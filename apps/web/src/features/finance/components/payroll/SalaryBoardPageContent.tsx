@@ -54,7 +54,6 @@ import { SalaryBoardListView } from '@/features/finance/components/payroll/salar
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
 import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
 import { SalaryBoardPageSettingsSheet } from '@/features/finance/components/payroll/SalaryBoardPageSettingsSheet';
-import { SalaryBoardFilteredTotalsBar } from '@/features/finance/components/payroll/salary-board-filtered-totals-bar';
 import { useSalaryBoardCsvExport } from '@/features/finance/components/payroll/use-salary-board-csv-export';
 import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
 
@@ -376,7 +375,6 @@ export function SalaryBoardPageContent() {
         />
       ) : (
         <>
-          <SalaryBoardFilteredTotalsBar totals={filteredTotals} />
           {view === 'calendar' ? (
             <SalaryBoardCalendarView
               data={data}

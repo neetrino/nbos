@@ -1,17 +1,22 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
-import {
-  PayrollRunsService,
-  type PatchPayrollRunBody,
-  type PatchSalaryLineSalesKpiBody,
-} from './payroll-runs.service';
+import { PayrollAllocationMatrixService } from './payroll-allocation-matrix.service';
+import type {
+  CreatePayrollMatrixManualBonusBody,
+  PatchPayrollMatrixCellBody,
+  PatchPayrollMatrixLayoutBody,
+} from './payroll-allocation-matrix.types';
+import { PayrollRunsService } from './payroll-runs.service';
 
 @ApiTags('Payroll runs')
 @ApiBearerAuth()
 @Controller('payroll-runs')
 export class PayrollRunsController {
-  constructor(private readonly payrollRunsService: PayrollRunsService) {}
+  constructor(
+    private readonly payrollRunsService: PayrollRunsService,
+    private readonly payrollAllocationMatrixService: PayrollAllocationMatrixService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -116,14 +121,104 @@ export class PayrollRunsController {
     return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
   }
 
-  @Get(':id/bonus-releases')
+  @Get(':id/allocation-matrix/validation')
+  @ApiOperation({ summary: 'Validate payroll matrix before review/approval' })
+  async getAllocationMatrixValidation(@Param('id') id: string) {
+    return this.payrollAllocationMatrixService.getValidation(id);
+  }
+
+  @Get(':id/employee-bonus-history/meta')
   @ApiOperation({
-    summary: 'Bonus releases for payroll run workspace',
-    description:
-      'Returns INCLUDED_IN_PAYROLL rows on this run and APPROVED releases available to attach while DRAFT/REVIEW.',
+    summary: 'Employee bonus history shared context (no matrix)',
+    description: 'Employees, month columns, and delivery units — load once per payroll run view.',
   })
-  async getBonusReleases(@Param('id') id: string) {
-    return this.payrollRunsService.getBonusReleases(id);
+  async getEmployeeBonusHistoryMeta(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistoryMeta(id, user.id);
+  }
+
+  @Get(':id/employee-bonus-history/slice')
+  @ApiOperation({
+    summary: 'Employee bonus history slice (12-month amounts, no matrix)',
+    description:
+      'Per-employee project rows and month totals; merge focus cells from allocation matrix on the client.',
+  })
+  @ApiQuery({ name: 'employeeId', required: true })
+  async getEmployeeBonusHistorySlice(
+    @Param('id') id: string,
+    @Query('employeeId') employeeId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistorySlice(
+      id,
+      user.id,
+      employeeId,
+    );
+  }
+
+  @Get(':id/allocation-matrix')
+  @ApiOperation({
+    summary: 'Payroll allocation matrix (employees × delivery payable units)',
+    description:
+      'Employee-centered or order-centered matrix data with cells, layout preference, and delivery unit funding totals.',
+  })
+  @ApiQuery({
+    name: 'viewMode',
+    required: false,
+    enum: ['EMPLOYEE_MATRIX', 'ORDER_MATRIX'],
+  })
+  async getAllocationMatrix(
+    @Param('id') id: string,
+    @Query('viewMode') viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getMatrix(
+      id,
+      user.id,
+      viewMode ?? 'EMPLOYEE_MATRIX',
+    );
+  }
+
+  @Patch(':id/allocation-matrix/layout')
+  @ApiOperation({ summary: 'Persist payroll matrix row/column order and pinned units' })
+  async patchAllocationMatrixLayout(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixLayoutBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.patchLayout(id, user.id, body);
+  }
+
+  @Patch(':id/allocation-matrix/cells')
+  @ApiOperation({ summary: 'Update bonus release amount for a matrix cell' })
+  async patchAllocationMatrixCell(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixCellBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.patchCell(id, user.id, body);
+  }
+
+  @Post(':id/allocation-matrix/manual-bonus')
+  @ApiOperation({ summary: 'Create manual bonus from a gray matrix cell' })
+  async createAllocationMatrixManualBonus(
+    @Param('id') id: string,
+    @Body() body: CreatePayrollMatrixManualBonusBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.createManualBonus(id, user.id, body);
+  }
+
+  @Post(':id/allocation-matrix/layout/reset')
+  @ApiOperation({ summary: 'Reset matrix row/column order and pinned units for current view' })
+  async resetAllocationMatrixLayout(
+    @Param('id') id: string,
+    @Body() body: { viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.resetLayout(id, user.id, body.viewMode);
   }
 
   @Get(':id')
@@ -136,30 +231,6 @@ export class PayrollRunsController {
     return this.payrollRunsService.findById(id);
   }
 
-  @Patch(':id')
-  @ApiOperation({
-    summary: 'Patch payroll run (sales KPI inputs for seller payout gate)',
-    description:
-      'Updates `kpiSalesPlanAmount` / `kpiSalesActualAmount` (NBOS § KPI to payout). Only while DRAFT/REVIEW and with no bonus releases attached.',
-  })
-  async patchPayrollRun(@Param('id') id: string, @Body() body: PatchPayrollRunBody) {
-    return this.payrollRunsService.patchPayrollRun(id, body);
-  }
-
-  @Patch(':id/salary-lines/:salaryLineId/sales-kpi')
-  @ApiOperation({
-    summary: 'Patch per-employee sales KPI on a salary line',
-    description:
-      'Overrides run-level plan/actual for SALES bonus attach on this employee. DRAFT/REVIEW only; employee must have no INCLUDED_IN_PAYROLL releases.',
-  })
-  async patchSalaryLineSalesKpi(
-    @Param('id') id: string,
-    @Param('salaryLineId') salaryLineId: string,
-    @Body() body: PatchSalaryLineSalesKpiBody,
-  ) {
-    return this.payrollRunsService.patchSalaryLineSalesKpi(id, salaryLineId, body);
-  }
-
   @Post()
   @ApiOperation({ summary: 'Create draft payroll run for a month (optional salary line seed)' })
   async create(
@@ -167,26 +238,6 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.payrollRunsService.create(body, user.id);
-  }
-
-  @Post(':id/bonus-releases/attach')
-  @ApiOperation({
-    summary: 'Attach approved bonus releases to salary lines (DRAFT/REVIEW run only)',
-    description:
-      'Each release must be APPROVED; optional `payrollRunId` on the release must match this run when set. Updates `SalaryLine.bonusesTotal` and sets release status to INCLUDED_IN_PAYROLL.',
-  })
-  async attachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
-    return this.payrollRunsService.attachBonusReleases(id, body);
-  }
-
-  @Post(':id/bonus-releases/detach')
-  @ApiOperation({
-    summary: 'Detach INCLUDED_IN_PAYROLL bonus releases from salary lines (DRAFT/REVIEW run only)',
-    description:
-      'Subtracts amounts from `SalaryLine.bonusesTotal`, sets each release back to APPROVED, and clears `payrollRunId`.',
-  })
-  async detachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
-    return this.payrollRunsService.detachBonusReleases(id, body);
   }
 
   @Patch(':id/status')

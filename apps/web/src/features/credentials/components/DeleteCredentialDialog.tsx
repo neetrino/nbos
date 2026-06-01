@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { DeleteConfirmDialog } from '@/components/shared';
 import { credentialsApi } from '@/lib/api/credentials';
 import { toast } from 'sonner';
 
@@ -46,35 +38,16 @@ export function DeleteCredentialDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Archive credential</DialogTitle>
-          <DialogDescription>
-            The record is hidden from active lists and project handoff counts; secrets stay in the
-            database until a separate purge policy runs. You can restore it later from Archived.
-            {credentialName ? (
-              <>
-                {' '}
-                <span className="text-foreground font-medium">{credentialName}</span>
-              </>
-            ) : null}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => void handleDelete()}
-            disabled={deleting || !credentialId}
-          >
-            {deleting ? 'Archiving…' : 'Archive'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DeleteConfirmDialog
+      level="simple"
+      open={open}
+      onOpenChange={onOpenChange}
+      itemName={credentialName ?? ''}
+      title="Archive credential?"
+      description="Hidden from active lists and project handoff. You can restore it from Archived."
+      confirmLabel="Archive"
+      isSubmitting={deleting}
+      onConfirm={handleDelete}
+    />
   );
 }

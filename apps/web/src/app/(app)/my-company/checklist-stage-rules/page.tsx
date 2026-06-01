@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ClipboardList, Loader2, Route } from 'lucide-react';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { DeleteConfirmDialog, PageHero, StatusBadge, useDeleteConfirm } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -20,6 +20,7 @@ export default function ChecklistStageRulesPage() {
   const [rules, setRules] = useState<DeliveryStageChecklistRuleRow[]>([]);
   const [templates, setTemplates] = useState<ChecklistTemplateListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const deleteConfirm = useDeleteConfirm();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,8 +53,7 @@ export default function ChecklistStageRulesPage() {
     }
   };
 
-  const onDelete = async (id: string) => {
-    if (!window.confirm('Delete this stage binding?')) return;
+  const performDelete = async (id: string) => {
     try {
       await checklistTemplatesApi.deleteStageRule(id);
       toast.success('Rule removed');
@@ -114,7 +114,14 @@ export default function ChecklistStageRulesPage() {
               key={row.id}
               row={row}
               onToggleActive={onToggleActive}
-              onDelete={onDelete}
+              onDelete={(id) => {
+                const row = rules.find((rule) => rule.id === id);
+                if (!row) return;
+                deleteConfirm.request({
+                  id,
+                  name: row.checklistTemplate.name,
+                });
+              }}
             />
           ))}
           {!loading && rules.length === 0 ? (
@@ -133,6 +140,21 @@ export default function ChecklistStageRulesPage() {
           ) : null}
         </ul>
       </Card>
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete stage rule?"
+        description="Checklists will no longer auto-spawn when items enter this stage."
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void performDelete(id);
+        }}
+      />
     </div>
   );
 }

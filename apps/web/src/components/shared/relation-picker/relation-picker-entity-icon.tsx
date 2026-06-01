@@ -3,23 +3,35 @@ import { Building2, FolderKanban, Handshake, Layers, User, UserCog } from 'lucid
 import { cn } from '@/lib/utils';
 import type { RelationEntityKind } from './relation-picker.types';
 
-const ICON_CLASS = 'text-muted-foreground size-8 shrink-0 rounded-lg bg-muted/60 p-1.5';
+const ICON_BOXED_CLASS = 'text-muted-foreground size-8 shrink-0 rounded-lg bg-muted/60 p-1.5';
 
-const ENTITY_ICONS: Record<RelationEntityKind, ReactNode> = {
-  contact: <User size={16} className="mx-auto" />,
-  company: <Building2 size={16} className="mx-auto" />,
-  project: <FolderKanban size={16} className="mx-auto" />,
-  partner: <Handshake size={16} className="mx-auto" />,
-  product: <Layers size={16} className="mx-auto" />,
-  employee: <UserCog size={16} className="mx-auto" />,
+const ICON_SIZE = 16;
+
+const ENTITY_ICON_COMPONENTS: Record<RelationEntityKind, typeof User> = {
+  contact: User,
+  company: Building2,
+  project: FolderKanban,
+  partner: Handshake,
+  product: Layers,
+  employee: UserCog,
 };
 
 export function RelationPickerEntityIcon({
   kind,
+  variant = 'boxed',
   className,
 }: {
   kind: RelationEntityKind;
+  variant?: 'boxed' | 'inline';
   className?: string;
 }) {
-  return <span className={cn(ICON_CLASS, className)}>{ENTITY_ICONS[kind]}</span>;
+  const Icon = ENTITY_ICON_COMPONENTS[kind];
+  if (variant === 'inline') {
+    return <Icon size={ICON_SIZE} className={cn(className)} aria-hidden />;
+  }
+  return (
+    <span className={cn(ICON_BOXED_CLASS, className)}>
+      <Icon size={ICON_SIZE} className="mx-auto" aria-hidden />
+    </span>
+  );
 }

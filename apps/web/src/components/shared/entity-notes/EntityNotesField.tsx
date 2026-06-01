@@ -2,11 +2,12 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   ENTITY_NOTES_EDITOR_ROOT_CLASS,
   ENTITY_NOTES_LABEL_CLASS,
+  ENTITY_NOTES_LABEL_ICON_CLASS,
   ENTITY_NOTES_SHELL_DISABLED_CLASS,
   ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
   ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
@@ -17,12 +18,14 @@ import { EntityNotesToolbar } from './entity-notes-toolbar';
 import { isNotesValueEmpty } from './entity-notes-value';
 import { useEntityNotesEditor } from './use-entity-notes-editor';
 
-const DEFAULT_PLACEHOLDER = 'Comment';
+const DEFAULT_PLACEHOLDER = 'Description';
 
 function focusLeftShell(shell: HTMLElement | null): boolean {
   const active = document.activeElement;
   return active !== null && shell !== null && !shell.contains(active);
 }
+
+const DEFAULT_FIELD_LABEL = 'Description';
 
 export function EntityNotesField({
   entityType: _entityType,
@@ -77,9 +80,16 @@ export function EntityNotesField({
     activate();
   };
 
+  const fieldLabel = label === null ? null : (label ?? DEFAULT_FIELD_LABEL);
+
   return (
     <div className={cn('w-full', className)}>
-      {label ? <span className={ENTITY_NOTES_LABEL_CLASS}>{label}</span> : null}
+      {fieldLabel ? (
+        <span className={ENTITY_NOTES_LABEL_CLASS}>
+          <MessageSquare size={10} className={ENTITY_NOTES_LABEL_ICON_CLASS} aria-hidden />
+          {fieldLabel}
+        </span>
+      ) : null}
       <div
         ref={shellRef}
         className={cn(

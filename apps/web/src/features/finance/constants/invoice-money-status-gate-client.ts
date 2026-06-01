@@ -3,6 +3,10 @@ import type { Invoice } from '@/lib/api/finance';
 
 export const INVOICE_GATE_FIELD_PAYMENTS = 'payments' as const;
 export const INVOICE_GATE_FIELD_MONEY_STATUS = 'moneyStatus' as const;
+export const INVOICE_GATE_FIELD_COMPANY = 'company' as const;
+export const INVOICE_GATE_FIELD_PROJECT = 'project' as const;
+
+const AWAITING_PAYMENT_CONTEXT_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE']);
 
 function invoiceOutstandingAmount(invoice: Invoice): number {
   const coverage = invoice.paymentCoverage;
@@ -12,6 +16,10 @@ function invoiceOutstandingAmount(invoice: Invoice): number {
   return Number.isFinite(amount) ? Math.max(0, amount - paid) : 0;
 }
 
+function requiresManualContextGate(invoice: Invoice, targetMoneyStatus: string): boolean {
+  return invoice.type === 'MANUAL' && AWAITING_PAYMENT_CONTEXT_STATUSES.has(targetMoneyStatus);
+}
+
 /** Local pre-check aligned with `InvoicesService.assertManualMoneyStatusAllowed`. */
 export function getLocalInvoiceMoneyStatusGateErrors(
   invoice: Invoice,
@@ -19,6 +27,21 @@ export function getLocalInvoiceMoneyStatusGateErrors(
 ): ApiFieldError[] {
   const errors: ApiFieldError[] = [];
   const outstanding = invoiceOutstandingAmount(invoice);
+
+  if (requiresManualContextGate(invoice, targetMoneyStatus)) {
+    if (!invoice.companyId) {
+      errors.push({
+        field: INVOICE_GATE_FIELD_COMPANY,
+        message: 'Link a company on the invoice card before awaiting payment.',
+      });
+    }
+    if (!invoice.projectId) {
+      errors.push({
+        field: INVOICE_GATE_FIELD_PROJECT,
+        message: 'Link a project on the invoice card before awaiting payment.',
+      });
+    }
+  }
 
   if (targetMoneyStatus === 'PAID' && outstanding > 0) {
     errors.push({

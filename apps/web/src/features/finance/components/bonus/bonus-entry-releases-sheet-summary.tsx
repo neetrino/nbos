@@ -13,6 +13,11 @@ import {
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
+import {
+  bonusEntryAutoPayable,
+  bonusEntryPayableAdjustment,
+  bonusEntryPayableCeiling,
+} from '@/features/finance/utils/bonus-entry-payable';
 import type { BonusEntryReleaseTotals } from '@/features/finance/utils/bonus-entry-release-totals';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -83,6 +88,11 @@ export function BonusEntryReleasesSheetSummary({
   const salesHint = bonusSalesAccrualHint(entry);
   const percent = Number.parseFloat(entry.percent);
   const showPercent = Number.isFinite(percent) && percent > 0;
+  const autoPayable = bonusEntryAutoPayable(entry);
+  const adjustment = bonusEntryPayableAdjustment(entry);
+  const payable = bonusEntryPayableCeiling(entry);
+  const showPayableBreakdown =
+    entry.type === 'SALES' || adjustment !== 0 || entry.payableAmount != null;
 
   return (
     <div className="space-y-4">
@@ -102,7 +112,7 @@ export function BonusEntryReleasesSheetSummary({
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <MetricCell label="Planned" value={formatAmount(totals.planned)} />
+        <MetricCell label="Payable" value={formatAmount(payable)} />
         <MetricCell
           label="Released"
           value={formatAmount(totals.released)}
@@ -119,6 +129,25 @@ export function BonusEntryReleasesSheetSummary({
           accentClass={totals.remaining > 0 ? 'text-amber-700 dark:text-amber-400' : undefined}
         />
       </div>
+
+      {showPayableBreakdown ? (
+        <div className="border-border bg-muted/20 grid grid-cols-2 gap-2 rounded-xl border p-3 text-xs sm:grid-cols-3">
+          <div>
+            <p className="text-muted-foreground text-[10px] font-medium uppercase">Planned</p>
+            <p className="mt-1 font-semibold tabular-nums">
+              {formatAmount(parseFloat(entry.amount))}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-[10px] font-medium uppercase">Auto (KPI)</p>
+            <p className="mt-1 font-semibold tabular-nums">{formatAmount(autoPayable)}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-[10px] font-medium uppercase">Adjustment</p>
+            <p className="mt-1 font-semibold tabular-nums">{formatAmount(adjustment)}</p>
+          </div>
+        </div>
+      ) : null}
 
       <ReleaseProgressBar totals={totals} />
 
@@ -141,11 +170,6 @@ export function BonusEntryReleasesSheetSummary({
           </p>
         ) : null}
         {salesHint ? <p className="text-muted-foreground leading-snug">{salesHint}</p> : null}
-        {entry.kpiGatePassed === false ? (
-          <p className="text-amber-700 dark:text-amber-400">
-            KPI gate not passed — release may be reduced at payroll attach.
-          </p>
-        ) : null}
       </div>
 
       <p className="text-muted-foreground text-xs">

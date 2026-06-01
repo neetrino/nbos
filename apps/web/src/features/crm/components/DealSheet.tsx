@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
-import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
+import {
+  Trash2,
+  LayoutGrid,
+  History,
+  FileText,
+  Phone,
+  CheckSquare,
+  AlertTriangle,
+} from 'lucide-react';
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
@@ -16,6 +24,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DealPipelineStages } from './DealPipelineStages';
+import { DealExceptionOrderDialog } from './DealExceptionOrderDialog';
 import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
 import { DealInvoiceTab } from './DealInvoiceTab';
@@ -89,6 +98,7 @@ export function DealSheet({
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
+  const [exceptionDialogOpen, setExceptionDialogOpen] = useState(false);
   const [generalDraft, setGeneralDraft] = useState<DealGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<DealGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -168,6 +178,11 @@ export function DealSheet({
   }, [generalSnap]);
 
   useEffect(() => {
+    if (!open || !stageGateHighlight) return;
+    queueMicrotask(() => setActiveTab('general'));
+  }, [open, stageGateHighlight]);
+
+  useEffect(() => {
     if (!open || !blockerNavigation) return;
     const { intent } = blockerNavigation;
     queueMicrotask(() => {
@@ -205,6 +220,11 @@ export function DealSheet({
   const typeVisual = getDealTypePresentation(deal.type);
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);
   const TypeIcon = typeVisual.Icon;
+  const canCreateExceptionOrder =
+    deal.status !== 'WON' &&
+    deal.status !== 'FAILED' &&
+    (deal.orders?.length ?? 0) === 0 &&
+    (deal.type === 'PRODUCT' || deal.type === 'EXTENSION' || deal.type === 'OUTSOURCE');
 
   const startEditing = () => {
     setNameValue(generalDraft?.name ?? deal.name ?? '');
@@ -252,12 +272,20 @@ export function DealSheet({
             titleEditHint="Click to edit deal name"
             onStartEditing={startEditing}
             actions={
-              onDelete ? (
+              onDelete || canCreateExceptionOrder ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
-                    <Trash2 />
-                    Delete
-                  </DropdownMenuItem>
+                  {canCreateExceptionOrder ? (
+                    <DropdownMenuItem onClick={() => setExceptionDialogOpen(true)}>
+                      <AlertTriangle />
+                      Exception order
+                    </DropdownMenuItem>
+                  ) : null}
+                  {onDelete ? (
+                    <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : null
             }
@@ -313,6 +341,14 @@ export function DealSheet({
           />
         </EntityDetailSheetContent>
       </Sheet>
+      <DealExceptionOrderDialog
+        dealId={deal.id}
+        open={exceptionDialogOpen}
+        onOpenChange={setExceptionDialogOpen}
+        onSuccess={() => {
+          onRefresh?.();
+        }}
+      />
     </EntityItemHost>
   );
 }

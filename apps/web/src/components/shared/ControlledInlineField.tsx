@@ -24,8 +24,18 @@ import {
   DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
+import { MoneyInput } from './MoneyInput';
 
-type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
+type FieldType =
+  | 'text'
+  | 'number'
+  | 'money'
+  | 'email'
+  | 'phone'
+  | 'textarea'
+  | 'select'
+  | 'link'
+  | 'date';
 
 interface SelectOption {
   value: string;
@@ -155,6 +165,19 @@ export function ControlledInlineField({
             className="min-w-0 flex-1"
             aria-label={label}
           />
+        </div>
+      ) : type === 'money' ? (
+        <div className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
+          <MoneyInput
+            value={str}
+            onChange={onValueChange}
+            disabled={disabled}
+            className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
+            placeholder={placeholder}
+          />
+          {suffix && str !== '' ? (
+            <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
+          ) : null}
         </div>
       ) : (
         <div className={DETAIL_SHEET_FIELD_SHELL_CLASS}>

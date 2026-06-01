@@ -39,11 +39,7 @@ function hasOfferProof(deal: DealStageGateInput): boolean {
   );
 }
 
-function hasContractProof(deal: DealStageGateInput): boolean {
-  return Boolean(
-    (deal.linkedContractAssetCount ?? 0) > 0 || hasNonBlankValue(deal.contractFileUrl ?? null),
-  );
-}
+const DEPOSIT_COMMERCIAL_DEAL_TYPES = new Set(['PRODUCT', 'EXTENSION', 'OUTSOURCE']);
 
 /**
  * Returns missing field / blocker errors for a deal stage transition (cumulative gates).
@@ -138,36 +134,31 @@ export function getDealStageGateErrors(
         message: 'Company is required for TAX deals at DEPOSIT_AND_CONTRACT',
       });
     }
-    if (deal.paymentType === 'CLASSIC' && !hasContractProof(deal)) {
+    if (dealType === 'PRODUCT' && !deal.deadline) {
       errors.push({
-        field: 'contractProof',
-        message: 'Attach a signed contract file in Drive before DEPOSIT_AND_CONTRACT',
+        field: 'deadline',
+        message: 'Deadline is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
       });
-    }
-    if (deal.paymentType === 'CLASSIC' && !hasInvoice) {
-      errors.push({
-        field: 'invoice',
-        message: 'Deposit invoice must be created before DEPOSIT_AND_CONTRACT',
-      });
-    }
-    if (dealType === 'PRODUCT') {
-      if (!deal.pmId) {
-        errors.push({
-          field: 'pmId',
-          message: 'PM is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
-        });
-      }
-      if (!deal.deadline) {
-        errors.push({
-          field: 'deadline',
-          message: 'Deadline is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
-        });
-      }
     }
     if (isExtension && !deal.existingProductId) {
       errors.push({
         field: 'existingProductId',
         message: 'Existing product must be selected for EXTENSION deals at DEPOSIT_AND_CONTRACT',
+      });
+    }
+  }
+
+  if (targetStatus === 'WON') {
+    if (dealType === 'PRODUCT' && !deal.pmId) {
+      errors.push({
+        field: 'pmId',
+        message: 'PM is required for PRODUCT deals before Deal Won',
+      });
+    }
+    if (dealType && DEPOSIT_COMMERCIAL_DEAL_TYPES.has(dealType) && !hasInvoice) {
+      errors.push({
+        field: 'invoice',
+        message: 'Deposit invoice is required before Deal Won',
       });
     }
   }

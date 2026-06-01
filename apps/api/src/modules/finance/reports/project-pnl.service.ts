@@ -81,7 +81,7 @@ export class ProjectPnlService {
 
 interface PaymentRow {
   amount: Decimal;
-  invoice: { projectId: string };
+  invoice: { projectId: string | null };
 }
 
 interface ExpensePaymentRow {
@@ -99,7 +99,9 @@ interface ProjectAccumulator {
 
 function collectProjectIds(payments: PaymentRow[], expensePayments: ExpensePaymentRow[]): string[] {
   const ids = new Set<string>();
-  for (const row of payments) ids.add(row.invoice.projectId);
+  for (const row of payments) {
+    if (row.invoice.projectId) ids.add(row.invoice.projectId);
+  }
   for (const row of expensePayments) {
     if (row.expense.projectId) ids.add(row.expense.projectId);
   }
@@ -113,6 +115,7 @@ function buildProjectRows(
 ): ProjectPnlRow[] {
   const byProject = new Map<string, ProjectAccumulator>();
   for (const row of payments) {
+    if (!row.invoice.projectId) continue;
     const acc = getProjectAccumulator(byProject, row.invoice.projectId);
     acc.revenue = acc.revenue.plus(row.amount);
     acc.paymentCount += 1;

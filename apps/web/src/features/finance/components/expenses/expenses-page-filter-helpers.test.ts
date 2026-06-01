@@ -5,11 +5,17 @@ import {
 } from './expenses-page-filter-helpers';
 
 describe('expenses-page-filter-helpers', () => {
-  it('initial Pay Now scope defaults to payroll salary cards for current month', () => {
+  it('initial Pay Now scope shows all expenses (no payroll preset)', () => {
     const filters = initialExpenseFilterRecord('default');
-    expect(filters.payrollSource).toBe('payroll');
-    expect(filters.payrollMonth).toMatch(/^\d{4}-\d{2}$/);
+    expect(filters.payrollSource).toBe('all');
+    expect(filters.payrollMonth).toBe('all');
     expect(filters.payrollEmployee).toBe('all');
+  });
+
+  it('cleared default scope matches initial (all expenses)', () => {
+    expect(clearedExpenseFilterRecord('default', null)).toEqual(
+      initialExpenseFilterRecord('default'),
+    );
   });
 
   it('initial closed scope uses API closedBoard (no fixed status filter)', () => {

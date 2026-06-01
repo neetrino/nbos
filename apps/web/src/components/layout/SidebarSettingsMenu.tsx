@@ -24,12 +24,12 @@ export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSetti
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center gap-3 rounded-lg text-sm font-medium transition-colors',
+          'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center gap-2 rounded-md text-[13px] font-medium transition-colors',
           SIDEBAR_NAV_ITEM_CLASS,
-          collapsed && 'justify-center px-2',
+          collapsed && 'justify-center px-1.5',
         )}
       >
-        <Settings size={20} className="shrink-0" />
+        <Settings size={16} className="shrink-0" />
         {!collapsed && <span className="flex-1 text-left">Settings</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent

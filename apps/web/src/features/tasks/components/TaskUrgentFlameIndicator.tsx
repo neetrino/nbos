@@ -1,4 +1,5 @@
 import { Flame } from 'lucide-react';
+import { TASK_PRIORITY_FLAME_FILLED_CLASS } from '@/components/shared/quick-create-task/quick-create-task-constants';
 import { cn } from '@/lib/utils';
 import { isTaskUrgentPriority } from '../constants/tasks';
 
@@ -20,7 +21,7 @@ export function TaskUrgentFlameIndicator({
     <Flame
       size={size}
       strokeWidth={1.75}
-      className={cn('shrink-0 text-orange-500', className)}
+      className={cn('shrink-0', TASK_PRIORITY_FLAME_FILLED_CLASS, className)}
       aria-label="Urgent"
     />
   );

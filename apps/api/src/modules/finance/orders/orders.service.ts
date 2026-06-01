@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -25,6 +25,9 @@ interface CreateOrderDto {
   taxStatus?: string;
   partnerId?: string;
   partnerPercent?: number;
+  paymentMode?: string;
+  deliveryStartMode?: string;
+  status?: string;
 }
 
 interface OrderQueryParams {
@@ -215,6 +218,14 @@ export class OrdersService {
   }
 
   async create(data: CreateOrderDto) {
+    if (data.paymentMode === 'FREE') {
+      if (data.totalAmount !== 0) {
+        throw new BadRequestException('FREE orders must have totalAmount = 0');
+      }
+    } else if (!Number.isFinite(data.totalAmount) || data.totalAmount <= 0) {
+      throw new BadRequestException('Order totalAmount must be greater than zero');
+    }
+
     const code = await this.generateCode();
     const created = await this.prisma.order.create({
       data: {
@@ -230,6 +241,13 @@ export class OrdersService {
         taxStatus: (data.taxStatus as Prisma.OrderCreateInput['taxStatus']) ?? 'TAX',
         partnerId: data.partnerId,
         partnerPercent: data.partnerPercent,
+        ...(data.paymentMode && {
+          paymentMode: data.paymentMode as Prisma.OrderCreateInput['paymentMode'],
+        }),
+        ...(data.deliveryStartMode && {
+          deliveryStartMode: data.deliveryStartMode as Prisma.OrderCreateInput['deliveryStartMode'],
+        }),
+        ...(data.status && { status: data.status as OrderStatusEnum }),
       },
     });
     return this.findById(created.id);

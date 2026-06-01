@@ -1,22 +1,31 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CheckSquare, ExternalLink, FileText, TrendingUp } from 'lucide-react';
+import { CheckSquare, ExternalLink, FileText, Plus, Rocket, TrendingUp } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import {
+  AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
-} from '@/components/shared/detail-sheet-classes';
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
+import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { dealOrderToCreateInvoiceOrder } from '@/features/finance/components/invoices/deal-order-to-create-invoice-order';
+import {
+  canCreateDepositInvoice,
+  canOpenDealCreateInvoiceDialog,
+} from '@/features/crm/utils/deal-invoice-eligibility';
+import { submitDealInvoiceCreation } from '@/features/crm/utils/submit-deal-invoice-creation';
 import type { Deal } from '@/lib/api/deals';
-import { invoicesApi, ordersApi } from '@/lib/api/finance';
+import { dealsApi } from '@/lib/api/deals';
 import { formatAmount } from '../constants/dealPipeline';
-import { DisabledInvoiceAction, InvoiceAction } from './DealActionControls';
 import { computeFinance } from './deal-general-tab.helpers';
+import { DealOrderCommercialBadges } from './DealOrderCommercialBadges';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 const FINANCE_PANEL_SURFACE_CLASS =
   'rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-5 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent';
@@ -32,7 +41,6 @@ interface DealFinanceActionsPanelProps {
   projectId: string | undefined;
   firstOrder: Deal['orders'][number] | undefined;
   taxStatus: string;
-  canCreateInvoice: boolean;
   onRefresh?: () => void;
   onOpenTaskTab?: () => void;
 }
@@ -42,13 +50,12 @@ export function DealFinanceActionsPanel({
   projectId,
   firstOrder,
   taxStatus,
-  canCreateInvoice,
   onRefresh,
   onOpenTaskTab,
 }: DealFinanceActionsPanelProps) {
-  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
-  const [invoiceAmount, setInvoiceAmount] = useState('');
-  const [creatingInvoice, setCreatingInvoice] = useState(false);
+  const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
+  const [startingEarly, setStartingEarly] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const { creatorId, creatorReady } = useTaskCreatorId();
   const finance = computeFinance(deal);
@@ -57,41 +64,39 @@ export function DealFinanceActionsPanel({
     [deal.id, projectId],
   );
 
-  const handleCreateInvoice = async () => {
-    const amount = Number(invoiceAmount);
-    if (!amount || amount <= 0 || !canCreateInvoice || !projectId) return;
-    setCreatingInvoice(true);
-    try {
-      const orderId = await ensureOrder(amount);
-      const projectIdForInvoice = firstOrder?.projectId ?? deal.projectId;
-      if (!projectIdForInvoice) return;
-      await invoicesApi.create({
-        orderId,
-        projectId: projectIdForInvoice,
-        amount,
-        type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
-        ...(taxStatus === 'TAX' && deal.companyId && { companyId: deal.companyId }),
-      });
-      setShowInvoiceForm(false);
-      setInvoiceAmount('');
-      onRefresh?.();
-    } finally {
-      setCreatingInvoice(false);
-    }
-  };
+  const createInvoiceOrder = firstOrder ? dealOrderToCreateInvoiceOrder(deal, firstOrder) : null;
+  const canCreateInvoice = canOpenDealCreateInvoiceDialog(deal, taxStatus);
+  const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
 
-  const ensureOrder = async (amount: number) => {
-    if (firstOrder?.id) return firstOrder.id;
-    const orderType = getOrderType(deal);
-    const order = await ordersApi.create({
-      projectId: deal.projectId!,
-      dealId: deal.id,
-      type: orderType,
-      paymentType: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'CLASSIC',
-      totalAmount: amount,
-      taxStatus,
-    });
-    return order.id;
+  const submitOverride = useCallback(
+    async (form: { amount: string; dueDate: string }) => {
+      await submitDealInvoiceCreation(deal.id, form, createInvoiceOrder);
+    },
+    [deal.id, createInvoiceOrder],
+  );
+
+  const canStartEarlyDelivery = Boolean(
+    firstOrder &&
+    firstOrder.invoices.length > 0 &&
+    firstOrder.deliveryStartMode !== 'EARLY_START' &&
+    firstOrder.deliveryStartMode !== 'EXCEPTION_IMMEDIATE' &&
+    firstOrder.invoices.some((invoice) => invoice.moneyStatus !== 'PAID') &&
+    deal.status !== 'WON' &&
+    deal.status !== 'FAILED',
+  );
+
+  const handleStartEarlyDelivery = async () => {
+    if (!canStartEarlyDelivery) return;
+    setStartingEarly(true);
+    setActionError(null);
+    try {
+      await dealsApi.startEarlyDelivery(deal.id);
+      onRefresh?.();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Could not start early delivery.'));
+    } finally {
+      setStartingEarly(false);
+    }
   };
 
   return (
@@ -101,6 +106,7 @@ export function DealFinanceActionsPanel({
           <TrendingUp size={12} />
           Finance
         </h4>
+        {firstOrder ? <DealOrderCommercialBadges order={firstOrder} /> : null}
         <div className="space-y-2.5 text-sm">
           <FinanceRow
             label="Total"
@@ -138,17 +144,40 @@ export function DealFinanceActionsPanel({
         </h4>
         <div className="space-y-3">
           {canCreateInvoice ? (
-            <InvoiceAction
-              showForm={showInvoiceForm}
-              invoiceAmount={invoiceAmount}
-              creatingInvoice={creatingInvoice}
-              setInvoiceAmount={setInvoiceAmount}
-              setShowInvoiceForm={setShowInvoiceForm}
-              handleCreateInvoice={handleCreateInvoice}
-            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+              onClick={() => setCreateInvoiceOpen(true)}
+            >
+              <Plus size={14} />
+              {depositBootstrap ? 'Create Deposit Invoice' : 'Create Invoice'}
+            </Button>
           ) : (
-            <DisabledInvoiceAction />
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-stone-300 text-stone-500 dark:border-stone-600 dark:text-stone-400"
+              disabled
+              title="Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company"
+            >
+              <Plus size={14} />
+              Create Invoice
+            </Button>
           )}
+
+          {canStartEarlyDelivery ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-950/30"
+              disabled={startingEarly}
+              onClick={handleStartEarlyDelivery}
+            >
+              <Rocket size={14} />
+              Start delivery before payment
+            </Button>
+          ) : null}
 
           {projectId ? (
             <Button
@@ -171,8 +200,23 @@ export function DealFinanceActionsPanel({
             <ExternalLink className="size-4" aria-hidden />
             Open Drive
           </Link>
+
+          {actionError ? <p className="text-destructive text-xs">{actionError}</p> : null}
         </div>
       </section>
+
+      {canCreateInvoice ? (
+        <CreateInvoiceDialog
+          open={createInvoiceOpen}
+          onOpenChange={setCreateInvoiceOpen}
+          order={createInvoiceOrder}
+          submitOverride={submitOverride}
+          forceNestedBackdrop
+          onCreated={() => {
+            onRefresh?.();
+          }}
+        />
+      ) : null}
 
       <QuickCreateTaskDialog
         open={quickCreateOpen}
@@ -180,6 +224,7 @@ export function DealFinanceActionsPanel({
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}
         defaultLinks={defaultLinks}
+        forceNestedBackdrop
         onCreated={() => {
           onOpenTaskTab?.();
           onRefresh?.();
@@ -198,18 +243,17 @@ function FinanceRow({
   value: string;
   valueClassName?: string;
 }) {
+  const showCurrency = value !== '—';
+
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn('tabular-nums', valueClassName)}>{value}</span>
+      <span className={cn('flex items-center justify-end gap-1 tabular-nums', valueClassName)}>
+        {showCurrency ? <AmdCurrencyIcon className={valueClassName} /> : null}
+        {value}
+      </span>
     </div>
   );
-}
-
-function getOrderType(deal: Deal) {
-  if (deal.type === 'EXTENSION') return 'EXTENSION';
-  if (deal.paymentType === 'SUBSCRIPTION') return 'SUBSCRIPTION';
-  return 'PRODUCT';
 }
 
 function getTaskLinks(dealId: string, projectId: string) {

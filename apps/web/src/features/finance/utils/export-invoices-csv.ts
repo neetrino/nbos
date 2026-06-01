@@ -1,11 +1,13 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { Invoice } from '@/lib/api/finance';
+import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 
 const CSV_HEADERS = [
   'id',
   'code',
   'orderId',
   'orderCode',
+  'dealName',
   'subscriptionId',
   'projectId',
   'projectName',
@@ -63,7 +65,8 @@ function invoiceToCsvCells(invoice: Invoice): string[] {
     invoice.id,
     invoice.code,
     invoice.orderId ?? '',
-    invoice.order?.code ?? '',
+    invoice.order ? getOrderDisplayTitle(invoice.order) : '',
+    getInvoiceDealTitle(invoice.order) ?? '',
     invoice.subscriptionId ?? '',
     invoice.projectId,
     invoice.project?.name ?? '',

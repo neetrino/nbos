@@ -6,6 +6,7 @@ export type SectionModuleVisitConfig = {
   sectionDefaults: Record<string, string>;
   resolveSection: (pathname: string) => string | null;
   isPathInSection: (pathname: string, sectionId: string) => boolean;
+  resolveStoredPath?: (pathname: string, sectionId: string) => string;
 };
 
 export type FlatModuleVisitConfig = {

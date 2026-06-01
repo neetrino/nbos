@@ -6,6 +6,7 @@ import {
   type BonusStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import {
   foldBonusProductPools,
@@ -22,6 +23,15 @@ import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
 import { syncProductBonusPoolForPoolKey } from './bonus-pool-sync-trigger';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
+import {
+  patchBonusEntryPlannedAmount,
+  type PatchBonusEntryPlannedAmountParams,
+} from './patch-bonus-entry-planned-amount';
+import {
+  patchBonusEntryPayableAdjustment,
+  type PatchBonusEntryPayableAdjustmentParams,
+} from './patch-bonus-entry-payable-adjustment';
+import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
@@ -31,8 +41,11 @@ interface CreateBonusDto {
   type: string;
   amount: number;
   percent: number;
+  title?: string;
+  reason?: string;
   status?: string;
   kpiGatePassed?: boolean;
+  earnedPeriod?: string;
   payoutMonth?: string;
 }
 
@@ -54,6 +67,7 @@ export class BonusService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly audit: AuditService,
   ) {}
 
   async findAll(params: BonusQueryParams) {
@@ -140,17 +154,22 @@ export class BonusService {
     return bonus;
   }
 
-  async create(data: CreateBonusDto) {
+  async create(data: CreateBonusDto, actorUserId?: string) {
+    const title = data.title?.trim();
+    const reason = data.reason?.trim();
     const created = await this.prisma.bonusEntry.create({
       data: {
+        title: title && title.length > 0 ? title : null,
         employeeId: data.employeeId,
         orderId: data.orderId,
         projectId: data.projectId,
         type: data.type as BonusTypeEnum,
         amount: data.amount,
+        originalAmount: data.amount,
         percent: data.percent,
         status: (data.status as BonusStatusEnum) ?? 'INCOMING',
         kpiGatePassed: data.kpiGatePassed,
+        earnedPeriod: data.earnedPeriod,
         payoutMonth: data.payoutMonth ? new Date(data.payoutMonth) : undefined,
       },
       include: {
@@ -160,6 +179,26 @@ export class BonusService {
       },
     });
     await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
+    await applyPayableSnapshotToBonusEntry(this.prisma, created.id);
+
+    if (actorUserId && reason && reason.length > 0) {
+      await this.audit.log({
+        entityType: 'BonusEntry',
+        entityId: created.id,
+        action: 'MANUAL_BONUS_CREATED',
+        userId: actorUserId,
+        projectId: data.projectId,
+        changes: {
+          employeeId: data.employeeId,
+          orderId: data.orderId,
+          amount: data.amount,
+          type: data.type,
+          title: title ?? null,
+          reason,
+        },
+      });
+    }
+
     return created;
   }
 
@@ -171,6 +210,67 @@ export class BonusService {
     });
     await syncProductBonusPoolForOrder(this.prisma, existing.orderId, this.notifications);
     return updated;
+  }
+
+  async patchPlannedAmount(
+    bonusEntryId: string,
+    params: Omit<PatchBonusEntryPlannedAmountParams, 'bonusEntryId'>,
+    actorUserId: string,
+  ) {
+    const result = await patchBonusEntryPlannedAmount(this.prisma, {
+      bonusEntryId,
+      ...params,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: result.bonusEntryId,
+      action: 'PLANNED_BONUS_UPDATED',
+      userId: actorUserId,
+      projectId: result.projectId,
+      changes: {
+        orderId: result.orderId,
+        employeeId: result.employeeId,
+        previousAmount: result.previousAmount,
+        nextAmount: result.nextAmount,
+        previousTitle: result.previousTitle,
+        nextTitle: params.title?.trim() ?? result.previousTitle,
+        reason: params.reason.trim(),
+      },
+    });
+
+    return this.findById(bonusEntryId);
+  }
+
+  async patchPayableAdjustment(
+    bonusEntryId: string,
+    params: Omit<PatchBonusEntryPayableAdjustmentParams, 'bonusEntryId'>,
+    actorUserId: string,
+  ) {
+    const result = await patchBonusEntryPayableAdjustment(this.prisma, {
+      bonusEntryId,
+      ...params,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: result.bonusEntryId,
+      action: 'PAYABLE_ADJUSTMENT_UPDATED',
+      userId: actorUserId,
+      projectId: result.projectId,
+      changes: {
+        orderId: result.orderId,
+        employeeId: result.employeeId,
+        previousAdjustment: result.previousAdjustment,
+        nextAdjustment: result.nextAdjustment,
+        previousPayableAmount: result.previousPayableAmount,
+        nextPayableAmount: result.nextPayableAmount,
+        autoPayable: result.autoPayable,
+        reason: params.reason.trim(),
+      },
+    });
+
+    return this.findById(bonusEntryId);
   }
 
   async getStats() {

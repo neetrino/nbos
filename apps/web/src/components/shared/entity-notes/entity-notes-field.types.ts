@@ -14,7 +14,8 @@ import type { EntityNoteEntityType } from './entity-notes-contract';
  * />
  * ```
  *
- * Omit `label` when the parent already provides a section title (e.g. DetailSheetSection).
+ * Omit `label` for the default compact “Description” caption, pass a string to override,
+ * or `label={null}` to hide the caption entirely.
  */
 export interface EntityNotesFieldProps {
   entityType: EntityNoteEntityType;
@@ -25,7 +26,8 @@ export interface EntityNotesFieldProps {
   disabled?: boolean;
   loading?: boolean;
   placeholder?: string;
-  label?: string;
+  /** Default: “Description”. Pass `null` to hide the caption. */
+  label?: string | null;
   className?: string;
   /** e.g. stage-gate ring from CRM sheets */
   shellClassName?: string;

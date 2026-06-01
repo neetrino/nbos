@@ -1,19 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Gift, Plus } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
+  PageHeroPrimaryAction,
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { BonusBoardFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-board-filtered-totals-bar';
-import { computeBonusBoardFilteredTotals } from '@/features/finance/utils/bonus-board-filtered-totals';
 import {
   readBonusBoardViewMode,
   writeBonusBoardViewMode,
@@ -298,10 +297,7 @@ export function BonusBoardPageContent() {
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
           />
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <Plus size={16} aria-hidden />
-            Create bonus
-          </Button>
+          <PageHeroPrimaryAction label="Create bonus" onClick={() => setCreateOpen(true)} />
         </>
       ),
     }),
@@ -321,8 +317,6 @@ export function BonusBoardPageContent() {
       view,
     ],
   );
-
-  const filteredTotals = useMemo(() => computeBonusBoardFilteredTotals(filtered), [filtered]);
 
   const boardBody = useMemo(() => {
     switch (view) {
@@ -376,10 +370,7 @@ export function BonusBoardPageContent() {
           action={null}
         />
       ) : (
-        <>
-          <BonusBoardFilteredTotalsBar totals={filteredTotals} />
-          {boardBody}
-        </>
+        boardBody
       )}
 
       <BonusEntryReleasesSheet

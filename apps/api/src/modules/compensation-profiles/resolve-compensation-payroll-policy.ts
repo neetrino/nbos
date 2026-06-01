@@ -13,11 +13,13 @@ export type CompensationPayrollPolicyDb = Pick<
 >;
 
 export type CompensationPayrollPolicy = {
+  kpiPolicyId: string | null;
   gateRules: KpiGateRules;
   bonusCapBaseSalaryMultiplier: Decimal;
 };
 
 const DEFAULT_POLICY: CompensationPayrollPolicy = {
+  kpiPolicyId: null,
   gateRules: DEFAULT_KPI_GATE_RULES,
   bonusCapBaseSalaryMultiplier: parseBonusCapBaseSalaryMultiplier(null),
 };
@@ -44,6 +46,7 @@ export async function resolveCompensationPayrollPolicyForEmployee(
   }
 
   return {
+    kpiPolicyId: profile.kpiPolicyId,
     gateRules: parseKpiGateRules(policy.gateRules),
     bonusCapBaseSalaryMultiplier: parseBonusCapBaseSalaryMultiplier(
       policy.bonusCapBaseSalaryMultiplier,

@@ -12,6 +12,8 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
   type KanbanColumn,
   type ViewModeOption,
 } from '@/components/shared';
@@ -107,6 +109,7 @@ function LeadsPipelinePageContent() {
   );
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
   const [leadBlockerNav, setLeadBlockerNav] = useState<LeadSheetBlockerNavigation | null>(null);
+  const deleteConfirm = useDeleteConfirm();
   const leadNavTokenRef = useRef(0);
 
   const clearLeadBlockerNav = useCallback(() => setLeadBlockerNav(null), []);
@@ -564,7 +567,12 @@ function LeadsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onDelete={handleDelete}
+        onDelete={(id) => {
+          const lead =
+            selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
+          if (!lead) return;
+          deleteConfirm.request({ id, name: lead.name ?? 'Lead' });
+        }}
         blockerNavigation={leadBlockerNav}
         onBlockerNavigationConsumed={clearLeadBlockerNav}
         stageGateHighlight={selectedLead && stageGateHighlight ? stageGateHighlight : null}
@@ -584,6 +592,21 @@ function LeadsPipelinePageContent() {
           if (!transition) return;
           setPendingTransition(null);
           handleStatusChange(transition.id, transition.status);
+        }}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete lead?"
+        description="The lead will be removed from the pipeline and linked lists."
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void handleDelete(id);
         }}
       />
     </div>

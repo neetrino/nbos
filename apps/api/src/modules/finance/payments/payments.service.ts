@@ -11,6 +11,7 @@ import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-gu
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
 import { ClientPaidInvoiceAutomationService } from '../../client-services/client-paid-invoice-automation.service';
+import { refreshSalesKpiAfterClientPayment } from '../../payroll-runs/sales-kpi-event-refresh';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -225,6 +226,11 @@ export class PaymentsService {
     });
 
     await this.syncInvoiceStatus(data.invoiceId);
+
+    await refreshSalesKpiAfterClientPayment(this.prisma, {
+      invoiceId: data.invoiceId,
+      paymentDate,
+    });
 
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);

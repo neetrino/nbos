@@ -49,6 +49,7 @@ export async function persistSalesBonusRows(
   snapshotJson: InputJsonValue,
   invoiceId: string,
   slotMode: 'slot' | null,
+  earnedPeriod: string,
 ): Promise<boolean> {
   if (rows.length === 0) {
     return false;
@@ -66,6 +67,7 @@ export async function persistSalesBonusRows(
     salesBonusSlot: slotMode ? row.slot : null,
     salesAccrualInvoiceId: invoiceId,
     calculationSnapshot: snapshotJson,
+    earnedPeriod,
   }));
 
   const result = await prisma.bonusEntry.createMany({

@@ -15,6 +15,7 @@ function baseInvoice(overrides: Partial<Invoice> = {}): Invoice {
     moneyStatus: 'AWAITING_PAYMENT',
     taxStatus: 'TAX',
     projectId: 'p1',
+    companyId: 'c1',
     paymentCoverage: {
       paidAmount: 0,
       outstandingAmount: 1000,
@@ -31,6 +32,19 @@ describe('invoice-money-status-gate-client', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(baseInvoice(), 'PAID');
     expect(errors).toHaveLength(1);
     expect(errors[0]?.field).toBe('payments');
+  });
+
+  it('requires company and project for manual invoices entering awaiting payment', () => {
+    const errors = getLocalInvoiceMoneyStatusGateErrors(
+      baseInvoice({
+        type: 'MANUAL',
+        companyId: null,
+        projectId: null,
+        moneyStatus: 'NEW',
+      }),
+      'AWAITING_PAYMENT',
+    );
+    expect(errors.map((error) => error.field)).toEqual(['company', 'project']);
   });
 
   it('allows PAID when fully covered', () => {

@@ -1,202 +1,135 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, ShoppingCart, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import {
-  EmptyState,
-  ErrorState,
   IntegratedSearchFilters,
-  ListMutationErrorBanner,
   LoadingState,
   useModuleHeroSlots,
+  ViewModeSwitch,
 } from '@/components/shared';
-import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { Button } from '@/components/ui/button';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
+import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
+import { buildOrderFilterConfigs } from '@/features/finance/components/orders/order-filter-configs';
+import { OrdersPageContent } from '@/features/finance/components/orders/OrdersPageContent';
+import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
+import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
 import {
-  ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
+import { useOrdersPageState } from '@/features/finance/components/orders/useOrdersPageState';
+import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
+import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
+import {
   ORDER_RECONCILIATION_GAP_QUERY,
   parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { ordersListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
-import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
-import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
-import { ORDER_FILTER_CONFIGS } from '@/features/finance/components/orders/order-filter-configs';
-import { ReconciliationGapBanner } from '@/features/finance/components/orders/orders-page-helpers';
 import {
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
-import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
-import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
-import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
-import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import type { ListData } from '@/lib/api/finance-common';
-import {
-  ordersApi,
-  type Order,
-  type OrderListParams,
-  type OrderStats,
-  type OrderStatsQueryParams,
-} from '@/lib/api/finance';
-import { getApiErrorMessage } from '@/lib/api-errors';
 
-function OrdersPageContent() {
+function OrdersPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gap = parseOrderReconciliationGap(searchParams.get(ORDER_RECONCILIATION_GAP_QUERY));
   const partnerIdFromUrl = searchParams.get(PARTNER_ORDERS_DRILLDOWN_QUERY);
+  const openOrderIdFromUrl = searchParams.get(OPEN_ORDER_QUERY)?.trim() || null;
 
   useFinanceDocumentTitle(ordersListPageTitle(Boolean(partnerIdFromUrl?.trim()), gap !== null));
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [stats, setStats] = useState<OrderStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [period, setPeriod] = useState<FinancePeriod>('month');
-  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
-  const [listMeta, setListMeta] = useState<ListData<Order>['meta'] | null>(null);
-  const [mutationError, setMutationError] = useState<string | null>(null);
-
-  const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
-    () =>
-      buildOrderListApiParams({
-        search,
-        filters,
-        partnerIdFromUrl,
-        period,
-        gap,
-      }),
-    [search, filters, partnerIdFromUrl, period, gap],
-  );
-
-  const { exportCsvSubmitting, handleExportCsv } = useOrdersCsvExport(orderListExportParams);
-
-  const orderStatsQueryParams = useMemo((): OrderStatsQueryParams => {
-    const periodParams = getFinancePeriodParams(period);
-    const statusFilter = filters.status && filters.status !== 'all' ? filters.status : undefined;
-    return {
-      ...periodParams,
-      ...(partnerIdFromUrl?.trim() ? { partnerId: partnerIdFromUrl.trim() } : {}),
-      ...(gap
-        ? {
-            gap,
-            status: statusFilter,
-            search: search.trim() || undefined,
-          }
-        : {}),
-    };
-  }, [period, partnerIdFromUrl, gap, filters.status, search]);
-
-  const { handleExportScopeStatsCsv } = useOrdersScopeStatsCsvExport(stats, {
-    period,
-    statsQuery: orderStatsQueryParams,
+  const state = useOrdersPageState({
+    gap,
+    partnerIdFromUrl,
+    openOrderIdFromUrl,
   });
 
-  const clearMutationError = useCallback(() => {
-    setMutationError(null);
-  }, []);
+  const { exportCsvSubmitting, handleExportCsv } = useOrdersCsvExport(state.orderListExportParams);
+  const { handleExportScopeStatsCsv } = useOrdersScopeStatsCsvExport(state.stats, {
+    period: state.period,
+    statsQuery: state.orderStatsQueryParams,
+  });
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
-      const listParams: OrderListParams = {
-        ...buildOrderListApiParams({
-          search,
-          filters,
-          partnerIdFromUrl,
-          period,
-          gap,
-        }),
-        pageSize,
-      };
-      const [data, orderStats] = await Promise.all([
-        ordersApi.getAll(listParams),
-        ordersApi.getStats(orderStatsQueryParams),
-      ]);
-      setOrders(data.items);
-      setListMeta(data.meta);
-      setStats(orderStats);
-      setError(null);
-      setMutationError(null);
-    } catch (caught) {
-      setError(
-        getApiErrorMessage(
-          caught,
-          'Orders could not be loaded. Check your connection and try again.',
-        ),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
+  const boardScope = resolveBoardLifecycleScope(state.filters.boardScope);
+  const hasOrderStatusFilter = Boolean(state.filters.status) && state.filters.status !== 'all';
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+  const displayOrders = useMemo(() => {
+    if (hasOrderStatusFilter) return state.orders;
+    return state.orders.filter((order) =>
+      matchesBoardLifecycleScope(order.status, ORDER_BOARD_STAGES, boardScope),
+    );
+  }, [state.orders, boardScope, hasOrderStatusFilter]);
 
-  const refreshOrdersAfterInvoice = useCallback(async () => {
-    try {
-      await fetchOrders();
-    } catch (caught) {
-      setMutationError(
-        getApiErrorMessage(
-          caught,
-          'Invoice was created but orders could not be refreshed. Use Refresh.',
-        ),
-      );
-    }
-  }, [fetchOrders]);
+  const orderFilterConfigs = useMemo(() => buildOrderFilterConfigs(), []);
 
   const orderFilterValues = useMemo(
     () => ({
-      [FINANCE_PERIOD_FILTER_KEY]: period,
-      ...filters,
+      [FINANCE_PERIOD_FILTER_KEY]: state.period,
+      boardScope: state.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      ...state.filters,
     }),
-    [filters, period],
+    [state.filters, state.period],
   );
 
-  const handleOrderFilterChange = useCallback((key: string, value: string) => {
-    if (key === FINANCE_PERIOD_FILTER_KEY) {
-      setPeriod(parseFinancePeriodFilterValue(value));
-      return;
-    }
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  const handleOrderFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === FINANCE_PERIOD_FILTER_KEY) {
+        state.setPeriod(parseFinancePeriodFilterValue(value));
+        return;
+      }
+      state.setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [state],
+  );
 
   const handleClearOrderFilters = useCallback(() => {
-    setFilters({});
-    setPeriod('month');
-  }, []);
+    state.setFilters({});
+    state.setPeriod('month');
+  }, [state]);
 
-  const clearReconciliationGap = () => {
+  const clearReconciliationGap = useCallback(() => {
     router.replace('/finance/orders');
-  };
+  }, [router]);
 
-  const clearPartnerDrilldown = () => {
+  const clearPartnerDrilldown = useCallback(() => {
     const next = new URLSearchParams(searchParams.toString());
     next.delete(PARTNER_ORDERS_DRILLDOWN_QUERY);
     const q = next.toString();
     router.replace(q ? `/finance/orders?${q}` : '/finance/orders');
-  };
+  }, [router, searchParams]);
 
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
         <IntegratedSearchFilters
-          search={search}
-          onSearchChange={setSearch}
+          search={state.search}
+          onSearchChange={state.setSearch}
           searchPlaceholder="Search by order, project, product, deal, partner…"
-          filters={ORDER_FILTER_CONFIGS}
+          filters={orderFilterConfigs}
           filterValues={orderFilterValues}
           onFilterChange={handleOrderFilterChange}
           onClearAll={handleClearOrderFilters}
         />
+      ),
+      viewMode: (
+        <ViewModeSwitch value={state.view} onChange={state.setView} options={ORDER_VIEW_OPTIONS} />
       ),
       trailing: (
         <>
@@ -204,14 +137,14 @@ function OrdersPageContent() {
             title="Orders — settings"
             description="Exports for the current list scope. Period and status follow filters in the search bar."
             triggerAriaLabel="Orders settings"
-            statsExportDisabled={loading || !stats}
-            exportCsvDisabled={loading || exportCsvSubmitting}
+            statsExportDisabled={state.loading || !state.stats}
+            exportCsvDisabled={state.loading || exportCsvSubmitting}
             exportCsvInProgress={exportCsvSubmitting}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
             exportCsvLabel="Export orders (CSV)"
           />
-          <Button type="button">
+          <Button type="button" disabled>
             <Plus size={16} aria-hidden />
             New Order
           </Button>
@@ -220,14 +153,12 @@ function OrdersPageContent() {
     }),
     [
       exportCsvSubmitting,
-      orderFilterValues,
       handleClearOrderFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleOrderFilterChange,
-      loading,
-      search,
-      stats,
+      orderFilterConfigs,
+      state,
     ],
   );
 
@@ -235,78 +166,36 @@ function OrdersPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {gap ? <ReconciliationGapBanner gap={gap} onClear={clearReconciliationGap} /> : null}
-
-      {partnerIdFromUrl ? (
-        <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
-          <p className="text-foreground max-w-prose">
-            Showing orders linked to this partner (server filter).
-          </p>
-          <Button variant="outline" size="sm" type="button" onClick={clearPartnerDrilldown}>
-            Clear partner filter
-          </Button>
-        </div>
-      ) : null}
-
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchOrders} />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {mutationError ? (
-            <ListMutationErrorBanner message={mutationError} onDismiss={clearMutationError} />
-          ) : null}
-          {orders.length === 0 ? (
-            partnerIdFromUrl ? (
-              <EmptyState
-                icon={ShoppingCart}
-                title="No orders for this partner"
-                description="There are no finance orders linked to this partner in the selected period."
-                action={
-                  <Button variant="outline" onClick={clearPartnerDrilldown}>
-                    <X size={16} />
-                    Clear partner filter
-                  </Button>
-                }
-              />
-            ) : gap ? (
-              <EmptyState
-                icon={ShoppingCart}
-                title="No orders match this reconciliation filter"
-                description="Try clearing the filter or widening the reporting period."
-                action={
-                  <Button variant="outline" onClick={clearReconciliationGap}>
-                    <X size={16} />
-                    Clear reconciliation filter
-                  </Button>
-                }
-              />
-            ) : (
-              <EmptyState
-                icon={ShoppingCart}
-                title="No orders yet"
-                description="Orders are created from closed deals"
-                action={
-                  <Button>
-                    <Plus size={16} />
-                    Create Order
-                  </Button>
-                }
-              />
-            )
-          ) : (
-            <OrdersTable orders={orders} onCreateInvoice={setInvoiceOrder} />
-          )}
-        </div>
-      )}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <OrdersPageContent
+          orders={displayOrders}
+          boardScope={boardScope as BoardLifecycleScope}
+          view={state.view}
+          loading={state.loading}
+          error={state.error}
+          mutationError={state.mutationError}
+          onDismissMutationError={state.clearMutationError}
+          onRetry={state.fetchOrders}
+          gap={gap}
+          partnerIdFromUrl={partnerIdFromUrl}
+          onClearReconciliationGap={clearReconciliationGap}
+          onClearPartnerDrilldown={clearPartnerDrilldown}
+          onOrderClick={state.handleOrderClick}
+          onCreateInvoice={state.handleCreateInvoice}
+        />
+      </div>
+      <OrderDetailSheet
+        orderId={state.selectedOrder?.id ?? openOrderIdFromUrl}
+        open={state.sheetOpen}
+        onOpenChange={state.handleOrderSheetOpenChange}
+        onCreateInvoice={state.handleCreateInvoice}
+        refreshSignal={state.sheetRefreshKey}
+      />
       <CreateInvoiceDialog
-        open={Boolean(invoiceOrder)}
-        order={invoiceOrder}
-        onOpenChange={(open) => {
-          if (!open) setInvoiceOrder(null);
-        }}
-        onCreated={refreshOrdersAfterInvoice}
+        open={Boolean(state.invoiceOrder)}
+        order={state.invoiceOrder}
+        onOpenChange={state.handleInvoiceDialogOpenChange}
+        onCreated={state.refreshOrdersAfterInvoice}
       />
     </div>
   );
@@ -315,7 +204,7 @@ function OrdersPageContent() {
 export default function OrdersPage() {
   return (
     <Suspense fallback={<LoadingState />}>
-      <OrdersPageContent />
+      <OrdersPageInner />
     </Suspense>
   );
 }

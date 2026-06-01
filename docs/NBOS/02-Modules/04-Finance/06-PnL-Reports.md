@@ -360,6 +360,19 @@ Order P&L нужен для:
 - `Expense Card`;
 - `Expense Payment`.
 
+### Unit Economics Board vs P&L
+
+`Unit Economics Board` (`/finance/unit-economics`) — **операционный** hub денег по delivery unit (Product / Extension order): **In** (received + receivable), **Out** (spent + bonus to pay + committed), **Balance** (cash, margin). Bonuses — часть Out.
+
+| Аспект      | Unit Economics Board                                   | P&L Reports                        |
+| ----------- | ------------------------------------------------------ | ---------------------------------- |
+| Назначение  | Работа Finance: funding, bonuses, cash                 | Аналитика CEO/Finance: performance |
+| Режим       | Операционный, drill-down                               | Read-only агрегаты                 |
+| Источники   | Те же факты: invoices, payments, journal, bonus pool   | Те же факты, другая агрегация      |
+| Bonus pools | Order-scoped breakdown в drill-down (не отд. страница) | Bonuses в payroll / order P&L      |
+
+Правило: Finance принимает решения в Unit Economics; P&L подтверждает картину на уровне company/project/product/order. Обе поверхности должны сходиться к одним `Payment`, `OperationalJournalEntry`, `BonusEntry` / `BonusRelease`.
+
 ---
 
 ## Drill-down / Расшифровка сумм

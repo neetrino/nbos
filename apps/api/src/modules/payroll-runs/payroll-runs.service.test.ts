@@ -4,12 +4,16 @@ import { Decimal } from '@nbos/database';
 import { PayrollRunsService } from './payroll-runs.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import type { NotificationService } from '../notifications/notification.service';
+import { materializePayrollBonusAllocationDrafts } from './payroll-bonus-allocation-materialize';
+
+vi.mock('./payroll-bonus-allocation-materialize', () => ({
+  materializePayrollBonusAllocationDrafts: vi.fn(),
+}));
 
 describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
   let prisma: MockPrisma;
   let notifications: NotificationService;
-
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
@@ -75,8 +79,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('100.50'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('10.00'),
           totalPayable: new Decimal('90.50'),
           totalPaid: new Decimal('40.00'),
         },
@@ -112,8 +114,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('0'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('0'),
           totalPayable: new Decimal('10.00'),
           totalPaid: new Decimal('25.00'),
         },
@@ -131,8 +131,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('0'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('0'),
           totalPayable: new Decimal('100.00'),
           totalPaid: new Decimal('0'),
         },
@@ -189,8 +187,6 @@ describe('PayrollRunsService', () => {
             status: 'CLOSED',
             totalBaseSalary: 0,
             totalBonuses: 0,
-            totalAdjustments: 0,
-            totalDeductions: 0,
             totalPayable: 0,
             totalPaid: 0,
             createdAt: new Date('2026-04-01T10:00:00.000Z'),
@@ -204,11 +200,9 @@ describe('PayrollRunsService', () => {
         }
         return Promise.resolve(null);
       });
-      prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal('99.10') } });
-      prisma.kpiPolicy.findFirst.mockResolvedValue({ scorecardMetrics: [] });
-      prisma.payment.findMany.mockResolvedValue([]);
       const result = await service.findById('p1');
-      expect(result.kpiSalesActualSuggestedAmount).toBe('99.10');
+      expect(result).not.toHaveProperty('kpiSalesPlanAmount');
+      expect(result).not.toHaveProperty('kpiSalesActualSuggestedAmount');
       expect(result.materializedExpenseLineCount).toBe(2);
       expect(result.journal).toHaveLength(3);
       expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([
@@ -230,6 +224,58 @@ describe('PayrollRunsService', () => {
       prisma.payrollRun.findUnique.mockResolvedValue({ id: 'existing', payrollMonth: '2026-03' });
       await expect(service.create({ payrollMonth: '2026-03' }, 'emp-1')).rejects.toThrow(
         ConflictException,
+      );
+    });
+  });
+
+  describe('updateStatus', () => {
+    beforeEach(() => {
+      vi.mocked(materializePayrollBonusAllocationDrafts).mockResolvedValue({
+        releaseIds: [],
+        carryNotifyEvents: [],
+      });
+      prisma.payrollRun.update.mockResolvedValue({});
+      prisma.auditLog.create.mockResolvedValue({});
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'run-1',
+        payrollMonth: '2026-05',
+        status: 'DRAFT',
+      });
+    });
+
+    it('does not materialize draft allocations when moving Draft to Review', async () => {
+      await service.updateStatus('run-1', 'REVIEW', { actorUserId: 'emp-1' });
+
+      expect(materializePayrollBonusAllocationDrafts).not.toHaveBeenCalled();
+      expect(prisma.payrollRun.update).toHaveBeenCalledWith({
+        where: { id: 'run-1' },
+        data: { status: 'REVIEW' },
+      });
+    });
+
+    it('materializes draft allocations when moving Review to Approved', async () => {
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'run-1',
+        payrollMonth: '2026-05',
+        status: 'REVIEW',
+      });
+      prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: {} });
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+      prisma.salaryLine.update.mockResolvedValue({});
+      prisma.expense.create.mockResolvedValue({ id: 'expense-1' });
+
+      await service.updateStatus('run-1', 'APPROVED', {
+        actorUserId: 'emp-1',
+        approvedById: 'emp-1',
+      });
+
+      expect(materializePayrollBonusAllocationDrafts).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          payrollRunId: 'run-1',
+          payrollMonth: '2026-05',
+          actorUserId: 'emp-1',
+        }),
       );
     });
   });

@@ -203,22 +203,21 @@ body {
 
 /* TipTap — entity notes field (detail sheets) */
 .nbos-entity-notes-editor .ProseMirror {
-  min-height: 5.5rem;
+  min-height: 8.25rem;
   padding: 0.625rem 0.75rem;
   outline: none;
 }
 [data-entity-notes-active='false'][data-entity-notes-empty='true']
   .nbos-entity-notes-editor
   .ProseMirror {
-  /* ~2× prior empty track (1.75rem → 3.5rem) */
-  min-height: 3.5rem;
+  min-height: 5.25rem;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
 [data-entity-notes-active='false'][data-entity-notes-empty='false']
   .nbos-entity-notes-editor
   .ProseMirror {
-  min-height: 2.5rem;
+  min-height: 3.75rem;
 }
 [data-entity-notes-active='false'][data-entity-notes-empty='true']
   .nbos-entity-notes-editor

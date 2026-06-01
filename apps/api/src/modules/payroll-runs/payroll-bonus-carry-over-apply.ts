@@ -2,6 +2,7 @@ import { Decimal, type TransactionClient } from '@nbos/database';
 
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
 
 const ZERO = new Decimal(0);
 
@@ -11,8 +12,6 @@ type SalaryLineSnapshot = {
   id: string;
   baseSalary: Decimal;
   bonusesTotal: Decimal;
-  adjustmentsTotal: Decimal;
-  deductionsTotal: Decimal;
   paidAmount: Decimal;
 };
 
@@ -67,10 +66,10 @@ async function bumpSalaryLineForCarry(
   applied: Decimal,
 ): Promise<void> {
   const nextBonuses = line.bonusesTotal.plus(applied);
-  const nextTotal = line.baseSalary
-    .plus(nextBonuses)
-    .plus(line.adjustmentsTotal)
-    .minus(line.deductionsTotal);
+  const nextTotal = computeSalaryLineTotalPayable({
+    baseSalary: line.baseSalary,
+    bonusesTotal: nextBonuses,
+  });
   const nextRemaining = Decimal.max(ZERO, nextTotal.minus(line.paidAmount));
 
   await tx.salaryLine.update({

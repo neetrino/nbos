@@ -30,13 +30,16 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ## Web routes (canon)
 
-| Screen       | Path                                          |
-| ------------ | --------------------------------------------- |
-| Salary board | `/finance/salary`                             |
-| Bonus board  | `/finance/bonuses` (legacy `/bonus` redirect) |
-| Bonus pools  | `/finance/bonus-pools`                        |
-| Pay Now      | `/finance/expenses` (+ payroll preset query)  |
-| Wallet       | `/my-account/wallet`                          |
+| Screen             | Path                                                          |
+| ------------------ | ------------------------------------------------------------- |
+| Salary board       | `/finance/salary`                                             |
+| Payroll runs index | `/finance/payroll`                                            |
+| Payroll run detail | `/finance/payroll/[id]` (allocation matrix)                   |
+| Unit economics     | `/finance/unit-economics`                                     |
+| Bonus board        | `/finance/bonuses` (legacy `/bonus` redirect)                 |
+| Unit economics     | `/finance/unit-economics` (`/finance/bonus-pools` → redirect) |
+| Pay Now            | `/finance/expenses` (+ payroll preset query)                  |
+| Wallet             | `/my-account/wallet`                                          |
 
 ## Policy engine (2026-05 re-audit)
 
@@ -51,25 +54,43 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### API (compensation / policy)
 
-| Route                                                        | Purpose                                                             |
-| ------------------------------------------------------------ | ------------------------------------------------------------------- |
-| `GET/POST/PATCH /api/bonus-policies`                         | List, create, update bonus policy bundles                           |
-| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                  |
-| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                  |
-| `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line) |
-| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                                     |
-| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                                     |
-| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                        |
+| Route                                                        | Purpose                                                              |
+| ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `GET/POST/PATCH /api/bonus-policies`                         | List, create, update bonus policy bundles                            |
+| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                   |
+| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                   |
+| `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line)  |
+| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                                      |
+| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                                      |
+| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                         |
+| `GET /api/payroll-runs/:id/allocation-matrix`                | Matrix read (`viewMode` employee \| order)                           |
+| `PATCH …/allocation-matrix/layout`, `POST …/layout/reset`    | Column/row order + pin persistence                                   |
+| `PATCH …/allocation-matrix/cells`, `POST …/manual-bonus`     | Draft allocation edit + gray-cell manual bonus draft                 |
+| `PATCH …/planned-bonus`, `PATCH …/reassign-recipient`        | Planned amount + recipient change (pre-approval)                     |
+| `GET …/allocation-matrix/validation`                         | Blocks REVIEW/APPROVED when rules fail                               |
+| `GET /api/unit-economics`                                    | Per delivery unit + `projects` / `products` roll-ups; In/Out/Balance |
+| `GET /api/unit-economics/orders/:orderId`                    | Drill-down + `bonusBreakdown` for Bonus breakdown sheet              |
+
+### Payroll allocation matrix + unit economics (2026-05)
+
+| Area                    | Shipped | Notes                                                                                |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------ |
+| Matrix primary UX       | Yes     | Run detail; employee/order views; DnD, pin, reset; validation banner                 |
+| Manual bonus exceptions | Yes     | Gray/empty cells + Bonus Board dialog (`title`, `reason`, `originalAmount`)          |
+| Bonus audit read        | Yes     | `BonusEntryAuditPanel` in matrix cell dialog and bonus entry releases sheet          |
+| Unit economics board    | Yes     | By unit, project, product, Cash, Outflows, Profitability (`GET /api/unit-economics`) |
+| UE drill-down           | Yes     | Invoices, payments, expenses, bonuses; Bonus breakdown via order `bonusBreakdown`    |
 
 ### Residual (canon backlog)
 
-- Manual bonus create UI on `/finance/bonuses` (`POST /api/bonus`) — marketing/support until KPI accrual rules ship.
+- Planned non-bonus expenses in Unit Economics Out (future; expense plans are project-scoped).
+- Full bonus recipient audit timeline (beyond last N rows in sheet).
 - Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
 
 ## Tests (automated)
 
-- API: `payroll-salary-line-ledger-sync`, `sales-kpi-payroll-payout`, `sales-bonus-accrual`, `payroll-bonus-release-attach`, `resolve-employee-sales-kpi`, `product-bonus-pool-sync`, `product-bonus-pool-auto-release`, `payroll-salary-board`, `expense-payroll-list-scope`, `employee-wallet`
+- API: `payroll-salary-line-ledger-sync`, `sales-kpi-payroll-payout`, `sales-bonus-accrual`, `payroll-bonus-release-attach`, `resolve-employee-sales-kpi`, `product-bonus-pool-sync`, `product-bonus-pool-auto-release`, `payroll-salary-board`, `expense-payroll-list-scope`, `employee-wallet`, `payroll-allocation-matrix`, `payroll-matrix-approval-validation`, `unit-economics-list`
 - Web: `salary-board-filtered-totals`, `bonus-board-grouping`, `export-salary-board-csv`, `sales-kpi-gate-summary`, `bonus-board-url`
 
 ## Manual visual QA checklist (Bitrix parity)
@@ -81,7 +102,8 @@ Use after deploy or large UX change:
 3. **Full pay** — line status `PAID`; payroll run totals updated.
 4. **Bonus board** — release ledger; Early/Extra/Over funding badges; payroll month grouping.
 5. **Wallet** — read-only month sheet; no Finance edit links.
-6. **Payroll run** — attach/detach bonus releases; link to Pay Now preset.
+6. **Payroll run** — allocation matrix: reorder columns/rows, edit release, planned bonus, reassign; validation before REVIEW; manual bonus from gray cell; audit in cell dialog.
+7. **Unit economics** — By unit / project / product tabs; Cash = received − spent; drill-down all tabs; Bonus breakdown from order detail; `/finance/bonus-pools` → redirect only.
 
 ## Follow-up (out of MVP roadmap closure)
 

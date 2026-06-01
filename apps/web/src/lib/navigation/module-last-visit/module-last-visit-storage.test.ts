@@ -44,6 +44,13 @@ describe('module-last-visit-storage', () => {
     expect(readModuleEntryHref('finance')).toBe('/finance/payments');
   });
 
+  it('keeps payroll section entry on payroll landing instead of run detail', () => {
+    writeModuleLastVisitFromPathname('/finance/payroll/29de90ae-7fc4-4b7c-8d15-bd1e1c2269a1');
+
+    expect(readFinanceSectionHref('payroll')).toBe('/finance/payroll');
+    expect(readModuleEntryHref('finance')).toBe('/finance/payroll');
+  });
+
   it('remembers crm last visit', () => {
     writeModuleLastVisitFromPathname('/crm/deals');
     expect(readModuleEntryHref('crm')).toBe('/crm/deals');

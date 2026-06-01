@@ -19,8 +19,6 @@ export async function recalculatePayrollRunTotalsFromSalaryLines(
     _sum: {
       baseSalary: true,
       bonusesTotal: true,
-      adjustmentsTotal: true,
-      deductionsTotal: true,
       totalPayable: true,
       paidAmount: true,
     },
@@ -31,8 +29,6 @@ export async function recalculatePayrollRunTotalsFromSalaryLines(
     data: {
       totalBaseSalary: sumDecimal(sums._sum.baseSalary),
       totalBonuses: sumDecimal(sums._sum.bonusesTotal),
-      totalAdjustments: sumDecimal(sums._sum.adjustmentsTotal),
-      totalDeductions: sumDecimal(sums._sum.deductionsTotal),
       totalPayable: sumDecimal(sums._sum.totalPayable),
       totalPaid: sumDecimal(sums._sum.paidAmount),
     },

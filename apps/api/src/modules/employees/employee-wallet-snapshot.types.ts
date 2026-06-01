@@ -59,8 +59,6 @@ export interface EmployeeWalletNextPayroll {
   runStatus: string;
   baseSalary: string;
   bonusesTotal: string;
-  adjustmentsTotal: string;
-  deductionsTotal: string;
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;

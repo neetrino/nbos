@@ -1,7 +1,6 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { BonusPoolsPageContent } from '@/features/finance/components/bonus/BonusPoolsPageContent';
-
+/** Bonus pools merged into Unit Economics — legacy URL kept for bookmarks. */
 export default function BonusPoolsPage() {
-  return <BonusPoolsPageContent />;
+  redirect('/finance/unit-economics');
 }

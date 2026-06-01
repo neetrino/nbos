@@ -1,10 +1,9 @@
 'use client';
 
-import { Building2, Calendar, Clock, User, UserCog } from 'lucide-react';
+import { Building2, User, UserCog } from 'lucide-react';
 import {
-  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DetailSheetSection,
-  InlineField,
   RelationPickerField,
 } from '@/components/shared';
 import {
@@ -47,97 +46,82 @@ export function DealContactTeamSection({
       icon={<User size={12} />}
       className={sectionClassName}
     >
-      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <RelationPickerField
-          label="Contacts"
-          entityKind="contact"
-          multiple
-          value={draft.contactIds}
-          selectionLabels={draft.contactLabels}
-          placeholder="Search or create contact…"
-          icon={<User size={12} />}
-          disabled={disabled}
-          onSearch={contactRelationSearch}
-          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
-          {...contactsPicker}
-        />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
+        <div className="min-w-0 space-y-4 sm:pr-5">
+          <RelationPickerField
+            label="Seller"
+            entityKind="employee"
+            value={draft.sellerId}
+            selectionLabel={
+              draft.sellerDisplayLabel ??
+              (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
+            }
+            placeholder="Select seller…"
+            icon={<Building2 size={12} />}
+            disabled={disabled}
+            onSearch={searchEmployees}
+            onSelect={(value, label) => patchDraft({ sellerId: value, sellerDisplayLabel: label })}
+            {...employeePicker}
+          />
 
-        <RelationPickerField
-          label="Seller"
-          entityKind="employee"
-          value={draft.sellerId}
-          selectionLabel={
-            draft.sellerDisplayLabel ??
-            (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
-          }
-          placeholder="Select seller…"
-          icon={<Building2 size={12} />}
-          disabled={disabled}
-          onSearch={searchEmployees}
-          onSelect={(value, label) => patchDraft({ sellerId: value, sellerDisplayLabel: label })}
-          {...employeePicker}
-        />
+          <RelationPickerField
+            label="Sales assistant"
+            entityKind="employee"
+            value={draft.sellerAssistantId}
+            selectionLabel={
+              draft.sellerAssistantDisplayLabel ??
+              (deal.sellerAssistant
+                ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
+                : null)
+            }
+            placeholder="Optional — search employee…"
+            icon={<Building2 size={12} />}
+            disabled={disabled}
+            onSearch={searchEmployees}
+            onSelect={(value, label) =>
+              patchDraft({ sellerAssistantId: value, sellerAssistantDisplayLabel: label })
+            }
+            onClear={() =>
+              patchDraft({ sellerAssistantId: null, sellerAssistantDisplayLabel: null })
+            }
+            {...employeePicker}
+          />
 
-        <RelationPickerField
-          label="Sales assistant"
-          entityKind="employee"
-          value={draft.sellerAssistantId}
-          selectionLabel={
-            draft.sellerAssistantDisplayLabel ??
-            (deal.sellerAssistant
-              ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
-              : null)
-          }
-          placeholder="Optional — search employee…"
-          icon={<Building2 size={12} />}
-          disabled={disabled}
-          onSearch={searchEmployees}
-          onSelect={(value, label) =>
-            patchDraft({ sellerAssistantId: value, sellerAssistantDisplayLabel: label })
-          }
-          onClear={() => patchDraft({ sellerAssistantId: null, sellerAssistantDisplayLabel: null })}
-          {...employeePicker}
-        />
+          <RelationPickerField
+            label="PM assigned"
+            entityKind="employee"
+            value={draft.pmId}
+            selectionLabel={
+              draft.pmDisplayLabel ?? (deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null)
+            }
+            className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
+            placeholder="Select project manager…"
+            icon={<UserCog size={12} />}
+            disabled={disabled}
+            onSearch={searchEmployees}
+            onSelect={(value, label) => patchDraft({ pmId: value, pmDisplayLabel: label })}
+            onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
+            {...employeePicker}
+          />
+        </div>
 
-        <RelationPickerField
-          label="PM assigned"
-          entityKind="employee"
-          value={draft.pmId}
-          selectionLabel={
-            draft.pmDisplayLabel ?? (deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null)
-          }
-          className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
-          placeholder="Select project manager…"
-          icon={<UserCog size={12} />}
-          disabled={disabled}
-          onSearch={searchEmployees}
-          onSelect={(value, label) => patchDraft({ pmId: value, pmDisplayLabel: label })}
-          onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
-          {...employeePicker}
-        />
-
-        <InlineField
-          label="Created"
-          value={formatStaticDate(deal.createdAt)}
-          icon={<Calendar size={12} />}
-          editable={false}
-        />
-
-        <InlineField
-          label="Last Updated"
-          value={formatStaticDate(deal.updatedAt)}
-          icon={<Clock size={12} />}
-          editable={false}
-        />
+        <div className={`min-w-0 space-y-4 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+          <RelationPickerField
+            label="Contacts"
+            entityKind="contact"
+            multiple
+            value={draft.contactIds}
+            selectionLabels={draft.contactLabels}
+            className={dealStageGateFieldClass(gateRequiredFields, 'contactId')}
+            placeholder="Search or create contact…"
+            icon={<User size={12} />}
+            disabled={disabled}
+            onSearch={contactRelationSearch}
+            onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+            {...contactsPicker}
+          />
+        </div>
       </div>
     </DetailSheetSection>
   );
-}
-
-function formatStaticDate(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }

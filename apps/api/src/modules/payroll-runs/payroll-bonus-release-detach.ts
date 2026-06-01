@@ -6,6 +6,7 @@ import {
 } from './payroll-bonus-carry-over-reverse';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
 
 const DETACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -17,18 +18,6 @@ export type BonusReleaseDetachTx = Pick<
 export interface DetachBonusReleasesParams {
   payrollRunId: string;
   releaseIds: string[];
-}
-
-function computeLineTotalPayable(line: {
-  baseSalary: Decimal;
-  bonusesTotal: Decimal;
-  adjustmentsTotal: Decimal;
-  deductionsTotal: Decimal;
-}): Decimal {
-  return line.baseSalary
-    .plus(line.bonusesTotal)
-    .plus(line.adjustmentsTotal)
-    .minus(line.deductionsTotal);
 }
 
 /**
@@ -110,11 +99,9 @@ export async function detachBonusReleasesFromPayrollRun(
     }
 
     const nextBonuses = line.bonusesTotal.minus(applied);
-    const nextTotal = computeLineTotalPayable({
+    const nextTotal = computeSalaryLineTotalPayable({
       baseSalary: line.baseSalary,
       bonusesTotal: nextBonuses,
-      adjustmentsTotal: line.adjustmentsTotal,
-      deductionsTotal: line.deductionsTotal,
     });
     const paid = line.paidAmount;
     const nextRemaining = Decimal.max(new Decimal(0), nextTotal.minus(paid));

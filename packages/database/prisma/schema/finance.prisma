@@ -13,10 +13,23 @@ enum PaymentTypeEnum {
 }
 
 enum OrderStatusEnum {
+  PENDING_PAYMENT
   ACTIVE
   PARTIALLY_PAID
   FULLY_PAID
   CLOSED
+}
+
+enum OrderPaymentModeEnum {
+  STANDARD_PREPAY
+  POSTPAID
+  FREE
+}
+
+enum OrderDeliveryStartModeEnum {
+  AFTER_PAYMENT
+  EARLY_START
+  EXCEPTION_IMMEDIATE
 }
 
 model Order {
@@ -31,7 +44,9 @@ model Order {
   totalAmount          Decimal         @map("total_amount") @db.Decimal(12, 2)
   currency             String          @default("AMD")
   taxStatus            TaxStatus       @default(TAX) @map("tax_status")
-  status               OrderStatusEnum @default(ACTIVE)
+  status               OrderStatusEnum @default(PENDING_PAYMENT)
+  paymentMode          OrderPaymentModeEnum @default(STANDARD_PREPAY) @map("payment_mode")
+  deliveryStartMode    OrderDeliveryStartModeEnum @default(AFTER_PAYMENT) @map("delivery_start_mode")
   partnerId            String?         @map("partner_id")
   partnerPercent       Decimal?        @default(30) @map("partner_percent") @db.Decimal(5, 2)
   sellerBonusPercent   Decimal?        @map("seller_bonus_percent") @db.Decimal(5, 2)
@@ -50,6 +65,7 @@ model Order {
   productBonusPool          ProductBonusPool?
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
 
   @@map("orders")
 }
@@ -60,6 +76,7 @@ enum InvoiceTypeEnum {
   SUBSCRIPTION
   DOMAIN
   SERVICE
+  MANUAL
 }
 
 enum InvoiceMoneyStatusEnum {
@@ -76,7 +93,7 @@ model Invoice {
   code                  String                 @unique
   orderId               String?                @map("order_id")
   subscriptionId        String?                @map("subscription_id")
-  projectId             String                 @map("project_id")
+  projectId             String?                @map("project_id")
   companyId             String?                @map("company_id")
   clientServiceRecordId String?                @map("client_service_record_id")
   amount                Decimal                @db.Decimal(12, 2)
@@ -101,6 +118,7 @@ model Invoice {
 
   order               Order?               @relation(fields: [orderId], references: [id])
   subscription        Subscription?        @relation(fields: [subscriptionId], references: [id])
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
   company             Company?             @relation(fields: [companyId], references: [id])
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   payments            Payment[]
@@ -437,6 +455,8 @@ enum BonusReleaseStatusEnum {
 
 model BonusEntry {
   id                    String              @id @default(uuid())
+  /// Human-readable bonus identity (manual and auto-generated titles).
+  title                 String?
   employeeId            String              @map("employee_id")
   orderId               String              @map("order_id")
   projectId             String              @map("project_id")
@@ -447,9 +467,19 @@ model BonusEntry {
   calculationSnapshot   Json?               @map("calculation_snapshot")
   type                  BonusTypeEnum
   amount                Decimal             @db.Decimal(12, 2)
+  /// Snapshot at creation; preserved when `amount` is edited.
+  originalAmount        Decimal?            @map("original_amount") @db.Decimal(12, 2)
   percent               Decimal             @db.Decimal(5, 2)
   status                BonusStatusEnum     @default(INCOMING)
   kpiGatePassed         Boolean?            @map("kpi_gate_passed")
+  /// Earned sales month `YYYY-MM` (KPI gate applies to this month, not payroll month).
+  earnedPeriod          String?             @map("earned_period") @db.VarChar(7)
+  /// Month KPI payout factor snapshot on this entry (0–1).
+  kpiPayoutFactor       Decimal?            @map("kpi_payout_factor") @db.Decimal(7, 4)
+  /// Manual +/- delta on top of `amount × kpiPayoutFactor` (Finance correction).
+  payableAdjustment     Decimal             @default(0) @map("payable_adjustment") @db.Decimal(12, 2)
+  /// `amount × kpiPayoutFactor + payableAdjustment` — payroll release ceiling.
+  payableAmount         Decimal?            @map("payable_amount") @db.Decimal(12, 2)
   payoutMonth           DateTime?           @map("payout_month")
   createdAt             DateTime            @default(now()) @map("created_at")
   updatedAt             DateTime            @updatedAt @map("updated_at")
@@ -459,6 +489,7 @@ model BonusEntry {
   project       Project        @relation(fields: [projectId], references: [id])
   deal          Deal?          @relation("DealSalesBonusEntries", fields: [dealId], references: [id])
   bonusReleases BonusRelease[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
 
   @@index([orderId, salesBonusSlot])
   @@index([orderId, salesAccrualInvoiceId])
@@ -514,7 +545,8 @@ enum ProductBonusPoolStatusEnum {
   CLOSED
 }
 
-/// NBOS Product Bonus Pool ledger row (one per `Order` that has bonus lines). Release events (`BonusRelease`) — follow-up.
+/// Denormalized bonus totals per delivery `Order` (synced from `BonusEntry` / releases).
+/// Operational UI reads this via Unit Economics; not a separate Finance “bonus pools” product page.
 model ProductBonusPool {
   id                   String                     @id @default(uuid())
   orderId              String                     @unique @map("order_id")
@@ -548,6 +580,15 @@ enum PayrollRunStatusEnum {
   CLOSED
 }
 
+enum PayrollBonusAllocationKindEnum {
+  READY
+  PARTIALLY_FUNDED
+  PROGRESS
+  MANUAL_BONUS
+  EXTRA_BONUS
+  OVER_FUNDING
+}
+
 enum SalaryLineStatusEnum {
   PENDING
   APPROVED
@@ -562,8 +603,6 @@ model PayrollRun {
   status               PayrollRunStatusEnum @default(DRAFT)
   totalBaseSalary      Decimal              @default(0) @map("total_base_salary") @db.Decimal(14, 2)
   totalBonuses         Decimal              @default(0) @map("total_bonuses") @db.Decimal(14, 2)
-  totalAdjustments     Decimal              @default(0) @map("total_adjustments") @db.Decimal(14, 2)
-  totalDeductions      Decimal              @default(0) @map("total_deductions") @db.Decimal(14, 2)
   totalPayable         Decimal              @default(0) @map("total_payable") @db.Decimal(14, 2)
   totalPaid            Decimal              @default(0) @map("total_paid") @db.Decimal(14, 2)
   /// Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount` (NBOS § KPI).
@@ -579,11 +618,69 @@ model PayrollRun {
 
   createdBy     Employee?      @relation("PayrollRunCreator", fields: [createdById], references: [id])
   approvedBy    Employee?      @relation("PayrollRunApprover", fields: [approvedById], references: [id])
-  salaryLines   SalaryLine[]
-  bonusReleases BonusRelease[]
+  salaryLines                    SalaryLine[]
+  bonusReleases                  BonusRelease[]
+  bonusAllocationDrafts          PayrollBonusAllocationDraft[]
+  kpiResults                     KpiResult[]
+  payrollMatrixLayoutPreferences PayrollMatrixLayoutPreference[]
 
   @@unique([payrollMonth])
   @@map("payroll_runs")
+}
+
+enum PayrollMatrixViewModeEnum {
+  EMPLOYEE_MATRIX
+  ORDER_MATRIX
+}
+
+/// Per-user row/column order and pinned delivery units for payroll allocation matrix.
+model PayrollMatrixLayoutPreference {
+  id            String                    @id @default(uuid())
+  userId        String                    @map("user_id")
+  payrollRunId  String                    @map("payroll_run_id")
+  viewMode      PayrollMatrixViewModeEnum @map("view_mode")
+  rowOrder      Json                      @default("[]") @map("row_order")
+  columnOrder   Json                      @default("[]") @map("column_order")
+  pinnedUnitIds Json                      @default("[]") @map("pinned_unit_ids")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+
+  user       Employee   @relation("PayrollMatrixLayoutUser", fields: [userId], references: [id], onDelete: Cascade)
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, payrollRunId, viewMode])
+  @@map("payroll_matrix_layout_preferences")
+}
+
+/// Draft-only payroll matrix bonus plan. Materialized to BonusRelease when the run leaves DRAFT.
+model PayrollBonusAllocationDraft {
+  id            String                         @id @default(uuid())
+  payrollRunId  String                         @map("payroll_run_id")
+  employeeId    String                         @map("employee_id")
+  orderId       String                         @map("order_id")
+  projectId     String                         @map("project_id")
+  bonusEntryId  String?                        @map("bonus_entry_id")
+  amount        Decimal                        @db.Decimal(12, 2)
+  kind          PayrollBonusAllocationKindEnum
+  title         String?
+  reason        String?
+  createdById   String?                        @map("created_by_id")
+  updatedById   String?                        @map("updated_by_id")
+  createdAt     DateTime                       @default(now()) @map("created_at")
+  updatedAt     DateTime                       @updatedAt @map("updated_at")
+
+  payrollRun PayrollRun  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee    @relation("PayrollBonusAllocationEmployee", fields: [employeeId], references: [id])
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bonusEntry BonusEntry? @relation(fields: [bonusEntryId], references: [id], onDelete: Cascade)
+  createdBy  Employee?   @relation("PayrollBonusAllocationCreatedBy", fields: [createdById], references: [id])
+  updatedBy  Employee?   @relation("PayrollBonusAllocationUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([payrollRunId, employeeId, orderId])
+  @@index([payrollRunId])
+  @@index([bonusEntryId])
+  @@map("payroll_bonus_allocation_drafts")
 }
 
 model SalaryLine {
@@ -598,8 +695,6 @@ model SalaryLine {
   /// Employee sales KPI override; null uses payroll run-level plan/actual at attach.
   kpiSalesPlanAmount        Decimal?     @map("kpi_sales_plan_amount") @db.Decimal(14, 2)
   kpiSalesActualAmount      Decimal?     @map("kpi_sales_actual_amount") @db.Decimal(14, 2)
-  adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
-  deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
   totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)
   paidAmount       Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
   remainingAmount  Decimal              @default(0) @map("remaining_amount") @db.Decimal(12, 2)
@@ -612,6 +707,7 @@ model SalaryLine {
   employee              Employee               @relation(fields: [employeeId], references: [id])
   compensationProfile   CompensationProfile?   @relation(fields: [compensationProfileId], references: [id])
   expense               Expense?               @relation(fields: [expenseId], references: [id])
+  kpiResults            KpiResult[]
 
   @@unique([payrollRunId, employeeId])
   @@index([payrollRunId])

@@ -157,10 +157,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     };
   }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
 
-  const portfolioCreateIntent = useMemo(
-    () => portfolioCreateInvoiceFromUrl && Boolean(portfolioProjectIdFromUrl),
-    [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl],
-  );
+  const portfolioCreateIntent = portfolioCreateInvoiceFromUrl;
 
   const createDialogOpen = createOpen || portfolioCreateIntent;
 
@@ -209,6 +206,17 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setInvoices((current) => replaceInvoice(current, updated));
   }, []);
 
+  const handleInvoiceCreated = useCallback(
+    async (created: Invoice) => {
+      await fetchInvoices();
+      setStageGateHighlight(null);
+      setSelectedInvoice(created);
+      setSheetOpen(true);
+      pushOpenInvoiceToUrl(created.id);
+    },
+    [fetchInvoices, pushOpenInvoiceToUrl],
+  );
+
   return {
     invoices,
     stats,
@@ -237,7 +245,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     handleMoneyStatusChange,
     handlePaymentRecorded,
     handleInvoiceUpdated,
-    handleInvoiceCreated: fetchInvoices,
+    handleInvoiceCreated,
     invoiceListExportParams,
     stageGateHighlight,
   };

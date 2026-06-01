@@ -42,7 +42,7 @@ export function getLatestPaymentDate(payments: PaymentCarrier[]): Date | null {
 
 export function resolveOrderStatus(
   invoices: OrderInvoiceCarrier[],
-): 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE' {
+): 'PENDING_PAYMENT' | 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE' {
   const allPaid = invoices.every((invoice) => invoice.moneyStatus === 'PAID');
   if (allPaid) {
     return 'FULLY_PAID';
@@ -51,6 +51,13 @@ export function resolveOrderStatus(
   const somePaid = invoices.some((invoice) => sumAmounts(invoice.payments) > 0);
   if (somePaid) {
     return 'PARTIALLY_PAID';
+  }
+
+  const hasAwaiting = invoices.some(
+    (invoice) => invoice.moneyStatus !== 'PAID' && invoice.moneyStatus !== 'CANCELLED',
+  );
+  if (hasAwaiting) {
+    return 'PENDING_PAYMENT';
   }
 
   return 'ACTIVE';

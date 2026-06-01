@@ -157,7 +157,7 @@ export function ClientServiceGeneralTab({
           <InlineField
             variant="controlled"
             label="Our cost"
-            type="number"
+            type="money"
             value={draft.ourCost}
             icon={<DollarSign size={12} />}
             disabled={formDisabled}
@@ -166,7 +166,7 @@ export function ClientServiceGeneralTab({
           <InlineField
             variant="controlled"
             label="Client charge"
-            type="number"
+            type="money"
             value={draft.clientCharge}
             icon={<DollarSign size={12} />}
             disabled={formDisabled}

@@ -14,7 +14,8 @@ export function financeZoneEntryLabel(href: string): string {
     '/finance/client-services': 'Client services',
     '/finance/payroll': 'Payroll',
     '/finance/salary': 'Salary',
-    '/finance/bonus-pools': 'Bonus pools',
+    '/finance/bonus-pools': 'Unit economics',
+    '/finance/unit-economics': 'Unit economics',
     '/finance/bonuses': 'Bonus',
     '/bonus': 'Bonus',
   };

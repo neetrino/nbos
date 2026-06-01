@@ -11,10 +11,12 @@ export const FINANCE_SECTION_DEFAULTS: Record<FinanceSectionId, string> = {
 
 const EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
 const EXPENSES_PREFIX = '/finance/expenses';
+const PAYROLL_RUN_DETAIL_PATTERN = /^\/finance\/payroll\/[^/]+$/;
 
 function isOverviewPath(pathname: string): boolean {
   return (
     pathname.startsWith('/finance/dashboard') ||
+    pathname.startsWith('/finance/unit-economics') ||
     pathname.startsWith('/finance/reports') ||
     pathname.startsWith('/finance/journal')
   );
@@ -37,7 +39,6 @@ function isPayrollPath(pathname: string): boolean {
   return (
     pathname.startsWith('/finance/payroll') ||
     pathname.startsWith('/finance/salary') ||
-    pathname.startsWith('/finance/bonus-pools') ||
     pathname.startsWith('/finance/bonuses') ||
     pathname.startsWith('/bonus')
   );
@@ -75,6 +76,12 @@ export const FINANCE_MODULE_VISIT_CONFIG: SectionModuleVisitConfig = {
   resolveSection: resolveFinanceSectionId,
   isPathInSection: (pathname, sectionId) =>
     isFinanceSectionPath(pathname, sectionId as FinanceSectionId),
+  resolveStoredPath: (pathname, sectionId) => {
+    if (sectionId === 'payroll' && PAYROLL_RUN_DETAIL_PATTERN.test(pathname)) {
+      return FINANCE_SECTION_DEFAULTS.payroll;
+    }
+    return pathname;
+  },
 };
 
 export function isFinanceModulePath(pathname: string): boolean {

@@ -5,6 +5,7 @@ export {
   PageHeroNavLinks,
   PageHeroSearch,
   ViewModeSwitch,
+  PageHeroPrimaryAction,
   ModuleHeroSlotProvider,
   useModuleHeroSlots,
   type PageHeroProps,
@@ -15,6 +16,7 @@ export {
   type PageHeroSearchProps,
   type ViewModeOption,
   type ViewModeSwitchProps,
+  type PageHeroPrimaryActionProps,
   type ModuleHeroSlots,
   type ModuleHeroSlotProviderProps,
 } from './page-hero';
@@ -36,6 +38,9 @@ export type {
 } from './kanban/kanban.types';
 export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { InlineField, type InlineFieldProps } from './InlineField';
+export { MoneyInput, type MoneyInputProps } from './MoneyInput';
+export { NbosMoneyInput, type NbosMoneyInputProps } from './NbosMoneyInput';
+export { AmdCurrencyIcon, type AmdCurrencyIconProps } from './AmdCurrencyIcon';
 export {
   NbosCalendarGrid,
   NbosDateInput,
@@ -148,3 +153,10 @@ export {
   type EntityItemSummary,
   type EntityItemVariant,
 } from './entity-item';
+export {
+  DeleteConfirmDialog,
+  useDeleteConfirm,
+  type DeleteConfirmDialogProps,
+  type DeleteConfirmLevel,
+  type DeleteConfirmTarget,
+} from './delete-confirm';

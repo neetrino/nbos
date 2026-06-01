@@ -1,45 +1,49 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { ErrorState, LoadingState } from '@/components/shared';
-import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
-import { formatAmount } from '@/features/finance/constants/finance';
-import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
-import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
-import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
-import { PayrollRunEmployeeSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-employee-sales-kpi-section';
-import { PayrollRunSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-sales-kpi-section';
-import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
+import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
+import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
+import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
+import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
+import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
+import {
+  PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
+  isPayrollMatrixViewMode,
+  isPayrollRunFullscreenViewMode,
+  readPayrollRunDetailViewMode,
+  type PayrollRunDetailViewMode,
+  writePayrollRunDetailViewMode,
+} from '@/features/finance/components/payroll/payroll-run-detail-view-options';
+import { PayrollEmployeeBonusHistoryWorkspace } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-workspace';
+import { usePayrollRunMatrixCache } from '@/features/finance/components/payroll/use-payroll-run-matrix-cache';
+import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
+import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
+import { PayrollRunDetailStatusActions } from '@/features/finance/components/payroll/PayrollRunDetailStatusActions';
+import type {
+  PayrollAllocationMatrix,
+  PayrollMatrixViewMode,
+} from '@/lib/api/payroll-allocation-matrix';
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
-import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
-import { PAYROLL_JOURNAL_KIND_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollRunsApi,
   type PayrollRunDetail,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
-
-function parseAmount(value: string): number {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function formatJournalAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function employeeName(emp: { firstName: string; lastName: string }): string {
-  return `${emp.firstName} ${emp.lastName}`.trim();
-}
+import { cn } from '@/lib/utils';
 
 export function PayrollRunDetailPageContent({
   payrollRunId,
@@ -59,13 +63,44 @@ export function PayrollRunDetailPageContent({
   const [error, setError] = useState<string | null>(initialError);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [openSalaryLineId, setOpenSalaryLineId] = useState<string | null>(null);
+  const [detailViewMode, setDetailViewMode] = useState<PayrollRunDetailViewMode>(() =>
+    readPayrollRunDetailViewMode(),
+  );
+  const [matrixSearch, setMatrixSearch] = useState('');
+  const [matrixTotals, setMatrixTotals] = useState<PayrollAllocationMatrix['totals'] | null>(null);
+  const [sheetSalaryLineId, setSheetSalaryLineId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [layoutHeroActions, setLayoutHeroActions] = useState<PayrollMatrixLayoutHeroActions | null>(
+    null,
+  );
+  const [matrixFullscreen, setMatrixFullscreen] = useState(false);
+
+  const usesMatrixFamily = detailViewMode !== 'SALARY_LINES';
+  const matrixCache = usePayrollRunMatrixCache(payrollRunId, usesMatrixFamily);
 
   useEffect(() => {
     setRun(initialRun);
     setLoading(initialLoading);
     setError(initialError);
   }, [initialError, initialLoading, initialRun]);
+
+  useEffect(() => {
+    if (!matrixFullscreen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMatrixFullscreen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [matrixFullscreen]);
+
+  const handleDetailViewModeChange = useCallback((mode: PayrollRunDetailViewMode) => {
+    setDetailViewMode(mode);
+    writePayrollRunDetailViewMode(mode);
+  }, []);
 
   const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
     usePayrollRunSalaryLinesCsvExport(run);
@@ -89,6 +124,7 @@ export function PayrollRunDetailPageContent({
   );
 
   const handleReload = useCallback(async () => {
+    matrixCache.reset();
     setLoading(true);
     setError(null);
     try {
@@ -101,7 +137,126 @@ export function PayrollRunDetailPageContent({
     } finally {
       setLoading(false);
     }
-  }, [onReload, payrollRunId]);
+  }, [matrixCache, onReload, payrollRunId]);
+
+  const statsTotals = useMemo((): PayrollAllocationMatrix['totals'] | null => {
+    if (matrixTotals) return matrixTotals;
+    if (!run) return null;
+    const payable = Number.parseFloat(run.totalPayable);
+    const paid = Number.parseFloat(run.totalPaid);
+    if (!Number.isFinite(payable)) return null;
+    return {
+      totalBaseSalary: run.totalBaseSalary,
+      totalBonuses: run.totalBonuses,
+      totalPayable: run.totalPayable,
+      totalPaid: run.totalPaid,
+      totalRemaining: String(Math.max(0, payable - (Number.isFinite(paid) ? paid : 0))),
+    };
+  }, [matrixTotals, run]);
+
+  const refreshRunQuiet = useCallback(async () => {
+    try {
+      const data = await payrollRunsApi.getById(payrollRunId);
+      setRun(data);
+    } catch {
+      /* keep current run on background refresh failure */
+    }
+  }, [payrollRunId]);
+
+  const handleOpenSalaryLine = useCallback((salaryLineId: string) => {
+    setSheetSalaryLineId(salaryLineId);
+    setSheetOpen(true);
+  }, []);
+
+  const matrixViewMode: PayrollMatrixViewMode =
+    detailViewMode === 'ORDER_MATRIX' ? 'ORDER_MATRIX' : 'EMPLOYEE_MATRIX';
+
+  useEffect(() => {
+    if (!usesMatrixFamily || !isPayrollMatrixViewMode(detailViewMode)) return;
+    void matrixCache.ensureMatrix(matrixViewMode);
+  }, [detailViewMode, matrixCache, matrixViewMode, usesMatrixFamily]);
+
+  const moduleHeroSlots = useMemo(() => {
+    if (!run) {
+      return {};
+    }
+    return {
+      tabs: <PayrollRunDetailHeroBar run={run} backHref="/finance/payroll" />,
+      search: (
+        <IntegratedSearchFilters
+          search={matrixSearch}
+          onSearchChange={setMatrixSearch}
+          searchPlaceholder={
+            detailViewMode === 'SALARY_LINES'
+              ? 'Search employee…'
+              : detailViewMode === 'EMPLOYEE_BONUS_HISTORY'
+                ? 'Search project…'
+                : 'Search project, order, or employee…'
+          }
+          onClearAll={() => setMatrixSearch('')}
+        />
+      ),
+      viewMode: matrixFullscreen ? undefined : (
+        <ViewModeSwitch
+          value={detailViewMode}
+          onChange={handleDetailViewModeChange}
+          options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
+          ariaLabel="Payroll run view"
+        />
+      ),
+      trailing: (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-8 shrink-0"
+            aria-label="Open allocation matrix full screen"
+            onClick={() => setMatrixFullscreen(true)}
+            disabled={!isPayrollRunFullscreenViewMode(detailViewMode)}
+          >
+            <Maximize2 className="size-4" aria-hidden />
+          </Button>
+          <PayrollRunDetailPageSettingsSheet
+            run={run}
+            onRefresh={handleReload}
+            salaryExportSubmitting={exportCsvSubmitting}
+            onExportSalaryLines={handleExportSalaryLinesCsv}
+            journalSubmitting={journalSubmitting}
+            onExportJournal={handleExportJournalCsv}
+            auditSubmitting={auditSubmitting}
+            onExportAudit={handleExportAuditCsv}
+            resetLayoutDisabled={layoutHeroActions?.resetDisabled ?? true}
+            onResetLayout={() => layoutHeroActions?.onResetLayout()}
+          />
+          <PayrollRunDetailStatusActions
+            run={run}
+            statusBusy={statusBusy}
+            onApplyStatus={applyStatus}
+          />
+        </>
+      ),
+    };
+  }, [
+    applyStatus,
+    auditSubmitting,
+    exportCsvSubmitting,
+    handleExportAuditCsv,
+    handleExportJournalCsv,
+    handleExportSalaryLinesCsv,
+    handleReload,
+    handleDetailViewModeChange,
+    journalSubmitting,
+    layoutHeroActions,
+    matrixFullscreen,
+    matrixSearch,
+    detailViewMode,
+    refreshRunQuiet,
+    run,
+    statusBusy,
+  ]);
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   if (loading && !run) {
     return <LoadingState />;
@@ -122,45 +277,8 @@ export function PayrollRunDetailPageContent({
     );
   }
 
-  const listHrefForRunMonth = payrollRunsListHref(undefined, {
-    payrollMonthFrom: run.payrollMonth,
-    payrollMonthTo: run.payrollMonth,
-  });
-
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link
-            href={listHrefForRunMonth}
-            className="text-muted-foreground hover:text-foreground mb-2 -ml-2 inline-flex items-center gap-1 text-sm"
-          >
-            <ArrowLeft size={14} />
-            Back to list
-          </Link>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-foreground text-2xl font-semibold">Payroll · {run.payrollMonth}</h1>
-            <PayrollRunStatusBadge status={run.status} />
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {run.salaryLines.length} line(s) · {run.materializedExpenseLineCount} expense(s) ·{' '}
-            {run.includedBonusReleaseCount} bonus release(s)
-          </p>
-        </div>
-        <PayrollRunDetailActions
-          run={run}
-          onRefresh={handleReload}
-          salaryExportSubmitting={exportCsvSubmitting}
-          onExportSalaryLines={handleExportSalaryLinesCsv}
-          journalSubmitting={journalSubmitting}
-          onExportJournal={handleExportJournalCsv}
-          auditSubmitting={auditSubmitting}
-          onExportAudit={handleExportAuditCsv}
-          statusBusy={statusBusy}
-          onApplyStatus={applyStatus}
-        />
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
@@ -181,91 +299,89 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Summary label="Total base" value={formatAmount(parseAmount(run.totalBaseSalary))} />
-        <Summary label="Bonuses" value={formatAmount(parseAmount(run.totalBonuses))} />
-        <Summary label="Payable" value={formatAmount(parseAmount(run.totalPayable))} />
-        <Summary label="Paid" value={formatAmount(parseAmount(run.totalPaid))} />
-        <Summary
-          label="Remaining"
-          value={formatAmount(payrollRunRemainingMajorUnits(run.totalPayable, run.totalPaid))}
-          accent
+      {statsTotals && !matrixFullscreen && detailViewMode !== 'EMPLOYEE_BONUS_HISTORY' ? (
+        <PayrollAllocationMatrixStatsStrip
+          lineCount={run.salaryLines.length}
+          expenseCount={run.materializedExpenseLineCount}
+          bonusReleaseCount={run.includedBonusReleaseCount}
+          totals={statsTotals}
         />
-      </div>
-
-      <PayrollRunSalesKpiSection
-        run={run}
-        scorecardMetrics={run.salesKpiScorecardMetrics}
-        onUpdated={setRun}
-      />
-
-      <PayrollRunEmployeeSalesKpiSection
-        run={run}
-        scorecardMetrics={run.salesKpiScorecardMetrics}
-        onUpdated={setRun}
-      />
-
-      <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
-
-      <PayrollRunSalaryLinesTable lines={run.salaryLines} onOpenMonth={setOpenSalaryLineId} />
-
-      {run.auditTrail.length > 0 ? (
-        <section className="border-border bg-card rounded-xl border p-4">
-          <h2 className="text-foreground text-sm font-semibold">Audit trail</h2>
-          <ul className="mt-3 space-y-0">
-            {run.auditTrail.map((row) => (
-              <PayrollAuditTrailEntry
-                key={row.id}
-                row={row}
-                actorLabel={employeeName(row.actor)}
-                formatAt={formatJournalAt}
-              />
-            ))}
-          </ul>
-        </section>
       ) : null}
 
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-foreground text-sm font-semibold">Run journal</h2>
-        <ul className="mt-3 space-y-0">
-          {run.journal.map((entry) => (
-            <li
-              key={`${entry.kind}-${entry.at}`}
-              className="border-border flex flex-wrap items-start justify-between gap-2 border-t py-3 first:border-t-0 first:pt-0"
+      <div
+        className={
+          matrixFullscreen
+            ? cn(
+                'bg-background fixed inset-0 flex min-h-0 flex-col p-3',
+                PAYROLL_MATRIX_FULLSCREEN_Z,
+              )
+            : 'flex min-h-0 flex-1 flex-col'
+        }
+      >
+        {matrixFullscreen ? (
+          <div className="border-border bg-card absolute right-3 bottom-3 z-10 flex items-center gap-2 rounded-lg border p-1.5 shadow-md">
+            <ViewModeSwitch
+              value={detailViewMode}
+              onChange={handleDetailViewModeChange}
+              options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
+              ariaLabel="Payroll run view"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8 shrink-0"
+              aria-label="Exit full screen"
+              onClick={() => setMatrixFullscreen(false)}
             >
-              <div className="min-w-0">
-                <p className="text-foreground text-sm font-medium">
-                  {PAYROLL_JOURNAL_KIND_LABEL[entry.kind]}
-                </p>
-                <p className="text-muted-foreground mt-0.5 text-xs">{entry.summary}</p>
-              </div>
-              <time
-                className="text-muted-foreground shrink-0 text-xs tabular-nums"
-                dateTime={entry.at}
-              >
-                {formatJournalAt(entry.at)}
-              </time>
-            </li>
-          ))}
-        </ul>
-      </section>
+              <Minimize2 className="size-4" aria-hidden />
+            </Button>
+          </div>
+        ) : null}
+
+        {detailViewMode === 'SALARY_LINES' ? (
+          <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
+            <PayrollRunSalaryLinesView
+              lines={run.salaryLines}
+              search={matrixSearch}
+              onOpenSalaryLine={handleOpenSalaryLine}
+            />
+          </section>
+        ) : detailViewMode === 'EMPLOYEE_BONUS_HISTORY' ? (
+          <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl p-1">
+            <PayrollEmployeeBonusHistoryWorkspace
+              payrollRunId={payrollRunId}
+              search={matrixSearch}
+              sharedMeta={matrixCache.meta}
+              sharedEmployeeMatrix={matrixCache.matrixByMode.EMPLOYEE_MATRIX}
+              onSharedMatrixChange={(matrix) =>
+                matrixCache.setMatrixForMode('EMPLOYEE_MATRIX', matrix)
+              }
+              sharedMetaError={matrixCache.metaError}
+              onSalaryLinesStale={() => void refreshRunQuiet()}
+            />
+          </section>
+        ) : (
+          <PayrollAllocationMatrixWorkspace
+            payrollRunId={payrollRunId}
+            viewMode={matrixViewMode}
+            search={matrixSearch}
+            fullscreen={matrixFullscreen}
+            initialMatrix={matrixCache.matrixByMode[matrixViewMode]}
+            onMatrixChange={(matrix) => matrixCache.setMatrixForMode(matrixViewMode, matrix)}
+            onTotalsChange={setMatrixTotals}
+            onLayoutHeroActionsChange={setLayoutHeroActions}
+            onOpenSalaryLine={handleOpenSalaryLine}
+            onSalaryLinesStale={() => void refreshRunQuiet()}
+          />
+        )}
+      </div>
 
       <EmployeeMonthCompensationSheet
-        salaryLineId={openSalaryLineId}
-        open={Boolean(openSalaryLineId)}
-        onOpenChange={(next) => {
-          if (!next) setOpenSalaryLineId(null);
-        }}
+        salaryLineId={sheetSalaryLineId}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
       />
-    </div>
-  );
-}
-
-function Summary({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="border-border bg-card rounded-xl border p-4">
-      <p className="text-muted-foreground text-xs">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${accent ? 'text-accent' : ''}`}>{value}</p>
     </div>
   );
 }

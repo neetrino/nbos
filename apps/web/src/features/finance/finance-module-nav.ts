@@ -21,6 +21,7 @@ const FINANCE_EXPENSES_PREFIX = '/finance/expenses';
 
 export const FINANCE_OVERVIEW_NAV: PageHeroNavLinkItem[] = [
   { href: '/finance/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/finance/unit-economics', label: 'Unit economics', icon: PieChart },
   { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },
   { href: '/finance/journal', label: 'Journal', icon: ScrollText },
 ];
@@ -58,7 +59,6 @@ export const FINANCE_PAYROLL_NAV: PageHeroNavLinkItem[] = [
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
   { href: '/finance/salary', label: 'Salary', icon: Users },
   { href: '/finance/bonuses', label: 'Bonus', icon: PieChart },
-  { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
 ];
 
 /** Zone tabs for the current Finance route; `null` = no section pills. */

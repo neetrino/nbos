@@ -38,7 +38,9 @@ function BonusBySourceTable({ rows }: { rows: readonly SalaryLineMonthBonusRow[]
           <TableHead>Project</TableHead>
           <TableHead>Product</TableHead>
           <TableHead>Policy</TableHead>
-          <TableHead className="text-right">Planned</TableHead>
+          <TableHead className="text-right">Full</TableHead>
+          <TableHead className="text-right">Payable</TableHead>
+          <TableHead className="text-right">KPI %</TableHead>
           <TableHead className="text-right">Released</TableHead>
           <TableHead className="text-right">Burned</TableHead>
           <TableHead className="text-right">Carry-over</TableHead>
@@ -65,6 +67,10 @@ function BonusBySourceTable({ rows }: { rows: readonly SalaryLineMonthBonusRow[]
               </span>
             </TableCell>
             <TableCell className="text-right tabular-nums">{formatAmount(group.planned)}</TableCell>
+            <TableCell className="text-right tabular-nums">
+              {group.payable > 0 ? formatAmount(group.payable) : POLICY_PENDING_LABEL}
+            </TableCell>
+            <TableCell className="text-muted-foreground text-right tabular-nums">—</TableCell>
             <TableCell className="text-right tabular-nums">
               {formatAmount(group.released)}
             </TableCell>
@@ -95,7 +101,9 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
         <TableRow>
           <TableHead>Product</TableHead>
           <TableHead>Release</TableHead>
-          <TableHead className="text-right">Planned</TableHead>
+          <TableHead className="text-right">Full</TableHead>
+          <TableHead className="text-right">Payable</TableHead>
+          <TableHead className="text-right">KPI %</TableHead>
           <TableHead className="text-right">Released</TableHead>
           <TableHead className="text-right">Included</TableHead>
           <TableHead className="text-right">Burned KPI</TableHead>
@@ -107,6 +115,12 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
       <TableBody>
         {rows.map((row) => {
           const releaseUi = BONUS_RELEASE_TYPE_UI[row.releaseType as BonusReleaseType];
+          const isSales = row.type === 'SALES';
+          const fullLabel =
+            row.fullAmount != null ? formatAmount(parseAmount(row.fullAmount)) : '—';
+          const payableLabel =
+            row.payableAmount != null ? formatAmount(parseAmount(row.payableAmount)) : '—';
+          const kpiPctLabel = row.kpiPayoutFactorPct != null ? `${row.kpiPayoutFactorPct}%` : '—';
           return (
             <TableRow key={row.bonusReleaseId}>
               <TableCell className="max-w-[10rem] truncate text-sm" title={row.productLabel}>
@@ -123,7 +137,13 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
                 )}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {formatAmount(parseAmount(row.plannedAmount))}
+                {isSales ? fullLabel : formatAmount(parseAmount(row.plannedAmount))}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {isSales ? payableLabel : '—'}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-right tabular-nums">
+                {isSales ? <span title={row.earnedPeriod ?? undefined}>{kpiPctLabel}</span> : '—'}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {formatAmount(parseAmount(row.releaseAmount))}

@@ -8,12 +8,8 @@ const sampleRow: PayrollRunListRow = {
   status: 'APPROVED',
   totalBaseSalary: '100.00',
   totalBonuses: '0.00',
-  totalAdjustments: '0.00',
-  totalDeductions: '0.00',
   totalPayable: '100.00',
   totalPaid: '0.00',
-  kpiSalesPlanAmount: null,
-  kpiSalesActualAmount: null,
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-02T00:00:00.000Z',
   _count: { salaryLines: 5 },
@@ -30,15 +26,15 @@ describe('buildPayrollRunsCsvContent', () => {
     expect(csv).toContain('3');
     expect(csv).toContain('totalRemaining');
     const cells = csv.split('\r\n')[1]?.split(',');
+    expect(cells?.[7]).toBe('100.00');
+    expect(cells?.[8]).toBe('0.00');
     expect(cells?.[9]).toBe('100.00');
-    expect(cells?.[10]).toBe('0.00');
-    expect(cells?.[11]).toBe('100.00');
   });
 
   it('returns header only when no rows', () => {
     const csv = buildPayrollRunsCsvContent([]);
     expect(csv).toBe(
-      'id,payrollMonth,status,salaryLinesCount,materializedExpenseLineCount,totalBaseSalary,totalBonuses,totalAdjustments,totalDeductions,totalPayable,totalPaid,totalRemaining,createdAt,updatedAt',
+      'id,payrollMonth,status,salaryLinesCount,materializedExpenseLineCount,totalBaseSalary,totalBonuses,totalPayable,totalPaid,totalRemaining,createdAt,updatedAt',
     );
   });
 
@@ -51,9 +47,9 @@ describe('buildPayrollRunsCsvContent', () => {
     };
     const csv = buildPayrollRunsCsvContent([row]);
     const cells = csv.split('\r\n')[1]?.split(',');
-    expect(cells?.[9]).toBe('10.00');
-    expect(cells?.[10]).toBe('25.00');
-    expect(cells?.[11]).toBe('-15.00');
+    expect(cells?.[7]).toBe('10.00');
+    expect(cells?.[8]).toBe('25.00');
+    expect(cells?.[9]).toBe('-15.00');
   });
 
   it('appends grand total row with rolled-up numeric columns', () => {
@@ -78,8 +74,8 @@ describe('buildPayrollRunsCsvContent', () => {
     expect(totalCells?.[4]).toBe('4');
     expect(totalCells?.[5]).toBe('150.00');
     expect(totalCells?.[6]).toBe('10.00');
-    expect(totalCells?.[9]).toBe('160.00');
-    expect(totalCells?.[10]).toBe('10.00');
-    expect(totalCells?.[11]).toBe('150.00');
+    expect(totalCells?.[7]).toBe('160.00');
+    expect(totalCells?.[8]).toBe('10.00');
+    expect(totalCells?.[9]).toBe('150.00');
   });
 });

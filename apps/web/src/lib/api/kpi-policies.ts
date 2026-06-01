@@ -25,6 +25,9 @@ export interface KpiPolicyRow {
   templateCode: string;
   gateRules: KpiGateRules;
   scorecardMetrics: KpiScorecardMetric[];
+  targetAmount: string | null;
+  targetSource: string | null;
+  resultSource: string | null;
   bonusCapBaseSalaryMultiplier: string;
   status: KpiPolicyStatus;
   scope: string | null;
@@ -38,6 +41,9 @@ export interface CreateKpiPolicyPayload {
   name: string;
   gateRules: KpiGateRules;
   scorecardMetrics?: KpiScorecardMetric[];
+  targetAmount?: number | null;
+  targetSource?: string;
+  resultSource?: string;
   bonusCapBaseSalaryMultiplier?: number;
   scope?: string;
   notes?: string;
@@ -46,6 +52,9 @@ export interface CreateKpiPolicyPayload {
 export interface UpdateKpiPolicyPayload {
   name?: string;
   gateRules?: KpiGateRules;
+  targetAmount?: number | null;
+  targetSource?: string | null;
+  resultSource?: string | null;
   bonusCapBaseSalaryMultiplier?: number;
   status?: KpiPolicyStatus;
   scope?: string | null;

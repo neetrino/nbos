@@ -33,10 +33,6 @@ import { EXPENSES_VIEW_OPTIONS } from './expenses-view-options';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { buildExpenseIntegratedFilterConfigs } from './build-expense-integrated-filter-configs';
-import {
-  ExpensePayrollPresetBanner,
-  isPayrollSourceFilterActive,
-} from './ExpensePayrollPresetBanner';
 import { useExpensePayrollEmployeeFilterOptions } from './use-expense-payroll-employee-filter-options';
 import {
   EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY,
@@ -46,8 +42,6 @@ import {
   EXPENSE_PAYROLL_PRESET_QUERY,
   EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
   EXPENSE_PAYROLL_SOURCE_PAYROLL,
-  clearPayrollPayNowFilters,
-  payNowDefaultExpenseFilters,
 } from '@/features/finance/constants/expense-payroll-filter';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import {
@@ -372,8 +366,6 @@ export function ExpensesPageContent({
     [payrollEmployeeFilterOptions, projectFilterOptions, pageVariant],
   );
 
-  const payrollFilterActive = isPayrollSourceFilterActive(filters);
-
   useEffect(() => {
     if (pageVariant !== 'default') return;
     const preset = searchParams.get(EXPENSE_PAYROLL_PRESET_QUERY) === '1';
@@ -399,20 +391,6 @@ export function ExpensesPageContent({
       params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
     });
   }, [pageVariant, replaceExpensesUrl, searchParams]);
-
-  const applyPayrollFilter = useCallback(() => {
-    setFilters((prev) => ({
-      ...prev,
-      ...payNowDefaultExpenseFilters(),
-    }));
-  }, []);
-
-  const clearPayrollFilter = useCallback(() => {
-    setFilters((prev) => ({
-      ...prev,
-      ...clearPayrollPayNowFilters(),
-    }));
-  }, []);
 
   const payrollPaymentFocus = Boolean(
     selectedExpense && resolveExpensePayrollRunId(selectedExpense),
@@ -534,14 +512,6 @@ export function ExpensesPageContent({
           expensePlanId={expensePlanIdFromUrl.trim()}
           planBannerLabel={planBannerLabel}
           onClearPlanFilter={handleClearPlanDrilldown}
-        />
-      ) : null}
-
-      {pageVariant === 'default' ? (
-        <ExpensePayrollPresetBanner
-          active={payrollFilterActive}
-          onApplyPayrollFilter={applyPayrollFilter}
-          onClearPayrollFilter={clearPayrollFilter}
         />
       ) : null}
 

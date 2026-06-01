@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
+import { AlertTriangle, Building2, Calendar, FolderKanban, Handshake } from 'lucide-react';
 import { KanbanBoard, KanbanColumnMoneyTotal, StatusBadge } from '@/components/shared';
 import {
   buildTerminalDropZonesFromBoard,
@@ -14,6 +14,7 @@ import { parseMoneyAmount } from '@/lib/format/money';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { getInvoiceDealTitle } from '@/features/finance/utils/order-display';
 import { createInvoiceKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Invoice } from '@/lib/api/finance';
@@ -79,23 +80,21 @@ export function InvoiceKanban({
   );
 
   return (
-    <div className="min-h-0 flex-1">
-      <KanbanBoard
-        columns={columns}
-        getItemId={(invoice: Invoice) => invoice.id}
-        onMove={onMove}
-        columnQuickCreate={invoiceQuickCreate}
-        terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
-        columnWidth={boardScope === 'CLOSED' ? 288 : 270}
-        emptyMessage="No invoices"
-        renderColumnHeader={(column) => (
-          <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
-        )}
-        renderCard={(invoice: Invoice) => (
-          <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
-        )}
-      />
-    </div>
+    <KanbanBoard
+      columns={columns}
+      getItemId={(invoice: Invoice) => invoice.id}
+      onMove={onMove}
+      columnQuickCreate={invoiceQuickCreate}
+      terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
+      columnWidth={boardScope === 'CLOSED' ? 288 : 270}
+      emptyMessage="No invoices"
+      renderColumnHeader={(column) => (
+        <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
+      )}
+      renderCard={(invoice: Invoice) => (
+        <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
+      )}
+    />
   );
 }
 
@@ -108,6 +107,7 @@ function InvoiceKanbanCard({
 }) {
   const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
   const overdueDays = resolveInvoiceOverdueDays(invoice);
+  const dealTitle = getInvoiceDealTitle(invoice.order);
 
   return (
     <div
@@ -122,10 +122,20 @@ function InvoiceKanbanCard({
         {formatAmount(parseMoneyAmount(invoice.amount))}
       </p>
       {type ? <StatusBadge label={type.label} variant="blue" /> : null}
+      {dealTitle ? <InvoiceDeal name={dealTitle} /> : null}
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}
       {overdueDays > 0 && <InvoiceOverdueDays days={overdueDays} />}
+    </div>
+  );
+}
+
+function InvoiceDeal({ name }: { name: string }) {
+  return (
+    <div className="text-muted-foreground flex items-center gap-1 text-xs">
+      <Handshake size={10} />
+      {name}
     </div>
   );
 }

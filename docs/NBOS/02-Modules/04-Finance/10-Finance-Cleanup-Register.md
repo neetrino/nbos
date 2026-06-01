@@ -77,7 +77,28 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 `HOLDBACK` уже удалён из активного канона. Будущий refactor должен убрать legacy `HOLDBACK` / holdback fields из runtime и выровнять выпуск бонусов через `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`, `Expense Card` и `Employee Wallet`.
 
-### A4. Compensation MVP UX aligned with Bitrix-style flow
+### A4. Payroll Run Workspace v2 + Unit Economics Board (2026-05)
+
+Статус: `SHIPPED` (`e73b88f4` … `84d40c50` on `development`) — **per-unit invoice/payment drill-down и bonus policy engine — не закрыты**
+
+**Сделано в runtime + UI:**
+
+- `GET/PATCH` payroll allocation matrix (employees × delivery payable units), layout persistence, cell release edit;
+- matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus, validation banner, cell audit read;
+- pre-review/approve matrix validation; carry/KPI notify on matrix attach;
+- `GET /api/unit-economics` + `/finance/unit-economics` (In/Out/Balance; by project + by product); `/finance/bonus-pools` redirects here; legacy bonus-pools page UI removed;
+- order detail `bonusBreakdown`; Bonus breakdown sheet loads from UE order detail (not full product pools list);
+- Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log; audit panel on entry sheet + matrix cell dialog;
+- docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities`, `06-PnL-Reports` (matrix + UE sections).
+
+**Остаётся:**
+
+- Unit Economics: planned non-bonus expenses in Out (future — project-scoped expense plans need allocation rule);
+- bonus recipient full history UI (beyond last N audit rows);
+- layout-change audit (optional);
+- full matrix E2E / manual QA checklist in `todo.md` Phase 8.
+
+### A5. Compensation MVP UX aligned with Bitrix-style flow
 
 Статус: `MVP SHIPPED` (2026-05) — **policy engine и My Company policies — не закрыты**
 
@@ -86,7 +107,7 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `PayrollRun`, `SalaryLine`, `BonusRelease`, product bonus pool roll-ups;
 - approve → expense card → `Expense Payment` → `syncSalaryLinePaidFromExpenseLedger`;
 - `/finance/salary` (grid/cards/list/board + month sheet), `/finance/payroll/[id]` workspace;
-- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/bonus-pools`;
+- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/unit-economics` (sole operational money hub; `/finance/bonus-pools` redirects here);
 - Pay Now payroll filters + expense sheet links to month sheet / payroll run;
 - `/my-account/wallet` read-only month cards + month-detail;
 - `GET …/salary-lines/:id/month-detail` (Finance + wallet scope);

@@ -4,17 +4,20 @@ import { BonusService } from './bonus.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 import type { NotificationService } from '../notifications/notification.service';
+import type { AuditService } from '../audit/audit.service';
 
 describe('BonusService', () => {
   let service: BonusService;
   let prisma: MockPrisma;
   let notifications: NotificationService;
+  let audit: AuditService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.bonusEntry.findMany.mockResolvedValue([]);
     notifications = { create: vi.fn() } as unknown as NotificationService;
-    service = new BonusService(prisma as never, notifications);
+    audit = { log: vi.fn() } as unknown as AuditService;
+    service = new BonusService(prisma as never, notifications, audit);
   });
 
   describe('findAll', () => {

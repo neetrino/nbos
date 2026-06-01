@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Building2, ExternalLink, FileText, UserCircle } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getDealDisplayTitle } from '@/features/crm/utils/crm-entity-display';
+import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
@@ -91,7 +93,7 @@ export function DeliveryItemCommercialSection({
         ) : null}
         {order ? (
           <div className="text-muted-foreground flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs">
-            <span className="text-foreground font-medium">Order {order.code}</span>
+            <span className="text-foreground font-medium">{getOrderDisplayTitle(order)}</span>
             <span>·</span>
             <span>{order.status}</span>
           </div>
@@ -107,7 +109,7 @@ export function DeliveryItemCommercialSection({
             )}
           >
             <FileText size={14} aria-hidden />
-            Open deal {deal.code}
+            Open deal {getDealDisplayTitle(deal)}
             <ExternalLink className="ml-auto size-3.5 opacity-60" aria-hidden />
           </a>
         ) : null}

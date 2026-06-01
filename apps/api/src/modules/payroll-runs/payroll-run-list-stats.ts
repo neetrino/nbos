@@ -31,8 +31,6 @@ export interface PayrollRunStatsResult {
   totals: {
     totalBaseSalary: string;
     totalBonuses: string;
-    totalAdjustments: string;
-    totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
     /** Sum of (run.totalPayable − run.totalPaid) for runs in scope. */
@@ -58,8 +56,6 @@ export async function computePayrollRunListStats(
       _sum: {
         totalBaseSalary: true,
         totalBonuses: true,
-        totalAdjustments: true,
-        totalDeductions: true,
         totalPayable: true,
         totalPaid: true,
       },
@@ -78,8 +74,6 @@ export async function computePayrollRunListStats(
     totals: {
       totalBaseSalary: decimalSumToString(s.totalBaseSalary),
       totalBonuses: decimalSumToString(s.totalBonuses),
-      totalAdjustments: decimalSumToString(s.totalAdjustments),
-      totalDeductions: decimalSumToString(s.totalDeductions),
       totalPayable: decimalSumToString(s.totalPayable),
       totalPaid: decimalSumToString(s.totalPaid),
       totalRemaining: decimalRemainingString(s.totalPayable, s.totalPaid),

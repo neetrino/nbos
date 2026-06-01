@@ -32,12 +32,24 @@ export interface InvoiceStatsQueryParams extends FinanceDateRangeParams {
   subscriptionId?: string;
 }
 
+export interface InvoiceDealSummary {
+  id: string;
+  name: string | null;
+  code: string;
+}
+
+export interface InvoiceOrderSummary {
+  id: string;
+  code: string;
+  deal?: InvoiceDealSummary | null;
+}
+
 export interface Invoice {
   id: string;
   code: string;
   orderId: string | null;
   subscriptionId: string | null;
-  projectId: string;
+  projectId: string | null;
   companyId: string | null;
   amount: string;
   currency: string;
@@ -53,7 +65,7 @@ export interface Invoice {
   notificationsEnabled: boolean;
   description: string | null;
   createdAt: string;
-  order: { id: string; code: string } | null;
+  order: InvoiceOrderSummary | null;
   company: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
@@ -104,6 +116,7 @@ export interface Order {
   status: string;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  deal?: InvoiceDealSummary | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; moneyStatus: string; amount: string }>;
@@ -331,8 +344,6 @@ export interface FinanceDashboardPayrollRuns {
   totals: {
     totalBaseSalary: string;
     totalBonuses: string;
-    totalAdjustments: string;
-    totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
     totalRemaining: string;
@@ -423,7 +434,15 @@ export const invoicesApi = {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
-  async updateGeneral(id: string, data: { amount?: number; taxStatus?: string }): Promise<Invoice> {
+  async updateGeneral(
+    id: string,
+    data: {
+      amount?: number;
+      taxStatus?: string;
+      companyId?: string | null;
+      projectId?: string | null;
+    },
+  ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
     return resp.data;
   },

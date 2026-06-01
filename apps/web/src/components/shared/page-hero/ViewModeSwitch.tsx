@@ -2,6 +2,8 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
+import { PAGE_HERO_VIEW_BUTTON } from './page-hero-layout';
 
 export type ViewModeOption<T extends string> = {
   value: T;
@@ -18,6 +20,7 @@ export interface ViewModeSwitchProps<T extends string> {
   ariaLabel?: string;
 }
 
+/** Icon-only view switcher (labels in aria-label / title). */
 export function ViewModeSwitch<T extends string>({
   value,
   onChange,
@@ -27,10 +30,7 @@ export function ViewModeSwitch<T extends string>({
 }: ViewModeSwitchProps<T>) {
   return (
     <div
-      className={cn(
-        'bg-muted/70 flex w-fit shrink-0 items-center gap-0.5 rounded-full p-1',
-        className,
-      )}
+      className={cn(PAGE_HERO_PILL_GROUP, 'shrink-0', className)}
       role="group"
       aria-label={ariaLabel}
     >
@@ -61,15 +61,15 @@ function ViewModeButton<T extends string>({
       onClick={onSelect}
       aria-label={option.ariaLabel ?? option.label}
       aria-pressed={active}
+      title={option.label}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3',
+        PAGE_HERO_VIEW_BUTTON,
         active
           ? 'bg-background text-foreground shadow-sm'
           : 'text-muted-foreground hover:text-foreground',
       )}
     >
       {option.icon}
-      {option.label}
     </button>
   );
 }

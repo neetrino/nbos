@@ -57,7 +57,9 @@ export function CreateManualBonusDialog({
   const [employeeId, setEmployeeId] = useState('');
   const [orderId, setOrderId] = useState('');
   const [type, setType] = useState<BonusType>('MARKETING');
+  const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
+  const [reason, setReason] = useState('');
   const [status, setStatus] = useState<BonusStatus>(MANUAL_BONUS_DEFAULT_STATUS);
   const [payoutMonth, setPayoutMonth] = useState(currentPayrollMonthValue);
 
@@ -103,7 +105,9 @@ export function CreateManualBonusDialog({
     setEmployeeId('');
     setOrderId('');
     setType('MARKETING');
+    setTitle('');
     setAmount('');
+    setReason('');
     setStatus(MANUAL_BONUS_DEFAULT_STATUS);
     setPayoutMonth(currentPayrollMonthValue());
     setFormError(null);
@@ -113,6 +117,8 @@ export function CreateManualBonusDialog({
   const canSubmit =
     employeeId.length > 0 &&
     orderId.length > 0 &&
+    title.trim().length > 0 &&
+    reason.trim().length > 0 &&
     selectedOrder != null &&
     Number.isFinite(parsedAmount) &&
     parsedAmount > 0;
@@ -129,9 +135,12 @@ export function CreateManualBonusDialog({
         orderId: selectedOrder.id,
         projectId: selectedOrder.projectId,
         type,
+        title: title.trim(),
+        reason: reason.trim(),
         amount: parsedAmount,
         percent: 0,
         status,
+        earnedPeriod: payoutMonth.trim(),
         payoutMonth: payoutMonth.trim() ? `${payoutMonth.trim()}-01` : undefined,
       };
       const created = await bonusesApi.create(payload);
@@ -160,6 +169,15 @@ export function CreateManualBonusDialog({
               {formError}
             </p>
           ) : null}
+          <div>
+            <Label>Title *</Label>
+            <Input
+              value={title}
+              disabled={loading}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Manual support bonus — launch"
+            />
+          </div>
           <div>
             <Label>Employee *</Label>
             <select
@@ -219,6 +237,15 @@ export function CreateManualBonusDialog({
               />
             </div>
           </div>
+          <div>
+            <Label>Reason *</Label>
+            <Input
+              value={reason}
+              disabled={loading}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Why this manual bonus is granted"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Status</Label>
@@ -236,7 +263,7 @@ export function CreateManualBonusDialog({
               </select>
             </div>
             <div>
-              <Label>Payroll month</Label>
+              <Label>Earned month</Label>
               <Input
                 type="month"
                 value={payoutMonth}

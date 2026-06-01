@@ -39,7 +39,7 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate({ ...baseDeal, notes: 'Budget' }, 'FAILED')).not.toThrow();
   });
 
-  it('accepts linked Drive contract files at DEPOSIT_AND_CONTRACT', () => {
+  it('accepts DEPOSIT_AND_CONTRACT without contract or invoice', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -50,8 +50,6 @@ describe('validateDealStageGate', () => {
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
-      linkedContractAssetCount: 1,
-      orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
   });
@@ -127,7 +125,7 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(deal, 'GET_ANSWER')).not.toThrow();
   });
 
-  it('requires pmId + deadline for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
+  it('requires deadline but not PM for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -136,21 +134,15 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
 
-    const complete = {
-      ...deal,
-      companyId: 'company-1',
-      pmId: 'pm-1',
-      deadline: new Date(),
-      linkedContractAssetCount: 1,
-      orders: [{ invoices: [{ id: 'invoice-1' }] }],
-    };
-    expect(() => validateDealStageGate(complete, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
+    const withDeadline = { ...deal, deadline: new Date() };
+    expect(() => validateDealStageGate(withDeadline, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
   });
 
-  it('requires contract proof and invoice for deposit-based deals', () => {
+  it('requires PM for PRODUCT at WON', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -160,28 +152,30 @@ describe('validateDealStageGate', () => {
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
-      pmId: 'pm-1',
       deadline: new Date(),
-    };
-    expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
-  });
-
-  it('does not treat blank contract file as contract proof', () => {
-    const deal = {
-      ...baseDeal,
-      amount: 5000,
-      paymentType: 'CLASSIC',
-      productCategory: 'CODE',
-      productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
-      offerLink: 'https://example.com/offer',
-      companyId: 'company-1',
-      pmId: 'pm-1',
-      deadline: new Date(),
-      contractFileUrl: '   ',
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
-    expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate(deal, 'WON')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate({ ...deal, pmId: 'pm-1' }, 'WON')).not.toThrow();
+  });
+
+  it('requires deposit invoice before WON for commercial deals', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerSentAt: new Date(),
+      offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
+      pmId: 'pm-1',
+      deadline: new Date(),
+    };
+    expect(() => validateDealStageGate(deal, 'WON')).toThrow(BadRequestException);
+    expect(() =>
+      validateDealStageGate({ ...deal, orders: [{ invoices: [{ id: 'invoice-1' }] }] }, 'WON'),
+    ).not.toThrow();
   });
 
   it('requires existingProductId for EXTENSION at DEPOSIT_AND_CONTRACT', () => {
@@ -193,8 +187,7 @@ describe('validateDealStageGate', () => {
       taxStatus: 'TAX_FREE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      contractFileUrl: 'https://example.com/contract.pdf',
-      orders: [{ invoices: [{ id: 'invoice-1' }] }],
+      companyId: 'company-1',
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
 

@@ -81,7 +81,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex min-h-0 flex-col gap-5">
       <PageHero
         title="Project Hub"
         tabs={

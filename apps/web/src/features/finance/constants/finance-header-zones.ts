@@ -11,11 +11,6 @@ export type FinanceHeaderZoneDefinition = {
 
 export const FINANCE_HEADER_ZONES: FinanceHeaderZoneDefinition[] = [
   {
-    zone: 'overview',
-    label: 'Overview',
-    permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-  },
-  {
     zone: 'revenue',
     label: 'Revenue',
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
@@ -28,6 +23,11 @@ export const FINANCE_HEADER_ZONES: FinanceHeaderZoneDefinition[] = [
   {
     zone: 'payroll',
     label: 'Payroll & bonus',
+    permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+  },
+  {
+    zone: 'overview',
+    label: 'Overview',
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
   },
 ];

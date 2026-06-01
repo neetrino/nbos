@@ -79,7 +79,6 @@ export function ExtensionPlanningSection({
             entityId={extension.id}
             value={draft.description}
             onChange={(description) => patchDraft({ description: description ?? '' })}
-            label="Scope & notes"
             placeholder="Plan, acceptance criteria…"
             disabled={disabled}
           />

@@ -14,6 +14,8 @@ import {
   ErrorState,
   LoadingState,
   StatusBadge,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
   type KanbanColumn,
   type ViewModeOption,
 } from '@/components/shared';
@@ -116,6 +118,7 @@ function DealsPipelinePageContent() {
   );
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
+  const deleteConfirm = useDeleteConfirm();
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -152,6 +155,10 @@ function DealsPipelinePageContent() {
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
       setDeals(data.items);
+      setSelectedDeal((prev) => {
+        if (!prev) return prev;
+        return data.items.find((deal) => deal.id === prev.id) ?? prev;
+      });
       setError(null);
     } catch {
       setError('Deals could not be loaded. Check your connection and try again.');
@@ -618,7 +625,12 @@ function DealsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onDelete={handleDelete}
+        onDelete={(id) => {
+          const deal =
+            selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
+          if (!deal) return;
+          deleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+        }}
         onRefresh={fetchDeals}
         onOpenDeal={handleOpenDealById}
         blockerNavigation={dealBlockerNav}
@@ -640,6 +652,21 @@ function DealsPipelinePageContent() {
           if (!transition) return;
           setPendingTransition(null);
           handleStatusChange(transition.id, transition.status);
+        }}
+      />
+
+      <DeleteConfirmDialog
+        level="strong"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete deal?"
+        description="The deal will be removed from the pipeline and linked lists. Type the deal name to confirm."
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void handleDelete(id);
         }}
       />
     </div>

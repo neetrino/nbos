@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { Order } from '@/lib/api/finance';
+import type { Invoice, Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
-import type { Project } from '@/lib/api/projects';
 import { getInitialInvoiceForm, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
+import type { CreateInvoiceHiddenContext } from './create-invoice-dialog-utils';
 import { bootstrapCreateInvoiceDialog } from './create-invoice-dialog-bootstrap';
 import { runCreateInvoiceSubmit } from './run-create-invoice-submit';
 
 export interface CreateInvoiceDialogOuterProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => Promise<void> | void;
+  onCreated: (invoice?: Invoice) => Promise<void> | void;
   order?: Order | null;
   subscriptionId?: string | null;
-  /** Prefill project when opening from Client Portfolio deep link. */
-  initialProjectId?: string | null;
+  /** Optional hidden context for non-manual entry points (not shown in popup). */
+  hiddenContext?: CreateInvoiceHiddenContext;
+  /** Custom submit (e.g. deal deposit bootstrap) instead of default invoices API create. */
+  submitOverride?: (form: CreateInvoiceFormState) => Promise<Invoice | void>;
+  /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
+  forceNestedBackdrop?: boolean;
 }
 
 export interface CreateInvoiceDialogState {
   form: CreateInvoiceFormState;
   setForm: (form: CreateInvoiceFormState) => void;
-  projects: Project[];
   loading: boolean;
   error: string | null;
   loadError: string | null;
@@ -36,36 +39,39 @@ export function useCreateInvoiceDialogState({
   onCreated,
   order,
   subscriptionId,
-  initialProjectId,
+  hiddenContext,
+  submitOverride,
 }: CreateInvoiceDialogOuterProps): CreateInvoiceDialogState {
   const [form, setForm] = useState(() => getInitialInvoiceForm(order));
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [subscriptionDetail, setSubscriptionDetail] = useState<Subscription | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
+  const hiddenContextKey = JSON.stringify(hiddenContext ?? {});
+
   useEffect(() => {
     bootstrapCreateInvoiceDialog({
       open,
       order,
       subscriptionId,
-      initialProjectId,
+      hiddenContext,
       setError,
       setLoadError,
       setForm,
-      setProjects,
       setSubscriptionDetail,
       setSubscriptionLoading,
     });
-  }, [open, order, subscriptionId, initialProjectId]);
+  }, [open, order, subscriptionId, hiddenContextKey, hiddenContext]);
 
   const handleSubmit = (event: FormEvent) =>
     runCreateInvoiceSubmit(event, {
       form,
       order,
       subscriptionDetail,
+      hiddenContext,
+      submitOverride,
       setLoading,
       setError,
       onCreated,
@@ -75,7 +81,6 @@ export function useCreateInvoiceDialogState({
   return {
     form,
     setForm,
-    projects,
     loading,
     error,
     loadError,

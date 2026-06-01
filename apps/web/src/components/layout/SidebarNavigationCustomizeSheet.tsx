@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { SidebarCustomizeSortableList } from './SidebarCustomizeSortableList';
+import { SidebarModuleIcon } from './SidebarModuleIcon';
 
 interface SidebarNavigationCustomizeSheetProps {
   open: boolean;
@@ -106,7 +107,10 @@ export function SidebarNavigationCustomizeSheet({
                       key={item.key}
                       className="bg-muted/30 flex items-center justify-between gap-2 rounded-lg px-3 py-2"
                     >
-                      <span className="text-sm">{item.label}</span>
+                      <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                        <SidebarModuleIcon moduleKey={item.key} muted />
+                        <span className="truncate text-sm">{item.label}</span>
+                      </span>
                       <Button
                         type="button"
                         variant="outline"

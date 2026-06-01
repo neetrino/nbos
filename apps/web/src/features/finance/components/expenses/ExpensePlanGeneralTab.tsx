@@ -70,7 +70,7 @@ export function ExpensePlanGeneralTab({
           <InlineField
             variant="controlled"
             label="Expected amount"
-            type="number"
+            type="money"
             value={draft.amount}
             placeholder="0"
             icon={<DollarSign size={12} />}

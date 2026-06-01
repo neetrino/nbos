@@ -94,7 +94,7 @@ export function SubscriptionGeneralTab({
             <InlineField
               variant="controlled"
               label="Amount / month"
-              type="number"
+              type="money"
               value={draft.baseMonthlyAmount}
               placeholder="Enter amount…"
               icon={<DollarSign size={12} />}

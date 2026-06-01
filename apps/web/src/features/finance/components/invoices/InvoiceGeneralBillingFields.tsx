@@ -26,7 +26,7 @@ export function InvoiceGeneralBillingFields({
       <InlineField
         variant="controlled"
         label="Amount"
-        type="number"
+        type="money"
         value={draft.amount}
         icon={<DollarSign size={12} />}
         disabled={disabled}

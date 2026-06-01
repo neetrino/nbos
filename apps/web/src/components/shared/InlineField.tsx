@@ -21,8 +21,19 @@ import {
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
+import { MoneyInput } from './MoneyInput';
+import { formatMoneyInput, formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
 
-type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
+type FieldType =
+  | 'text'
+  | 'number'
+  | 'money'
+  | 'email'
+  | 'phone'
+  | 'textarea'
+  | 'select'
+  | 'link'
+  | 'date';
 
 interface SelectOption {
   value: string;
@@ -93,7 +104,7 @@ function InlineFieldUncontrolled({
 
   const startEdit = () => {
     if (!editable || !onSave) return;
-    setEditValue(String(value ?? ''));
+    setEditValue(type === 'money' ? formatMoneyInput(value) : String(value ?? ''));
     setEditing(true);
     if (type === 'select') {
       setSelectOpen(true);
@@ -142,7 +153,9 @@ function InlineFieldUncontrolled({
   const displayStr =
     rawDisplayStr && type === 'select' && options
       ? resolveSelectOptionLabel(rawDisplayStr, options)
-      : rawDisplayStr;
+      : rawDisplayStr && type === 'money'
+        ? formatGroupedNumber(parseMoneyAmount(rawDisplayStr))
+        : rawDisplayStr;
 
   return (
     <div className={cn('group relative', className)}>
@@ -226,6 +239,15 @@ function InlineFieldUncontrolled({
               placeholder={placeholder ?? 'Select date…'}
               className="min-w-0 flex-1"
               aria-label={label}
+            />
+          ) : type === 'money' ? (
+            <MoneyInput
+              ref={inputRef as React.Ref<HTMLInputElement>}
+              value={editValue}
+              onChange={setEditValue}
+              onKeyDown={handleKeyDown}
+              className="h-8 text-sm"
+              placeholder={placeholder}
             />
           ) : (
             <Input

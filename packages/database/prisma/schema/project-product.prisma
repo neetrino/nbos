@@ -27,6 +27,7 @@ model Project {
   bonusEntries              BonusEntry[]
   bonusReleases             BonusRelease[]
   productBonusPools         ProductBonusPool[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
   auditLogs                 AuditLog[]
   kickoffChecklistItems     ProjectKickoffChecklistItem[]
   technicalProfiles         ProductTechnicalProfile[]
@@ -36,6 +37,7 @@ model Project {
   partnerAccruals           PartnerAccrual[]
   partnerServiceTerms       PartnerServiceTerm[]
   additionalContacts        ProjectAdditionalContact[]
+  invoices                  Invoice[]
 
   @@map("projects")
 }

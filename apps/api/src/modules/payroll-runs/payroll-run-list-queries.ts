@@ -2,6 +2,7 @@ import { PrismaClient } from '@nbos/database';
 import { buildPayrollRunWhereFromScope } from './payroll-run-list-scope';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { computePayrollRunListStats, type PayrollRunStatsResult } from './payroll-run-list-stats';
+import { omitLegacyPayrollKpiFields } from './payroll-run-api-response';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 
@@ -62,7 +63,7 @@ export async function queryPayrollRunList(
 
   return {
     items: items.map((row) => ({
-      ...row,
+      ...omitLegacyPayrollKpiFields(row),
       materializedExpenseLineCount: materializedByRun.get(row.id) ?? 0,
     })),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },

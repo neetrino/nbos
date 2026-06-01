@@ -77,7 +77,7 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         />
       </nav>
 
-      <div className="border-sidebar-border border-t p-2">
+      <div className="border-sidebar-border border-t p-1.5">
         <SidebarSettingsMenu collapsed={collapsed} onCustomizeMenu={() => setCustomizeOpen(true)} />
       </div>
 

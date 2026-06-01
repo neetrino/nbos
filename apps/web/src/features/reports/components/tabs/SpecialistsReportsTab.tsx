@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCircle2, ClipboardList, Flame, ListTodo } from 'lucide-react';
+import { TASK_PRIORITY_FLAME_FILLED_CLASS } from '@/components/shared/quick-create-task/quick-create-task-constants';
 import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { TaskStats } from '@/lib/api/tasks';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
@@ -60,7 +61,11 @@ function SpecialistKpis({ data }: { data: TaskStats }) {
     <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       <KpiCard label="Tasks" value={count(totalTasks)} icon={<ListTodo size={18} />} />
       <KpiCard label="Completed" value={count(completed)} icon={<CheckCircle2 size={18} />} />
-      <KpiCard label="High priority" value={count(urgent)} icon={<Flame size={18} />} />
+      <KpiCard
+        label="High priority"
+        value={count(urgent)}
+        icon={<Flame size={18} className={TASK_PRIORITY_FLAME_FILLED_CLASS} />}
+      />
       <KpiCard
         label="Status buckets"
         value={count(data.byStatus.length)}

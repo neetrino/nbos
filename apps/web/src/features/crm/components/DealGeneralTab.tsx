@@ -21,10 +21,8 @@ import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
 import { DealCombinedInfoSection } from './DealCombinedInfoSection';
 import { DealMarketingSection } from './DealMarketingSection';
-import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
-import { DealLegacyFieldsPanel } from './DealLegacyFieldsPanel';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealGeneralTabProps {
@@ -141,6 +139,7 @@ export function DealGeneralTab({
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
       <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
         <DealCombinedInfoSection
+          entityId={deal.id}
           draft={draft}
           patchDraft={patchDraft}
           filteredProductTypeOptions={filteredProductTypeOptions}
@@ -150,15 +149,11 @@ export function DealGeneralTab({
           disabled={formDisabled}
           gateRequiredFields={gateRequiredFields}
         />
-        <DealNotesSection
-          entityId={deal.id}
-          draft={draft}
-          patchDraft={patchDraft}
-          disabled={formDisabled}
+        <DealOfferContractSection
+          dealId={deal.id}
           gateRequiredFields={gateRequiredFields}
+          onFilesChanged={onRefresh}
         />
-        <DealOfferContractSection dealId={deal.id} gateRequiredFields={gateRequiredFields} />
-        <DealLegacyFieldsPanel deal={deal} />
         <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
           <DealContactTeamSection
             deal={deal}
@@ -183,6 +178,7 @@ export function DealGeneralTab({
           />
           <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
         </div>
+        <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
       </div>
 
       <div aria-hidden className="hidden min-h-0 xl:block" />
@@ -193,7 +189,6 @@ export function DealGeneralTab({
           projectId={projectId}
           firstOrder={firstOrder}
           taxStatus={taxStatus}
-          canCreateInvoice={canCreateInvoice(deal, taxStatus)}
           onRefresh={onRefresh}
           onOpenTaskTab={onOpenTaskTab}
         />
@@ -216,14 +211,31 @@ function getFilteredProductTypeOptions(
   );
 }
 
-function canCreateInvoice(deal: Deal, taxStatus: string) {
-  return Boolean(
-    deal.amount != null &&
-    Number(deal.amount) > 0 &&
-    deal.paymentType &&
-    deal.projectId &&
-    deal.type &&
-    taxStatus &&
-    (taxStatus !== 'TAX' || deal.companyId),
+interface DealEntityMetaLineProps {
+  createdAt: string;
+  updatedAt: string;
+}
+
+function DealEntityMetaLine({ createdAt, updatedAt }: DealEntityMetaLineProps) {
+  return (
+    <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 px-1 text-xs tabular-nums">
+      <span>
+        <span className="font-medium">Created</span> {formatDealMetaDate(createdAt)}
+      </span>
+      <span aria-hidden className="text-muted-foreground/40">
+        |
+      </span>
+      <span>
+        <span className="font-medium">Last updated</span> {formatDealMetaDate(updatedAt)}
+      </span>
+    </p>
   );
+}
+
+function formatDealMetaDate(value: string): string {
+  return new Date(value).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }

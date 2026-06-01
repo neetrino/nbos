@@ -653,6 +653,69 @@ Payroll status:
 
 ---
 
+## Payroll Run Workspace v2 (Allocation Matrix)
+
+`/finance/payroll` remains the payroll run index. `/finance/payroll/[id]` is the monthly work screen.
+
+### Delivery Payable Unit
+
+Matrix columns are **Delivery Payable Units**: `Order` rows of type `PRODUCT` or `EXTENSION` that represent delivery work and team bonuses. Domain, hosting, license, and pass-through service orders are excluded unless explicitly modeled as delivery-payable.
+
+Units included in the matrix:
+
+- open / in-progress delivery units;
+- closed units with unpaid bonus remaining;
+- units pinned for extra/manual bonus;
+- units with releases already on the current payroll run.
+
+### Allocation Matrix views
+
+Inside payroll run detail:
+
+| View            | Rows                     | Columns                |
+| --------------- | ------------------------ | ---------------------- |
+| Employee matrix | Employees (+ fix salary) | Delivery payable units |
+| Order matrix    | Delivery payable units   | Employees              |
+
+Cell states: unlinked (gray), linked empty (blue), ready / partially funded / progress (green), manual bonus (orange), extra bonus, over funding.
+
+Finance edits **Payroll Bonus Allocation Draft** rows while the run is `DRAFT`. `REVIEW` locks the draft for read-only review. `APPROVED` materializes draft allocations into real `BonusRelease` rows and salary line totals. Partial release carries remainder forward. Extra / over funding require reason. Gray cells create manual bonus drafts.
+
+Row/column order persists per user, per payroll run, per view mode (`PayrollMatrixLayoutPreference`).
+
+### Sales KPI payable snapshot (event-driven)
+
+KPI configuration lives in **My Company / Compensation / KPI Policies**, not in Payroll Run Detail.
+
+| Concept        | Role                                                                         |
+| -------------- | ---------------------------------------------------------------------------- |
+| KPI Policy     | Reusable gate rules (bands, cap multiplier)                                  |
+| KPI Result     | Earned-month snapshot: plan, actual, attainment %, payout factor             |
+| BonusEntry     | `earnedPeriod`, `amount`, `kpiPayoutFactorAtFreeze`, `payableAmount`         |
+| Payroll attach | Uses **bonus earned period** + frozen `payableAmount`, not payroll month − 1 |
+
+Rules:
+
+- KPI snapshots refresh on business events (client payment, sales accrual) — not Finance manual month-close.
+- Calendar month roll-over implicitly freezes prior-month bonuses; optional scheduler repair endpoints only for ops.
+- Payroll shows KPI-adjusted amounts as part of bonus release facts (Salary Board month sheet, Wallet) — no standalone KPI workspace on payroll detail.
+- Bonus Board / matrix: **Adjust planned amount** — any sum, required reason, audit `PLANNED_BONUS_UPDATED`.
+
+### Unit Economics Board
+
+Operational finance hub at `/finance/unit-economics` (Finance Overview). **In / Out / Balance** per delivery unit; bonuses are part of Out, not a separate product area. `/finance/bonus-pools` redirects here.
+
+| API                                       | Purpose                                                                                                     |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `GET /api/unit-economics`                 | Items + `projects` + `products` roll-ups + totals (In/Out/Balance fields per unit)                          |
+| `GET /api/unit-economics/orders/:orderId` | Drill-down: invoices, payments, expenses, bonuses, `bonusBreakdown` (order-scoped pool for Bonus breakdown) |
+
+Web tabs: By unit, By project, By product, Cash, Outflows, Profitability. Bonus breakdown uses order detail — not `GET /api/bonus/products/pools` list.
+
+Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch writes draft allocations only; approval materializes them and triggers carry-over / sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
+
+---
+
 ## Связи с другими модулями
 
 ```text

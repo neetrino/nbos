@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FileText, Building2, Clock, User, FolderKanban, Repeat } from 'lucide-react';
+import { FileText, Building2, Clock, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
 import { DetailSheetSection, InlineField, StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
@@ -7,6 +7,7 @@ import { FinanceProofAttachments } from '@/features/finance/components/FinancePr
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
+import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
 export type InvoiceSheetInvoice = Invoice;
@@ -100,7 +101,13 @@ export function InvoiceOfficialSection({
 }
 
 export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const dealTitle = getInvoiceDealTitle(invoice.order);
   const links = [
+    dealTitle
+      ? { icon: Handshake, label: 'Deal', value: dealTitle }
+      : invoice.order
+        ? { icon: FileText, label: 'Order', value: getOrderDisplayTitle(invoice.order) }
+        : null,
     invoice.company ? { icon: Building2, label: 'Company', value: invoice.company.name } : null,
     invoice.project ? { icon: FolderKanban, label: 'Project', value: invoice.project.name } : null,
     invoice.contact
@@ -110,7 +117,6 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
           value: `${invoice.contact.firstName} ${invoice.contact.lastName}`,
         }
       : null,
-    invoice.order ? { icon: FileText, label: 'Order', value: invoice.order.code } : null,
     invoice.subscriptionId
       ? { icon: Repeat, label: 'Subscription', value: invoice.subscriptionId }
       : null,

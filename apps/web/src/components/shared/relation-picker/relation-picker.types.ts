@@ -38,7 +38,7 @@ type RelationPickerBaseProps = {
   className?: string;
   onSearch: RelationPickerSearchFn;
   maxResults?: number;
-  /** Opens the linked entity sheet (chip body click). */
+  /** Opens the linked entity sheet (avatar + label on the chip). */
   onOpenSelected?: (id: string) => void;
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
   onCreate?: (searchQuery: string) => void;

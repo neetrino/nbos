@@ -163,7 +163,7 @@ export function ExpenseGeneralTab({
           <InlineField
             variant="controlled"
             label="Amount"
-            type="number"
+            type="money"
             value={draft.amount}
             placeholder="0"
             icon={<DollarSign size={12} />}

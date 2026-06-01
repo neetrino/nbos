@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  DETAIL_SHEET_PERSON_AVATAR_CLASS,
   RELATION_PICKER_CHIP_STACK_CLASS,
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+  RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
+  RELATION_PICKER_PERSON_AVATAR_CLASS,
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
@@ -37,14 +38,20 @@ function initialsFromLabel(label: string): string {
 }
 
 function personAvatar(label: string): ReactNode {
-  return <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
+  return <div className={RELATION_PICKER_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
 }
 
 function chipIcon(kind: RelationEntityKind, label: string): ReactNode {
   if (kind === 'contact' || kind === 'employee') {
     return personAvatar(label);
   }
-  return <RelationPickerEntityIcon kind={kind} />;
+  return (
+    <RelationPickerEntityIcon
+      kind={kind}
+      variant="inline"
+      className={RELATION_PICKER_ENTITY_ICON_INLINE_CLASS}
+    />
+  );
 }
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
@@ -164,6 +171,8 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
 
   const searchPlaceholder = placeholder ?? `Search ${kindLabel.toLowerCase()}s…`;
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
+  const showFieldHeader =
+    Boolean(label.trim()) || Boolean(icon) || (multiple && multiChipCount > 0 && !open);
 
   return (
     <div
@@ -174,23 +183,29 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
         className,
       )}
     >
-      <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
-        <div className="flex min-w-0 items-center gap-1.5">
-          {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
-          <span className="truncate">{label}</span>
+      {showFieldHeader ? (
+        <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
+          {label.trim() || icon ? (
+            <div className="flex min-w-0 items-center gap-1.5">
+              {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
+              {label.trim() ? <span className="truncate">{label}</span> : null}
+            </div>
+          ) : (
+            <span aria-hidden />
+          )}
+          {multiple && multiChipCount > 0 && !open ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setOpen(true)}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+              aria-label={`Add ${kindLabel.toLowerCase()}`}
+            >
+              <Plus size={16} />
+            </button>
+          ) : null}
         </div>
-        {multiple && multiChipCount > 0 && !open ? (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => setOpen(true)}
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
-            aria-label={`Add ${kindLabel.toLowerCase()}`}
-          >
-            <Plus size={16} />
-          </button>
-        ) : null}
-      </div>
+      ) : null}
 
       {open ? (
         <RelationPickerDropdown

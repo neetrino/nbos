@@ -6,7 +6,9 @@ import {
   formatGroupedNumber,
   formatMoneyDram,
   formatMoneyDramOrDash,
+  formatMoneyInput,
   parseMoneyAmount,
+  sanitizeMoneyInput,
 } from './money';
 
 describe('money formatting', () => {
@@ -24,6 +26,15 @@ describe('money formatting', () => {
 
   it('parses grouped input strings', () => {
     expect(parseMoneyAmount('3 500 000')).toBe(3_500_000);
+    expect(parseMoneyAmount('3\u00a0500\u00a0000')).toBe(3_500_000);
     expect(parseMoneyAmount('bad')).toBe(0);
+  });
+
+  it('sanitizes and formats money input while typing', () => {
+    expect(sanitizeMoneyInput('3 500 abc000')).toBe('3500000');
+    expect(formatMoneyInput('3500000')).toBe('3\u00a0500\u00a0000');
+    expect(formatMoneyInput('3500000.5')).toBe('3\u00a0500\u00a0000.5');
+    expect(formatMoneyInput('-1500000')).toBe('-1\u00a0500\u00a0000');
+    expect(formatMoneyInput('')).toBe('');
   });
 });

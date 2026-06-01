@@ -2,7 +2,9 @@ import { BadRequestException } from '@nestjs/common';
 import { PrismaClient, type PayrollRunStatusEnum, type SalaryLineStatusEnum } from '@nbos/database';
 import { resolveCompensationPayoutPhase } from './compensation-payout-phase';
 import type { CompensationPayoutPhase } from './compensation-payout-phase';
+import { batchSalaryBoardSalesKpiSummaries } from './load-employee-sales-kpi-for-period';
 import { isValidPayrollMonth } from './payroll-runs.constants';
+import type { SalaryBoardSalesKpiSummaryDto } from './salary-line-month-detail.types';
 
 /** Inclusive window length when `payrollMonthFrom` is omitted (calendar months). */
 export const SALARY_BOARD_DEFAULT_MONTH_COUNT = 12;
@@ -44,6 +46,8 @@ export interface SalaryBoardCellDto {
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;
+  /** Present when employee has a KPI policy for this payout month. */
+  salesKpiSummary?: SalaryBoardSalesKpiSummaryDto;
 }
 
 export interface SalaryBoardEmployeeDto {
@@ -191,12 +195,24 @@ export async function querySalaryBoard(
     };
   });
 
+  const kpiCellKeys: Array<{
+    employeeId: string;
+    payoutMonth: string;
+    salaryLineId: string;
+    payrollRunId: string;
+  }> = [];
   const rows: SalaryBoardRowDto[] = employees.map((emp) => {
     const cells = months.map((month) => {
       const meta = runByMonth.get(month);
       if (!meta) return null;
       const line = lineByRunEmployee.get(`${meta.id}:${emp.id}`);
       if (!line) return null;
+      kpiCellKeys.push({
+        employeeId: emp.id,
+        payoutMonth: month,
+        salaryLineId: line.id,
+        payrollRunId: meta.id,
+      });
       return {
         salaryLineId: line.id,
         payrollRunId: meta.id,
@@ -218,6 +234,17 @@ export async function querySalaryBoard(
       cells,
     };
   });
+
+  const kpiByLineId = await batchSalaryBoardSalesKpiSummaries(prisma, kpiCellKeys);
+  if (kpiByLineId.size > 0) {
+    for (const row of rows) {
+      row.cells = row.cells.map((cell) => {
+        if (cell == null) return null;
+        const summary = kpiByLineId.get(cell.salaryLineId);
+        return summary != null ? { ...cell, salesKpiSummary: summary } : cell;
+      });
+    }
+  }
 
   return {
     payrollMonthFrom: from,

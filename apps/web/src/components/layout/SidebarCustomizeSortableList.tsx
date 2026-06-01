@@ -21,6 +21,7 @@ import { SIDEBAR_MODULE_KEYS_NON_HIDABLE, type SidebarModuleKey } from '@nbos/sh
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { SidebarModuleIcon } from './SidebarModuleIcon';
 
 type SidebarCustomizeSortableListProps = {
   items: NavModuleDefinition[];
@@ -107,6 +108,7 @@ function SortableModuleRow({
       >
         <GripVertical size={18} />
       </button>
+      <SidebarModuleIcon moduleKey={item.key} />
       <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.label}</span>
       {canHide && (
         <Button

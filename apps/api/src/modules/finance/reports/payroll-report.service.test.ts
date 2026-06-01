@@ -11,8 +11,6 @@ describe('PayrollReportService', () => {
       _sum: {
         totalBaseSalary: new Decimal(700),
         totalBonuses: new Decimal(150),
-        totalAdjustments: new Decimal(20),
-        totalDeductions: new Decimal(10),
         totalPayable: new Decimal(860),
         totalPaid: new Decimal(500),
       },
@@ -45,8 +43,6 @@ describe('PayrollReportService', () => {
       salaryLineCount: 4,
       totalBaseSalary: '700.00',
       totalBonuses: '150.00',
-      totalAdjustments: '20.00',
-      totalDeductions: '10.00',
       totalPayable: '860.00',
       totalPaid: '500.00',
       totalRemaining: '360.00',

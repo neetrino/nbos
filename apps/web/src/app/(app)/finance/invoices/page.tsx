@@ -210,19 +210,21 @@ function InvoicesPageInner() {
           </Button>
         </div>
       ) : null}
-      <InvoicesPageContent
-        invoices={displayInvoices}
-        boardScope={boardScope as BoardLifecycleScope}
-        loading={state.loading}
-        error={state.error}
-        mutationError={state.mutationError}
-        onDismissMutationError={state.clearMutationError}
-        view={state.view}
-        onRetry={state.fetchInvoices}
-        onInvoiceClick={state.handleInvoiceClick}
-        onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
-        onOpenQuickCreate={() => state.setCreateOpen(true)}
-      />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <InvoicesPageContent
+          invoices={displayInvoices}
+          boardScope={boardScope as BoardLifecycleScope}
+          loading={state.loading}
+          error={state.error}
+          mutationError={state.mutationError}
+          onDismissMutationError={state.clearMutationError}
+          view={state.view}
+          onRetry={state.fetchInvoices}
+          onInvoiceClick={state.handleInvoiceClick}
+          onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
+          onOpenQuickCreate={() => state.setCreateOpen(true)}
+        />
+      </div>
       <InvoiceSheet
         invoice={state.selectedInvoice}
         open={state.sheetOpen}
@@ -237,7 +239,6 @@ function InvoicesPageInner() {
         onOpenChange={state.handleCreateDialogOpenChange}
         onCreated={state.handleInvoiceCreated}
         subscriptionId={subscriptionIdFromUrl}
-        initialProjectId={portfolioCreateInvoiceFromUrl ? portfolioProjectIdFromUrl : null}
       />
     </div>
   );

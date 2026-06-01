@@ -248,7 +248,7 @@ describe('InvoicesService', () => {
 
       expect(prisma.deal.update).toHaveBeenCalledWith({
         where: { id: 'deal-1' },
-        data: { status: 'WON' },
+        data: { status: 'WON', wonMode: 'STANDARD' },
       });
     });
 

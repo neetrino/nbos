@@ -1,7 +1,18 @@
 /** Armenian dram sign (U+058F). */
 export const AMD_CURRENCY_SYMBOL = '\u058F';
 
+/**
+ * Money field usage:
+ * - display: formatAmount / formatGroupedNumber
+ * - input (dialogs/forms): NbosMoneyInput
+ * - input (detail sheets): InlineField type="money"
+ * - parse at submit/API: parseMoneyAmount
+ */
+
 const MONEY_GROUPING_LOCALE = 'hy-AM';
+
+/** Spaces and NBSP stripped from typed/displayed money strings. */
+const MONEY_INPUT_GROUPING_PATTERN = /[\s\u00a0\u202f]/g;
 
 const groupedNumberFormatter = new Intl.NumberFormat(MONEY_GROUPING_LOCALE, {
   minimumFractionDigits: 0,
@@ -26,6 +37,75 @@ export function formatMoneyDramOrDash(amount: number | null | undefined): string
   return formatGroupedNumber(amount);
 }
 
+/**
+ * Normalizes typed money input to a plain numeric string (`3500000`, `3500.5`, ``).
+ * Keeps at most one decimal point; drops other non-digit characters.
+ */
+export function sanitizeMoneyInput(raw: string): string {
+  const withoutGrouping = raw.replace(MONEY_INPUT_GROUPING_PATTERN, '');
+  let hasDecimal = false;
+  let result = '';
+
+  for (const char of withoutGrouping) {
+    if (char === '-' && result === '') {
+      result += '-';
+      continue;
+    }
+    if (char >= '0' && char <= '9') {
+      result += char;
+      continue;
+    }
+    if (char === '.' && !hasDecimal) {
+      hasDecimal = true;
+      result += '.';
+    }
+  }
+
+  return result;
+}
+
+/** Formats a money input value with hy-AM thousand grouping while typing. */
+export function formatMoneyInput(raw: string | number | null | undefined): string {
+  if (raw == null || raw === '') {
+    return '';
+  }
+
+  const normalized =
+    typeof raw === 'number' ? (Number.isFinite(raw) ? String(raw) : '') : sanitizeMoneyInput(raw);
+
+  if (normalized === '') {
+    return '';
+  }
+  if (normalized === '-' || normalized === '.') {
+    return normalized;
+  }
+
+  const isNegative = normalized.startsWith('-');
+  const unsigned = isNegative ? normalized.slice(1) : normalized;
+
+  if (unsigned === '') {
+    return isNegative ? '-' : '';
+  }
+  if (unsigned === '.') {
+    return isNegative ? '-.' : '.';
+  }
+
+  const [intPart = '', decPart] = unsigned.split('.');
+  if (intPart === '' && decPart !== undefined) {
+    return `${isNegative ? '-' : ''}.${decPart}`;
+  }
+  if (intPart === '') {
+    return isNegative ? '-' : '';
+  }
+
+  const intValue = Number.parseInt(intPart, 10);
+  const groupedInt = Number.isFinite(intValue) ? groupedNumberFormatter.format(intValue) : intPart;
+
+  const formatted = decPart !== undefined ? `${groupedInt}.${decPart}` : groupedInt;
+
+  return isNegative ? `-${formatted}` : formatted;
+}
+
 /** Parses user/API money strings (strips grouping spaces). */
 export function parseMoneyAmount(raw: string | number | null | undefined): number {
   if (typeof raw === 'number') {
@@ -34,7 +114,7 @@ export function parseMoneyAmount(raw: string | number | null | undefined): numbe
   if (raw == null || raw === '') {
     return 0;
   }
-  const parsed = Number.parseFloat(String(raw).replace(/\s/g, ''));
+  const parsed = Number.parseFloat(String(raw).replace(MONEY_INPUT_GROUPING_PATTERN, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 }
 

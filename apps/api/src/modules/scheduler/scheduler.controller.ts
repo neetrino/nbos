@@ -1,4 +1,4 @@
-import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SchedulerService } from './scheduler.service';
 
@@ -71,6 +71,28 @@ export class SchedulerController {
   })
   async runReportSchedulesDue() {
     return this.schedulerService.runReportSchedulesDue();
+  }
+
+  @Post('sales-kpi-month-close')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Finalize Sales KPI snapshots for earned month (external cron)',
+    description:
+      'Syncs KpiResult rows from sales payment facts for all employees with an active KPI policy. Defaults to prior calendar month vs UTC today. Optional body `{ "earnedPeriod": "YYYY-MM" }`.',
+  })
+  async runSalesKpiMonthClose(@Body() body: { earnedPeriod?: string }) {
+    return this.schedulerService.runSalesKpiMonthClose(body);
+  }
+
+  @Post('sales-kpi-backfill-all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Repair Sales KPI + payable snapshots for every earned month with Sales bonuses',
+    description:
+      'Runs month-close sync + open-bonus payable refresh for each distinct `earnedPeriod` on Sales bonus entries. Use after migrations or data fixes.',
+  })
+  async runSalesKpiBackfillAll() {
+    return this.schedulerService.runSalesKpiBackfillAll();
   }
 
   @Post('support-sla-escalation')

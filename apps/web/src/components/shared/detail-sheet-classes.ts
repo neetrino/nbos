@@ -125,11 +125,53 @@ export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
   DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
 ].join(' ');
 
+/** Avatar + label open the linked entity sheet; shared hover tint (see relation picker chip). */
+export const RELATION_PICKER_SHEET_TARGET_GROUP_CLASS =
+  'group/open flex min-w-0 shrink items-center gap-2';
+
+export const RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS =
+  'rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-1';
+
+/** Person initials in relation chips — ring on group hover, no extra fill. */
+export const RELATION_PICKER_PERSON_AVATAR_CLASS = [
+  DETAIL_SHEET_PERSON_AVATAR_CLASS,
+  'transition-[color,box-shadow]',
+  'group-hover/open:text-sky-700 group-hover/open:ring-1 group-hover/open:ring-sky-500/45',
+  'group-focus-within/open:text-sky-700 group-focus-within/open:ring-1 group-focus-within/open:ring-sky-500/45',
+  'dark:group-hover/open:text-sky-300 dark:group-focus-within/open:text-sky-300',
+].join(' ');
+
+export const RELATION_PICKER_SHEET_TARGET_LABEL_CLASS = [
+  'text-foreground block truncate font-medium transition-colors',
+  'group-hover/open:text-sky-600 group-focus-within/open:text-sky-600',
+  'dark:group-hover/open:text-sky-400 dark:group-focus-within/open:text-sky-400',
+].join(' ');
+
+export const RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS = [
+  'text-muted-foreground block truncate text-[11px] transition-colors',
+  'group-hover/open:text-sky-600/75 group-focus-within/open:text-sky-600/75',
+  'dark:group-hover/open:text-sky-400/80 dark:group-focus-within/open:text-sky-400/80',
+].join(' ');
+
+/** Plain entity icon in chips (project, company, …) — no muted tile behind icon. */
+export const RELATION_PICKER_ENTITY_ICON_INLINE_CLASS = [
+  'text-muted-foreground size-4 shrink-0 transition-colors',
+  'group-hover/open:text-sky-600 group-focus-within/open:text-sky-600',
+  'dark:group-hover/open:text-sky-400 dark:group-focus-within/open:text-sky-400',
+].join(' ');
+
+/** Flex gap + chevron opens the search dropdown. */
+export const RELATION_PICKER_REPLACE_ZONE_CLASS = [
+  'text-muted-foreground/80 hover:text-foreground flex min-w-8 flex-1 items-center justify-end gap-0.5 rounded-md py-0.5 pr-0.5 pl-1 transition-colors',
+  'hover:bg-muted/25 focus-visible:bg-muted/25',
+  DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
+].join(' ');
+
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex w-full min-h-8 min-w-0 items-center gap-2 rounded-xl py-1 pr-1 pl-2.5 text-sm',
+  'border-border/40 flex w-full min-h-8 min-w-0 items-center gap-1 rounded-xl border border-transparent py-1 pr-1 pl-2.5 text-sm',
+  'focus-within:border-border/50 transition-[border-color]',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */

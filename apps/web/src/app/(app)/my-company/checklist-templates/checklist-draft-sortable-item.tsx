@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2 } from 'lucide-react';
+import { DeleteConfirmDialog } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -30,9 +32,6 @@ import {
 } from './checklist-draft-evidence-ui';
 import { ChecklistDraftEvidenceFileField } from './checklist-draft-evidence-file-field';
 import { isHttpUrlString } from '@/features/checklist/checklist-evidence-value';
-
-const CONFIRM_REMOVE_CHECKLIST_ITEM =
-  'Delete this checklist step? This cannot be undone after you save the draft.';
 
 const DECISION_REQUIRED_TOOLTIP =
   'Specialist must choose Done or Not Done on this item before the checklist can be completed. Not Done needs a comment.';
@@ -67,6 +66,7 @@ export function ChecklistDraftSortableItem({
   onPatch,
   onRemove,
 }: Props) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -291,17 +291,27 @@ export function ChecklistDraftSortableItem({
             size="sm"
             disabled={disabled}
             className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0 gap-1.5 text-xs"
-            onClick={() => {
-              if (window.confirm(CONFIRM_REMOVE_CHECKLIST_ITEM)) {
-                onRemove();
-              }
-            }}
+            onClick={() => setDeleteOpen(true)}
           >
             <Trash2 className="size-3.5" aria-hidden />
             Remove step
           </Button>
         </div>
       </div>
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        itemName={item.title.trim() || 'Checklist step'}
+        title="Remove step?"
+        description="The step is removed from the draft. Save the template to apply."
+        confirmLabel="Remove"
+        onConfirm={() => {
+          setDeleteOpen(false);
+          onRemove();
+        }}
+      />
     </div>
   );
 }

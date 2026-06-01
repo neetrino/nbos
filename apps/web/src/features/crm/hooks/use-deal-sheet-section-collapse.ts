@@ -6,8 +6,7 @@ const STORAGE_PREFIX = 'nbos:deal-sheet-collapse:';
 
 export const DEAL_SHEET_COLLAPSE_KEY = {
   DEAL_PROJECT: 'deal-project',
-  OFFER: 'offer',
-  CONTRACT: 'contract',
+  OFFER_CONTRACT: 'offer-contract',
 } as const;
 
 export type DealSheetCollapseKey =

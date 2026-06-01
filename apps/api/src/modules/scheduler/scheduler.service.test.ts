@@ -63,6 +63,14 @@ describe('SchedulerService', () => {
         resolveBreaches: 0,
       }),
     };
+    const salesKpiMonthClose = {
+      run: vi.fn().mockResolvedValue({
+        earnedPeriod: '2026-04',
+        syncedCount: 0,
+        skippedCount: 0,
+        refreshedPayableCount: 0,
+      }),
+    };
     service = new SchedulerService(
       prisma as never,
       billingService as never,
@@ -71,6 +79,7 @@ describe('SchedulerService', () => {
       expensePlansService as never,
       reportsService as never,
       supportSlaOrchestrationService as never,
+      salesKpiMonthClose as never,
     );
   });
 

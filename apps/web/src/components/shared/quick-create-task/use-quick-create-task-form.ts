@@ -19,6 +19,8 @@ export interface QuickCreateTaskDialogProps {
   defaultPlanningStatus?: string;
   onCreated?: (task: Task) => void;
   onOpenFull?: () => void;
+  /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
+  forceNestedBackdrop?: boolean;
 }
 
 function displayNameFromMe(me: MeResponse): string {

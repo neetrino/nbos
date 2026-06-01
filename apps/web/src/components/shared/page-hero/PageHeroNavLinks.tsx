@@ -5,6 +5,11 @@ import { usePathname } from 'next/navigation';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
+import {
+  PAGE_HERO_TAB_BUTTON,
+  PAGE_HERO_TAB_ICON,
+  PAGE_HERO_TAB_ICON_WRAP,
+} from './page-hero-layout';
 
 export type PageHeroNavLinkItem = {
   href: string;
@@ -44,8 +49,9 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
             key={item.href}
             href={item.href}
             aria-current={active ? 'page' : undefined}
+            title={item.label}
             className={cn(
-              'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
+              PAGE_HERO_TAB_BUTTON,
               active
                 ? 'bg-primary text-primary-foreground shadow-md'
                 : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
@@ -54,13 +60,13 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
             {Icon ? (
               <span
                 className={cn(
-                  'flex size-7 shrink-0 items-center justify-center rounded-full',
+                  PAGE_HERO_TAB_ICON_WRAP,
                   active
                     ? 'bg-primary-foreground/20 text-primary-foreground'
                     : 'bg-muted text-muted-foreground',
                 )}
               >
-                <Icon className="size-4" aria-hidden />
+                <Icon className={PAGE_HERO_TAB_ICON} aria-hidden />
               </span>
             ) : null}
             {item.label}

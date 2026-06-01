@@ -8,8 +8,6 @@ const SCOPE_TOTAL_METRICS = [
   'runCount',
   'totalBaseSalary',
   'totalBonuses',
-  'totalAdjustments',
-  'totalDeductions',
   'totalPayable',
   'totalPaid',
   'totalRemaining',

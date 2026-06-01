@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { BonusReleaseStatusEnum, BonusReleaseTypeEnum } from '@nbos/database';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { BonusService } from './bonus.service';
 import { BonusReleaseService } from './bonus-release.service';
 import {
@@ -215,6 +216,39 @@ export class BonusController {
     });
   }
 
+  @Patch('entries/:entryId/planned-amount')
+  @ApiOperation({
+    summary: 'Edit planned bonus amount on entry (preserves originalAmount; audit trail)',
+  })
+  async patchEntryPlannedAmount(
+    @Param('entryId') entryId: string,
+    @Body()
+    body: {
+      amount: string;
+      reason: string;
+      title?: string;
+    },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.bonusService.patchPlannedAmount(entryId, body, user.id);
+  }
+
+  @Patch('entries/:entryId/payable-adjustment')
+  @ApiOperation({
+    summary: 'Set manual payable adjustment (+/− delta on top of KPI auto payable)',
+  })
+  async patchEntryPayableAdjustment(
+    @Param('entryId') entryId: string,
+    @Body()
+    body: {
+      adjustment: string;
+      reason: string;
+    },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.bonusService.patchPayableAdjustment(entryId, body, user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get bonus entry by ID' })
   async findOne(@Param('id') id: string) {
@@ -232,12 +266,16 @@ export class BonusController {
       type: string;
       amount: number;
       percent: number;
+      title?: string;
+      reason?: string;
       status?: string;
       kpiGatePassed?: boolean;
+      earnedPeriod?: string;
       payoutMonth?: string;
     },
+    @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.bonusService.create(body);
+    return this.bonusService.create(body, user.id);
   }
 
   @Patch(':id/status')

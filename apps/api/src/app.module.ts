@@ -15,6 +15,7 @@ import { SupportModule } from './modules/support/support.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BonusModule } from './modules/bonus/bonus.module';
 import { PayrollRunsModule } from './modules/payroll-runs/payroll-runs.module';
+import { UnitEconomicsModule } from './modules/unit-economics/unit-economics.module';
 import { CompensationProfilesModule } from './modules/compensation-profiles/compensation-profiles.module';
 import { KpiPoliciesModule } from './modules/kpi-policies/kpi-policies.module';
 import { BonusPoliciesModule } from './modules/bonus-policies/bonus-policies.module';
@@ -67,6 +68,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ExpensesModule,
     BonusModule,
     PayrollRunsModule,
+    UnitEconomicsModule,
     CompensationProfilesModule,
     KpiPoliciesModule,
     BonusPoliciesModule,

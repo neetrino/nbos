@@ -1,12 +1,25 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { cn } from '@/lib/utils';
+import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
+import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
-  PAGE_HERO_SEARCH_CENTER,
-  PAGE_HERO_SURFACE,
-  PAGE_HERO_TAB_SCROLL,
-} from './page-hero-constants';
+  PAGE_HERO_OVERFLOW_FILTERS_OPEN,
+  PAGE_HERO_SEARCH_SLOT,
+  PAGE_HERO_SEARCH_SLOT_EXPANDED,
+  PAGE_HERO_SURFACE_CLIP,
+  PAGE_HERO_SURFACE_PADDING,
+  PAGE_HERO_TABS_SLOT,
+  PAGE_HERO_TOOLBAR,
+  PAGE_HERO_TOOLS_ROW,
+  PAGE_HERO_TRAILING_COLLAPSED,
+  PAGE_HERO_TRAILING_SLOT,
+} from './page-hero-layout';
+import { PageHeroToolbarProvider, usePageHeroToolbar } from './page-hero-toolbar-context';
+import { usePageHeroCompactToolbar } from './use-page-hero-compact-toolbar';
+import { usePageHeroToolsRowOverflow } from './use-page-hero-tools-row-overflow';
 
 export interface PageHeroProps {
   title: string;
@@ -14,58 +27,86 @@ export interface PageHeroProps {
   search?: ReactNode;
   secondaryTabs?: ReactNode;
   viewMode?: ReactNode;
-  actions?: ReactNode;
   trailing?: ReactNode;
   className?: string;
 }
 
-export function PageHero({
+export function PageHero(props: PageHeroProps) {
+  return (
+    <PageHeroToolbarProvider>
+      <PageHeroInner {...props} />
+    </PageHeroToolbarProvider>
+  );
+}
+
+function PageHeroInner({
   title,
   tabs,
   search,
   secondaryTabs,
   viewMode,
-  actions,
   trailing,
   className,
 }: PageHeroProps) {
-  const hasTrailing = Boolean(viewMode || actions || trailing);
+  const sectionRef = useRef<HTMLElement>(null);
+  const toolsRowRef = useRef<HTMLDivElement>(null);
+  useHeaderModuleTitle(title);
+
+  const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
+  const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
+
+  const { searchActive, filterPanelOpen } = usePageHeroToolbar();
+  const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
+  const toolsRowOverflow = usePageHeroToolsRowOverflow(
+    toolsRowRef,
+    hasSearch && hasTrailing && isCompactToolbar,
+  );
+  const searchExpanded = isCompactToolbar && (searchActive || toolsRowOverflow);
+  const filterOverflowClass = filterPanelOpen ? PAGE_HERO_OVERFLOW_FILTERS_OPEN : undefined;
+
+  if (!hasToolbar && !secondaryTabs) {
+    return null;
+  }
+
+  const trailingNode = hasTrailing ? (
+    <HeroTrailingActions searchExpanded={searchExpanded} viewMode={viewMode} trailing={trailing} />
+  ) : null;
 
   return (
-    <section className={cn(PAGE_HERO_SURFACE, className)}>
-      <div
-        className={cn(
-          'grid min-w-0 items-center gap-3 sm:gap-4',
-          hasSearch && hasTrailing
-            ? 'grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)_auto]'
-            : hasSearch
-              ? 'grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)]'
-              : hasTrailing
-                ? 'grid-cols-1 sm:grid-cols-[auto_auto]'
-                : 'grid-cols-1',
-        )}
-      >
-        <div className="flex min-w-0 items-center gap-3 sm:col-start-1 sm:row-start-1 sm:gap-4">
-          <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
-          {tabs ? <div className={cn(PAGE_HERO_TAB_SCROLL, 'shrink-0')}>{tabs}</div> : null}
+    <section
+      ref={sectionRef}
+      className={cn(
+        PAGE_HERO_HEADER_OFFSET,
+        PAGE_HERO_SURFACE,
+        PAGE_HERO_SURFACE_CLIP,
+        filterOverflowClass,
+        PAGE_HERO_SURFACE_PADDING,
+        className,
+      )}
+    >
+      {hasToolbar ? (
+        <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
+          {tabs ? (
+            <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
+          ) : null}
+          {hasSearch || trailingNode ? (
+            <div ref={toolsRowRef} className={cn(PAGE_HERO_TOOLS_ROW, filterOverflowClass)}>
+              {search ? (
+                <div
+                  className={cn(
+                    PAGE_HERO_SEARCH_SLOT,
+                    searchExpanded && PAGE_HERO_SEARCH_SLOT_EXPANDED,
+                  )}
+                >
+                  {search}
+                </div>
+              ) : null}
+              {trailingNode}
+            </div>
+          ) : null}
         </div>
-        {hasSearch ? (
-          <div className="w-full min-w-0 sm:col-start-2">
-            <div className={PAGE_HERO_SEARCH_CENTER}>{search}</div>
-          </div>
-        ) : null}
-        {hasTrailing ? (
-          <HeroTrailingActions
-            viewMode={viewMode}
-            actions={actions}
-            trailing={trailing}
-            className={cn(
-              hasSearch ? 'sm:col-start-3 sm:row-start-1 sm:justify-self-end' : 'sm:ml-auto',
-            )}
-          />
-        ) : null}
-      </div>
+      ) : null}
       {secondaryTabs ? (
         <div className={cn('mt-3', PAGE_HERO_TAB_SCROLL)}>{secondaryTabs}</div>
       ) : null}
@@ -74,25 +115,20 @@ export function PageHero({
 }
 
 function HeroTrailingActions({
+  searchExpanded,
   viewMode,
-  actions,
   trailing,
-  className,
 }: {
+  searchExpanded: boolean;
   viewMode?: ReactNode;
-  actions?: ReactNode;
   trailing?: ReactNode;
-  className?: string;
 }) {
   return (
     <div
-      className={cn(
-        'flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto',
-        className,
-      )}
+      className={cn(PAGE_HERO_TRAILING_SLOT, searchExpanded && PAGE_HERO_TRAILING_COLLAPSED)}
+      aria-hidden={searchExpanded}
     >
       {viewMode}
-      {actions}
       {trailing}
     </div>
   );

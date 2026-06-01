@@ -32,6 +32,9 @@ const CRM_ACTION_RULES = [
       'name',
       'contactName',
       'contactMethod',
+      'contactId',
+      'type',
+      'taxStatus',
       'source',
       'sourceDetail',
       'sourcePartnerId',
@@ -169,8 +172,11 @@ export function resolveDealSheetIntentFromBlockerAction(
     if ([...fieldSet].some((field) => CRM_MARKETING_FIELDS.has(field))) {
       return { kind: 'general-section', sectionId: DEAL_SHEET_SECTION.MARKETING };
     }
-    if (fieldSet.has('assignedTo')) {
+    if (fieldSet.has('assignedTo') || fieldSet.has('contactId') || fieldSet.has('pmId')) {
       return { kind: 'general-section', sectionId: DEAL_SHEET_SECTION.CONTACT_TEAM };
+    }
+    if (fieldSet.has('type') || fieldSet.has('taxStatus')) {
+      return { kind: 'general-section', sectionId: DEAL_SHEET_SECTION.INFO };
     }
     return { kind: 'general-section', sectionId: DEAL_SHEET_SECTION.INFO };
   }

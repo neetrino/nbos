@@ -6,7 +6,12 @@ import { AccountMenuDropdown } from '@/components/layout/AccountMenuDropdown';
 import { HeaderQuickNote } from '@/components/layout/HeaderQuickNote';
 import { HeaderSearchButton } from '@/components/layout/HeaderSearchButton';
 import { isHeaderQuickNoteHiddenPath } from '@/components/layout/header-quick-note-constants';
-import { HeaderContextBar, useHeaderContextResolved } from '@/components/layout/header-context';
+import {
+  HeaderContextBar,
+  HeaderModuleTitle,
+  useHeaderContextResolved,
+  useHeaderModuleTitleResolved,
+} from '@/components/layout/header-context';
 import { NotificationDropdown } from '@/components/layout/NotificationDropdown';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +19,7 @@ export function Topbar() {
   const pathname = usePathname();
   const { can, me, meLoadError } = usePermission();
   const headerContext = useHeaderContextResolved();
+  const moduleTitle = useHeaderModuleTitleResolved();
   const hasBridgedZoneNav = headerContext?.kind === 'nav';
   const showQuickNote = can('VIEW', 'DASHBOARDS') && !isHeaderQuickNoteHiddenPath(pathname);
 
@@ -34,7 +40,17 @@ export function Topbar() {
         )}
       >
         <div className="flex min-w-0 flex-1 items-stretch">
-          <HeaderContextBar />
+          {moduleTitle ? (
+            <div
+              className="mr-1 flex shrink-0 items-center self-stretch sm:mr-2"
+              aria-label={`Module: ${moduleTitle}`}
+            >
+              <HeaderModuleTitle>{moduleTitle}</HeaderModuleTitle>
+            </div>
+          ) : null}
+          <div className="flex min-w-0 flex-1 items-stretch">
+            <HeaderContextBar />
+          </div>
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2 self-center overflow-visible sm:gap-3">
           <HeaderSearchButton />

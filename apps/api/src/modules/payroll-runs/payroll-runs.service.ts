@@ -17,6 +17,10 @@ import {
 } from './payroll-run-list-queries';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
+import {
+  materializePayrollBonusAllocationDrafts,
+  type PayrollBonusAllocationMaterializeResult,
+} from './payroll-bonus-allocation-materialize';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { buildPayrollRunJournal } from './payroll-run-journal';
 import {
@@ -27,10 +31,7 @@ import {
 import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { type PayrollRunStatsResult } from './payroll-run-list-stats';
-import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
-import { notifySalesKpiReductionsOnAttach } from './payroll-bonus-release-kpi-notify';
-import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
 import {
   refreshBonusEntryStatusesForReleases,
   syncProductBonusPoolsForBonusReleases,
@@ -39,40 +40,22 @@ import {
   notifyEmployeesOnPayrollRunClosed,
   notifyEmployeesOnPayrollRunCreated,
 } from './payroll-run-employee-wallet-notify';
-import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
-import {
-  applySalaryLineSalesKpiPatch,
-  type PatchSalaryLineSalesKpiBody,
-} from './salary-line-sales-kpi-patch';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
-import {
-  sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
-  sumPaymentsForPayrollMonthSuggestedSalesKpi,
-} from './payroll-run-suggested-sales-actual';
-import {
-  resolvePriorPayrollRunSalesPlanAmount,
-  resolveSuggestedSalesPlanByEmployee,
-} from './payroll-run-suggested-sales-plan';
-import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
-import { resolvePayrollRunSalesKpiScorecardMetrics } from './resolve-payroll-run-sales-kpi-scorecard';
+import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
+import { omitLegacyPayrollKpiFields } from './payroll-run-api-response';
 import {
   querySalaryBoard,
   type SalaryBoardQueryParams,
   type SalaryBoardResponseDto,
 } from './payroll-salary-board';
 import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
-import { queryPayrollRunBonusReleases } from './payroll-run-bonus-releases';
 import { querySalaryLineMonthDetail } from './salary-line-month-detail';
-import type { PayrollRunBonusReleasesDto } from './payroll-run-bonus-releases.types';
 import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
 
-export type { PayrollRunBonusReleasesDto } from './payroll-run-bonus-releases.types';
 export type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
-export type { PatchSalaryLineSalesKpiBody } from './salary-line-sales-kpi-patch';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
-export type { PatchPayrollRunBody };
 export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-salary-board';
 
 export interface CreatePayrollRunBody {
@@ -114,11 +97,6 @@ export class PayrollRunsService {
     return querySalaryLineMonthDetail(this.prisma, salaryLineId);
   }
 
-  /** Included + attachable bonus releases for payroll run workspace. */
-  async getBonusReleases(payrollRunId: string): Promise<PayrollRunBonusReleasesDto> {
-    return queryPayrollRunBonusReleases(this.prisma, payrollRunId);
-  }
-
   async findById(id: string) {
     const run = await this.prisma.payrollRun.findUnique({
       where: { id },
@@ -136,69 +114,24 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
-    const employeeIds = run.salaryLines.map((line) => line.employeeId);
-
-    const [
-      materializedByRun,
-      auditTrail,
-      includedBonusReleaseCount,
-      kpiSalesActualSuggestedAmount,
-      salesKpiScorecardMetrics,
-      suggestedActualBySeller,
-      kpiSalesPlanSuggestedAmount,
-      suggestedPlanByEmployee,
-    ] = await Promise.all([
+    const [materializedByRun, auditTrail, includedBonusReleaseCount] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
       this.prisma.bonusRelease.count({
         where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
       }),
-      sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
-      resolvePayrollRunSalesKpiScorecardMetrics(this.prisma, run.payrollMonth, employeeIds),
-      sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
-        this.prisma,
-        run.payrollMonth,
-        employeeIds,
-      ),
-      resolvePriorPayrollRunSalesPlanAmount(this.prisma, run.payrollMonth),
-      resolveSuggestedSalesPlanByEmployee(this.prisma, run.payrollMonth, employeeIds),
     ]);
 
-    const salaryLines = run.salaryLines.map((line) => ({
-      ...line,
-      kpiSalesPlanSuggestedAmount: (
-        suggestedPlanByEmployee.get(line.employeeId) ?? BONUS_POOL_ZERO
-      ).toFixed(2),
-      kpiSalesActualSuggestedAmount: (
-        suggestedActualBySeller.get(line.employeeId) ?? BONUS_POOL_ZERO
-      ).toFixed(2),
-    }));
+    const salaryLines = run.salaryLines.map((line) => omitLegacyPayrollKpiFields(line));
 
     return {
-      ...run,
+      ...omitLegacyPayrollKpiFields(run),
       salaryLines,
       materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,
       includedBonusReleaseCount,
-      kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
-      kpiSalesPlanSuggestedAmount: kpiSalesPlanSuggestedAmount?.toFixed(2) ?? null,
-      salesKpiScorecardMetrics,
     };
-  }
-
-  async patchPayrollRun(id: string, body: PatchPayrollRunBody) {
-    await applyPayrollRunKpiPatch(this.prisma, id, body);
-    return this.findById(id);
-  }
-
-  async patchSalaryLineSalesKpi(
-    payrollRunId: string,
-    salaryLineId: string,
-    body: PatchSalaryLineSalesKpiBody,
-  ) {
-    await applySalaryLineSalesKpiPatch(this.prisma, payrollRunId, salaryLineId, body);
-    return this.findById(payrollRunId);
   }
 
   async create(body: CreatePayrollRunBody, createdById?: string | null) {
@@ -242,8 +175,6 @@ export class PayrollRunsService {
               compensationProfileId: profile?.id ?? null,
               baseSalary: base,
               bonusesTotal: zero,
-              adjustmentsTotal: zero,
-              deductionsTotal: zero,
               totalPayable,
               paidAmount: zero,
               remainingAmount: totalPayable,
@@ -285,6 +216,16 @@ export class PayrollRunsService {
       throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
     }
 
+    if (status === 'APPROVED') {
+      const matrixIssues = await validatePayrollMatrixForApproval(this.prisma, id);
+      if (matrixIssues.length > 0) {
+        throw new BadRequestException({
+          message: 'Payroll matrix validation failed',
+          issues: matrixIssues,
+        });
+      }
+    }
+
     if (status === 'CLOSED') {
       const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(this.prisma, id);
       if (blockingCount > 0) {
@@ -295,6 +236,7 @@ export class PayrollRunsService {
     }
 
     const data: Prisma.PayrollRunUpdateInput = { status };
+    let materializedBonusResult: PayrollBonusAllocationMaterializeResult | undefined;
 
     if (status === 'APPROVED') {
       data.approvedAt = new Date();
@@ -308,6 +250,13 @@ export class PayrollRunsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      if (run.status === 'REVIEW' && status === 'APPROVED') {
+        materializedBonusResult = await materializePayrollBonusAllocationDrafts(tx, {
+          payrollRunId: id,
+          payrollMonth: run.payrollMonth,
+          actorUserId: meta.actorUserId,
+        });
+      }
       await tx.payrollRun.update({ where: { id }, data });
       let materializedExpenseIds: string[] | undefined;
       if (status === 'APPROVED') {
@@ -333,6 +282,21 @@ export class PayrollRunsService {
       });
     });
 
+    const bonusResult = materializedBonusResult;
+    if (bonusResult !== undefined) {
+      await refreshBonusEntryStatusesForReleases(this.prisma, bonusResult.releaseIds);
+      await syncProductBonusPoolsForBonusReleases(
+        this.prisma,
+        bonusResult.releaseIds,
+        this.notifications,
+      );
+      await notifyPayrollCarryEventsOnAttach(
+        this.prisma,
+        this.notifications,
+        bonusResult.carryNotifyEvents,
+      );
+    }
+
     if (status === 'CLOSED') {
       await notifyEmployeesOnPayrollRunClosed(
         this.prisma,
@@ -343,35 +307,5 @@ export class PayrollRunsService {
     }
 
     return this.findById(id);
-  }
-
-  /** NBOS: attach APPROVED bonus releases to this run’s salary lines (DRAFT/REVIEW). */
-  async attachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
-    const uniqueIds = [...new Set(body.releaseIds)];
-    const carryNotifyEvents = await this.prisma.$transaction(async (tx) =>
-      attachBonusReleasesToPayrollRun(tx, {
-        payrollRunId,
-        releaseIds: uniqueIds,
-      }),
-    );
-    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
-    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
-    await notifyPayrollCarryEventsOnAttach(this.prisma, this.notifications, carryNotifyEvents);
-    await notifySalesKpiReductionsOnAttach(this.prisma, this.notifications, uniqueIds);
-    return this.findById(payrollRunId);
-  }
-
-  /** NBOS: detach INCLUDED_IN_PAYROLL releases back to APPROVED (DRAFT/REVIEW). */
-  async detachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
-    const uniqueIds = [...new Set(body.releaseIds)];
-    await this.prisma.$transaction(async (tx) => {
-      await detachBonusReleasesFromPayrollRun(tx, {
-        payrollRunId,
-        releaseIds: uniqueIds,
-      });
-    });
-    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
-    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
-    return this.findById(payrollRunId);
   }
 }

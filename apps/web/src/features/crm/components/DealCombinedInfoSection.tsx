@@ -5,8 +5,11 @@ import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DetailSheetCollapsibleSection,
+  EntityNotesField,
 } from '@/components/shared';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import { cn } from '@/lib/utils';
 import {
   DEAL_SHEET_COLLAPSE_KEY,
   useDealSheetSectionCollapse,
@@ -16,6 +19,7 @@ import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealCombinedInfoSectionProps {
+  entityId: string;
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   filteredProductTypeOptions: Array<{ value: string; label: string }>;
@@ -27,6 +31,7 @@ interface DealCombinedInfoSectionProps {
 }
 
 export function DealCombinedInfoSection({
+  entityId,
   draft,
   patchDraft,
   filteredProductTypeOptions,
@@ -69,6 +74,16 @@ export function DealCombinedInfoSection({
             gateRequiredFields={gateRequiredFields}
           />
         </div>
+      </div>
+      <div className={cn('mt-3', dealStageGateFieldClass(gateRequiredFields, 'notes', ''))}>
+        <EntityNotesField
+          entityType="deal"
+          entityId={entityId}
+          value={draft.notes}
+          onChange={(notes) => patchDraft({ notes })}
+          placeholder="Add notes about this deal…"
+          disabled={disabled}
+        />
       </div>
     </DetailSheetCollapsibleSection>
   );

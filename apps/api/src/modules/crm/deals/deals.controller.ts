@@ -15,12 +15,21 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { DealsService } from './deals.service';
 import type { PatchPartnerReferralTermsBody } from './partner-referral-terms.ops';
+import { DealCommercialHandoffService } from './deal-commercial-handoff.service';
+import type {
+  CreateDepositOrderBody,
+  CreateExceptionOrderBody,
+  StartEarlyDeliveryBody,
+} from './deal-commercial-handoff.types';
 
 @ApiTags('CRM / Deals')
 @ApiBearerAuth()
 @Controller('crm/deals')
 export class DealsController {
-  constructor(private readonly dealsService: DealsService) {}
+  constructor(
+    private readonly dealsService: DealsService,
+    private readonly dealCommercialHandoff: DealCommercialHandoffService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all deals with filters and pagination' })
@@ -151,16 +160,47 @@ export class DealsController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update deal status (pipeline move)' })
-  async updateStatus(
+  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    return this.dealsService.updateStatus(id, body.status);
+  }
+
+  @Post(':id/actions/create-deposit-order')
+  @ApiOperation({ summary: 'Create standard prepay order + deposit invoice for a deal' })
+  async createDepositOrder(@Param('id') id: string, @Body() body: CreateDepositOrderBody) {
+    await this.dealCommercialHandoff.createDepositOrder(id, body);
+    return this.dealsService.findById(id);
+  }
+
+  @Post(':id/actions/start-early-delivery')
+  @ApiOperation({
+    summary: 'Start delivery before deposit invoice is paid (standard prepay order)',
+  })
+  async startEarlyDelivery(
     @Param('id') id: string,
-    @Body() body: { status: string; overrideReason?: string | null },
+    @Body() body: StartEarlyDeliveryBody,
     @CurrentUser() user?: CurrentUserPayload,
   ) {
-    return this.dealsService.updateStatus(id, body.status, {
-      reason: body.overrideReason,
+    await this.dealCommercialHandoff.startEarlyDelivery(id, body, {
       actorId: user?.id,
       actorRoleLevel: user?.roleLevel,
     });
+    return this.dealsService.findById(id);
+  }
+
+  @Post(':id/actions/create-exception-order')
+  @ApiOperation({
+    summary: 'Close deal via FREE or POSTPAID exception order (replaces Won override)',
+  })
+  async createExceptionOrder(
+    @Param('id') id: string,
+    @Body() body: CreateExceptionOrderBody,
+    @CurrentUser() user?: CurrentUserPayload,
+  ) {
+    await this.dealCommercialHandoff.createExceptionOrder(id, body, {
+      actorId: user?.id,
+      actorRoleLevel: user?.roleLevel,
+    });
+    return this.dealsService.findById(id);
   }
 
   @Delete(':id')

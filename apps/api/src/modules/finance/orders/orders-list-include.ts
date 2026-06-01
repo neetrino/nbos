@@ -10,7 +10,7 @@ export const ORDER_LIST_INCLUDE = {
       contact: { select: { id: true, firstName: true, lastName: true } },
     },
   },
-  deal: { select: { id: true, code: true } },
+  deal: { select: { id: true, name: true, code: true } },
   product: { select: { id: true, name: true, productType: true } },
   extension: { select: { id: true, name: true } },
   invoices: {

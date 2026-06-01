@@ -67,6 +67,7 @@ export class PartnerAccrualSubscriptionService {
     });
     if (!invoice || invoice.moneyStatus !== 'PAID') return;
     if (invoice.type !== 'SUBSCRIPTION' || !invoice.subscriptionId) return;
+    if (!invoice.projectId) return;
 
     const order = await this.resolveOrderForSubscriptionPartnerInvoice({
       projectId: invoice.projectId,

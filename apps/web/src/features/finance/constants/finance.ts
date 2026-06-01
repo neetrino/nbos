@@ -5,7 +5,9 @@ export const INVOICE_TYPES = [
   { value: 'DEVELOPMENT', label: 'Development' },
   { value: 'EXTENSION', label: 'Extension' },
   { value: 'SUBSCRIPTION', label: 'Subscription' },
-  { value: 'DOMAIN_SERVICE', label: 'Domain / Service' },
+  { value: 'DOMAIN', label: 'Domain' },
+  { value: 'SERVICE', label: 'Service' },
+  { value: 'MANUAL', label: 'Manual' },
 ] as const;
 
 /** Invoice Card money status (canonical). */
@@ -119,7 +121,9 @@ export {
   formatGroupedNumber,
   formatMoneyDram,
   formatMoneyDramOrDash,
+  formatMoneyInput,
   parseMoneyAmount,
+  sanitizeMoneyInput,
 } from '@/lib/format/money';
 
 function toApiDate(date: Date): string {

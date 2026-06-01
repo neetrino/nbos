@@ -4,7 +4,11 @@ import { CheckSquare, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { DetailSheetCollapsibleSection, EntityDetailSheetContent } from '@/components/shared';
+import {
+  DeleteConfirmDialog,
+  DetailSheetCollapsibleSection,
+  EntityDetailSheetContent,
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
@@ -45,9 +49,9 @@ export function TaskSheet({
 }: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   async function handleDelete() {
-    if (!window.confirm('Delete this task? This action cannot be undone.')) return;
     const deleted = await state.handleDeleteTask();
     if (deleted) onOpenChange(false);
   }
@@ -183,7 +187,7 @@ export function TaskSheet({
                     onSave={() => void state.handleGeneralSave()}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}
-                    onDelete={() => void handleDelete()}
+                    onDelete={() => setDeleteOpen(true)}
                   />
                 </>
               }
@@ -200,6 +204,19 @@ export function TaskSheet({
           <div className="text-muted-foreground p-5 text-sm">{state.generalError}</div>
         )}
       </EntityDetailSheetContent>
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        itemName={state.task?.title ?? ''}
+        title="Delete task?"
+        description="The task and its checklists, subtasks, and comments will be removed."
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </Sheet>
   );
 }
