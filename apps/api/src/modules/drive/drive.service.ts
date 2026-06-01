@@ -55,6 +55,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
 import { readTenantOrganizationId } from './drive-tenant';
+import { assertStorageKeyInTenantScope } from '../../common/security/storage-key-validation';
 import { buildVersionStagingKey, versionStagingPrefix } from './drive-storage-home-path';
 import {
   buildDriveAssetAccessWhere,
@@ -257,6 +258,9 @@ export class DriveService {
     if (provider === 'R2' && !data.storageKey) {
       throw new BadRequestException('storageKey is required for R2 file assets.');
     }
+    if (provider === 'R2' && data.storageKey) {
+      assertStorageKeyInTenantScope(data.storageKey, readTenantOrganizationId(this.config));
+    }
     if (provider === 'EXTERNAL_URL' && !data.externalUrl) {
       throw new BadRequestException('externalUrl is required for external file assets.');
     }
@@ -357,6 +361,7 @@ export class DriveService {
     access?: DriveEntityAccess,
   ) {
     const storageKey = requireText(data.storageKey, 'storageKey');
+    assertStorageKeyInTenantScope(storageKey, readTenantOrganizationId(this.config), id);
     const stagingPrefix = versionStagingPrefix(readTenantOrganizationId(this.config), id);
     if (!storageKey.startsWith(stagingPrefix)) {
       throw new BadRequestException('storageKey does not belong to this file version upload.');

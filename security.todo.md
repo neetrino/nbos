@@ -30,7 +30,9 @@
 
 **Закрыто в 3-м заходе P1:** §6.1 nestjs-pino + request-id (`x-request-id`), §6.3 редакция секретов в логах (authorization/cookie/scheduler-key/password/token), фильтр исключений переведён на Nest Logger.
 
-**Осталось (следующий заход):** 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях. _2.7 JWT revoke ✅; 2.8 BFF ✅; 2.3 Origin guard ✅; 0.10 deploy runbook ✅._
+**Осталось (следующий заход):** **👤 preflight** (§0, §18) на панелях — Neon, Cloudflare, Vercel/Render secrets, branch protection. **Messenger (после доработки модуля):** §11.2 rate limit, §11.3 WS channel authZ.
+
+**Закрыто в 4-м заходе:** §2.7 Redis-backed JWT denylist (`nbos:jwt-denylist:*`), §9.3 R2 storage key path traversal guard, §5.6/§10.1 placeholder + required secrets (env validation), §7.2 denylist key prefix + TTL.
 
 ---
 
@@ -86,20 +88,20 @@
 
 ## 2. Auth + Sessions — Security `2`, Quality **B.1–B.7**
 
-| #    | P   | Статус | Задача                                                                             | Проверка                            |
-| ---- | --- | ------ | ---------------------------------------------------------------------------------- | ----------------------------------- |
-| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                           | `docs/adr-auth.md`                  |
-| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod             | DevTools                            |
-| 2.3  | P0  | ✅     | 🤖 CSRF / Origin: OriginGuard на mutating + CORS allowlist                         | POST чужой origin → 403             |
-| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                                       | curl → 403                          |
-| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                                | —                                   |
-| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено)          | 400 на слабый                       |
-| 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + in-memory denylist + `POST /auth/logout` (signOut → revoke) | После logout → 401                  |
-| 2.8  | P0  | ✅     | 🤖 BFF: JWT в httpOnly cookie, `/api/bff` + realtime-token для WS                  | DevTools: нет accessToken в session |
-| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                                 | Phase 2+                            |
-| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                               | Нет перебора                        |
-| 2.11 | P0  | ✅     | 🤖 argon2id                                                                        | —                                   |
-| 2.12 | P0  | ✅     | 🤖 Invite-only                                                                     | —                                   |
+| #    | P   | Статус | Задача                                                                    | Проверка                            |
+| ---- | --- | ------ | ------------------------------------------------------------------------- | ----------------------------------- |
+| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                  | `docs/adr-auth.md`                  |
+| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod    | DevTools                            |
+| 2.3  | P0  | ✅     | 🤖 CSRF / Origin: OriginGuard на mutating + CORS allowlist                | POST чужой origin → 403             |
+| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                              | curl → 403                          |
+| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                       | —                                   |
+| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено) | 400 на слабый                       |
+| 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + Redis/in-memory denylist + logout                  | После logout → 401                  |
+| 2.8  | P0  | ✅     | 🤖 BFF: JWT в httpOnly cookie, `/api/bff` + realtime-token для WS         | DevTools: нет accessToken в session |
+| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                        | Phase 2+                            |
+| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                      | Нет перебора                        |
+| 2.11 | P0  | ✅     | 🤖 argon2id                                                               | —                                   |
+| 2.12 | P0  | ✅     | 🤖 Invite-only                                                            | —                                   |
 
 ---
 
@@ -118,7 +120,7 @@
 | 3.7  | P0  | ✅     | 🤖 Swagger `/api/docs` только вне production                          | Недоступен снаружи   |
 | 3.8  | P0  | ✅     | 🤖 Scheduler: **service API key** (`ServiceApiKeyGuard`), не user JWT | §18 + runbook        |
 | 3.9  | P1  | ⬜     | 🤖 `proxy.ts` + headers при необходимости                             | —                    |
-| 3.10 | P1  | ⬜     | 🤖 request-id в логах (Security `6.1`, Quality **K**)                 | Trace                |
+| 3.10 | P1  | ✅     | 🤖 request-id в логах (`x-request-id`, nestjs-pino)                   | Trace                |
 | 3.11 | P0  | ✅     | 🤖 **Body size limits**: JSON/urlencoded 1 MB (`main.ts`)             | 413 на huge body     |
 | 3.12 | P1  | ⬜     | 🤖 API timeouts (Quality **B.21**)                                    | Nest/Render settings |
 | 3.13 | P2  | ⬜     | 🤖 OpenAPI только internal                                            | —                    |
@@ -147,7 +149,7 @@
 | 5.3 | P0  | ✅     | 🤖 `.gitignore` env                                                  | —                  |
 | 5.4 | P0  | ✅     | 🤖 Fail-fast env validation at API boot (`config/env.validation.ts`) | Weak secret → exit |
 | 5.5 | P0  | ✅     | 🤖 CI: gitleaks (`.github/workflows/ci.yml`)                         | PR fail            |
-| 5.6 | P1  | ⬜     | 🤖 Reject placeholder secrets in prod                                | —                  |
+| 5.6 | P1  | ✅     | 🤖 Reject placeholder secrets in prod (JWT, CREDENTIALS, SCHEDULER)  | Boot fail          |
 | 5.7 | P1  | ⬜     | 👤 R2 IAM minimal (Quality **C.3**, **F.3**)                         | —                  |
 | 5.8 | P2  | ⬜     | 👤 Локальный dev без prod DB/secrets (C.10)                          | —                  |
 
@@ -170,7 +172,7 @@
 | #   | P   | Статус | Задача                                                                         | Проверка |
 | --- | --- | ------ | ------------------------------------------------------------------------------ | -------- |
 | 7.1 | P0  | ✅     | 🤖👤 `rediss://` TLS — код enforce в prod (`common/redis/redis-connection.ts`) | Upstash  |
-| 7.2 | P1  | ⬜     | 🤖 TTL + key prefixes                                                          | —        |
+| 7.2 | P1  | ✅     | 🤖 JWT denylist: `nbos:jwt-denylist:` prefix + SETEX TTL                       | —        |
 | 7.3 | P0  | ⬜     | 🤖 No secrets/PII in Redis                                                     | Review   |
 
 ---
@@ -191,7 +193,7 @@
 | --- | --- | ------ | ----------------------------------------------------------------------------------- | ------------- |
 | 9.1 | P0  | ✅     | 🤖 Presigned upload + RBAC; ext-blocklist + size cap (`drive-upload-validation.ts`) | .exe rejected |
 | 9.2 | P0  | ⬜     | 👤 Bucket private; только signed URLs (F.1–F.2)                                     | —             |
-| 9.3 | P1  | ⬜     | 🤖 Path traversal в keys                                                            | `../` fail    |
+| 9.3 | P1  | ✅     | 🤖 Path traversal в R2 keys (`storage-key-validation.ts`)                           | `../` fail    |
 | 9.4 | P1  | ⬜     | 👤 R2 CORS minimal (F.4)                                                            | —             |
 | 9.5 | P2  | ⬜     | 🤖 AV scan user uploads (F.6)                                                       | —             |
 | 9.6 | P1  | ⬜     | 🤖 CDN cache rules не ломают private files (F.7+)                                   | —             |
@@ -200,22 +202,22 @@
 
 ## 10. Credentials vault (NBOS)
 
-| #    | P   | Статус | Задача                                                 | Проверка  |
-| ---- | --- | ------ | ------------------------------------------------------ | --------- |
-| 10.1 | P0  | ⬜     | 🤖 `CREDENTIALS_ENCRYPTION_KEY` required prod          | Boot fail |
-| 10.2 | P0  | ✅     | 🤖 AES-256-GCM at rest                                 | —         |
-| 10.3 | P1  | ⬜     | 🤖 Audit `credential.secret_revealed`                  | —         |
-| 10.4 | P0  | ⬜     | 🤖 RBAC regression (`credentials.service.test` в gate) | 403       |
+| #    | P   | Статус | Задача                                                    | Проверка  |
+| ---- | --- | ------ | --------------------------------------------------------- | --------- |
+| 10.1 | P0  | ✅     | 🤖 `CREDENTIALS_ENCRYPTION_KEY` required (env validation) | Boot fail |
+| 10.2 | P0  | ✅     | 🤖 AES-256-GCM at rest                                    | —         |
+| 10.3 | P1  | ⬜     | 🤖 Audit `credential.secret_revealed`                     | —         |
+| 10.4 | P0  | ⬜     | 🤖 RBAC regression (`credentials.service.test` в gate)    | 403       |
 
 ---
 
 ## 11. WebSocket / Messenger
 
-| #    | P   | Статус | Задача                      | Проверка |
-| ---- | --- | ------ | --------------------------- | -------- |
-| 11.1 | P0  | ✅     | 🤖 CORS + JWT handshake     | —        |
-| 11.2 | P1  | ⬜     | 🤖 Message rate limit       | —        |
-| 11.3 | P1  | ⬜     | 🤖 AuthZ на каждое WS event | —        |
+| #    | P   | Статус | Задача                                                | Проверка |
+| ---- | --- | ------ | ----------------------------------------------------- | -------- |
+| 11.1 | P0  | ✅     | 🤖 CORS + JWT handshake                               | —        |
+| 11.2 | P1  | ⏸      | 🤖 Message rate limit — **после доработки messenger** | —        |
+| 11.3 | P1  | ⏸      | 🤖 AuthZ на каждое WS event — **после messenger ACL** | —        |
 
 ---
 

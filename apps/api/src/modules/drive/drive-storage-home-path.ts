@@ -1,4 +1,5 @@
 import { sanitizeUploadBaseName } from './drive-upload-path';
+import { normalizeSafeContextPath } from '../../common/security/storage-key-validation';
 import {
   buildStorageHomeFileName,
   type StorageHomeFilenameParams,
@@ -15,7 +16,7 @@ export function buildStorageHomeKey(
   contextPath: string,
   fileName: string,
 ): string {
-  const ctx = contextPath.replace(/^\/+|\/+$/g, '');
+  const ctx = normalizeSafeContextPath(contextPath);
   return `${buildTenantFilesPrefix(organizationId)}${ctx}/${fileName}`;
 }
 
