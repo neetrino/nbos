@@ -270,8 +270,8 @@ importers:
         specifier: ^12.12.1
         version: 12.35.2(react-dom@19.2.3)(react@19.2.3)
       lucide-react:
-        specifier: ^0.513.0
-        version: 0.513.0(react@19.2.3)
+        specifier: ^1.17.0
+        version: 1.17.0(react@19.2.3)
       next:
         specifier: 16.2.6
         version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.3)(react@19.2.3)
@@ -4803,12 +4803,12 @@ packages:
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
     dev: false
 
-  /@tiptap/extension-bubble-menu@3.23.6(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
-    resolution: {integrity: sha512-Mwkyp9LkDHFbqmWRIkp63FinRxFu3ajC4qSb9t4mnHsb4kAdbNLLsGtbFg+le0SWk4CxGwAOwM7SzeJ+6UGqCA==}
+  /@tiptap/extension-bubble-menu@3.24.0(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
+    resolution: {integrity: sha512-jRXD+JPu9ayvq78g8hsCxx4q/qUFtrdfIYirRSf5YUseuuUbtfrq83AsGabcygpUTefjJkMQoXNITkh6294Ggw==}
     requiresBuild: true
     peerDependencies:
-      '@tiptap/core': 3.23.6
-      '@tiptap/pm': 3.23.6
+      '@tiptap/core': 3.24.0
+      '@tiptap/pm': 3.24.0
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
@@ -4858,13 +4858,13 @@ packages:
       '@tiptap/extensions': 3.22.5(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
     dev: false
 
-  /@tiptap/extension-floating-menu@3.23.6(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
-    resolution: {integrity: sha512-2kjuDcEq69lEcECl75xqY5MyzUSh2zcC5aLrpwP1WwhJz5bxsIFHiaps5AP6h9R4A+ZBj5b2haay2Y1wDUU3VA==}
+  /@tiptap/extension-floating-menu@3.24.0(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
+    resolution: {integrity: sha512-7QEbf3mUzFAkejjQGX9f0L507oMtnOBRwHt2skUTR+9yXgudsN8zaDBSSRHLeMWGk9b7L293ZMA6zCRrZaHrfA==}
     requiresBuild: true
     peerDependencies:
       '@floating-ui/dom': ^1.0.0
-      '@tiptap/core': 3.23.6
-      '@tiptap/pm': 3.23.6
+      '@tiptap/core': 3.24.0
+      '@tiptap/pm': 3.24.0
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
@@ -5096,8 +5096,8 @@ packages:
       react-dom: 19.2.3(react@19.2.3)
       use-sync-external-store: 1.6.0(react@19.2.3)
     optionalDependencies:
-      '@tiptap/extension-bubble-menu': 3.23.6(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
-      '@tiptap/extension-floating-menu': 3.23.6(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
+      '@tiptap/extension-bubble-menu': 3.24.0(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
+      '@tiptap/extension-floating-menu': 3.24.0(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
     transitivePeerDependencies:
       - '@floating-ui/dom'
     dev: false
@@ -10036,8 +10036,8 @@ packages:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
 
-  /lucide-react@0.513.0(react@19.2.3):
-    resolution: {integrity: sha512-CJZKq2g8Y8yN4Aq002GahSXbG2JpFv9kXwyiOAMvUBv7pxeOFHUWKB0mO7MiY4ZVFCV4aNjv2BJFq/z3DgKPQg==}
+  /lucide-react@1.17.0(react@19.2.3):
+    resolution: {integrity: sha512-9FA9evdox/JQL5PT57fdA1x/yg8T7knJ98+zjTL3UfKza6pflQUUh3XtaQIHKvnsJw1lmsEyHVlt5jchYxOQ5w==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
     dependencies:
