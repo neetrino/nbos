@@ -5,7 +5,7 @@ export function canCreateDepositInvoice(deal: Deal, taxStatus: string): boolean 
     deal.amount != null &&
     Number(deal.amount) > 0 &&
     deal.paymentType &&
-    deal.contactId &&
+    deal.contact?.id &&
     deal.type &&
     taxStatus &&
     (taxStatus !== 'TAX' || deal.companyId) &&
