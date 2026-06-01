@@ -8,6 +8,28 @@
 
 ---
 
+## Session 2026-06-01 — закрыто в коде (этапы A–D)
+
+> Реализовано в рамках security-прохода. Все изменения прошли `typecheck` (api) + `lint` + unit-тесты.
+
+| Пункт                | Что сделано                                                                                               | Файлы                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **19.1**             | `sortBy` whitelist в 7 сервисах + общий хелпер `resolveSortField`/`normalizeSortDirection` + тест         | `common/utils/sort-order.ts(.test)`, `projects/contacts/leads/deals/support/bonus/tasks`                |
+| **3.11**             | Лимиты тела запроса (`json`/`urlencoded` 1 MB)                                                            | `apps/api/src/main.ts`                                                                                  |
+| **3.7**              | Swagger `/api/docs` только вне production                                                                 | `apps/api/src/main.ts`                                                                                  |
+| **1.4 / 2.10**       | Rate-limit auth: login 10/min, accept-invite 5/10min, invite-info 20/5min                                 | `modules/auth/auth.controller.ts`                                                                       |
+| **5.4**              | Fail-fast env-валидация (required + сила/placeholder секретов в prod)                                     | `config/env.validation.ts(.test)`, `app.module.ts`                                                      |
+| **3.8**              | `ServiceApiKeyGuard` для `/api/scheduler/*` (service key, не user-JWT) + `SkipThrottle`                   | `common/guards/service-api-key.guard.ts`, `scheduler.controller.ts`, `crypto.ts` (`timingSafeEqualStr`) |
+| **1.5 / 1.5c**       | Security headers + baseline CSP во фронте (HSTS только prod)                                              | `apps/web/next.config.ts`                                                                               |
+| **2.2**              | `useSecureCookies` в prod (явный Secure-флаг)                                                             | `apps/web/src/auth.ts`                                                                                  |
+| **2.6**              | Парольная политика accept-invite: ≥10 + буква+цифра                                                       | `dto/accept-invite.dto.ts`                                                                              |
+| **13.1 / 5.5 / 8.1** | CI: lint+typecheck+test+build, blocking `pnpm audit --audit-level=high`, gitleaks; npm Dependabot включён | `.github/workflows/ci.yml`, `.github/dependabot.yml`                                                    |
+| **23.2**             | Regression-тест whitelist `sortBy`                                                                        | `common/utils/sort-order.test.ts`                                                                       |
+
+**Осталось (следующий заход):** 2.7/2.8 JWT revoke + accessToken→BFF (P1), 6.1/6.3 pino + request-id + маскирование (P1), 9.1 R2 MIME/size лимиты (P1), 11.3 WS channel authZ (P1), 7.1 Redis TLS-enforce (P1) — плюс весь **👤 preflight** (§0, §18) на панелях.
+
+---
+
 ## Индекс стандартов `docs/reference/Check` (все источники)
 
 | Документ                                                                                                                  | Назначение                              | Секция в этом файле |
@@ -45,57 +67,57 @@
 
 ## 1. Edge / Network — Security `1`, WAF `§18`
 
-| #    | P   | Статус | Задача                                                                           | Проверка            |
-| ---- | --- | ------ | -------------------------------------------------------------------------------- | ------------------- |
-| 1.1  | P0  | ⬜     | 👤 HTTPS + HSTS (Cloudflare / Vercel)                                            | `curl -I`           |
-| 1.2  | P1  | ⬜     | 👤 WAF: Managed + **OWASP CRS** ON (§18.2)                                       | CF Security         |
-| 1.3  | P1  | ⬜     | 👤 Bot / DDoS protection ON                                                      | CF Security         |
-| 1.4  | P0  | 🔄     | 🤖 App rate limit: Throttler 100/min; **ужесточить** auth (см. §18.3 NBOS paths) | 429 на login        |
-| 1.5  | P0  | ⬜     | 🤖 Next **security headers** (`next.config` / `headers()`)                       | securityheaders.com |
-| 1.5b | P1  | ✅     | 🤖 Nest Helmet                                                                   | `/api/*`            |
-| 1.5c | P1  | ⬜     | 🤖 CSP Next без `unsafe-everything`                                              | CSP evaluator       |
-| 1.6  | P1  | ⬜     | 👤 CF rate rules для групп A–E (§18)                                             | Логи 429            |
+| #    | P   | Статус | Задача                                                                                 | Проверка            |
+| ---- | --- | ------ | -------------------------------------------------------------------------------------- | ------------------- |
+| 1.1  | P0  | ⬜     | 👤 HTTPS + HSTS (Cloudflare / Vercel)                                                  | `curl -I`           |
+| 1.2  | P1  | ⬜     | 👤 WAF: Managed + **OWASP CRS** ON (§18.2)                                             | CF Security         |
+| 1.3  | P1  | ⬜     | 👤 Bot / DDoS protection ON                                                            | CF Security         |
+| 1.4  | P0  | ✅     | 🤖 App rate limit: Throttler 100/min; auth ужесточён (login/accept-invite/invite-info) | 429 на login        |
+| 1.5  | P0  | ✅     | 🤖 Next **security headers** (`next.config` `headers()`)                               | securityheaders.com |
+| 1.5b | P1  | ✅     | 🤖 Nest Helmet                                                                         | `/api/*`            |
+| 1.5c | P1  | 🔄     | 🤖 CSP Next baseline (nonce-based — P1 follow-up вместо `unsafe-inline`)               | CSP evaluator       |
+| 1.6  | P1  | ⬜     | 👤 CF rate rules для групп A–E (§18)                                                   | Логи 429            |
 
 ---
 
 ## 2. Auth + Sessions — Security `2`, Quality **B.1–B.7**
 
-| #    | P   | Статус | Задача                                                                  | Проверка                |
-| ---- | --- | ------ | ----------------------------------------------------------------------- | ----------------------- |
-| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                | `docs/adr-auth.md`      |
-| 2.2  | P0  | 🔄     | 🤖 Cookie flags в `auth.ts`: httpOnly, secure, sameSite                 | DevTools                |
-| 2.3  | P0  | 🔄     | 🤖 CSRF / Origin (TECH_CARD §10.2 — **перепроверить**)                  | POST чужой origin → 403 |
-| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                            | curl → 403              |
-| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                     | —                       |
-| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥8, login ≥6 → **единая политика** (≥12 + complexity) | 400 на слабый           |
-| 2.7  | P0  | ⬜     | 🤖 JWT revoke / denylist (Redis) или короткий TTL                       | После logout → 401      |
-| 2.8  | P0  | ⬜     | 🤖 `accessToken` не в client-readable session (XSS → API)               | httpOnly BFF            |
-| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                      | Phase 2+                |
-| 2.10 | P1  | ⬜     | 🤖 `invite-info`: rate limit + generic errors                           | Нет перебора            |
-| 2.11 | P0  | ✅     | 🤖 argon2id                                                             | —                       |
-| 2.12 | P0  | ✅     | 🤖 Invite-only                                                          | —                       |
+| #    | P   | Статус | Задача                                                                    | Проверка                |
+| ---- | --- | ------ | ------------------------------------------------------------------------- | ----------------------- |
+| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                  | `docs/adr-auth.md`      |
+| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod    | DevTools                |
+| 2.3  | P0  | 🔄     | 🤖 CSRF / Origin (TECH_CARD §10.2 — **перепроверить**)                    | POST чужой origin → 403 |
+| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                              | curl → 403              |
+| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                       | —                       |
+| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено) | 400 на слабый           |
+| 2.7  | P0  | ⬜     | 🤖 JWT revoke / denylist (Redis) или короткий TTL                         | После logout → 401      |
+| 2.8  | P0  | ⬜     | 🤖 `accessToken` не в client-readable session (XSS → API)                 | httpOnly BFF            |
+| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                        | Phase 2+                |
+| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                      | Нет перебора            |
+| 2.11 | P0  | ✅     | 🤖 argon2id                                                               | —                       |
+| 2.12 | P0  | ✅     | 🤖 Invite-only                                                            | —                       |
 
 ---
 
 ## 3. API — Security `3`, Quality **B.5–B.8, E.1, E.8**
 
-| #    | P   | Статус | Задача                                                                              | Проверка             |
-| ---- | --- | ------ | ----------------------------------------------------------------------------------- | -------------------- |
-| 3.1  | P0  | ✅     | 🤖 ValidationPipe whitelist                                                         | 400                  |
-| 3.1a | P0  | ✅     | 🤖 XSS: DOMPurify                                                                   | —                    |
-| 3.2  | P0  | ✅     | 🤖 500 без stack в prod                                                             | —                    |
-| 3.2a | P0  | 🔄     | 🤖 4xx без утечки схемы/секретов                                                    | Audit errors         |
-| 3.3  | P0  | ✅     | 🤖 CORS strict + prod assert                                                        | —                    |
-| 3.4  | P1  | 🔄     | 🤖 Idempotency на payments/orders (Quality **E.2**)                                 | Дубль POST           |
-| 3.5  | P1  | ⬜     | 🤖 Webhooks: signature + replay (IDBank/Idram)                                      | Подделка → 403       |
-| 3.6  | P0  | ✅     | 🤖 SQL parameterized (Prisma)                                                       | §19                  |
-| 3.7  | P0  | ⬜     | 🤖 Swagger `/api/docs` off или за auth в prod                                       | Недоступен снаружи   |
-| 3.8  | P0  | ⬜     | 🤖 Scheduler: **service API key**, не user JWT в cron                               | §18 + runbook        |
-| 3.9  | P1  | ⬜     | 🤖 `proxy.ts` + headers при необходимости                                           | —                    |
-| 3.10 | P1  | ⬜     | 🤖 request-id в логах (Security `6.1`, Quality **K**)                               | Trace                |
-| 3.11 | P0  | ⬜     | 🤖 **Body size limits** (WAF §5.2, Quality **E.8**): JSON ~1–2 MB, forms 100–300 KB | 413 на huge body     |
-| 3.12 | P1  | ⬜     | 🤖 API timeouts (Quality **B.21**)                                                  | Nest/Render settings |
-| 3.13 | P2  | ⬜     | 🤖 OpenAPI только internal                                                          | —                    |
+| #    | P   | Статус | Задача                                                                | Проверка             |
+| ---- | --- | ------ | --------------------------------------------------------------------- | -------------------- |
+| 3.1  | P0  | ✅     | 🤖 ValidationPipe whitelist                                           | 400                  |
+| 3.1a | P0  | ✅     | 🤖 XSS: DOMPurify                                                     | —                    |
+| 3.2  | P0  | ✅     | 🤖 500 без stack в prod                                               | —                    |
+| 3.2a | P0  | 🔄     | 🤖 4xx без утечки схемы/секретов                                      | Audit errors         |
+| 3.3  | P0  | ✅     | 🤖 CORS strict + prod assert                                          | —                    |
+| 3.4  | P1  | 🔄     | 🤖 Idempotency на payments/orders (Quality **E.2**)                   | Дубль POST           |
+| 3.5  | P1  | ⬜     | 🤖 Webhooks: signature + replay (IDBank/Idram)                        | Подделка → 403       |
+| 3.6  | P0  | ✅     | 🤖 SQL parameterized (Prisma)                                         | §19                  |
+| 3.7  | P0  | ✅     | 🤖 Swagger `/api/docs` только вне production                          | Недоступен снаружи   |
+| 3.8  | P0  | ✅     | 🤖 Scheduler: **service API key** (`ServiceApiKeyGuard`), не user JWT | §18 + runbook        |
+| 3.9  | P1  | ⬜     | 🤖 `proxy.ts` + headers при необходимости                             | —                    |
+| 3.10 | P1  | ⬜     | 🤖 request-id в логах (Security `6.1`, Quality **K**)                 | Trace                |
+| 3.11 | P0  | ✅     | 🤖 **Body size limits**: JSON/urlencoded 1 MB (`main.ts`)             | 413 на huge body     |
+| 3.12 | P1  | ⬜     | 🤖 API timeouts (Quality **B.21**)                                    | Nest/Render settings |
+| 3.13 | P2  | ⬜     | 🤖 OpenAPI только internal                                            | —                    |
 
 ---
 
@@ -114,16 +136,16 @@
 
 ## 5. Secrets — Security `5`, Quality **C**
 
-| #   | P   | Статус | Задача                                                     | Проверка           |
-| --- | --- | ------ | ---------------------------------------------------------- | ------------------ |
-| 5.1 | P0  | ⬜     | 👤 Секреты только в Vercel/Render/GitHub Secrets (C.1–C.2) | —                  |
-| 5.2 | P1  | ⬜     | 👤 `docs/runbook-secret-rotation.md` (C.4)                 | Runbook            |
-| 5.3 | P0  | ✅     | 🤖 `.gitignore` env                                        | —                  |
-| 5.4 | P0  | ⬜     | 🤖 Fail-fast env validation at API boot (C.5)              | Weak secret → exit |
-| 5.5 | P0  | ⬜     | 🤖 CI: gitleaks / trufflehog (C.1)                         | PR fail            |
-| 5.6 | P1  | ⬜     | 🤖 Reject placeholder secrets in prod                      | —                  |
-| 5.7 | P1  | ⬜     | 👤 R2 IAM minimal (Quality **C.3**, **F.3**)               | —                  |
-| 5.8 | P2  | ⬜     | 👤 Локальный dev без prod DB/secrets (C.10)                | —                  |
+| #   | P   | Статус | Задача                                                               | Проверка           |
+| --- | --- | ------ | -------------------------------------------------------------------- | ------------------ |
+| 5.1 | P0  | ⬜     | 👤 Секреты только в Vercel/Render/GitHub Secrets (C.1–C.2)           | —                  |
+| 5.2 | P1  | ⬜     | 👤 `docs/runbook-secret-rotation.md` (C.4)                           | Runbook            |
+| 5.3 | P0  | ✅     | 🤖 `.gitignore` env                                                  | —                  |
+| 5.4 | P0  | ✅     | 🤖 Fail-fast env validation at API boot (`config/env.validation.ts`) | Weak secret → exit |
+| 5.5 | P0  | ✅     | 🤖 CI: gitleaks (`.github/workflows/ci.yml`)                         | PR fail            |
+| 5.6 | P1  | ⬜     | 🤖 Reject placeholder secrets in prod                                | —                  |
+| 5.7 | P1  | ⬜     | 👤 R2 IAM minimal (Quality **C.3**, **F.3**)                         | —                  |
+| 5.8 | P2  | ⬜     | 👤 Локальный dev без prod DB/secrets (C.10)                          | —                  |
 
 ---
 
@@ -151,11 +173,11 @@
 
 ## 8. Dependencies — Security `8`, Quality **B.17**
 
-| #   | P   | Статус | Задача                                                   | Проверка |
-| --- | --- | ------ | -------------------------------------------------------- | -------- |
-| 8.1 | P0  | 🔄     | 🤖👤 Dependabot + **CI `pnpm audit`** fail high/critical | Green PR |
-| 8.2 | P1  | ⬜     | 👤 SLA: critical 7d, high 30d                            | Policy   |
-| 8.3 | P2  | ⬜     | 👤 SBOM при необходимости                                | —        |
+| #   | P   | Статус | Задача                                                                    | Проверка |
+| --- | --- | ------ | ------------------------------------------------------------------------- | -------- |
+| 8.1 | P0  | ✅     | 🤖👤 npm Dependabot включён + blocking CI `pnpm audit --audit-level=high` | Green PR |
+| 8.2 | P1  | ⬜     | 👤 SLA: critical 7d, high 30d                                             | Policy   |
+| 8.3 | P2  | ⬜     | 👤 SBOM при необходимости                                                 | —        |
 
 ---
 
@@ -205,15 +227,15 @@
 
 ## 13. CI/CD — Quality **L**, anti-pattern #9
 
-| #    | P   | Статус | Задача                                          | Проверка          |
-| ---- | --- | ------ | ----------------------------------------------- | ----------------- |
-| 13.1 | P0  | ⬜     | 🤖 GHA: lint + typecheck + test + audit (L.3)   | Branch protection |
-| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                | GitHub            |
-| 13.3 | P0  | ⬜     | 👤 Single migration job (L.4)                   | Log               |
-| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                      | Env scopes        |
-| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                | Image scan        |
-| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                       | Doc               |
-| 13.7 | P1  | ⬜     | 👤 Render health `/api/health` (L.10, anti #17) | Render UI         |
+| #    | P   | Статус | Задача                                                           | Проверка          |
+| ---- | --- | ------ | ---------------------------------------------------------------- | ----------------- |
+| 13.1 | P0  | ✅     | 🤖 GHA: lint + typecheck + test + build + audit + gitleaks (L.3) | Branch protection |
+| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                                 | GitHub            |
+| 13.3 | P0  | ⬜     | 👤 Single migration job (L.4)                                    | Log               |
+| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                                       | Env scopes        |
+| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                                 | Image scan        |
+| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                                        | Doc               |
+| 13.7 | P1  | ⬜     | 👤 Render health `/api/health` (L.10, anti #17)                  | Render UI         |
 
 ---
 
@@ -299,28 +321,28 @@
 
 ## 19. SQL Injection Checklist — аудит NBOS (2026-05-20)
 
-| Критерий                        | Статус      | Комментарий                      |
-| ------------------------------- | ----------- | -------------------------------- |
-| ORM / параметризация            | ✅          | Prisma; raw через `sql` template |
-| `queryRawUnsafe`                | ✅          | Не найдено                       |
-| Whitelist `ORDER BY` / `sortBy` | ⬜ **FAIL** | См. ниже                         |
-| DB least privilege              | ⬜          | 👤 Neon                          |
-| Manual test `' OR 1=1`          | ⬜          | QA на staging                    |
+| Критерий                        | Статус | Комментарий                       |
+| ------------------------------- | ------ | --------------------------------- |
+| ORM / параметризация            | ✅     | Prisma; raw через `sql` template  |
+| `queryRawUnsafe`                | ✅     | Не найдено                        |
+| Whitelist `ORDER BY` / `sortBy` | ✅     | Все списки whitelisted (см. ниже) |
+| DB least privilege              | ⬜     | 👤 Neon                           |
+| Manual test `' OR 1=1`          | ⬜     | QA на staging                     |
 
 ### 19.1 P0 — `sortBy` без whitelist (Prisma `orderBy: { [sortBy] }`)
 
 Исправить по образцу `expenses.service.ts` / `CLIENT_SERVICE_SORT_FIELDS`:
 
-| Файл                                                            | Статус                                                    |
-| --------------------------------------------------------------- | --------------------------------------------------------- |
-| `apps/api/src/modules/projects/projects.service.ts`             | ⬜                                                        |
-| `apps/api/src/modules/clients/contacts/contacts.service.ts`     | ⬜                                                        |
-| `apps/api/src/modules/crm/leads/leads.service.ts`               | ⬜                                                        |
-| `apps/api/src/modules/crm/deals/deals.service.ts`               | ⬜                                                        |
-| `apps/api/src/modules/support/support.service.ts`               | ⬜                                                        |
-| `apps/api/src/modules/bonus/bonus.service.ts`                   | ⬜                                                        |
-| `apps/api/src/modules/tasks/task-find-all-paginated.op.ts`      | ⬜                                                        |
-| `apps/api/src/modules/payroll-runs/payroll-run-list-queries.ts` | ⬜ частично есть SET — проверить controller→service chain |
+| Файл                                                            | Статус                                   |
+| --------------------------------------------------------------- | ---------------------------------------- |
+| `apps/api/src/modules/projects/projects.service.ts`             | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/clients/contacts/contacts.service.ts`     | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/crm/leads/leads.service.ts`               | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/crm/deals/deals.service.ts`               | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/support/support.service.ts`               | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/bonus/bonus.service.ts`                   | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/tasks/task-find-all-paginated.op.ts`      | ✅ `resolveSortField`                    |
+| `apps/api/src/modules/payroll-runs/payroll-run-list-queries.ts` | ✅ `LIST_SORT_FIELDS` (был закрыт ранее) |
 
 **Проверка:** `?sortBy=__proto__` / невалидное поле → игнор или 400, не 500.
 
@@ -358,13 +380,13 @@
 | 1   | Секреты в репо              | ✅ .gitignore                            |
 | 2   | `NEXT_PUBLIC_` для секретов | ✅ только BACKEND_URL                    |
 | 3   | Нет AuthZ на API            | ✅ guards                                |
-| 4   | Нет rate limit login        | ⬜ §1.4, §18                             |
-| 5   | Нет security headers        | ⬜ §1.5                                  |
+| 4   | Нет rate limit login        | ✅ §1.4 (auth throttle)                  |
+| 5   | Нет security headers        | ✅ §1.5 (next headers + CSP baseline)    |
 | 6   | Параллельные миграции       | ⬜ §13.3                                 |
 | 7   | Логи с токенами             | ⬜ §6.3                                  |
 | 8   | Нет schema validation       | ✅ ValidationPipe                        |
 | 9   | Render без health           | 🔄 `/api/health` есть — настроить Render |
-| 10  | Игнор npm audit             | ⬜ §8.1                                  |
+| 10  | Игнор npm audit             | ✅ §8.1 (blocking CI audit)              |
 
 ---
 
@@ -430,5 +452,6 @@
 
 ---
 
-**Аудит:** 2026-05-20 (код + все файлы `docs/reference/Check`)  
-**Новое vs прошлый аудит:** индекс Check, REG-SEC-EDGE-001 §18, SQL §19.1 (8 файлов sortBy), Quality Gate §20–21, body limits §3.11
+**Аудит:** 2026-06-01 (перепроверка по коду + реализация этапов A–D)  
+**Прошлый аудит:** 2026-05-20  
+**Закрыто 2026-06-01 (код):** §19.1 sortBy (7 сервисов), §3.11 body limits, §3.7 Swagger prod, §1.4/§2.10 auth throttle, §5.4 env validation, §3.8 scheduler service key, §1.5 security headers + CSP, §2.2 secure cookies, §2.6 invite password policy, §13.1/§5.5/§8.1 CI (audit + gitleaks + Dependabot). См. «Session 2026-06-01».

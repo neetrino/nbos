@@ -7,6 +7,9 @@ import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 import { leadDetailInclude } from './lead.includes';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
+import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+
+const LEAD_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'status', 'source']);
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -107,7 +110,10 @@ export class LeadsService {
           marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
           deal: { select: { id: true, code: true, status: true } },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, LEAD_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

@@ -9,6 +9,9 @@ import {
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
 import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
+import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+
+const PROJECT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code']);
 
 interface CreateProjectDto {
   name: string;
@@ -72,7 +75,10 @@ export class ProjectsService {
           contact: { select: { id: true, firstName: true, lastName: true } },
           _count: { select: { orders: true } },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, PROJECT_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

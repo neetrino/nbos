@@ -96,4 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60,
   },
+  // Force the Secure cookie flag + `__Secure-` prefix in production.
+  // The session cookie itself stays httpOnly + sameSite=lax (Auth.js defaults).
+  useSecureCookies: process.env.NODE_ENV === 'production',
 });

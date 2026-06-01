@@ -10,6 +10,7 @@ import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { SchedulerController } from './scheduler.controller';
 import { SchedulerService } from './scheduler.service';
+import { ServiceApiKeyGuard } from '../../common/guards/service-api-key.guard';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { SchedulerService } from './scheduler.service';
     PayrollRunsModule,
   ],
   controllers: [SchedulerController],
-  providers: [SchedulerService, ExpensePlanAutoDueCron, ReportSchedulesDueCron],
+  providers: [SchedulerService, ExpensePlanAutoDueCron, ReportSchedulesDueCron, ServiceApiKeyGuard],
 })
 export class SchedulerModule {}

@@ -27,6 +27,15 @@ import {
 } from './support-ticket-status.constants';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
+import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+
+const SUPPORT_TICKET_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'status',
+  'priority',
+  'category',
+]);
 
 const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: number }> = {
   P1: { responseHours: 4, resolveHours: 24 },
@@ -188,7 +197,10 @@ export class SupportService {
       this.prisma.supportTicket.findMany({
         where,
         include: SUPPORT_TICKET_INCLUDE,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, SUPPORT_TICKET_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

@@ -33,6 +33,16 @@ import {
 } from './patch-bonus-entry-payable-adjustment';
 import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+
+const BONUS_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'amount',
+  'status',
+  'earnedPeriod',
+  'payoutMonth',
+]);
 
 interface CreateBonusDto {
   employeeId: string;
@@ -128,7 +138,10 @@ export class BonusService {
           order: { select: { id: true, code: true, totalAmount: true } },
           project: { select: { id: true, code: true, name: true } },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, BONUS_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
