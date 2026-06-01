@@ -20,10 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RelationPickerField } from '@/components/shared';
-import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useRelationPickerActions } from '@/components/shared/relation-picker/use-relation-picker-actions';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
