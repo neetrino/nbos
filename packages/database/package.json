@@ -26,17 +26,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.4.2",
-    "@prisma/client": "^7.4.2",
-    "dotenv": "^17.3.1",
-    "pg": "^8.20.0"
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@nbos/tsconfig": "workspace:*",
-    "@types/pg": "^8.18.0",
-    "argon2": "^0.43.0",
-    "prisma": "^7.4.2",
-    "tsx": "^4.19.4",
+    "@types/pg": "^8.20.0",
+    "argon2": "^0.44.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   }
 }
