@@ -33,6 +33,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
+        env:
+          # Prisma 7 config requires DIRECT_URL; generate does not connect to the DB.
+          DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm db:generate
 
       - name: Format check
@@ -81,7 +84,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install gitleaks
+        run: |
+          GITLEAKS_VERSION=8.24.2
+          install_dir="${RUNNER_TOOL_CACHE}/gitleaks"
+          mkdir -p "$install_dir"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C "$install_dir"
+          echo "$install_dir" >> "$GITHUB_PATH"
+
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gitleaks detect --source . --verbose --redact

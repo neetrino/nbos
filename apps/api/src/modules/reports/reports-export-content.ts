@@ -1,5 +1,5 @@
+import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
-import { utils as xlsxUtils, write as writeXlsx } from 'xlsx';
 import type { ReportExportFormat } from './reports.types';
 
 export interface ReportExportFile {
@@ -23,7 +23,7 @@ export async function renderReportExportFile(
   }
   if (format === 'XLSX') {
     return {
-      content: renderXlsx(payload),
+      content: await renderXlsx(payload),
       contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       extension: 'xlsx',
       fileType: 'SPREADSHEET',
@@ -37,12 +37,15 @@ export async function renderReportExportFile(
   };
 }
 
-function renderXlsx(payload: unknown): Uint8Array {
+async function renderXlsx(payload: unknown): Promise<Uint8Array> {
   const rows = [['path', 'value'], ...flattenPayload(payload)];
-  const workbook = xlsxUtils.book_new();
-  const worksheet = xlsxUtils.aoa_to_sheet(rows);
-  xlsxUtils.book_append_sheet(workbook, worksheet, 'Report');
-  return writeXlsx(workbook, { type: 'buffer', bookType: 'xlsx' });
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Report');
+  rows.forEach((row, rowIndex) => {
+    worksheet.getRow(rowIndex + 1).values = row;
+  });
+  const buffer = await workbook.xlsx.writeBuffer();
+  return new Uint8Array(buffer);
 }
 
 async function renderPdf(payload: unknown): Promise<Uint8Array> {
