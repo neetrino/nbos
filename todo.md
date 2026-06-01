@@ -1,96 +1,112 @@
 # Credentials Vault — план работ
 
-> Модуль: `12-Credentials` · Статус: MVP в runtime, доработка по канону · Обновлено: 2026-06-01
+> Модуль: `12-Credentials` · Статус: MVP + rich seed · Обновлено: 2026-06-01
 
-## Текущее состояние
-
-| Слой       | Готово                                                                  | Пробелы                                                   |
-| ---------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| API        | CRUD, archive/restore/purge, reveal/copy/export, step-up, audit, health | Access requests, grants+TTL, emergency, versions          |
-| DB         | `Credential` + enums, context fields, rotation                          | `CredentialAccessGrant`, versions, flexible secret fields |
-| UI         | `/credentials` list + dialogs, product tab (basic)                      | Drawer, saved views, bulk, audit block, step-up dialog    |
-| Seed       | ~~6 записей без секретов~~ → **rich demo (Слайс 0)**                    | —                                                         |
-| Интеграции | Product access slots, Mail schema link                                  | Offboarding, Tasks rotation, incident flow                |
-
-Канон: `docs/NBOS/02-Modules/12-Credentials/*` · Cleanup register: `99-Credentials-Cleanup-Register.md`
+Канон: `docs/NBOS/02-Modules/12-Credentials/*` · UX decisions: `06-Credentials-UX-Decisions.md`
 
 ---
 
-## Слайс 0 — Rich seed (сейчас)
+## Зафиксированные решения (2026-06-01)
 
-**Цель:** наполнить test DB так, чтобы можно было прогнать весь vault end-to-end.
+| #   | Тема                   | Решение                                                                                      | Статус |
+| --- | ---------------------- | -------------------------------------------------------------------------------------------- | ------ |
+| 1   | ENV bundle             | Paste `.env` → preview → encrypted store → export/copy `.env`                                | ✅     |
+| 2   | Форма                  | Dynamic fields по kind/type; не показывать все поля сразу                                    | ✅     |
+| 3   | Category vs Type       | **Открыто** — нужен глобальный аудит (модели A/B/C в `06-Credentials-UX-Decisions.md`)       | ⏸      |
+| 4   | Criticality / rotation | Auto при create; 4 уровня; override в **Settings** внутри Sheet                              | ✅     |
+| 5   | Comment                | Одно поле, **always private** (encrypted); в Sheet **виден сразу** при доступе (без step-up) | ✅     |
+| —   | Create/Edit UI         | **Sheet** вместо modal dialog; удалить dialog после реализации                               | ✅     |
 
-- [x] План в `todo.md`
-- [x] `seed-credentials-demo.ts` (~120+ записей)
-  - все `credentialType`, `category`, `accessLevel`, `criticality`
-  - encrypted `password` / `apiKey` / `envData` / `secureNotes`
-  - rotation: healthy / due soon / overdue / без даты
-  - archived sample + restore/purge flow
-  - привязки: projects, products, domains, client services
-  - product access slot bindings (prod1, prod4, prod9)
-- [x] Подключить в `seed.ts` (после domains)
-- [x] Прогнать `pnpm --filter @nbos/database seed` → **100 записей**, 2 archived, 7 slot bindings
-
-**Проверка после seed:**
-
-- `/credentials` — tabs, filters, rotation badges, archived
-- Detail → reveal/copy (step-up) с реальными секретами
-- Project/Product → Credentials tab
-- Delivery Board → access slots bound
+**Блокер Слайса A (form):** закрыть п.3 → затем Sheet + dynamic fields.
 
 ---
 
-## Слайс A — QA-ready UX (следующий)
+## Слайс 0 — Rich seed ✅
 
-- [ ] Фильтры API + UI: `credentialType`, `criticality`, `rotationStatus`, `productId`, `ownerId`
+- [x] `seed-credentials-demo.ts` (~100 записей, encrypted secrets, all access levels)
+- [x] Подключено в `seed.ts`, seed прогнан
+
+---
+
+## Слайс A — UX (после закрытия п.3)
+
+### Form / Sheet (зависит от п.3)
+
+- [ ] Глобальный аудит Category vs Type → decision record
+- [ ] `CredentialFormSheet` (create + edit), удалить modal dialogs
+- [ ] Dynamic secret fields по kind/type
+- [ ] ENV paste + preview + export `.env`
+- [ ] Comment → single encrypted field; убрать public notes из UI
+- [ ] Settings block: criticality override, next rotation override (auto defaults on create)
+- [ ] Backend: auto criticality + default `nextRotationAt` on create (если ещё нет)
+
+### List / vault (можно параллельно п.3)
+
+- [ ] Фильтры API + UI: kind/category (как решим в п.3), rotationStatus, productId, ownerId
 - [ ] Tab/view **Needs Rotation**
-- [ ] Step-up dialog вместо `window.prompt`
-- [ ] Project CredentialsTab → «Open in Vault» / deep-link
+- [ ] Step-up dialog вместо `window.prompt` (для password/api/env reveal)
+- [ ] Project CredentialsTab → «Open in Vault» / deep-link to Sheet
 - [ ] Pagination (убрать hardcoded `pageSize: 200`)
-- [ ] Обновить `security.todo.md` (audit reveal ✅)
 
 ---
 
 ## Слайс B — Операционный vault
 
-- [ ] **Access Request** flow (request → approve/reject → grant + notification)
-- [ ] Audit log block в credential detail
-- [ ] Recently used (из audit events)
-- [ ] Export → encrypted file + download UX (не только JSON в memory)
+- [ ] Access Request flow
+- [ ] Audit log block в Sheet
+- [ ] Recently used
+- [ ] Export → encrypted file download
 
 ---
 
 ## Слайс C — Security canon
 
-- [ ] Таблица `CredentialAccessGrant` + expiry
-- [ ] Emergency access (break-glass)
-- [ ] Credential versions при rotation
-- [ ] Offboarding hook (My Company)
+- [ ] CredentialAccessGrant + expiry
+- [ ] Emergency access
+- [ ] Versions on rotation
+- [ ] Offboarding hook
 - [ ] Permanent delete step-up для CRITICAL
 
 ---
 
 ## Слайс D — Scale & migration
 
-- [ ] Bulk actions (assign owner, archive, rotation request)
-- [ ] CSV import + duplicate detection
+- [ ] Bulk actions
+- [ ] CSV import
 - [ ] Saved views / favorites
-- [ ] Bitrix encrypted migration (Phase 7)
+- [ ] Bitrix encrypted migration
 
 ---
 
-## Решения (зафиксировать перед B)
+## Открытый вопрос — п.3 Category / Type (аудит)
 
-| Вопрос             | Вариант по умолчанию                                               |
-| ------------------ | ------------------------------------------------------------------ |
-| Access model на P1 | Request flow + расширение `allowedEmployees[]` (без новой таблицы) |
-| Step-up            | Password-only до отдельного решения по 2FA                         |
-| Categories enum    | DEVELOPMENT/MARKETING/FINANCE — отложить (OTHER покрывает)         |
+**Цель:** один понятный классификатор в UI без дубля и без скрытого костыля.
+
+**Варианты:** см. `docs/NBOS/02-Modules/12-Credentials/06-Credentials-UX-Decisions.md`
+
+**Затронутые места:**
+
+- Prisma enums `CredentialCategoryEnum`, `CredentialTypeEnum`
+- `product-access-slots.ts`, Delivery Board bind/create
+- `product-done-readiness.ts` handoff categories
+- List filters, seed, migration mapping
+
+**Не начинать** рефактор form/sheet до выбора модели.
+
+---
+
+## Прочие решения (ранее)
+
+| Вопрос                                 | Вариант                             |
+| -------------------------------------- | ----------------------------------- |
+| Access model на P1                     | Request flow + `allowedEmployees[]` |
+| Step-up для secrets                    | Password-only (не Comment)          |
+| DEVELOPMENT/MARKETING/FINANCE category | Отложить                            |
 
 ---
 
 ## Ссылки
 
-- Roadmap Phase 5: `docs/NBOS/00-Implementation-Roadmap.md`
-- Delivery matrix: `docs/execution/01-module-delivery-matrix.md` (п.5 Credentials and Drive security)
+- UX decisions: `docs/NBOS/02-Modules/12-Credentials/06-Credentials-UX-Decisions.md`
+- Cleanup: `99-Credentials-Cleanup-Register.md`
 - Regression: `apps/api/src/modules/credentials/credentials.service.test.ts`

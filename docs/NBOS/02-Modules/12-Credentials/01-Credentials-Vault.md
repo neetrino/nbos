@@ -73,6 +73,7 @@ Drive может хранить supporting documents, инструкции, invo
 | `03-Credentials-Security.md`         | безопасность, encryption, reveal/copy, audit, backup/export, emergency access, offboarding |
 | `04-Credentials-UX-Workflows.md`     | интерфейс, views, поиск, карточка, quick actions, daily workflows                          |
 | `05-Credentials-Integrations.md`     | связи с Project Hub, Finance, Drive, Messenger, Tasks, Notifications, My Company           |
+| `06-Credentials-UX-Decisions.md`     | зафиксированные UX-решения (Sheet, Comment, ENV); открытые вопросы до реализации           |
 | `99-Credentials-Cleanup-Register.md` | что в текущем runtime нужно переделать по новому канону                                    |
 
 ---
