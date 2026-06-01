@@ -2,11 +2,8 @@
 
 This project deploys to **Hetzner VPS via Coolify** (web + api). External: Neon, R2, Resend, optional Cloudflare edge.
 
-**Runbooks:**
-
-- [`docs/reference/platforms/nbos-coolify-hetzner.md`](../reference/platforms/nbos-coolify-hetzner.md) — Coolify UI, build/start commands, env split
-- [`docs/reference/platforms/nbos-production-deploy.md`](../reference/platforms/nbos-production-deploy.md) — security preflight + smoke tests
-- [`security.todo.md`](../../security.todo.md) §0
+**Runbook:** [`docs/reference/platforms/nbos-production-deploy.md`](../reference/platforms/nbos-production-deploy.md) — Coolify, Cloudflare, security preflight, smoke tests  
+**Security gate:** [`security.todo.md`](../../security.todo.md) §0
 
 ## Web (`apps/web`)
 
