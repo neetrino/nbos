@@ -453,12 +453,12 @@ expiry_date updated
 Структура sheet сверху вниз:
 
 1. **Header** — название, тип, статус, **Settings** (⚙) с действием удаления сервиса.
-2. **Connections** — компактная панель действий под header: создать invoice / expense plan / expense / task.
+2. **Connections** — компактная панель действий под header: create invoice / expense plan / expense / task открывают shared-формы с предзаполнением из карточки сервиса.
 3. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
    - **General** — поля карточки (basics, billing, dates, notes, proofs).
-   - **Invoices** — список связанных `Invoice Card` (+ create).
-   - **Expenses** — списки связанных expense plans и expense cards (+ create).
-   - **Tasks** — список связанных задач; **Create task** открывает shared `QuickCreateTaskDialog` (как Deal / Work Spaces), а не мгновенное создание.
+   - **Invoices** — список связанных `Invoice Card`; **Create invoice** → `CreateInvoiceDialog` (amount, due date).
+   - **Expenses** — списки expense plans и expense cards; **Create** → `CreateExpensePlanDialog` / `CreateExpenseDialog`.
+   - **Tasks** — список связанных задач; **Create task** → `QuickCreateTaskDialog`.
 
 Должно быть видно:
 

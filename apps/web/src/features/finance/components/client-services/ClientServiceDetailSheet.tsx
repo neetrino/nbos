@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Layers, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -37,11 +36,9 @@ import {
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
-import {
-  ClientServiceSheetActions,
-  type ClientServiceActionKind,
-} from './ClientServiceSheetActions';
+import { ClientServiceSheetActions } from './ClientServiceSheetActions';
 import {
   CLIENT_SERVICE_DETAIL_SHEET_TABS,
   type ClientServiceDetailSheetTab,
@@ -66,6 +63,18 @@ function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
   );
 }
 
+function closeCreateDialogs(setters: {
+  setInvoiceOpen: (open: boolean) => void;
+  setExpensePlanOpen: (open: boolean) => void;
+  setExpenseOpen: (open: boolean) => void;
+  setQuickCreateTaskOpen: (open: boolean) => void;
+}) {
+  setters.setInvoiceOpen(false);
+  setters.setExpensePlanOpen(false);
+  setters.setExpenseOpen(false);
+  setters.setQuickCreateTaskOpen(false);
+}
+
 export function ClientServiceDetailSheet({
   serviceId,
   open,
@@ -81,8 +90,10 @@ export function ClientServiceDetailSheet({
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [actionId, setActionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [expensePlanOpen, setExpensePlanOpen] = useState(false);
+  const [expenseOpen, setExpenseOpen] = useState(false);
   const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
   const projects = useClientServiceProjects(open);
@@ -110,7 +121,14 @@ export function ClientServiceDetailSheet({
 
   useEffect(() => {
     setActiveTab('general');
-    if (!open) setQuickCreateTaskOpen(false);
+    if (!open) {
+      closeCreateDialogs({
+        setInvoiceOpen,
+        setExpensePlanOpen,
+        setExpenseOpen,
+        setQuickCreateTaskOpen,
+      });
+    }
   }, [serviceId, open]);
 
   const taskDefaultLinks = useMemo(
@@ -125,15 +143,30 @@ export function ClientServiceDetailSheet({
 
   const canCreateTask = creatorReady && Boolean(creatorId);
 
-  const handleOpenCreateTask = useCallback(() => {
-    setQuickCreateTaskOpen(true);
-  }, []);
-
-  const handleTaskCreated = useCallback(() => {
-    setActiveTab('tasks');
+  const refreshAfterLinkCreated = useCallback(() => {
     void fetchService();
     onSaved();
   }, [fetchService, onSaved]);
+
+  const handleInvoiceCreated = useCallback(() => {
+    setActiveTab('invoices');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
+
+  const handleExpensePlanCreated = useCallback(() => {
+    setActiveTab('expenses');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
+
+  const handleExpenseCreated = useCallback(() => {
+    setActiveTab('expenses');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
+
+  const handleTaskCreated = useCallback(() => {
+    setActiveTab('tasks');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
 
   useLayoutEffect(() => {
     if (!service) {
@@ -199,35 +232,6 @@ export function ClientServiceDetailSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
-  const runServiceAction = useCallback(
-    async (kind: ClientServiceActionKind) => {
-      if (!service) return;
-      setActionId(`${kind}:${service.id}`);
-      try {
-        if (kind === 'invoice') {
-          await clientServicesApi.createInvoice(service.id);
-          toast.success('Linked invoice card created.');
-          setActiveTab('invoices');
-        } else if (kind === 'plan') {
-          await clientServicesApi.createExpensePlan(service.id);
-          toast.success('Linked expense plan created.');
-          setActiveTab('expenses');
-        } else if (kind === 'expense') {
-          await clientServicesApi.createExpense(service.id);
-          toast.success('Linked expense card created.');
-          setActiveTab('expenses');
-        }
-        await fetchService();
-        onSaved();
-      } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Client service action failed.'));
-      } finally {
-        setActionId(null);
-      }
-    },
-    [fetchService, onSaved, service],
-  );
-
   if (!serviceId) return null;
 
   const typeLabel = service
@@ -237,7 +241,6 @@ export function ClientServiceDetailSheet({
     ? clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)
     : undefined;
   const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
-  const actionBusy = saving || Boolean(actionId);
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchService()}>
@@ -267,7 +270,7 @@ export function ClientServiceDetailSheet({
                   <DetailSheetSettingsMenu>
                     <DropdownMenuItem
                       variant="destructive"
-                      disabled={actionBusy}
+                      disabled={saving}
                       onClick={() => onRequestDelete({ id: service.id, name: service.name })}
                     >
                       <Trash2 />
@@ -283,11 +286,12 @@ export function ClientServiceDetailSheet({
             <div className="border-border shrink-0 border-b px-5 py-2.5">
               <ClientServiceSheetActions
                 service={service}
-                actionId={actionId}
                 canCreateTask={canCreateTask}
-                disabled={actionBusy}
-                onAction={(kind) => void runServiceAction(kind)}
-                onCreateTask={handleOpenCreateTask}
+                disabled={saving}
+                onCreateInvoice={() => setInvoiceOpen(true)}
+                onCreateExpensePlan={() => setExpensePlanOpen(true)}
+                onCreateExpense={() => setExpenseOpen(true)}
+                onCreateTask={() => setQuickCreateTaskOpen(true)}
               />
             </div>
           ) : null}
@@ -313,10 +317,11 @@ export function ClientServiceDetailSheet({
                   patchDraft={patchDraft}
                   projects={projects}
                   saving={saving}
-                  actionId={actionId}
                   canCreateTask={canCreateTask}
-                  onAction={(kind) => void runServiceAction(kind)}
-                  onCreateTask={handleOpenCreateTask}
+                  onCreateInvoice={() => setInvoiceOpen(true)}
+                  onCreateExpensePlan={() => setExpensePlanOpen(true)}
+                  onCreateExpense={() => setExpenseOpen(true)}
+                  onCreateTask={() => setQuickCreateTaskOpen(true)}
                 />
               ) : null}
             </div>
@@ -334,16 +339,30 @@ export function ClientServiceDetailSheet({
       </Sheet>
 
       {service ? (
-        <QuickCreateTaskDialog
-          open={quickCreateTaskOpen}
-          onOpenChange={setQuickCreateTaskOpen}
-          creatorId={creatorId ?? ''}
-          creatorReady={creatorReady}
-          defaultLinks={taskDefaultLinks}
-          defaultDueDate={taskDefaultDueDate}
-          forceNestedBackdrop
-          onCreated={handleTaskCreated}
-        />
+        <>
+          <ClientServiceCreateDialogs
+            service={service}
+            invoiceOpen={invoiceOpen}
+            onInvoiceOpenChange={setInvoiceOpen}
+            expensePlanOpen={expensePlanOpen}
+            onExpensePlanOpenChange={setExpensePlanOpen}
+            expenseOpen={expenseOpen}
+            onExpenseOpenChange={setExpenseOpen}
+            onInvoiceCreated={handleInvoiceCreated}
+            onExpensePlanCreated={handleExpensePlanCreated}
+            onExpenseCreated={handleExpenseCreated}
+          />
+          <QuickCreateTaskDialog
+            open={quickCreateTaskOpen}
+            onOpenChange={setQuickCreateTaskOpen}
+            creatorId={creatorId ?? ''}
+            creatorReady={creatorReady}
+            defaultLinks={taskDefaultLinks}
+            defaultDueDate={taskDefaultDueDate}
+            forceNestedBackdrop
+            onCreated={handleTaskCreated}
+          />
+        </>
       ) : null}
     </EntityItemHost>
   );
