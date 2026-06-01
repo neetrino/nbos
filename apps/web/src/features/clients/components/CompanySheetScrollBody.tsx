@@ -1,14 +1,12 @@
 'use client';
 
 import { Building2, Calendar, FileText, MessageCircle, Receipt, Tag, User } from 'lucide-react';
-import {
-  DetailSheetSection,
-  EntityNotesSection,
-  InlineField,
-  RelationPickerField,
-  StatusBadge,
-} from '@/components/shared';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
+import { EntityNotesSection } from '@/components/shared/entity-notes/EntityNotesSection';
+import { InlineField } from '@/components/shared/InlineField';
+import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { useRelationPickerActions } from '@/components/shared/relation-picker/use-relation-picker-actions';
 import { COMPANY_TYPES, getTaxStatus } from '../constants/clients';
 import { companyTypeNumberLabel } from '../constants/company-type-field-copy';
 import type { Company } from '@/lib/api/clients';
