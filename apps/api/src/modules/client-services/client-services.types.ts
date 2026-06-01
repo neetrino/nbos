@@ -9,6 +9,8 @@ export interface ClientServiceRecordQueryParams {
   search?: string;
   renewalFrom?: string;
   renewalTo?: string;
+  stage?: string;
+  year?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }

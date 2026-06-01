@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
 import { CLIENT_SERVICE_TASK_ENTITY_TYPE } from './client-service-flow-helpers';
+import { computeClientServicePaymentStage } from './client-service-payment-stage';
 
 const CLIENT_SERVICE_PAGE_SIZE_DEFAULT = 50;
 const CLIENT_SERVICE_PAGE_SIZE_MAX = 200;
@@ -52,7 +53,31 @@ export const clientServiceListInclude = {
   product: { select: { id: true, name: true } },
   providerAccount: { select: { id: true, name: true, provider: true } },
   _count: { select: { invoices: true, expensePlans: true, expenses: true } },
+  invoices: { select: { moneyStatus: true }, orderBy: { createdAt: 'desc' }, take: 100 },
+  expenses: { select: { status: true }, orderBy: { createdAt: 'desc' }, take: 100 },
 } satisfies Prisma.ClientServiceRecordInclude;
+
+export type ClientServiceListRow = Prisma.ClientServiceRecordGetPayload<{
+  include: typeof clientServiceListInclude;
+}>;
+
+/**
+ * Serializes a list row and attaches the computed payment stage + overdue overlay,
+ * stripping the raw invoice/expense status arrays used only for the computation.
+ */
+export function serializeClientServiceListRow(row: ClientServiceListRow, now: Date = new Date()) {
+  const { invoices, expenses, ...rest } = row;
+  const { stage, overdue } = computeClientServicePaymentStage(
+    {
+      renewalDate: rest.renewalDate,
+      billingModel: rest.billingModel,
+      invoiceMoneyStatuses: invoices.map((invoice) => invoice.moneyStatus),
+      expenseStatuses: expenses.map((expense) => expense.status),
+    },
+    now,
+  );
+  return { ...serializeClientServiceRow(rest), paymentStage: stage, overdue };
+}
 
 export const clientServiceDetailInclude = {
   ...clientServiceListInclude,

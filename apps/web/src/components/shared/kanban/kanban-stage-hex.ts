@@ -7,6 +7,7 @@ export const KANBAN_TAILWIND_BG_HEX: Record<string, string> = {
   'bg-indigo-500': '#6366F1',
   'bg-purple-500': '#A855F7',
   'bg-violet-500': '#8B5CF6',
+  'bg-violet-600': '#7C3AED',
   'bg-fuchsia-500': '#D946EF',
   'bg-red-400': '#F87171',
   'bg-red-500': '#EF4444',
@@ -16,6 +17,8 @@ export const KANBAN_TAILWIND_BG_HEX: Record<string, string> = {
   'bg-green-600': '#16A34A',
   'bg-orange-500': '#F97316',
   'bg-slate-500': '#64748B',
+  'bg-cyan-500': '#06B6D4',
+  'bg-cyan-600': '#0891B2',
 };
 
 export function resolveKanbanStageHex(colorClass: string, hexColor?: string): string | undefined {
