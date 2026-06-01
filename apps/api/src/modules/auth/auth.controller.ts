@@ -1,10 +1,10 @@
-import { Controller, Post, Get, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Query, HttpCode } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AcceptInviteDto } from './dto/accept-invite.dto';
-import { Public } from '../../common/decorators';
+import { Public, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 
 const ONE_MINUTE_MS = 60_000;
 const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
@@ -38,6 +38,15 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
   acceptInvite(@Body() dto: AcceptInviteDto) {
     return this.authService.acceptInvite(dto.token, dto.firstName, dto.lastName, dto.password);
+  }
+
+  @Post('logout')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke the current access token' })
+  @ApiResponse({ status: 200, description: 'Token revoked' })
+  logout(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.logout(user.jti, user.tokenExp);
   }
 
   @Get('invite-info')

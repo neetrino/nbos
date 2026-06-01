@@ -5,6 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import type { ExecutionContext } from '@nestjs/common';
+import { TokenDenylistService } from '../security/token-denylist.service';
 
 function createMockContext(headers: Record<string, string> = {}): {
   context: ExecutionContext;
@@ -27,14 +28,16 @@ describe('AuthGuard', () => {
   const testSecret = 'test-secret';
   let guard: AuthGuard;
   let reflector: Reflector;
+  let denylist: TokenDenylistService;
 
   beforeEach(() => {
     vi.clearAllMocks();
     reflector = new Reflector();
+    denylist = new TokenDenylistService();
     const configService = {
       getOrThrow: vi.fn().mockReturnValue(testSecret),
     } as unknown as ConfigService;
-    guard = new AuthGuard(reflector, configService);
+    guard = new AuthGuard(reflector, configService, denylist);
   });
 
   it('allows access to public routes', () => {
@@ -71,6 +74,18 @@ describe('AuthGuard', () => {
       employeeId: 'emp_123',
       email: 'test@example.com',
     });
+  });
+
+  it('throws when the token jti has been revoked', () => {
+    vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    const token = jwt.sign({ sub: 'emp_123', email: 'test@example.com' }, testSecret, {
+      jwtid: 'jti-revoked',
+      expiresIn: '1h',
+    });
+    denylist.revokeUntil('jti-revoked', Date.now() + 3_600_000);
+    const { context } = createMockContext({ authorization: `Bearer ${token}` });
+
+    expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
   });
 
   it('throws when token is signed with a different secret', () => {

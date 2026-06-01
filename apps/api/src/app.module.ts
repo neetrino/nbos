@@ -44,6 +44,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
+import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -61,6 +62,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
+    TokenDenylistModule,
     DatabaseModule,
     AuthModule,
     EmployeesModule,

@@ -30,7 +30,7 @@
 
 **Закрыто в 3-м заходе P1:** §6.1 nestjs-pino + request-id (`x-request-id`), §6.3 редакция секретов в логах (authorization/cookie/scheduler-key/password/token), фильтр исключений переведён на Nest Logger.
 
-**Осталось (следующий заход):** 2.7/2.8 JWT revoke + accessToken→BFF (P1), 6.1/6.3 pino + request-id + маскирование (P1, отдельный срез — добавление зависимости), 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях.
+**Осталось (следующий заход):** 2.8 `accessToken`→BFF (P1, требует архитектурного решения по BFF), 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях. _2.7 JWT revoke закрыт (jti + denylist + logout); durable multi-instance вариант (Redis) — задокументированный follow-up в `token-denylist.service.ts`._
 
 ---
 
@@ -86,20 +86,20 @@
 
 ## 2. Auth + Sessions — Security `2`, Quality **B.1–B.7**
 
-| #    | P   | Статус | Задача                                                                    | Проверка                |
-| ---- | --- | ------ | ------------------------------------------------------------------------- | ----------------------- |
-| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                  | `docs/adr-auth.md`      |
-| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod    | DevTools                |
-| 2.3  | P0  | 🔄     | 🤖 CSRF / Origin (TECH_CARD §10.2 — **перепроверить**)                    | POST чужой origin → 403 |
-| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                              | curl → 403              |
-| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                       | —                       |
-| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено) | 400 на слабый           |
-| 2.7  | P0  | ⬜     | 🤖 JWT revoke / denylist (Redis) или короткий TTL                         | После logout → 401      |
-| 2.8  | P0  | ⬜     | 🤖 `accessToken` не в client-readable session (XSS → API)                 | httpOnly BFF            |
-| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                        | Phase 2+                |
-| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                      | Нет перебора            |
-| 2.11 | P0  | ✅     | 🤖 argon2id                                                               | —                       |
-| 2.12 | P0  | ✅     | 🤖 Invite-only                                                            | —                       |
+| #    | P   | Статус | Задача                                                                             | Проверка                |
+| ---- | --- | ------ | ---------------------------------------------------------------------------------- | ----------------------- |
+| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                           | `docs/adr-auth.md`      |
+| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod             | DevTools                |
+| 2.3  | P0  | 🔄     | 🤖 CSRF / Origin (TECH_CARD §10.2 — **перепроверить**)                             | POST чужой origin → 403 |
+| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                                       | curl → 403              |
+| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                                | —                       |
+| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено)          | 400 на слабый           |
+| 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + in-memory denylist + `POST /auth/logout` (signOut → revoke) | После logout → 401      |
+| 2.8  | P0  | ⬜     | 🤖 `accessToken` не в client-readable session (XSS → API)                          | httpOnly BFF            |
+| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                                 | Phase 2+                |
+| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                               | Нет перебора            |
+| 2.11 | P0  | ✅     | 🤖 argon2id                                                                        | —                       |
+| 2.12 | P0  | ✅     | 🤖 Invite-only                                                                     | —                       |
 
 ---
 

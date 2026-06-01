@@ -89,6 +89,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  events: {
+    // Best-effort: revoke the backend access token when the user signs out,
+    // so a leaked token cannot be reused after logout.
+    async signOut(message) {
+      const accessToken =
+        'token' in message ? (message.token?.['accessToken'] as string | undefined) : undefined;
+      if (!accessToken) {
+        return;
+      }
+      try {
+        await fetch(`${BACKEND_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      } catch {
+        // Signing out client-side must succeed even if the backend is unreachable.
+      }
+    },
+  },
   pages: {
     signIn: '/sign-in',
   },
