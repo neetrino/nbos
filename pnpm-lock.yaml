@@ -276,8 +276,8 @@ importers:
         specifier: 16.2.6
         version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.3)(react@19.2.3)
       next-auth:
-        specifier: ^5.0.0-beta.29
-        version: 5.0.0-beta.30(next@16.2.6)(react@19.2.3)
+        specifier: ^5.0.0-beta.31
+        version: 5.0.0-beta.31(next@16.2.6)(react@19.2.3)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3)(react@19.2.3)
@@ -496,12 +496,12 @@ packages:
       tinyexec: 1.0.2
     dev: false
 
-  /@auth/core@0.41.0:
-    resolution: {integrity: sha512-Wd7mHPQ/8zy6Qj7f4T46vg3aoor8fskJm6g2Zyj064oQ3+p0xNZXAV60ww0hY+MbTesfu29kK14Zk5d5JTazXQ==}
+  /@auth/core@0.41.2:
+    resolution: {integrity: sha512-Hx5MNBxN2fJTbJKGUKAA0wca43D0Akl3TvufY54Gn8lop7F+34vU1zA1pn0vQfIoVuLIrpfc2nkyjwIaPJMW7w==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
-      nodemailer: ^6.8.0
+      nodemailer: ^7.0.7
     peerDependenciesMeta:
       '@simplewebauthn/browser':
         optional: true
@@ -511,8 +511,8 @@ packages:
         optional: true
     dependencies:
       '@panva/hkdf': 1.2.1
-      jose: 6.2.1
-      oauth4webapi: 3.8.5
+      jose: 6.2.3
+      oauth4webapi: 3.8.6
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
     dev: false
@@ -2686,7 +2686,7 @@ packages:
       express: 5.2.1
       express-rate-limit: 8.3.1(express@5.2.1)
       hono: 4.12.23
-      jose: 6.2.1
+      jose: 6.2.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
@@ -4803,12 +4803,12 @@ packages:
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
     dev: false
 
-  /@tiptap/extension-bubble-menu@3.23.6(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
-    resolution: {integrity: sha512-Mwkyp9LkDHFbqmWRIkp63FinRxFu3ajC4qSb9t4mnHsb4kAdbNLLsGtbFg+le0SWk4CxGwAOwM7SzeJ+6UGqCA==}
+  /@tiptap/extension-bubble-menu@3.24.0(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
+    resolution: {integrity: sha512-jRXD+JPu9ayvq78g8hsCxx4q/qUFtrdfIYirRSf5YUseuuUbtfrq83AsGabcygpUTefjJkMQoXNITkh6294Ggw==}
     requiresBuild: true
     peerDependencies:
-      '@tiptap/core': 3.23.6
-      '@tiptap/pm': 3.23.6
+      '@tiptap/core': 3.24.0
+      '@tiptap/pm': 3.24.0
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
@@ -4858,13 +4858,13 @@ packages:
       '@tiptap/extensions': 3.22.5(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
     dev: false
 
-  /@tiptap/extension-floating-menu@3.23.6(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
-    resolution: {integrity: sha512-2kjuDcEq69lEcECl75xqY5MyzUSh2zcC5aLrpwP1WwhJz5bxsIFHiaps5AP6h9R4A+ZBj5b2haay2Y1wDUU3VA==}
+  /@tiptap/extension-floating-menu@3.24.0(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5):
+    resolution: {integrity: sha512-7QEbf3mUzFAkejjQGX9f0L507oMtnOBRwHt2skUTR+9yXgudsN8zaDBSSRHLeMWGk9b7L293ZMA6zCRrZaHrfA==}
     requiresBuild: true
     peerDependencies:
       '@floating-ui/dom': ^1.0.0
-      '@tiptap/core': 3.23.6
-      '@tiptap/pm': 3.23.6
+      '@tiptap/core': 3.24.0
+      '@tiptap/pm': 3.24.0
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@tiptap/core': 3.22.5(@tiptap/pm@3.22.5)
@@ -5096,8 +5096,8 @@ packages:
       react-dom: 19.2.3(react@19.2.3)
       use-sync-external-store: 1.6.0(react@19.2.3)
     optionalDependencies:
-      '@tiptap/extension-bubble-menu': 3.23.6(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
-      '@tiptap/extension-floating-menu': 3.23.6(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
+      '@tiptap/extension-bubble-menu': 3.24.0(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
+      '@tiptap/extension-floating-menu': 3.24.0(@floating-ui/dom@1.7.6)(@tiptap/core@3.22.5)(@tiptap/pm@3.22.5)
     transitivePeerDependencies:
       - '@floating-ui/dom'
     dev: false
@@ -9361,8 +9361,8 @@ packages:
     hasBin: true
     dev: true
 
-  /jose@6.2.1:
-    resolution: {integrity: sha512-jUaKr1yrbfaImV7R2TN/b3IcZzsw38/chqMpo2XJ7i2F8AfM/lA4G1goC3JVEwg0H7UldTmSt3P68nt31W7/mw==}
+  /jose@6.2.3:
+    resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
     dev: false
 
   /joycon@3.1.1:
@@ -10337,8 +10337,8 @@ packages:
       rxjs: 7.8.2
     dev: false
 
-  /next-auth@5.0.0-beta.30(next@16.2.6)(react@19.2.3):
-    resolution: {integrity: sha512-+c51gquM3F6nMVmoAusRJ7RIoY0K4Ts9HCCwyy/BRoe4mp3msZpOzYMyb5LAYc1wSo74PMQkGDcaghIO7W6Xjg==}
+  /next-auth@5.0.0-beta.31(next@16.2.6)(react@19.2.3):
+    resolution: {integrity: sha512-1OBgCKPzo+S7UWWMp3xgvGvIJ0OpV7B3vR4ZDRqD9a4Ch+OT6dakLXG9ivhtmIWVa71nTSXattOHyCg8sNi8/Q==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -10353,7 +10353,7 @@ packages:
       nodemailer:
         optional: true
     dependencies:
-      '@auth/core': 0.41.0
+      '@auth/core': 0.41.2
       next: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.3)(react@19.2.3)
       react: 19.2.3
     dev: false
@@ -10498,8 +10498,8 @@ packages:
       pathe: 2.0.3
       tinyexec: 1.0.2
 
-  /oauth4webapi@3.8.5:
-    resolution: {integrity: sha512-A8jmyUckVhRJj5lspguklcl90Ydqk61H3dcU0oLhH3Yv13KpAliKTt5hknpGGPZSSfOwGyraNEFmofDYH+1kSg==}
+  /oauth4webapi@3.8.6:
+    resolution: {integrity: sha512-iwemM91xz8nryHti2yTmg5fhyEMVOkOXwHNqbvcATjyajb5oQxCQzrNOA6uElRHuMhQQTKUyFKV9y/CNyg25BQ==}
     dev: false
 
   /object-assign@4.1.1:
