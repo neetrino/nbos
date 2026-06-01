@@ -65,7 +65,7 @@
 | 0.5  | P0  | ⬜     | 👤 Neon: `sslmode=require`, `app_user` least privilege                                                                                   | Не owner в runtime                  |
 | 0.6  | P0  | ⬜     | 👤 `REPORT_EXPORT_SYNC_FALLBACK` выключен в prod                                                                                         | Только worker                       |
 | 0.7  | P0  | ⬜     | 👤 Нет постоянного `ADMIN_PASSWORD` в prod; seed:admin один раз → смена пароля                                                           | —                                   |
-| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** весь публичный трафик → CF proxy ON → origin (REG-SEC-EDGE-001 §0)                                                    | Не светить origin URL               |
+| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** `app` + `api` → VPS IP, **Proxied ON**, SSL **Full (strict)** → Coolify origin                                        | `nbos-coolify-hetzner.md` §1        |
 | 0.9  | P1  | ⬜     | 👤 Домены `@`, `www`, `api` (если отдельно) — proxied, SSL Full (strict), HSTS после теста                                               | §18                                 |
 | 0.10 | P1  | ✅     | 🤖 Runbook деплоя (Coolify/Hetzner + security gate)                                                                                      | `platforms/nbos-coolify-hetzner.md` |
 
@@ -73,16 +73,16 @@
 
 ## 1. Edge / Network — Security `1`, WAF `§18`
 
-| #    | P   | Статус | Задача                                                                                 | Проверка            |
-| ---- | --- | ------ | -------------------------------------------------------------------------------------- | ------------------- |
-| 1.1  | P0  | ⬜     | 👤 HTTPS + HSTS (Cloudflare / Vercel)                                                  | `curl -I`           |
-| 1.2  | P1  | ⬜     | 👤 WAF: Managed + **OWASP CRS** ON (§18.2)                                             | CF Security         |
-| 1.3  | P1  | ⬜     | 👤 Bot / DDoS protection ON                                                            | CF Security         |
-| 1.4  | P0  | ✅     | 🤖 App rate limit: Throttler 100/min; auth ужесточён (login/accept-invite/invite-info) | 429 на login        |
-| 1.5  | P0  | ✅     | 🤖 Next **security headers** (`next.config` `headers()`)                               | securityheaders.com |
-| 1.5b | P1  | ✅     | 🤖 Nest Helmet                                                                         | `/api/*`            |
-| 1.5c | P1  | 🔄     | 🤖 CSP Next baseline (nonce-based — P1 follow-up вместо `unsafe-inline`)               | CSP evaluator       |
-| 1.6  | P1  | ⬜     | 👤 CF rate rules для групп A–E (§18)                                                   | Логи 429            |
+| #    | P   | Статус | Задача                                                                                 | Проверка             |
+| ---- | --- | ------ | -------------------------------------------------------------------------------------- | -------------------- |
+| 1.1  | P0  | ⬜     | 👤 HTTPS + HSTS (Cloudflare → Coolify origin)                                          | `curl -I` + `cf-ray` |
+| 1.2  | P1  | ⬜     | 👤 WAF: Managed + **OWASP CRS** ON (§18.2)                                             | CF Security          |
+| 1.3  | P1  | ⬜     | 👤 Bot / DDoS protection ON                                                            | CF Security          |
+| 1.4  | P0  | ✅     | 🤖 App rate limit: Throttler 100/min; auth ужесточён (login/accept-invite/invite-info) | 429 на login         |
+| 1.5  | P0  | ✅     | 🤖 Next **security headers** (`next.config` `headers()`)                               | securityheaders.com  |
+| 1.5b | P1  | ✅     | 🤖 Nest Helmet                                                                         | `/api/*`             |
+| 1.5c | P1  | 🔄     | 🤖 CSP Next baseline (nonce-based — P1 follow-up вместо `unsafe-inline`)               | CSP evaluator        |
+| 1.6  | P1  | ⬜     | 👤 CF rate rules для групп A–E (§18)                                                   | Логи 429             |
 
 ---
 

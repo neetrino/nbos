@@ -4,14 +4,14 @@
 
 ## Hosting target
 
-| Component              | Production choice                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Compute**            | **Hetzner VPS + [Coolify](https://coolify.io)** — see [`nbos-coolify-hetzner.md`](./nbos-coolify-hetzner.md) |
-| **Database**           | Neon Postgres (`sslmode=require`)                                                                            |
-| **Object storage**     | Cloudflare R2 (private bucket)                                                                               |
-| **Cache / queues**     | Redis (`REDIS_URL`, `rediss://` in prod) — Coolify on VPS or Upstash                                         |
-| **Edge (recommended)** | Cloudflare proxy + WAF in front of VPS                                                                       |
-| **Email**              | Resend                                                                                                       |
+| Component          | Production choice                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ |
+| **Compute**        | **Hetzner VPS + [Coolify](https://coolify.io)** — see [`nbos-coolify-hetzner.md`](./nbos-coolify-hetzner.md) |
+| **Database**       | Neon Postgres (`sslmode=require`)                                                                            |
+| **Object storage** | Cloudflare R2 (private bucket)                                                                               |
+| **Cache / queues** | Redis (`REDIS_URL`, `rediss://` in prod) — Coolify on VPS or Upstash                                         |
+| **Edge / domains** | **Cloudflare** (DNS proxied, TLS Full strict, WAF) → Hetzner origin                                          |
+| **Email**          | Resend                                                                                                       |
 
 Legacy references to Vercel/Render in older docs are **not** the current deploy path.
 
@@ -31,7 +31,7 @@ Legacy references to Vercel/Render in older docs are **not** the current deploy 
 | Redis `rediss://` in prod                                                                       | Coolify / Upstash → api | API boot + denylist log                                |
 | R2 bucket private                                                                               | Cloudflare R2           | Keys only on api service                               |
 | `REPORT_EXPORT_SYNC_FALLBACK` unset/false                                                       | Coolify api             | Worker-only exports                                    |
-| Cloudflare proxy ON (if used)                                                                   | DNS                     | Origin not exposed raw                                 |
+| Cloudflare DNS proxied + SSL Full (strict) for `app` + `api`                                    | Cloudflare → Hetzner    | Orange cloud; see coolify guide §1                     |
 | Hetzner firewall                                                                                | VPS                     | 80/443 (+22 SSH); no public 3000/4000                  |
 | Branch protection on `main`                                                                     | GitHub                  | CI green                                               |
 | CI green on release commit                                                                      | GitHub Actions          | lint, typecheck, test, audit, gitleaks                 |
