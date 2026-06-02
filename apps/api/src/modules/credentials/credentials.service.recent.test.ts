@@ -24,7 +24,10 @@ describe('CredentialsService findRecent', () => {
 
     const result = await service.findRecent(accessUser1);
 
-    expect(result.items.map((i) => i.id)).toEqual(['cred-2', 'cred-1']);
+    expect(result.items).toEqual([
+      expect.objectContaining({ id: 'cred-2', name: 'Newer' }),
+      expect.objectContaining({ id: 'cred-1', name: 'Older' }),
+    ]);
     expect(prisma.auditLog.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
