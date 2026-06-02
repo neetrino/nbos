@@ -16,3 +16,5 @@ export * from './platform-access/product-slot-bindings';
 export * from './credentials/parse-env-bundle';
 export * from './credentials/credential-create-defaults';
 export * from './employees/employee-offboarding.constants';
+export * from './employees/employee-onboarding.constants';
+export * from './employees/employee-reactivation-access';

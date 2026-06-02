@@ -16,6 +16,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { RequirePermission, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { EmployeesService } from './employees.service';
 import { EmployeeOffboardingService } from './employee-offboarding.service';
+import { EmployeeReactivationService } from './employee-reactivation.service';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -24,6 +25,7 @@ export class EmployeesController {
   constructor(
     private readonly employeesService: EmployeesService,
     private readonly employeeOffboardingService: EmployeeOffboardingService,
+    private readonly employeeReactivationService: EmployeeReactivationService,
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
@@ -69,6 +71,18 @@ export class EmployeesController {
   @ApiOperation({ summary: 'Offboard employee (terminate + revoke access + checklist)' })
   offboard(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.employeeOffboardingService.execute(id, user.id);
+  }
+
+  @Post(':id/reactivate')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Reactivate terminated employee (rehire + onboarding checklist)' })
+  reactivate(
+    @Param('id') id: string,
+    @Body() body: { status?: 'ACTIVE' | 'PROBATION' },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const status = body.status === 'PROBATION' ? 'PROBATION' : 'ACTIVE';
+    return this.employeeReactivationService.execute(id, user.id, user.role, { status });
   }
 
   @Get(':id')

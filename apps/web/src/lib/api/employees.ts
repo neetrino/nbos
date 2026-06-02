@@ -145,6 +145,16 @@ export interface EmployeeOffboardingResult {
   financeNotificationsSent: number;
 }
 
+export type EmployeeReactivationTargetStatus = 'ACTIVE' | 'PROBATION';
+
+export interface EmployeeReactivationResult {
+  employeeId: string;
+  status: string;
+  fireDate: null;
+  checklistInstanceId: string;
+  previousFireDate: string | null;
+}
+
 export const employeesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Employee>> {
     const resp = await api.get<ListData<Employee>>('/api/employees', { params });
@@ -197,6 +207,16 @@ export const employeesApi = {
   },
   async offboard(id: string): Promise<EmployeeOffboardingResult> {
     const resp = await api.post<EmployeeOffboardingResult>(`/api/employees/${id}/offboard`);
+    return resp.data;
+  },
+  async reactivate(
+    id: string,
+    body: { status: EmployeeReactivationTargetStatus },
+  ): Promise<EmployeeReactivationResult> {
+    const resp = await api.post<EmployeeReactivationResult>(
+      `/api/employees/${id}/reactivate`,
+      body,
+    );
     return resp.data;
   },
 };

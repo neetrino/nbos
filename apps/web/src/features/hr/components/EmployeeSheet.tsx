@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { UserX } from 'lucide-react';
+import { UserCheck, UserX } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -44,8 +44,13 @@ import {
 } from './employee-general-form-state';
 import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
 import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
+import { EmployeeOnboardingPanel } from './EmployeeOnboardingPanel';
 import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
+import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
+import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
+import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
+import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
 
 interface EmployeeSheetProps {
   employee: Employee | null;
@@ -75,6 +80,10 @@ export function EmployeeSheet({
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [terminateOpen, setTerminateOpen] = useState(false);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+  const canReactivate = useCanReactivateEmployee();
 
   useLayoutEffect(() => {
     if (!employee) {
@@ -84,6 +93,7 @@ export function EmployeeSheet({
       return;
     }
     setCurrent(employee);
+    setActiveTab('general');
     const next = createEmployeeGeneralDraft(employee);
     setDraft(next);
     setSnap(next);
@@ -104,6 +114,25 @@ export function EmployeeSheet({
       .then((d) => setDepartments(d ?? []))
       .catch(() => {});
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !current || current.status === 'TERMINATED') {
+      setHasOnboardingChecklist(false);
+      return;
+    }
+    let cancelled = false;
+    void checklistTemplatesApi
+      .listInstances(EMPLOYEE_ONBOARDING_OWNER_TYPE, current.id)
+      .then((rows) => {
+        if (!cancelled) setHasOnboardingChecklist(rows.length > 0);
+      })
+      .catch(() => {
+        if (!cancelled) setHasOnboardingChecklist(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, current?.id, current?.status]);
 
   const patchDraft = useCallback((partial: Partial<EmployeeGeneralDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...partial } : null));
@@ -154,6 +183,19 @@ export function EmployeeSheet({
     const next = createEmployeeGeneralDraft(fresh);
     setDraft(next);
     setSnap(next);
+    setActiveTab('offboarding');
+    await onSaved?.();
+  }, [current, onSaved]);
+
+  const handleReactivateComplete = useCallback(async () => {
+    if (!current) return;
+    const fresh = await employeesApi.getById(current.id);
+    setCurrent(fresh);
+    const next = createEmployeeGeneralDraft(fresh);
+    setDraft(next);
+    setSnap(next);
+    setHasOnboardingChecklist(true);
+    setActiveTab('onboarding');
     await onSaved?.();
   }, [current, onSaved]);
 
@@ -204,16 +246,31 @@ export function EmployeeSheet({
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               )}
+              {canReactivate && current.status === 'TERMINATED' && (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
+                    <UserCheck className="mr-2 size-4" />
+                    Reactivate employee
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              )}
             </div>
           </div>
 
-          <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <div className={TEAM_SHEET_TABS_WRAPPER_CLASS}>
               <TabsList variant="default" className="h-8 w-full justify-start">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
                 {current.status === 'TERMINATED' ? (
                   <TabsTrigger value="offboarding">Offboarding</TabsTrigger>
+                ) : null}
+                {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
+                  <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
                 ) : null}
               </TabsList>
             </div>
@@ -249,6 +306,11 @@ export function EmployeeSheet({
                   <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
                 </TabsContent>
               ) : null}
+              {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
+                <TabsContent value="onboarding" className="mt-0">
+                  <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
+                </TabsContent>
+              ) : null}
             </ScrollArea>
           </Tabs>
 
@@ -270,6 +332,14 @@ export function EmployeeSheet({
         open={terminateOpen}
         onOpenChange={setTerminateOpen}
         onTerminated={handleOffboardComplete}
+      />
+
+      <ReactivateEmployeeDialog
+        employeeId={current.id}
+        employeeName={fullName}
+        open={reactivateOpen}
+        onOpenChange={setReactivateOpen}
+        onReactivated={handleReactivateComplete}
       />
     </Sheet>
   );
