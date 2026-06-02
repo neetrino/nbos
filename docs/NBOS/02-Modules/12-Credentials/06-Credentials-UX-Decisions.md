@@ -34,7 +34,7 @@ Step-up для copy/reveal секретов **зависит от criticality**,
 
 **API:** `GET /credentials/vault-session`, `POST /credentials/vault-unlock`, `POST /credentials/vault-lock`. Logout сбрасывает vault unlock.
 
-**UI:** banner на главном vault (`Unlock vault` / `Lock vault` + expiry). Первый copy/reveal critical за день может открыть тот же step-up dialog; успешный ввод unlock на 24h.
+**UI:** unlock **только in-context** — step-up dialog при первом copy/reveal HIGH/CRITICAL за день; отдельного banner/control на vault screen нет. Logout сбрасывает vault unlock.
 
 **Audit:** `credential.vault_unlocked`, `credential.vault_locked`, `credential.secret_copied`, `credential.secret_revealed` — без plaintext.
 

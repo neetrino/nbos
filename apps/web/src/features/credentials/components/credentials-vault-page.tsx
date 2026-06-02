@@ -13,7 +13,6 @@ import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
-import { CredentialVaultUnlockBanner } from '@/features/credentials/components/credential-vault-unlock-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultPaginationFooter } from '@/features/credentials/components/credential-vault-pagination-footer';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
@@ -109,25 +108,16 @@ export function CredentialsVaultPage() {
 
       {vault.vaultListScope === 'archived' ? (
         <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
-      ) : (
-        <CredentialVaultUnlockBanner />
-      )}
+      ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <CredentialQuickFilterChips
-          vaultScope={vault.activeTab}
-          categoryChips={vault.quickCategoryChips}
-          activeCategory={vault.quickCategory}
-          onCategoryChange={vault.setQuickCategory}
-          activeQuick={vault.quickFilters}
-          onToggleQuick={vault.toggleQuickFilter}
-        />
-        <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-          {vault.vaultListScope === 'archived'
-            ? `${vault.total} archived`
-            : `${vault.total} credentials`}
-        </span>
-      </div>
+      <CredentialQuickFilterChips
+        vaultScope={vault.activeTab}
+        categoryChips={vault.quickCategoryChips}
+        activeCategory={vault.quickCategory}
+        onCategoryChange={vault.setQuickCategory}
+        activeQuick={vault.quickFilters}
+        onToggleQuick={vault.toggleQuickFilter}
+      />
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
