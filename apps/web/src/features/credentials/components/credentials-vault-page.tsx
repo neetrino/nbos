@@ -17,19 +17,24 @@ import { CredentialQuickFilterChips } from '@/features/credentials/components/cr
 import { CredentialVaultPaginationFooter } from '@/features/credentials/components/credential-vault-pagination-footer';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
-import {
-  CredentialsVaultPageOverlays,
-  useVaultPasswordCopy,
-} from '@/features/credentials/components/credentials-vault-page-overlays';
-import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
+import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
+import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
+import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
+  return (
+    <CredentialVaultSessionProvider>
+      <CredentialsVaultPageContent />
+    </CredentialVaultSessionProvider>
+  );
+}
+
+function CredentialsVaultPageContent() {
   const vault = useCredentialsVaultPage();
-  const vaultSession = useCredentialVaultSession(true);
   const [boardScrollRoot, setBoardScrollRoot] = useState<HTMLElement | null>(null);
   const bindBoardScrollContainer = useCallback((node: HTMLDivElement | null) => {
     setBoardScrollRoot(node);
@@ -44,11 +49,7 @@ export function CredentialsVaultPage() {
     }, CREDENTIAL_VAULT_COPY_FEEDBACK_MS);
   };
 
-  const copyVaultPassword = useVaultPasswordCopy(
-    vaultSession,
-    vault.setTileCopyTarget,
-    handlePasswordCopied,
-  );
+  const copyVaultPassword = useVaultPasswordCopy(vault.setTileCopyTarget, handlePasswordCopied);
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
@@ -225,6 +226,11 @@ export function CredentialsVaultPage() {
         }}
         onTileCopyOpenChange={(open) => {
           if (!open) vault.setTileCopyTarget(null);
+        }}
+        onTileCopyConfirm={async (pwd) => {
+          if (!vault.tileCopyTarget) return;
+          await copyVaultPassword(vault.tileCopyTarget, pwd);
+          vault.setTileCopyTarget(null);
         }}
         onPasswordCopied={handlePasswordCopied}
       />

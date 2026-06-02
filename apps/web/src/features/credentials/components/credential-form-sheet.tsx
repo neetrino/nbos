@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { useContext } from 'react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
@@ -9,6 +9,8 @@ import { CredentialEmergencyAccessPanel } from './credential-emergency-access-pa
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
 import { CredentialFormSheetHeader } from './credential-form-sheet-header';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
+import { CredentialVaultSessionContext } from '@/features/credentials/context/credential-vault-session-context';
+import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 import type { CredentialFormSheetProps } from './credential-form-sheet-types';
 import { usePermission } from '@/lib/permissions';
@@ -16,6 +18,18 @@ import { usePermission } from '@/lib/permissions';
 export type { CredentialFormSheetProps } from './credential-form-sheet-types';
 
 export function CredentialFormSheet(props: CredentialFormSheetProps) {
+  const parentVaultSession = useContext(CredentialVaultSessionContext);
+  if (parentVaultSession) {
+    return <CredentialFormSheetInner {...props} />;
+  }
+  return (
+    <CredentialVaultSessionProvider>
+      <CredentialFormSheetInner {...props} />
+    </CredentialVaultSessionProvider>
+  );
+}
+
+function CredentialFormSheetInner(props: CredentialFormSheetProps) {
   const { open, onOpenChange, onRequestArchive } = props;
   const { me } = usePermission();
   const form = useCredentialFormSheet(props);

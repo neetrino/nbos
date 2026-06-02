@@ -7,7 +7,7 @@ import type { CredentialFormSheetProps } from '@/features/credentials/components
 
 export function useCredentialFormSheet(props: CredentialFormSheetProps) {
   const state = useCredentialFormSheetState(props);
-  const vault = useCredentialVaultSession(props.open);
+  const vault = useCredentialVaultSession();
   const actions = useCredentialFormSheetActions(
     props,
     {

@@ -3,6 +3,7 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import { credentialsApi, type CredentialSecretField } from '@/lib/api/credentials';
 import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
+import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
@@ -38,10 +39,7 @@ export interface CredentialFormSheetStateSlice {
   captureFormRollback: () => () => void;
 }
 
-export interface CredentialVaultSessionSlice {
-  isUnlocked: boolean;
-  refresh: () => Promise<void>;
-}
+import type { CredentialVaultSessionValue } from '@/features/credentials/hooks/use-credential-vault-session';
 
 function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record<string, unknown> {
   return {
@@ -66,7 +64,7 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
 export function useCredentialFormSheetActions(
   props: CredentialFormSheetProps,
   state: CredentialFormSheetStateSlice,
-  vault: CredentialVaultSessionSlice,
+  vault: CredentialVaultSessionValue,
 ) {
   const { onOpenChange, projectId, productId, successToast, onCreated, onSaved } = props;
   const { creatorId } = useTaskCreatorId();
@@ -154,29 +152,54 @@ export function useCredentialFormSheetActions(
   const executeSecretAction = useCallback(
     async (field: CredentialSecretField, mode: 'reveal' | 'copy', pwd?: string) => {
       if (!state.credentialId) return;
-      const needsUnlock = credentialNeedsVaultUnlock(state.criticality) && !vault.isUnlocked;
-      const stepUpPassword = needsUnlock ? pwd : undefined;
-      if (needsUnlock && !stepUpPassword) return;
+      const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
 
-      try {
+      const run = async (stepUpPassword?: string) => {
         if (mode === 'reveal') {
           const { value } = await credentialsApi.revealSecret(
-            state.credentialId,
+            state.credentialId!,
             field,
             stepUpPassword,
           );
           state.setRevealed((p) => ({ ...p, [field]: value }));
         } else {
           const { value } = await credentialsApi.copySecret(
-            state.credentialId,
+            state.credentialId!,
             field,
             stepUpPassword,
           );
           await navigator.clipboard.writeText(value);
           toast.success('Copied');
         }
-        if (stepUpPassword) await vault.refresh();
-      } catch {
+        if (needsUnlock) await vault.markUnlockedFromStepUp();
+      };
+
+      if (!needsUnlock) {
+        try {
+          await run();
+        } catch {
+          toast.error('Could not access secret');
+        }
+        return;
+      }
+
+      if (pwd) {
+        try {
+          await run(pwd);
+        } catch {
+          toast.error('Could not access secret');
+        }
+        return;
+      }
+
+      try {
+        await run();
+      } catch (error) {
+        if (isCredentialVaultStepUpRequired(error)) {
+          state.setStepUpField(field);
+          state.setStepUpMode(mode);
+          return;
+        }
         toast.error('Could not access secret');
       }
     },
@@ -185,14 +208,9 @@ export function useCredentialFormSheetActions(
 
   const requestSecretAction = useCallback(
     (field: CredentialSecretField, mode: 'reveal' | 'copy') => {
-      if (!credentialNeedsVaultUnlock(state.criticality) || vault.isUnlocked) {
-        void executeSecretAction(field, mode);
-        return;
-      }
-      state.setStepUpField(field);
-      state.setStepUpMode(mode);
+      void executeSecretAction(field, mode);
     },
-    [executeSecretAction, state, vault.isUnlocked],
+    [executeSecretAction],
   );
 
   const runStepUp = useCallback(

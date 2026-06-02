@@ -7,6 +7,7 @@ import { CredentialStepUpDialog } from '@/features/credentials/components/creden
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { useCredentialSecretVersions } from '@/features/credentials/hooks/use-credential-secret-versions';
 import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
+import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
 import { credentialsApi, type CredentialSecretVersion } from '@/lib/api/credentials';
 import { usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
@@ -30,7 +31,7 @@ export function CredentialSecretVersionsPanel({
   embedded = false,
 }: CredentialSecretVersionsPanelProps) {
   const { me } = usePermission();
-  const vault = useCredentialVaultSession(sheetOpen);
+  const vault = useCredentialVaultSession();
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
   const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
   const canReveal =
@@ -40,21 +41,16 @@ export function CredentialSecretVersionsPanel({
 
   const revealVersion = async (version: CredentialSecretVersion, password?: string) => {
     try {
-      const stepUpPassword = !vault.isUnlocked ? password : undefined;
-      if (!vault.isUnlocked && !stepUpPassword) {
+      const result = await credentialsApi.revealSecretVersion(credentialId, version.id, password);
+      await navigator.clipboard.writeText(result.value);
+      toast.success(`Copied ${fieldLabel(result.field)} v${result.versionNumber}`);
+      await vault.markUnlockedFromStepUp();
+      setRevealTarget(null);
+    } catch (error) {
+      if (!password && isCredentialVaultStepUpRequired(error)) {
         setRevealTarget(version);
         return;
       }
-      const result = await credentialsApi.revealSecretVersion(
-        credentialId,
-        version.id,
-        stepUpPassword,
-      );
-      await navigator.clipboard.writeText(result.value);
-      toast.success(`Copied ${fieldLabel(result.field)} v${result.versionNumber}`);
-      if (stepUpPassword) await vault.refresh();
-      setRevealTarget(null);
-    } catch {
       toast.error('Could not reveal version');
     }
   };
