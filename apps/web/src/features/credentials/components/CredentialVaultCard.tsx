@@ -1,6 +1,7 @@
 'use client';
 
-import { StatusBadge } from '@/components/shared';
+import { Fragment } from 'react';
+import { StatusBadge, type StatusVariant } from '@/components/shared/StatusBadge';
 import { cn } from '@/lib/utils';
 import { CredentialVaultSecretPills } from '@/features/credentials/components/credential-vault-secret-pills';
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
@@ -20,12 +21,42 @@ const VAULT_CARD_SHELL_CLASS = cn(
   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
 );
 
+const VAULT_CARD_BODY_CLASS = 'flex flex-col gap-1.5 p-2.5 pl-3';
+
+const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
+
 function shellClassForVariant(variant: CredentialVaultCardVariant): string {
   return cn(VAULT_CARD_SHELL_CLASS, variant === 'grid' ? 'rounded-lg' : 'rounded-xl');
 }
 
-function bodyClassForVariant(variant: CredentialVaultCardVariant): string {
-  return cn('flex flex-col gap-1.5', variant === 'grid' ? 'p-2.5 pl-3' : 'p-3');
+interface VaultCardMetaItem {
+  key: string;
+  label: string;
+  variant: StatusVariant;
+}
+
+function CredentialVaultCardMetaRow({ items }: { items: VaultCardMetaItem[] }) {
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-1">
+      {items.map((item, index) => (
+        <Fragment key={item.key}>
+          {index > 0 ? (
+            <span
+              className="text-muted-foreground/45 shrink-0 text-[10px] leading-none select-none"
+              aria-hidden
+            >
+              |
+            </span>
+          ) : null}
+          <StatusBadge
+            label={item.label}
+            variant={item.variant}
+            className={VAULT_CARD_BADGE_CLASS}
+          />
+        </Fragment>
+      ))}
+    </div>
+  );
 }
 
 export interface CredentialVaultCardProps {
@@ -49,22 +80,21 @@ export function CredentialVaultCard({
   const criticality = getCredentialCriticality(credential.criticality);
   const accessLabel = formatCredentialAccessLabel(credential.accessLevel);
 
-  const showCategoryBadge = variant === 'grid';
-  const showAccessBadge = variant === 'kanban';
-  const showHighCriticality =
-    variant === 'grid' &&
-    criticality &&
-    (credential.criticality === 'HIGH' || credential.criticality === 'CRITICAL');
-  const showKanbanCriticality = variant === 'kanban' && Boolean(criticality);
-
   const showCopyStrip = Boolean(onCopyLogin);
   const showPassword =
     showCopyStrip && Boolean(onCopyPassword) && Boolean(credential.secretsPresent?.password);
 
-  const titleClass =
-    variant === 'grid'
-      ? 'text-foreground line-clamp-2 min-h-[2lh] text-[11px] leading-snug font-medium'
-      : 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
+  const metaItems: VaultCardMetaItem[] = [
+    { key: 'category', label: category.label, variant: category.badgeVariant },
+  ];
+  if (criticality) {
+    metaItems.push({
+      key: 'criticality',
+      label: criticality.label,
+      variant: criticality.variant,
+    });
+  }
+  metaItems.push({ key: 'access', label: accessLabel, variant: 'gray' });
 
   return (
     <div
@@ -79,32 +109,12 @@ export function CredentialVaultCard({
         }
       }}
     >
-      {showCategoryBadge ? (
-        <span
-          className={cn('absolute top-0 bottom-0 left-0 w-0.5', category.accentBarClass)}
-          aria-hidden
-        />
-      ) : null}
-      <div className={bodyClassForVariant(variant)}>
-        {showCategoryBadge || showHighCriticality ? (
-          <div className="flex min-w-0 flex-wrap items-center gap-1">
-            {showCategoryBadge ? (
-              <StatusBadge
-                label={category.label}
-                variant={category.badgeVariant}
-                className={VAULT_CARD_BADGE_CLASS}
-              />
-            ) : null}
-            {showHighCriticality && criticality ? (
-              <StatusBadge
-                label={criticality.label}
-                variant={criticality.variant}
-                className={VAULT_CARD_BADGE_CLASS}
-              />
-            ) : null}
-          </div>
-        ) : null}
-        <p className={titleClass}>{credential.name}</p>
+      <span
+        className={cn('absolute top-0 bottom-0 left-0 w-0.5', category.accentBarClass)}
+        aria-hidden
+      />
+      <div className={VAULT_CARD_BODY_CLASS}>
+        <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
         {showCopyStrip && onCopyLogin ? (
           <CredentialVaultSecretPills
             login={credential.login}
@@ -114,14 +124,7 @@ export function CredentialVaultCard({
             onCopyPassword={() => onCopyPassword!(credential.id)}
           />
         ) : null}
-        {showAccessBadge || showKanbanCriticality ? (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {showKanbanCriticality && criticality ? (
-              <StatusBadge label={criticality.label} variant={criticality.variant} />
-            ) : null}
-            {showAccessBadge ? <StatusBadge label={accessLabel} variant="gray" /> : null}
-          </div>
-        ) : null}
+        <CredentialVaultCardMetaRow items={metaItems} />
       </div>
     </div>
   );
