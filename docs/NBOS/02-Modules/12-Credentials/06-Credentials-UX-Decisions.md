@@ -196,6 +196,8 @@ One DB enum (`ADMIN`, `DOMAIN`, `HOSTING`, `SERVICE`, `APP`, `MAIL`, `API_KEY`, 
 
 Implementation: `apps/web/src/features/credentials/constants/credential-vault-categories.ts`. Delivery slot `allowedCategories` intersects with the active scope set.
 
+**Category Board view** uses the platform shared `KanbanBoard` (colored stage headers, column quick-create `+`, card chrome aligned with Support/Finance boards) — not a custom column layout.
+
 ### Enum / migration rules
 
 - Do **not** add `ENV`, `SSH`, `RECOVERY_CODES` to `CredentialCategoryEnum`; those are secret formats, not categories.

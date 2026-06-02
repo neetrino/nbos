@@ -227,6 +227,7 @@ export default function CredentialsPage() {
         <CredentialVaultCategoryBoard
           credentials={credentials}
           loading={loading}
+          vaultScope={activeTab}
           showCreate={showCreate}
           categoryColumns={quickCategoryChips}
           onCreateInCategory={(cat) => openCreate(cat)}
@@ -328,7 +329,9 @@ export default function CredentialsPage() {
         onToggleQuick={toggleQuickFilter}
       />
 
-      {vaultView}
+      <div className={viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col' : undefined}>
+        {vaultView}
+      </div>
 
       <CredentialVaultPagination
         page={page}
