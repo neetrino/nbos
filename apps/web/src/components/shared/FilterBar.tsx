@@ -183,17 +183,12 @@ function FilterBarFilterSelect({
         <SelectValue placeholder={filter.label}>{resolveTriggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {showAll
-          ? items.map((item) => (
-              <SelectItem key={`${filter.key}-${item.value}`} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))
-          : filter.options.map((opt) => (
-              <SelectItem key={`${filter.key}-${opt.value}`} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
+        {showAll ? <SelectItem value="all">{filterAllOptionLabel(filter)}</SelectItem> : null}
+        {filter.options.map((opt) => (
+          <SelectItem key={`${filter.key}-${opt.value}`} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

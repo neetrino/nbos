@@ -10,6 +10,7 @@ import type { NextRequest } from 'next/server';
 const PUBLIC_PATHS = ['/', '/sign-in', '/sign-up', '/accept-invite'];
 
 function isPublicPath(pathname: string): boolean {
+  if (pathname.startsWith('/api/')) return true;
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
@@ -32,6 +33,10 @@ export const proxy = auth((req: NextRequest & { auth: unknown }) => {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)).*)',
+    /*
+     * Skip API route handlers, static assets, and files with extensions.
+     * Auth.js (`/api/auth/session`) must return JSON, not an HTML redirect/404.
+     */
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
   ],
 };
