@@ -59,11 +59,3 @@ export function defaultCategoryForVaultScope(
   if (preset && options.some((o) => o.value === preset)) return preset;
   return options[0]?.value ?? 'OTHER';
 }
-
-export function isCategoryAllowedInVaultScope(
-  scope: CredentialVaultScope,
-  category: string,
-): boolean {
-  if (scope === 'all') return true;
-  return (VAULT_CATEGORY_VALUES_BY_SCOPE[scope] as readonly string[]).includes(category);
-}

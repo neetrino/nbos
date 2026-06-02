@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  categoriesForVaultScope,
-  isCategoryAllowedInVaultScope,
-} from './credential-vault-categories';
+import { categoriesForVaultScope } from './credential-vault-categories';
 
 describe('credential-vault-categories', () => {
   it('limits My scope to MAIL, SERVICE, APP, OTHER', () => {
@@ -20,8 +17,8 @@ describe('credential-vault-categories', () => {
     expect(options.map((c) => c.value)).toContain('ADMIN');
   });
 
-  it('validates scope membership', () => {
-    expect(isCategoryAllowedInVaultScope('secret', 'ADMIN')).toBe(true);
-    expect(isCategoryAllowedInVaultScope('my', 'ADMIN')).toBe(false);
+  it('excludes out-of-scope categories without legacy extra', () => {
+    expect(categoriesForVaultScope('secret').map((c) => c.value)).toContain('ADMIN');
+    expect(categoriesForVaultScope('my').map((c) => c.value)).not.toContain('ADMIN');
   });
 });

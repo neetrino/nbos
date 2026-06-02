@@ -19,7 +19,7 @@ pnpm test:regression
 | Finance         | `invoice-money-status.test.ts`, `invoices.service.test.ts`                  |
 | CRM / Deals     | `deals.service.test.ts`, `deal-stage-gate.test.ts`                          |
 | Support         | `support.service.test.ts`                                                   |
-| Credentials     | `credentials.service.test.ts`                                               |
+| Credentials     | `credentials.service.*.test.ts` (list / secrets / mutations)                |
 | Expenses        | `expenses.service.test.ts`                                                  |
 | Payroll         | `payroll-runs.service.test.ts`                                              |
 | Wallet          | `employee-wallet.service.test.ts`                                           |

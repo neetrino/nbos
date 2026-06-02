@@ -207,7 +207,7 @@
 | 10.1 | P0  | ✅     | 🤖 `CREDENTIALS_ENCRYPTION_KEY` required (env validation) | Boot fail |
 | 10.2 | P0  | ✅     | 🤖 AES-256-GCM at rest                                    | —         |
 | 10.3 | P1  | ⬜     | 🤖 Audit `credential.secret_revealed`                     | —         |
-| 10.4 | P0  | ⬜     | 🤖 RBAC regression (`credentials.service.test` в gate)    | 403       |
+| 10.4 | P0  | ⬜     | 🤖 RBAC regression (`credentials.service.*.test` в gate)  | 403       |
 
 ---
 
