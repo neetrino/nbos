@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
-import type { PlatformResourceFamily } from '@nbos/shared';
+import { PrismaClient, type PlatformResourceFamilyEnum } from '@nbos/database';
+import type { AccessScopeMode, PlatformResourceFamily } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 
 export interface PlatformTeamContext {
@@ -46,15 +46,45 @@ export class PlatformAccessResolverService {
     return ctx.productIds.includes(productId);
   }
 
-  /**
-   * Placeholder for Role/Personal policy resolution (Phase 1c).
-   * Returns ASSIGNED until policy tables are populated from Settings UI.
-   */
-  resolveScopeModeForFamily(
-    _employeeId: string,
-    _roleId: string,
-    _family: PlatformResourceFamily,
-  ): 'ALL' | 'ASSIGNED' | 'NONE' {
+  /** Resolves effective scope mode: personal override → role policy → ASSIGNED default. */
+  async resolveScopeModeForFamily(
+    employeeId: string,
+    family: PlatformResourceFamily,
+  ): Promise<AccessScopeMode> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { roleId: true },
+    });
+    if (!employee) return 'NONE';
+
+    const familyKey = family as PlatformResourceFamilyEnum;
+    const override = await this.prisma.employeeAccessOverride.findUnique({
+      where: {
+        employeeId_resourceFamily: { employeeId, resourceFamily: familyKey },
+      },
+      select: { scopeMode: true, effectiveFrom: true, effectiveTo: true },
+    });
+    if (override && this.isOverrideActive(override)) {
+      return (override.scopeMode as AccessScopeMode | null) ?? 'ASSIGNED';
+    }
+
+    const rolePolicy = await this.prisma.roleAccessPolicy.findUnique({
+      where: {
+        roleId_resourceFamily: { roleId: employee.roleId, resourceFamily: familyKey },
+      },
+      select: { scopeMode: true },
+    });
+    if (rolePolicy) return rolePolicy.scopeMode as AccessScopeMode;
     return 'ASSIGNED';
+  }
+
+  private isOverrideActive(override: {
+    effectiveFrom: Date | null;
+    effectiveTo: Date | null;
+  }): boolean {
+    const now = Date.now();
+    if (override.effectiveFrom && override.effectiveFrom.getTime() > now) return false;
+    if (override.effectiveTo && override.effectiveTo.getTime() < now) return false;
+    return true;
   }
 }

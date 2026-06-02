@@ -5,6 +5,9 @@ describe('PlatformAccessResolverService', () => {
   const prisma = {
     projectTeamMember: { findMany: vi.fn() },
     productTeamMember: { findMany: vi.fn() },
+    employee: { findUnique: vi.fn() },
+    employeeAccessOverride: { findUnique: vi.fn() },
+    roleAccessPolicy: { findUnique: vi.fn() },
   };
 
   const service = new PlatformAccessResolverService(prisma as never);
@@ -29,5 +32,14 @@ describe('PlatformAccessResolverService', () => {
     const ctx = { projectIds: ['p1'], productIds: ['prod-a'], projectAdminProjectIds: [] };
     expect(service.employeeInProductTeam(ctx, 'prod-a')).toBe(true);
     expect(service.employeeInProductTeam(ctx, 'prod-b')).toBe(false);
+  });
+
+  it('resolveScopeModeForFamily returns role policy scope', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ roleId: 'role-1' });
+    prisma.employeeAccessOverride.findUnique.mockResolvedValue(null);
+    prisma.roleAccessPolicy.findUnique.mockResolvedValue({ scopeMode: 'ALL' });
+
+    const mode = await service.resolveScopeModeForFamily('emp-1', 'CREDENTIALS');
+    expect(mode).toBe('ALL');
   });
 });
