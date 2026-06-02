@@ -228,6 +228,9 @@ My Company -> Tasks
 My Company -> Credentials
   Seat / permission mapping, offboarding access revoke
 
+My Company -> Platform Access Foundation
+  Role access levels, personal overrides, Project/Product team access
+
 My Company -> Dashboards
   KPI, scorecard, team capacity, org health
 ```
@@ -243,3 +246,4 @@ My Company -> Dashboards
 - [05-SOP-Templates.md](./05-SOP-Templates.md) - SOP и процедуры.
 - [06-My-Company-Cleanup-Register.md](./06-My-Company-Cleanup-Register.md) - cleanup register.
 - [07-Compensation-and-Policies.md](./07-Compensation-and-Policies.md) - compensation profiles, bonus policies, KPI policies.
+- [09-Platform-Access-Foundation.md](./09-Platform-Access-Foundation.md) - role access levels, personal overrides, Project/Product team foundation.

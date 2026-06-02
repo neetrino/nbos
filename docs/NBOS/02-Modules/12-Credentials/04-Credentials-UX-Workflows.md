@@ -24,15 +24,18 @@ Credentials должен быть быстрым рабочим инструме
 
 Scope tabs определяют область vault, а не внешний вид списка.
 
-| Scope        | Для чего                                           | Create   |
-| ------------ | -------------------------------------------------- | -------- |
-| `All`        | все credentials, доступные пользователю            | скрыт    |
-| `Personal`   | личные рабочие credentials сотрудника              | доступен |
-| `Department` | рабочие credentials department/company context     | доступен |
-| `Secret`     | чувствительные credentials с ограниченным доступом | доступен |
-| `Archived`   | архивированные credentials                         | скрыт    |
+| Scope      | Для чего                                         | Create   |
+| ---------- | ------------------------------------------------ | -------- |
+| `All`      | все credentials, доступные пользователю          | скрыт    |
+| `My`       | личные рабочие credentials сотрудника            | доступен |
+| `Team`     | низкорисковые общие credentials компании/команды | доступен |
+| `Project`  | credentials клиентов, проектов и продуктов       | доступен |
+| `Secret`   | чувствительные credentials с ручным доступом     | доступен |
+| `Archived` | архивированные credentials                       | скрыт    |
 
-`All` используется для поиска, просмотра, открытия Sheet и quick actions. Создание из `All` не допускается: пользователь должен сначала перейти в `Personal`, `Department` или `Secret`.
+`All` используется для поиска, просмотра, открытия Sheet и quick actions. Создание из `All` не допускается: пользователь должен сначала перейти в `My`, `Team`, `Project` или `Secret`.
+
+`Department` как UX-scope не использовать. Клиентские/рабочие credentials относятся к `Project`.
 
 ## View Modes
 
@@ -147,7 +150,7 @@ Sheet должен иметь блоки:
 - Overview;
 - Secret Fields;
 - Context Links;
-- Access & Sharing;
+- Manual Access;
 - Rotation & Health;
 - Audit Log;
 - Related Files / Drive supporting docs;
@@ -155,6 +158,26 @@ Sheet должен иметь блоки:
 - Versions.
 
 Dangerous actions (`archive`, `restore`, `permanent delete`) находятся в Settings/Advanced внутри Sheet.
+
+### Manual Access Block
+
+Manual Access показывает только сотрудников, которым доступ к этому credential выдан руками из Sheet.
+
+Не показывать здесь всех сотрудников, которые получили доступ через:
+
+- Role Access Levels;
+- Personal Access Levels;
+- Project Team;
+- Product Team;
+- global owner/CEO policy.
+
+Row в Manual Access:
+
+- employee;
+- access: `View` / `Edit`;
+- remove manual access.
+
+Inherited access можно показывать как короткий summary, без полного списка людей.
 
 ## Quick Actions
 
