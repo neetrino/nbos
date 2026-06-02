@@ -11,10 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CREDENTIAL_MANUAL_ACCESS_ACCESS_SELECT_CLASS } from '@/features/credentials/constants/credential-manual-access-inline-controls';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
+
+const MANUAL_ACCESS_LEVEL_SELECT_CLASS =
+  'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
 
 export interface CredentialManualAccessGrantRowProps {
   grant: CredentialManualGrant;
@@ -65,7 +67,7 @@ export function CredentialManualAccessGrantRow({
           >
             <SelectTrigger
               size="sm"
-              className={CREDENTIAL_MANUAL_ACCESS_ACCESS_SELECT_CLASS}
+              className={MANUAL_ACCESS_LEVEL_SELECT_CLASS}
               aria-label={`Access for ${label}`}
             >
               <SelectValue />

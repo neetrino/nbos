@@ -2,7 +2,7 @@
 
 import { useCredentialFormSheetState } from '@/features/credentials/hooks/use-credential-form-sheet-state';
 import { useCredentialFormSheetActions } from '@/features/credentials/hooks/use-credential-form-sheet-actions';
-import type { CredentialFormSheetProps } from './credential-form-sheet-types';
+import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
 export function useCredentialFormSheet(props: CredentialFormSheetProps) {
   const state = useCredentialFormSheetState(props);
@@ -42,3 +42,5 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     onOpenChange: props.onOpenChange,
   };
 }
+
+export type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';

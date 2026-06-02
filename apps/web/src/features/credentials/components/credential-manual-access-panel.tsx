@@ -6,20 +6,17 @@ import { RelationPickerField } from '@/components/shared';
 import { RELATION_PICKER_CHIP_STACK_CLASS } from '@/components/shared/detail-sheet-classes';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CredentialManualAccessGrantRow } from './credential-manual-access-grant-row';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 export interface CredentialManualAccessPanelProps {
   grants: CredentialManualGrant[];
-  loading?: boolean;
   inheritedSummary: string;
   onGrantsChange: (grants: CredentialManualGrant[]) => void;
 }
 
 export function CredentialManualAccessPanel({
   grants,
-  loading = false,
   inheritedSummary,
   onGrantsChange,
 }: CredentialManualAccessPanelProps) {
@@ -75,27 +72,23 @@ export function CredentialManualAccessPanel({
         {...employeePicker}
       />
 
-      {loading ? (
-        <Skeleton className="h-24 w-full rounded-xl" />
-      ) : (
-        <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
-          {grants.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No manual grants yet.</p>
-          ) : (
-            grants.map((grant) => (
-              <CredentialManualAccessGrantRow
-                key={grant.employeeId}
-                grant={grant}
-                onLevelChange={(employeeId, level) => patchGrant(employeeId, { level })}
-                onExpiresAtChange={(employeeId, expiresAt) => patchGrant(employeeId, { expiresAt })}
-                onRemove={(employeeId) =>
-                  onGrantsChange(grants.filter((g) => g.employeeId !== employeeId))
-                }
-              />
-            ))
-          )}
-        </div>
-      )}
+      <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
+        {grants.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No manual grants yet.</p>
+        ) : (
+          grants.map((grant) => (
+            <CredentialManualAccessGrantRow
+              key={grant.employeeId}
+              grant={grant}
+              onLevelChange={(employeeId, level) => patchGrant(employeeId, { level })}
+              onExpiresAtChange={(employeeId, expiresAt) => patchGrant(employeeId, { expiresAt })}
+              onRemove={(employeeId) =>
+                onGrantsChange(grants.filter((g) => g.employeeId !== employeeId))
+              }
+            />
+          ))
+        )}
+      </div>
     </section>
   );
 }

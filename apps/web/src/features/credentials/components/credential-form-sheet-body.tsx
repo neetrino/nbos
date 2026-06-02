@@ -12,7 +12,7 @@ import {
   CREDENTIAL_FORM_SHEET_TABS,
   type CredentialFormSheetTab,
 } from '@/features/credentials/constants/credential-form-sheet-tabs';
-import type { useCredentialFormSheet } from './use-credential-form-sheet';
+import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -22,7 +22,6 @@ export interface CredentialFormSheetBodyProps {
   sheetOpen: boolean;
   credentialId: string | null;
   manualGrants: CredentialManualGrant[];
-  manualLoading: boolean;
   onManualGrantsChange: (grants: CredentialManualGrant[]) => void;
 }
 
@@ -31,7 +30,6 @@ export function CredentialFormSheetBody({
   sheetOpen,
   credentialId,
   manualGrants,
-  manualLoading,
   onManualGrantsChange,
 }: CredentialFormSheetBodyProps) {
   const isEdit = Boolean(credentialId);
@@ -73,7 +71,6 @@ export function CredentialFormSheetBody({
         {activeTab === 'manual-access' ? (
           <CredentialManualAccessPanel
             grants={manualGrants}
-            loading={manualLoading}
             inheritedSummary={inheritedSummary}
             onGrantsChange={onManualGrantsChange}
           />

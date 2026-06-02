@@ -16,7 +16,7 @@ import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
 import { credentialInheritedAccessSummary } from '@/features/credentials/utils/credential-inherited-access-summary';
-import type { useCredentialFormSheet } from './use-credential-form-sheet';
+import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
 

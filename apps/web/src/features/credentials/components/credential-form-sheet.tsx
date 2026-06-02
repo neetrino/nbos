@@ -9,7 +9,7 @@ import { CredentialEmergencyAccessPanel } from './credential-emergency-access-pa
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
 import { CredentialFormSheetHeader } from './credential-form-sheet-header';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
-import { useCredentialFormSheet } from './use-credential-form-sheet';
+import { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 import type { CredentialFormSheetProps } from './credential-form-sheet-types';
 import { usePermission } from '@/lib/permissions';
 
@@ -95,7 +95,6 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
                   sheetOpen={open}
                   credentialId={credentialId}
                   manualGrants={manualGrants}
-                  manualLoading={loading}
                   onManualGrantsChange={setManualGrants}
                 />
               </ScrollArea>

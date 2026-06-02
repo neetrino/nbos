@@ -17,8 +17,6 @@ export interface NbosDatePickerTriggerProps {
   onClear?: () => void;
   /** Inside detail-sheet field shell — no double border. */
   embedded?: boolean;
-  /** Calendar icon before label (inline chip rows). */
-  iconLeading?: boolean;
   /** Raised pill; empty state is icon-only (no placeholder dash). */
   iconButtonShell?: boolean;
   className?: string;
@@ -34,7 +32,6 @@ export function NbosDatePickerTrigger({
   hasValue,
   onClear,
   embedded = false,
-  iconLeading = false,
   iconButtonShell = false,
   className,
   id,
@@ -49,8 +46,7 @@ export function NbosDatePickerTrigger({
       id={id}
       aria-label={ariaLabel}
       className={cn(
-        'min-w-0 truncate text-left text-xs leading-normal',
-        iconLeading && !iconButtonShell ? 'max-w-[4.5rem] flex-1' : 'flex-1',
+        'min-w-0 flex-1 truncate text-left text-xs leading-normal',
         iconButtonShell && hasValue && 'max-w-[4.5rem]',
         !hasValue && 'text-muted-foreground',
       )}
@@ -120,19 +116,9 @@ export function NbosDatePickerTrigger({
         className,
       )}
     >
-      {iconLeading ? (
-        <>
-          {calendarIcon}
-          {valueLabel}
-          {clearControl}
-        </>
-      ) : (
-        <>
-          {valueLabel}
-          {clearControl}
-          {calendarIcon}
-        </>
-      )}
+      {valueLabel}
+      {clearControl}
+      {calendarIcon}
     </span>
   );
 }
