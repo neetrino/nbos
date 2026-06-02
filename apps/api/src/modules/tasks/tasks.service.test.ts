@@ -67,9 +67,24 @@ describe('TasksService', () => {
       await expect(service.findAll({ orderId: 'ord-1' })).rejects.toThrow(BadRequestException);
     });
 
+    it('gates projectId list to project participation when TASKS_VIEW is scoped', async () => {
+      prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
+      await service.findAll({
+        projectId: 'p1',
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'ASSIGNED' },
+      });
+      expect(prisma.project.findFirst).toHaveBeenCalled();
+    });
+
     it('validates order belongs to project when both ids are set', async () => {
       prisma.order.findUnique.mockResolvedValue({ projectId: 'p1' });
-      await service.findAll({ projectId: 'p1', orderId: 'ord-1', pageSize: 50 });
+      prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
+      await service.findAll({
+        projectId: 'p1',
+        orderId: 'ord-1',
+        pageSize: 50,
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'ALL' },
+      });
       expect(prisma.order.findUnique).toHaveBeenCalledWith({
         where: { id: 'ord-1' },
         select: { projectId: true },

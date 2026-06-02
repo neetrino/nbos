@@ -12,6 +12,7 @@ import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './tas
 import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
+import type { TasksAccessContext } from './tasks-scoped-access';
 import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
@@ -77,6 +78,7 @@ interface TaskQueryParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   involvesEmployeeId?: string;
+  access?: TasksAccessContext;
 }
 
 @Injectable()

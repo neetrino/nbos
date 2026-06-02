@@ -10,8 +10,10 @@ import {
   buildOrderTaskScopeWhere,
   buildProjectTaskScopeWhere,
 } from './task-project-list-filter.ops';
+import { assertProjectTasksAccessible } from './task-project-access.op';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
+import type { TasksAccessContext } from './tasks-scoped-access';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
 
 const TASK_SORT_FIELDS = new Set([
@@ -43,6 +45,8 @@ export interface TaskFindAllPaginatedParams {
   sortOrder?: 'asc' | 'desc';
   /** When set, only tasks where this employee is assignee, creator, co-assignee, or observer. */
   involvesEmployeeId?: string;
+  /** When `projectId` is set, gates list to projects the viewer participates in (unless TASKS_VIEW is ALL). */
+  access?: TasksAccessContext;
 }
 
 export async function taskFindAllPaginated(
@@ -97,6 +101,7 @@ export async function taskFindAllPaginated(
     throw new BadRequestException('orderId requires projectId');
   }
   if (params.projectId) {
+    await assertProjectTasksAccessible(prisma, params.projectId, params.access);
     parts.push(buildProjectTaskScopeWhere(params.projectId));
   }
   if (params.orderId) {

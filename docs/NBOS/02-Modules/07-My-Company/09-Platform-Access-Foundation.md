@@ -177,7 +177,9 @@ Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 
 **UI:** `ProjectParticipantsSection` / `ProductParticipantsSection` are source of truth for team edits; APIs sync legacy FKs via `ProductTeamSyncService`.
 
-**Still backlog:** Tasks module list/detail filters should import the same participation helpers instead of duplicating product FK checks.
+**Runtime (partial):** `GET /tasks?projectId=` asserts viewer project participation via `assertProjectTasksAccessible` when `TASKS_VIEW` ≠ `ALL`.
+
+**Still backlog:** workspace-only lists without `projectId`; task detail authorization beyond list gate.
 
 ---
 
