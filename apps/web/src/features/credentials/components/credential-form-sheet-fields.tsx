@@ -1,0 +1,196 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
+import { commentLabelForType } from '@/features/credentials/credential-field-config';
+import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
+import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
+import type { useCredentialFormSheet } from './use-credential-form-sheet';
+
+type FormState = ReturnType<typeof useCredentialFormSheet>;
+
+export interface CredentialFormSheetFieldsProps {
+  form: FormState;
+}
+
+export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsProps) {
+  const {
+    isCreate,
+    credentialId,
+    category,
+    setCategory,
+    credentialType,
+    setCredentialType,
+    categoryOptions,
+    categoryLocked,
+    provider,
+    setProvider,
+    environment,
+    setEnvironment,
+    login,
+    setLogin,
+    password,
+    setPassword,
+    apiKey,
+    setApiKey,
+    phone,
+    setPhone,
+    url,
+    setUrl,
+    envData,
+    setEnvData,
+    comment,
+    setComment,
+    accessLevel,
+    allowedEmployees,
+    employees,
+    toggleAllowedEmployee,
+    detail,
+    revealed,
+    setStepUpField,
+    setStepUpMode,
+    showSettings,
+    criticality,
+    setCriticality,
+    nextRotationAt,
+    setNextRotationAt,
+  } = form;
+
+  return (
+    <div className="space-y-6 px-6 py-5">
+      {!categoryLocked && (
+        <div className="grid gap-2">
+          <Label>Category</Label>
+          <Select value={category} onValueChange={(v) => setCategory(v ?? category)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryOptions.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div className="grid gap-2">
+        <Label>What is stored?</Label>
+        <Select
+          value={credentialType}
+          onValueChange={(v) => setCredentialType(v ?? credentialType)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CREDENTIAL_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="cred-provider">Provider</Label>
+          <Input
+            id="cred-provider"
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="cred-environment">Environment</Label>
+          <Input
+            id="cred-environment"
+            value={environment}
+            onChange={(e) => setEnvironment(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <CredentialFormDynamicFields
+        credentialType={credentialType}
+        credentialId={credentialId}
+        login={login}
+        onLoginChange={setLogin}
+        password={password}
+        onPasswordChange={setPassword}
+        apiKey={apiKey}
+        onApiKeyChange={setApiKey}
+        phone={phone}
+        onPhoneChange={setPhone}
+        url={url}
+        onUrlChange={setUrl}
+        envData={envData}
+        onEnvDataChange={setEnvData}
+        secretsPresent={detail?.secretsPresent}
+        revealed={revealed}
+        onReveal={(field) => {
+          setStepUpField(field);
+          setStepUpMode('reveal');
+        }}
+        onCopy={(field) => {
+          setStepUpField(field);
+          setStepUpMode('copy');
+        }}
+      />
+
+      <div className="grid gap-2">
+        <Label htmlFor="cred-comment">{commentLabelForType(credentialType)}</Label>
+        <Textarea
+          id="cred-comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="min-h-[80px] text-sm"
+          placeholder="Private notes (encrypted)"
+        />
+      </div>
+
+      {accessLevel === 'SECRET' && (
+        <div className="grid gap-2">
+          <Label>Allowed employees ({allowedEmployees.length})</Label>
+          <div className="border-border max-h-40 overflow-y-auto rounded-md border p-2">
+            {employees.map((emp) => (
+              <label
+                key={emp.id}
+                className="hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={allowedEmployees.includes(emp.id)}
+                  onChange={() => toggleAllowedEmployee(emp.id)}
+                  className="accent-primary"
+                />
+                {emp.firstName} {emp.lastName}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!isCreate && showSettings && (
+        <CredentialFormSettingsPanel
+          criticality={criticality}
+          onCriticalityChange={setCriticality}
+          nextRotationAt={nextRotationAt}
+          onNextRotationAtChange={setNextRotationAt}
+        />
+      )}
+    </div>
+  );
+}

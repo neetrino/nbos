@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { credentialsAccessFromUser } from './credentials-access';
 import { CredentialsService } from './credentials.service';
+import { normalizeCredentialTab } from './credential-tab';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -30,7 +31,11 @@ export class CredentialsController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'tab', required: false, enum: ['all', 'personal', 'department', 'secret'] })
+  @ApiQuery({
+    name: 'tab',
+    required: false,
+    enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret'],
+  })
   @ApiQuery({
     name: 'includeArchived',
     required: false,
@@ -57,7 +62,7 @@ export class CredentialsController {
       category,
       accessLevel,
       search,
-      tab: (tab as 'all' | 'personal' | 'department' | 'secret') || undefined,
+      tab: normalizeCredentialTab(tab),
       employeeId: access.employeeId,
       departmentIds: access.departmentIds,
       viewScope: access.viewScope,

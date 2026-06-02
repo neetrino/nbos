@@ -13,3 +13,5 @@ export * from './projects/extension-stage-gate';
 export * from './finance-drive-upload';
 export * from './platform-access/constants';
 export * from './platform-access/product-slot-bindings';
+export * from './credentials/parse-env-bundle';
+export * from './credentials/credential-create-defaults';

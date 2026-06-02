@@ -29,6 +29,8 @@ export interface CredentialDetail {
   phone?: string | null;
   notes?: string | null;
   publicNotes?: string | null;
+  /** Decrypted private comment (`secureNotes`); visible without step-up when user can view credential. */
+  comment?: string | null;
   lastRotatedAt?: string | null;
   nextRotationAt?: string | null;
   rotationOwnerId?: string | null;

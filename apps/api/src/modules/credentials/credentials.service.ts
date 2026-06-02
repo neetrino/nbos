@@ -59,7 +59,8 @@ function isSafeCredentialOpenUrl(raw: string): boolean {
   }
 }
 
-type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
+import type { CredentialTab } from './credential-tab';
+import { resolveCredentialCreateDefaults } from '@nbos/shared';
 
 export type { CredentialsAccessContext } from './credentials-access';
 
@@ -303,6 +304,9 @@ export class CredentialsService {
         }
         break;
       }
+      case 'project':
+        where.accessLevel = 'PROJECT_TEAM';
+        break;
       case 'all':
       default:
         if (!rbacBypass && visibilityCtx) {
@@ -356,7 +360,14 @@ export class CredentialsService {
       projectId: credential.projectId ?? undefined,
     });
 
-    return this.toCredentialWithoutSecrets(credential);
+    const base = this.toCredentialWithoutSecrets(credential);
+    const comment = this.decryptCommentIfPresent(credential.secureNotes);
+    return { ...base, comment };
+  }
+
+  private decryptCommentIfPresent(stored: unknown): string | null {
+    if (typeof stored !== 'string' || stored.length === 0) return null;
+    return this.decryptFieldIfEncrypted(stored);
   }
 
   /**
@@ -526,6 +537,14 @@ export class CredentialsService {
 
   async create(data: CreateCredentialDto, userId: string) {
     const encrypted = this.encryptSensitive(data);
+    const credentialType =
+      (data.credentialType as Prisma.CredentialCreateInput['credentialType']) ?? 'LOGIN_PASSWORD';
+    const accessLevel =
+      (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM';
+    const autoDefaults = resolveCredentialCreateDefaults({
+      credentialType,
+      accessLevel,
+    });
 
     const credential = await this.prisma.credential.create({
       data: {
@@ -534,12 +553,12 @@ export class CredentialsService {
         domainId: data.domainId,
         clientServiceRecordId: data.clientServiceRecordId,
         departmentId: data.departmentId,
-        ownerId: data.ownerId,
+        ownerId: data.ownerId ?? (accessLevel === 'PERSONAL' ? userId : undefined),
         category: data.category as Prisma.CredentialCreateInput['category'],
-        credentialType:
-          (data.credentialType as Prisma.CredentialCreateInput['credentialType']) ??
-          'LOGIN_PASSWORD',
-        criticality: (data.criticality as Prisma.CredentialCreateInput['criticality']) ?? 'MEDIUM',
+        credentialType,
+        criticality:
+          (data.criticality as Prisma.CredentialCreateInput['criticality']) ??
+          (autoDefaults.criticality as Prisma.CredentialCreateInput['criticality']),
         environment: data.environment,
         provider: data.provider,
         name: data.name,
@@ -553,10 +572,9 @@ export class CredentialsService {
         publicNotes: data.publicNotes ?? data.notes,
         secureNotes: encrypted.secureNotes,
         lastRotatedAt: nullableDate(data.lastRotatedAt),
-        nextRotationAt: nullableDate(data.nextRotationAt),
+        nextRotationAt: nullableDate(data.nextRotationAt) ?? new Date(autoDefaults.nextRotationAt),
         rotationOwnerId: data.rotationOwnerId,
-        accessLevel:
-          (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM',
+        accessLevel,
         allowedEmployees: data.allowedEmployees ?? [],
       },
       include: { project: { select: { id: true, name: true } } },

@@ -14,7 +14,7 @@ import {
   FolderKanban,
   Shield,
   Lock,
-  Building2,
+  Users,
   User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,16 +42,18 @@ import {
   getAccessLevel,
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
-import { CreateCredentialDialog } from '@/features/credentials/components/CreateCredentialDialog';
-import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
-import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
 import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
+import {
+  canCreateInVaultScope,
+  type CredentialVaultScope,
+  vaultScopeToListTab,
+} from '@/features/credentials/vault-scope';
 import { credentialsApi } from '@/lib/api/credentials';
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
 
-type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
 type VaultListScope = 'active' | 'archived';
 
 interface CredentialListItem {
@@ -95,10 +97,11 @@ function credentialHealthBadge(
   return { label: 'Unknown', variant: 'default' };
 }
 
-const CREDENTIAL_TAB_OPTIONS: PageHeroTabOption<CredentialTab>[] = [
+const CREDENTIAL_TAB_OPTIONS: PageHeroTabOption<CredentialVaultScope>[] = [
   { value: 'all', label: 'All', icon: KeyRound },
-  { value: 'personal', label: 'Personal', icon: User },
-  { value: 'department', label: 'Department', icon: Building2 },
+  { value: 'my', label: 'My', icon: User },
+  { value: 'team', label: 'Team', icon: Users },
+  { value: 'project', label: 'Project', icon: FolderKanban },
   { value: 'secret', label: 'Secret', icon: Lock },
 ];
 
@@ -108,15 +111,12 @@ export default function CredentialsPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<CredentialTab>('all');
-  const [createOpen, setCreateOpen] = useState(false);
-  const [detailCredentialId, setDetailCredentialId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<CredentialVaultScope>('all');
+  const [vaultListScope, setVaultListScope] = useState<VaultListScope>('active');
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [purgeTarget, setPurgeTarget] = useState<{ id: string; name: string } | null>(null);
-  const [vaultListScope, setVaultListScope] = useState<VaultListScope>('active');
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -127,7 +127,7 @@ export default function CredentialsPage() {
         category: filters.category && filters.category !== 'all' ? filters.category : undefined,
         accessLevel:
           filters.accessLevel && filters.accessLevel !== 'all' ? filters.accessLevel : undefined,
-        tab: activeTab,
+        tab: vaultListScope === 'archived' ? undefined : vaultScopeToListTab(activeTab),
         includeArchived: vaultListScope === 'archived',
       });
       setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
@@ -141,6 +141,16 @@ export default function CredentialsPage() {
   useEffect(() => {
     fetchCredentials();
   }, [fetchCredentials]);
+
+  const openCreate = () => {
+    setSheetCredentialId(null);
+    setSheetOpen(true);
+  };
+
+  const openCredential = (id: string) => {
+    setSheetCredentialId(id);
+    setSheetOpen(true);
+  };
 
   const toggleLogin = (id: string) => {
     setVisibleLogins((prev) => {
@@ -168,6 +178,8 @@ export default function CredentialsPage() {
       options: ACCESS_LEVELS.map((l) => ({ value: l.value, label: l.label })),
     },
   ];
+
+  const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -213,16 +225,14 @@ export default function CredentialsPage() {
             >
               Archived
             </Button>
-            <PermissionGate module="CREDENTIALS" action="ADD">
-              <Button
-                type="button"
-                onClick={() => setCreateOpen(true)}
-                disabled={vaultListScope === 'archived'}
-              >
-                <Plus size={16} aria-hidden />
-                New Credential
-              </Button>
-            </PermissionGate>
+            {showCreate && (
+              <PermissionGate module="CREDENTIALS" action="ADD">
+                <Button type="button" onClick={openCreate}>
+                  <Plus size={16} aria-hidden />
+                  New Credential
+                </Button>
+              </PermissionGate>
+            )}
           </>
         }
       />
@@ -234,45 +244,27 @@ export default function CredentialsPage() {
         visibleLogins={visibleLogins}
         onToggleLogin={toggleLogin}
         onCopy={copyToClipboard}
-        onCreateOpen={() => setCreateOpen(true)}
-        onOpenVault={(id) => {
-          setDetailCredentialId(id);
-          setDetailOpen(true);
-        }}
-        onOpenEdit={(id) => {
-          setEditCredentialId(id);
-          setEditOpen(true);
-        }}
+        onCreateOpen={openCreate}
+        onOpenCredential={openCredential}
         onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
         onRequestPurge={(id, name) => setPurgeTarget({ id, name })}
         onRestored={fetchCredentials}
+        showCreate={showCreate}
       />
 
-      <CreateCredentialDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={() => {
-          void fetchCredentials();
-        }}
-      />
-
-      <CredentialDetailDialog
-        credentialId={detailCredentialId}
-        open={detailOpen}
+      <CredentialFormSheet
+        open={sheetOpen}
         onOpenChange={(open) => {
-          setDetailOpen(open);
-          if (!open) setDetailCredentialId(null);
+          setSheetOpen(open);
+          if (!open) setSheetCredentialId(null);
         }}
-      />
-
-      <EditCredentialDialog
-        credentialId={editCredentialId}
-        open={editOpen}
-        onOpenChange={(open) => {
-          setEditOpen(open);
-          if (!open) setEditCredentialId(null);
-        }}
+        credentialId={sheetCredentialId}
+        vaultScope={activeTab}
         onSaved={fetchCredentials}
+        onRequestArchive={(id, name) => {
+          setSheetOpen(false);
+          setDeleteTarget({ id, name });
+        }}
       />
 
       <DeleteCredentialDialog
@@ -306,11 +298,11 @@ function CredentialTable({
   onToggleLogin,
   onCopy,
   onCreateOpen,
-  onOpenVault,
-  onOpenEdit,
+  onOpenCredential,
   onRequestDelete,
   onRequestPurge,
   onRestored,
+  showCreate,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
@@ -319,11 +311,11 @@ function CredentialTable({
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onCreateOpen: () => void;
-  onOpenVault: (id: string) => void;
-  onOpenEdit: (id: string) => void;
+  onOpenCredential: (id: string) => void;
   onRequestDelete: (id: string, name: string) => void;
   onRequestPurge: (id: string, name: string) => void;
   onRestored: () => void;
+  showCreate: boolean;
 }) {
   const isArchivedList = listScope === 'archived';
   if (loading) {
@@ -343,11 +335,13 @@ function CredentialTable({
         title="No credentials"
         description="No credentials match the current filters"
         action={
-          <PermissionGate module="CREDENTIALS" action="ADD">
-            <Button onClick={onCreateOpen}>
-              <Plus size={16} /> Add Credential
-            </Button>
-          </PermissionGate>
+          showCreate ? (
+            <PermissionGate module="CREDENTIALS" action="ADD">
+              <Button onClick={onCreateOpen}>
+                <Plus size={16} /> Add Credential
+              </Button>
+            </PermissionGate>
+          ) : undefined
         }
       />
     );
@@ -370,7 +364,6 @@ function CredentialTable({
             <TableHead>Rotation</TableHead>
             <TableHead>URL</TableHead>
             <TableHead className="w-28 text-center">Actions</TableHead>
-            <TableHead className="w-24 text-right">Vault</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -380,7 +373,11 @@ function CredentialTable({
             const healthBadge = credentialHealthBadge(cred.health);
             const isVisible = visibleLogins.has(cred.id);
             return (
-              <TableRow key={cred.id}>
+              <TableRow
+                key={cred.id}
+                className="cursor-pointer"
+                onClick={() => onOpenCredential(cred.id)}
+              >
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <KeyRound size={14} className="text-muted-foreground" />
@@ -400,7 +397,7 @@ function CredentialTable({
                   {cred.provider ?? '—'}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <span className="font-mono text-xs">
                       {cred.login ? (isVisible ? cred.login : '••••••••') : '—'}
                     </span>
@@ -409,21 +406,11 @@ function CredentialTable({
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleLogin(cred.id);
-                          }}
+                          onClick={() => onToggleLogin(cred.id)}
                         >
                           {isVisible ? <EyeOff size={12} /> : <Eye size={12} />}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onCopy(cred.login!);
-                          }}
-                        >
+                        <Button variant="ghost" size="icon-sm" onClick={() => onCopy(cred.login!)}>
                           <Copy size={12} />
                         </Button>
                       </div>
@@ -461,21 +448,15 @@ function CredentialTable({
                     {healthBadge && (
                       <StatusBadge label={healthBadge.label} variant={healthBadge.variant} />
                     )}
-                    {!!cred.health?.flags?.length && (
-                      <span className="text-muted-foreground text-[10px]">
-                        {cred.health.flags.join(', ')}
-                      </span>
-                    )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   {cred.url && !isArchivedList ? (
                     <Button
                       type="button"
                       variant="link"
                       className="text-accent h-auto gap-1 p-0 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
                         void (async () => {
                           try {
                             const { url } = await credentialsApi.recordUrlOpened(cred.id);
@@ -495,7 +476,7 @@ function CredentialTable({
                     '—'
                   )}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                   {isArchivedList ? (
                     <div className="flex flex-wrap items-center justify-center gap-1.5">
                       <PermissionGate module="CREDENTIALS" action="EDIT">
@@ -504,8 +485,7 @@ function CredentialTable({
                           variant="outline"
                           size="sm"
                           className="h-8 gap-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             void (async () => {
                               try {
                                 await credentialsApi.restore(cred.id);
@@ -527,10 +507,7 @@ function CredentialTable({
                           variant="outline"
                           size="sm"
                           className="text-destructive border-destructive/40 hover:bg-destructive/10 h-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRequestPurge(cred.id, cred.name);
-                          }}
+                          onClick={() => onRequestPurge(cred.id, cred.name)}
                         >
                           Erase
                         </Button>
@@ -543,11 +520,8 @@ function CredentialTable({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          title="Edit credential"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenEdit(cred.id);
-                          }}
+                          title="Open credential"
+                          onClick={() => onOpenCredential(cred.id)}
                         >
                           <Pencil size={12} />
                         </Button>
@@ -559,33 +533,12 @@ function CredentialTable({
                           size="icon-sm"
                           title="Archive credential"
                           className="text-destructive hover:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRequestDelete(cred.id, cred.name);
-                          }}
+                          onClick={() => onRequestDelete(cred.id, cred.name)}
                         >
                           <Trash2 size={12} />
                         </Button>
                       </PermissionGate>
                     </div>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  {!isArchivedList && (
-                    <PermissionGate module="CREDENTIALS" action="VIEW">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Open vault detail"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenVault(cred.id);
-                        }}
-                      >
-                        <Shield size={12} />
-                      </Button>
-                    </PermissionGate>
                   )}
                 </TableCell>
               </TableRow>

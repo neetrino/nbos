@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { Asterisk, ChevronRight, KeyRound, Loader2, Plus, Unlink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
-import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
@@ -43,8 +42,8 @@ export function DeliveryAccessInfrastructureSection({
 }: DeliveryAccessInfrastructureSectionProps) {
   const [slots, setSlots] = useState<ProductAccessSlotRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [detailId, setDetailId] = useState<string | null>(null);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [pickSlot, setPickSlot] = useState<ProductAccessSlotRow | null>(null);
   const [createSlot, setCreateSlot] = useState<ProductAccessSlotRow | null>(null);
 
@@ -148,7 +147,10 @@ export function DeliveryAccessInfrastructureSection({
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 max-w-[12rem] min-w-0 flex-1 gap-1 px-2 sm:max-w-[14rem] sm:flex-initial"
-                                onClick={() => setDetailId(b.boundCredential!.id)}
+                                onClick={() => {
+                                  setSheetCredentialId(b.boundCredential!.id);
+                                  setSheetOpen(true);
+                                }}
                               >
                                 <span className="truncate text-sm font-medium">
                                   {b.boundCredential.name}
@@ -161,7 +163,10 @@ export function DeliveryAccessInfrastructureSection({
                                   variant="outline"
                                   size="sm"
                                   className="h-8 text-xs"
-                                  onClick={() => setEditId(b.boundCredential!.id)}
+                                  onClick={() => {
+                                    setSheetCredentialId(b.boundCredential!.id);
+                                    setSheetOpen(true);
+                                  }}
                                 >
                                   Edit
                                 </Button>
@@ -253,22 +258,17 @@ export function DeliveryAccessInfrastructureSection({
         renderSlotBody()
       )}
 
-      <CredentialDetailDialog
-        credentialId={detailId}
-        open={detailId !== null}
+      <CredentialFormSheet
+        open={sheetOpen}
         onOpenChange={(o) => {
-          if (!o) setDetailId(null);
+          setSheetOpen(o);
+          if (!o) setSheetCredentialId(null);
         }}
-      />
-
-      <EditCredentialDialog
-        credentialId={editId}
-        open={editId !== null}
-        onOpenChange={(o) => {
-          if (!o) setEditId(null);
-        }}
+        credentialId={sheetCredentialId}
+        vaultScope="project"
+        projectId={projectId}
+        productId={productId}
         onSaved={() => {
-          setEditId(null);
           void load();
           onRefreshDetail();
         }}

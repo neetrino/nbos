@@ -36,7 +36,7 @@ export const CREDENTIAL_CRITICALITIES = [
 export const ACCESS_LEVELS = [
   { value: 'SECRET', label: 'Secret', variant: 'red' as StatusVariant },
   { value: 'PROJECT_TEAM', label: 'Project Team', variant: 'blue' as StatusVariant },
-  { value: 'DEPARTMENT', label: 'Department', variant: 'purple' as StatusVariant },
+  { value: 'DEPARTMENT', label: 'Team', variant: 'purple' as StatusVariant },
   { value: 'ALL', label: 'All', variant: 'green' as StatusVariant },
   { value: 'PERSONAL', label: 'Personal', variant: 'gray' as StatusVariant },
 ] as const;
