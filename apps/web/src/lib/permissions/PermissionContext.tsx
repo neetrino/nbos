@@ -34,7 +34,8 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [meLoadError, setMeLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const prevUserIdRef = useRef<string | undefined>(undefined);
+  /** One `/api/me` fetch per signed-in user; avoids refetch loops when `me` stays null. */
+  const fetchedUserIdRef = useRef<string | null>(null);
 
   const userId = session?.user?.id;
 
@@ -42,14 +43,15 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     if (status === 'loading') return;
 
     if (status !== 'authenticated' || !userId) {
+      fetchedUserIdRef.current = null;
       setIsLoading(false);
       setMe(null);
       setMeLoadError(null);
       return;
     }
 
-    if (prevUserIdRef.current === userId && me) return;
-    prevUserIdRef.current = userId;
+    if (fetchedUserIdRef.current === userId) return;
+    fetchedUserIdRef.current = userId;
 
     let cancelled = false;
     setIsLoading(true);
@@ -84,7 +86,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [me, userId, status]);
+  }, [userId, status]);
 
   const permissions = me?.permissions ?? {};
 

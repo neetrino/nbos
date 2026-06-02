@@ -9,6 +9,11 @@ export function useCredentialVaultOpenQuery(onOpenCredential: (id: string) => vo
   const router = useRouter();
   const pathname = usePathname();
   const handledRef = useRef<string | null>(null);
+  const onOpenRef = useRef(onOpenCredential);
+
+  useEffect(() => {
+    onOpenRef.current = onOpenCredential;
+  }, [onOpenCredential]);
 
   useEffect(() => {
     const openId = searchParams.get(CREDENTIAL_VAULT_OPEN_QUERY)?.trim();
@@ -18,10 +23,10 @@ export function useCredentialVaultOpenQuery(onOpenCredential: (id: string) => vo
     }
     if (handledRef.current === openId) return;
     handledRef.current = openId;
-    onOpenCredential(openId);
+    onOpenRef.current(openId);
     const next = new URLSearchParams(searchParams.toString());
     next.delete(CREDENTIAL_VAULT_OPEN_QUERY);
     const qs = next.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname);
-  }, [searchParams, pathname, router, onOpenCredential]);
+  }, [searchParams, pathname, router]);
 }

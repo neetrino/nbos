@@ -31,6 +31,8 @@ export interface CredentialsVaultListQueryParams {
 export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryParams) {
   const isBoard = params.viewMode === 'category-board';
   const requestPageSize = isBoard ? CREDENTIAL_VAULT_BOARD_CHUNK_SIZE : params.pageSize;
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
 
   const [credentials, setCredentials] = useState<CredentialListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,11 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
   const [totalPages, setTotalPages] = useState(1);
   const [loadedBoardPage, setLoadedBoardPage] = useState(1);
   const fetchGenerationRef = useRef(0);
+
+  const quickFiltersKey = useMemo(
+    () => [...params.quickFilters].sort().join(','),
+    [params.quickFilters],
+  );
 
   const filterKey = useMemo(
     () =>
@@ -49,7 +56,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.filters.accessLevel,
         params.filters.sort,
         params.quickCategory,
-        [...params.quickFilters].sort().join(','),
+        quickFiltersKey,
         params.activeTab,
         params.vaultListScope,
         params.listSort,
@@ -57,47 +64,55 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.viewMode,
         isBoard ? 'board' : `${params.page}|${params.pageSize}`,
       ].join('|'),
-    [params, isBoard],
+    [
+      params.search,
+      params.filters.category,
+      params.filters.credentialType,
+      params.filters.accessLevel,
+      params.filters.sort,
+      params.quickCategory,
+      quickFiltersKey,
+      params.activeTab,
+      params.vaultListScope,
+      params.listSort,
+      params.meId,
+      params.viewMode,
+      isBoard,
+      params.page,
+      params.pageSize,
+    ],
   );
 
   const fetchPage = useCallback(
     async (targetPage: number, mode: 'replace' | 'append') => {
+      const p = paramsRef.current;
       const generation = ++fetchGenerationRef.current;
       if (mode === 'replace') setLoading(true);
       else setLoadingMore(true);
 
       try {
         const category =
-          params.quickCategory ??
-          (params.filters.category && params.filters.category !== 'all'
-            ? params.filters.category
-            : undefined);
+          p.quickCategory ??
+          (p.filters.category && p.filters.category !== 'all' ? p.filters.category : undefined);
         const data = await credentialsApi.getAll({
           page: targetPage,
           pageSize: requestPageSize,
-          search: params.search || undefined,
+          search: p.search || undefined,
           category,
           credentialType:
-            params.filters.credentialType && params.filters.credentialType !== 'all'
-              ? params.filters.credentialType
+            p.filters.credentialType && p.filters.credentialType !== 'all'
+              ? p.filters.credentialType
               : undefined,
           accessLevel:
-            params.activeTab === 'all' &&
-            params.filters.accessLevel &&
-            params.filters.accessLevel !== 'all'
-              ? params.filters.accessLevel
+            p.activeTab === 'all' && p.filters.accessLevel && p.filters.accessLevel !== 'all'
+              ? p.filters.accessLevel
               : undefined,
           ownerId:
-            params.activeTab === 'all' && params.quickFilters.has('mine') && params.meId
-              ? params.meId
-              : undefined,
-          needsRotation: params.quickFilters.has('needsRotation') ? true : undefined,
-          tab:
-            params.vaultListScope === 'archived'
-              ? undefined
-              : vaultScopeToListTab(params.activeTab),
-          includeArchived: params.vaultListScope === 'archived',
-          sort: params.listSort,
+            p.activeTab === 'all' && p.quickFilters.has('mine') && p.meId ? p.meId : undefined,
+          needsRotation: p.quickFilters.has('needsRotation') ? true : undefined,
+          tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
+          includeArchived: p.vaultListScope === 'archived',
+          sort: p.listSort,
         });
         if (generation !== fetchGenerationRef.current) return;
 
@@ -121,7 +136,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         }
       }
     },
-    [params, requestPageSize],
+    [filterKey, requestPageSize],
   );
 
   useEffect(() => {
