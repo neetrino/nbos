@@ -31,6 +31,7 @@ export interface CredentialFormSheetStateSlice {
   stepUpMode: 'reveal' | 'copy';
   setRevealed: Dispatch<SetStateAction<Partial<Record<CredentialSecretField, string>>>>;
   loadDetail: () => Promise<void>;
+  commitFormSnapshot: () => void;
 }
 
 export function useCredentialFormSheetActions(
@@ -93,7 +94,7 @@ export function useCredentialFormSheetActions(
           })),
         );
         toast.success('Credential saved');
-        await state.loadDetail();
+        state.commitFormSnapshot();
         onSaved?.();
       }
     } catch (err) {

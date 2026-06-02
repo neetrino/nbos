@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
+import { RELATION_PICKER_CHIP_STACK_CLASS } from '@/components/shared/detail-sheet-classes';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -59,18 +60,15 @@ export function CredentialManualAccessPanel({
   );
 
   return (
-    <section className="border-border grid gap-3 border-t pt-5" aria-label="Manual access">
-      <div>
-        <h3 className="text-sm font-medium">Manual access</h3>
-        <p className="text-muted-foreground mt-1 text-xs">{inheritedSummary}</p>
-      </div>
+    <section className="grid gap-5" aria-label="Manual access">
+      <p className="text-muted-foreground text-xs leading-relaxed">{inheritedSummary}</p>
 
       {loading ? (
-        <Skeleton className="h-20 w-full rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       ) : (
-        <div className="grid gap-2">
+        <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
           {grants.length === 0 ? (
-            <p className="text-muted-foreground text-xs">No manual grants yet.</p>
+            <p className="text-muted-foreground text-sm">No manual grants yet.</p>
           ) : (
             grants.map((grant) => (
               <CredentialManualAccessGrantRow
@@ -92,7 +90,7 @@ export function CredentialManualAccessPanel({
         entityKind="employee"
         value={null}
         selectionLabel={null}
-        placeholder="Search employee…"
+        placeholder="Choose…"
         icon={<User size={12} />}
         onSearch={searchEmployees}
         onSelect={(id, label) => addEmployee(id, label)}

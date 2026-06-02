@@ -1,4 +1,5 @@
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
+import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
 /** DB enum values allowed per vault scope (not one global list in UI). */
@@ -45,6 +46,38 @@ export function quickCategoryChipsForVaultScope(
   scope: CredentialVaultScope,
 ): readonly CredentialCategoryOption[] {
   return categoriesForVaultScope(scope);
+}
+
+/** Maps a credential category to a visible board column (unknown → OTHER). */
+export function resolveCredentialCategoryBucket(
+  category: string,
+  categoryColumns: readonly CredentialCategoryOption[],
+): string {
+  const allowed = new Set(categoryColumns.map((column) => column.value));
+  return allowed.has(category) ? category : 'OTHER';
+}
+
+/** Category board columns: all scope chips, or a single chip when a quick filter is active. */
+export function categoryBoardColumnsForQuickFilter(
+  chips: readonly CredentialCategoryOption[],
+  activeCategory: string | null,
+): readonly CredentialCategoryOption[] {
+  if (!activeCategory) return chips;
+  const filtered = chips.filter((chip) => chip.value === activeCategory);
+  return filtered.length > 0 ? filtered : chips;
+}
+
+/** Client-side quick category filter for the category board (no refetch). */
+export function filterCredentialsByQuickCategory(
+  credentials: CredentialListItem[],
+  activeCategory: string | null,
+  categoryColumns: readonly CredentialCategoryOption[],
+): CredentialListItem[] {
+  if (!activeCategory) return credentials;
+  return credentials.filter(
+    (credential) =>
+      resolveCredentialCategoryBucket(credential.category, categoryColumns) === activeCategory,
+  );
 }
 
 export function defaultCategoryForVaultScope(

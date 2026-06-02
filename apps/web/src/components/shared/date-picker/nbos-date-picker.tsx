@@ -39,6 +39,8 @@ export interface NbosDatePickerProps {
   'aria-label'?: string;
   /** Render trigger without outer border (inside field shells). */
   embedded?: boolean;
+  /** Calendar icon before the date label (compact inline rows). */
+  iconLeading?: boolean;
 }
 
 export function NbosDatePicker({
@@ -54,6 +56,7 @@ export function NbosDatePicker({
   id,
   'aria-label': ariaLabel,
   embedded = false,
+  iconLeading = false,
 }: NbosDatePickerProps) {
   const parsed = useMemo(
     () => (mode === 'datetime' ? parseDatetimeLocalValue(value) : parseIsoDateValue(value)),
@@ -124,6 +127,7 @@ export function NbosDatePicker({
           hasValue={Boolean(parsed)}
           onClear={clearable ? handleClear : undefined}
           embedded={embedded}
+          iconLeading={iconLeading}
         />
       </PopoverTrigger>
       <PopoverContent

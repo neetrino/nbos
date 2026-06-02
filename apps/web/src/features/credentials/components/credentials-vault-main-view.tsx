@@ -1,6 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { CredentialVaultViewMode } from '@/features/credentials/constants/credential-vault';
+import {
+  categoryBoardColumnsForQuickFilter,
+  filterCredentialsByQuickCategory,
+} from '@/features/credentials/constants/credential-vault-categories';
 import { CredentialVaultCategoryBoard } from '@/features/credentials/components/credential-vault-category-board';
 import {
   CredentialVaultTable,
@@ -26,6 +31,7 @@ export interface CredentialsVaultMainViewProps {
   vaultListScope: VaultListScope;
   visibleLogins: Set<string>;
   quickCategoryChips: readonly CredentialCategoryOption[];
+  activeCategory: string | null;
   passwordFlashCredentialId: string | null;
   tableSelection?: CredentialVaultTableSelectionProps;
   tilesSelection?: CredentialVaultTilesSelectionProps;
@@ -54,6 +60,7 @@ export function CredentialsVaultMainView({
   vaultListScope,
   visibleLogins,
   quickCategoryChips,
+  activeCategory,
   passwordFlashCredentialId,
   tableSelection,
   tilesSelection,
@@ -68,6 +75,15 @@ export function CredentialsVaultMainView({
   onRequestPurge,
   onRestored,
 }: CredentialsVaultMainViewProps) {
+  const boardCategoryColumns = useMemo(
+    () => categoryBoardColumnsForQuickFilter(quickCategoryChips, activeCategory),
+    [quickCategoryChips, activeCategory],
+  );
+  const boardCredentials = useMemo(
+    () => filterCredentialsByQuickCategory(credentials, activeCategory, quickCategoryChips),
+    [credentials, activeCategory, quickCategoryChips],
+  );
+
   if (viewMode === 'tiles') {
     return (
       <CredentialVaultTiles
@@ -86,7 +102,7 @@ export function CredentialsVaultMainView({
   if (viewMode === 'category-board') {
     return (
       <CredentialVaultCategoryBoard
-        credentials={credentials}
+        credentials={boardCredentials}
         loading={loading}
         loadingMore={loadingMore}
         hasMore={hasMore}
@@ -94,7 +110,7 @@ export function CredentialsVaultMainView({
         onLoadMore={onBoardLoadMore}
         vaultScope={activeTab}
         showCreate={showCreate}
-        categoryColumns={quickCategoryChips}
+        categoryColumns={boardCategoryColumns}
         onCreateInCategory={onCreateInCategory}
         onOpenCredential={onOpenCredential}
         onCopyLogin={onCopyLogin}

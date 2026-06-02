@@ -58,7 +58,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.filters.credentialType,
         params.filters.accessLevel,
         params.filters.sort,
-        params.quickCategory,
+        ...(isBoard ? [] : [params.quickCategory ?? '']),
         quickFiltersKey,
         params.activeTab,
         params.vaultListScope,
@@ -94,9 +94,13 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       else setLoadingMore(true);
 
       try {
-        const category =
-          p.quickCategory ??
-          (p.filters.category && p.filters.category !== 'all' ? p.filters.category : undefined);
+        const isBoardView = p.viewMode === 'category-board';
+        const category = isBoardView
+          ? p.filters.category && p.filters.category !== 'all'
+            ? p.filters.category
+            : undefined
+          : (p.quickCategory ??
+            (p.filters.category && p.filters.category !== 'all' ? p.filters.category : undefined));
         const data = await credentialsApi.getAll({
           page: targetPage,
           pageSize: requestPageSize,

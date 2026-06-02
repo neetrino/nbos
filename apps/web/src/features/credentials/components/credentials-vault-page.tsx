@@ -149,6 +149,7 @@ export function CredentialsVaultPage() {
           vaultListScope={vault.vaultListScope}
           visibleLogins={vault.visibleLogins}
           quickCategoryChips={vault.quickCategoryChips}
+          activeCategory={vault.quickCategory}
           passwordFlashCredentialId={vault.passwordFlashCredentialId}
           tableSelection={
             vault.selectionEnabled

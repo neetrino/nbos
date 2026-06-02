@@ -110,6 +110,37 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     [],
   );
 
+  const commitFormSnapshot = useCallback(() => {
+    applyFormSnapshot({
+      name,
+      category,
+      credentialType,
+      criticality,
+      environment,
+      provider,
+      url,
+      login,
+      phone,
+      comment,
+      nextRotationAt,
+      manualGrants,
+    });
+  }, [
+    applyFormSnapshot,
+    name,
+    category,
+    credentialType,
+    criticality,
+    environment,
+    provider,
+    url,
+    login,
+    phone,
+    comment,
+    nextRotationAt,
+    manualGrants,
+  ]);
+
   const applyDetail = useCallback(
     (d: CredentialDetail, grants: CredentialManualGrant[]) => {
       setDetail(d);
@@ -253,6 +284,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     categoryLabel,
     dirty,
     loadDetail,
+    commitFormSnapshot,
     accessDenied,
     setAccessDenied,
   };

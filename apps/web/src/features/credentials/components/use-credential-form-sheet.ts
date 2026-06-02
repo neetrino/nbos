@@ -29,6 +29,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     stepUpMode: state.stepUpMode,
     setRevealed: state.setRevealed,
     loadDetail: state.loadDetail,
+    commitFormSnapshot: state.commitFormSnapshot,
   });
 
   return {

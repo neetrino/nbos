@@ -2,6 +2,7 @@ import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-h
 import type { KanbanColumn } from '@/components/shared/kanban/kanban.types';
 import { credentialCategoryAccentBarClass } from '@/features/credentials/constants/credential-category-meta';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
+import { resolveCredentialCategoryBucket } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 
 export const CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH = 280;
@@ -16,7 +17,7 @@ export function buildCredentialCategoryKanbanColumns(
   }
 
   for (const credential of credentials) {
-    const key = buckets.has(credential.category) ? credential.category : 'OTHER';
+    const key = resolveCredentialCategoryBucket(credential.category, categoryColumns);
     buckets.get(key)?.push(credential);
   }
 

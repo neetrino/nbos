@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DetailSheetTabBar } from '@/components/shared';
 import { CredentialFormSheetFields } from './credential-form-sheet-fields';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
@@ -38,10 +38,16 @@ export function CredentialFormSheetBody({
   const [activeTab, setActiveTab] = useState<CredentialFormSheetTab>('general');
   const audit = useCredentialSheetAudit(credentialId, sheetOpen && activeTab === 'activity');
 
+  const prevSheetOpenRef = useRef(false);
+  const prevCredentialIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (sheetOpen) {
+    const opened = sheetOpen && !prevSheetOpenRef.current;
+    const idChanged = credentialId !== prevCredentialIdRef.current;
+    if (sheetOpen && (opened || idChanged)) {
       setActiveTab('general');
     }
+    prevSheetOpenRef.current = sheetOpen;
+    prevCredentialIdRef.current = credentialId;
   }, [sheetOpen, credentialId]);
 
   const inheritedSummary = credentialInheritedAccessSummary(form.accessLevel, form.detail);
@@ -63,16 +69,14 @@ export function CredentialFormSheetBody({
         className="border-border shrink-0 border-b px-6"
       />
       <div className="px-6 pt-5 pb-6">
-        {activeTab === 'general' ? (
-          <div className="space-y-6">
-            <CredentialFormSheetFields form={form} />
-            <CredentialManualAccessPanel
-              grants={manualGrants}
-              loading={manualLoading}
-              inheritedSummary={inheritedSummary}
-              onGrantsChange={onManualGrantsChange}
-            />
-          </div>
+        {activeTab === 'general' ? <CredentialFormSheetFields form={form} /> : null}
+        {activeTab === 'manual-access' ? (
+          <CredentialManualAccessPanel
+            grants={manualGrants}
+            loading={manualLoading}
+            inheritedSummary={inheritedSummary}
+            onGrantsChange={onManualGrantsChange}
+          />
         ) : null}
         {activeTab === 'activity' ? (
           <CredentialSheetAuditPanel

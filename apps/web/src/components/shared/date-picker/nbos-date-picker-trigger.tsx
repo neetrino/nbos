@@ -13,6 +13,8 @@ export interface NbosDatePickerTriggerProps {
   onClear?: () => void;
   /** Inside detail-sheet field shell — no double border. */
   embedded?: boolean;
+  /** Calendar icon before label (inline chip rows). */
+  iconLeading?: boolean;
   className?: string;
   id?: string;
   'aria-label'?: string;
@@ -26,14 +28,56 @@ export function NbosDatePickerTrigger({
   hasValue,
   onClear,
   embedded = false,
+  iconLeading = false,
   className,
   id,
   'aria-label': ariaLabel,
 }: NbosDatePickerTriggerProps) {
+  const calendarIcon = (
+    <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
+  );
+  const valueLabel = (
+    <span
+      id={id}
+      aria-label={ariaLabel}
+      className={cn(
+        'min-w-0 truncate text-left text-xs leading-normal',
+        iconLeading ? 'max-w-[4.5rem] flex-1' : 'flex-1',
+        !hasValue && 'text-muted-foreground',
+      )}
+    >
+      {hasValue ? displayValue : placeholder}
+    </span>
+  );
+  const clearControl =
+    clearable && hasValue && onClear ? (
+      <span
+        role="button"
+        tabIndex={-1}
+        aria-label="Clear date"
+        className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 shrink-0 cursor-pointer rounded-md p-0.5 outline-none focus-visible:ring-2"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClear();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            onClear();
+          }
+        }}
+      >
+        <X size={14} aria-hidden />
+      </span>
+    ) : null;
+
   return (
     <span
       className={cn(
-        'text-foreground flex h-10 w-full min-w-0 items-center gap-2 text-sm transition-colors',
+        'text-foreground flex h-10 w-full min-w-0 items-center gap-1.5 text-sm transition-colors',
         embedded
           ? 'h-8 min-h-8 border-0 bg-transparent px-0 py-0 shadow-none'
           : cn(
@@ -45,37 +89,19 @@ export function NbosDatePickerTrigger({
         className,
       )}
     >
-      <span
-        id={id}
-        aria-label={ariaLabel}
-        className={cn('min-w-0 flex-1 truncate text-left', !hasValue && 'text-muted-foreground')}
-      >
-        {hasValue ? displayValue : placeholder}
-      </span>
-      {clearable && hasValue && onClear ? (
-        <span
-          role="button"
-          tabIndex={-1}
-          aria-label="Clear date"
-          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 shrink-0 cursor-pointer rounded-md p-0.5 outline-none focus-visible:ring-2"
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onClear();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              event.stopPropagation();
-              onClear();
-            }
-          }}
-        >
-          <X size={14} aria-hidden />
-        </span>
-      ) : null}
-      <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
+      {iconLeading ? (
+        <>
+          {calendarIcon}
+          {valueLabel}
+          {clearControl}
+        </>
+      ) : (
+        <>
+          {valueLabel}
+          {clearControl}
+          {calendarIcon}
+        </>
+      )}
     </span>
   );
 }
