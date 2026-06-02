@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Put, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 import type { PlatformResourceFamily } from '@nbos/shared';
@@ -33,6 +43,7 @@ export class AccessPoliciesController {
         defaultLevel: 'VIEW' | 'EDIT';
         scopeMode: 'NONE' | 'ALL' | 'ASSIGNED';
       }>;
+      changeReason?: string | null;
     },
   ) {
     return this.rolePolicies.upsertForRole(roleId, body, user.id);
@@ -72,7 +83,8 @@ export class AccessPoliciesController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('employeeId') employeeId: string,
     @Param('resourceFamily') resourceFamily: PlatformResourceFamily,
+    @Query('changeReason') changeReason?: string,
   ) {
-    await this.employeeOverrides.remove(employeeId, resourceFamily, user.id);
+    await this.employeeOverrides.remove(employeeId, resourceFamily, user.id, changeReason);
   }
 }

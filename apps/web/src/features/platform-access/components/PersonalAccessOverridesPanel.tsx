@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2, User } from 'lucide-react';
+import { Trash2, User } from 'lucide-react';
 import type { AccessScopeMode, PlatformAccessAction, PlatformResourceFamily } from '@nbos/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import {
@@ -26,12 +25,10 @@ import {
 import { toast } from 'sonner';
 import { PermissionGate } from '@/lib/permissions';
 import { platformAccessApi, type EmployeeAccessOverrideRow } from '@/lib/api/platform-access';
-import {
-  ACCESS_POLICY_FAMILIES,
-  ACCESS_POLICY_LEVEL_OPTIONS,
-  ACCESS_POLICY_SCOPE_OPTIONS,
-  formatResourceFamilyLabel,
-} from '../constants';
+import { ACCESS_POLICY_FAMILIES, formatResourceFamilyLabel } from '../constants';
+import { AccessPolicyChangeReasonDialog } from './AccessPolicyChangeReasonDialog';
+import { PersonalAccessOverrideAddForm } from './PersonalAccessOverrideAddForm';
+import { isRiskyPersonalOverride, isValidChangeReason } from '../utils/access-policy-risk';
 
 interface EmployeeOption {
   id: string;
@@ -53,6 +50,9 @@ export function PersonalAccessOverridesPanel() {
   const [addScope, setAddScope] = useState<AccessScopeMode>('ASSIGNED');
   const [addReason, setAddReason] = useState('');
   const [saving, setSaving] = useState(false);
+  const [pendingRemoveFamily, setPendingRemoveFamily] = useState<PlatformResourceFamily | null>(
+    null,
+  );
 
   const fetchEmployees = useCallback(async () => {
     setLoadingEmployees(true);
@@ -95,18 +95,15 @@ export function PersonalAccessOverridesPanel() {
     void fetchOverrides(selectedEmployeeId);
   }, [selectedEmployeeId, fetchOverrides]);
 
-  const handleAddOverride = async () => {
-    if (!selectedEmployeeId) {
-      toast.error('Select an employee first');
-      return;
-    }
+  const persistAddOverride = async (reason: string) => {
+    if (!selectedEmployeeId) return;
     setSaving(true);
     try {
       await platformAccessApi.upsertEmployeeOverride(selectedEmployeeId, {
         resourceFamily: addFamily,
         level: addLevel,
         scopeMode: addScope,
-        reason: addReason.trim() || null,
+        reason,
       });
       toast.success('Override saved');
       setAddReason('');
@@ -118,14 +115,41 @@ export function PersonalAccessOverridesPanel() {
     }
   };
 
-  const handleRemove = async (family: PlatformResourceFamily) => {
-    if (!selectedEmployeeId) return;
+  const handleAddOverride = () => {
+    if (!selectedEmployeeId) {
+      toast.error('Select an employee first');
+      return;
+    }
+    const reason = addReason.trim();
+    if (isRiskyPersonalOverride(addLevel, addScope)) {
+      if (!isValidChangeReason(reason)) {
+        toast.error('Enter a change reason (at least 3 characters) for this override');
+        return;
+      }
+      void persistAddOverride(reason);
+      return;
+    }
+    void persistAddOverride(reason || 'Routine personal access adjustment');
+  };
+
+  const handleRemove = (family: PlatformResourceFamily) => {
+    setPendingRemoveFamily(family);
+  };
+
+  const confirmRemove = async (reason: string) => {
+    if (!selectedEmployeeId || !pendingRemoveFamily) return;
     try {
-      await platformAccessApi.removeEmployeeOverride(selectedEmployeeId, family);
+      await platformAccessApi.removeEmployeeOverride(
+        selectedEmployeeId,
+        pendingRemoveFamily,
+        reason,
+      );
       toast.success('Override removed');
       await fetchOverrides(selectedEmployeeId);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to remove');
+    } finally {
+      setPendingRemoveFamily(null);
     }
   };
 
@@ -217,80 +241,33 @@ export function PersonalAccessOverridesPanel() {
           </Table>
 
           <PermissionGate module="COMPANY" action="EDIT">
-            <div className="border-border bg-muted/30 grid gap-3 rounded-xl border p-4 md:grid-cols-2 lg:grid-cols-5">
-              <div>
-                <Label>Resource family</Label>
-                <Select
-                  value={addFamily}
-                  onValueChange={(v) => setAddFamily(v as PlatformResourceFamily)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(availableFamilies.length > 0
-                      ? availableFamilies
-                      : ACCESS_POLICY_FAMILIES
-                    ).map((family) => (
-                      <SelectItem key={family} value={family}>
-                        {formatResourceFamilyLabel(family)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Level</Label>
-                <Select
-                  value={addLevel}
-                  onValueChange={(v) => setAddLevel(v as PlatformAccessAction)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCESS_POLICY_LEVEL_OPTIONS.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Scope</Label>
-                <Select value={addScope} onValueChange={(v) => setAddScope(v as AccessScopeMode)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCESS_POLICY_SCOPE_OPTIONS.map((scope) => (
-                      <SelectItem key={scope} value={scope}>
-                        {scope}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-2">
-                <Label>Reason</Label>
-                <Input
-                  className="mt-1"
-                  value={addReason}
-                  onChange={(e) => setAddReason(e.target.value)}
-                  placeholder="Why this override is needed"
-                />
-              </div>
-              <div className="flex items-end">
-                <Button type="button" disabled={saving} onClick={() => void handleAddOverride()}>
-                  <Plus size={16} aria-hidden />
-                  Add / update
-                </Button>
-              </div>
-            </div>
+            <PersonalAccessOverrideAddForm
+              addFamily={addFamily}
+              addLevel={addLevel}
+              addScope={addScope}
+              addReason={addReason}
+              availableFamilies={availableFamilies}
+              saving={saving}
+              onFamilyChange={setAddFamily}
+              onLevelChange={setAddLevel}
+              onScopeChange={setAddScope}
+              onReasonChange={setAddReason}
+              onSubmit={() => void handleAddOverride()}
+            />
           </PermissionGate>
         </>
       )}
+
+      <AccessPolicyChangeReasonDialog
+        open={pendingRemoveFamily !== null}
+        title="Remove personal override"
+        description="Removing an override changes effective access for this employee. Enter a reason for the audit log."
+        confirmLabel="Remove override"
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveFamily(null);
+        }}
+        onConfirm={(reason) => void confirmRemove(reason)}
+      />
     </div>
   );
 }

@@ -10,16 +10,15 @@
 
 ## Активно
 
-| План                                   | Фокус                                                                         |
-| -------------------------------------- | ----------------------------------------------------------------------------- |
-| [1.todo-Access.md](./1.todo-Access.md) | Platform Access **Phase 2** — reuse в Drive/Finance/Tasks + Settings audit UX |
+| План                                   | Фокус                                                     |
+| -------------------------------------- | --------------------------------------------------------- |
+| [1.todo-Access.md](./1.todo-Access.md) | Platform Access **Phase 2** — reuse в Drive/Finance/Tasks |
 
 ## Что дальше (по приоритету)
 
-1. **Access — Slice F:** зафиксировать и внедрить контракты доступа для Drive, Finance, Project Hub/Tasks (не дублировать Credentials-логику).
-2. **Access — Slice C:** UI change reason / audit trail при правках Role & Personal Access Levels в Settings.
-3. **Access — Slice D:** вынести manual `ResourceAccessGrant` pattern за пределы Credentials (док + enforcement hooks).
-4. **Credentials (backlog, по запросу):** расширенные фильтры vault (`productId`, client, period), CSV import, saved views, Bitrix migration — см. архивный план.
+1. **Access — Slice F:** контракты и enforcement для Drive, Finance, Project Hub/Tasks.
+2. **Access — Slice D:** manual `ResourceAccessGrant` за пределами Credentials (док + hooks).
+3. **Credentials (backlog):** фильтры vault, CSV, saved views, Bitrix — см. архивный план.
 
 ## Канон и прогресс
 

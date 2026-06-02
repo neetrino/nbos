@@ -65,12 +65,22 @@ export class EmployeeAccessOverrideService {
       entityId: employeeId,
       action: 'employee.access_override.upserted',
       userId: actorId,
-      changes: { resourceFamily: dto.resourceFamily, level: dto.level, scopeMode: dto.scopeMode },
+      changes: {
+        resourceFamily: dto.resourceFamily,
+        level: dto.level,
+        scopeMode: dto.scopeMode,
+        reason: dto.reason?.trim() || null,
+      },
     });
     return row;
   }
 
-  async remove(employeeId: string, resourceFamily: PlatformResourceFamily, actorId: string) {
+  async remove(
+    employeeId: string,
+    resourceFamily: PlatformResourceFamily,
+    actorId: string,
+    changeReason?: string | null,
+  ) {
     await this.assertEmployeeExists(employeeId);
     const existing = await this.prisma.employeeAccessOverride.findUnique({
       where: {
@@ -93,7 +103,7 @@ export class EmployeeAccessOverrideService {
       entityId: employeeId,
       action: 'employee.access_override.removed',
       userId: actorId,
-      changes: { resourceFamily },
+      changes: { resourceFamily, changeReason: changeReason?.trim() || null },
     });
     return { removed: true };
   }

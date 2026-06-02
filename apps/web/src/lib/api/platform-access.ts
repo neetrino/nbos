@@ -78,9 +78,11 @@ export const platformAccessApi = {
       defaultLevel: PlatformAccessAction;
       scopeMode: AccessScopeMode;
     }>,
+    changeReason?: string | null,
   ) {
     return api.put<RoleAccessPolicyRow[]>(`/api/platform-access/roles/${roleId}/policies`, {
       policies,
+      changeReason: changeReason ?? null,
     });
   },
   listEmployeeOverrides(employeeId: string) {
@@ -102,7 +104,14 @@ export const platformAccessApi = {
       body,
     );
   },
-  removeEmployeeOverride(employeeId: string, resourceFamily: PlatformResourceFamily) {
-    return api.delete(`/api/platform-access/employees/${employeeId}/overrides/${resourceFamily}`);
+  removeEmployeeOverride(
+    employeeId: string,
+    resourceFamily: PlatformResourceFamily,
+    changeReason?: string | null,
+  ) {
+    const params = changeReason?.trim() ? { changeReason: changeReason.trim() } : undefined;
+    return api.delete(`/api/platform-access/employees/${employeeId}/overrides/${resourceFamily}`, {
+      params,
+    });
   },
 };

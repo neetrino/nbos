@@ -29,6 +29,12 @@ import {
   ACCESS_POLICY_SCOPE_OPTIONS,
   formatResourceFamilyLabel,
 } from '../constants';
+import { AccessPolicyChangeReasonDialog } from './AccessPolicyChangeReasonDialog';
+import {
+  buildRolePolicyDraft,
+  isRiskyRolePolicyChange,
+  type RolePolicyDraft,
+} from '../utils/access-policy-risk';
 
 interface RoleItem {
   id: string;
@@ -43,23 +49,6 @@ interface RoleAccessPoliciesPanelProps {
   onRetryRoles: () => void;
 }
 
-type PolicyDraft = Record<
-  PlatformResourceFamily,
-  { defaultLevel: PlatformAccessAction; scopeMode: AccessScopeMode }
->;
-
-function buildDraft(rows: RoleAccessPolicyRow[]): PolicyDraft {
-  const draft = {} as PolicyDraft;
-  for (const family of ACCESS_POLICY_FAMILIES) {
-    const row = rows.find((r) => r.resourceFamily === family);
-    draft[family] = {
-      defaultLevel: row?.defaultLevel ?? 'VIEW',
-      scopeMode: row?.scopeMode ?? 'ASSIGNED',
-    };
-  }
-  return draft;
-}
-
 export function RoleAccessPoliciesPanel({
   roles,
   loadingRoles,
@@ -67,10 +56,12 @@ export function RoleAccessPoliciesPanel({
   onRetryRoles,
 }: RoleAccessPoliciesPanelProps) {
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<PolicyDraft | null>(null);
+  const [baseline, setBaseline] = useState<RoleAccessPolicyRow[]>([]);
+  const [draft, setDraft] = useState<RolePolicyDraft | null>(null);
   const [loadingPolicies, setLoadingPolicies] = useState(false);
   const [policyError, setPolicyError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [reasonDialogOpen, setReasonDialogOpen] = useState(false);
 
   const selectedRole = roles.find((r) => r.id === selectedRoleId);
 
@@ -79,7 +70,9 @@ export function RoleAccessPoliciesPanel({
     setPolicyError(null);
     try {
       const res = await platformAccessApi.listRolePolicies(roleId);
-      setDraft(buildDraft(res.data));
+      const rows = res.data;
+      setBaseline(rows);
+      setDraft(buildRolePolicyDraft(rows));
     } catch (err) {
       setPolicyError(err instanceof Error ? err.message : 'Failed to load policies');
       setDraft(null);
@@ -93,7 +86,7 @@ export function RoleAccessPoliciesPanel({
     void loadPolicies(selectedRoleId);
   }, [selectedRoleId, loadPolicies]);
 
-  const handleSave = async () => {
+  const persistSave = async (changeReason: string | null) => {
     if (!selectedRoleId || !draft) return;
     setSaving(true);
     try {
@@ -102,14 +95,24 @@ export function RoleAccessPoliciesPanel({
         defaultLevel: draft[family].defaultLevel,
         scopeMode: draft[family].scopeMode,
       }));
-      const res = await platformAccessApi.saveRolePolicies(selectedRoleId, policies);
-      setDraft(buildDraft(res.data));
+      const res = await platformAccessApi.saveRolePolicies(selectedRoleId, policies, changeReason);
+      setBaseline(res.data);
+      setDraft(buildRolePolicyDraft(res.data));
       toast.success('Role access levels saved');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSaveClick = () => {
+    if (!selectedRoleId || !draft) return;
+    if (isRiskyRolePolicyChange(baseline, draft)) {
+      setReasonDialogOpen(true);
+      return;
+    }
+    void persistSave(null);
   };
 
   return (
@@ -152,7 +155,12 @@ export function RoleAccessPoliciesPanel({
               {selectedRole._count?.employees ?? 0} employees unless personal override applies.
             </p>
             <PermissionGate module="COMPANY" action="EDIT">
-              <Button type="button" size="sm" disabled={saving} onClick={() => void handleSave()}>
+              <Button
+                type="button"
+                size="sm"
+                disabled={saving}
+                onClick={() => void handleSaveClick()}
+              >
                 <Save size={16} aria-hidden />
                 Save
               </Button>
@@ -245,6 +253,15 @@ export function RoleAccessPoliciesPanel({
           )}
         </div>
       )}
+
+      <AccessPolicyChangeReasonDialog
+        open={reasonDialogOpen}
+        title="Confirm role access change"
+        description="This update reduces access or sets scope to NONE for at least one resource family. Enter a reason for the audit log."
+        confirmLabel="Save changes"
+        onOpenChange={setReasonDialogOpen}
+        onConfirm={(reason) => void persistSave(reason)}
+      />
     </div>
   );
 }

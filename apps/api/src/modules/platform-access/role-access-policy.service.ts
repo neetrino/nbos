@@ -17,6 +17,7 @@ export interface RoleAccessPolicyDto {
 
 interface UpsertRolePoliciesInput {
   policies: RoleAccessPolicyDto[];
+  changeReason?: string | null;
 }
 
 @Injectable()
@@ -79,7 +80,11 @@ export class RoleAccessPolicyService {
       entityId: roleId,
       action: 'role.access_policy.updated',
       userId: actorId,
-      changes: { before, after },
+      changes: {
+        before,
+        after,
+        changeReason: input.changeReason?.trim() || null,
+      },
     });
     return after;
   }
