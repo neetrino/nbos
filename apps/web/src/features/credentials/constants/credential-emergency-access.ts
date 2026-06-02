@@ -1,4 +1,5 @@
-import { EMERGENCY_ACCESS_ROLE_SLUGS } from './credential-emergency-access.constants';
+/** Executive roles allowed to use credential break-glass (must match API policy). */
+export const EMERGENCY_ACCESS_ROLE_SLUGS = ['ceo', 'admin', 'owner'] as const;
 
 export function canUseCredentialEmergencyAccess(roleSlug: string | undefined): boolean {
   if (!roleSlug) return false;

@@ -57,7 +57,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setDraftManualGrants,
     employees,
     detail,
-    isCreate,
     revealed,
     setStepUpField,
     setStepUpMode,
