@@ -11,6 +11,16 @@ import {
   credentialsRbacBypassesRowFilter,
   resolveCredentialsRbacScope,
 } from './credentials-access';
+import {
+  syncCredentialManualGrants,
+  loadManualGrantCredentialIds,
+} from './credential-manual-grants';
+import {
+  buildCredentialVisibilityOr,
+  credentialVisibilityContextFromTeam,
+  type CredentialVisibilityContext,
+} from './credentials-visibility';
+import { PlatformAccessResolverService } from '../platform-access/platform-access-resolver.service';
 
 const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
 type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
@@ -156,6 +166,7 @@ export class CredentialsService {
     private readonly configService: ConfigService,
     private readonly auditService: AuditService,
     private readonly notifications: NotificationService,
+    private readonly platformAccessResolver: PlatformAccessResolverService,
   ) {
     const key = this.configService.get<string>('CREDENTIALS_ENCRYPTION_KEY');
     if (!key) throw new Error('CREDENTIALS_ENCRYPTION_KEY is not configured');
@@ -196,10 +207,15 @@ export class CredentialsService {
       ];
     }
 
+    const visibilityCtx =
+      employeeId && !credentialsRbacBypassesRowFilter(viewScope)
+        ? await this.loadVisibilityContext({ employeeId, departmentIds })
+        : undefined;
+
     if (tab && employeeId) {
-      this.applyTabFilter(where, tab, employeeId, departmentIds, viewScope);
-    } else if (employeeId) {
-      this.applyVisibilityFilter(where, employeeId, departmentIds, viewScope);
+      this.applyTabFilter(where, tab, employeeId, visibilityCtx, viewScope);
+    } else if (visibilityCtx) {
+      where.OR = [...(where.OR ?? []), ...buildCredentialVisibilityOr(visibilityCtx)];
     }
 
     const [rows, total] = await Promise.all([
@@ -261,9 +277,11 @@ export class CredentialsService {
     where: Prisma.CredentialWhereInput,
     tab: CredentialTab,
     employeeId: string,
-    departmentIds: string[],
+    visibilityCtx: CredentialVisibilityContext | undefined,
     viewScope?: string,
   ) {
+    const rbacBypass = credentialsRbacBypassesRowFilter(viewScope);
+
     switch (tab) {
       case 'personal':
         where.accessLevel = 'PERSONAL';
@@ -271,81 +289,52 @@ export class CredentialsService {
         break;
       case 'department':
         where.accessLevel = 'DEPARTMENT';
-        if (!credentialsRbacBypassesRowFilter(viewScope) && departmentIds.length > 0) {
-          where.departmentId = { in: departmentIds };
+        if (!rbacBypass && visibilityCtx && visibilityCtx.departmentIds.length > 0) {
+          where.departmentId = { in: visibilityCtx.departmentIds };
         }
         break;
-      case 'secret':
+      case 'secret': {
         where.accessLevel = 'SECRET';
-        if (!credentialsRbacBypassesRowFilter(viewScope)) {
-          where.allowedEmployees = { has: employeeId };
+        if (!rbacBypass && visibilityCtx) {
+          const secretBranch = buildCredentialVisibilityOr(visibilityCtx).find(
+            (b) => 'accessLevel' in b && b.accessLevel === 'SECRET',
+          );
+          if (secretBranch?.OR) where.OR = secretBranch.OR;
         }
         break;
+      }
       case 'all':
       default:
-        this.applyVisibilityFilter(where, employeeId, departmentIds, viewScope);
+        if (!rbacBypass && visibilityCtx) {
+          where.OR = [...(where.OR ?? []), ...buildCredentialVisibilityOr(visibilityCtx)];
+        }
         break;
     }
   }
 
-  /**
-   * General visibility: user sees credentials they have access to.
-   * - ALL → everyone
-   * - PERSONAL → only owner
-   * - DEPARTMENT → same department
-   * - PROJECT_TEAM → same project team (via project membership)
-   * - SECRET → only allowedEmployees
-   */
-  private applyVisibilityFilter(
-    where: Prisma.CredentialWhereInput,
-    employeeId: string,
-    departmentIds: string[],
-    viewScope?: string,
-  ) {
-    if (credentialsRbacBypassesRowFilter(viewScope)) return;
-    where.OR = [...(where.OR ?? []), ...this.visibilityAccessOr(employeeId, departmentIds)];
+  private async loadVisibilityContext(
+    access: Pick<CredentialsAccessContext, 'employeeId' | 'departmentIds'>,
+  ): Promise<CredentialVisibilityContext> {
+    const [team, manualGrantCredentialIds] = await Promise.all([
+      this.platformAccessResolver.loadTeamContext(access.employeeId),
+      loadManualGrantCredentialIds(this.prisma, access.employeeId),
+    ]);
+    return credentialVisibilityContextFromTeam(
+      access.employeeId,
+      access.departmentIds,
+      team,
+      manualGrantCredentialIds,
+    );
   }
 
-  private rowVisibilityWhere(
+  private async rowVisibilityWhere(
     access: CredentialsAccessContext,
     action: 'view' | 'edit' | 'delete' = 'view',
-  ): Pick<Prisma.CredentialWhereInput, 'OR'> {
+  ): Promise<Pick<Prisma.CredentialWhereInput, 'OR'>> {
     const scope = resolveCredentialsRbacScope(access, action);
     if (credentialsRbacBypassesRowFilter(scope)) return {};
-    return { OR: this.visibilityAccessOr(access.employeeId, access.departmentIds) };
-  }
-
-  /** Same rules as list `applyVisibilityFilter` OR branch, for single-row guards. */
-  private visibilityAccessOr(
-    employeeId: string,
-    departmentIds: string[],
-  ): Prisma.CredentialWhereInput[] {
-    return [
-      { accessLevel: 'ALL' },
-      { accessLevel: 'PERSONAL', ownerId: employeeId },
-      ...(departmentIds.length > 0
-        ? [{ accessLevel: 'DEPARTMENT' as const, departmentId: { in: departmentIds } }]
-        : []),
-      {
-        accessLevel: 'PROJECT_TEAM',
-        project: {
-          OR: [
-            { products: { some: { pmId: employeeId } } },
-            { extensions: { some: { assignedTo: employeeId } } },
-            {
-              orders: {
-                some: {
-                  deal: {
-                    OR: [{ sellerId: employeeId }, { pmId: employeeId }],
-                  },
-                },
-              },
-            },
-          ],
-        },
-      },
-      { accessLevel: 'SECRET', allowedEmployees: { has: employeeId } },
-    ];
+    const ctx = await this.loadVisibilityContext(access);
+    return { OR: buildCredentialVisibilityOr(ctx) };
   }
 
   async findById(id: string, access: CredentialsAccessContext) {
@@ -353,7 +342,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        ...this.rowVisibilityWhere(access, 'view'),
+        ...(await this.rowVisibilityWhere(access, 'view')),
       },
       include: { project: { select: { id: true, name: true } } },
     });
@@ -439,7 +428,7 @@ export class CredentialsService {
 
     const where: Prisma.CredentialWhereInput = {
       archivedAt: null,
-      ...this.rowVisibilityWhere(access, 'view'),
+      ...(await this.rowVisibilityWhere(access, 'view')),
     };
     if (input.credentialIds && input.credentialIds.length > 0) {
       where.id = { in: input.credentialIds };
@@ -581,6 +570,15 @@ export class CredentialsService {
       projectId: credential.projectId ?? undefined,
     });
 
+    if (credential.accessLevel === 'SECRET' && credential.allowedEmployees.length > 0) {
+      await syncCredentialManualGrants(
+        this.prisma,
+        credential.id,
+        credential.allowedEmployees,
+        userId,
+      );
+    }
+
     return this.toCredentialWithoutSecrets(credential);
   }
 
@@ -589,7 +587,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        ...this.rowVisibilityWhere(access, 'edit'),
+        ...(await this.rowVisibilityWhere(access, 'edit')),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -655,6 +653,18 @@ export class CredentialsService {
       changes: changedFields,
     });
 
+    if (
+      credential.accessLevel === 'SECRET' &&
+      (data.allowedEmployees !== undefined || data.accessLevel === 'SECRET')
+    ) {
+      await syncCredentialManualGrants(
+        this.prisma,
+        credential.id,
+        credential.allowedEmployees,
+        access.employeeId,
+      );
+    }
+
     return this.toCredentialWithoutSecrets(credential);
   }
 
@@ -663,7 +673,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        ...this.rowVisibilityWhere(access, 'delete'),
+        ...(await this.rowVisibilityWhere(access, 'delete')),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -688,7 +698,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: { not: null },
-        ...this.rowVisibilityWhere(access, 'edit'),
+        ...(await this.rowVisibilityWhere(access, 'edit')),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -715,7 +725,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: { not: null },
-        ...this.rowVisibilityWhere(access, 'delete'),
+        ...(await this.rowVisibilityWhere(access, 'delete')),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -837,7 +847,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        ...this.rowVisibilityWhere(access, 'view'),
+        ...(await this.rowVisibilityWhere(access, 'view')),
       },
     });
     if (!row) throw new NotFoundException(`Credential ${id} not found`);

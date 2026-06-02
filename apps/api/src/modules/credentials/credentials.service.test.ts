@@ -48,6 +48,16 @@ function createMockNotificationService() {
   };
 }
 
+function createMockPlatformAccessResolver() {
+  return {
+    loadTeamContext: vi.fn().mockResolvedValue({
+      projectIds: [],
+      productIds: [],
+      projectAdminProjectIds: [],
+    }),
+  };
+}
+
 describe('CredentialsService', () => {
   let service: CredentialsService;
   let prisma: MockPrisma;
@@ -60,11 +70,16 @@ describe('CredentialsService', () => {
     notifications = createMockNotificationService();
     const configService = createMockConfigService();
 
+    Object.assign(prisma, {
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    });
+
     service = new CredentialsService(
       prisma as never,
       configService as never,
       auditService as never,
       notifications as never,
+      createMockPlatformAccessResolver() as never,
     );
   });
 
