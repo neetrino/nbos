@@ -81,6 +81,7 @@ export function CredentialsVaultPageOverlays({
       <PermanentDeleteCredentialDialog
         credentialId={purgeTarget?.id ?? null}
         credentialName={purgeTarget?.name ?? null}
+        criticality={purgeTarget?.criticality ?? null}
         open={purgeTarget !== null}
         onOpenChange={onPurgeTargetChange}
         onDeleted={onSaved}

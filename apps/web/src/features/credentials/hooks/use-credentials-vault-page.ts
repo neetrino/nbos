@@ -22,6 +22,7 @@ import { usePermission } from '@/lib/permissions';
 export interface CredentialDeleteTarget {
   id: string;
   name: string;
+  criticality?: string;
 }
 
 export function useCredentialsVaultPage() {

@@ -133,6 +133,7 @@ describe('CredentialsService mutations', () => {
     prisma.credential.findFirst.mockResolvedValue({
       id: '1',
       projectId: 'p1',
+      criticality: 'LOW',
       archivedAt: new Date(),
     });
     await service.permanentlyDelete('1', accessUser1);

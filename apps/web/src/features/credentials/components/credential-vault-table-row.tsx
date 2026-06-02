@@ -16,7 +16,7 @@ export interface CredentialVaultTableRowProps {
   onCopy: (text: string) => void;
   onOpenCredential: (id: string) => void;
   onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string) => void;
+  onRequestPurge: (id: string, name: string, criticality: string) => void;
   onRestored: () => void;
 }
 

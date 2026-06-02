@@ -54,7 +54,7 @@ export function CredentialVaultTableActionsCell({
   isArchivedList: boolean;
   onOpenCredential: (id: string) => void;
   onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string) => void;
+  onRequestPurge: (id: string, name: string, criticality: string) => void;
   onRestored: () => void;
 }) {
   if (isArchivedList) {
@@ -88,7 +88,7 @@ export function CredentialVaultTableActionsCell({
             variant="outline"
             size="sm"
             className="text-destructive border-destructive/40 hover:bg-destructive/10 h-8"
-            onClick={() => onRequestPurge(cred.id, cred.name)}
+            onClick={() => onRequestPurge(cred.id, cred.name, cred.criticality)}
           >
             Erase
           </Button>

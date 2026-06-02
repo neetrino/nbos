@@ -139,7 +139,7 @@ export class CredentialsService {
     return restoreCredential(this.runtime, id, access);
   }
 
-  permanentlyDelete(id: string, access: CredentialsAccessContext) {
-    return permanentlyDeleteCredential(this.runtime, id, access);
+  permanentlyDelete(id: string, access: CredentialsAccessContext, stepUpPassword?: string) {
+    return permanentlyDeleteCredential(this.runtime, id, access, stepUpPassword);
   }
 }

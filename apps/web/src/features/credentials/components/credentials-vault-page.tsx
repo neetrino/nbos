@@ -161,7 +161,9 @@ export function CredentialsVaultPage() {
           onToggleLogin={vault.toggleLogin}
           onCopy={vault.copyToClipboard}
           onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
-          onRequestPurge={(id, name) => vault.setPurgeTarget({ id, name })}
+          onRequestPurge={(id, name, criticality) =>
+            vault.setPurgeTarget({ id, name, criticality })
+          }
           onRestored={handleSaved}
         />
       </div>

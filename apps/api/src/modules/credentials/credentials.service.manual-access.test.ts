@@ -21,6 +21,7 @@ describe('CredentialsService manual access & sheet audit', () => {
       {
         employeeId: 'emp-2',
         level: 'VIEW',
+        expiresAt: null,
         createdAt: new Date('2026-01-01'),
         employee: { id: 'emp-2', firstName: 'A', lastName: 'B', email: 'a@b.c' },
         grantedBy: null,
@@ -38,6 +39,7 @@ describe('CredentialsService manual access & sheet audit', () => {
       {
         employeeId: 'emp-2',
         level: 'EDIT',
+        expiresAt: null,
         createdAt: new Date(),
         employee: { id: 'emp-2', firstName: 'A', lastName: 'B', email: 'a@b.c' },
         grantedBy: { id: 'user-1', firstName: 'U', lastName: '1' },

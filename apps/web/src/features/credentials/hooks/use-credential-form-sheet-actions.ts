@@ -67,6 +67,7 @@ export function useCredentialFormSheetActions(
             ? state.draftManualGrants.map((g) => ({
                 employeeId: g.employeeId,
                 level: g.level,
+                expiresAt: g.expiresAt,
               }))
             : undefined,
       };

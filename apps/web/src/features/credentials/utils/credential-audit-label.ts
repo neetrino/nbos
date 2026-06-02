@@ -10,6 +10,7 @@ const CREDENTIAL_AUDIT_LABELS: Record<string, string> = {
   'credential.url_opened': 'URL opened',
   'credential.exported': 'Exported',
   'credential.manual_access_updated': 'Manual access updated',
+  'credential.access_revoked': 'Access revoked',
   'credential.step_up_verified': 'Step-up verified',
 };
 

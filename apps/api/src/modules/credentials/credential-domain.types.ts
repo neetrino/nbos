@@ -46,6 +46,7 @@ export interface ExportCredentialsInput {
 export interface CredentialManualGrantDto {
   employeeId: string;
   level: 'VIEW' | 'EDIT';
+  expiresAt?: string | null;
 }
 
 export interface CreateCredentialDto {

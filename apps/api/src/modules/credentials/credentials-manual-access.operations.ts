@@ -17,7 +17,11 @@ function parseManualGrants(body: CredentialManualGrantInput[]): CredentialManual
       throw new BadRequestException('Manual grant level must be VIEW or EDIT');
     }
     seen.add(employeeId);
-    grants.push({ employeeId, level: row.level });
+    grants.push({
+      employeeId,
+      level: row.level,
+      expiresAt: row.expiresAt ?? null,
+    });
   }
   return grants;
 }

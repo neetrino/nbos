@@ -29,7 +29,7 @@ export interface CredentialsVaultMainViewProps {
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string) => void;
+  onRequestPurge: (id: string, name: string, criticality: string) => void;
   onRestored: () => void;
 }
 

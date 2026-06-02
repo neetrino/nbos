@@ -127,6 +127,7 @@ model ResourceAccessGrant {
   level        PlatformAccessActionEnum
   grantedById  String                   @map("granted_by_id")
   reason       String?
+  expiresAt    DateTime?                @map("expires_at")
   revokedAt    DateTime?                @map("revoked_at")
   createdAt    DateTime                 @default(now()) @map("created_at")
   updatedAt    DateTime                 @updatedAt @map("updated_at")
@@ -137,5 +138,6 @@ model ResourceAccessGrant {
   @@unique([resourceType, resourceId, employeeId])
   @@index([employeeId])
   @@index([resourceType, resourceId])
+  @@index([expiresAt])
   @@map("resource_access_grants")
 }

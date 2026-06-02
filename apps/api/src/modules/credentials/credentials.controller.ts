@@ -122,7 +122,8 @@ export class CredentialsController {
   @ApiOperation({ summary: 'Replace manual access grants for a credential' })
   async replaceManualAccess(
     @Param('id') id: string,
-    @Body() body: { grants: { employeeId: string; level: 'VIEW' | 'EDIT' }[] },
+    @Body()
+    body: { grants: { employeeId: string; level: 'VIEW' | 'EDIT'; expiresAt?: string | null }[] },
     @CurrentUser() user: CurrentUserPayload,
   ) {
     const grants = Array.isArray(body.grants) ? body.grants : [];
@@ -302,8 +303,16 @@ export class CredentialsController {
   @ApiOperation({
     summary: 'Permanently delete an archived credential (cannot be undone)',
   })
-  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.permanentlyDelete(id, credentialsAccessFromUser(user));
+  async permanentRemove(
+    @Param('id') id: string,
+    @Body() body: { stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    await this.credentialsService.permanentlyDelete(
+      id,
+      credentialsAccessFromUser(user),
+      body.stepUpPassword,
+    );
   }
 
   @Delete(':id')

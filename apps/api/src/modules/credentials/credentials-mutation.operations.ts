@@ -8,6 +8,7 @@ import { encryptSensitiveFields, decryptFieldIfEncrypted } from './credential-cr
 import { toCredentialWithoutSecrets } from './credential-health.utils';
 import { buildCredentialUpdateData, detectChangedCredentialFields } from './credential-update-data';
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
+import { assertPermanentDeleteStepUp } from './credential-permanent-delete.policy';
 import {
   manualGrantsFromEmployeeIds,
   syncCredentialManualGrants,
@@ -227,6 +228,7 @@ export async function permanentlyDeleteCredential(
   runtime: CredentialsRuntime,
   id: string,
   access: CredentialsAccessContext,
+  stepUpPassword?: string,
 ) {
   const existing = await runtime.prisma.credential.findFirst({
     where: {
@@ -239,8 +241,16 @@ export async function permanentlyDeleteCredential(
         'delete',
       )),
     },
+    select: { id: true, projectId: true, criticality: true },
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
+
+  await assertPermanentDeleteStepUp(
+    runtime,
+    existing.criticality,
+    access.employeeId,
+    stepUpPassword,
+  );
 
   await runtime.prisma.credential.delete({ where: { id } });
   await runtime.auditService.log({

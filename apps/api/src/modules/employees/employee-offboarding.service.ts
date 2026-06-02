@@ -5,6 +5,7 @@ import {
   EMPLOYEE_OFFBOARDING_OWNER_TYPE,
   EMPLOYEE_OFFBOARDING_TEMPLATE_NAME,
 } from '@nbos/shared';
+import { auditCredentialAccessRevokedOnOffboard } from '../credentials/credential-offboarding-audit';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
@@ -93,6 +94,13 @@ export class EmployeeOffboardingService {
         checklistInstanceId: result.checklistInstanceId,
       } as unknown as InputJsonValue,
     });
+
+    await auditCredentialAccessRevokedOnOffboard(
+      this.audit,
+      inventory.credentialIds,
+      employeeId,
+      actorId,
+    );
 
     const financeNotificationsSent = await this.notifyFinanceTeam(
       employeeId,

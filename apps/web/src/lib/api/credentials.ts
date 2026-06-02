@@ -4,6 +4,7 @@ import type { AuditLogEntry } from './audit';
 export interface CredentialManualGrant {
   employeeId: string;
   level: 'VIEW' | 'EDIT';
+  expiresAt: string | null;
   employee: {
     id: string;
     firstName: string;
@@ -105,8 +106,10 @@ export const credentialsApi = {
     await api.delete(`/api/credentials/${id}`);
   },
   /** Remove archived row from DB (CREDENTIALS DELETE). */
-  async permanentDelete(id: string): Promise<void> {
-    await api.delete(`/api/credentials/${id}/permanent`);
+  async permanentDelete(id: string, stepUpPassword?: string): Promise<void> {
+    await api.delete(`/api/credentials/${id}/permanent`, {
+      data: stepUpPassword ? { stepUpPassword } : {},
+    });
   },
   async revealSecret(
     id: string,
@@ -143,7 +146,7 @@ export const credentialsApi = {
   },
   async replaceManualAccess(
     id: string,
-    grants: { employeeId: string; level: 'VIEW' | 'EDIT' }[],
+    grants: { employeeId: string; level: 'VIEW' | 'EDIT'; expiresAt?: string | null }[],
   ): Promise<{ grants: CredentialManualGrant[] }> {
     const resp = await api.put<{ grants: CredentialManualGrant[] }>(
       `/api/credentials/${id}/manual-access`,
