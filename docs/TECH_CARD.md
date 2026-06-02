@@ -123,18 +123,21 @@
 
 ## 8. DevOps и хостинг
 
-| #    | Параметр         | Решение                 | Статус | Примечание                 |
-| ---- | ---------------- | ----------------------- | ------ | -------------------------- |
-| 8.1  | Хостинг frontend | Vercel                  | ✅     |                            |
-| 8.2  | Хостинг backend  | Render                  | ✅     | Docker, WebSocket, workers |
-| 8.3  | CI/CD            | GitHub Actions          | ✅     |                            |
-| 8.4  | Docker           | Dockerfile для api      | ✅     | Render деплоит контейнеры  |
-| 8.5  | WAF              | Cloudflare              | ✅     | опционально                |
-| 8.6  | Мониторинг       | Sentry + метрики Render | ✅     |                            |
-| 8.7  | Логирование      | Pino (production)       | ✅     | структурированные JSON     |
-| 8.8  | Окружения        | dev + staging + prod    | ✅     | Neon branches              |
-| 8.9  | Домен            | кастомный               | ✅     | nbos.\* или аналог         |
-| 8.10 | Бэкапы БД        | Neon PITR (авто)        | ✅     |                            |
+| #    | Параметр         | Решение                 | Статус | Примечание                                              |
+| ---- | ---------------- | ----------------------- | ------ | ------------------------------------------------------- |
+| 8.1  | Хостинг frontend | Vercel                  | ✅     |                                                         |
+| 8.2  | Хостинг backend  | Render                  | ✅     | Docker, WebSocket, workers                              |
+| 8.3  | CI/CD            | GitHub Actions          | ✅     |                                                         |
+| 8.4  | Docker           | Dockerfile для api      | ✅     | Render деплоит контейнеры                               |
+| 8.5  | WAF              | Cloudflare              | ✅     | опционально                                             |
+| 8.6  | Мониторинг       | Sentry + метрики Render | ✅     |                                                         |
+| 8.7  | Логирование      | Pino (production)       | ✅     | структурированные JSON                                  |
+| 8.8  | Окружения        | dev + staging + prod    | ✅     | Neon branches                                           |
+| 8.9  | Домен            | кастомный               | ✅     | nbos.\* или аналог                                      |
+| 8.10 | Бэкапы БД        | Neon PITR (авто)        | ✅     |                                                         |
+| 8.11 | Обновление deps  | Dependabot (monthly)    | ✅     | minor/patch авто; major — вручную по roadmap (см. ниже) |
+
+**Политика зависимостей (8.11).** Dependabot: раз в месяц, до 3 npm + 2 Actions PR. Security alerts GitHub — отдельно. **Major не через бота:** TypeScript 6+, Zod 4+, ESLint 10+, `@types/node` 25+ (пока Node 22 LTS), lucide-react 1.x, commitlint 21+ — отдельная миграция с CI и обновлением этой карты. Текущий зафиксированный стек: **TS 5.9**, **Zod 3**, **ESLint 9**, **Node 22**.
 
 ---
 

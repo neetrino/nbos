@@ -1,22 +1,39 @@
-# Dependabot: keep GitHub Actions and npm (if added later) up to date.
+# Dependabot: monthly minor/patch updates; semver-major migrations are manual (see docs/TECH_CARD.md §8.11).
 version: 2
 updates:
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 5
+      interval: 'monthly'
+    open-pull-requests-limit: 2
 
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 10
+      interval: 'monthly'
+    open-pull-requests-limit: 3
     labels:
       - 'dependencies'
     groups:
-      # Group minor/patch bumps to reduce PR noise; majors stay separate.
       minor-and-patch:
         update-types:
           - 'minor'
           - 'patch'
+    ignore:
+      # Planned manual migrations — see TECH_CARD §1.5, §2.5, §12 ESLint.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'zod'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'lucide-react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@commitlint/cli'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@commitlint/config-conventional'
+        update-types: ['version-update:semver-major']
