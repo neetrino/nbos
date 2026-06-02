@@ -52,6 +52,8 @@ import {
 } from './expense-workflow';
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
+import { mergeFinanceWhere } from '../finance/finance-scoped-access';
+import { resolveExpenseParticipationWhere } from '../finance/finance-module-participation.where';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -103,7 +105,7 @@ export class ExpensesService {
     const safeFrequency = pickExpenseFrequencyFilter(frequency);
     const safeBacklogReason = pickExpenseBacklogReasonFilter(backlogReason);
 
-    const where = this.buildWhere({
+    const baseWhere = this.buildWhere({
       type: safeType,
       category: safeCategory,
       status: safeStatus,
@@ -120,6 +122,8 @@ export class ExpensesService {
       payrollMonth,
       payrollEmployeeId,
     });
+    const participationWhere = await resolveExpenseParticipationWhere(this.prisma, params.access);
+    const where = mergeFinanceWhere(baseWhere, participationWhere);
 
     const [items, total] = await Promise.all([
       this.prisma.expense.findMany({
@@ -373,8 +377,10 @@ export class ExpensesService {
       payrollMonth: params.payrollMonth,
       payrollEmployeeId: params.payrollEmployeeId,
     });
+    const participationWhere = await resolveExpenseParticipationWhere(this.prisma, params.access);
+    const statsWhere = mergeFinanceWhere(scopeWhere, participationWhere);
 
-    return fetchExpenseStatsAggregates(this.prisma, scopeWhere);
+    return fetchExpenseStatsAggregates(this.prisma, statsWhere);
   }
 
   private async persistRefreshedWorkflowStatus(id: string): Promise<void> {

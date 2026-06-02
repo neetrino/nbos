@@ -167,7 +167,9 @@ Finance row access = **RBAC module scopes** (`FINANCE_*` permissions) **plus** p
 | Seller / PM on a deal | `buildProjectParticipationWhere` on invoice/payment/expense `projectId` |
 | Manual override       | Future `ResourceAccessGrant` on finance document (not shipped)          |
 
-Portfolio/client views already mask sections via `portfolio-access-mask.ts`; wire project graph checks where list endpoints are still scope-only.
+Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
+
+**Runtime (partial):** `GET /finance/invoices`, `/finance/payments`, `/finance/subscriptions` (+ grid), and `GET /expenses` list/stats apply `finance-scoped-access` + `finance-module-participation.where` when module `*_VIEW` ≠ `ALL`.
 
 ### Project Hub / Tasks
 

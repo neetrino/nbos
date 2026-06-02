@@ -10,6 +10,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequirePermission,
+} from '../../../common/decorators';
+import { financePaymentAccessFromUser } from '../finance-module-access';
 import { PaymentsService } from './payments.service';
 
 @ApiTags('Finance / Payments')
@@ -19,8 +25,10 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
+  @RequirePermission('FINANCE_PAYMENTS', 'VIEW')
   @ApiOperation({ summary: 'Get all payments' })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('invoiceId') invoiceId?: string,
@@ -35,13 +43,23 @@ export class PaymentsController {
       search,
       dateFrom,
       dateTo,
+      access: financePaymentAccessFromUser(user),
     });
   }
 
   @Get('stats')
+  @RequirePermission('FINANCE_PAYMENTS', 'VIEW')
   @ApiOperation({ summary: 'Get payment statistics' })
-  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
-    return this.paymentsService.getStats({ dateFrom, dateTo });
+  async getStats(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return this.paymentsService.getStats({
+      dateFrom,
+      dateTo,
+      access: financePaymentAccessFromUser(user),
+    });
   }
 
   @Get(':id')

@@ -1,23 +1,17 @@
 import type { CurrentUserPayload } from '../../../common/decorators';
+import {
+  financeScopedAccessFromUser,
+  financeScopedBypassRowFilter,
+  type FinanceScopedAccessContext,
+} from '../finance-scoped-access';
 
 /** Caller identity + RBAC scope for invoice list/stats row filter. */
-export interface FinanceInvoiceAccessContext {
-  employeeId: string;
-  departmentIds: string[];
-  /** RBAC `FINANCE_INVOICES_VIEW` scope; ALL bypasses project participation filter. */
-  viewScope?: string;
-}
+export type FinanceInvoiceAccessContext = FinanceScopedAccessContext;
 
-export function financeInvoicesBypassRowFilter(scope: string | undefined): boolean {
-  return scope?.trim().toUpperCase() === 'ALL';
-}
+export const financeInvoicesBypassRowFilter = financeScopedBypassRowFilter;
 
 export function financeInvoiceAccessFromUser(
   user: CurrentUserPayload,
 ): FinanceInvoiceAccessContext {
-  return {
-    employeeId: user.id,
-    departmentIds: user.departmentIds ?? [],
-    viewScope: user.permissions.FINANCE_INVOICES_VIEW,
-  };
+  return financeScopedAccessFromUser(user, 'FINANCE_INVOICES_VIEW');
 }

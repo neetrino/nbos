@@ -14,6 +14,8 @@ import {
   applySubscriptionBillingPatch,
   resolveSubscriptionBillingInput,
 } from './subscription-billing-dto';
+import { mergeFinanceWhere, type FinanceScopedAccessContext } from '../finance-scoped-access';
+import { resolveSubscriptionParticipationWhere } from '../finance-module-participation.where';
 
 interface CreateSubscriptionDto {
   projectId: string;
@@ -58,12 +60,14 @@ interface SubscriptionQueryParams {
   search?: string;
   dateFrom?: string;
   dateTo?: string;
+  access?: FinanceScopedAccessContext;
 }
 
 interface SubscriptionStatsParams {
   dateFrom?: string;
   dateTo?: string;
   partnerId?: string;
+  access?: FinanceScopedAccessContext;
 }
 
 interface SubscriptionGridParams {
@@ -73,6 +77,7 @@ interface SubscriptionGridParams {
   status?: string;
   type?: string;
   search?: string;
+  access?: FinanceScopedAccessContext;
 }
 
 @Injectable()
@@ -114,8 +119,14 @@ export class SubscriptionsService {
       andParts.push(partnerClause);
     }
 
+    const participationWhere = await resolveSubscriptionParticipationWhere(
+      this.prisma,
+      params.access,
+    );
+    const gridWhere = mergeFinanceWhere({ AND: andParts }, participationWhere);
+
     const subscriptions = await this.prisma.subscription.findMany({
-      where: { AND: andParts },
+      where: gridWhere,
       include: {
         project: { select: { id: true, name: true } },
         invoices: {
@@ -174,9 +185,15 @@ export class SubscriptionsService {
       where.createdAt = createdAt;
     }
 
+    const participationWhere = await resolveSubscriptionParticipationWhere(
+      this.prisma,
+      params.access,
+    );
+    const listWhere = mergeFinanceWhere(where, participationWhere);
+
     const [items, total] = await Promise.all([
       this.prisma.subscription.findMany({
-        where,
+        where: listWhere,
         include: {
           project: { select: { id: true, code: true, name: true } },
           partner: { select: { id: true, name: true } },
@@ -196,7 +213,7 @@ export class SubscriptionsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.subscription.count({ where }),
+      this.prisma.subscription.count({ where: listWhere }),
     ]);
 
     return {
@@ -298,49 +315,38 @@ export class SubscriptionsService {
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const snapshotDate = params.dateTo ? new Date(params.dateTo) : new Date();
     const partnerWhere = this.subscriptionPartnerWhere(params.partnerId);
+    const participationWhere = await resolveSubscriptionParticipationWhere(
+      this.prisma,
+      params.access,
+    );
+    const withPartner = (base: Prisma.SubscriptionWhereInput): Prisma.SubscriptionWhereInput =>
+      mergeFinanceWhere({ ...base, ...partnerWhere }, participationWhere);
+    const periodWhere = withPartner(createdAt ? { createdAt } : {});
+    const activeWhere = withPartner({
+      status: 'ACTIVE',
+      billingStartDate: { lte: snapshotDate },
+      OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+    });
 
     const [total, byStatus, byType, totalRevenue, activeSubscriptions] = await Promise.all([
-      this.prisma.subscription.count({
-        where: {
-          ...(createdAt ? { createdAt } : {}),
-          ...partnerWhere,
-        },
-      }),
+      this.prisma.subscription.count({ where: periodWhere }),
       this.prisma.subscription.groupBy({
         by: ['status'],
-        where: {
-          ...(createdAt ? { createdAt } : {}),
-          ...partnerWhere,
-        },
+        where: periodWhere,
         _count: true,
         _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
-        where: {
-          ...(createdAt ? { createdAt } : {}),
-          ...partnerWhere,
-        },
+        where: periodWhere,
         _count: true,
         _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.aggregate({
-        where: {
-          status: 'ACTIVE',
-          billingStartDate: { lte: snapshotDate },
-          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
-          ...partnerWhere,
-        },
+        where: activeWhere,
         _sum: { baseMonthlyAmount: true },
       }),
-      this.prisma.subscription.count({
-        where: {
-          status: 'ACTIVE',
-          billingStartDate: { lte: snapshotDate },
-          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
-          ...partnerWhere,
-        },
-      }),
+      this.prisma.subscription.count({ where: activeWhere }),
     ]);
 
     return {
