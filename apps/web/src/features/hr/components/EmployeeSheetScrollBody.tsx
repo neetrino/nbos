@@ -31,7 +31,9 @@ export function EmployeeSheetScrollBody({
   generalError,
 }: EmployeeSheetScrollBodyProps) {
   const levelOptions = EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label }));
-  const statusOptions = EMPLOYEE_STATUSES.map((s) => ({ value: s.value, label: s.label }));
+  const statusOptions = EMPLOYEE_STATUSES.filter(
+    (s) => s.value !== 'TERMINATED' || draft.status === 'TERMINATED',
+  ).map((s) => ({ value: s.value, label: s.label }));
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }));
 
   return (

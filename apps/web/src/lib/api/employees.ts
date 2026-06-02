@@ -108,6 +108,43 @@ export interface UpdateEmployeePayload {
   hireDate?: string | null;
 }
 
+export interface EmployeeOffboardingInventory {
+  activeTaskCount: number;
+  projectTeamCount: number;
+  productTeamCount: number;
+  resourceGrantCount: number;
+  fileGrantCount: number;
+  credentialGrantCount: number;
+  projectIds: string[];
+  productIds: string[];
+  credentialIds: string[];
+}
+
+export interface EmployeeOffboardingPreview {
+  employeeId: string;
+  employeeName: string;
+  currentStatus: string;
+  alreadyTerminated: boolean;
+  inventory: EmployeeOffboardingInventory;
+}
+
+export interface EmployeeOffboardingResult {
+  employeeId: string;
+  status: string;
+  fireDate: string;
+  checklistInstanceId: string;
+  inventory: EmployeeOffboardingInventory;
+  revoked: {
+    resourceGrantsRevoked: number;
+    fileGrantsRevoked: number;
+    projectTeamRemovals: number;
+    productTeamRemovals: number;
+    credentialGrantsRevoked: number;
+    accessOverridesClosed: number;
+  };
+  financeNotificationsSent: number;
+}
+
 export const employeesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Employee>> {
     const resp = await api.get<ListData<Employee>>('/api/employees', { params });
@@ -153,6 +190,14 @@ export const employeesApi = {
   },
   async removeDepartment(id: string, departmentId: string): Promise<void> {
     await api.delete(`/api/employees/${id}/departments/${departmentId}`);
+  },
+  async offboardPreview(id: string): Promise<EmployeeOffboardingPreview> {
+    const resp = await api.get<EmployeeOffboardingPreview>(`/api/employees/${id}/offboard-preview`);
+    return resp.data;
+  },
+  async offboard(id: string): Promise<EmployeeOffboardingResult> {
+    const resp = await api.post<EmployeeOffboardingResult>(`/api/employees/${id}/offboard`);
+    return resp.data;
   },
 };
 

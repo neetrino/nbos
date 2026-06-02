@@ -39,12 +39,13 @@ import {
   buildEmployeeGeneralPatch,
   createEmployeeGeneralDraft,
   employeeRoleChanged,
-  employeeStatusChanged,
   isEmployeeGeneralDirty,
   type EmployeeGeneralDraft,
 } from './employee-general-form-state';
 import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
+import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
 import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
+import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 
 interface EmployeeSheetProps {
   employee: Employee | null;
@@ -73,6 +74,7 @@ export function EmployeeSheet({
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [terminateOpen, setTerminateOpen] = useState(false);
 
   useLayoutEffect(() => {
     if (!employee) {
@@ -126,9 +128,6 @@ export function EmployeeSheet({
       if (employeeRoleChanged(snap, draft)) {
         updated = await employeesApi.changeRole(current.id, draft.roleId);
       }
-      if (employeeStatusChanged(snap, draft)) {
-        updated = await employeesApi.changeStatus(current.id, draft.status);
-      }
       const fresh = await employeesApi.getById(updated.id);
       setCurrent(fresh);
       const next = createEmployeeGeneralDraft(fresh);
@@ -148,24 +147,15 @@ export function EmployeeSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
-  const handleTerminate = useCallback(async () => {
-    if (!current || !canEdit) return;
-    setSaving(true);
-    try {
-      await employeesApi.changeStatus(current.id, 'TERMINATED');
-      const fresh = await employeesApi.getById(current.id);
-      setCurrent(fresh);
-      const next = createEmployeeGeneralDraft(fresh);
-      setDraft(next);
-      setSnap(next);
-      toast.success('Employee marked as terminated');
-      await onSaved?.();
-    } catch (err) {
-      toast.error(saveErrorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  }, [canEdit, current, onSaved]);
+  const handleOffboardComplete = useCallback(async () => {
+    if (!current) return;
+    const fresh = await employeesApi.getById(current.id);
+    setCurrent(fresh);
+    const next = createEmployeeGeneralDraft(fresh);
+    setDraft(next);
+    setSnap(next);
+    await onSaved?.();
+  }, [current, onSaved]);
 
   if (!current || !draft || !snap) return null;
 
@@ -207,10 +197,10 @@ export function EmployeeSheet({
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"
-                    onClick={() => void handleTerminate()}
+                    onClick={() => setTerminateOpen(true)}
                   >
                     <UserX className="mr-2 size-4" />
-                    Mark terminated
+                    Offboard employee
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               )}
@@ -222,6 +212,9 @@ export function EmployeeSheet({
               <TabsList variant="default" className="h-8 w-full justify-start">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
+                {current.status === 'TERMINATED' ? (
+                  <TabsTrigger value="offboarding">Offboarding</TabsTrigger>
+                ) : null}
               </TabsList>
             </div>
 
@@ -233,7 +226,7 @@ export function EmployeeSheet({
                   patchDraft={patchDraft}
                   roles={roles}
                   saving={saving}
-                  canEdit={canEdit}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
                   generalError={generalError}
                 />
               </TabsContent>
@@ -241,7 +234,7 @@ export function EmployeeSheet({
                 <EmployeeDepartmentsPanel
                   employee={current}
                   departments={departments}
-                  canEdit={canEdit}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
                   onUpdated={(emp) => {
                     setCurrent(emp);
                     const next = createEmployeeGeneralDraft(emp);
@@ -251,11 +244,16 @@ export function EmployeeSheet({
                   }}
                 />
               </TabsContent>
+              {current.status === 'TERMINATED' ? (
+                <TabsContent value="offboarding" className="mt-0">
+                  <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
+                </TabsContent>
+              ) : null}
             </ScrollArea>
           </Tabs>
 
           <DetailSheetFormFooter
-            visible={canEdit}
+            visible={canEdit && current.status !== 'TERMINATED'}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}
@@ -265,6 +263,14 @@ export function EmployeeSheet({
           />
         </div>
       </EntityDetailSheetContent>
+
+      <TerminateEmployeeDialog
+        employeeId={current.id}
+        employeeName={fullName}
+        open={terminateOpen}
+        onOpenChange={setTerminateOpen}
+        onTerminated={handleOffboardComplete}
+      />
     </Sheet>
   );
 }

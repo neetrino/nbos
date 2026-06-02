@@ -13,8 +13,9 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { RequirePermission } from '../../common/decorators';
+import { RequirePermission, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { EmployeesService } from './employees.service';
+import { EmployeeOffboardingService } from './employee-offboarding.service';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -22,6 +23,7 @@ import { EmployeesService } from './employees.service';
 export class EmployeesController {
   constructor(
     private readonly employeesService: EmployeesService,
+    private readonly employeeOffboardingService: EmployeeOffboardingService,
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
@@ -53,6 +55,20 @@ export class EmployeesController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
     });
+  }
+
+  @Get(':id/offboard-preview')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Preview employee offboarding impact' })
+  previewOffboard(@Param('id') id: string) {
+    return this.employeeOffboardingService.buildPreview(id);
+  }
+
+  @Post(':id/offboard')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Offboard employee (terminate + revoke access + checklist)' })
+  offboard(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.employeeOffboardingService.execute(id, user.id);
   }
 
   @Get(':id')
@@ -122,10 +138,21 @@ export class EmployeesController {
   @Patch(':id/status')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Change employee status' })
-  async changeStatus(@Param('id') id: string, @Body() body: { status: string }) {
+  async changeStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    if (body.status === 'TERMINATED') {
+      return this.employeeOffboardingService.execute(id, user.id);
+    }
     return this.prisma.employee.update({
       where: { id },
-      data: { status: body.status as 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' | 'TERMINATED' },
+      data: { status: body.status as 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' },
+      include: {
+        role: { select: { id: true, name: true, slug: true, level: true } },
+        departments: { include: { department: true } },
+      },
     });
   }
 

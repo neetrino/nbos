@@ -36,11 +36,22 @@ export class AuthService {
   async login(email: string, password: string) {
     const employee = await this.prisma.employee.findUnique({
       where: { email: email.toLowerCase().trim() },
-      select: { id: true, email: true, firstName: true, lastName: true, passwordHash: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        passwordHash: true,
+        status: true,
+      },
     });
 
     if (!employee?.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (employee.status === 'TERMINATED') {
+      throw new UnauthorizedException('Account deactivated');
     }
 
     const isValid = await argon2.verify(employee.passwordHash, password);
