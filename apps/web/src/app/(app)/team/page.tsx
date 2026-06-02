@@ -2,16 +2,14 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Users2, LayoutGrid, List, Mail, Phone, Calendar, Building2 } from 'lucide-react';
+import { ChevronDown, LayoutGrid, List, Plus, UserPlus, Users2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   PageHero,
   IntegratedSearchFilters,
@@ -19,20 +17,26 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  StatusBadge,
   type ViewModeOption,
 } from '@/components/shared';
-import {
-  EMPLOYEE_LEVELS,
-  EMPLOYEE_STATUSES,
-  getEmployeeLevel,
-  getEmployeeStatus,
-} from '@/features/hr/constants/hr';
-import { PermissionGate } from '@/lib/permissions';
-import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
+import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
+import { TEAM_PAGE_SIZE } from '@/features/hr/constants/team-directory';
+import { CreateEmployeeSheet } from '@/features/hr/components/CreateEmployeeSheet';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
+import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
+import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
+import { TeamEmployeeTable } from '@/features/hr/components/TeamEmployeeTable';
+import { TeamStatusChips } from '@/features/hr/components/TeamStatusChips';
 import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
-import { employeesApi, rolesApi, type Employee, type RoleItem } from '@/lib/api/employees';
+import {
+  departmentsApi,
+  employeesApi,
+  rolesApi,
+  type DepartmentItem,
+  type Employee,
+  type RoleItem,
+} from '@/lib/api/employees';
+import { PermissionGate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'grid';
@@ -56,40 +60,68 @@ function TeamPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { can } = usePermission();
+  const canEdit = can('EDIT', 'COMPANY');
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [quickStatus, setQuickStatus] = useState<string | null>(null);
+  const [showTerminated, setShowTerminated] = useState(false);
   const [view, setView] = useState<ViewMode>('grid');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [total, setTotal] = useState(0);
+
+  const effectiveStatus = useMemo(() => {
+    if (quickStatus) return quickStatus;
+    if (filters.status && filters.status !== 'all') return filters.status;
+    if (showTerminated) return 'TERMINATED';
+    return undefined;
+  }, [quickStatus, filters.status, showTerminated]);
 
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
-      const { items } = await employeesApi.getAll({
-        pageSize: 100,
+      const { items, meta } = await employeesApi.getAll({
+        pageSize: TEAM_PAGE_SIZE,
         search: search || undefined,
         roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        level: filters.level && filters.level !== 'all' ? filters.level : undefined,
+        status: effectiveStatus,
         departmentId:
           filters.department && filters.department !== 'all' ? filters.department : undefined,
       });
       setEmployees(items);
+      setTotal(meta.total);
       setError(null);
     } catch {
       setError('Employees could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, effectiveStatus]);
 
   useEffect(() => {
-    fetchEmployees();
+    void fetchEmployees();
   }, [fetchEmployees]);
+
+  useEffect(() => {
+    rolesApi
+      .getAll()
+      .then((r) => setRoles(r ?? []))
+      .catch(() => {});
+    departmentsApi
+      .getAll()
+      .then((d) => setDepartments(d ?? []))
+      .catch(() => {});
+  }, []);
 
   const openEmployeeId = searchParams.get(TEAM_OPEN_EMPLOYEE_QUERY)?.trim() || null;
   const deepLinkEmployeeAttemptedRef = useRef<string | null>(null);
@@ -145,17 +177,23 @@ function TeamPageContent() {
     };
   }, [openEmployeeId, loading, employees, stripOpenEmployeeFromUrl]);
 
-  useEffect(() => {
-    rolesApi
-      .getAll()
-      .then((r) => setRoles(r ?? []))
-      .catch(() => {});
-  }, []);
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const emp of employees) {
+      counts[emp.status] = (counts[emp.status] ?? 0) + 1;
+    }
+    return counts;
+  }, [employees]);
 
-  const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
+  const activeCount = statusCounts.ACTIVE ?? 0;
 
   const filterConfigs = useMemo(
     () => [
+      {
+        key: 'department',
+        label: 'Department',
+        options: departments.map((d) => ({ value: d.id, label: d.name })),
+      },
       {
         key: 'role',
         label: 'Role',
@@ -172,35 +210,25 @@ function TeamPageContent() {
         options: EMPLOYEE_STATUSES.map((s) => ({ value: s.value, label: s.label })),
       },
     ],
-    [roles],
+    [roles, departments],
   );
-
-  function fullName(emp: Employee) {
-    return `${emp.firstName} ${emp.lastName}`;
-  }
-
-  function initials(emp: Employee) {
-    return `${emp.firstName[0] ?? ''}${emp.lastName[0] ?? ''}`.toUpperCase();
-  }
-
-  function primaryDepartment(emp: Employee) {
-    const primary = emp.departments?.find((d) => d.isPrimary);
-    return primary?.department?.name ?? emp.departments?.[0]?.department?.name ?? null;
-  }
-
-  function tenure(hireDate: string | null): string {
-    if (!hireDate) return '—';
-    const diff = Date.now() - new Date(hireDate).getTime();
-    const months = Math.floor(diff / (30.44 * 24 * 60 * 60 * 1000));
-    if (months < 1) return 'New';
-    if (months < 12) return `${months} mo`;
-    const years = Math.floor(months / 12);
-    const rem = months % 12;
-    return rem > 0 ? `${years}y ${rem}m` : `${years}y`;
-  }
 
   function openSheet(emp: Employee) {
     pushOpenEmployeeToUrl(emp.id);
+  }
+
+  function handleQuickStatus(status: string | null) {
+    setQuickStatus(status);
+    setShowTerminated(false);
+    if (status) {
+      setFilters((prev) => ({ ...prev, status: 'all' }));
+    }
+  }
+
+  function handleToggleTerminated() {
+    setShowTerminated((v) => !v);
+    setQuickStatus(null);
+    setFilters((prev) => ({ ...prev, status: 'all' }));
   }
 
   return (
@@ -214,24 +242,57 @@ function TeamPageContent() {
             searchPlaceholder="Search by name, email…"
             filters={filterConfigs}
             filterValues={filters}
-            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearAll={() => setFilters({})}
+            onFilterChange={(key, value) => {
+              setFilters((prev) => ({ ...prev, [key]: value }));
+              if (key === 'status') setQuickStatus(null);
+            }}
+            onClearAll={() => {
+              setFilters({});
+              setQuickStatus(null);
+              setShowTerminated(false);
+            }}
           />
         }
         viewMode={<ViewModeSwitch value={view} onChange={setView} options={TEAM_VIEW_OPTIONS} />}
         trailing={
           <>
             <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-              {activeCount} active
+              {activeCount} active · {total} total
             </span>
             <PermissionGate module="COMPANY" action="ADD">
-              <Button type="button" onClick={() => setInviteOpen(true)}>
-                <Plus size={16} aria-hidden />
-                Invite Employee
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={(props) => (
+                    <Button {...props} type="button">
+                      <Plus size={16} aria-hidden />
+                      Add
+                      <ChevronDown className="ml-1 size-4 opacity-70" aria-hidden />
+                    </Button>
+                  )}
+                />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                    <Users2 className="mr-2 size-4" />
+                    Create employee
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInviteOpen(true)}>
+                    <UserPlus className="mr-2 size-4" />
+                    Send invitation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </PermissionGate>
           </>
         }
+      />
+
+      <TeamStatusChips
+        activeStatus={quickStatus}
+        onStatusChange={handleQuickStatus}
+        counts={statusCounts}
+        showTerminated={showTerminated}
+        onToggleTerminated={handleToggleTerminated}
+        terminatedCount={statusCounts.TERMINATED ?? 0}
       />
 
       {loading ? (
@@ -242,119 +303,38 @@ function TeamPageContent() {
         <EmptyState
           icon={Users2}
           title="No employees yet"
-          description="Invite your team members"
+          description="Create a profile or send an invitation to grow your team directory."
           action={
             <PermissionGate module="COMPANY" action="ADD">
-              <Button onClick={() => setInviteOpen(true)}>
-                <Plus size={16} /> Invite First Employee
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button onClick={() => setCreateOpen(true)}>
+                  <Plus size={16} /> Create employee
+                </Button>
+                <Button variant="outline" onClick={() => setInviteOpen(true)}>
+                  <UserPlus size={16} /> Send invitation
+                </Button>
+              </div>
             </PermissionGate>
           }
         />
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {employees.map((emp) => {
-            const lvl = emp.level ? getEmployeeLevel(emp.level) : null;
-            const st = getEmployeeStatus(emp.status);
-            const dept = primaryDepartment(emp);
-            return (
-              <div
-                key={emp.id}
-                onClick={() => openSheet(emp)}
-                className="border-border bg-card cursor-pointer rounded-xl border p-5 transition-shadow hover:shadow-sm"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="bg-accent/15 text-accent flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold">
-                    {initials(emp)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{fullName(emp)}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {emp.role?.name ?? '—'} {dept ? `· ${dept}` : ''}
-                    </p>
-                  </div>
-                  {st && <StatusBadge label={st.label} variant={st.variant} />}
-                </div>
-
-                <div className="mt-4 space-y-1.5">
-                  {lvl && (
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <Building2 size={12} />
-                      <StatusBadge label={lvl.label} variant={lvl.variant} />
-                    </div>
-                  )}
-                  {emp.email && (
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <Mail size={12} />
-                      <span className="truncate">{emp.email}</span>
-                    </div>
-                  )}
-                  {emp.phone && (
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <Phone size={12} />
-                      <span>{emp.phone}</span>
-                    </div>
-                  )}
-                  {emp.hireDate && (
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                      <Calendar size={12} />
-                      <span>Tenure: {tenure(emp.hireDate)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {employees.map((emp) => (
+            <TeamEmployeeCard key={emp.id} employee={emp} onOpen={openSheet} />
+          ))}
         </div>
       ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tenure</TableHead>
-                <TableHead>Email</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((emp) => {
-                const lvl = emp.level ? getEmployeeLevel(emp.level) : null;
-                const st = getEmployeeStatus(emp.status);
-                return (
-                  <TableRow key={emp.id} className="cursor-pointer" onClick={() => openSheet(emp)}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-accent/15 text-accent flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold">
-                          {initials(emp)}
-                        </div>
-                        <span className="font-medium">{fullName(emp)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{emp.role?.name ?? '—'}</TableCell>
-                    <TableCell>
-                      {lvl && <StatusBadge label={lvl.label} variant={lvl.variant} />}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {primaryDepartment(emp) ?? '—'}
-                    </TableCell>
-                    <TableCell>
-                      {st && <StatusBadge label={st.label} variant={st.variant} />}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {tenure(emp.hireDate)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{emp.email}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <TeamEmployeeTable employees={employees} onOpen={openSheet} />
       )}
+
+      <CreateEmployeeSheet
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(emp) => {
+          void fetchEmployees();
+          openSheet(emp);
+        }}
+      />
 
       <InviteEmployeeDialog
         open={inviteOpen}
@@ -365,6 +345,8 @@ function TeamPageContent() {
       <EmployeeSheet
         employee={selectedEmployee}
         open={sheetOpen}
+        canEdit={canEdit}
+        onSaved={fetchEmployees}
         onOpenChange={(open) => {
           setSheetOpen(open);
           if (!open) {

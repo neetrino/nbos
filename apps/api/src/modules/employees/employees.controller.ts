@@ -31,6 +31,7 @@ export class EmployeesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'roleId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'level', required: false })
   @ApiQuery({ name: 'departmentId', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -38,6 +39,7 @@ export class EmployeesController {
     @Query('search') search?: string,
     @Query('roleId') roleId?: string,
     @Query('status') status?: string,
+    @Query('level') level?: string,
     @Query('departmentId') departmentId?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -46,6 +48,7 @@ export class EmployeesController {
       search,
       roleId,
       status,
+      level,
       departmentId,
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
@@ -98,11 +101,17 @@ export class EmployeesController {
       position?: string;
       level?: 'JUNIOR' | 'MIDDLE' | 'SENIOR' | 'LEAD' | 'HEAD';
       notes?: string;
+      hireDate?: string | null;
     },
   ) {
+    const { hireDate, ...rest } = body;
+    const data: Record<string, unknown> = { ...rest };
+    if (hireDate !== undefined) {
+      data.hireDate = hireDate ? new Date(hireDate) : null;
+    }
     return this.prisma.employee.update({
       where: { id },
-      data: body,
+      data,
       include: {
         role: { select: { id: true, name: true, slug: true, level: true } },
         departments: { include: { department: true } },

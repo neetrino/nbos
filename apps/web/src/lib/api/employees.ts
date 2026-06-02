@@ -86,6 +86,28 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface CreateEmployeePayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  roleId: string;
+  phone?: string;
+  telegram?: string;
+  position?: string;
+}
+
+export interface UpdateEmployeePayload {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string | null;
+  telegram?: string | null;
+  position?: string | null;
+  level?: string | null;
+  notes?: string | null;
+  hireDate?: string | null;
+}
+
 export const employeesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Employee>> {
     const resp = await api.get<ListData<Employee>>('/api/employees', { params });
@@ -95,13 +117,42 @@ export const employeesApi = {
     const resp = await api.get<Employee>(`/api/employees/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Employee> {
+  async create(data: CreateEmployeePayload): Promise<Employee> {
     const resp = await api.post<Employee>('/api/employees', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Employee> {
+  async update(id: string, data: UpdateEmployeePayload): Promise<Employee> {
     const resp = await api.put<Employee>(`/api/employees/${id}`, data);
     return resp.data;
+  },
+  async changeStatus(id: string, status: string): Promise<Employee> {
+    const resp = await api.patch<Employee>(`/api/employees/${id}/status`, { status });
+    return resp.data;
+  },
+  async changeRole(id: string, roleId: string): Promise<Employee> {
+    const resp = await api.patch<Employee>(`/api/employees/${id}/role`, { roleId });
+    return resp.data;
+  },
+  async addDepartment(
+    id: string,
+    data: { departmentId: string; deptRole?: string; isPrimary?: boolean },
+  ): Promise<EmployeeDepartment> {
+    const resp = await api.post<EmployeeDepartment>(`/api/employees/${id}/departments`, data);
+    return resp.data;
+  },
+  async updateDepartment(
+    id: string,
+    departmentId: string,
+    data: { deptRole?: string; isPrimary?: boolean },
+  ): Promise<EmployeeDepartment> {
+    const resp = await api.patch<EmployeeDepartment>(
+      `/api/employees/${id}/departments/${departmentId}`,
+      data,
+    );
+    return resp.data;
+  },
+  async removeDepartment(id: string, departmentId: string): Promise<void> {
+    await api.delete(`/api/employees/${id}/departments/${departmentId}`);
   },
 };
 
