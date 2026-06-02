@@ -5,6 +5,12 @@ export const DRIVE_VIEW_MODES: DriveViewMode[] = ['cards', 'tiles', 'list', 'tab
 export const DRIVE_FOLDER_CARDS_GRID_CLASS =
   'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7';
 
+/** Horizontal folder chips (Google Drive–style) above the file grid. */
+export const DRIVE_FOLDER_CHIPS_ROW_CLASS =
+  'flex gap-2 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:thin]';
+
+export const DRIVE_FILE_CARDS_GRID_CLASS = DRIVE_FOLDER_CARDS_GRID_CLASS;
+
 export const DRIVE_TILES_GRID_CLASS = 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3';
 
 export function parseDriveViewMode(raw: string | null): DriveViewMode | null {

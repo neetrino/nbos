@@ -79,6 +79,7 @@ import {
   DriveDeleteFolderDialog,
   DriveRenameFolderDialog,
 } from './DriveFolderActionDialogs';
+import { DriveAccessDialog, type DriveAccessDialogTarget } from './drive-access-dialog';
 import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
 import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
 import {
@@ -177,6 +178,9 @@ export function DriveWorkspace() {
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [renameFolderTarget, setRenameFolderTarget] = useState<DriveFolder | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<DriveFolder | null>(null);
+  const [accessDialogTarget, setAccessDialogTarget] = useState<DriveAccessDialogTarget | null>(
+    null,
+  );
   const [rootStorageFolderId, setRootStorageFolderId] = useState<string | null>(null);
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
   const [systemLibraryLink, setSystemLibraryLink] = useState<LibraryUploadLink | null>(null);
@@ -1566,7 +1570,15 @@ export function DriveWorkspace() {
       toast.error('Sharing is not available in this view.');
       return;
     }
-    setSelected(file);
+    setAccessDialogTarget({ kind: 'file', file });
+  }
+
+  function onShareFolder(folder: DriveFolder) {
+    if (!driveActionCapabilities.canShareFile) {
+      toast.error('Sharing is not available in this view.');
+      return;
+    }
+    setAccessDialogTarget({ kind: 'folder', folder });
   }
 
   async function onUnlinkFromRecord(file: FileAsset) {
@@ -2329,6 +2341,9 @@ export function DriveWorkspace() {
                   ? (folder) => setDeleteFolderTarget(folder)
                   : undefined
               }
+              onShareFolder={
+                !inLifecycleView && driveActionCapabilities.canShareFile ? onShareFolder : undefined
+              }
               fileMenu={{
                 onOpenDetails: onPreview,
                 onArchive: inLifecycleView ? undefined : onArchive,
@@ -2456,6 +2471,14 @@ export function DriveWorkspace() {
           if (!next) setDeleteFolderTarget(null);
         }}
         onConfirm={(folderId) => confirmDeleteFolder(folderId)}
+      />
+      <DriveAccessDialog
+        target={accessDialogTarget}
+        onClose={() => setAccessDialogTarget(null)}
+        onChanged={() => {
+          void loadFolders();
+          void load();
+        }}
       />
     </div>
   );

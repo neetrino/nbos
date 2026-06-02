@@ -6,6 +6,9 @@ import { FILE_GRANT_PERMISSIONS } from './drive-grant-permissions';
 /** Platform {@link ResourceAccessGrant} resource type for Drive file assets. */
 export const DRIVE_FILE_ASSET_RESOURCE_TYPE = 'drive_file_asset';
 
+/** Platform {@link ResourceAccessGrant} resource type for Drive folders. */
+export const DRIVE_FOLDER_RESOURCE_TYPE = 'drive_folder';
+
 const PERMISSION_PREFIX = 'drive_permission:';
 
 type GrantClient = Pick<
@@ -49,18 +52,20 @@ export async function syncDriveFileResourceAccessGrant(
     grantedById: string;
     expiresAt: Date | null;
     auditReason?: string | null;
+    resourceType?: typeof DRIVE_FILE_ASSET_RESOURCE_TYPE | typeof DRIVE_FOLDER_RESOURCE_TYPE;
   },
 ): Promise<void> {
+  const resourceType = input.resourceType ?? DRIVE_FILE_ASSET_RESOURCE_TYPE;
   await client.resourceAccessGrant.upsert({
     where: {
       resourceType_resourceId_employeeId: {
-        resourceType: DRIVE_FILE_ASSET_RESOURCE_TYPE,
+        resourceType,
         resourceId: input.fileAssetId,
         employeeId: input.employeeId,
       },
     },
     create: {
-      resourceType: DRIVE_FILE_ASSET_RESOURCE_TYPE,
+      resourceType,
       resourceId: input.fileAssetId,
       employeeId: input.employeeId,
       level: mapFileGrantToPlatformLevel(input.permission),
@@ -82,10 +87,13 @@ export async function revokeDriveFileResourceAccessGrant(
   client: GrantClient,
   fileAssetId: string,
   employeeId: string,
+  resourceType:
+    | typeof DRIVE_FILE_ASSET_RESOURCE_TYPE
+    | typeof DRIVE_FOLDER_RESOURCE_TYPE = DRIVE_FILE_ASSET_RESOURCE_TYPE,
 ): Promise<void> {
   await client.resourceAccessGrant.updateMany({
     where: {
-      resourceType: DRIVE_FILE_ASSET_RESOURCE_TYPE,
+      resourceType,
       resourceId: fileAssetId,
       employeeId,
       revokedAt: null,
@@ -94,14 +102,15 @@ export async function revokeDriveFileResourceAccessGrant(
   });
 }
 
-async function loadPlatformGrantFileIds(
+async function loadPlatformGrantResourceIds(
   prisma: InstanceType<typeof PrismaClient>,
+  resourceType: typeof DRIVE_FILE_ASSET_RESOURCE_TYPE | typeof DRIVE_FOLDER_RESOURCE_TYPE,
   employeeId: string,
   permissions?: readonly FileGrantPermission[],
 ): Promise<string[]> {
   const rows = await prisma.resourceAccessGrant.findMany({
     where: {
-      resourceType: DRIVE_FILE_ASSET_RESOURCE_TYPE,
+      resourceType,
       employeeId,
       ...activeResourceAccessGrantWhere(),
     },
@@ -118,6 +127,58 @@ async function loadPlatformGrantFileIds(
       return row.level === 'VIEW' && allowed.has('VIEW');
     })
     .map((row) => row.resourceId);
+}
+
+/** Folder visibility via platform {@link ResourceAccessGrant} on {@link DRIVE_FOLDER_RESOURCE_TYPE}. */
+export async function buildDriveExplicitFolderGrantWhere(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeId: string,
+  permissions?: readonly FileGrantPermission[],
+): Promise<Prisma.DriveFolderWhereInput> {
+  const ids = await loadPlatformGrantResourceIds(
+    prisma,
+    DRIVE_FOLDER_RESOURCE_TYPE,
+    employeeId,
+    permissions,
+  );
+  if (ids.length === 0) return { id: { in: [] } };
+  return { id: { in: ids } };
+}
+
+export async function employeeHasActiveDriveFolderGrant(
+  prisma: InstanceType<typeof PrismaClient>,
+  folderId: string,
+  employeeId: string,
+): Promise<boolean> {
+  const ids = await loadPlatformGrantResourceIds(prisma, DRIVE_FOLDER_RESOURCE_TYPE, employeeId);
+  return ids.includes(folderId);
+}
+
+export async function employeeCanManageDriveFolderGrants(
+  prisma: InstanceType<typeof PrismaClient>,
+  folderId: string,
+  employeeId: string,
+): Promise<boolean> {
+  const editIds = await loadPlatformGrantResourceIds(
+    prisma,
+    DRIVE_FOLDER_RESOURCE_TYPE,
+    employeeId,
+    ['EDIT_METADATA', 'SHARE', 'UPLOAD_VERSION'],
+  );
+  return editIds.includes(folderId);
+}
+
+async function loadPlatformGrantFileIds(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeId: string,
+  permissions?: readonly FileGrantPermission[],
+): Promise<string[]> {
+  return loadPlatformGrantResourceIds(
+    prisma,
+    DRIVE_FILE_ASSET_RESOURCE_TYPE,
+    employeeId,
+    permissions,
+  );
 }
 
 function activeFileAssetGrantWhere(

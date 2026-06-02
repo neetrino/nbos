@@ -58,16 +58,19 @@ export interface FileAuditEvent {
   createdAt: string;
 }
 
-export interface FileAssetGrantRow {
+export interface DriveGrantRow {
   id: string;
-  fileAssetId: string;
   granteeEmployeeId: string;
   granteeLabel?: string;
-  grantedById: string | null;
   permission: string;
   expiresAt: string | null;
-  revokedAt: string | null;
   createdAt: string;
+}
+
+export interface FileAssetGrantRow extends DriveGrantRow {
+  fileAssetId: string;
+  grantedById: string | null;
+  revokedAt: string | null;
 }
 
 export type DriveZipExportJobStatus =
@@ -253,6 +256,37 @@ export const driveApi = {
   async revokeFileAssetGrant(fileId: string, grantId: string): Promise<FileAssetGrantRow> {
     const resp = await api.delete<FileAssetGrantRow>(
       '/api/drive/files/' + encodeURIComponent(fileId) + '/grants/' + encodeURIComponent(grantId),
+    );
+    return resp.data;
+  },
+
+  async createFolderGrant(
+    folderId: string,
+    body: { granteeEmployeeId: string; permission?: string },
+  ): Promise<DriveGrantRow> {
+    const resp = await api.post<DriveGrantRow>(
+      '/api/drive/folders/' + encodeURIComponent(folderId) + '/grants',
+      body,
+    );
+    return resp.data;
+  },
+
+  async listFolderGrants(folderId: string): Promise<DriveGrantRow[]> {
+    const resp = await api.get<DriveGrantRow[]>(
+      '/api/drive/folders/' + encodeURIComponent(folderId) + '/grants',
+    );
+    return resp.data;
+  },
+
+  async revokeFolderGrant(
+    folderId: string,
+    grantId: string,
+  ): Promise<{ id: string; revoked: boolean }> {
+    const resp = await api.delete<{ id: string; revoked: boolean }>(
+      '/api/drive/folders/' +
+        encodeURIComponent(folderId) +
+        '/grants/' +
+        encodeURIComponent(grantId),
     );
     return resp.data;
   },

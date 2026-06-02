@@ -10,6 +10,7 @@ import {
   driveFileCardLayout,
   driveFolderRowLayout,
   driveItemsContainerClass,
+  DRIVE_FILE_CARDS_GRID_CLASS,
 } from './drive-view-layout';
 import {
   DriveFileCard,
@@ -19,6 +20,7 @@ import {
 } from './DriveFileCard';
 import {
   DriveFolderCardRow,
+  DriveFolderChipStrip,
   DriveFolderTableRow,
   type DriveFolderFileDropHandlers,
 } from './DriveFolderRows';
@@ -46,6 +48,7 @@ export function DriveFileSurface({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   fileMenu,
   fileDrag,
   folderFileDrop,
@@ -63,6 +66,7 @@ export function DriveFileSurface({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   fileMenu?: DriveFileCardMenuHandlers;
   fileDrag?: DriveFileCardDragConfig;
   folderFileDrop?: {
@@ -127,6 +131,7 @@ export function DriveFileSurface({
         onOpenFolder={onOpenFolder}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
+        onShareFolder={onShareFolder}
         fileDrag={fileDrag}
         dropTargetFolderId={dropTargetFolderId}
         buildFolderDropHandlers={buildFolderDropHandlers}
@@ -135,36 +140,59 @@ export function DriveFileSurface({
   }
   const folderLayout = driveFolderRowLayout(viewMode);
   const fileLayout = driveFileCardLayout(viewMode);
+  const useFolderChips = viewMode === 'cards' && folders.length > 0;
 
   return (
-    <div className={cn(driveItemsContainerClass(viewMode))}>
-      {folders.map((folder) => (
-        <DriveFolderCardRow
-          key={folder.id}
-          folder={folder}
-          layout={folderLayout}
+    <div className="space-y-3">
+      {useFolderChips ? (
+        <DriveFolderChipStrip
+          folders={folders}
           onOpenFolder={onOpenFolder}
+          onShareFolder={onShareFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
-          fileDropHighlight={dropTargetFolderId === folder.id}
-          fileDropHandlers={buildFolderDropHandlers(folder.id)}
-          folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
-          onToggleFolderChecked={onToggleFolderChecked}
+          fileDropHighlight={dropTargetFolderId}
+          buildFolderDropHandlers={buildFolderDropHandlers}
         />
-      ))}
-      {files.map((file) => (
-        <DriveFileCard
-          key={file.id}
-          file={file}
-          layout={fileLayout}
-          selected={file.id === selectedId}
-          checked={checkedIds.includes(file.id)}
-          onSelect={onSelect}
-          onToggleChecked={onToggleChecked}
-          menu={fileMenu}
-          fileDrag={fileDrag}
-        />
-      ))}
+      ) : null}
+      <div
+        className={cn(
+          useFolderChips ? DRIVE_FILE_CARDS_GRID_CLASS : driveItemsContainerClass(viewMode),
+        )}
+      >
+        {!useFolderChips
+          ? folders.map((folder) => (
+              <DriveFolderCardRow
+                key={folder.id}
+                folder={folder}
+                layout={folderLayout}
+                onOpenFolder={onOpenFolder}
+                onShareFolder={onShareFolder}
+                onRenameFolder={onRenameFolder}
+                onDeleteFolder={onDeleteFolder}
+                fileDropHighlight={dropTargetFolderId === folder.id}
+                fileDropHandlers={buildFolderDropHandlers(folder.id)}
+                folderChecked={
+                  onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined
+                }
+                onToggleFolderChecked={onToggleFolderChecked}
+              />
+            ))
+          : null}
+        {files.map((file) => (
+          <DriveFileCard
+            key={file.id}
+            file={file}
+            layout={fileLayout}
+            selected={file.id === selectedId}
+            checked={checkedIds.includes(file.id)}
+            onSelect={onSelect}
+            onToggleChecked={onToggleChecked}
+            menu={fileMenu}
+            fileDrag={fileDrag}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -181,6 +209,7 @@ function FileTable({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   fileDrag,
   dropTargetFolderId,
   buildFolderDropHandlers,
@@ -196,6 +225,7 @@ function FileTable({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   fileDrag?: DriveFileCardDragConfig;
   dropTargetFolderId: string | null;
   buildFolderDropHandlers: (folderId: string) => DriveFolderFileDropHandlers | undefined;
@@ -221,6 +251,7 @@ function FileTable({
           key={folder.id}
           folder={folder}
           onOpenFolder={onOpenFolder}
+          onShareFolder={onShareFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           fileDropHighlight={dropTargetFolderId === folder.id}

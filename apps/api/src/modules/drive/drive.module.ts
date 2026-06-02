@@ -4,6 +4,7 @@ import { DriveService } from './drive.service';
 import { DriveR2Client } from './drive-r2.client';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
+import { DriveFolderGrantService } from './drive-folder-grant.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { DriveExportZipWorker } from './drive-export-zip.worker';
@@ -23,6 +24,7 @@ import { AuditModule } from '../audit/audit.module';
     DriveService,
     DriveUploadSessionService,
     DriveFolderService,
+    DriveFolderGrantService,
     DriveZipExportService,
     DriveExportZipQueueService,
     DriveExportZipWorker,

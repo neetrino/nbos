@@ -1,7 +1,7 @@
 'use client';
 
 import type { DragEvent, ReactNode } from 'react';
-import { Folder, MoreHorizontal } from 'lucide-react';
+import { Folder, MoreHorizontal, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import type { DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate } from './drive-format';
 import { DriveTileShell } from './DriveTileShell';
+import { DRIVE_FOLDER_CHIPS_ROW_CLASS } from './drive-view-layout';
 
 type DriveFolderRowLayout = 'cards' | 'list' | 'tiles';
 
@@ -39,10 +40,97 @@ export type DriveFolderFileDropHandlers = {
   onDrop: (e: DragEvent) => void;
 };
 
+export function DriveFolderChipStrip({
+  folders,
+  onOpenFolder,
+  onShareFolder,
+  onRenameFolder,
+  onDeleteFolder,
+  fileDropHighlight,
+  buildFolderDropHandlers,
+}: {
+  folders: DriveFolder[];
+  onOpenFolder: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
+  onRenameFolder?: (folder: DriveFolder) => void;
+  onDeleteFolder?: (folder: DriveFolder) => void;
+  fileDropHighlight?: string | null;
+  buildFolderDropHandlers?: (folderId: string) => DriveFolderFileDropHandlers | undefined;
+}) {
+  return (
+    <div className={DRIVE_FOLDER_CHIPS_ROW_CLASS} role="list" aria-label="Folders">
+      {folders.map((folder) => (
+        <DriveFolderChip
+          key={folder.id}
+          folder={folder}
+          onOpenFolder={onOpenFolder}
+          onShareFolder={onShareFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+          fileDropHighlight={fileDropHighlight === folder.id}
+          fileDropHandlers={buildFolderDropHandlers?.(folder.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DriveFolderChip({
+  folder,
+  onOpenFolder,
+  onShareFolder,
+  onRenameFolder,
+  onDeleteFolder,
+  fileDropHighlight,
+  fileDropHandlers,
+}: {
+  folder: DriveFolder;
+  onOpenFolder: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
+  onRenameFolder?: (folder: DriveFolder) => void;
+  onDeleteFolder?: (folder: DriveFolder) => void;
+  fileDropHighlight?: boolean;
+  fileDropHandlers?: DriveFolderFileDropHandlers;
+}) {
+  const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
+  return (
+    <div
+      role="listitem"
+      className={cn(
+        'border-border/70 bg-muted/40 hover:bg-muted/70 group flex max-w-[14rem] min-w-[8.5rem] shrink-0 items-center gap-1 rounded-full border py-1 pr-1 pl-3 shadow-sm transition-colors',
+        fileDropHighlight && 'ring-primary ring-2 ring-offset-1',
+      )}
+      onDragOver={fileDropHandlers?.onDragOver}
+      onDragLeave={fileDropHandlers?.onDragLeave}
+      onDrop={fileDropHandlers?.onDrop}
+    >
+      <button
+        type="button"
+        draggable={false}
+        onClick={() => onOpenFolder(folder)}
+        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2 rounded-full text-left outline-none focus-visible:ring-2"
+      >
+        <Folder className="text-primary/80 size-4 shrink-0" strokeWidth={2} aria-hidden />
+        <span className="text-foreground truncate text-sm font-medium">{folder.name}</span>
+      </button>
+      {showMenu ? (
+        <FolderOverflowMenu
+          folder={folder}
+          onShareFolder={onShareFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+          compact
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export function DriveFolderCardRow({
   folder,
   layout,
   onOpenFolder,
+  onShareFolder,
   onRenameFolder,
   onDeleteFolder,
   fileDropHighlight,
@@ -53,6 +141,7 @@ export function DriveFolderCardRow({
   folder: DriveFolder;
   layout: DriveFolderRowLayout;
   onOpenFolder: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
   fileDropHighlight?: boolean;
@@ -60,7 +149,7 @@ export function DriveFolderCardRow({
   folderChecked?: boolean;
   onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
 }) {
-  const showMenu = Boolean(onRenameFolder || onDeleteFolder);
+  const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
 
   const shell = (layoutClass: string, children: ReactNode) => (
     <div
@@ -116,6 +205,7 @@ export function DriveFolderCardRow({
           <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
             <FolderOverflowMenu
               folder={folder}
+              onShareFolder={onShareFolder}
               onRenameFolder={onRenameFolder}
               onDeleteFolder={onDeleteFolder}
             />
@@ -167,6 +257,7 @@ export function DriveFolderCardRow({
           <div className={cn('shrink-0', FOLDER_CARD_MENU_HOVER)}>
             <FolderOverflowMenu
               folder={folder}
+              onShareFolder={onShareFolder}
               onRenameFolder={onRenameFolder}
               onDeleteFolder={onDeleteFolder}
             />
@@ -228,12 +319,16 @@ export function DriveFolderCardRow({
 
 function FolderOverflowMenu({
   folder,
+  onShareFolder,
   onRenameFolder,
   onDeleteFolder,
+  compact,
 }: {
   folder: DriveFolder;
+  onShareFolder?: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  compact?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -243,8 +338,12 @@ function FolderOverflowMenu({
             {...props}
             type="button"
             size="icon"
-            variant="secondary"
-            className="bg-background/90 text-muted-foreground size-8 shrink-0 shadow-sm backdrop-blur-sm"
+            variant={compact ? 'ghost' : 'secondary'}
+            className={
+              compact
+                ? 'text-muted-foreground size-7 shrink-0'
+                : 'bg-background/90 text-muted-foreground size-8 shrink-0 shadow-sm backdrop-blur-sm'
+            }
             aria-label={`Folder actions for ${folder.name}`}
             onClick={(e) => {
               e.stopPropagation();
@@ -255,15 +354,21 @@ function FolderOverflowMenu({
           </Button>
         )}
       />
-      <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
-        {onRenameFolder && (
+      <DropdownMenuContent align="end" className="min-w-44" onClick={(e) => e.stopPropagation()}>
+        {onShareFolder ? (
+          <DropdownMenuItem onClick={() => onShareFolder(folder)}>
+            <UserPlus className="size-4" aria-hidden />
+            Share access…
+          </DropdownMenuItem>
+        ) : null}
+        {onRenameFolder ? (
           <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
-        )}
-        {onDeleteFolder && (
+        ) : null}
+        {onDeleteFolder ? (
           <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
             Delete
           </DropdownMenuItem>
-        )}
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -272,6 +377,7 @@ function FolderOverflowMenu({
 export function DriveFolderTableRow({
   folder,
   onOpenFolder,
+  onShareFolder,
   onRenameFolder,
   onDeleteFolder,
   fileDropHighlight,
@@ -281,6 +387,7 @@ export function DriveFolderTableRow({
 }: {
   folder: DriveFolder;
   onOpenFolder: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
   fileDropHighlight?: boolean;
@@ -288,7 +395,7 @@ export function DriveFolderTableRow({
   folderChecked?: boolean;
   onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
 }) {
-  const showMenu = Boolean(onRenameFolder || onDeleteFolder);
+  const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
   if (!onToggleFolderChecked) {
     return (
       <div
@@ -326,36 +433,12 @@ export function DriveFolderTableRow({
         </div>
         {showMenu ? (
           <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={(props) => (
-                  <Button
-                    {...props}
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground size-8"
-                    aria-label={`Folder actions for ${folder.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      props.onClick?.(e);
-                    }}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                )}
-              />
-              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                {onRenameFolder && (
-                  <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
-                )}
-                {onDeleteFolder && (
-                  <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <FolderOverflowMenu
+              folder={folder}
+              onShareFolder={onShareFolder}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+            />
           </div>
         ) : (
           <span />
@@ -408,36 +491,12 @@ export function DriveFolderTableRow({
       </div>
       {showMenu ? (
         <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={(props) => (
-                <Button
-                  {...props}
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-foreground size-8"
-                  aria-label={`Folder actions for ${folder.name}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    props.onClick?.(e);
-                  }}
-                >
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              )}
-            />
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              {onRenameFolder && (
-                <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
-              )}
-              {onDeleteFolder && (
-                <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
-                  Delete
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <FolderOverflowMenu
+            folder={folder}
+            onShareFolder={onShareFolder}
+            onRenameFolder={onRenameFolder}
+            onDeleteFolder={onDeleteFolder}
+          />
         </div>
       ) : (
         <span />
