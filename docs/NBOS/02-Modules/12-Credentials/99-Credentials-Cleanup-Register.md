@@ -11,7 +11,7 @@
 | Basic credential CRUD         | PARTIAL | Создание, список, edit, архив, restore, permanent только для archived + подтверждение имени                                                                                 | Item types, secret fields, версии, TTL / step-up по политике                                                       |
 | Encryption                    | PARTIAL | Шифруются `password`, `apiKey`, `envData`                                                                                                                                   | Шифровать все secret fields и secure notes; перейти к гибкой модели                                                |
 | Notes                         | PARTIAL | `publicNotes` + `secureNotes`; reveal/copy для secure                                                                                                                       | **Решено:** одно поле Comment, always encrypted; visible in Sheet without step-up (5-A); убрать public notes из UI |
-| Create/Edit UI                | PARTIAL | Modal dialog, все поля сразу, Category + Type дубль                                                                                                                         | **Решено:** Sheet; dynamic fields; Settings для criticality/rotation; **Category/Type — открытый аудит (п.3)**     |
+| Create/Edit UI                | PARTIAL | Modal dialog, все поля сразу, Category + Type дубль                                                                                                                         | **Решено:** Sheet; dynamic fields; Settings для criticality/rotation; **Category/Type — C-hybrid accepted**        |
 | Access model                  | PARTIAL | Есть enum accessLevel и allowedEmployees                                                                                                                                    | Добавить Access Grants, temporary access, requests, expiry                                                         |
 | Permission check              | PARTIAL | `findById` / `update` / `delete` используют тот же visibility OR, что и list, перед reveal/mutation                                                                         | Grants, temporary access, requests, expiry по канону                                                               |
 | Reveal/copy audit             | DONE    | `POST …/secrets/reveal` и `…/copy` требуют `stepUpPassword`; audit `secret_revealed` / `secret_copied` + `step_up_verified`; high-risk уведомления для critical credentials | UX auto-hide / таймаут раскрытия позже                                                                             |
@@ -33,7 +33,7 @@
 
 ## Documentation: Mail module
 
-| Область            | Статус | Примечание                                                                                          |
-| ------------------ | ------ | --------------------------------------------------------------------------------------------------- |
-| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Credentials-Integrations.md` — секция **Mail** (OAuth/IMAP/SMTP secrets)        |
-| UX decisions       | `OPEN` | **2026-06-01:** `06-Credentials-UX-Decisions.md` — Sheet, Comment, ENV; Category/Type audit pending |
+| Область            | Статус | Примечание                                                                                              |
+| ------------------ | ------ | ------------------------------------------------------------------------------------------------------- |
+| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Credentials-Integrations.md` — секция **Mail** (OAuth/IMAP/SMTP secrets)            |
+| UX decisions       | `OK`   | **2026-06-02:** `06-Credentials-UX-Decisions.md` — Sheet, Comment, ENV; Category/Type C-hybrid accepted |

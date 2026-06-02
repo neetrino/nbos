@@ -175,6 +175,14 @@ Access grant может быть выдан:
 
 Category нужна для группировки и фильтрации, но не должна заменять Credential Type.
 
+**Decision 2026-06-02:** Credentials используют C-hybrid model.
+
+- `category` отвечает за группировку: Category Board columns, quick filters, Delivery slots, Finance/product handoff grouping.
+- `credentialType` отвечает за формат секрета: dynamic fields, ENV editor, reveal/copy/export behavior, validation.
+- Глобального `type -> category` или `category -> type` auto-map нет.
+- `ENV`, `SSH`, `RECOVERY_CODES` не добавляются в category; это `credentialType` formats.
+- Delivery/Product slots могут передавать explicit `defaultCredentialType`, но это preset из контекста, не скрытая магия.
+
 | Category      | Примеры                                         |
 | ------------- | ----------------------------------------------- |
 | `Admin`       | main company admin accounts, super admin panels |
@@ -196,20 +204,20 @@ Category нужна для группировки и фильтрации, но 
 
 ### Общие Поля
 
-| Поле                | Обязательное | Описание                                  |
-| ------------------- | ------------ | ----------------------------------------- |
-| `Title`             | Да           | Понятное название credential              |
-| `Type`              | Да           | Login, API Key, Database, SSH, ENV и т.д. |
-| `Category`          | Да           | Domain, Hosting, Service, Finance и т.д.  |
-| `Owner / Custodian` | Да           | Кто отвечает за credential                |
-| `Access Policy`     | Да           | Кто может видеть/копировать secret        |
-| `Criticality`       | Да           | Low / Medium / High / Critical            |
-| `Context`           | По ситуации  | Project/Product/Service/Department        |
-| `Provider`          | По ситуации  | Beget, Vercel, Cloudflare, Neon           |
-| `URL`               | По ситуации  | Страница входа или admin panel            |
-| `Environment`       | По ситуации  | Production / Staging / Development        |
-| `Notes`             | Нет          | Только non-secret notes                   |
-| `Secure Notes`      | Нет          | Secret notes, шифруются                   |
+| Поле                | Обязательное | Описание                                                                                   |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------ |
+| `Title`             | Да           | Понятное название credential                                                               |
+| `Type`              | Да           | Login, API Key, Database, SSH, ENV и т.д.                                                  |
+| `Category`          | Да           | Domain, Hosting, Service, Finance и т.д.; preset из scope/context/board/slot, где возможно |
+| `Owner / Custodian` | Да           | Кто отвечает за credential                                                                 |
+| `Access Policy`     | Да           | Кто может видеть/копировать secret                                                         |
+| `Criticality`       | Да           | Low / Medium / High / Critical                                                             |
+| `Context`           | По ситуации  | Project/Product/Service/Department                                                         |
+| `Provider`          | По ситуации  | Beget, Vercel, Cloudflare, Neon                                                            |
+| `URL`               | По ситуации  | Страница входа или admin panel                                                             |
+| `Environment`       | По ситуации  | Production / Staging / Development                                                         |
+| `Notes`             | Нет          | Только non-secret notes                                                                    |
+| `Secure Notes`      | Нет          | Secret notes, шифруются                                                                    |
 
 ### Naming Convention
 
