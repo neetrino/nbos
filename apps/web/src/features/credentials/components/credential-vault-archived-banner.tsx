@@ -13,7 +13,7 @@ export function CredentialVaultArchivedBanner({
   return (
     <div
       role="status"
-      className="border-border bg-muted/70 flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-4"
+      className="border-border bg-muted/70 border-l-destructive flex flex-wrap items-center justify-between gap-4 rounded-xl border border-l-4 px-5 py-4"
     >
       <div className="flex min-w-0 items-center gap-3.5">
         <div className="bg-destructive/15 text-destructive flex size-11 shrink-0 items-center justify-center rounded-full">

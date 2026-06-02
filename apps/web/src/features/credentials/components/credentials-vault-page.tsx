@@ -46,7 +46,9 @@ export function CredentialsVaultPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title="Credentials Vault"
+        title={
+          vault.vaultListScope === 'archived' ? 'Credentials Vault — Archived' : 'Credentials Vault'
+        }
         tabs={
           <PageHeroTabs
             value={vault.activeTab}
@@ -107,7 +109,9 @@ export function CredentialsVaultPage() {
           onToggleQuick={vault.toggleQuickFilter}
         />
         <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-          {vault.total} credentials
+          {vault.vaultListScope === 'archived'
+            ? `${vault.total} archived`
+            : `${vault.total} credentials`}
         </span>
       </div>
 
