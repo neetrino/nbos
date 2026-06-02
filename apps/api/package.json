@@ -24,7 +24,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.18",
     "@prisma/adapter-pg": "^7.4.2",
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "argon2": "^0.43.0",
     "bullmq": "^5.76.4",
     "class-transformer": "^0.5.1",
