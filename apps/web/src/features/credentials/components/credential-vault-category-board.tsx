@@ -33,7 +33,7 @@ export interface CredentialVaultCategoryBoardProps {
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
   onCopyLogin?: (login: string) => void;
-  onCopyPassword?: (credentialId: string) => void;
+  onCopyPassword?: (credentialId: string, criticality: string) => void;
   passwordFlashCredentialId?: string | null;
 }
 

@@ -32,6 +32,15 @@ export function createCredentialsServiceTestContext() {
     }),
   };
   const notifications = { create: vi.fn() };
+  const vaultSession = {
+    getSession: vi.fn().mockResolvedValue({ unlocked: false, expiresAt: null }),
+    isUnlocked: vi.fn().mockResolvedValue(false),
+    unlock: vi.fn().mockResolvedValue({
+      unlocked: true,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+    }),
+    lock: vi.fn().mockResolvedValue(undefined),
+  };
   const configService = {
     get: vi.fn((key: string) => (key === 'CREDENTIALS_ENCRYPTION_KEY' ? TEST_KEY : undefined)),
   };
@@ -63,11 +72,13 @@ export function createCredentialsServiceTestContext() {
         projectAdminProjectIds: [],
       }),
     } as never,
+    vaultSession as never,
   );
   return {
     service,
     prisma: prisma as MockPrisma,
     auditService: auditService as Pick<AuditService, 'log'>,
     notifications,
+    vaultSession,
   };
 }

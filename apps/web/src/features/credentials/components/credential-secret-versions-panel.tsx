@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { useCredentialSecretVersions } from '@/features/credentials/hooks/use-credential-secret-versions';
+import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
 import { credentialsApi, type CredentialSecretVersion } from '@/lib/api/credentials';
 import { usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
@@ -29,6 +30,7 @@ export function CredentialSecretVersionsPanel({
   embedded = false,
 }: CredentialSecretVersionsPanelProps) {
   const { me } = usePermission();
+  const vault = useCredentialVaultSession(sheetOpen);
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
   const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
   const canReveal =
@@ -36,20 +38,30 @@ export function CredentialSecretVersionsPanel({
     me?.permissions.CREDENTIALS_EDIT === 'ALL' ||
     me?.permissions.CREDENTIALS_VIEW === 'ALL';
 
-  const onReveal = async (password: string) => {
-    if (!revealTarget) return;
+  const revealVersion = async (version: CredentialSecretVersion, password?: string) => {
     try {
+      const stepUpPassword = !vault.isUnlocked ? password : undefined;
+      if (!vault.isUnlocked && !stepUpPassword) {
+        setRevealTarget(version);
+        return;
+      }
       const result = await credentialsApi.revealSecretVersion(
         credentialId,
-        revealTarget.id,
-        password,
+        version.id,
+        stepUpPassword,
       );
       await navigator.clipboard.writeText(result.value);
       toast.success(`Copied ${fieldLabel(result.field)} v${result.versionNumber}`);
+      if (stepUpPassword) await vault.refresh();
       setRevealTarget(null);
     } catch {
       toast.error('Could not reveal version');
     }
+  };
+
+  const onReveal = async (password: string) => {
+    if (!revealTarget) return;
+    await revealVersion(revealTarget, password);
   };
 
   return (
@@ -64,8 +76,8 @@ export function CredentialSecretVersionsPanel({
           <h3 className="text-sm font-medium">Secret history</h3>
         )}
         <p className="text-muted-foreground mt-1 text-xs">
-          Previous encrypted values saved when secrets change. Reveal requires step-up and executive
-          or vault-wide access.
+          Previous encrypted values saved when secrets change. Uses the same daily vault unlock as
+          critical live secrets.
         </p>
       </div>
 
@@ -91,7 +103,7 @@ export function CredentialSecretVersionsPanel({
                   variant="outline"
                   size="sm"
                   className="h-7 shrink-0 text-xs"
-                  onClick={() => setRevealTarget(row)}
+                  onClick={() => void revealVersion(row)}
                 >
                   Reveal
                 </Button>
@@ -106,7 +118,7 @@ export function CredentialSecretVersionsPanel({
         onOpenChange={(open) => {
           if (!open) setRevealTarget(null);
         }}
-        title="Confirm to reveal historical secret"
+        title="Unlock vault to reveal historical secret"
         onConfirm={onReveal}
       />
     </section>

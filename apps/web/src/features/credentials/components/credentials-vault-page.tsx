@@ -13,11 +13,16 @@ import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
+import { CredentialVaultUnlockBanner } from '@/features/credentials/components/credential-vault-unlock-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultPaginationFooter } from '@/features/credentials/components/credential-vault-pagination-footer';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
-import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
+import {
+  CredentialsVaultPageOverlays,
+  useVaultPasswordCopy,
+} from '@/features/credentials/components/credentials-vault-page-overlays';
+import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
@@ -25,6 +30,7 @@ import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
   const vault = useCredentialsVaultPage();
+  const vaultSession = useCredentialVaultSession(true);
   const [boardScrollRoot, setBoardScrollRoot] = useState<HTMLElement | null>(null);
   const bindBoardScrollContainer = useCallback((node: HTMLDivElement | null) => {
     setBoardScrollRoot(node);
@@ -38,6 +44,12 @@ export function CredentialsVaultPage() {
       vault.setPasswordFlashCredentialId((current) => (current === flashId ? null : current));
     }, CREDENTIAL_VAULT_COPY_FEEDBACK_MS);
   };
+
+  const copyVaultPassword = useVaultPasswordCopy(
+    vaultSession,
+    vault.setTileCopyTarget,
+    handlePasswordCopied,
+  );
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
@@ -97,7 +109,9 @@ export function CredentialsVaultPage() {
 
       {vault.vaultListScope === 'archived' ? (
         <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
-      ) : null}
+      ) : (
+        <CredentialVaultUnlockBanner />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <CredentialQuickFilterChips
@@ -177,7 +191,7 @@ export function CredentialsVaultPage() {
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}
           onCopyLogin={vault.copyToClipboard}
-          onCopyPassword={vault.setTileCopyCredentialId}
+          onCopyPassword={(id, criticality) => void copyVaultPassword({ id, criticality })}
           onToggleLogin={vault.toggleLogin}
           onCopy={vault.copyToClipboard}
           onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
@@ -206,7 +220,7 @@ export function CredentialsVaultPage() {
         createPresetCategory={vault.createPresetCategory}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
-        tileCopyCredentialId={vault.tileCopyCredentialId}
+        tileCopyTarget={vault.tileCopyTarget}
         onCloseSheet={vault.closeSheet}
         onSaved={handleSaved}
         onRequestArchive={(id, name) => {
@@ -220,7 +234,7 @@ export function CredentialsVaultPage() {
           if (!open) vault.setPurgeTarget(null);
         }}
         onTileCopyOpenChange={(open) => {
-          if (!open) vault.setTileCopyCredentialId(null);
+          if (!open) vault.setTileCopyTarget(null);
         }}
         onPasswordCopied={handlePasswordCopied}
       />

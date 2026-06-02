@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { DeleteConfirmDialog } from '@/components/shared';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
-import { credentialPermanentDeleteNeedsStepUp } from '@/features/credentials/constants/credential-permanent-delete';
 import { credentialsApi } from '@/lib/api/credentials';
 import { toast } from 'sonner';
 
@@ -19,16 +18,14 @@ export interface PermanentDeleteCredentialDialogProps {
 export function PermanentDeleteCredentialDialog({
   credentialId,
   credentialName,
-  criticality,
   open,
   onOpenChange,
   onDeleted,
 }: PermanentDeleteCredentialDialogProps) {
   const [deleting, setDeleting] = useState(false);
   const [stepUpOpen, setStepUpOpen] = useState(false);
-  const needsStepUp = credentialPermanentDeleteNeedsStepUp(criticality ?? undefined);
 
-  const runDelete = async (stepUpPassword?: string) => {
+  const runDelete = async (stepUpPassword: string) => {
     if (!credentialId) return;
     setDeleting(true);
     try {
@@ -45,11 +42,7 @@ export function PermanentDeleteCredentialDialog({
   };
 
   const handleConfirm = () => {
-    if (needsStepUp) {
-      setStepUpOpen(true);
-      return;
-    }
-    void runDelete();
+    setStepUpOpen(true);
   };
 
   return (
@@ -60,11 +53,7 @@ export function PermanentDeleteCredentialDialog({
         onOpenChange={onOpenChange}
         itemName={credentialName ?? ''}
         title="Delete permanently?"
-        description={
-          needsStepUp
-            ? 'Removes the database row and encrypted secrets. Step-up required for high/critical credentials.'
-            : 'Removes the database row and encrypted secrets. Only archived credentials can be purged.'
-        }
+        description="Removes the database row and encrypted secrets. Account password required."
         confirmLabel="Delete forever"
         isSubmitting={deleting}
         onConfirm={handleConfirm}
@@ -73,7 +62,7 @@ export function PermanentDeleteCredentialDialog({
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
         title="Confirm permanent delete"
-        onConfirm={(pwd) => runDelete(pwd)}
+        onConfirm={(pwd) => void runDelete(pwd)}
       />
     </>
   );

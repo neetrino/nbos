@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { CredentialsAccessContext } from './credentials-access';
-import { assertCredentialStepUpPassword } from './credential-step-up';
+import { assertVaultAccessForSecretVersion } from './credential-vault-access';
 import { decryptFieldIfEncrypted } from './credential-crypto.mapper';
 import { parseSecretField } from './credential-sensitive.utils';
 import { assertSecretVersionRevealAllowed } from './credential-secret-version.policy';
@@ -53,13 +53,7 @@ export async function revealCredentialSecretVersion(
 ) {
   await getAccessibleCredentialRow(runtime, credentialId, access);
   await assertSecretVersionRevealAllowed(runtime.prisma, access);
-  await assertCredentialStepUpPassword(
-    runtime.prisma,
-    runtime.auditService,
-    access.employeeId,
-    stepUpPassword,
-    'secret_version_reveal',
-  );
+  await assertVaultAccessForSecretVersion(runtime, access.employeeId, stepUpPassword);
 
   const version = await runtime.prisma.credentialSecretVersion.findFirst({
     where: { id: versionId, credentialId },

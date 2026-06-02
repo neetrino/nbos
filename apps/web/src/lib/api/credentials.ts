@@ -141,25 +141,41 @@ export const credentialsApi = {
       data: stepUpPassword ? { stepUpPassword } : {},
     });
   },
+  async getVaultSession(): Promise<{ unlocked: boolean; expiresAt: string | null }> {
+    const resp = await api.get<{ unlocked: boolean; expiresAt: string | null }>(
+      '/api/credentials/vault-session',
+    );
+    return resp.data;
+  },
+  async unlockVault(password: string): Promise<{ unlocked: boolean; expiresAt: string | null }> {
+    const resp = await api.post<{ unlocked: boolean; expiresAt: string | null }>(
+      '/api/credentials/vault-unlock',
+      { password },
+    );
+    return resp.data;
+  },
+  async lockVault(): Promise<void> {
+    await api.post('/api/credentials/vault-lock', {});
+  },
   async revealSecret(
     id: string,
     field: CredentialSecretField,
-    stepUpPassword: string,
+    stepUpPassword?: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/reveal`,
-      { field, stepUpPassword },
+      stepUpPassword ? { field, stepUpPassword } : { field },
     );
     return resp.data;
   },
   async copySecret(
     id: string,
     field: CredentialSecretField,
-    stepUpPassword: string,
+    stepUpPassword?: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/copy`,
-      { field, stepUpPassword },
+      stepUpPassword ? { field, stepUpPassword } : { field },
     );
     return resp.data;
   },
@@ -221,13 +237,16 @@ export const credentialsApi = {
   async revealSecretVersion(
     id: string,
     versionId: string,
-    stepUpPassword: string,
+    stepUpPassword?: string,
   ): Promise<{ field: CredentialSecretField; versionNumber: number; value: string }> {
     const resp = await api.post<{
       field: CredentialSecretField;
       versionNumber: number;
       value: string;
-    }>(`/api/credentials/${id}/secret-versions/${versionId}/reveal`, { stepUpPassword });
+    }>(
+      `/api/credentials/${id}/secret-versions/${versionId}/reveal`,
+      stepUpPassword ? { stepUpPassword } : {},
+    );
     return resp.data;
   },
 };

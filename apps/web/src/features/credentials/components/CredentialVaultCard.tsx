@@ -69,7 +69,7 @@ export interface CredentialVaultCardProps {
   variant: CredentialVaultCardVariant;
   onOpen: (id: string) => void;
   onCopyLogin?: (login: string) => void;
-  onCopyPassword?: (credentialId: string) => void;
+  onCopyPassword?: (credentialId: string, criticality: string) => void;
   passwordFlashCredentialId?: string | null;
   selectionEnabled?: boolean;
   selectionActive?: boolean;
@@ -157,7 +157,7 @@ export function CredentialVaultCard({
             showPassword={showPassword}
             passwordCopied={passwordFlashCredentialId === credential.id}
             onCopyLogin={onCopyLogin}
-            onCopyPassword={() => onCopyPassword!(credential.id)}
+            onCopyPassword={() => onCopyPassword!(credential.id, credential.criticality)}
           />
         ) : null}
         <CredentialVaultCardMetaRow items={metaItems} />

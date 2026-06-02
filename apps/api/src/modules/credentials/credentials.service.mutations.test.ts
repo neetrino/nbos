@@ -129,14 +129,15 @@ describe('CredentialsService mutations', () => {
     );
   });
 
-  it('should permanently delete archived credential', async () => {
+  it('should permanently delete archived credential after step-up', async () => {
     prisma.credential.findFirst.mockResolvedValue({
       id: '1',
       projectId: 'p1',
       criticality: 'LOW',
       archivedAt: new Date(),
     });
-    await service.permanentlyDelete('1', accessUser1);
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+    await service.permanentlyDelete('1', accessUser1, 'step-up');
     expect(prisma.credential.delete).toHaveBeenCalledWith({ where: { id: '1' } });
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'credential.permanently_deleted', entityId: '1' }),

@@ -4,7 +4,12 @@ import { CredentialFormSheet } from '@/features/credentials/components/credentia
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
 import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
 import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
-import type { CredentialDeleteTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
+import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
+import type {
+  CredentialDeleteTarget,
+  CredentialTileCopyTarget,
+} from '@/features/credentials/hooks/use-credentials-vault-page';
+import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import { credentialsApi } from '@/lib/api/credentials';
 import { toast } from 'sonner';
@@ -16,7 +21,7 @@ export interface CredentialsVaultPageOverlaysProps {
   createPresetCategory: string | undefined;
   deleteTarget: CredentialDeleteTarget | null;
   purgeTarget: CredentialDeleteTarget | null;
-  tileCopyCredentialId: string | null;
+  tileCopyTarget: CredentialTileCopyTarget | null;
   onCloseSheet: (open: boolean) => void;
   onSaved: () => void;
   onRequestArchive: (id: string, name: string) => void;
@@ -33,7 +38,7 @@ export function CredentialsVaultPageOverlays({
   createPresetCategory,
   deleteTarget,
   purgeTarget,
-  tileCopyCredentialId,
+  tileCopyTarget,
   onCloseSheet,
   onSaved,
   onRequestArchive,
@@ -42,6 +47,21 @@ export function CredentialsVaultPageOverlays({
   onTileCopyOpenChange,
   onPasswordCopied,
 }: CredentialsVaultPageOverlaysProps) {
+  const vault = useCredentialVaultSession(true);
+
+  const copyPassword = async (target: CredentialTileCopyTarget, password?: string) => {
+    const needsUnlock = credentialNeedsVaultUnlock(target.criticality) && !vault.isUnlocked;
+    const stepUpPassword = needsUnlock ? password : undefined;
+    if (needsUnlock && !stepUpPassword) return;
+
+    const { value } = await credentialsApi.copySecret(target.id, 'password', stepUpPassword);
+    await navigator.clipboard.writeText(value);
+    toast.success('Password copied');
+    if (stepUpPassword) await vault.refresh();
+    onTileCopyOpenChange(false);
+    onPasswordCopied(target.id);
+  };
+
   return (
     <>
       <CredentialFormSheet
@@ -56,17 +76,16 @@ export function CredentialsVaultPageOverlays({
       />
 
       <CredentialStepUpDialog
-        open={tileCopyCredentialId !== null}
+        open={tileCopyTarget !== null}
         onOpenChange={onTileCopyOpenChange}
-        title="Confirm to copy password"
+        title="Unlock vault to copy password"
         onConfirm={async (pwd) => {
-          if (!tileCopyCredentialId) return;
-          const flashId = tileCopyCredentialId;
-          const { value } = await credentialsApi.copySecret(flashId, 'password', pwd);
-          await navigator.clipboard.writeText(value);
-          toast.success('Password copied');
-          onTileCopyOpenChange(false);
-          onPasswordCopied(flashId);
+          if (!tileCopyTarget) return;
+          try {
+            await copyPassword(tileCopyTarget, pwd);
+          } catch {
+            toast.error('Could not copy password');
+          }
         }}
       />
 
@@ -88,4 +107,26 @@ export function CredentialsVaultPageOverlays({
       />
     </>
   );
+}
+
+/** Copy password from vault card; opens unlock dialog only for locked HIGH/CRITICAL. */
+export function useVaultPasswordCopy(
+  vault: ReturnType<typeof useCredentialVaultSession>,
+  onNeedUnlock: (target: CredentialTileCopyTarget) => void,
+  onCopied: (credentialId: string) => void,
+) {
+  return async (target: CredentialTileCopyTarget) => {
+    if (credentialNeedsVaultUnlock(target.criticality) && !vault.isUnlocked) {
+      onNeedUnlock(target);
+      return;
+    }
+    try {
+      const { value } = await credentialsApi.copySecret(target.id, 'password');
+      await navigator.clipboard.writeText(value);
+      toast.success('Password copied');
+      onCopied(target.id);
+    } catch {
+      toast.error('Could not copy password');
+    }
+  };
 }

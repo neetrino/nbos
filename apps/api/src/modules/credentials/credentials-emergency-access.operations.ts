@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { CredentialsAccessContext } from './credentials-access';
-import { assertCredentialStepUpPassword } from './credential-step-up';
+import { assertFreshCredentialStepUp } from './credential-vault-access';
 import {
   EMERGENCY_ACCESS_REASON_MIN_LENGTH,
   EMERGENCY_ACCESS_REASON_PREFIX,
@@ -33,9 +33,8 @@ export async function grantCredentialEmergencyAccess(
     );
   }
 
-  await assertCredentialStepUpPassword(
-    runtime.prisma,
-    runtime.auditService,
+  await assertFreshCredentialStepUp(
+    runtime,
     access.employeeId,
     input.stepUpPassword,
     'emergency_access',

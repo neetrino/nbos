@@ -8,7 +8,10 @@ import {
 } from './credential-domain.types';
 import { parseSecretField } from './credential-sensitive.utils';
 import { decryptFieldIfEncrypted } from './credential-crypto.mapper';
-import { assertCredentialStepUpPassword } from './credential-step-up';
+import {
+  assertFreshCredentialStepUp,
+  assertVaultAccessForSecretAction,
+} from './credential-vault-access';
 import {
   notifyCredentialHighRiskRecipients,
   notifyHighRiskCredentialAction,
@@ -47,14 +50,14 @@ async function readDecryptedSecret(
   purpose: 'reveal' | 'copy',
 ) {
   const secretField = parseSecretField(field);
-  await assertCredentialStepUpPassword(
-    runtime.prisma,
-    runtime.auditService,
+  const row = await getAccessibleCredentialRow(runtime, id, access);
+  await assertVaultAccessForSecretAction(
+    runtime,
     access.employeeId,
+    row.criticality,
     stepUpPassword,
     `${purpose}:${secretField}`,
   );
-  const row = await getAccessibleCredentialRow(runtime, id, access);
   const raw = row[secretField];
   if (!raw || typeof raw !== 'string') {
     throw new BadRequestException(`Credential has no ${secretField} value`);
@@ -106,13 +109,7 @@ export async function exportCredentialsBundle(
   input: ExportCredentialsInput,
   access: CredentialsAccessContext,
 ) {
-  await assertCredentialStepUpPassword(
-    runtime.prisma,
-    runtime.auditService,
-    access.employeeId,
-    input.stepUpPassword,
-    'export',
-  );
+  await assertFreshCredentialStepUp(runtime, access.employeeId, input.stepUpPassword, 'export');
   const requestedFields = input.fields?.length ? input.fields : [...SENSITIVE_FIELDS];
   const fields = requestedFields.map((f) => parseSecretField(f));
 

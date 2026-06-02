@@ -141,6 +141,29 @@ export class CredentialsController {
     return this.credentialsService.bulkRestore(credentialIds, credentialsAccessFromUser(user));
   }
 
+  @Get('vault-session')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Daily vault unlock status for HIGH/CRITICAL secrets' })
+  async getVaultSession(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.getVaultSession(user.id);
+  }
+
+  @Post('vault-unlock')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Unlock vault for HIGH/CRITICAL copy/reveal (24h TTL)' })
+  async unlockVault(@Body() body: { password?: string }, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.unlockVault(user.id, body.password ?? '');
+  }
+
+  @Post('vault-lock')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Lock vault before daily unlock expires' })
+  async lockVault(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.lockVault(user.id);
+  }
+
   @Get(':id/manual-access')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'List manual access grants for a credential' })

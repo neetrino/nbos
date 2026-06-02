@@ -46,7 +46,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Revoke the current access token' })
   @ApiResponse({ status: 200, description: 'Token revoked' })
   logout(@CurrentUser() user: CurrentUserPayload) {
-    return this.authService.logout(user.jti, user.tokenExp);
+    return this.authService.logout(user.jti, user.tokenExp, user.id);
   }
 
   @Get('invite-info')

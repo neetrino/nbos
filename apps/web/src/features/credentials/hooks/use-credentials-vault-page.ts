@@ -34,6 +34,11 @@ export interface CredentialDeleteTarget {
   criticality?: string;
 }
 
+export interface CredentialTileCopyTarget {
+  id: string;
+  criticality: string;
+}
+
 export function useCredentialsVaultPage() {
   const { me } = usePermission();
   const [preferences, setPreferences] = useCredentialVaultPagePreferences();
@@ -51,7 +56,7 @@ export function useCredentialsVaultPage() {
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<CredentialDeleteTarget | null>(null);
   const [purgeTarget, setPurgeTarget] = useState<CredentialDeleteTarget | null>(null);
-  const [tileCopyCredentialId, setTileCopyCredentialId] = useState<string | null>(null);
+  const [tileCopyTarget, setTileCopyTarget] = useState<CredentialTileCopyTarget | null>(null);
   const [passwordFlashCredentialId, setPasswordFlashCredentialId] = useState<string | null>(null);
 
   const listSort = useMemo(
@@ -236,8 +241,8 @@ export function useCredentialsVaultPage() {
     setDeleteTarget,
     purgeTarget,
     setPurgeTarget,
-    tileCopyCredentialId,
-    setTileCopyCredentialId,
+    tileCopyTarget,
+    setTileCopyTarget,
     passwordFlashCredentialId,
     setPasswordFlashCredentialId,
     fetchCredentials: refetch,

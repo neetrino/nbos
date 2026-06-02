@@ -14,6 +14,8 @@ const CREDENTIAL_AUDIT_LABELS: Record<string, string> = {
   'credential.emergency_access_used': 'Emergency access granted',
   'credential.secret_version_revealed': 'Historical secret revealed',
   'credential.step_up_verified': 'Step-up verified',
+  'credential.vault_unlocked': 'Vault unlocked',
+  'credential.vault_locked': 'Vault locked',
 };
 
 export function labelCredentialAuditAction(action: string): string {

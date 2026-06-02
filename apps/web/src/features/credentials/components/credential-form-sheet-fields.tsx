@@ -57,8 +57,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setManualGrants,
     detail,
     revealed,
-    setStepUpField,
-    setStepUpMode,
+    requestSecretAction,
     showSettings,
     criticality,
     setCriticality,
@@ -141,14 +140,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         onEnvDataChange={setEnvData}
         secretsPresent={detail?.secretsPresent}
         revealed={revealed}
-        onReveal={(field) => {
-          setStepUpField(field);
-          setStepUpMode('reveal');
-        }}
-        onCopy={(field) => {
-          setStepUpField(field);
-          setStepUpMode('copy');
-        }}
+        onReveal={(field) => requestSecretAction(field, 'reveal')}
+        onCopy={(field) => requestSecretAction(field, 'copy')}
       />
 
       <div className="grid gap-2">

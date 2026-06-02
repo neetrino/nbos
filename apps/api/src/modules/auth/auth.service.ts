@@ -12,6 +12,7 @@ import * as jwt from 'jsonwebtoken';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { TokenDenylistService } from '../../common/security/token-denylist.service';
+import { CredentialVaultSessionService } from '../credentials/credential-vault-session.service';
 
 interface JwtPayload {
   sub: string;
@@ -28,6 +29,7 @@ export class AuthService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly config: ConfigService,
     private readonly tokenDenylist: TokenDenylistService,
+    private readonly vaultSession: CredentialVaultSessionService,
   ) {
     this.jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
     this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
@@ -80,9 +82,16 @@ export class AuthService {
    * Revokes the caller's current access token until its natural expiry,
    * so a stolen token cannot be reused after the user signs out.
    */
-  async logout(jti: string | undefined, tokenExp: number | undefined): Promise<{ success: true }> {
+  async logout(
+    jti: string | undefined,
+    tokenExp: number | undefined,
+    employeeId?: string,
+  ): Promise<{ success: true }> {
     if (jti && typeof tokenExp === 'number') {
       await this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
+    }
+    if (employeeId) {
+      await this.vaultSession.lock(employeeId);
     }
     return { success: true };
   }

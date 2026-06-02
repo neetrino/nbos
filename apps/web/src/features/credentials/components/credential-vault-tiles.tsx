@@ -29,7 +29,7 @@ export interface CredentialVaultTilesProps {
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   onCopyLogin: (login: string) => void;
-  onCopyPassword?: (credentialId: string) => void;
+  onCopyPassword?: (credentialId: string, criticality: string) => void;
   passwordFlashCredentialId?: string | null;
 }
 

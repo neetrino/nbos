@@ -39,7 +39,7 @@ export interface CredentialsVaultMainViewProps {
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
   onCopyLogin: (text: string) => void;
-  onCopyPassword: (id: string) => void;
+  onCopyPassword: (id: string, criticality: string) => void;
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onRequestDelete: (id: string, name: string) => void;

@@ -5,6 +5,8 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { PlatformAccessResolverService } from '../platform-access/platform-access-resolver.service';
+import { assertFreshCredentialStepUp } from './credential-vault-access';
+import { CredentialVaultSessionService } from './credential-vault-session.service';
 import type {
   CredentialQueryParams,
   CreateCredentialDto,
@@ -58,6 +60,7 @@ export class CredentialsService {
     auditService: AuditService,
     notifications: NotificationService,
     platformAccessResolver: PlatformAccessResolverService,
+    vaultSession: CredentialVaultSessionService,
   ) {
     const key = configService.get<string>('CREDENTIALS_ENCRYPTION_KEY');
     if (!key) throw new Error('CREDENTIALS_ENCRYPTION_KEY is not configured');
@@ -67,7 +70,36 @@ export class CredentialsService {
       auditService,
       notifications,
       platformAccessResolver,
+      vaultSession,
     };
+  }
+
+  getVaultSession(employeeId: string) {
+    return this.runtime.vaultSession.getSession(employeeId);
+  }
+
+  async unlockVault(employeeId: string, password: string) {
+    await assertFreshCredentialStepUp(this.runtime, employeeId, password, 'vault_unlock');
+    const session = await this.runtime.vaultSession.unlock(employeeId);
+    await this.runtime.auditService.log({
+      entityType: 'credential',
+      entityId: employeeId,
+      action: 'credential.vault_unlocked',
+      userId: employeeId,
+      changes: { expiresAt: session.expiresAt },
+    });
+    return session;
+  }
+
+  async lockVault(employeeId: string) {
+    await this.runtime.vaultSession.lock(employeeId);
+    await this.runtime.auditService.log({
+      entityType: 'credential',
+      entityId: employeeId,
+      action: 'credential.vault_locked',
+      userId: employeeId,
+    });
+    return { locked: true as const };
   }
 
   findAll(params: CredentialQueryParams, access: CredentialsAccessContext) {

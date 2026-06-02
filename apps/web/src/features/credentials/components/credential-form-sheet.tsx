@@ -119,7 +119,11 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
         onOpenChange={(o) => {
           if (!o) setStepUpField(null);
         }}
-        title={stepUpMode === 'copy' ? 'Confirm to copy secret' : 'Confirm to reveal secret'}
+        title={
+          stepUpMode === 'copy'
+            ? 'Unlock vault to copy critical secret'
+            : 'Unlock vault to reveal critical secret'
+        }
         onConfirm={runStepUp}
       />
     </>

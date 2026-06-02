@@ -259,12 +259,7 @@ export async function permanentlyDeleteCredential(
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
-  await assertPermanentDeleteStepUp(
-    runtime,
-    existing.criticality,
-    access.employeeId,
-    stepUpPassword,
-  );
+  await assertPermanentDeleteStepUp(runtime, access.employeeId, stepUpPassword);
 
   await runtime.prisma.credential.delete({ where: { id } });
   await runtime.auditService.log({

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { CredentialVaultSessionModule } from '../credentials/credential-vault-session.module';
 
 @Module({
+  imports: [CredentialVaultSessionModule],
   controllers: [AuthController],
   providers: [AuthService],
 })
