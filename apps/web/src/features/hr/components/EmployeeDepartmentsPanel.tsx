@@ -12,20 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DetailSheetSection } from '@/components/shared';
-import { TEAM_DEPT_ROLE_OPTIONS } from '@/features/hr/constants/team-directory';
-import {
-  departmentsApi,
-  employeesApi,
-  type DepartmentItem,
-  type Employee,
-} from '@/lib/api/employees';
+import { TEAM_DEPT_ROLE_OPTIONS, getDeptRoleLabel } from '@/features/hr/constants/team-directory';
+import { employeesApi, type DepartmentItem, type Employee } from '@/lib/api/employees';
 import { toast } from 'sonner';
-
-const DEPT_ROLE_LABELS: Record<string, string> = {
-  HEAD: 'Head',
-  DEPUTY: 'Deputy',
-  MEMBER: 'Member',
-};
 
 export interface EmployeeDepartmentsPanelProps {
   employee: Employee;
@@ -122,7 +111,7 @@ export function EmployeeDepartmentsPanel({
                     <p className="font-medium">{ed.department.name}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <Badge variant="outline" className="text-xs">
-                        {DEPT_ROLE_LABELS[ed.deptRole] ?? ed.deptRole}
+                        {getDeptRoleLabel(ed.deptRole)}
                       </Badge>
                       {ed.isPrimary && (
                         <Badge variant="secondary" className="text-xs">

@@ -45,12 +45,3 @@ export function employeeTenure(hireDate: string | null): string {
   const rem = months % 12;
   return rem > 0 ? `${years}y ${rem}m` : `${years}y`;
 }
-
-export function formatEmployeeDate(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}

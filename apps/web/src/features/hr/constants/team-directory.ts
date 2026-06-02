@@ -5,3 +5,7 @@ export const TEAM_DEPT_ROLE_OPTIONS = [
   { value: 'DEPUTY', label: 'Deputy' },
   { value: 'MEMBER', label: 'Member' },
 ] as const;
+
+export function getDeptRoleLabel(role: string): string {
+  return TEAM_DEPT_ROLE_OPTIONS.find((option) => option.value === role)?.label ?? role;
+}
