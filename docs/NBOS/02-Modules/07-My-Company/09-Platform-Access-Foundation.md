@@ -151,9 +151,11 @@ Shared Prisma participation filters live in `apps/api/src/modules/platform-acces
 
 **Runtime (partial):** scoped Drive entity context and inherited file links use the shared participation filters for `PROJECT`, `PRODUCT`, finance-linked entities (`INVOICE`, `PAYMENT`, `EXPENSE`), and `TASK` (assignees **or** project team).
 
+**Runtime (partial):** `FileAssetGrant` create/update/revoke dual-writes `ResourceAccessGrant` with `resourceType=drive_file_asset`; file list/action access reads both grant stores (`drive-resource-access-grant.sync.ts`).
+
 **Still backlog:**
 
-- `ResourceAccessGrant` for manual file/folder override (Drive-specific resource type);
+- folder-level `ResourceAccessGrant` (`drive_folder`);
 - role/personal `DRIVE` family policies via `PlatformAccessResolverService`;
 - inherited multi-link confidentiality edge cases (see Drive permissions canon).
 

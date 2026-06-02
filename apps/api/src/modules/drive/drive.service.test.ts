@@ -327,6 +327,17 @@ describe('DriveService', () => {
           }),
         }),
       );
+      expect(prisma.resourceAccessGrant.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            resourceType_resourceId_employeeId: {
+              resourceType: 'drive_file_asset',
+              resourceId: 'f1',
+              employeeId: 'emp-2',
+            },
+          }),
+        }),
+      );
       expect(prisma.fileAuditEvent.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
