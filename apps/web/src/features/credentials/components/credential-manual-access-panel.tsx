@@ -63,6 +63,18 @@ export function CredentialManualAccessPanel({
     <section className="grid gap-5" aria-label="Manual access">
       <p className="text-muted-foreground text-xs leading-relaxed">{inheritedSummary}</p>
 
+      <RelationPickerField
+        label="Add employee"
+        entityKind="employee"
+        value={null}
+        selectionLabel={null}
+        placeholder="Choose…"
+        icon={<User size={12} />}
+        onSearch={searchEmployees}
+        onSelect={(id, label) => addEmployee(id, label)}
+        {...employeePicker}
+      />
+
       {loading ? (
         <Skeleton className="h-24 w-full rounded-xl" />
       ) : (
@@ -84,18 +96,6 @@ export function CredentialManualAccessPanel({
           )}
         </div>
       )}
-
-      <RelationPickerField
-        label="Add employee"
-        entityKind="employee"
-        value={null}
-        selectionLabel={null}
-        placeholder="Choose…"
-        icon={<User size={12} />}
-        onSearch={searchEmployees}
-        onSelect={(id, label) => addEmployee(id, label)}
-        {...employeePicker}
-      />
     </section>
   );
 }

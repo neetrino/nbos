@@ -137,7 +137,7 @@ export function RelationPickerChip({
 
       {trailing ? (
         <span
-          className="flex shrink-0 items-center gap-1"
+          className="flex shrink-0 items-center gap-2"
           onMouseDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >

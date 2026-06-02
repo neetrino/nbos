@@ -10,8 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CREDENTIAL_MANUAL_ACCESS_ACCESS_SELECT_CLASS } from '@/features/credentials/constants/credential-manual-access-inline-controls';
 import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
+
+const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
 
 export interface CredentialManualAccessGrantRowProps {
   grant: CredentialManualGrant;
@@ -40,15 +43,14 @@ export function CredentialManualAccessGrantRow({
       }
       onClear={() => onRemove(grant.employeeId)}
       trailing={
-        <>
+        <span className={MANUAL_ACCESS_TRAILING_GAP_CLASS}>
           <NbosDatePicker
             variant="compact"
             mode="date"
             embedded
-            iconLeading
+            iconButtonShell
             value={dateValue}
             clearable
-            placeholder="—"
             aria-label={`Expires for ${label}`}
             className="w-auto shrink-0"
             onChange={(next) => {
@@ -64,7 +66,7 @@ export function CredentialManualAccessGrantRow({
           >
             <SelectTrigger
               size="sm"
-              className="border-border/50 h-8 min-h-8 w-auto min-w-[3.5rem] shrink-0 justify-center gap-0 border px-2.5 text-xs font-normal normal-case shadow-none [&_svg]:hidden"
+              className={CREDENTIAL_MANUAL_ACCESS_ACCESS_SELECT_CLASS}
               aria-label={`Access for ${label}`}
             >
               <SelectValue />
@@ -74,7 +76,7 @@ export function CredentialManualAccessGrantRow({
               <SelectItem value="EDIT">Edit</SelectItem>
             </SelectContent>
           </Select>
-        </>
+        </span>
       }
     />
   );

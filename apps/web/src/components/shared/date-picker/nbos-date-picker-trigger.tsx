@@ -1,6 +1,10 @@
 'use client';
 
 import { Calendar, X } from 'lucide-react';
+import {
+  NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS,
+  NBOS_DATE_PICKER_ICON_BUTTON_SHELL_CLASS,
+} from './date-picker-constants';
 import { DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +19,8 @@ export interface NbosDatePickerTriggerProps {
   embedded?: boolean;
   /** Calendar icon before label (inline chip rows). */
   iconLeading?: boolean;
+  /** Raised pill; empty state is icon-only (no placeholder dash). */
+  iconButtonShell?: boolean;
   className?: string;
   id?: string;
   'aria-label'?: string;
@@ -29,6 +35,7 @@ export function NbosDatePickerTrigger({
   onClear,
   embedded = false,
   iconLeading = false,
+  iconButtonShell = false,
   className,
   id,
   'aria-label': ariaLabel,
@@ -36,17 +43,23 @@ export function NbosDatePickerTrigger({
   const calendarIcon = (
     <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
   );
-  const valueLabel = (
+  const showEmptyPlaceholder = !iconButtonShell || hasValue;
+  const valueLabel = showEmptyPlaceholder ? (
     <span
       id={id}
       aria-label={ariaLabel}
       className={cn(
         'min-w-0 truncate text-left text-xs leading-normal',
-        iconLeading ? 'max-w-[4.5rem] flex-1' : 'flex-1',
+        iconLeading && !iconButtonShell ? 'max-w-[4.5rem] flex-1' : 'flex-1',
+        iconButtonShell && hasValue && 'max-w-[4.5rem]',
         !hasValue && 'text-muted-foreground',
       )}
     >
       {hasValue ? displayValue : placeholder}
+    </span>
+  ) : (
+    <span id={id} className="sr-only">
+      {ariaLabel ?? 'Select expiry date'}
     </span>
   );
   const clearControl =
@@ -73,6 +86,24 @@ export function NbosDatePickerTrigger({
         <X size={14} aria-hidden />
       </span>
     ) : null;
+
+  if (iconButtonShell && embedded) {
+    return (
+      <span
+        className={cn(
+          NBOS_DATE_PICKER_ICON_BUTTON_SHELL_CLASS,
+          !hasValue && NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS,
+          hasValue && 'px-2',
+          disabled && 'pointer-events-none cursor-not-allowed opacity-50',
+          className,
+        )}
+      >
+        {calendarIcon}
+        {hasValue ? valueLabel : null}
+        {clearControl}
+      </span>
+    );
+  }
 
   return (
     <span

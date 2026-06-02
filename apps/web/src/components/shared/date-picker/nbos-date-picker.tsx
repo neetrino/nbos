@@ -13,6 +13,7 @@ import {
 } from './date-picker-constants';
 import {
   formatDateDisplay,
+  formatDateDisplayShort,
   formatDatetimeLocalValue,
   formatIsoDateValue,
   parseDatetimeLocalValue,
@@ -41,6 +42,8 @@ export interface NbosDatePickerProps {
   embedded?: boolean;
   /** Calendar icon before the date label (compact inline rows). */
   iconLeading?: boolean;
+  /** Raised pill button (icon-only when empty — no placeholder dash). */
+  iconButtonShell?: boolean;
 }
 
 export function NbosDatePicker({
@@ -57,6 +60,7 @@ export function NbosDatePicker({
   'aria-label': ariaLabel,
   embedded = false,
   iconLeading = false,
+  iconButtonShell = false,
 }: NbosDatePickerProps) {
   const parsed = useMemo(
     () => (mode === 'datetime' ? parseDatetimeLocalValue(value) : parseIsoDateValue(value)),
@@ -67,10 +71,10 @@ export function NbosDatePicker({
   const [viewMonth, setViewMonth] = useState(() => parsed ?? new Date());
   const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '09:00'));
 
-  const displayText = useMemo(
-    () => formatDateDisplay(parsed, locale, mode === 'datetime'),
-    [locale, mode, parsed],
-  );
+  const displayText = useMemo(() => {
+    if (iconButtonShell) return formatDateDisplayShort(parsed, locale);
+    return formatDateDisplay(parsed, locale, mode === 'datetime');
+  }, [iconButtonShell, locale, mode, parsed]);
 
   const applyDate = useCallback(
     (date: Date) => {
@@ -128,6 +132,7 @@ export function NbosDatePicker({
           onClear={clearable ? handleClear : undefined}
           embedded={embedded}
           iconLeading={iconLeading}
+          iconButtonShell={iconButtonShell}
         />
       </PopoverTrigger>
       <PopoverContent

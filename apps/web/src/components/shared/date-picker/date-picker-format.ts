@@ -50,3 +50,9 @@ export function formatDateDisplay(
     ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
   }).format(date);
 }
+
+/** Short label for compact inline date buttons (no year). */
+export function formatDateDisplayShort(date: Date | undefined, locale: string): string {
+  if (!date || !isValid(date)) return '';
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(date);
+}
