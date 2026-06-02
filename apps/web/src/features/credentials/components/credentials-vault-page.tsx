@@ -18,7 +18,7 @@ import { CredentialsVaultMainView } from '@/features/credentials/components/cred
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
-import { CredentialVaultExportButton } from '@/features/credentials/components/credential-vault-export-button';
+import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
@@ -91,7 +91,7 @@ export function CredentialsVaultPage() {
             </Button>
             {vault.vaultListScope === 'active' && (
               <PermissionGate module="CREDENTIALS" action="VIEW">
-                <CredentialVaultExportButton />
+                <CredentialsPageSettingsSheet />
               </PermissionGate>
             )}
             {vault.showCreate && (

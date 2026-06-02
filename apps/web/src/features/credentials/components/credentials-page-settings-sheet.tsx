@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
 import { downloadBase64File } from '@/features/credentials/utils/download-base64-file';
 import { credentialsApi } from '@/lib/api/credentials';
 import { toast } from 'sonner';
 
-export function CredentialVaultExportButton() {
+export function CredentialsPageSettingsSheet() {
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -27,16 +28,26 @@ export function CredentialVaultExportButton() {
 
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={exporting}
-        onClick={() => setStepUpOpen(true)}
+      <PageSettingsSheet
+        title="Credentials — settings"
+        description="Encrypted vault export. Requires step-up confirmation."
+        triggerAriaLabel="Credentials settings"
       >
-        <Download size={14} className="mr-1.5" aria-hidden />
-        Export file
-      </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="justify-start gap-2"
+          disabled={exporting}
+          onClick={() => setStepUpOpen(true)}
+        >
+          {exporting ? (
+            <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+          ) : (
+            <Download className="size-4 shrink-0" aria-hidden />
+          )}
+          Export file
+        </Button>
+      </PageSettingsSheet>
       <CredentialStepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
