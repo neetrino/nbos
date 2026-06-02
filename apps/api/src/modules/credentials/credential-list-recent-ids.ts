@@ -1,4 +1,4 @@
-import type { CredentialsAccessContext } from './credentials-access';
+import type { Prisma } from '@nbos/database';
 import {
   CREDENTIAL_RECENT_AUDIT_ACTIONS,
   CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT,
@@ -6,12 +6,10 @@ import {
   CREDENTIAL_RECENT_LOOKBACK_DAYS,
 } from './credential-recent.constants';
 import { dedupeRecentCredentialIds } from './credential-recent-dedupe';
-import { normalizeCredentialTab } from './credential-tab';
-import { resolveRecentCredentialItems } from './credential-recent-resolve';
-import type { CredentialRecentQuery } from './credential-recent.types';
+import type { CredentialsAccessContext } from './credentials-access';
 import type { CredentialsRuntime } from './credentials-runtime';
 
-export type { CredentialRecentQuery } from './credential-recent.types';
+const RECENT_ID_CHUNK_SIZE = 20;
 
 function recentLookbackSince(): Date {
   const since = new Date();
@@ -19,11 +17,12 @@ function recentLookbackSince(): Date {
   return since;
 }
 
-export async function findRecentCredentials(
+/** Audit-ordered credential ids that match the current list filters (no row limit). */
+export async function loadRecentOrderedCredentialIds(
   runtime: CredentialsRuntime,
   access: CredentialsAccessContext,
-  query: CredentialRecentQuery = {},
-) {
+  listWhere: Prisma.CredentialWhereInput,
+): Promise<string[]> {
   const auditRows = await runtime.prisma.auditLog.findMany({
     where: {
       userId: access.employeeId,
@@ -38,11 +37,20 @@ export async function findRecentCredentials(
   });
 
   const candidateIds = dedupeRecentCredentialIds(auditRows, CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT);
-  if (candidateIds.length === 0) {
-    return { items: [] as Awaited<ReturnType<typeof resolveRecentCredentialItems>> };
+  if (candidateIds.length === 0) return [];
+
+  const ordered: string[] = [];
+  for (let offset = 0; offset < candidateIds.length; offset += RECENT_ID_CHUNK_SIZE) {
+    const chunk = candidateIds.slice(offset, offset + RECENT_ID_CHUNK_SIZE);
+    const rows = await runtime.prisma.credential.findMany({
+      where: { AND: [listWhere, { id: { in: chunk } }] },
+      select: { id: true },
+    });
+    const visible = new Set(rows.map((row) => row.id));
+    for (const id of chunk) {
+      if (visible.has(id)) ordered.push(id);
+    }
   }
 
-  const tab = normalizeCredentialTab(query.tab) ?? 'all';
-  const items = await resolveRecentCredentialItems(runtime, access, candidateIds, tab, query);
-  return { items };
+  return ordered;
 }

@@ -9,7 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { resolveFilterSelectValue, type FilterConfig } from '../FilterBar';
+import {
+  filterAllOptionLabel,
+  resolveFilterSelectLabel,
+  resolveFilterSelectValue,
+  type FilterConfig,
+} from '../FilterBar';
 
 interface IntegratedSearchFilterPanelProps {
   filters: FilterConfig[];
@@ -80,22 +85,20 @@ function FilterField({
 
   const showAll = filter.includeAllOption !== false;
   const value = resolveFilterSelectValue(filter, filterValues);
-  const items = [
-    ...(showAll ? [{ value: 'all' as const, label: `All ${filter.label}` }] : []),
-    ...filter.options.map((opt) => ({ value: opt.value, label: opt.label })),
-  ];
+  const triggerLabel = resolveFilterSelectLabel(filter, value);
 
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-muted-foreground text-xs font-medium">{filter.label}</span>
       <Select value={value} onValueChange={(v) => onFilterChange(filter.key, v as string)}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={filter.label} />
+          <SelectValue placeholder={filter.label}>{triggerLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {items.map((item) => (
-            <SelectItem key={`${filter.key}-${item.value}`} value={item.value}>
-              {item.label}
+          {showAll ? <SelectItem value="all">{filterAllOptionLabel(filter)}</SelectItem> : null}
+          {filter.options.map((opt) => (
+            <SelectItem key={`${filter.key}-${opt.value}`} value={opt.value}>
+              {opt.label}
             </SelectItem>
           ))}
         </SelectContent>

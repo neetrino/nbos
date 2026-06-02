@@ -26,7 +26,4 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
 
 export const CREDENTIAL_VAULT_PAGE_SIZE = 50;
 
-/** Recently-used strip size (last viewed credentials). */
-export const CREDENTIAL_VAULT_RECENT_LIMIT = 10;
-
 export type CredentialQuickFilterKey = 'mine' | 'needsRotation';

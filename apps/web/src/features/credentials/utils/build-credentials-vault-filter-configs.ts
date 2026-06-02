@@ -1,3 +1,4 @@
+import type { FilterConfig } from '@/components/shared/FilterBar';
 import {
   ACCESS_LEVELS,
   CREDENTIAL_CATEGORIES,
@@ -5,16 +6,36 @@ import {
 } from '@/features/credentials/constants/credentials';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
-export interface VaultFilterConfig {
-  key: string;
-  label: string;
-  options: { value: string; label: string }[];
+function buildSortFilterConfig(vaultListScope: 'active' | 'archived'): FilterConfig {
+  if (vaultListScope === 'archived') {
+    return {
+      key: 'sort',
+      label: 'Sort',
+      includeAllOption: false,
+      defaultOptionValue: 'created_desc',
+      defaultOptionLabel: 'Newest first',
+      options: [{ value: 'name_asc', label: 'Name (A–Z)' }],
+    };
+  }
+  return {
+    key: 'sort',
+    label: 'Sort',
+    includeAllOption: false,
+    defaultOptionValue: 'recent',
+    defaultOptionLabel: 'Recently used',
+    options: [
+      { value: 'name_asc', label: 'Name (A–Z)' },
+      { value: 'created_desc', label: 'Newest first' },
+    ],
+  };
 }
 
 export function buildCredentialsVaultFilterConfigs(
   activeTab: CredentialVaultScope,
-): VaultFilterConfig[] {
-  const base: VaultFilterConfig[] = [
+  vaultListScope: 'active' | 'archived' = 'active',
+): FilterConfig[] {
+  const base: FilterConfig[] = [
+    buildSortFilterConfig(vaultListScope),
     {
       key: 'category',
       label: 'Category',

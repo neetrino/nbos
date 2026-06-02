@@ -1,4 +1,5 @@
 import type { CredentialTab } from './credential-tab';
+import type { CredentialListSort } from './credential-list-sort';
 
 export const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
 export type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
@@ -35,8 +36,7 @@ export interface CredentialQueryParams {
   needsRotation?: boolean;
   viewScope?: string;
   includeArchived?: boolean;
-  /** Omit these ids from the paginated list (e.g. recently used strip). */
-  excludeCredentialIds?: string[];
+  sort?: CredentialListSort;
 }
 
 export interface ExportCredentialsInput {

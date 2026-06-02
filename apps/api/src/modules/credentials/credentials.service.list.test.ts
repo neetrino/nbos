@@ -15,6 +15,7 @@ describe('CredentialsService findAll', () => {
     const setup = createCredentialsServiceTestContext();
     service = setup.service;
     prisma = setup.prisma;
+    prisma.auditLog.findMany.mockResolvedValue([]);
   });
 
   it('should list credentials without sensitive fields', async () => {
@@ -22,7 +23,10 @@ describe('CredentialsService findAll', () => {
     prisma.credential.findMany.mockResolvedValue(mockItems);
     prisma.credential.count.mockResolvedValue(1);
 
-    const result = await service.findAll({ page: 1, pageSize: 10 });
+    const result = await service.findAll(
+      { page: 1, pageSize: 10, sort: 'created_desc' },
+      accessUser1,
+    );
 
     expect(result.items).toEqual([
       expect.objectContaining({
@@ -37,7 +41,7 @@ describe('CredentialsService findAll', () => {
   it('should list archived credentials when includeArchived is true', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({ includeArchived: true });
+    await service.findAll({ includeArchived: true, sort: 'created_desc' }, accessUser1);
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ archivedAt: { not: null } }),
@@ -48,7 +52,7 @@ describe('CredentialsService findAll', () => {
   it('should filter by projectId', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({ projectId: 'proj-1' });
+    await service.findAll({ projectId: 'proj-1', sort: 'created_desc' }, accessUser1);
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: expect.objectContaining({ projectId: 'proj-1' }) }),
     );
@@ -57,7 +61,7 @@ describe('CredentialsService findAll', () => {
   it('should filter by category', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({ category: 'API_KEY' });
+    await service.findAll({ category: 'API_KEY', sort: 'created_desc' }, accessUser1);
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: expect.objectContaining({ category: 'API_KEY' }) }),
     );
@@ -66,7 +70,10 @@ describe('CredentialsService findAll', () => {
   it('should search by name, provider, login', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({ search: 'aws', employeeId: 'user-1', departmentIds: [] });
+    await service.findAll(
+      { search: 'aws', employeeId: 'user-1', departmentIds: [], sort: 'created_desc' },
+      accessUser1,
+    );
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -79,7 +86,10 @@ describe('CredentialsService findAll', () => {
   it('skips credential-level visibility filter when RBAC viewScope is ALL', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({ employeeId: 'owner-1', departmentIds: [], viewScope: 'ALL' });
+    await service.findAll(
+      { employeeId: 'owner-1', departmentIds: [], viewScope: 'ALL', sort: 'created_desc' },
+      accessOwnerAll,
+    );
     const call = prisma.credential.findMany.mock.calls[0]?.[0] as { where: { OR?: unknown } };
     expect(call.where.OR).toBeUndefined();
   });
@@ -87,12 +97,16 @@ describe('CredentialsService findAll', () => {
   it('scopes my tab to PERSONAL credentials owned by the employee', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({
-      tab: 'personal',
-      employeeId: 'emp-1',
-      departmentIds: ['dept-1'],
-      viewScope: 'ALL',
-    });
+    await service.findAll(
+      {
+        tab: 'personal',
+        employeeId: 'emp-1',
+        departmentIds: ['dept-1'],
+        viewScope: 'ALL',
+        sort: 'created_desc',
+      },
+      accessOwnerAll,
+    );
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ accessLevel: 'PERSONAL', ownerId: 'emp-1' }),
@@ -103,12 +117,16 @@ describe('CredentialsService findAll', () => {
   it('scopes project tab to PROJECT_TEAM access level', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({
-      tab: 'project',
-      employeeId: 'emp-1',
-      departmentIds: [],
-      viewScope: 'ALL',
-    });
+    await service.findAll(
+      {
+        tab: 'project',
+        employeeId: 'emp-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+        sort: 'created_desc',
+      },
+      accessOwnerAll,
+    );
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ accessLevel: 'PROJECT_TEAM' }),
@@ -119,12 +137,16 @@ describe('CredentialsService findAll', () => {
   it('lists all SECRET credentials on secret tab when RBAC viewScope is ALL', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
-    await service.findAll({
-      tab: 'secret',
-      employeeId: 'owner-1',
-      departmentIds: [],
-      viewScope: 'ALL',
-    });
+    await service.findAll(
+      {
+        tab: 'secret',
+        employeeId: 'owner-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+        sort: 'created_desc',
+      },
+      accessOwnerAll,
+    );
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ accessLevel: 'SECRET' }),
@@ -144,7 +166,10 @@ describe('CredentialsService findAll', () => {
       },
     ]);
     prisma.credential.count.mockResolvedValue(1);
-    const result = await service.findAll({ page: 1, pageSize: 10 });
+    const result = await service.findAll(
+      { page: 1, pageSize: 10, sort: 'created_desc' },
+      accessUser1,
+    );
     const first = result.items[0] as { health?: { status: string; flags: string[] } };
     expect(first.health?.status).toBe('OVERDUE');
     expect(first.health?.flags).toContain('MISSING_OWNER');

@@ -38,9 +38,9 @@
 - Scope tabs: `All`, `My`, `Team`, `Project`, `Secret`, `Archived`.
 - `All` — режим просмотра/поиска/использования по всем доступным credentials. **Create button скрыта** в `All`.
 - Создать credential можно только внутри конкретного scope: `My`, `Team`, `Project`, `Secret`. Выбранный scope автоматически передается в create Sheet.
-- Под стандартными tabs/search может быть компактный блок `Recently used` / `Frequently used`, визуально как часть страницы, с тонким разделителем и compact cards.
-- `Recently/Frequently used` показывать только в `List` и `Tiles` view. В `Category Board` не показывать.
-- **Implemented (2026-06-06):** `GET /api/credentials/recent?tab=&search=&category=&credentialType=&needsRotation=` — top 10 по audit (30d), scoped per vault tab (`my`/`team`/`project`/`secret`/`all`) с проходом по audit до 100 id; те же quick/search фильтры, что и список. При поиске без совпадений — блок скрыт. **Partition:** id из recent исключаются из основного списка (`excludeIds` на list) — одна карточка в одном месте. Grid как Tiles (`4` / `5` / `6` cols). Deep-link: `/credentials?open=<id>`.
+- **Sort** — первый фильтр в панели vault (не strip): default **Recently used** (`sort=recent` → API `recent`), в меню только `Name` / `Newest`; не использовать `all` (это для category-фильтров). Один список; дубликатов нет.
+- `Recently used` — порядок по последней vault-активности в audit (30d), затем `createdAt`; учитывает текущий tab/search/quick filters. В `Category Board` sort не меняет Kanban-колонки (данные те же, порядок внутри колонок — по имени).
+- **Implemented (2026-06-06):** `GET /api/credentials?sort=recent|name_asc|created_desc` + те же query, что и список. `recent` только для активного vault; `Archived` → всегда `created_desc`. Отдельный `GET /credentials/recent` и partition `excludeIds` **сняты**.
 
 ### Vault scopes
 

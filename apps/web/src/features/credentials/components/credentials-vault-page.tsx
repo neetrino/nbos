@@ -11,10 +11,10 @@ import {
 import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
+import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultPagination } from '@/features/credentials/components/credential-vault-pagination';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
-import { CredentialVaultRecentStrip } from '@/features/credentials/components/credential-vault-recent-strip';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
@@ -36,7 +36,6 @@ export function CredentialsVaultPage() {
 
   const handleSaved = () => {
     void vault.fetchCredentials();
-    void vault.refreshRecent();
   };
 
   return (
@@ -57,7 +56,7 @@ export function CredentialsVaultPage() {
             onSearchChange={vault.setSearch}
             searchPlaceholder="Search by name, provider…"
             filters={vault.filterConfigs}
-            filterValues={vault.filters}
+            filterValues={vault.filterValuesForUi}
             onFilterChange={(key, value) => vault.setFilters((prev) => ({ ...prev, [key]: value }))}
             onClearAll={vault.clearFilters}
           />
@@ -74,27 +73,12 @@ export function CredentialsVaultPage() {
             <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
               {vault.total} credentials
             </span>
-            <Button
-              type="button"
-              variant={vault.vaultListScope === 'active' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => vault.setVaultListScope('active')}
-            >
-              Active
-            </Button>
-            <Button
-              type="button"
-              variant={vault.vaultListScope === 'archived' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => vault.setVaultListScope('archived')}
-            >
-              Archived
-            </Button>
-            {vault.vaultListScope === 'active' && (
-              <PermissionGate module="CREDENTIALS" action="VIEW">
-                <CredentialsPageSettingsSheet />
-              </PermissionGate>
-            )}
+            <PermissionGate module="CREDENTIALS" action="VIEW">
+              <CredentialsPageSettingsSheet
+                vaultListScope={vault.vaultListScope}
+                onVaultListScopeChange={vault.setVaultListScope}
+              />
+            </PermissionGate>
             {vault.showCreate && (
               <PermissionGate module="CREDENTIALS" action="ADD">
                 <Button type="button" onClick={() => vault.openCreate()}>
@@ -106,6 +90,10 @@ export function CredentialsVaultPage() {
           </>
         }
       />
+
+      {vault.vaultListScope === 'archived' ? (
+        <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
+      ) : null}
 
       <CredentialQuickFilterChips
         vaultScope={vault.activeTab}
@@ -126,18 +114,6 @@ export function CredentialsVaultPage() {
           onSelectAll={vault.selection.selectAllOnPage}
           onClear={vault.selection.clearSelection}
           onCompleted={handleSaved}
-        />
-      )}
-
-      {vault.showRecentBlock && (
-        <CredentialVaultRecentStrip
-          credentials={vault.recentCredentials}
-          loading={vault.recentLoading}
-          searchActive={vault.searchQuery.length > 0}
-          onOpenCredential={vault.openCredential}
-          onCopyLogin={vault.copyToClipboard}
-          onCopyPassword={vault.setTileCopyCredentialId}
-          passwordFlashCredentialId={vault.passwordFlashCredentialId}
         />
       )}
 

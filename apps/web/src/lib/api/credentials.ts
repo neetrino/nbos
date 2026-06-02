@@ -92,18 +92,6 @@ export const credentialsApi = {
     const resp = await api.get<ListData<CredentialDetail>>('/api/credentials', { params });
     return resp.data;
   },
-  async getRecent(params?: {
-    tab?: string;
-    search?: string;
-    category?: string;
-    credentialType?: string;
-    needsRotation?: boolean;
-  }): Promise<{ items: CredentialDetail[] }> {
-    const resp = await api.get<{ items: CredentialDetail[] }>('/api/credentials/recent', {
-      params,
-    });
-    return resp.data;
-  },
   /** Un-archive a credential (CREDENTIALS EDIT). */
   async restore(id: string): Promise<void> {
     await api.post(`/api/credentials/${id}/restore`, {});

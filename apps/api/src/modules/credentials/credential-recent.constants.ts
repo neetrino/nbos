@@ -1,6 +1,3 @@
-/** Max credentials returned for the recent strip. */
-export const CREDENTIAL_RECENT_LIMIT = 10;
-
 /** Audit rows scanned before dedupe (per user, recent window). */
 export const CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT = 100;
 

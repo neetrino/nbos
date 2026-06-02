@@ -7,6 +7,12 @@ import type {
   CredentialVaultViewMode,
 } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_PAGE_SIZE } from '@/features/credentials/constants/credential-vault';
+import {
+  CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
+  defaultCredentialVaultSortFilter,
+  normalizeCredentialVaultSortFilter,
+  resolveCredentialVaultListSort,
+} from '@/features/credentials/constants/credential-vault-list-sort';
 import { useCredentialVaultPagePreferences } from '@/features/credentials/constants/credential-vault-page-state-storage';
 import { quickCategoryChipsForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
@@ -17,18 +23,9 @@ import {
   vaultScopeToListTab,
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
-import { buildCredentialVaultRecentQueryParams } from '@/features/credentials/utils/credential-vault-recent-filters';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
-import { useCredentialsVaultRecent } from '@/features/credentials/hooks/use-credentials-vault-recent';
 import { credentialsApi } from '@/lib/api/credentials';
 import { usePermission } from '@/lib/permissions';
-
-function vaultShowsRecentStrip(
-  viewMode: CredentialVaultViewMode,
-  vaultListScope: VaultListScope,
-): boolean {
-  return vaultListScope === 'active' && (viewMode === 'list' || viewMode === 'tiles');
-}
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -46,7 +43,9 @@ export function useCredentialsVaultPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string>>(() => ({
+    ...CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
+  }));
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
   const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
@@ -57,9 +56,7 @@ export function useCredentialsVaultPage() {
   const [purgeTarget, setPurgeTarget] = useState<CredentialDeleteTarget | null>(null);
   const [tileCopyCredentialId, setTileCopyCredentialId] = useState<string | null>(null);
   const [passwordFlashCredentialId, setPasswordFlashCredentialId] = useState<string | null>(null);
-  const [listExcludeIds, setListExcludeIds] = useState<string[]>([]);
 
-  const recentEnabled = vaultShowsRecentStrip(viewMode, vaultListScope);
   const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
   const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${search}`;
@@ -68,23 +65,19 @@ export function useCredentialsVaultPage() {
     pageCredentialIds,
     selectionResetKey,
   );
-  const recentFilterInput = useMemo(
-    () => ({ search, quickCategory, filters, quickFilters }),
-    [search, quickCategory, filters, quickFilters],
-  );
-  const { recentCredentials, recentLoading, refreshRecent } = useCredentialsVaultRecent(
-    recentEnabled,
-    activeTab,
-    recentFilterInput,
+
+  const listSort = useMemo(
+    () => resolveCredentialVaultListSort(filters, vaultListScope),
+    [filters, vaultListScope],
   );
 
-  useEffect(() => {
-    if (!recentEnabled || recentLoading) {
-      setListExcludeIds([]);
-      return;
-    }
-    setListExcludeIds(recentCredentials.map((credential) => credential.id));
-  }, [recentEnabled, recentLoading, recentCredentials]);
+  const filterValuesForUi = useMemo(
+    () => ({
+      ...filters,
+      sort: normalizeCredentialVaultSortFilter(filters.sort, vaultListScope),
+    }),
+    [filters, vaultListScope],
+  );
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -109,10 +102,7 @@ export function useCredentialsVaultPage() {
         needsRotation: quickFilters.has('needsRotation') ? true : undefined,
         tab: vaultListScope === 'archived' ? undefined : vaultScopeToListTab(activeTab),
         includeArchived: vaultListScope === 'archived',
-        excludeIds:
-          vaultListScope === 'active' && listExcludeIds.length > 0
-            ? listExcludeIds.join(',')
-            : undefined,
+        sort: listSort,
       });
       setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
       setTotalPages(data.meta.totalPages);
@@ -133,7 +123,7 @@ export function useCredentialsVaultPage() {
     vaultListScope,
     page,
     me?.id,
-    listExcludeIds,
+    listSort,
   ]);
 
   useEffect(() => {
@@ -199,10 +189,13 @@ export function useCredentialsVaultPage() {
   );
 
   const clearFilters = useCallback(() => {
-    setFilters({});
+    setFilters({
+      ...CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
+      sort: defaultCredentialVaultSortFilter(vaultListScope),
+    });
     setQuickCategory(null);
     setQuickFilters(new Set());
-  }, []);
+  }, [vaultListScope]);
 
   const closeSheet = useCallback((open: boolean) => {
     setSheetOpen(open);
@@ -213,11 +206,11 @@ export function useCredentialsVaultPage() {
   }, []);
 
   const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
-  const filterConfigs = useMemo(() => buildCredentialsVaultFilterConfigs(activeTab), [activeTab]);
+  const filterConfigs = useMemo(
+    () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope),
+    [activeTab, vaultListScope],
+  );
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
-  const searchQuery = search.trim();
-  const showRecentBlock =
-    recentEnabled && (recentLoading || recentCredentials.length > 0 || searchQuery.length === 0);
 
   const setViewMode = useCallback(
     (mode: CredentialVaultViewMode) => {
@@ -229,6 +222,10 @@ export function useCredentialsVaultPage() {
   const setVaultListScope = useCallback(
     (scope: VaultListScope) => {
       setPreferences({ vaultListScope: scope });
+      setFilters((prev) => ({
+        ...prev,
+        sort: defaultCredentialVaultSortFilter(scope),
+      }));
     },
     [setPreferences],
   );
@@ -243,6 +240,7 @@ export function useCredentialsVaultPage() {
     search,
     setSearch,
     filters,
+    filterValuesForUi,
     setFilters,
     quickCategory,
     setQuickCategory,
@@ -276,12 +274,6 @@ export function useCredentialsVaultPage() {
     quickCategoryChips,
     filterConfigs,
     showCreate,
-    recentEnabled,
-    recentCredentials,
-    recentLoading,
-    refreshRecent,
-    showRecentBlock,
-    searchQuery,
     selectionEnabled,
     selection,
     pageCredentialIds,
