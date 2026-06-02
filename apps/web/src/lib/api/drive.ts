@@ -62,6 +62,7 @@ export interface DriveGrantRow {
   id: string;
   granteeEmployeeId: string;
   granteeLabel?: string;
+  granteeEmail?: string | null;
   permission: string;
   expiresAt: string | null;
   createdAt: string;

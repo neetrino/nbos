@@ -55,6 +55,7 @@ export function DriveAccessDialog({
       <DialogContent className="max-w-md gap-0 p-0 sm:max-w-lg">
         <DialogHeader className="border-border/60 border-b px-5 py-4">
           <DialogTitle className="text-base font-semibold">{title}</DialogTitle>
+          <p className="text-muted-foreground text-xs font-normal">Manual access</p>
         </DialogHeader>
         <div className="px-5 py-4">
           {api && target ? (

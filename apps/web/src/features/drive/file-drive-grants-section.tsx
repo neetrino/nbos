@@ -23,7 +23,7 @@ export function FileDriveGrantsSection({
 
   return (
     <section>
-      <h3 className="text-foreground text-sm font-semibold">Explicit access</h3>
+      <h3 className="text-foreground text-sm font-semibold">Manual access</h3>
       <div className="mt-2">
         <DriveAccessGrantsPanel subjectKind="file" api={api} onChanged={onChanged} />
       </div>

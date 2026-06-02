@@ -602,13 +602,19 @@ export class DriveService {
     const empIds = [...new Set(rows.map((r) => r.granteeEmployeeId))];
     const employees = await this.prisma.employee.findMany({
       where: { id: { in: empIds } },
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const labelById = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`.trim()]));
-    return rows.map((r) => ({
-      ...jsonSafeForHttp(r),
-      granteeLabel: labelById.get(r.granteeEmployeeId) ?? r.granteeEmployeeId,
-    }));
+    const employeeById = new Map(employees.map((e) => [e.id, e]));
+    return rows.map((r) => {
+      const employee = employeeById.get(r.granteeEmployeeId);
+      return {
+        ...jsonSafeForHttp(r),
+        granteeLabel: employee
+          ? `${employee.firstName} ${employee.lastName}`.trim()
+          : r.granteeEmployeeId,
+        granteeEmail: employee?.email ?? null,
+      };
+    });
   }
 
   async revokeFileAssetGrant(

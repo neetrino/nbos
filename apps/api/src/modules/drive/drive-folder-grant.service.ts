@@ -36,19 +36,25 @@ export class DriveFolderGrantService {
     const empIds = [...new Set(rows.map((r) => r.employeeId))];
     const employees = await this.prisma.employee.findMany({
       where: { id: { in: empIds } },
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const labelById = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`.trim()]));
-    return rows.map((row) => ({
-      id: row.id,
-      granteeEmployeeId: row.employeeId,
-      granteeLabel: labelById.get(row.employeeId) ?? row.employeeId,
-      permission:
-        parseDriveGrantPermissionFromReason(row.reason) ??
-        (row.level === 'EDIT' ? 'EDIT_METADATA' : 'VIEW'),
-      expiresAt: row.expiresAt?.toISOString() ?? null,
-      createdAt: row.createdAt.toISOString(),
-    }));
+    const employeeById = new Map(employees.map((e) => [e.id, e]));
+    return rows.map((row) => {
+      const employee = employeeById.get(row.employeeId);
+      return {
+        id: row.id,
+        granteeEmployeeId: row.employeeId,
+        granteeLabel: employee
+          ? `${employee.firstName} ${employee.lastName}`.trim()
+          : row.employeeId,
+        granteeEmail: employee?.email ?? null,
+        permission:
+          parseDriveGrantPermissionFromReason(row.reason) ??
+          (row.level === 'EDIT' ? 'EDIT_METADATA' : 'VIEW'),
+        expiresAt: row.expiresAt?.toISOString() ?? null,
+        createdAt: row.createdAt.toISOString(),
+      };
+    });
   }
 
   async createGrant(
