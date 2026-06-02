@@ -1,7 +1,7 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { AtSign, Copy, KeyRound, Lock, Plus } from 'lucide-react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { AtSign, Check, Copy, KeyRound, Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState, StatusBadge } from '@/components/shared';
@@ -13,6 +13,7 @@ import { PermissionGate } from '@/lib/permissions';
 
 const TILE_SKELETON_COUNT = 12;
 const PASSWORD_MASK = '••••••';
+export const CREDENTIAL_VAULT_TILE_COPY_FEEDBACK_MS = 1000;
 const TILE_BADGE_CLASS = 'h-4 shrink-0 px-1.5 py-0 text-[10px] leading-none';
 
 /** 4 columns on small viewports; 5–6 on large (vault tiles canon). */
@@ -38,39 +39,85 @@ const TILE_SECRET_COPY_ICON_CLASS = cn(
   'group-hover/tile:opacity-100',
 );
 
+const TILE_SECRET_PILL_COPIED_CLASS = cn(
+  'bg-emerald-500/15 text-emerald-800 shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)] dark:text-emerald-300',
+  'group-hover/tile:bg-emerald-500/15 group-hover/tile:shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)]',
+);
+
 interface TileSecretPillProps {
   icon: ReactNode;
   value: string;
   copyLabel: string;
   mono?: boolean;
+  copied?: boolean;
   onCopy: () => void;
 }
 
-function TileSecretPill({ icon, value, copyLabel, mono = true, onCopy }: TileSecretPillProps) {
+function TileSecretPill({
+  icon,
+  value,
+  copyLabel,
+  mono = true,
+  copied: copiedExternal = false,
+  onCopy,
+}: TileSecretPillProps) {
+  const [copiedLocal, setCopiedLocal] = useState(false);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copied = copiedExternal || copiedLocal;
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    };
+  }, []);
+
+  const handleCopy = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onCopy();
+    if (copiedExternal) return;
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    setCopiedLocal(true);
+    feedbackTimerRef.current = setTimeout(
+      () => setCopiedLocal(false),
+      CREDENTIAL_VAULT_TILE_COPY_FEEDBACK_MS,
+    );
+  };
+
   return (
     <button
       type="button"
-      className={TILE_SECRET_PILL_CLASS}
+      className={cn(TILE_SECRET_PILL_CLASS, copied && TILE_SECRET_PILL_COPIED_CLASS)}
       title={copyLabel}
       aria-label={copyLabel}
-      onClick={(event) => {
-        event.stopPropagation();
-        onCopy();
-      }}
+      onClick={handleCopy}
     >
-      <span className="text-muted-foreground shrink-0" aria-hidden>
+      <span
+        className={cn(
+          'shrink-0',
+          copied ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
+        )}
+        aria-hidden
+      >
         {icon}
       </span>
       <span
         className={cn(
-          'text-foreground min-w-0 flex-1 truncate text-[11px] leading-tight',
+          'min-w-0 flex-1 truncate text-[11px] leading-tight',
+          copied ? 'text-emerald-800 dark:text-emerald-200' : 'text-foreground',
           mono && 'font-mono',
         )}
       >
         {value}
       </span>
-      <span className={cn('text-muted-foreground', TILE_SECRET_COPY_ICON_CLASS)} aria-hidden>
-        <Copy size={11} />
+      <span
+        className={cn(
+          copied ? 'text-emerald-600 opacity-100 dark:text-emerald-400' : 'text-muted-foreground',
+          TILE_SECRET_COPY_ICON_CLASS,
+          copied && 'opacity-100',
+        )}
+        aria-hidden
+      >
+        {copied ? <Check size={11} strokeWidth={2.5} /> : <Copy size={11} />}
       </span>
     </button>
   );
@@ -79,6 +126,7 @@ function TileSecretPill({ icon, value, copyLabel, mono = true, onCopy }: TileSec
 interface TileSecretsStripProps {
   login: string | null;
   showPassword: boolean;
+  passwordCopied: boolean;
   onCopyLogin: (login: string) => void;
   onCopyPassword: () => void;
 }
@@ -86,6 +134,7 @@ interface TileSecretsStripProps {
 function TileSecretsStrip({
   login,
   showPassword,
+  passwordCopied,
   onCopyLogin,
   onCopyPassword,
 }: TileSecretsStripProps) {
@@ -106,6 +155,7 @@ function TileSecretsStrip({
           icon={<Lock size={12} strokeWidth={2} />}
           value={PASSWORD_MASK}
           copyLabel="Copy password"
+          copied={passwordCopied}
           mono
           onCopy={onCopyPassword}
         />
@@ -122,6 +172,7 @@ export interface CredentialVaultTilesProps {
   onOpenCredential: (id: string) => void;
   onCopyLogin: (login: string) => void;
   onCopyPassword?: (credentialId: string) => void;
+  passwordFlashCredentialId?: string | null;
 }
 
 function CredentialVaultTile({
@@ -129,11 +180,13 @@ function CredentialVaultTile({
   onOpenCredential,
   onCopyLogin,
   onCopyPassword,
+  passwordFlashCredentialId,
 }: {
   credential: CredentialListItem;
   onOpenCredential: (id: string) => void;
   onCopyLogin: (login: string) => void;
   onCopyPassword?: (credentialId: string) => void;
+  passwordFlashCredentialId?: string | null;
 }) {
   const category = getCredentialCategoryMeta(credential.category);
   const criticality = getCredentialCriticality(credential.criticality);
@@ -179,6 +232,7 @@ function CredentialVaultTile({
         <TileSecretsStrip
           login={credential.login}
           showPassword={showPassword}
+          passwordCopied={passwordFlashCredentialId === credential.id}
           onCopyLogin={onCopyLogin}
           onCopyPassword={() => onCopyPassword!(credential.id)}
         />
@@ -195,6 +249,7 @@ export function CredentialVaultTiles({
   onOpenCredential,
   onCopyLogin,
   onCopyPassword,
+  passwordFlashCredentialId,
 }: CredentialVaultTilesProps) {
   if (loading) {
     return (
@@ -234,6 +289,7 @@ export function CredentialVaultTiles({
           onOpenCredential={onOpenCredential}
           onCopyLogin={onCopyLogin}
           onCopyPassword={onCopyPassword}
+          passwordFlashCredentialId={passwordFlashCredentialId}
         />
       ))}
     </div>
