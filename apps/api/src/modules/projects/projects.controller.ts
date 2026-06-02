@@ -13,7 +13,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { ProjectTeamService } from '../platform-access/project-team.service';
-import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -61,6 +61,7 @@ export class ProjectsController {
   }
 
   @Post(':id/team')
+  @RequirePermission('PROJECTS', 'EDIT')
   @ApiOperation({ summary: 'Add or update a project team member' })
   async addProjectTeamMember(
     @CurrentUser() user: CurrentUserPayload,
@@ -71,6 +72,7 @@ export class ProjectsController {
   }
 
   @Put(':id/team/:employeeId')
+  @RequirePermission('PROJECTS', 'EDIT')
   @ApiOperation({ summary: 'Update project team member role' })
   async updateProjectTeamMember(
     @CurrentUser() user: CurrentUserPayload,
@@ -82,6 +84,7 @@ export class ProjectsController {
   }
 
   @Delete(':id/team/:employeeId')
+  @RequirePermission('PROJECTS', 'EDIT')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove project team member' })
   async removeProjectTeamMember(

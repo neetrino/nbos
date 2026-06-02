@@ -3,7 +3,7 @@
 > Платформенная модель access levels для Project/Product-scoped данных. Credentials использует ее первым, но модель не является credentials-only.
 
 **Дата:** 2026-06-02  
-**Статус:** accepted direction; implementation planned before final Credentials access implementation.
+**Статус:** Phase 1 implemented (schema, team APIs, access policies settings, project/product participants UI). Credentials enforcement — Phase 2 after Category vs Type decision.
 
 ---
 

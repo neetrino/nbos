@@ -55,6 +55,19 @@ export const platformAccessApi = {
   listProductTeam(productId: string) {
     return api.get<ProductTeamMemberRow[]>(`/api/projects/products/${productId}/team`);
   },
+  addProjectTeamMember(projectId: string, body: { employeeId: string; role?: 'ADMIN' | 'MEMBER' }) {
+    return api.post<ProjectTeamMemberRow>(`/api/projects/${projectId}/team`, body);
+  },
+  updateProjectTeamMember(
+    projectId: string,
+    employeeId: string,
+    body: { role?: 'ADMIN' | 'MEMBER' },
+  ) {
+    return api.put<ProjectTeamMemberRow>(`/api/projects/${projectId}/team/${employeeId}`, body);
+  },
+  removeProjectTeamMember(projectId: string, employeeId: string) {
+    return api.delete(`/api/projects/${projectId}/team/${employeeId}`);
+  },
   listRolePolicies(roleId: string) {
     return api.get<RoleAccessPolicyRow[]>(`/api/platform-access/roles/${roleId}/policies`);
   },
