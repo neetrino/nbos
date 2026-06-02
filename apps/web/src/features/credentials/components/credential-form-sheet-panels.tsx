@@ -1,6 +1,7 @@
 'use client';
 
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
+import { CredentialSecretVersionsPanel } from './credential-secret-versions-panel';
 import { CredentialSheetAuditPanel } from './credential-sheet-audit-panel';
 import { useCredentialManualAccess } from '@/features/credentials/hooks/use-credential-manual-access';
 import { useCredentialSheetAudit } from '@/features/credentials/hooks/use-credential-sheet-audit';
@@ -39,6 +40,7 @@ export function CredentialFormSheetPanels({
         onSave={() => void manual.save()}
         showSave
       />
+      <CredentialSecretVersionsPanel credentialId={credentialId} sheetOpen={sheetOpen} />
       <CredentialSheetAuditPanel
         entries={audit.entries}
         loading={audit.loading}

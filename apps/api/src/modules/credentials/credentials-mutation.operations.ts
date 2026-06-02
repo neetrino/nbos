@@ -10,6 +10,10 @@ import { buildCredentialUpdateData, detectChangedCredentialFields } from './cred
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
 import { assertPermanentDeleteStepUp } from './credential-permanent-delete.policy';
 import {
+  archiveCredentialSecretVersions,
+  resolveSecretRotationSource,
+} from './credential-archive-secret-versions';
+import {
   manualGrantsFromEmployeeIds,
   syncCredentialManualGrants,
 } from './credential-manual-grants';
@@ -141,6 +145,16 @@ export async function updateCredential(
 
   const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
   const changedFields = detectChangedCredentialFields(data, existing);
+
+  await archiveCredentialSecretVersions(
+    runtime.prisma,
+    id,
+    existing,
+    data,
+    encrypted,
+    access.employeeId,
+    resolveSecretRotationSource(data),
+  );
 
   const credential = await runtime.prisma.credential.update({
     where: { id },

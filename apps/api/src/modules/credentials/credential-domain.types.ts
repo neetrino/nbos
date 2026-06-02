@@ -106,4 +106,5 @@ export interface UpdateCredentialDto {
   accessLevel?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
+  rotationReason?: string;
 }

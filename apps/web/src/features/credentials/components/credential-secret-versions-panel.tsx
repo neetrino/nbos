@@ -1,0 +1,105 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
+import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
+import { useCredentialSecretVersions } from '@/features/credentials/hooks/use-credential-secret-versions';
+import { credentialsApi, type CredentialSecretVersion } from '@/lib/api/credentials';
+import { usePermission } from '@/lib/permissions';
+import { toast } from 'sonner';
+
+function fieldLabel(field: string): string {
+  if (field === 'secureNotes') return 'Comment';
+  if (field === 'apiKey') return 'API key';
+  if (field === 'envData') return 'ENV';
+  return field.charAt(0).toUpperCase() + field.slice(1);
+}
+
+export interface CredentialSecretVersionsPanelProps {
+  credentialId: string;
+  sheetOpen: boolean;
+}
+
+export function CredentialSecretVersionsPanel({
+  credentialId,
+  sheetOpen,
+}: CredentialSecretVersionsPanelProps) {
+  const { me } = usePermission();
+  const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
+  const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
+  const canReveal =
+    canUseCredentialEmergencyAccess(me?.role.slug) ||
+    me?.permissions.CREDENTIALS_EDIT === 'ALL' ||
+    me?.permissions.CREDENTIALS_VIEW === 'ALL';
+
+  const onReveal = async (password: string) => {
+    if (!revealTarget) return;
+    try {
+      const result = await credentialsApi.revealSecretVersion(
+        credentialId,
+        revealTarget.id,
+        password,
+      );
+      await navigator.clipboard.writeText(result.value);
+      toast.success(`Copied ${fieldLabel(result.field)} v${result.versionNumber}`);
+      setRevealTarget(null);
+    } catch {
+      toast.error('Could not reveal version');
+    }
+  };
+
+  return (
+    <section className="border-border grid gap-3 border-t pt-5" aria-label="Secret history">
+      <div>
+        <h3 className="text-sm font-medium">Secret history</h3>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Previous encrypted values saved when secrets change. Reveal requires step-up and executive
+          or vault-wide access.
+        </p>
+      </div>
+
+      {loading ? (
+        <Skeleton className="h-16 w-full rounded-lg" />
+      ) : items.length === 0 ? (
+        <p className="text-muted-foreground text-xs">No archived versions yet.</p>
+      ) : (
+        <ul className="max-h-44 space-y-2 overflow-y-auto text-xs">
+          {items.map((row) => (
+            <li
+              key={row.id}
+              className="border-border flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
+            >
+              <span className="min-w-0">
+                {fieldLabel(row.field)} v{row.versionNumber} · {row.source} ·{' '}
+                {row.rotatedBy.firstName} {row.rotatedBy.lastName} ·{' '}
+                {new Date(row.rotatedAt).toLocaleString()}
+              </span>
+              {canReveal ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 shrink-0 text-xs"
+                  onClick={() => setRevealTarget(row)}
+                >
+                  Reveal
+                </Button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <CredentialStepUpDialog
+        open={revealTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRevealTarget(null);
+        }}
+        title="Confirm to reveal historical secret"
+        onConfirm={onReveal}
+      />
+    </section>
+  );
+}

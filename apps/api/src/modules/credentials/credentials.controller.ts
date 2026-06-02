@@ -148,6 +148,33 @@ export class CredentialsController {
     );
   }
 
+  @Get(':id/secret-versions')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List archived secret versions for a credential' })
+  async listSecretVersions(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.listSecretVersions(id, credentialsAccessFromUser(user));
+  }
+
+  @Post(':id/secret-versions/:versionId/reveal')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reveal a historical secret version (executive or vault-wide access + step-up)',
+  })
+  async revealSecretVersion(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() body: { stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.revealSecretVersion(
+      id,
+      versionId,
+      body.stepUpPassword,
+      credentialsAccessFromUser(user),
+    );
+  }
+
   @Get(':id/audit-log')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Audit trail for a credential (sheet)' })

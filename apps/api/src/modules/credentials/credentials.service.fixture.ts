@@ -43,6 +43,13 @@ export function createCredentialsServiceTestContext() {
       create: vi.fn(),
       update: vi.fn(),
     },
+    credentialSecretVersion: {
+      count: vi.fn().mockResolvedValue(0),
+      create: vi.fn().mockResolvedValue({}),
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
   });
   const service = new CredentialsService(
     prisma as never,

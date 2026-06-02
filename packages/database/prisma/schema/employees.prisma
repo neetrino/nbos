@@ -74,7 +74,8 @@ model Employee {
   recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
   invitationsSent          Invitation[]            @relation("InvitedBy")
   invitationReceived       Invitation?             @relation("InvitationEmployee")
-  credentialsOwned         Credential[]            @relation("CredentialOwner")
+  credentialsOwned              Credential[]              @relation("CredentialOwner")
+  credentialSecretVersionsRotated CredentialSecretVersion[] @relation("CredentialSecretVersionRotatedBy")
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
 

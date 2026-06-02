@@ -28,6 +28,10 @@ import {
 } from './credentials-manual-access.operations';
 import { grantCredentialEmergencyAccess } from './credentials-emergency-access.operations';
 import {
+  listCredentialSecretVersions,
+  revealCredentialSecretVersion,
+} from './credentials-secret-versions.operations';
+import {
   archiveCredential,
   createCredential,
   findCredentialById,
@@ -126,6 +130,19 @@ export class CredentialsService {
     access: CredentialsAccessContext,
   ) {
     return grantCredentialEmergencyAccess(this.runtime, id, input, access);
+  }
+
+  listSecretVersions(id: string, access: CredentialsAccessContext) {
+    return listCredentialSecretVersions(this.runtime, id, access);
+  }
+
+  revealSecretVersion(
+    id: string,
+    versionId: string,
+    stepUpPassword: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
+    return revealCredentialSecretVersion(this.runtime, id, versionId, stepUpPassword, access);
   }
 
   recordUrlOpened(id: string, access: CredentialsAccessContext) {

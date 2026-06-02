@@ -15,6 +15,16 @@ export interface CredentialManualGrant {
   grantedBy: { id: string; firstName: string; lastName: string } | null;
 }
 
+export interface CredentialSecretVersion {
+  id: string;
+  field: CredentialSecretField;
+  versionNumber: number;
+  rotatedAt: string;
+  source: 'PLANNED' | 'MANUAL' | 'EMERGENCY';
+  reason: string | null;
+  rotatedBy: { id: string; firstName: string; lastName: string };
+}
+
 export interface CredentialsExportFileResult {
   format: string;
   filename: string;
@@ -180,6 +190,24 @@ export const credentialsApi = {
       `/api/credentials/${id}/emergency-access`,
       body,
     );
+    return resp.data;
+  },
+  async getSecretVersions(id: string): Promise<{ items: CredentialSecretVersion[] }> {
+    const resp = await api.get<{ items: CredentialSecretVersion[] }>(
+      `/api/credentials/${id}/secret-versions`,
+    );
+    return resp.data;
+  },
+  async revealSecretVersion(
+    id: string,
+    versionId: string,
+    stepUpPassword: string,
+  ): Promise<{ field: CredentialSecretField; versionNumber: number; value: string }> {
+    const resp = await api.post<{
+      field: CredentialSecretField;
+      versionNumber: number;
+      value: string;
+    }>(`/api/credentials/${id}/secret-versions/${versionId}/reveal`, { stepUpPassword });
     return resp.data;
   },
 };
