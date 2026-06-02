@@ -17,6 +17,8 @@ export interface PageSettingsSheetProps {
   description?: string;
   triggerAriaLabel?: string;
   children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /** Page-level settings: opens a right sheet (not a centered dialog). */
@@ -25,9 +27,11 @@ export function PageSettingsSheet({
   description,
   triggerAriaLabel = 'Page settings',
   children,
+  open,
+  onOpenChange,
 }: PageSettingsSheetProps) {
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger
         render={(props) => (
           <Button

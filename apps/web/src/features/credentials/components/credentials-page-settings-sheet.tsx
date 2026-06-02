@@ -19,6 +19,7 @@ export function CredentialsPageSettingsSheet({
   vaultListScope,
   onVaultListScopeChange,
 }: CredentialsPageSettingsSheetProps) {
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const isArchivedList = vaultListScope === 'archived';
@@ -36,6 +37,11 @@ export function CredentialsPageSettingsSheet({
     }
   };
 
+  const handleVaultListScopeChange = (scope: CredentialVaultListScope) => {
+    onVaultListScopeChange(scope);
+    setSheetOpen(false);
+  };
+
   return (
     <>
       <PageSettingsSheet
@@ -46,13 +52,15 @@ export function CredentialsPageSettingsSheet({
             : 'Encrypted vault export and access to archived credentials.'
         }
         triggerAriaLabel="Credentials settings"
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
       >
         {isArchivedList ? (
           <Button
             type="button"
             variant="outline"
             className="justify-start gap-2"
-            onClick={() => onVaultListScopeChange('active')}
+            onClick={() => handleVaultListScopeChange('active')}
           >
             <ArrowLeft className="size-4 shrink-0" aria-hidden />
             Back to vault
@@ -75,9 +83,9 @@ export function CredentialsPageSettingsSheet({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               className="justify-start gap-2"
-              onClick={() => onVaultListScopeChange('archived')}
+              onClick={() => handleVaultListScopeChange('archived')}
             >
               <Archive className="size-4 shrink-0" aria-hidden />
               View archived credentials
