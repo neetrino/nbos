@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/select';
 import { DetailSheetSection } from '@/components/shared';
 import { TEAM_DEPT_ROLE_OPTIONS, getDeptRoleLabel } from '@/features/hr/constants/team-directory';
+import {
+  TEAM_SHEET_BODY_CLASS,
+  TEAM_SHEET_SECTION_CLASS,
+} from '@/features/hr/constants/team-sheet-layout';
 import { employeesApi, type DepartmentItem, type Employee } from '@/lib/api/employees';
 import { toast } from 'sonner';
 
@@ -92,18 +96,22 @@ export function EmployeeDepartmentsPanel({
   }
 
   return (
-    <div className="space-y-4 px-7 py-5">
-      <DetailSheetSection title="Department assignments" icon={<Building2 size={12} />}>
+    <div className={TEAM_SHEET_BODY_CLASS}>
+      <DetailSheetSection
+        title="Department assignments"
+        icon={<Building2 size={12} />}
+        className={TEAM_SHEET_SECTION_CLASS}
+      >
         {employee.departments.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
+          <p className="text-muted-foreground py-4 text-center text-sm">
             No departments assigned yet
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {employee.departments.map((ed) => (
               <li
                 key={ed.id}
-                className="border-border bg-muted/30 flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
+                className="border-border bg-muted/30 flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <Building2 className="text-muted-foreground size-4 shrink-0" />
@@ -156,7 +164,7 @@ export function EmployeeDepartmentsPanel({
       </DetailSheetSection>
 
       {canEdit && (
-        <div className="border-border rounded-lg border border-dashed p-4">
+        <div className="border-border rounded-lg border border-dashed p-3">
           {!adding ? (
             <Button
               type="button"

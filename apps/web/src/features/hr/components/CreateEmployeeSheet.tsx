@@ -15,6 +15,12 @@ import {
 import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
 import { EMPLOYEE_LEVELS } from '@/features/hr/constants/hr';
 import {
+  TEAM_SHEET_FIELD_GRID_CLASS,
+  TEAM_SHEET_FOOTER_CLASS,
+  TEAM_SHEET_HEADER_CLASS,
+  TEAM_SHEET_WIDTH,
+} from '@/features/hr/constants/team-sheet-layout';
+import {
   departmentsApi,
   employeesApi,
   rolesApi,
@@ -116,11 +122,11 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" width="medium">
+      <EntityDetailSheetContent open={open} layout="full" width={TEAM_SHEET_WIDTH}>
         <div className="flex h-full min-h-0 flex-col">
-          <div className="border-border shrink-0 border-b px-6 py-4">
-            <h2 className="text-lg font-semibold">Add employee</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
+          <div className={TEAM_SHEET_HEADER_CLASS}>
+            <h2 className="text-base font-semibold">Add employee</h2>
+            <p className="text-muted-foreground mt-0.5 text-xs">
               Create a profile directly. Use Invite when the person should set their own password.
             </p>
           </div>
@@ -131,8 +137,8 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
               Loading…
             </div>
           ) : (
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
+              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div>
                   <Label htmlFor="emp-first">First name *</Label>
                   <Input
@@ -162,7 +168,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   disabled={saving}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div>
                   <Label>Platform role *</Label>
                   <Select
@@ -205,7 +211,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div>
                   <Label>Primary department</Label>
                   <Select
@@ -260,6 +266,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
             onSave={() => void handleSave()}
             onCancel={() => onOpenChange(false)}
             saveLabel="Create employee"
+            className={TEAM_SHEET_FOOTER_CLASS}
           />
         </div>
       </EntityDetailSheetContent>

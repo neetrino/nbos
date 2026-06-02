@@ -13,6 +13,12 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
+import {
+  TEAM_SHEET_FOOTER_CLASS,
+  TEAM_SHEET_HEADER_CLASS,
+  TEAM_SHEET_TABS_WRAPPER_CLASS,
+  TEAM_SHEET_WIDTH,
+} from '@/features/hr/constants/team-sheet-layout';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
 import {
   employeeAvatarColor,
@@ -173,23 +179,24 @@ export function EmployeeSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
+        width={TEAM_SHEET_WIDTH}
         sourcePageHref={`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`}
       >
         <div className="flex h-full min-h-0 flex-col">
-          <div className="border-border shrink-0 border-b px-6 py-5">
-            <div className="flex items-start gap-4">
+          <div className={TEAM_SHEET_HEADER_CLASS}>
+            <div className="flex items-start gap-3">
               <div
-                className={`flex size-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white ${employeeAvatarColor(fullName)}`}
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${employeeAvatarColor(fullName)}`}
               >
                 {employeeInitials(current)}
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold">{fullName}</h2>
-                <p className="text-muted-foreground text-sm">
+                <h2 className="text-base font-semibold">{fullName}</h2>
+                <p className="text-muted-foreground text-xs">
                   {current.position || current.role.name}
                   {dept ? ` · ${dept}` : ''}
                 </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   {statusInfo && (
                     <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
                   )}
@@ -211,8 +218,8 @@ export function EmployeeSheet({
           </div>
 
           <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
-            <div className="border-border shrink-0 border-b px-6">
-              <TabsList variant="default" className="h-9 w-full justify-start">
+            <div className={TEAM_SHEET_TABS_WRAPPER_CLASS}>
+              <TabsList variant="default" className="h-8 w-full justify-start">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
               </TabsList>
@@ -254,6 +261,7 @@ export function EmployeeSheet({
             errorMessage={generalError}
             onSave={() => void handleSave()}
             onCancel={handleCancel}
+            className={TEAM_SHEET_FOOTER_CLASS}
           />
         </div>
       </EntityDetailSheetContent>

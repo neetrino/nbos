@@ -3,6 +3,11 @@
 import { Building2, Calendar, Mail, Phone, Send, User } from 'lucide-react';
 import { DetailSheetSection, EntityNotesSection, InlineField } from '@/components/shared';
 import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
+import {
+  TEAM_SHEET_BODY_CLASS,
+  TEAM_SHEET_FIELD_GRID_CLASS,
+  TEAM_SHEET_SECTION_CLASS,
+} from '@/features/hr/constants/team-sheet-layout';
 import type { RoleItem } from '@/lib/api/employees';
 import type { EmployeeGeneralDraft } from './employee-general-form-state';
 
@@ -30,15 +35,19 @@ export function EmployeeSheetScrollBody({
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }));
 
   return (
-    <div className="space-y-6 px-7 py-5">
+    <div className={TEAM_SHEET_BODY_CLASS}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
         </p>
       ) : null}
 
-      <DetailSheetSection title="Profile" icon={<User size={12} />}>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <DetailSheetSection
+        title="Profile"
+        icon={<User size={12} />}
+        className={TEAM_SHEET_SECTION_CLASS}
+      >
+        <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
             label="First name"
@@ -82,8 +91,12 @@ export function EmployeeSheetScrollBody({
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title="Contacts" icon={<Mail size={12} />}>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <DetailSheetSection
+        title="Contacts"
+        icon={<Mail size={12} />}
+        className={TEAM_SHEET_SECTION_CLASS}
+      >
+        <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
             label="Email"
@@ -117,8 +130,12 @@ export function EmployeeSheetScrollBody({
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title="Employment" icon={<Calendar size={12} />}>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <DetailSheetSection
+        title="Employment"
+        icon={<Calendar size={12} />}
+        className={TEAM_SHEET_SECTION_CLASS}
+      >
+        <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
             label="Status"
