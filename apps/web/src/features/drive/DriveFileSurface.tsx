@@ -10,7 +10,6 @@ import {
   driveFileCardLayout,
   driveFolderRowLayout,
   driveItemsContainerClass,
-  DRIVE_FILE_CARDS_GRID_CLASS,
 } from './drive-view-layout';
 import {
   DriveFileCard,
@@ -20,7 +19,6 @@ import {
 } from './DriveFileCard';
 import {
   DriveFolderCardRow,
-  DriveFolderChipStrip,
   DriveFolderTableRow,
   type DriveFolderFileDropHandlers,
 } from './DriveFolderRows';
@@ -139,45 +137,25 @@ export function DriveFileSurface({
   }
   const folderLayout = driveFolderRowLayout(viewMode);
   const fileLayout = driveFileCardLayout(viewMode);
-  const useFolderChips = viewMode === 'cards' && folders.length > 0;
 
   return (
     <div className="space-y-3">
-      {useFolderChips ? (
-        <DriveFolderChipStrip
-          folders={folders}
-          onOpenFolder={onOpenFolder}
-          onShareFolder={onShareFolder}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          fileDropHighlight={dropTargetFolderId}
-          buildFolderDropHandlers={buildFolderDropHandlers}
-        />
-      ) : null}
-      <div
-        className={cn(
-          useFolderChips ? DRIVE_FILE_CARDS_GRID_CLASS : driveItemsContainerClass(viewMode),
-        )}
-      >
-        {!useFolderChips
-          ? folders.map((folder) => (
-              <DriveFolderCardRow
-                key={folder.id}
-                folder={folder}
-                layout={folderLayout}
-                onOpenFolder={onOpenFolder}
-                onShareFolder={onShareFolder}
-                onRenameFolder={onRenameFolder}
-                onDeleteFolder={onDeleteFolder}
-                fileDropHighlight={dropTargetFolderId === folder.id}
-                fileDropHandlers={buildFolderDropHandlers(folder.id)}
-                folderChecked={
-                  onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined
-                }
-                onToggleFolderChecked={onToggleFolderChecked}
-              />
-            ))
-          : null}
+      <div className={driveItemsContainerClass(viewMode)}>
+        {folders.map((folder) => (
+          <DriveFolderCardRow
+            key={folder.id}
+            folder={folder}
+            layout={folderLayout}
+            onOpenFolder={onOpenFolder}
+            onShareFolder={onShareFolder}
+            onRenameFolder={onRenameFolder}
+            onDeleteFolder={onDeleteFolder}
+            fileDropHighlight={dropTargetFolderId === folder.id}
+            fileDropHandlers={buildFolderDropHandlers(folder.id)}
+            folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
+            onToggleFolderChecked={onToggleFolderChecked}
+          />
+        ))}
         {files.map((file) => (
           <DriveFileCard
             key={file.id}

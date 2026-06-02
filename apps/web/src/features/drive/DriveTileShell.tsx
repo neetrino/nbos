@@ -24,11 +24,11 @@ export function DriveTileShell({
       type="button"
       onClick={onClick}
       className={cn(
-        'border-border/80 bg-muted/30 hover:bg-muted/50 focus-visible:ring-ring flex h-auto w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors outline-none focus-visible:ring-2',
+        'border-border/60 bg-card/90 hover:border-primary/25 hover:bg-card focus-visible:ring-ring flex h-auto w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left shadow-sm transition-colors outline-none focus-visible:ring-2',
         className,
       )}
     >
-      <span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+      <span className="border-border/60 bg-muted/30 text-foreground/80 flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
         {icon}
       </span>
       <span className="min-w-0 flex-1">

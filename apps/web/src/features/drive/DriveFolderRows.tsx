@@ -13,7 +13,6 @@ import type { DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate } from './drive-format';
 import { DriveTileShell } from './DriveTileShell';
-import { DRIVE_FOLDER_CHIPS_ROW_CLASS } from './drive-view-layout';
 import {
   DriveManualGrantCountBadge,
   normalizeManualGrantCount,
@@ -43,101 +42,6 @@ export type DriveFolderFileDropHandlers = {
   onDragLeave: (e: DragEvent) => void;
   onDrop: (e: DragEvent) => void;
 };
-
-export function DriveFolderChipStrip({
-  folders,
-  onOpenFolder,
-  onShareFolder,
-  onRenameFolder,
-  onDeleteFolder,
-  fileDropHighlight,
-  buildFolderDropHandlers,
-}: {
-  folders: DriveFolder[];
-  onOpenFolder: (folder: DriveFolder) => void;
-  onShareFolder?: (folder: DriveFolder) => void;
-  onRenameFolder?: (folder: DriveFolder) => void;
-  onDeleteFolder?: (folder: DriveFolder) => void;
-  fileDropHighlight?: string | null;
-  buildFolderDropHandlers?: (folderId: string) => DriveFolderFileDropHandlers | undefined;
-}) {
-  return (
-    <div className={DRIVE_FOLDER_CHIPS_ROW_CLASS} role="list" aria-label="Folders">
-      {folders.map((folder) => (
-        <DriveFolderChip
-          key={folder.id}
-          folder={folder}
-          onOpenFolder={onOpenFolder}
-          onShareFolder={onShareFolder}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          fileDropHighlight={fileDropHighlight === folder.id}
-          fileDropHandlers={buildFolderDropHandlers?.(folder.id)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function DriveFolderChip({
-  folder,
-  onOpenFolder,
-  onShareFolder,
-  onRenameFolder,
-  onDeleteFolder,
-  fileDropHighlight,
-  fileDropHandlers,
-}: {
-  folder: DriveFolder;
-  onOpenFolder: (folder: DriveFolder) => void;
-  onShareFolder?: (folder: DriveFolder) => void;
-  onRenameFolder?: (folder: DriveFolder) => void;
-  onDeleteFolder?: (folder: DriveFolder) => void;
-  fileDropHighlight?: boolean;
-  fileDropHandlers?: DriveFolderFileDropHandlers;
-}) {
-  const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
-  const sharedCount = normalizeManualGrantCount(folder.manualGrantCount);
-  return (
-    <div
-      role="listitem"
-      className={cn(
-        'border-border/70 bg-muted/40 hover:bg-muted/70 group flex max-w-[14rem] min-w-[8.5rem] shrink-0 items-center gap-1 rounded-full border py-1 pr-1 pl-3 shadow-sm transition-colors',
-        sharedCount > 0 && 'border-primary/40 bg-primary/5',
-        fileDropHighlight && 'ring-primary ring-2 ring-offset-1',
-      )}
-      onDragOver={fileDropHandlers?.onDragOver}
-      onDragLeave={fileDropHandlers?.onDragLeave}
-      onDrop={fileDropHandlers?.onDrop}
-    >
-      <button
-        type="button"
-        draggable={false}
-        onClick={() => onOpenFolder(folder)}
-        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2 rounded-full text-left outline-none focus-visible:ring-2"
-      >
-        <Folder className="text-primary/80 size-4 shrink-0" strokeWidth={2} aria-hidden />
-        <span className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
-          {folder.name}
-        </span>
-      </button>
-      {sharedCount > 0 ? (
-        <div className="shrink-0">
-          <DriveManualGrantCountBadge count={sharedCount} />
-        </div>
-      ) : null}
-      {showMenu ? (
-        <FolderOverflowMenu
-          folder={folder}
-          onShareFolder={onShareFolder}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          compact
-        />
-      ) : null}
-    </div>
-  );
-}
 
 export function DriveFolderCardRow({
   folder,
