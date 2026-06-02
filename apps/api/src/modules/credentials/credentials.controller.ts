@@ -130,6 +130,24 @@ export class CredentialsController {
     return this.credentialsService.replaceManualAccess(id, grants, credentialsAccessFromUser(user));
   }
 
+  @Post(':id/emergency-access')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Grant temporary VIEW access via break-glass (executive roles, step-up required)',
+  })
+  async grantEmergencyAccess(
+    @Param('id') id: string,
+    @Body() body: { reason?: string; stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.grantEmergencyAccess(
+      id,
+      { reason: body.reason ?? '', stepUpPassword: body.stepUpPassword },
+      credentialsAccessFromUser(user),
+    );
+  }
+
   @Get(':id/audit-log')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Audit trail for a credential (sheet)' })

@@ -11,6 +11,7 @@ const CREDENTIAL_AUDIT_LABELS: Record<string, string> = {
   'credential.exported': 'Exported',
   'credential.manual_access_updated': 'Manual access updated',
   'credential.access_revoked': 'Access revoked',
+  'credential.emergency_access_used': 'Emergency access granted',
   'credential.step_up_verified': 'Step-up verified',
 };
 

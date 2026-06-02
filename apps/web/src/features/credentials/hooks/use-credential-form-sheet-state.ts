@@ -54,6 +54,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
   const [stepUpField, setStepUpField] = useState<CredentialSecretField | null>(null);
   const [stepUpMode, setStepUpMode] = useState<'reveal' | 'copy'>('reveal');
+  const [accessDenied, setAccessDenied] = useState(false);
   const [snap, setSnap] = useState('');
 
   const categoryOptions = useMemo(() => {
@@ -116,15 +117,16 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const loadDetail = useCallback(async () => {
     if (!credentialId) return;
     setLoading(true);
+    setAccessDenied(false);
     try {
       applyDetail(await credentialsApi.getById(credentialId));
     } catch {
-      toast.error('Failed to load credential');
-      onOpenChange(false);
+      setAccessDenied(true);
+      toast.error('No access to this credential');
     } finally {
       setLoading(false);
     }
-  }, [applyDetail, credentialId, onOpenChange]);
+  }, [applyDetail, credentialId]);
 
   const prevOpenRef = useRef(false);
   const prevPresetRef = useRef(presetKey);
@@ -132,6 +134,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     if (!open) {
       prevOpenRef.current = false;
       setShowSettings(false);
+      setAccessDenied(false);
       return;
     }
     const opening = !prevOpenRef.current;
@@ -206,5 +209,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     categoryLabel,
     dirty,
     loadDetail,
+    accessDenied,
+    setAccessDenied,
   };
 }

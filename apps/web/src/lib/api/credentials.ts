@@ -172,4 +172,14 @@ export const credentialsApi = {
     const resp = await api.post<CredentialsExportFileResult>('/api/credentials/export/file', body);
     return resp.data;
   },
+  async grantEmergencyAccess(
+    id: string,
+    body: { reason: string; stepUpPassword: string },
+  ): Promise<{ credentialId: string; expiresAt: string; level: 'VIEW' }> {
+    const resp = await api.post<{ credentialId: string; expiresAt: string; level: 'VIEW' }>(
+      `/api/credentials/${id}/emergency-access`,
+      body,
+    );
+    return resp.data;
+  },
 };

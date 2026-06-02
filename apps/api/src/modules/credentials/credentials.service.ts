@@ -26,6 +26,7 @@ import {
   listCredentialSheetAudit,
   replaceCredentialManualAccess,
 } from './credentials-manual-access.operations';
+import { grantCredentialEmergencyAccess } from './credentials-emergency-access.operations';
 import {
   archiveCredential,
   createCredential,
@@ -117,6 +118,14 @@ export class CredentialsService {
 
   listSheetAudit(id: string, access: CredentialsAccessContext, page?: number) {
     return listCredentialSheetAudit(this.runtime, id, access, page);
+  }
+
+  grantEmergencyAccess(
+    id: string,
+    input: { reason: string; stepUpPassword?: string },
+    access: CredentialsAccessContext,
+  ) {
+    return grantCredentialEmergencyAccess(this.runtime, id, input, access);
   }
 
   recordUrlOpened(id: string, access: CredentialsAccessContext) {
