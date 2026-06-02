@@ -10,6 +10,7 @@ import { accessLevelForVaultScope } from '@/features/credentials/vault-scope';
 import {
   credentialsApi,
   type CredentialDetail,
+  type CredentialManualGrant,
   type CredentialSecretField,
 } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
@@ -47,7 +48,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [comment, setComment] = useState('');
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [nextRotationAt, setNextRotationAt] = useState('');
-  const [allowedEmployees, setAllowedEmployees] = useState<string[]>([]);
+  const [draftManualGrants, setDraftManualGrants] = useState<CredentialManualGrant[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
@@ -83,7 +84,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setEnvData('');
     setComment('');
     setNextRotationAt('');
-    setAllowedEmployees([]);
+    setDraftManualGrants([]);
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
@@ -106,7 +107,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setComment(d.comment ?? '');
     setAccessLevel(d.accessLevel);
     setNextRotationAt(d.nextRotationAt?.slice(0, 10) ?? '');
-    setAllowedEmployees([...d.allowedEmployees]);
     setRevealed({});
     setSnap(
       JSON.stringify({ name: d.name, category: d.category, credentialType: d.credentialType }),
@@ -145,10 +145,10 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   }, [open, presetKey, isCreate, resetCreate, loadDetail]);
 
   useEffect(() => {
-    if (open && accessLevel === 'SECRET') {
+    if (open && (accessLevel === 'SECRET' || !isCreate)) {
       void employeesApi.getAll({ pageSize: 200 }).then((r) => setEmployees(r.items));
     }
-  }, [open, accessLevel]);
+  }, [open, accessLevel, isCreate]);
 
   const dirty = isCreate
     ? name.trim().length > 0
@@ -190,8 +190,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     accessLevel,
     nextRotationAt,
     setNextRotationAt,
-    allowedEmployees,
-    setAllowedEmployees,
+    draftManualGrants,
+    setDraftManualGrants,
+    open,
     employees,
     detail,
     revealed,

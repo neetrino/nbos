@@ -20,6 +20,12 @@ import {
   recordCredentialUrlOpened,
   revealCredentialSecret,
 } from './credentials-secrets.operations';
+import { exportCredentialsEncryptedFile } from './credentials-export-file.operations';
+import {
+  listCredentialManualAccess,
+  listCredentialSheetAudit,
+  replaceCredentialManualAccess,
+} from './credentials-manual-access.operations';
 import {
   archiveCredential,
   createCredential,
@@ -28,6 +34,7 @@ import {
   restoreCredential,
   updateCredential,
 } from './credentials-mutation.operations';
+import type { CredentialManualGrantInput } from './credential-manual-grant.types';
 import type { CredentialsRuntime } from './credentials-runtime';
 
 export type { CredentialsAccessContext } from './credentials-access';
@@ -90,6 +97,26 @@ export class CredentialsService {
 
   exportCredentials(input: ExportCredentialsInput, access: CredentialsAccessContext) {
     return exportCredentialsBundle(this.runtime, input, access);
+  }
+
+  exportCredentialsFile(input: ExportCredentialsInput, access: CredentialsAccessContext) {
+    return exportCredentialsEncryptedFile(this.runtime, input, access);
+  }
+
+  listManualAccess(id: string, access: CredentialsAccessContext) {
+    return listCredentialManualAccess(this.runtime, id, access);
+  }
+
+  replaceManualAccess(
+    id: string,
+    grants: CredentialManualGrantInput[],
+    access: CredentialsAccessContext,
+  ) {
+    return replaceCredentialManualAccess(this.runtime, id, grants, access);
+  }
+
+  listSheetAudit(id: string, access: CredentialsAccessContext, page?: number) {
+    return listCredentialSheetAudit(this.runtime, id, access, page);
   }
 
   recordUrlOpened(id: string, access: CredentialsAccessContext) {

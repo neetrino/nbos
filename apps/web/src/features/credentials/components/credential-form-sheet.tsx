@@ -16,6 +16,7 @@ import {
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
 import { CredentialFormSheetFields } from './credential-form-sheet-fields';
+import { CredentialFormSheetPanels } from './credential-form-sheet-panels';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
 import { useCredentialFormSheet } from './use-credential-form-sheet';
 import type { CredentialFormSheetProps } from './credential-form-sheet-types';
@@ -98,6 +99,14 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
             ) : (
               <ScrollArea className="min-h-0 flex-1">
                 <CredentialFormSheetFields form={form} />
+                {!isCreate && credentialId ? (
+                  <CredentialFormSheetPanels
+                    sheetOpen={open}
+                    credentialId={credentialId}
+                    accessLevel={accessLevel}
+                    detail={form.detail}
+                  />
+                ) : null}
               </ScrollArea>
             )}
 

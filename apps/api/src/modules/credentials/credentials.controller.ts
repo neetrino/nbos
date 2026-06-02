@@ -90,6 +90,61 @@ export class CredentialsController {
     return this.credentialsService.findRecent(credentialsAccessFromUser(user));
   }
 
+  @Post('export/file')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Export visible credentials as encrypted file (step-up required)',
+  })
+  async exportCredentialsFile(
+    @Body() body: { credentialIds?: string[]; fields?: string[]; stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.exportCredentialsFile(
+      {
+        credentialIds: Array.isArray(body.credentialIds) ? body.credentialIds : undefined,
+        fields: Array.isArray(body.fields) ? body.fields : undefined,
+        stepUpPassword: body.stepUpPassword,
+      },
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Get(':id/manual-access')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List manual access grants for a credential' })
+  async listManualAccess(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.listManualAccess(id, credentialsAccessFromUser(user));
+  }
+
+  @Put(':id/manual-access')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @ApiOperation({ summary: 'Replace manual access grants for a credential' })
+  async replaceManualAccess(
+    @Param('id') id: string,
+    @Body() body: { grants: { employeeId: string; level: 'VIEW' | 'EDIT' }[] },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const grants = Array.isArray(body.grants) ? body.grants : [];
+    return this.credentialsService.replaceManualAccess(id, grants, credentialsAccessFromUser(user));
+  }
+
+  @Get(':id/audit-log')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Audit trail for a credential (sheet)' })
+  @ApiQuery({ name: 'page', required: false })
+  async listAuditLog(
+    @Param('id') id: string,
+    @Query('page') page: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.listSheetAudit(
+      id,
+      credentialsAccessFromUser(user),
+      page ? parseInt(page, 10) : undefined,
+    );
+  }
+
   @Get(':id')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({

@@ -14,6 +14,8 @@ import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 import { commentLabelForType } from '@/features/credentials/credential-field-config';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
+import { CredentialManualAccessPanel } from './credential-manual-access-panel';
+import { credentialInheritedAccessSummary } from '@/features/credentials/utils/credential-inherited-access-summary';
 import type { useCredentialFormSheet } from './use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -51,10 +53,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     comment,
     setComment,
     accessLevel,
-    allowedEmployees,
+    draftManualGrants,
+    setDraftManualGrants,
     employees,
-    toggleAllowedEmployee,
     detail,
+    isCreate,
     revealed,
     setStepUpField,
     setStepUpMode,
@@ -161,26 +164,17 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         />
       </div>
 
-      {accessLevel === 'SECRET' && (
-        <div className="grid gap-2">
-          <Label>Allowed employees ({allowedEmployees.length})</Label>
-          <div className="border-border max-h-40 overflow-y-auto rounded-md border p-2">
-            {employees.map((emp) => (
-              <label
-                key={emp.id}
-                className="hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  checked={allowedEmployees.includes(emp.id)}
-                  onChange={() => toggleAllowedEmployee(emp.id)}
-                  className="accent-primary"
-                />
-                {emp.firstName} {emp.lastName}
-              </label>
-            ))}
-          </div>
-        </div>
+      {isCreate && accessLevel === 'SECRET' && (
+        <CredentialManualAccessPanel
+          grants={draftManualGrants}
+          employees={employees}
+          loading={false}
+          saving={false}
+          inheritedSummary={credentialInheritedAccessSummary(accessLevel, detail)}
+          onGrantsChange={setDraftManualGrants}
+          onSave={() => undefined}
+          showSave={false}
+        />
       )}
 
       {!isCreate && showSettings && (

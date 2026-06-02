@@ -1,4 +1,26 @@
 import { api } from '../api';
+import type { AuditLogEntry } from './audit';
+
+export interface CredentialManualGrant {
+  employeeId: string;
+  level: 'VIEW' | 'EDIT';
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  grantedAt: string;
+  grantedBy: { id: string; firstName: string; lastName: string } | null;
+}
+
+export interface CredentialsExportFileResult {
+  format: string;
+  filename: string;
+  mimeType: string;
+  contentBase64: string;
+  count: number;
+}
 
 export interface CredentialSecretsPresent {
   password: boolean;
@@ -111,6 +133,40 @@ export const credentialsApi = {
   /** Audits `credential.url_opened`; returns safe http(s) URL for navigation. */
   async recordUrlOpened(id: string): Promise<{ url: string }> {
     const resp = await api.post<{ url: string }>(`/api/credentials/${id}/open-url`, {});
+    return resp.data;
+  },
+  async getManualAccess(id: string): Promise<{ grants: CredentialManualGrant[] }> {
+    const resp = await api.get<{ grants: CredentialManualGrant[] }>(
+      `/api/credentials/${id}/manual-access`,
+    );
+    return resp.data;
+  },
+  async replaceManualAccess(
+    id: string,
+    grants: { employeeId: string; level: 'VIEW' | 'EDIT' }[],
+  ): Promise<{ grants: CredentialManualGrant[] }> {
+    const resp = await api.put<{ grants: CredentialManualGrant[] }>(
+      `/api/credentials/${id}/manual-access`,
+      { grants },
+    );
+    return resp.data;
+  },
+  async getAuditLog(
+    id: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<{ items: AuditLogEntry[]; meta: { total: number; page: number; pageSize: number } }> {
+    const resp = await api.get<{
+      items: AuditLogEntry[];
+      meta: { total: number; page: number; pageSize: number };
+    }>(`/api/credentials/${id}/audit-log`, { params });
+    return resp.data;
+  },
+  async exportEncryptedFile(body: {
+    credentialIds?: string[];
+    fields?: string[];
+    stepUpPassword: string;
+  }): Promise<CredentialsExportFileResult> {
+    const resp = await api.post<CredentialsExportFileResult>('/api/credentials/export/file', body);
     return resp.data;
   },
 };

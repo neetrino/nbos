@@ -22,6 +22,7 @@ import { CredentialsVaultPageOverlays } from '@/features/credentials/components/
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { useCredentialsVaultRecent } from '@/features/credentials/hooks/use-credentials-vault-recent';
+import { CredentialVaultExportButton } from '@/features/credentials/components/credential-vault-export-button';
 import { PermissionGate } from '@/lib/permissions';
 
 function showRecentStrip(
@@ -102,6 +103,11 @@ export function CredentialsVaultPage() {
             >
               Archived
             </Button>
+            {vault.vaultListScope === 'active' && (
+              <PermissionGate module="CREDENTIALS" action="VIEW">
+                <CredentialVaultExportButton />
+              </PermissionGate>
+            )}
             {vault.showCreate && (
               <PermissionGate module="CREDENTIALS" action="ADD">
                 <Button type="button" onClick={() => vault.openCreate()}>

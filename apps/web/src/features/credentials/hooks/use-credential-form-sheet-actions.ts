@@ -26,7 +26,7 @@ export interface CredentialFormSheetStateSlice {
   comment: string;
   accessLevel: string;
   nextRotationAt: string;
-  allowedEmployees: string[];
+  draftManualGrants: { employeeId: string; level: 'VIEW' | 'EDIT' }[];
   stepUpField: CredentialSecretField | null;
   stepUpMode: 'reveal' | 'copy';
   setRevealed: Dispatch<SetStateAction<Partial<Record<CredentialSecretField, string>>>>;
@@ -62,7 +62,13 @@ export function useCredentialFormSheetActions(
         envData: state.envData.trim() || undefined,
         secureNotes: state.comment.trim() || undefined,
         accessLevel: state.accessLevel,
-        allowedEmployees: state.accessLevel === 'SECRET' ? state.allowedEmployees : undefined,
+        manualGrants:
+          state.isCreate && state.draftManualGrants.length > 0
+            ? state.draftManualGrants.map((g) => ({
+                employeeId: g.employeeId,
+                level: g.level,
+              }))
+            : undefined,
       };
       if (state.isCreate) {
         if (projectId) body.projectId = projectId;

@@ -8,7 +8,10 @@ import { encryptSensitiveFields, decryptFieldIfEncrypted } from './credential-cr
 import { toCredentialWithoutSecrets } from './credential-health.utils';
 import { buildCredentialUpdateData, detectChangedCredentialFields } from './credential-update-data';
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
-import { syncCredentialManualGrants } from './credential-manual-grants';
+import {
+  manualGrantsFromEmployeeIds,
+  syncCredentialManualGrants,
+} from './credential-manual-grants';
 import type { CredentialsRuntime } from './credentials-runtime';
 
 export async function findCredentialById(
@@ -103,13 +106,13 @@ export async function createCredential(
     projectId: credential.projectId ?? undefined,
   });
 
-  if (credential.accessLevel === 'SECRET' && credential.allowedEmployees.length > 0) {
-    await syncCredentialManualGrants(
-      runtime.prisma,
-      credential.id,
-      credential.allowedEmployees,
-      userId,
-    );
+  const createGrants = data.manualGrants?.length
+    ? data.manualGrants
+    : credential.accessLevel === 'SECRET' && credential.allowedEmployees.length > 0
+      ? manualGrantsFromEmployeeIds(credential.allowedEmployees)
+      : [];
+  if (createGrants.length > 0) {
+    await syncCredentialManualGrants(runtime.prisma, credential.id, createGrants, userId);
   }
 
   return toCredentialWithoutSecrets(credential);
@@ -153,14 +156,18 @@ export async function updateCredential(
     changes: changedFields,
   });
 
-  if (
-    credential.accessLevel === 'SECRET' &&
-    (data.allowedEmployees !== undefined || data.accessLevel === 'SECRET')
-  ) {
+  if (data.manualGrants !== undefined) {
     await syncCredentialManualGrants(
       runtime.prisma,
       credential.id,
-      credential.allowedEmployees,
+      data.manualGrants,
+      access.employeeId,
+    );
+  } else if (credential.accessLevel === 'SECRET' && data.allowedEmployees !== undefined) {
+    await syncCredentialManualGrants(
+      runtime.prisma,
+      credential.id,
+      manualGrantsFromEmployeeIds(credential.allowedEmployees),
       access.employeeId,
     );
   }

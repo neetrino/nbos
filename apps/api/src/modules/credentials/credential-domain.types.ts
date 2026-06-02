@@ -43,6 +43,11 @@ export interface ExportCredentialsInput {
   stepUpPassword?: string;
 }
 
+export interface CredentialManualGrantDto {
+  employeeId: string;
+  level: 'VIEW' | 'EDIT';
+}
+
 export interface CreateCredentialDto {
   projectId?: string;
   productId?: string;
@@ -70,6 +75,7 @@ export interface CreateCredentialDto {
   rotationOwnerId?: string;
   accessLevel?: string;
   allowedEmployees?: string[];
+  manualGrants?: CredentialManualGrantDto[];
 }
 
 export interface UpdateCredentialDto {
@@ -98,4 +104,5 @@ export interface UpdateCredentialDto {
   rotationOwnerId?: string | null;
   accessLevel?: string;
   allowedEmployees?: string[];
+  manualGrants?: CredentialManualGrantDto[];
 }

@@ -24,13 +24,25 @@ export const accessOwnerAll = {
 
 export function createCredentialsServiceTestContext() {
   const prisma = createMockPrisma();
-  const auditService = { log: vi.fn() };
+  const auditService = {
+    log: vi.fn(),
+    findByEntity: vi.fn().mockResolvedValue({
+      items: [],
+      meta: { total: 0, page: 1, pageSize: 20, totalPages: 0 },
+    }),
+  };
   const notifications = { create: vi.fn() };
   const configService = {
     get: vi.fn((key: string) => (key === 'CREDENTIALS_ENCRYPTION_KEY' ? TEST_KEY : undefined)),
   };
   Object.assign(prisma, {
-    resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    resourceAccessGrant: {
+      findMany: vi.fn().mockResolvedValue([]),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      upsert: vi.fn().mockResolvedValue({}),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
   });
   const service = new CredentialsService(
     prisma as never,

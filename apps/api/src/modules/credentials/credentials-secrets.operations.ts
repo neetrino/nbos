@@ -17,7 +17,7 @@ import { isSafeCredentialOpenUrl } from './credential-url.utils';
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
 import type { CredentialsRuntime } from './credentials-runtime';
 
-async function getAccessibleCredentialRow(
+export async function getAccessibleCredentialRow(
   runtime: CredentialsRuntime,
   id: string,
   access: CredentialsAccessContext,
