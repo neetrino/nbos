@@ -283,6 +283,22 @@ export const driveApi = {
     return resp.data;
   },
 
+  async getFolderGrantCounts(folderIds: string[]): Promise<Record<string, number>> {
+    if (folderIds.length === 0) return {};
+    const resp = await api.get<Record<string, number>>('/api/drive/folders/grant-counts', {
+      params: { ids: folderIds.join(',') },
+    });
+    return resp.data;
+  },
+
+  async getFileGrantCounts(fileIds: string[]): Promise<Record<string, number>> {
+    if (fileIds.length === 0) return {};
+    const resp = await api.get<Record<string, number>>('/api/drive/files/grant-counts', {
+      params: { ids: fileIds.join(',') },
+    });
+    return resp.data;
+  },
+
   async revokeFolderGrant(
     folderId: string,
     grantId: string,

@@ -14,7 +14,10 @@ import { cn } from '@/lib/utils';
 import { formatDriveDate } from './drive-format';
 import { DriveTileShell } from './DriveTileShell';
 import { DRIVE_FOLDER_CHIPS_ROW_CLASS } from './drive-view-layout';
-import { DriveManualGrantCountBadge } from './drive-manual-grant-count-badge';
+import {
+  DriveManualGrantCountBadge,
+  normalizeManualGrantCount,
+} from './drive-manual-grant-count-badge';
 
 type DriveFolderRowLayout = 'cards' | 'list' | 'tiles';
 
@@ -94,11 +97,13 @@ function DriveFolderChip({
   fileDropHandlers?: DriveFolderFileDropHandlers;
 }) {
   const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
+  const sharedCount = normalizeManualGrantCount(folder.manualGrantCount);
   return (
     <div
       role="listitem"
       className={cn(
         'border-border/70 bg-muted/40 hover:bg-muted/70 group flex max-w-[14rem] min-w-[8.5rem] shrink-0 items-center gap-1 rounded-full border py-1 pr-1 pl-3 shadow-sm transition-colors',
+        sharedCount > 0 && 'border-primary/40 bg-primary/5',
         fileDropHighlight && 'ring-primary ring-2 ring-offset-1',
       )}
       onDragOver={fileDropHandlers?.onDragOver}
@@ -112,9 +117,15 @@ function DriveFolderChip({
         className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2 rounded-full text-left outline-none focus-visible:ring-2"
       >
         <Folder className="text-primary/80 size-4 shrink-0" strokeWidth={2} aria-hidden />
-        <span className="text-foreground min-w-0 truncate text-sm font-medium">{folder.name}</span>
-        <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+        <span className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
+          {folder.name}
+        </span>
       </button>
+      {sharedCount > 0 ? (
+        <div className="shrink-0">
+          <DriveManualGrantCountBadge count={sharedCount} />
+        </div>
+      ) : null}
       {showMenu ? (
         <FolderOverflowMenu
           folder={folder}
@@ -152,13 +163,15 @@ export function DriveFolderCardRow({
   onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
 }) {
   const showMenu = Boolean(onShareFolder || onRenameFolder || onDeleteFolder);
+  const sharedCount = normalizeManualGrantCount(folder.manualGrantCount);
 
   const shell = (layoutClass: string, children: ReactNode) => (
     <div
       className={cn(
         layoutClass,
-        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card border shadow-sm transition-colors',
+        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card relative border shadow-sm transition-colors',
         fileDropHighlight && 'ring-primary ring-2 ring-offset-2',
+        sharedCount > 0 && 'border-primary/45',
       )}
       onDragOver={fileDropHandlers?.onDragOver}
       onDragLeave={fileDropHandlers?.onDragLeave}
@@ -203,9 +216,11 @@ export function DriveFolderCardRow({
           icon={<Folder className="size-5" strokeWidth={2} aria-hidden />}
           onClick={() => onOpenFolder(folder)}
         />
-        <div className="pointer-events-none absolute bottom-2 left-2 z-10">
-          <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
-        </div>
+        {sharedCount > 0 ? (
+          <div className="pointer-events-none absolute bottom-2 left-2 z-10">
+            <DriveManualGrantCountBadge count={sharedCount} />
+          </div>
+        ) : null}
         {showMenu ? (
           <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
             <FolderOverflowMenu
@@ -254,13 +269,15 @@ export function DriveFolderCardRow({
         >
           <Folder className="text-muted-foreground size-5 shrink-0" strokeWidth={2} />
           <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
-              <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
-            </div>
+            <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
             <p className="text-muted-foreground text-[11px] leading-tight">{folder.space}</p>
           </div>
         </button>
+        {sharedCount > 0 ? (
+          <div className="shrink-0 px-1">
+            <DriveManualGrantCountBadge count={sharedCount} />
+          </div>
+        ) : null}
         {showMenu && (
           <div className={cn('shrink-0', FOLDER_CARD_MENU_HOVER)}>
             <FolderOverflowMenu
@@ -306,19 +323,24 @@ export function DriveFolderCardRow({
           <Folder className={FOLDER_CARD_ICON_CLASS} strokeWidth={1.35} aria-hidden />
         </div>
         <div className="min-h-0 shrink-0 space-y-0.5 pt-1">
-          <div className="flex items-center justify-center gap-1">
-            <p className="text-foreground line-clamp-2 text-sm font-semibold">{folder.name}</p>
-            <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
-          </div>
+          <p className="text-foreground line-clamp-2 text-center text-sm font-semibold">
+            {folder.name}
+          </p>
           <p className="text-muted-foreground text-[11px] leading-tight tracking-wide uppercase">
             {folder.space}
           </p>
         </div>
       </button>
+      {sharedCount > 0 ? (
+        <div className="pointer-events-none absolute bottom-12 left-1/2 z-[6] -translate-x-1/2">
+          <DriveManualGrantCountBadge count={sharedCount} />
+        </div>
+      ) : null}
       {showMenu && (
         <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
           <FolderOverflowMenu
             folder={folder}
+            onShareFolder={onShareFolder}
             onRenameFolder={onRenameFolder}
             onDeleteFolder={onDeleteFolder}
           />
@@ -436,14 +458,13 @@ export function DriveFolderTableRow({
           }}
         >
           <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
-          <span className="flex min-w-0 items-center gap-1.5 truncate font-medium">
-            <span className="truncate">{folder.name}</span>
-            <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
-          </span>
+          <span className="truncate font-medium">{folder.name}</span>
           <span className="text-muted-foreground text-xs">Folder</span>
           <span className="text-muted-foreground text-xs">{folder.space}</span>
           <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
-          <span />
+          <span className="flex justify-end">
+            <DriveManualGrantCountBadge count={folder.manualGrantCount} />
+          </span>
         </div>
         {showMenu ? (
           <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
@@ -497,14 +518,13 @@ export function DriveFolderTableRow({
         }}
       >
         <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
-        <span className="flex min-w-0 items-center gap-1.5 truncate font-medium">
-          <span className="truncate">{folder.name}</span>
-          <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
-        </span>
+        <span className="truncate font-medium">{folder.name}</span>
         <span className="text-muted-foreground text-xs">Folder</span>
         <span className="text-muted-foreground text-xs">{folder.space}</span>
         <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
-        <span />
+        <span className="flex justify-end">
+          <DriveManualGrantCountBadge count={folder.manualGrantCount} />
+        </span>
       </div>
       {showMenu ? (
         <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>

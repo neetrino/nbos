@@ -68,6 +68,7 @@ import {
   syncDriveFileResourceAccessGrant,
 } from './drive-resource-access-grant.sync';
 import { DriveProjectHubService } from './drive-project-hub.service';
+import { attachManualGrantCount, countDriveFileManualGrants } from './drive-manual-grant-counts';
 import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
 import type { DriveEntityContextAccess } from './drive-access.types';
 
@@ -168,14 +169,17 @@ export class DriveService {
 
   async listFileAssets(params: FileAssetQueryParams, access?: DriveEntityAccess) {
     const where = await this.buildFileAssetWhere(params, access);
-    return jsonSafeForHttp(
-      await this.prisma.fileAsset.findMany({
-        where,
-        include: FILE_ASSET_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
+    const rows = await this.prisma.fileAsset.findMany({
+      where,
+      include: FILE_ASSET_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    const counts = await countDriveFileManualGrants(
+      this.prisma,
+      rows.map((row) => row.id),
     );
+    return jsonSafeForHttp(attachManualGrantCount(rows, counts));
   }
 
   async getLifecycleCounts(access?: DriveEntityAccess) {

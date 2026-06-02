@@ -103,6 +103,7 @@ import { toFileSizeNumber } from './drive-format';
 import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
 import { resolveDriveEntityFolderScope } from './drive-entity-folder-scope';
 import { folderListingMatchesBrowseContext } from './drive-folder-listing-match';
+import { enrichDriveFolderListing } from './enrich-drive-folder-listing';
 import {
   findLibraryRecordFileLink,
   resolveDriveActionCapabilities,
@@ -928,11 +929,13 @@ export function DriveWorkspace() {
 
     if (browseEntityScopedFolders && libraryEntityFolderScope) {
       try {
-        const listing = await driveApi.listFolder({
-          scopeEntityType: libraryEntityFolderScope.scopeEntityType,
-          scopeEntityId: libraryEntityFolderScope.scopeEntityId,
-          parentId: activeFolderId,
-        });
+        const listing = await enrichDriveFolderListing(
+          await driveApi.listFolder({
+            scopeEntityType: libraryEntityFolderScope.scopeEntityType,
+            scopeEntityId: libraryEntityFolderScope.scopeEntityId,
+            parentId: activeFolderId,
+          }),
+        );
         if (requestId !== folderListingRequestId.current) return;
         setFolderListing(listing);
         if (listing.rootStorageFolderId) {
@@ -970,10 +973,12 @@ export function DriveWorkspace() {
       return;
     }
     try {
-      const listing = await driveApi.listFolder({
-        space: driveStorageSpace,
-        parentId: activeFolderId,
-      });
+      const listing = await enrichDriveFolderListing(
+        await driveApi.listFolder({
+          space: driveStorageSpace,
+          parentId: activeFolderId,
+        }),
+      );
       if (requestId !== folderListingRequestId.current) return;
       setFolderListing(listing);
       if (listing.rootStorageFolderId) {

@@ -85,6 +85,30 @@ export class DriveController {
     );
   }
 
+  @Get('folders/grant-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Batch count active manual grants on Drive folders' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Comma-separated folder ids' })
+  async getFolderGrantCounts(@Query('ids') idsParam?: string) {
+    const folderIds = (idsParam ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return this.driveFolders.getFolderManualGrantCounts(folderIds);
+  }
+
+  @Get('files/grant-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Batch count active manual grants on Drive files' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Comma-separated file asset ids' })
+  async getFileGrantCounts(@Query('ids') idsParam?: string) {
+    const fileIds = (idsParam ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return this.driveFolders.getFileManualGrantCounts(fileIds);
+  }
+
   @Get('folders/tree')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List all Drive folders in a space (flat list for tree UI)' })

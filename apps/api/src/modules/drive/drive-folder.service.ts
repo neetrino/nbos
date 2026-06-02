@@ -35,6 +35,7 @@ import {
   attachManualGrantCount,
   countDriveFileManualGrants,
   countDriveFolderManualGrants,
+  manualGrantCountMapToRecord,
 } from './drive-manual-grant-counts';
 import {
   buildDriveExplicitFolderGrantWhere,
@@ -57,6 +58,16 @@ export class DriveFolderService {
     private readonly r2: DriveR2Client,
     private readonly config: ConfigService,
   ) {}
+
+  async getFolderManualGrantCounts(folderIds: string[]): Promise<Record<string, number>> {
+    const counts = await countDriveFolderManualGrants(this.prisma, folderIds);
+    return manualGrantCountMapToRecord(counts);
+  }
+
+  async getFileManualGrantCounts(fileAssetIds: string[]): Promise<Record<string, number>> {
+    const counts = await countDriveFileManualGrants(this.prisma, fileAssetIds);
+    return manualGrantCountMapToRecord(counts);
+  }
 
   async listFolder(
     params: DriveFolderQueryParams,
@@ -135,13 +146,20 @@ export class DriveFolderService {
       ),
     ]);
 
+    const foldersWithCounts = attachManualGrantCount(folders, folderGrantCounts).map((folder) =>
+      jsonSafeForHttp(folder),
+    );
+    const filesWithCounts = attachManualGrantCount(files, fileGrantCounts).map((file) =>
+      jsonSafeForHttp(file),
+    );
+
     return jsonSafeForHttp({
       space,
       parentId,
       scopeEntityType: entityScope?.scopeEntityType ?? null,
       scopeEntityId: entityScope?.scopeEntityId ?? null,
-      folders: attachManualGrantCount(folders, folderGrantCounts),
-      files: attachManualGrantCount(files, fileGrantCounts),
+      folders: foldersWithCounts,
+      files: filesWithCounts,
       rootStorageFolderId: rootStorage.id,
     });
   }

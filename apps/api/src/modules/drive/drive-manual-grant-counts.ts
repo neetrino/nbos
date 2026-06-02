@@ -89,3 +89,12 @@ export function attachManualGrantCount<T extends { id: string }>(
     manualGrantCount: counts.get(item.id) ?? 0,
   }));
 }
+
+/** JSON map for batch grant-count queries from the web app. */
+export function manualGrantCountMapToRecord(counts: Map<string, number>): Record<string, number> {
+  const record: Record<string, number> = {};
+  for (const [id, count] of counts) {
+    record[id] = count;
+  }
+  return record;
+}
