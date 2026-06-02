@@ -11,6 +11,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { financeExpenseAccessFromUser } from '../finance/finance-module-access';
 import { ExpensesService } from './expenses.service';
 
 @ApiTags('Expenses')
@@ -20,6 +22,7 @@ export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Get()
+  @RequirePermission('FINANCE_EXPENSES', 'VIEW')
   @ApiOperation({
     summary: 'Get all expenses with filters',
     description:
@@ -65,6 +68,7 @@ export class ExpensesController {
   @ApiQuery({ name: 'payrollMonth', required: false, description: 'Payroll month YYYY-MM.' })
   @ApiQuery({ name: 'payrollEmployeeId', required: false, description: 'Salary line employee id.' })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('type') type?: string,
@@ -105,10 +109,12 @@ export class ExpensesController {
       payrollLinked: payrollLinked === 'true',
       payrollMonth,
       payrollEmployeeId,
+      access: financeExpenseAccessFromUser(user),
     });
   }
 
   @Get('stats')
+  @RequirePermission('FINANCE_EXPENSES', 'VIEW')
   @ApiOperation({ summary: 'Get expense statistics' })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({
@@ -135,6 +141,7 @@ export class ExpensesController {
   @ApiQuery({ name: 'payrollMonth', required: false })
   @ApiQuery({ name: 'payrollEmployeeId', required: false })
   async getStats(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('projectId') projectId?: string,
@@ -157,6 +164,7 @@ export class ExpensesController {
       payrollLinked: payrollLinked === 'true',
       payrollMonth,
       payrollEmployeeId,
+      access: financeExpenseAccessFromUser(user),
     });
   }
 

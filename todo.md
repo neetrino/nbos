@@ -1,14 +1,30 @@
 # NBOS Work Plans — index
 
-> Root work-plan index. Detailed plans are split so Platform Access Foundation can be completed before the Credentials Vault build.
+> Обновлено: 2026-06-02
 
-## Active order
+## Архив
 
-1. [1.todo-Access.md](./1.todo-Access.md) — Platform Access Foundation: RBAC/action levels, role access levels, personal overrides, Project/Product teams, manual resource overrides.
-2. [2.todo-Credentials.md](./2.todo-Credentials.md) — Credentials Vault: UI shell, Sheet, view modes, ENV/comment, and final vault implementation using the access foundation.
+| План                                                                                  | Статус                                                               |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [2.todo-Credentials.archived.md](./docs/archive/todos/2.todo-Credentials.archived.md) | **MVP complete** — vault, Sheet, manual access, security canon, bulk |
 
-## Why split
+## Активно
 
-- Access levels are platform-wide, not Credentials-only.
-- Credentials must consume Project/Product team access correctly, so access foundation comes first.
-- Drive, Finance, Project Hub, Tasks and future modules should reuse the same foundation instead of each module inventing its own access model.
+| План                                   | Фокус                                                     |
+| -------------------------------------- | --------------------------------------------------------- |
+| [1.todo-Access.md](./1.todo-Access.md) | Platform Access **Phase 2** — reuse в Drive/Finance/Tasks |
+
+## Что дальше (по приоритету)
+
+1. **Access — Slice F:** контракты и enforcement для Drive, Finance, Project Hub/Tasks.
+2. **Access — Slice D:** manual `ResourceAccessGrant` за пределами Credentials (док + hooks).
+3. **Credentials (backlog):** фильтры vault, CSV, saved views, Bitrix — см. архивный план.
+
+## Канон и прогресс
+
+- Roadmap: `docs/NBOS/00-Implementation-Roadmap.md`
+- Статус по модулям: `docs/IMPLEMENTATION_PROGRESS.md`, `docs/IMPLEMENTATION_DONE.md`
+
+## Почему split
+
+Access — платформенная модель; Credentials стал первым потребителем foundation. Следующие модули должны переиспользовать те же primitives (`ProjectTeamMember`, `ProductTeamMember`, `ResourceAccessGrant`, role/personal policies).

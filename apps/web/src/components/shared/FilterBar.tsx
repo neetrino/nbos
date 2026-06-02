@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useMemo, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import {
   FILTER_BAR_CONTROL_PILL,
@@ -39,6 +39,32 @@ export interface FilterConfig {
   includeAllOption?: boolean;
   /** Baseline value when unset; also used to hide filter chips (e.g. board default “Active”). */
   defaultOptionValue?: string;
+  /** Label for the baseline `all` option when `includeAllOption` is true (default: `All {label}`). */
+  allOptionLabel?: string;
+  /** Human label for `defaultOptionValue` when `includeAllOption` is false (e.g. sort default). */
+  defaultOptionLabel?: string;
+}
+
+/** Label for the implicit “all” / baseline select option. */
+export function filterAllOptionLabel(filter: FilterConfig): string {
+  return filter.allOptionLabel ?? `All ${filter.label}`;
+}
+
+/** Resolved label for the select trigger (never raw tokens like `all`). */
+export function resolveFilterSelectLabel(filter: FilterConfig, value: string): string {
+  if (filter.includeAllOption !== false && value === 'all') {
+    return filterAllOptionLabel(filter);
+  }
+  const baseline = filter.defaultOptionValue;
+  if (
+    filter.includeAllOption === false &&
+    baseline &&
+    value === baseline &&
+    filter.defaultOptionLabel
+  ) {
+    return filter.defaultOptionLabel;
+  }
+  return filter.options.find((o) => o.value === value)?.label ?? filter.label;
 }
 
 /** Current select value for a filter field. */
@@ -139,18 +165,8 @@ function FilterBarFilterSelect({
   const value = resolveFilterSelectValue(filter, filterValues);
   const baseline = showAll ? 'all' : (filter.defaultOptionValue ?? filter.options[0]?.value ?? '');
 
-  const items = useMemo(
-    () => [
-      ...(showAll ? [{ value: 'all' as const, label: `All ${filter.label}` }] : []),
-      ...filter.options.map((opt) => ({ value: opt.value, label: opt.label })),
-    ],
-    [filter.label, filter.options, showAll],
-  );
-
   const resolveTriggerLabel = (selected: string | null) => {
-    const resolved = selected ?? value;
-    const row = items.find((i) => i.value === resolved);
-    return row?.label ?? filter.label;
+    return resolveFilterSelectLabel(filter, selected ?? value);
   };
 
   const isNarrowingFilter = value !== baseline;
@@ -167,9 +183,10 @@ function FilterBarFilterSelect({
         <SelectValue placeholder={filter.label}>{resolveTriggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {items.map((item) => (
-          <SelectItem key={`${filter.key}-${item.value}`} value={item.value}>
-            {item.label}
+        {showAll ? <SelectItem value="all">{filterAllOptionLabel(filter)}</SelectItem> : null}
+        {filter.options.map((opt) => (
+          <SelectItem key={`${filter.key}-${opt.value}`} value={opt.value}>
+            {opt.label}
           </SelectItem>
         ))}
       </SelectContent>

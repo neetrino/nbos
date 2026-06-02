@@ -12,6 +12,9 @@ import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
 import { ClientPaidInvoiceAutomationService } from '../../client-services/client-paid-invoice-automation.service';
 import { refreshSalesKpiAfterClientPayment } from '../../payroll-runs/sales-kpi-event-refresh';
+import { mergeFinanceWhere } from '../finance-scoped-access';
+import type { FinanceScopedAccessContext } from '../finance-scoped-access';
+import { resolvePaymentParticipationWhere } from '../finance-module-participation.where';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -29,6 +32,7 @@ interface PaymentQueryParams {
   search?: string;
   dateFrom?: string;
   dateTo?: string;
+  access?: FinanceScopedAccessContext;
 }
 
 @Injectable()
@@ -85,8 +89,10 @@ export class PaymentsService {
       });
     }
 
-    const where: Prisma.PaymentWhereInput =
+    const baseWhere: Prisma.PaymentWhereInput =
       parts.length === 0 ? {} : parts.length === 1 ? parts[0]! : { AND: parts };
+    const participationWhere = await resolvePaymentParticipationWhere(this.prisma, params.access);
+    const where = mergeFinanceWhere(baseWhere, participationWhere);
 
     const [items, total] = await Promise.all([
       this.prisma.payment.findMany({
@@ -279,26 +285,31 @@ export class PaymentsService {
     }
   }
 
-  async getStats(params: Pick<PaymentQueryParams, 'dateFrom' | 'dateTo'> = {}) {
+  async getStats(params: Pick<PaymentQueryParams, 'dateFrom' | 'dateTo' | 'access'> = {}) {
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
     const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
     const monthScopedPaymentDate = this.buildMonthScopedDateRange(paymentDate, monthStart);
+    const participationWhere = await resolvePaymentParticipationWhere(this.prisma, params.access);
+    const dateWhere: Prisma.PaymentWhereInput = paymentDate ? { paymentDate } : {};
+    const scopedDateWhere = mergeFinanceWhere(dateWhere, participationWhere);
+    const scopedMonthWhere = mergeFinanceWhere(
+      { paymentDate: monthScopedPaymentDate } satisfies Prisma.PaymentWhereInput,
+      participationWhere,
+    );
 
     const [totalPayments, totalCollected, thisMonthCollected] = await Promise.all([
       this.prisma.payment.count({
-        ...(paymentDate ? { where: { paymentDate } } : {}),
+        ...(Object.keys(scopedDateWhere).length > 0 ? { where: scopedDateWhere } : {}),
       }),
       this.prisma.payment.aggregate({
-        ...(paymentDate ? { where: { paymentDate } } : {}),
+        ...(Object.keys(scopedDateWhere).length > 0 ? { where: scopedDateWhere } : {}),
         _sum: { amount: true },
       }),
       this.prisma.payment.aggregate({
-        where: {
-          paymentDate: monthScopedPaymentDate,
-        },
+        where: scopedMonthWhere,
         _sum: { amount: true },
       }),
     ]);

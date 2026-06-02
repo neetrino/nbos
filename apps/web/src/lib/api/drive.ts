@@ -2,6 +2,8 @@ import { api } from '../api';
 
 export interface FileAsset {
   id: string;
+  /** Active manual grants on this file. */
+  manualGrantCount?: number;
   displayName: string;
   originalName: string | null;
   fileType: string;
@@ -58,16 +60,20 @@ export interface FileAuditEvent {
   createdAt: string;
 }
 
-export interface FileAssetGrantRow {
+export interface DriveGrantRow {
   id: string;
-  fileAssetId: string;
   granteeEmployeeId: string;
   granteeLabel?: string;
-  grantedById: string | null;
+  granteeEmail?: string | null;
   permission: string;
   expiresAt: string | null;
-  revokedAt: string | null;
   createdAt: string;
+}
+
+export interface FileAssetGrantRow extends DriveGrantRow {
+  fileAssetId: string;
+  grantedById: string | null;
+  revokedAt: string | null;
 }
 
 export type DriveZipExportJobStatus =
@@ -137,6 +143,8 @@ export interface DriveFolder {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Active manual grants (ResourceAccessGrant / FileAssetGrant). */
+  manualGrantCount?: number;
 }
 
 export type DriveFolderListParams = {
@@ -253,6 +261,53 @@ export const driveApi = {
   async revokeFileAssetGrant(fileId: string, grantId: string): Promise<FileAssetGrantRow> {
     const resp = await api.delete<FileAssetGrantRow>(
       '/api/drive/files/' + encodeURIComponent(fileId) + '/grants/' + encodeURIComponent(grantId),
+    );
+    return resp.data;
+  },
+
+  async createFolderGrant(
+    folderId: string,
+    body: { granteeEmployeeId: string; permission?: string },
+  ): Promise<DriveGrantRow> {
+    const resp = await api.post<DriveGrantRow>(
+      '/api/drive/folders/' + encodeURIComponent(folderId) + '/grants',
+      body,
+    );
+    return resp.data;
+  },
+
+  async listFolderGrants(folderId: string): Promise<DriveGrantRow[]> {
+    const resp = await api.get<DriveGrantRow[]>(
+      '/api/drive/folders/' + encodeURIComponent(folderId) + '/grants',
+    );
+    return resp.data;
+  },
+
+  async getFolderGrantCounts(folderIds: string[]): Promise<Record<string, number>> {
+    if (folderIds.length === 0) return {};
+    const resp = await api.get<Record<string, number>>('/api/drive/folders/grant-counts', {
+      params: { ids: folderIds.join(',') },
+    });
+    return resp.data;
+  },
+
+  async getFileGrantCounts(fileIds: string[]): Promise<Record<string, number>> {
+    if (fileIds.length === 0) return {};
+    const resp = await api.get<Record<string, number>>('/api/drive/files/grant-counts', {
+      params: { ids: fileIds.join(',') },
+    });
+    return resp.data;
+  },
+
+  async revokeFolderGrant(
+    folderId: string,
+    grantId: string,
+  ): Promise<{ id: string; revoked: boolean }> {
+    const resp = await api.delete<{ id: string; revoked: boolean }>(
+      '/api/drive/folders/' +
+        encodeURIComponent(folderId) +
+        '/grants/' +
+        encodeURIComponent(grantId),
     );
     return resp.data;
   },

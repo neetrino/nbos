@@ -20,7 +20,7 @@ import {
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
 import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
-import { InfiniteScrollSentinel } from './InfiniteScrollSentinel';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
 

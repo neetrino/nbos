@@ -7,7 +7,7 @@ import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban
 import { CLIENT_SERVICE_BOARD_COLUMN_WIDTH } from '@/features/finance/constants/client-service-payment-stage';
 import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceCard } from './ClientServiceCard';
-import { InfiniteScrollSentinel } from './InfiniteScrollSentinel';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { useClientServiceList } from './use-client-service-list';
 
 interface ClientServiceBoardColumnProps {

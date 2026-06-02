@@ -5,7 +5,12 @@ export const DRIVE_VIEW_MODES: DriveViewMode[] = ['cards', 'tiles', 'list', 'tab
 export const DRIVE_FOLDER_CARDS_GRID_CLASS =
   'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7';
 
-export const DRIVE_TILES_GRID_CLASS = 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3';
+/** Minimum tile track width (px) before wrapping — aligned with Credentials vault tiles. */
+export const DRIVE_TILE_MIN_WIDTH_PX = 240;
+
+/** Fluid tile grid — as many columns as fit at the current width (no fixed breakpoints). */
+export const DRIVE_TILES_GRID_CLASS =
+  'grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))]';
 
 export function parseDriveViewMode(raw: string | null): DriveViewMode | null {
   if (raw === 'cards' || raw === 'tiles' || raw === 'list' || raw === 'table') {

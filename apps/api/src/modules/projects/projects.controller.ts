@@ -12,12 +12,17 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
+import { ProjectTeamService } from '../platform-access/project-team.service';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly projectTeamService: ProjectTeamService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all projects with filters' })
@@ -47,6 +52,47 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get project statistics' })
   async getStats() {
     return this.projectsService.getStats();
+  }
+
+  @Get(':id/team')
+  @ApiOperation({ summary: 'List project team members (platform access)' })
+  async listProjectTeam(@Param('id') id: string) {
+    return this.projectTeamService.listByProject(id);
+  }
+
+  @Post(':id/team')
+  @RequirePermission('PROJECTS', 'EDIT')
+  @ApiOperation({ summary: 'Add or update a project team member' })
+  async addProjectTeamMember(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { employeeId: string; role?: 'ADMIN' | 'MEMBER' },
+  ) {
+    return this.projectTeamService.addMember(id, body, user.id);
+  }
+
+  @Put(':id/team/:employeeId')
+  @RequirePermission('PROJECTS', 'EDIT')
+  @ApiOperation({ summary: 'Update project team member role' })
+  async updateProjectTeamMember(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('employeeId') employeeId: string,
+    @Body() body: { role?: 'ADMIN' | 'MEMBER' },
+  ) {
+    return this.projectTeamService.updateMember(id, employeeId, body, user.id);
+  }
+
+  @Delete(':id/team/:employeeId')
+  @RequirePermission('PROJECTS', 'EDIT')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove project team member' })
+  async removeProjectTeamMember(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('employeeId') employeeId: string,
+  ) {
+    await this.projectTeamService.removeMember(id, employeeId, user.id);
   }
 
   @Get(':id')

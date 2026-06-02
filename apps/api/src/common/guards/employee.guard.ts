@@ -134,6 +134,10 @@ export class EmployeeGuard implements CanActivate {
       throw new UnauthorizedException('Employee not found');
     }
 
+    if (employee.status === 'TERMINATED') {
+      throw new UnauthorizedException('Account deactivated');
+    }
+
     const permissions: Record<string, string> = {};
     for (const rp of employee.role.permissions) {
       const key = `${rp.permission.module}_${rp.permission.action}`;

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Copy, Check, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { Eye, EyeOff, Copy, Check, ExternalLink, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
+import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
 import { credentialsApi } from '@/lib/api/credentials';
 import type { ProjectCredential } from '@/lib/api/projects';
 import { toast } from 'sonner';
@@ -40,7 +42,7 @@ function MaskedField({ value }: { value: string | null }) {
   if (!value) return <span className="text-muted-foreground">—</span>;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(value);
+    void navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -74,18 +76,24 @@ export function CredentialsTab({ credentials }: CredentialsTabProps) {
         const access = ACCESS_LEVEL_MAP[cred.accessLevel];
         return (
           <div key={cred.id} className="bg-card border-border rounded-xl border p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-3">
                 <span className="text-lg">{CATEGORY_ICONS[cred.category] ?? '🔐'}</span>
-                <div>
-                  <p className="text-sm font-medium">{cred.name}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{cred.name}</p>
                   {cred.provider && (
-                    <p className="text-muted-foreground text-xs">{cred.provider}</p>
+                    <p className="text-muted-foreground truncate text-xs">{cred.provider}</p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {access && <StatusBadge label={access.label} variant={access.variant} />}
+                <Button type="button" variant="outline" size="sm" className="h-8 gap-1" asChild>
+                  <Link href={buildCredentialVaultHref(cred.id)}>
+                    <KeyRound size={12} aria-hidden />
+                    Open in Vault
+                  </Link>
+                </Button>
                 {cred.url && (
                   <Button
                     type="button"

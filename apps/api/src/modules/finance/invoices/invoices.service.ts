@@ -34,6 +34,11 @@ import {
 import { resolveCreateInvoiceType, resolveInvoiceDueDate } from './invoice-create-resolver';
 import { resolveInvoiceProjectRow } from './invoice-project-resolve';
 import { INVOICE_ORDER_DETAIL_INCLUDE, INVOICE_ORDER_SELECT } from './invoice-order-select';
+import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
+import {
+  mergeInvoiceWhere,
+  resolveInvoiceParticipationWhere,
+} from './finance-invoice-participation.where';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -57,12 +62,14 @@ interface InvoiceQueryParams {
   search?: string;
   dateFrom?: string;
   dateTo?: string;
+  access?: FinanceInvoiceAccessContext;
 }
 
 interface InvoiceStatsParams {
   dateFrom?: string;
   dateTo?: string;
   subscriptionId?: string;
+  access?: FinanceInvoiceAccessContext;
 }
 
 @Injectable()
@@ -145,9 +152,12 @@ export class InvoicesService {
       where.createdAt = createdAt;
     }
 
+    const participationWhere = await resolveInvoiceParticipationWhere(this.prisma, params.access);
+    const listWhere = mergeInvoiceWhere(where, participationWhere);
+
     const [items, total] = await Promise.all([
       this.prisma.invoice.findMany({
-        where,
+        where: listWhere,
         include: {
           project: { select: { id: true, name: true } },
           order: {
@@ -162,7 +172,7 @@ export class InvoicesService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.invoice.count({ where }),
+      this.prisma.invoice.count({ where: listWhere }),
     ]);
 
     return {

@@ -13,8 +13,10 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { RequirePermission } from '../../common/decorators';
+import { RequirePermission, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { EmployeesService } from './employees.service';
+import { EmployeeOffboardingService } from './employee-offboarding.service';
+import { EmployeeReactivationService } from './employee-reactivation.service';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -22,6 +24,8 @@ import { EmployeesService } from './employees.service';
 export class EmployeesController {
   constructor(
     private readonly employeesService: EmployeesService,
+    private readonly employeeOffboardingService: EmployeeOffboardingService,
+    private readonly employeeReactivationService: EmployeeReactivationService,
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
@@ -31,6 +35,7 @@ export class EmployeesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'roleId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'level', required: false })
   @ApiQuery({ name: 'departmentId', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -38,6 +43,7 @@ export class EmployeesController {
     @Query('search') search?: string,
     @Query('roleId') roleId?: string,
     @Query('status') status?: string,
+    @Query('level') level?: string,
     @Query('departmentId') departmentId?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -46,10 +52,37 @@ export class EmployeesController {
       search,
       roleId,
       status,
+      level,
       departmentId,
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
     });
+  }
+
+  @Get(':id/offboard-preview')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Preview employee offboarding impact' })
+  previewOffboard(@Param('id') id: string) {
+    return this.employeeOffboardingService.buildPreview(id);
+  }
+
+  @Post(':id/offboard')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Offboard employee (terminate + revoke access + checklist)' })
+  offboard(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.employeeOffboardingService.execute(id, user.id);
+  }
+
+  @Post(':id/reactivate')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Reactivate terminated employee (rehire + onboarding checklist)' })
+  reactivate(
+    @Param('id') id: string,
+    @Body() body: { status?: 'ACTIVE' | 'PROBATION' },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const status = body.status === 'PROBATION' ? 'PROBATION' : 'ACTIVE';
+    return this.employeeReactivationService.execute(id, user.id, user.role, { status });
   }
 
   @Get(':id')
@@ -98,11 +131,17 @@ export class EmployeesController {
       position?: string;
       level?: 'JUNIOR' | 'MIDDLE' | 'SENIOR' | 'LEAD' | 'HEAD';
       notes?: string;
+      hireDate?: string | null;
     },
   ) {
+    const { hireDate, ...rest } = body;
+    const data: Record<string, unknown> = { ...rest };
+    if (hireDate !== undefined) {
+      data.hireDate = hireDate ? new Date(hireDate) : null;
+    }
     return this.prisma.employee.update({
       where: { id },
-      data: body,
+      data,
       include: {
         role: { select: { id: true, name: true, slug: true, level: true } },
         departments: { include: { department: true } },
@@ -113,10 +152,21 @@ export class EmployeesController {
   @Patch(':id/status')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Change employee status' })
-  async changeStatus(@Param('id') id: string, @Body() body: { status: string }) {
+  async changeStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    if (body.status === 'TERMINATED') {
+      return this.employeeOffboardingService.execute(id, user.id);
+    }
     return this.prisma.employee.update({
       where: { id },
-      data: { status: body.status as 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' | 'TERMINATED' },
+      data: { status: body.status as 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' },
+      include: {
+        role: { select: { id: true, name: true, slug: true, level: true } },
+        departments: { include: { department: true } },
+      },
     });
   }
 

@@ -25,6 +25,8 @@ type RelationPickerChipProps = {
   onOpen?: () => void;
   /** Opens search dropdown (empty gap + chevron). */
   onReplace?: () => void;
+  /** Inline controls after the label (e.g. date + access level). */
+  trailing?: ReactNode;
   onClear?: () => void;
 };
 
@@ -40,6 +42,7 @@ export function RelationPickerChip({
   disabled,
   onOpen,
   onReplace,
+  trailing,
   onClear,
 }: RelationPickerChipProps) {
   const canOpen = Boolean(onOpen) && !disabled;
@@ -69,7 +72,10 @@ export function RelationPickerChip({
     <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, disabled && 'opacity-60')}>
       {canOpen ? (
         <div
-          className={cn(RELATION_PICKER_SHEET_TARGET_GROUP_CLASS, !canReplace && 'min-w-0 flex-1')}
+          className={cn(
+            RELATION_PICKER_SHEET_TARGET_GROUP_CLASS,
+            (trailing || !canReplace) && 'min-w-0 flex-1',
+          )}
         >
           <button
             type="button"
@@ -129,6 +135,16 @@ export function RelationPickerChip({
         </button>
       ) : null}
 
+      {trailing ? (
+        <span
+          className="flex shrink-0 items-center gap-2"
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {trailing}
+        </span>
+      ) : null}
+
       {onClear ? (
         <button
           type="button"
@@ -141,7 +157,11 @@ export function RelationPickerChip({
             event.stopPropagation();
             onClear();
           }}
-          className={cn(DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS, 'ml-auto shrink-0')}
+          className={cn(
+            DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+            'shrink-0',
+            !trailing && !canReplace && 'ml-auto',
+          )}
           aria-label={`Remove ${label}`}
         >
           <X size={14} />

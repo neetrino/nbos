@@ -1,0 +1,82 @@
+'use client';
+
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
+import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
+import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
+import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
+import type { CredentialDeleteTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
+import type { CredentialTileCopyTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
+import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
+
+export interface CredentialsVaultPageOverlaysProps {
+  activeTab: CredentialVaultScope;
+  sheetOpen: boolean;
+  sheetCredentialId: string | null;
+  createPresetCategory: string | undefined;
+  deleteTarget: CredentialDeleteTarget | null;
+  purgeTarget: CredentialDeleteTarget | null;
+  tileCopyTarget: CredentialTileCopyTarget | null;
+  onCloseSheet: (open: boolean) => void;
+  onSaved: () => void;
+  onRequestArchive: (id: string, name: string) => void;
+  onDeleteTargetChange: (open: boolean) => void;
+  onPurgeTargetChange: (open: boolean) => void;
+  onTileCopyOpenChange: (open: boolean) => void;
+  onTileCopyConfirm: (password: string) => void | Promise<void>;
+}
+
+export function CredentialsVaultPageOverlays({
+  activeTab,
+  sheetOpen,
+  sheetCredentialId,
+  createPresetCategory,
+  deleteTarget,
+  purgeTarget,
+  tileCopyTarget,
+  onCloseSheet,
+  onSaved,
+  onRequestArchive,
+  onDeleteTargetChange,
+  onPurgeTargetChange,
+  onTileCopyOpenChange,
+  onTileCopyConfirm,
+}: CredentialsVaultPageOverlaysProps) {
+  return (
+    <>
+      <CredentialFormSheet
+        open={sheetOpen}
+        onOpenChange={onCloseSheet}
+        credentialId={sheetCredentialId}
+        vaultScope={activeTab}
+        initialCategory={createPresetCategory}
+        presetKey={`${createPresetCategory ?? ''}-${activeTab}`}
+        onSaved={onSaved}
+        onRequestArchive={onRequestArchive}
+      />
+
+      <CredentialStepUpDialog
+        open={tileCopyTarget !== null}
+        onOpenChange={onTileCopyOpenChange}
+        title="Unlock vault to copy password"
+        onConfirm={onTileCopyConfirm}
+      />
+
+      <DeleteCredentialDialog
+        credentialId={deleteTarget?.id ?? null}
+        credentialName={deleteTarget?.name ?? null}
+        open={deleteTarget !== null}
+        onOpenChange={onDeleteTargetChange}
+        onDeleted={onSaved}
+      />
+
+      <PermanentDeleteCredentialDialog
+        credentialId={purgeTarget?.id ?? null}
+        credentialName={purgeTarget?.name ?? null}
+        criticality={purgeTarget?.criticality ?? null}
+        open={purgeTarget !== null}
+        onOpenChange={onPurgeTargetChange}
+        onDeleted={onSaved}
+      />
+    </>
+  );
+}

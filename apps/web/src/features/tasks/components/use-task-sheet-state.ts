@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { employeesApi, type Employee } from '@/lib/api/employees';
+import { searchEmployeesForPicker } from '@/lib/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { toggleTaskUrgentPriority } from '../constants/tasks';
 import {
@@ -440,14 +440,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     [task],
   );
 
-  const searchEmployees = useCallback(async (query: string) => {
-    const data = await employeesApi.getAll({ pageSize: 20, search: query || undefined });
-    return data.items.map((employee: Employee) => ({
-      value: employee.id,
-      label: `${employee.firstName} ${employee.lastName}`.trim(),
-      subtitle: employee.position ?? employee.email,
-    }));
-  }, []);
+  const searchEmployees = useCallback(async (query: string) => searchEmployeesForPicker(query), []);
 
   return {
     task,

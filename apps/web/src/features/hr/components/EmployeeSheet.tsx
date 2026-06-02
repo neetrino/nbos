@@ -1,192 +1,346 @@
 'use client';
 
-import { Mail, Phone, Calendar, Building2, Send } from 'lucide-react';
-import { EntityDetailSheetContent } from '@/components/shared';
-import { Sheet, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { StatusBadge } from '@/components/shared';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { UserCheck, UserX } from 'lucide-react';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Employee } from '@/lib/api/employees';
+import { Sheet } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
+  EntityDetailSheetContent,
+  StatusBadge,
+} from '@/components/shared';
+import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
+import {
+  TEAM_SHEET_FOOTER_CLASS,
+  TEAM_SHEET_HEADER_CLASS,
+  TEAM_SHEET_TABS_WRAPPER_CLASS,
+  TEAM_SHEET_WIDTH,
+} from '@/features/hr/constants/team-sheet-layout';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
-
-const AVATAR_COLORS = [
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-violet-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-indigo-500',
-  'bg-teal-500',
-];
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index]!;
-}
-
-function getInitials(firstName: string, lastName: string): string {
-  const first = firstName?.charAt(0)?.toUpperCase() ?? '';
-  const last = lastName?.charAt(0)?.toUpperCase() ?? '';
-  return first + last || '?';
-}
-
-const DEPT_ROLE_LABELS: Record<string, string> = {
-  HEAD: 'Head',
-  DEPUTY: 'Deputy',
-  MEMBER: 'Member',
-};
+import {
+  employeeAvatarColor,
+  employeeFullName,
+  employeeInitials,
+  employeePrimaryDepartment,
+} from '@/features/hr/utils/employee-display';
+import {
+  departmentsApi,
+  employeesApi,
+  rolesApi,
+  type DepartmentItem,
+  type Employee,
+  type RoleItem,
+} from '@/lib/api/employees';
+import { toast } from 'sonner';
+import {
+  buildEmployeeGeneralPatch,
+  createEmployeeGeneralDraft,
+  employeeRoleChanged,
+  isEmployeeGeneralDirty,
+  type EmployeeGeneralDraft,
+} from './employee-general-form-state';
+import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
+import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
+import { EmployeeOnboardingPanel } from './EmployeeOnboardingPanel';
+import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
+import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
+import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
+import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
+import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
+import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
 
 interface EmployeeSheetProps {
   employee: Employee | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSaved?: () => void | Promise<void>;
+  canEdit?: boolean;
 }
 
-export function EmployeeSheet({ employee, open, onOpenChange }: EmployeeSheetProps) {
-  if (!employee) return null;
+function saveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
+}
 
-  const fullName = `${employee.firstName} ${employee.lastName}`.trim();
-  const initials = getInitials(employee.firstName, employee.lastName);
-  const avatarColor = getAvatarColor(fullName);
-  const levelInfo = getEmployeeLevel(employee.level ?? '');
-  const statusInfo = getEmployeeStatus(employee.status);
+export function EmployeeSheet({
+  employee,
+  open,
+  onOpenChange,
+  onSaved,
+  canEdit = false,
+}: EmployeeSheetProps) {
+  const [draft, setDraft] = useState<EmployeeGeneralDraft | null>(null);
+  const [snap, setSnap] = useState<EmployeeGeneralDraft | null>(null);
+  const [current, setCurrent] = useState<Employee | null>(null);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [terminateOpen, setTerminateOpen] = useState(false);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+  const canReactivate = useCanReactivateEmployee();
+
+  useLayoutEffect(() => {
+    if (!employee) {
+      setDraft(null);
+      setSnap(null);
+      setCurrent(null);
+      return;
+    }
+    setCurrent(employee);
+    setActiveTab('general');
+    const next = createEmployeeGeneralDraft(employee);
+    setDraft(next);
+    setSnap(next);
+  }, [employee]);
+
+  useEffect(() => {
+    if (!open) setGeneralError(null);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    void rolesApi
+      .getAll()
+      .then((r) => setRoles(r ?? []))
+      .catch(() => {});
+    void departmentsApi
+      .getAll()
+      .then((d) => setDepartments(d ?? []))
+      .catch(() => {});
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !current || current.status === 'TERMINATED') {
+      setHasOnboardingChecklist(false);
+      return;
+    }
+    let cancelled = false;
+    void checklistTemplatesApi
+      .listInstances(EMPLOYEE_ONBOARDING_OWNER_TYPE, current.id)
+      .then((rows) => {
+        if (!cancelled) setHasOnboardingChecklist(rows.length > 0);
+      })
+      .catch(() => {
+        if (!cancelled) setHasOnboardingChecklist(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, current?.id, current?.status]);
+
+  const patchDraft = useCallback((partial: Partial<EmployeeGeneralDraft>) => {
+    setDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty = draft != null && snap != null && isEmployeeGeneralDirty(draft, snap);
+
+  const handleSave = useCallback(async () => {
+    if (!current || !draft || !snap || !canEdit) return;
+    setGeneralError(null);
+    if (!draft.firstName.trim() || !draft.lastName.trim() || !draft.email.trim()) {
+      setGeneralError('First name, last name, and email are required.');
+      return;
+    }
+    setSaving(true);
+    try {
+      let updated = current;
+      const patch = buildEmployeeGeneralPatch(snap, draft);
+      if (Object.keys(patch).length > 0) {
+        updated = await employeesApi.update(current.id, patch);
+      }
+      if (employeeRoleChanged(snap, draft)) {
+        updated = await employeesApi.changeRole(current.id, draft.roleId);
+      }
+      const fresh = await employeesApi.getById(updated.id);
+      setCurrent(fresh);
+      const next = createEmployeeGeneralDraft(fresh);
+      setDraft(next);
+      setSnap(next);
+      toast.success('Employee updated');
+      await onSaved?.();
+    } catch (err) {
+      setGeneralError(saveErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }, [canEdit, current, draft, onSaved, snap]);
+
+  const handleCancel = useCallback(() => {
+    setGeneralError(null);
+    if (snap) setDraft({ ...snap });
+  }, [snap]);
+
+  const handleOffboardComplete = useCallback(async () => {
+    if (!current) return;
+    const fresh = await employeesApi.getById(current.id);
+    setCurrent(fresh);
+    const next = createEmployeeGeneralDraft(fresh);
+    setDraft(next);
+    setSnap(next);
+    setActiveTab('offboarding');
+    await onSaved?.();
+  }, [current, onSaved]);
+
+  const handleReactivateComplete = useCallback(async () => {
+    if (!current) return;
+    const fresh = await employeesApi.getById(current.id);
+    setCurrent(fresh);
+    const next = createEmployeeGeneralDraft(fresh);
+    setDraft(next);
+    setSnap(next);
+    setHasOnboardingChecklist(true);
+    setActiveTab('onboarding');
+    await onSaved?.();
+  }, [current, onSaved]);
+
+  if (!current || !draft || !snap) return null;
+
+  const fullName = employeeFullName(current);
+  const levelInfo = getEmployeeLevel(current.level ?? '');
+  const statusInfo = getEmployeeStatus(current.status);
+  const dept = employeePrimaryDepartment(current);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent
         open={open}
-        layout="auxiliary"
-        sourcePageHref={`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(employee.id)}`}
+        layout="full"
+        width={TEAM_SHEET_WIDTH}
+        sourcePageHref={`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`}
       >
-        <SheetHeader className="border-border shrink-0 border-b px-6 py-5">
-          <div className="flex items-start gap-4">
-            <div
-              className={`flex size-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white ${avatarColor}`}
-            >
-              {initials}
-            </div>
-            <div className="min-w-0 flex-1">
-              <SheetTitle className="text-lg font-semibold">{fullName}</SheetTitle>
-              {employee.position && (
-                <p className="text-muted-foreground mt-0.5 text-sm">{employee.position}</p>
-              )}
-              <p className="text-muted-foreground text-sm">{employee.role.name}</p>
-              {statusInfo && (
-                <div className="mt-2">
-                  <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
-                </div>
-              )}
-            </div>
-          </div>
-        </SheetHeader>
-
-        <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
-          <div className="border-border shrink-0 border-b px-6">
-            <TabsList variant="default" className="h-9 w-full justify-start">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="departments">Departments</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="px-6 py-4">
-              <TabsContent value="general" className="mt-0">
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm">
-                      <Mail className="text-muted-foreground size-4 shrink-0" />
-                      <a href={`mailto:${employee.email}`} className="text-primary hover:underline">
-                        {employee.email}
-                      </a>
-                    </div>
-                    {employee.phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="text-muted-foreground size-4 shrink-0" />
-                        <a href={`tel:${employee.phone}`} className="text-primary hover:underline">
-                          {employee.phone}
-                        </a>
-                      </div>
-                    )}
-                    {employee.telegram && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Send className="text-muted-foreground size-4 shrink-0" />
-                        <a
-                          href={`https://t.me/${employee.telegram.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          @{employee.telegram.replace('@', '')}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {levelInfo && <Badge variant="secondary">{levelInfo.label}</Badge>}
-                    {employee.hireDate && (
-                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <Calendar className="size-4" />
-                        <span>Hired {new Date(employee.hireDate).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {employee.notes && (
-                    <div className="space-y-1.5">
-                      <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                        Notes
-                      </p>
-                      <p className="text-foreground text-sm leading-relaxed">{employee.notes}</p>
-                    </div>
+        <div className="flex h-full min-h-0 flex-col">
+          <div className={TEAM_SHEET_HEADER_CLASS}>
+            <div className="flex items-start gap-3">
+              <div
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${employeeAvatarColor(fullName)}`}
+              >
+                {employeeInitials(current)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-semibold">{fullName}</h2>
+                <p className="text-muted-foreground text-xs">
+                  {current.position || current.role.name}
+                  {dept ? ` · ${dept}` : ''}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {statusInfo && (
+                    <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
                   )}
+                  {levelInfo && <StatusBadge label={levelInfo.label} variant={levelInfo.variant} />}
                 </div>
-              </TabsContent>
-
-              <TabsContent value="departments" className="mt-0">
-                {employee.departments.length === 0 ? (
-                  <p className="text-muted-foreground py-8 text-center text-sm">
-                    No departments assigned
-                  </p>
-                ) : (
-                  <ul className="space-y-3">
-                    {employee.departments.map((ed) => (
-                      <li
-                        key={ed.id}
-                        className="border-border bg-muted/30 flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          <Building2 className="text-muted-foreground size-4 shrink-0" />
-                          <div>
-                            <p className="font-medium">{ed.department.name}</p>
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                {DEPT_ROLE_LABELS[ed.deptRole] ?? ed.deptRole}
-                              </Badge>
-                              {ed.isPrimary && (
-                                <Badge variant="secondary" className="text-xs">
-                                  Primary
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </TabsContent>
+              </div>
+              {canEdit && current.status !== 'TERMINATED' && (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => setTerminateOpen(true)}
+                  >
+                    <UserX className="mr-2 size-4" />
+                    Offboard employee
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              )}
+              {canReactivate && current.status === 'TERMINATED' && (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
+                    <UserCheck className="mr-2 size-4" />
+                    Reactivate employee
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              )}
             </div>
-          </ScrollArea>
-        </Tabs>
+          </div>
+
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className={TEAM_SHEET_TABS_WRAPPER_CLASS}>
+              <TabsList variant="default" className="h-8 w-full justify-start">
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="departments">Departments</TabsTrigger>
+                {current.status === 'TERMINATED' ? (
+                  <TabsTrigger value="offboarding">Offboarding</TabsTrigger>
+                ) : null}
+                {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
+                  <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
+                ) : null}
+              </TabsList>
+            </div>
+
+            <ScrollArea className="min-h-0 flex-1">
+              <TabsContent value="general" className="mt-0">
+                <EmployeeSheetScrollBody
+                  employeeId={current.id}
+                  draft={draft}
+                  patchDraft={patchDraft}
+                  roles={roles}
+                  saving={saving}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  generalError={generalError}
+                />
+              </TabsContent>
+              <TabsContent value="departments" className="mt-0">
+                <EmployeeDepartmentsPanel
+                  employee={current}
+                  departments={departments}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  onUpdated={(emp) => {
+                    setCurrent(emp);
+                    const next = createEmployeeGeneralDraft(emp);
+                    setDraft(next);
+                    setSnap(next);
+                    void onSaved?.();
+                  }}
+                />
+              </TabsContent>
+              {current.status === 'TERMINATED' ? (
+                <TabsContent value="offboarding" className="mt-0">
+                  <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
+                </TabsContent>
+              ) : null}
+              {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
+                <TabsContent value="onboarding" className="mt-0">
+                  <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
+                </TabsContent>
+              ) : null}
+            </ScrollArea>
+          </Tabs>
+
+          <DetailSheetFormFooter
+            visible={canEdit && current.status !== 'TERMINATED'}
+            dirty={generalDirty}
+            saving={saving}
+            errorMessage={generalError}
+            onSave={() => void handleSave()}
+            onCancel={handleCancel}
+            className={TEAM_SHEET_FOOTER_CLASS}
+          />
+        </div>
       </EntityDetailSheetContent>
+
+      <TerminateEmployeeDialog
+        employeeId={current.id}
+        employeeName={fullName}
+        open={terminateOpen}
+        onOpenChange={setTerminateOpen}
+        onTerminated={handleOffboardComplete}
+      />
+
+      <ReactivateEmployeeDialog
+        employeeId={current.id}
+        employeeName={fullName}
+        open={reactivateOpen}
+        onOpenChange={setReactivateOpen}
+        onReactivated={handleReactivateComplete}
+      />
     </Sheet>
   );
 }

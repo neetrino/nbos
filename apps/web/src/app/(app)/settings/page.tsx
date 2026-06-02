@@ -25,6 +25,12 @@ const SETTINGS_SECTIONS = [
     icon: ShieldCheck,
   },
   {
+    title: 'Access policies',
+    href: '/settings/access-policies',
+    description: 'Role and personal access levels for project/product-scoped data.',
+    icon: ShieldCheck,
+  },
+  {
     title: 'Module Settings',
     href: '/settings/module-settings',
     description: 'Safe module defaults, not business-rule builders.',

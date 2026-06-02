@@ -28,7 +28,6 @@ import {
   parseDriveFileDragPayload,
   stringifyDriveFileDragPayload,
 } from './drive-file-drag';
-
 const FILE_TABLE_GRID_CLASS =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
 
@@ -46,6 +45,7 @@ export function DriveFileSurface({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   fileMenu,
   fileDrag,
   folderFileDrop,
@@ -63,6 +63,7 @@ export function DriveFileSurface({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   fileMenu?: DriveFileCardMenuHandlers;
   fileDrag?: DriveFileCardDragConfig;
   folderFileDrop?: {
@@ -127,6 +128,7 @@ export function DriveFileSurface({
         onOpenFolder={onOpenFolder}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
+        onShareFolder={onShareFolder}
         fileDrag={fileDrag}
         dropTargetFolderId={dropTargetFolderId}
         buildFolderDropHandlers={buildFolderDropHandlers}
@@ -137,34 +139,37 @@ export function DriveFileSurface({
   const fileLayout = driveFileCardLayout(viewMode);
 
   return (
-    <div className={cn(driveItemsContainerClass(viewMode))}>
-      {folders.map((folder) => (
-        <DriveFolderCardRow
-          key={folder.id}
-          folder={folder}
-          layout={folderLayout}
-          onOpenFolder={onOpenFolder}
-          onRenameFolder={onRenameFolder}
-          onDeleteFolder={onDeleteFolder}
-          fileDropHighlight={dropTargetFolderId === folder.id}
-          fileDropHandlers={buildFolderDropHandlers(folder.id)}
-          folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
-          onToggleFolderChecked={onToggleFolderChecked}
-        />
-      ))}
-      {files.map((file) => (
-        <DriveFileCard
-          key={file.id}
-          file={file}
-          layout={fileLayout}
-          selected={file.id === selectedId}
-          checked={checkedIds.includes(file.id)}
-          onSelect={onSelect}
-          onToggleChecked={onToggleChecked}
-          menu={fileMenu}
-          fileDrag={fileDrag}
-        />
-      ))}
+    <div className="space-y-3">
+      <div className={driveItemsContainerClass(viewMode)}>
+        {folders.map((folder) => (
+          <DriveFolderCardRow
+            key={folder.id}
+            folder={folder}
+            layout={folderLayout}
+            onOpenFolder={onOpenFolder}
+            onShareFolder={onShareFolder}
+            onRenameFolder={onRenameFolder}
+            onDeleteFolder={onDeleteFolder}
+            fileDropHighlight={dropTargetFolderId === folder.id}
+            fileDropHandlers={buildFolderDropHandlers(folder.id)}
+            folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
+            onToggleFolderChecked={onToggleFolderChecked}
+          />
+        ))}
+        {files.map((file) => (
+          <DriveFileCard
+            key={file.id}
+            file={file}
+            layout={fileLayout}
+            selected={file.id === selectedId}
+            checked={checkedIds.includes(file.id)}
+            onSelect={onSelect}
+            onToggleChecked={onToggleChecked}
+            menu={fileMenu}
+            fileDrag={fileDrag}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -181,6 +186,7 @@ function FileTable({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onShareFolder,
   fileDrag,
   dropTargetFolderId,
   buildFolderDropHandlers,
@@ -196,6 +202,7 @@ function FileTable({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  onShareFolder?: (folder: DriveFolder) => void;
   fileDrag?: DriveFileCardDragConfig;
   dropTargetFolderId: string | null;
   buildFolderDropHandlers: (folderId: string) => DriveFolderFileDropHandlers | undefined;
@@ -221,6 +228,7 @@ function FileTable({
           key={folder.id}
           folder={folder}
           onOpenFolder={onOpenFolder}
+          onShareFolder={onShareFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           fileDropHighlight={dropTargetFolderId === folder.id}

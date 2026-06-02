@@ -39,6 +39,7 @@ import {
 } from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
+import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -97,6 +98,7 @@ export class ExtensionsService {
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
+    private readonly productTeamSync: ProductTeamSyncService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -315,6 +317,11 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extension.id);
+    await this.productTeamSync.syncExtensionAssignee({
+      productId: extension.productId,
+      projectId: extension.projectId,
+      assignedTo: extension.assignedTo,
+    });
     return attachExtensionReadiness(extension);
   }
 
@@ -340,6 +347,13 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    if (data.assignedTo !== undefined) {
+      await this.productTeamSync.syncExtensionAssignee({
+        productId: extension.productId,
+        projectId: extension.projectId,
+        assignedTo: extension.assignedTo,
+      });
+    }
     return attachExtensionReadiness(extension);
   }
 

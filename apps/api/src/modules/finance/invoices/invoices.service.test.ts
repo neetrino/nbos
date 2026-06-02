@@ -68,6 +68,16 @@ describe('InvoicesService', () => {
       expect(result.meta.page).toBe(1);
     });
 
+    it('scopes list by project participation when view scope is not ALL', async () => {
+      await service.findAll({
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'ASSIGNED' },
+      });
+      const listCall = prisma.invoice.findMany.mock.calls[0]?.[0] as { where?: { OR?: unknown[] } };
+      expect(listCall?.where?.OR).toEqual(
+        expect.arrayContaining([{ project: expect.objectContaining({ OR: expect.any(Array) }) }]),
+      );
+    });
+
     it('applies createdAt date range filter', async () => {
       await service.findAll({
         dateFrom: '2026-04-01T00:00:00.000Z',

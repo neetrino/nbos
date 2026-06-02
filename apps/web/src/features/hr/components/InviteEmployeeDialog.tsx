@@ -18,25 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { api } from '@/lib/api';
+import {
+  departmentsApi,
+  invitationsApi,
+  rolesApi,
+  type DepartmentItem,
+  type RoleItem,
+} from '@/lib/api/employees';
 import { toast } from 'sonner';
-
-interface RoleItem {
-  id: string;
-  name: string;
-  slug: string;
-  level: number;
-  isSystem?: boolean;
-}
-
-interface DepartmentItem {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  parentId?: string | null;
-  sortOrder?: number;
-}
 
 interface InviteEmployeeDialogProps {
   open: boolean;
@@ -65,7 +54,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
       setRolesLoading(true);
       setRolesError(null);
       try {
-        const data = await api.get<RoleItem[]>('/api/roles').then((r) => r.data);
+        const data = await rolesApi.getAll();
         setRoles(Array.isArray(data) ? data : []);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to load roles';
@@ -80,7 +69,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
       setDepartmentsLoading(true);
       setDepartmentsError(null);
       try {
-        const data = await api.get<DepartmentItem[]>('/api/departments').then((r) => r.data);
+        const data = await departmentsApi.getAll();
         setDepartments(Array.isArray(data) ? data : []);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to load departments';
@@ -91,8 +80,8 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
       }
     };
 
-    loadRoles();
-    loadDepartments();
+    void loadRoles();
+    void loadDepartments();
   }, [open]);
 
   const reset = () => {
@@ -107,7 +96,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await api.post('/api/invitations', {
+      await invitationsApi.create({
         email: form.email.trim(),
         roleId: form.roleId,
         departmentId: form.departmentId || undefined,

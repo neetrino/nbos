@@ -6,6 +6,7 @@ interface EmployeeQueryParams {
   search?: string;
   roleId?: string;
   status?: string;
+  level?: string;
   departmentId?: string;
   page?: number;
   pageSize?: number;
@@ -38,7 +39,7 @@ export class EmployeesService {
   }
 
   async findAllWithFilters(params: EmployeeQueryParams) {
-    const { search, roleId, status, departmentId, page = 1, pageSize = 50 } = params;
+    const { search, roleId, status, level, departmentId, page = 1, pageSize = 50 } = params;
     const where: Prisma.EmployeeWhereInput = {};
 
     if (search) {
@@ -50,6 +51,7 @@ export class EmployeesService {
     }
     if (roleId) where.roleId = roleId;
     if (status) where.status = status as Prisma.EmployeeWhereInput['status'];
+    if (level) where.level = level as Prisma.EmployeeWhereInput['level'];
     if (departmentId) {
       where.departments = { some: { departmentId } };
     }

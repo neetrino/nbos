@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
 import type { FileGrantPermission } from './drive-grant-permissions';
 import type { DriveEntityAccess } from './drive-access.types';
+import { buildDriveExplicitFileGrantWhere } from './drive-resource-access-grant.sync';
 import { buildDriveInheritedLinkFileAccessWhere } from './drive-inherited-link-access';
 
 const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
@@ -12,38 +13,17 @@ const SENSITIVE_CONFIDENTIALITIES = new Set<string>([
 ]);
 
 /** “Shared with me”: not sole self-origin, or explicit grant to the viewer. */
-export function buildSharedWithMeWhereClause(employeeId: string): Prisma.FileAssetWhereInput {
+export async function buildSharedWithMeWhereClause(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeId: string,
+): Promise<Prisma.FileAssetWhereInput> {
   const notSoleSelfOrigin: Prisma.FileAssetWhereInput = {
     NOT: {
       OR: [{ ownerId: employeeId }, { AND: [{ ownerId: null }, { createdById: employeeId }] }],
     },
   };
-  const activeGrant: Prisma.FileAssetWhereInput = {
-    assetGrants: {
-      some: {
-        granteeEmployeeId: employeeId,
-        revokedAt: null,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    },
-  };
-  return { OR: [notSoleSelfOrigin, activeGrant] };
-}
-
-function activeFileAssetGrantWhere(
-  employeeId: string,
-  permissions?: readonly FileGrantPermission[],
-): Prisma.FileAssetWhereInput {
-  return {
-    assetGrants: {
-      some: {
-        granteeEmployeeId: employeeId,
-        revokedAt: null,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        ...(permissions && permissions.length > 0 ? { permission: { in: [...permissions] } } : {}),
-      },
-    },
-  };
+  const grantWhere = await buildDriveExplicitFileGrantWhere(prisma, employeeId);
+  return { OR: [notSoleSelfOrigin, grantWhere] };
 }
 
 function selfOriginWhere(employeeId: string): Prisma.FileAssetWhereInput {
@@ -52,7 +32,11 @@ function selfOriginWhere(employeeId: string): Prisma.FileAssetWhereInput {
   };
 }
 
-function layeredSensitivityWhere(employeeId: string): Prisma.FileAssetWhereInput {
+async function layeredSensitivityWhere(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeId: string,
+): Promise<Prisma.FileAssetWhereInput> {
+  const grantWhere = await buildDriveExplicitFileGrantWhere(prisma, employeeId);
   return {
     OR: [
       {
@@ -62,18 +46,18 @@ function layeredSensitivityWhere(employeeId: string): Prisma.FileAssetWhereInput
         ],
       },
       selfOriginWhere(employeeId),
-      activeFileAssetGrantWhere(employeeId),
+      grantWhere,
     ],
   };
 }
 
-function ownScopeWhere(employeeId: string): Prisma.FileAssetWhereInput {
+async function ownScopeWhere(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeId: string,
+): Promise<Prisma.FileAssetWhereInput> {
+  const grantWhere = await buildDriveExplicitFileGrantWhere(prisma, employeeId);
   return {
-    OR: [
-      { ownerId: employeeId },
-      { createdById: employeeId },
-      activeFileAssetGrantWhere(employeeId),
-    ],
+    OR: [{ ownerId: employeeId }, { createdById: employeeId }, grantWhere],
   };
 }
 
@@ -88,12 +72,12 @@ export async function buildDriveAssetAccessWhere(
   if (!access) return {};
   const scope = normalizeScope(access.driveScope);
   if (DRIVE_WIDE_SCOPES.has(scope)) {
-    return layeredSensitivityWhere(access.employeeId);
+    return layeredSensitivityWhere(prisma, access.employeeId);
   }
   const inheritedWhere = await buildDriveInheritedLinkFileAccessWhere(prisma, access);
-  const grantWhere = activeFileAssetGrantWhere(access.employeeId);
+  const grantWhere = await buildDriveExplicitFileGrantWhere(prisma, access.employeeId);
   if (scope === 'OWN') {
-    return { OR: [ownScopeWhere(access.employeeId), inheritedWhere] };
+    return { OR: [await ownScopeWhere(prisma, access.employeeId), inheritedWhere] };
   }
   if (scope === 'DEPARTMENT') {
     const colleagueRows = await prisma.employeeDepartment.findMany({
@@ -113,12 +97,12 @@ export async function buildDriveAssetAccessWhere(
             grantWhere,
           ],
         },
-        layeredSensitivityWhere(access.employeeId),
+        await layeredSensitivityWhere(prisma, access.employeeId),
       ],
     };
     return { OR: [departmentScope, inheritedWhere] };
   }
-  return { OR: [ownScopeWhere(access.employeeId), inheritedWhere] };
+  return { OR: [await ownScopeWhere(prisma, access.employeeId), inheritedWhere] };
 }
 
 export async function buildDriveAssetBaseAccessWhere(
@@ -177,9 +161,10 @@ export async function buildDriveAssetBaseAccessWhere(
   return selfOriginWhere(access.employeeId);
 }
 
-export function buildDriveAssetGrantAccessWhere(
+export async function buildDriveAssetGrantAccessWhere(
+  prisma: InstanceType<typeof PrismaClient>,
   employeeId: string,
   permissions?: readonly FileGrantPermission[],
-): Prisma.FileAssetWhereInput {
-  return activeFileAssetGrantWhere(employeeId, permissions);
+): Promise<Prisma.FileAssetWhereInput> {
+  return buildDriveExplicitFileGrantWhere(prisma, employeeId, permissions);
 }

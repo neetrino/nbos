@@ -63,7 +63,12 @@ import {
   buildDriveAssetGrantAccessWhere,
   buildSharedWithMeWhereClause,
 } from './drive-asset-access.where';
+import {
+  revokeDriveFileResourceAccessGrant,
+  syncDriveFileResourceAccessGrant,
+} from './drive-resource-access-grant.sync';
 import { DriveProjectHubService } from './drive-project-hub.service';
+import { attachManualGrantCount, countDriveFileManualGrants } from './drive-manual-grant-counts';
 import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
 import type { DriveEntityContextAccess } from './drive-access.types';
 
@@ -164,14 +169,17 @@ export class DriveService {
 
   async listFileAssets(params: FileAssetQueryParams, access?: DriveEntityAccess) {
     const where = await this.buildFileAssetWhere(params, access);
-    return jsonSafeForHttp(
-      await this.prisma.fileAsset.findMany({
-        where,
-        include: FILE_ASSET_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
+    const rows = await this.prisma.fileAsset.findMany({
+      where,
+      include: FILE_ASSET_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    const counts = await countDriveFileManualGrants(
+      this.prisma,
+      rows.map((row) => row.id),
     );
+    return jsonSafeForHttp(attachManualGrantCount(rows, counts));
   }
 
   async getLifecycleCounts(access?: DriveEntityAccess) {
@@ -598,13 +606,19 @@ export class DriveService {
     const empIds = [...new Set(rows.map((r) => r.granteeEmployeeId))];
     const employees = await this.prisma.employee.findMany({
       where: { id: { in: empIds } },
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, lastName: true, email: true },
     });
-    const labelById = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`.trim()]));
-    return rows.map((r) => ({
-      ...jsonSafeForHttp(r),
-      granteeLabel: labelById.get(r.granteeEmployeeId) ?? r.granteeEmployeeId,
-    }));
+    const employeeById = new Map(employees.map((e) => [e.id, e]));
+    return rows.map((r) => {
+      const employee = employeeById.get(r.granteeEmployeeId);
+      return {
+        ...jsonSafeForHttp(r),
+        granteeLabel: employee
+          ? `${employee.firstName} ${employee.lastName}`.trim()
+          : r.granteeEmployeeId,
+        granteeEmail: employee?.email ?? null,
+      };
+    });
   }
 
   async revokeFileAssetGrant(
@@ -623,6 +637,7 @@ export class DriveService {
         where: { id: grantId },
         data: { revokedAt: new Date() },
       });
+      await revokeDriveFileResourceAccessGrant(tx, fileAssetId, row.granteeEmployeeId);
       await tx.fileAuditEvent.create({
         data: {
           fileAssetId,
@@ -659,17 +674,28 @@ export class DriveService {
       if (existing.permission === permission) {
         return jsonSafeForHttp(existing);
       }
-      const row = await this.prisma.fileAssetGrant.update({
-        where: { id: existing.id },
-        data: { permission, expiresAt },
-      });
-      await this.prisma.fileAuditEvent.create({
-        data: {
+      const row = await this.prisma.$transaction(async (tx) => {
+        const updatedGrant = await tx.fileAssetGrant.update({
+          where: { id: existing.id },
+          data: { permission, expiresAt },
+        });
+        await syncDriveFileResourceAccessGrant(tx, {
           fileAssetId,
-          actorId,
-          action: 'grant_updated',
-          metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
-        },
+          employeeId: grantee,
+          permission,
+          grantedById: actorId,
+          expiresAt,
+          auditReason: reason,
+        });
+        await tx.fileAuditEvent.create({
+          data: {
+            fileAssetId,
+            actorId,
+            action: 'grant_updated',
+            metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
+          },
+        });
+        return updatedGrant;
       });
       await notifyDriveFileGrantRecipient({
         prisma: this.prisma,
@@ -684,22 +710,33 @@ export class DriveService {
       });
       return jsonSafeForHttp(row);
     }
-    const row = await this.prisma.fileAssetGrant.create({
-      data: {
+    const row = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.fileAssetGrant.create({
+        data: {
+          fileAssetId,
+          granteeEmployeeId: grantee,
+          grantedById: actorId,
+          permission,
+          expiresAt,
+        },
+      });
+      await syncDriveFileResourceAccessGrant(tx, {
         fileAssetId,
-        granteeEmployeeId: grantee,
-        grantedById: actorId,
+        employeeId: grantee,
         permission,
+        grantedById: actorId,
         expiresAt,
-      },
-    });
-    await this.prisma.fileAuditEvent.create({
-      data: {
-        fileAssetId,
-        actorId,
-        action: 'grant_created',
-        metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
-      },
+        auditReason: reason,
+      });
+      await tx.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId,
+          action: 'grant_created',
+          metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
+        },
+      });
+      return created;
     });
     await notifyDriveFileGrantRecipient({
       prisma: this.prisma,
@@ -949,7 +986,7 @@ export class DriveService {
       if (!employeeId) {
         throw new BadRequestException('sharedWithMe requires an authenticated employee context.');
       }
-      clauses.push(buildSharedWithMeWhereClause(employeeId));
+      clauses.push(await buildSharedWithMeWhereClause(this.prisma, employeeId));
     }
     if (params.search) {
       clauses.push({
@@ -969,7 +1006,10 @@ export class DriveService {
     if (!access?.employeeId) return {};
     const baseWhere = await buildDriveAssetBaseAccessWhere(this.prisma, access);
     return {
-      OR: [baseWhere, buildDriveAssetGrantAccessWhere(access.employeeId, grantPermissions)],
+      OR: [
+        baseWhere,
+        await buildDriveAssetGrantAccessWhere(this.prisma, access.employeeId, grantPermissions),
+      ],
     };
   }
 

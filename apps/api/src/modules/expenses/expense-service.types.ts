@@ -1,3 +1,5 @@
+import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
+
 export interface CreateExpenseDto {
   name: string;
   type: string;
@@ -59,6 +61,7 @@ export interface ExpenseQueryParams {
   payrollMonth?: string;
   /** Filter by salary line employee id. */
   payrollEmployeeId?: string;
+  access?: FinanceScopedAccessContext;
 }
 
 export interface ExpenseStatsParams {
@@ -77,4 +80,5 @@ export interface ExpenseStatsParams {
   payrollLinked?: boolean;
   payrollMonth?: string;
   payrollEmployeeId?: string;
+  access?: FinanceScopedAccessContext;
 }

@@ -18,6 +18,7 @@ import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
+import { DriveFolderGrantService } from './drive-folder-grant.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
@@ -47,6 +48,7 @@ export class DriveController {
     private readonly driveService: DriveService,
     private readonly driveUploadSessions: DriveUploadSessionService,
     private readonly driveFolders: DriveFolderService,
+    private readonly driveFolderGrants: DriveFolderGrantService,
     private readonly driveZipExports: DriveZipExportService,
     private readonly driveProjectHub: DriveProjectHubService,
     private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
@@ -81,6 +83,30 @@ export class DriveController {
         driveScope: request.permissionScope,
       },
     );
+  }
+
+  @Get('folders/grant-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Batch count active manual grants on Drive folders' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Comma-separated folder ids' })
+  async getFolderGrantCounts(@Query('ids') idsParam?: string) {
+    const folderIds = (idsParam ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return this.driveFolders.getFolderManualGrantCounts(folderIds);
+  }
+
+  @Get('files/grant-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Batch count active manual grants on Drive files' })
+  @ApiQuery({ name: 'ids', required: true, description: 'Comma-separated file asset ids' })
+  async getFileGrantCounts(@Query('ids') idsParam?: string) {
+    const fileIds = (idsParam ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return this.driveFolders.getFileManualGrantCounts(fileIds);
   }
 
   @Get('folders/tree')
@@ -149,6 +175,53 @@ export class DriveController {
     @Param('folderId') folderId: string,
   ) {
     await this.driveFolders.deleteFolder(folderId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('folders/:folderId/grants')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Grant another employee access to a Drive folder' })
+  async createFolderGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Body() body: CreateFileAssetGrantDto,
+  ) {
+    return this.driveFolderGrants.createGrant(folderId, body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('folders/:folderId/grants')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List active grants on a Drive folder' })
+  async listFolderGrants(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+  ) {
+    return this.driveFolderGrants.listGrants(folderId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Delete('folders/:folderId/grants/:grantId')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Revoke an active grant on a Drive folder' })
+  async revokeFolderGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Param('grantId') grantId: string,
+  ) {
+    return this.driveFolderGrants.revokeGrant(folderId, grantId, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,

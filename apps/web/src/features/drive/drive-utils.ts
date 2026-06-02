@@ -61,11 +61,22 @@ export function fileMatchesLibrary(
 }
 
 /** Merges file lists by id; earlier entries win. */
+function mergeManualGrantCount(a: FileAsset, b: FileAsset): FileAsset {
+  const count = Math.max(a.manualGrantCount ?? 0, b.manualGrantCount ?? 0);
+  if (count === (a.manualGrantCount ?? 0)) return a;
+  return { ...a, manualGrantCount: count };
+}
+
 export function mergeFileAssetsById(...lists: readonly FileAsset[][]): FileAsset[] {
   const map = new Map<string, FileAsset>();
   for (const list of lists) {
     for (const file of list) {
-      if (!map.has(file.id)) map.set(file.id, file);
+      const existing = map.get(file.id);
+      if (!existing) {
+        map.set(file.id, file);
+        continue;
+      }
+      map.set(file.id, mergeManualGrantCount(existing, file));
     }
   }
   return [...map.values()];

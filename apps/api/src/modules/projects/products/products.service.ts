@@ -41,6 +41,7 @@ import {
 } from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
+import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -119,6 +120,16 @@ function normalizeProductLanguages(input: unknown): string[] {
   return Array.from(out);
 }
 
+type ProductSlotSyncRow = {
+  id: string;
+  projectId: string;
+  pmId: string | null;
+  developerId: string | null;
+  designerId: string | null;
+  technicalSpecialistId: string | null;
+  qaLeadId: string | null;
+};
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -129,6 +140,7 @@ export class ProductsService {
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
+    private readonly productTeamSync: ProductTeamSyncService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -380,6 +392,7 @@ export class ProductsService {
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
+    await this.syncProductTeamAccess(product);
     return attachProductDeliveryLifecycle(product);
   }
 
@@ -424,6 +437,7 @@ export class ProductsService {
         qaLead: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.syncProductTeamAccess(product);
     return attachProductDeliveryLifecycle(product);
   }
 
@@ -621,6 +635,20 @@ export class ProductsService {
     ]);
 
     return { total, byStatus, byType };
+  }
+
+  private async syncProductTeamAccess(product: ProductSlotSyncRow): Promise<void> {
+    await this.productTeamSync.syncProductSlots({
+      productId: product.id,
+      projectId: product.projectId,
+      row: {
+        pmId: product.pmId,
+        developerId: product.developerId,
+        designerId: product.designerId,
+        technicalSpecialistId: product.technicalSpecialistId,
+        qaLeadId: product.qaLeadId,
+      },
+    });
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

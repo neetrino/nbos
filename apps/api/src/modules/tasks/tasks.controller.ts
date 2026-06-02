@@ -12,6 +12,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { tasksAccessFromUser } from './tasks-scoped-access';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -21,6 +23,7 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
+  @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get all tasks with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -37,6 +40,7 @@ export class TasksController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'involvesEmployeeId', required: false })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
@@ -75,6 +79,7 @@ export class TasksController {
       sortBy,
       sortOrder,
       involvesEmployeeId,
+      access: tasksAccessFromUser(user),
     });
   }
 

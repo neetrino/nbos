@@ -15,6 +15,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
+import { ProductTeamService } from '../../platform-access/product-team.service';
 import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
@@ -28,6 +29,7 @@ export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
     private readonly productAccessSlotBindings: ProductAccessSlotBindingsService,
+    private readonly productTeamService: ProductTeamService,
   ) {}
 
   @Get()
@@ -105,6 +107,12 @@ export class ProductsController {
   @ApiOperation({ summary: 'Remove a single access-slot binding (credential stays in vault)' })
   async unbindAccessSlotBinding(@Param('id') id: string, @Param('bindingId') bindingId: string) {
     return this.productAccessSlotBindings.unbindProductAccessSlotBinding(id, bindingId);
+  }
+
+  @Get(':id/team')
+  @ApiOperation({ summary: 'List product team members (platform access)' })
+  async listProductTeam(@Param('id') id: string) {
+    return this.productTeamService.listByProduct(id);
   }
 
   @Get(':id')

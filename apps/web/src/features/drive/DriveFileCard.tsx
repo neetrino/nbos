@@ -29,6 +29,10 @@ import {
 import { formatDriveLabel, formatFileSize } from './drive-format';
 import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
+import {
+  DriveManualGrantCountBadge,
+  normalizeManualGrantCount,
+} from './drive-manual-grant-count-badge';
 import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
 import { DRIVE_FILE_DRAG_MIME, stringifyDriveFileDragPayload } from './drive-file-drag';
 
@@ -238,6 +242,11 @@ function DriveFileCardTileRow({
         }
         onClick={() => onSelect(file)}
       />
+      {normalizeManualGrantCount(file.manualGrantCount) > 0 ? (
+        <div className="pointer-events-none absolute bottom-2 left-2 z-10">
+          <DriveManualGrantCountBadge count={file.manualGrantCount} />
+        </div>
+      ) : null}
       {showMenu && menu ? (
         <div className={cn('absolute top-2 right-2 z-10', CARD_CONTROL_HOVER)}>
           <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
@@ -268,6 +277,7 @@ function DriveFileCardListRow({
 }) {
   const showMenu = Boolean(menu);
   const draggable = Boolean(fileDrag);
+  const sharedCount = normalizeManualGrantCount(file.manualGrantCount);
   return (
     <div
       draggable={draggable}
@@ -284,27 +294,11 @@ function DriveFileCardListRow({
           : undefined
       }
       className={cn(
-        'border-border/70 bg-card/80 group hover:bg-muted/40 relative w-full rounded-2xl border transition-all',
+        'border-border/70 bg-card/80 group hover:bg-muted/40 relative flex w-full items-center gap-2 rounded-2xl border py-1 pr-1 transition-all',
         selected && 'border-primary/60 ring-primary/15 ring-2',
         draggable && 'cursor-grab active:cursor-grabbing',
       )}
     >
-      <button
-        type="button"
-        draggable={false}
-        onClick={() => onSelect(file)}
-        className="focus-visible:ring-ring flex w-full items-center gap-3 rounded-2xl py-3 pr-3 pl-10 text-left outline-none focus-visible:ring-2 md:pl-12"
-      >
-        <div className="border-border/60 relative size-12 shrink-0 overflow-hidden rounded-lg border">
-          <DriveFileCardThumbnail file={file} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-            {formatFileSize(file.sizeBytes)}
-          </p>
-        </div>
-      </button>
       <div
         className={cn(
           'absolute top-1/2 left-3 z-10 -translate-y-1/2 md:left-3',
@@ -319,11 +313,32 @@ function DriveFileCardListRow({
           className="mt-0"
         />
       </div>
-      {showMenu && menu && (
-        <div className={cn('absolute top-1/2 right-1 z-10 -translate-y-1/2', CARD_CONTROL_HOVER)}>
+      <button
+        type="button"
+        draggable={false}
+        onClick={() => onSelect(file)}
+        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-2xl py-3 pl-10 text-left outline-none focus-visible:ring-2 md:pl-12"
+      >
+        <div className="border-border/60 relative size-12 shrink-0 overflow-hidden rounded-lg border">
+          <DriveFileCardThumbnail file={file} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+            {formatFileSize(file.sizeBytes)}
+          </p>
+        </div>
+      </button>
+      {sharedCount > 0 ? (
+        <div className="shrink-0 px-1">
+          <DriveManualGrantCountBadge count={sharedCount} />
+        </div>
+      ) : null}
+      {showMenu && menu ? (
+        <div className={cn('shrink-0', CARD_CONTROL_HOVER)}>
           <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -349,6 +364,7 @@ function DriveFileCardGrid({
 }) {
   const showMenu = Boolean(menu);
   const draggable = Boolean(fileDrag);
+  const sharedCount = normalizeManualGrantCount(file.manualGrantCount);
   return (
     <div
       draggable={draggable}
@@ -386,6 +402,11 @@ function DriveFileCardGrid({
           </p>
         </div>
       </button>
+      {sharedCount > 0 ? (
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-[6] -translate-x-1/2">
+          <DriveManualGrantCountBadge count={sharedCount} />
+        </div>
+      ) : null}
       <div
         className={cn(
           'absolute top-2 left-2 z-10',

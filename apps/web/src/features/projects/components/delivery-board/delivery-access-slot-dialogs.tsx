@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { CreateCredentialDialog } from '@/features/credentials/components/CreateCredentialDialog';
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { credentialsApi } from '@/lib/api/credentials';
 import {
   productsApi,
@@ -177,9 +177,10 @@ export function CreateAccessSlotCredentialDialog({
   onBound,
 }: CreateAccessSlotCredentialDialogProps) {
   return (
-    <CreateCredentialDialog
+    <CredentialFormSheet
       open={open}
       onOpenChange={onOpenChange}
+      vaultScope="project"
       projectId={projectId}
       productId={productId}
       title={`New credential — ${slot.label}`}

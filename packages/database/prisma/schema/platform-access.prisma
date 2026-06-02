@@ -1,0 +1,143 @@
+// ─── PLATFORM ACCESS FOUNDATION ─────────────────────────────
+
+enum PlatformAccessActionEnum {
+  VIEW
+  EDIT
+}
+
+enum PlatformResourceFamilyEnum {
+  CREDENTIALS
+  DRIVE
+  FINANCE
+  PROJECT_HUB
+  TASKS
+}
+
+enum AccessScopeModeEnum {
+  NONE
+  ALL
+  ASSIGNED
+}
+
+enum ProjectTeamRoleEnum {
+  ADMIN
+  MEMBER
+}
+
+enum ProductTeamSlotEnum {
+  PM
+  DEVELOPER
+  DESIGNER
+  TECHNICAL_SPECIALIST
+  QA_LEAD
+  CONTRIBUTOR
+}
+
+enum TeamMemberSourceEnum {
+  MANUAL
+  PRODUCT_SLOT
+  EXTENSION_ASSIGNEE
+  MIGRATION
+}
+
+model ProjectTeamMember {
+  id          String                    @id @default(uuid())
+  projectId   String                    @map("project_id")
+  employeeId  String                    @map("employee_id")
+  role        ProjectTeamRoleEnum       @default(MEMBER)
+  accessLevel PlatformAccessActionEnum  @default(VIEW) @map("access_level")
+  source      TeamMemberSourceEnum      @default(MANUAL)
+  addedById   String?                   @map("added_by_id")
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee Employee  @relation("ProjectTeamMemberEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  addedBy  Employee? @relation("ProjectTeamMemberAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, employeeId])
+  @@index([employeeId])
+  @@map("project_team_members")
+}
+
+model ProductTeamMember {
+  id          String                    @id @default(uuid())
+  productId   String                    @map("product_id")
+  employeeId  String                    @map("employee_id")
+  slot        ProductTeamSlotEnum?
+  accessLevel PlatformAccessActionEnum  @default(VIEW) @map("access_level")
+  source      TeamMemberSourceEnum      @default(MANUAL)
+  isPrimary   Boolean                   @default(false) @map("is_primary")
+  addedById   String?                   @map("added_by_id")
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  employee Employee  @relation("ProductTeamMemberEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  addedBy  Employee? @relation("ProductTeamMemberAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+
+  @@unique([productId, employeeId])
+  @@index([employeeId])
+  @@index([productId, slot])
+  @@map("product_team_members")
+}
+
+model RoleAccessPolicy {
+  id             String                     @id @default(uuid())
+  roleId         String                     @map("role_id")
+  resourceFamily PlatformResourceFamilyEnum @map("resource_family")
+  defaultLevel   PlatformAccessActionEnum   @default(VIEW) @map("default_level")
+  scopeMode      AccessScopeModeEnum        @default(ASSIGNED) @map("scope_mode")
+  updatedById    String?                    @map("updated_by_id")
+  createdAt      DateTime                   @default(now()) @map("created_at")
+  updatedAt      DateTime                   @updatedAt @map("updated_at")
+
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  updatedBy Employee? @relation("RoleAccessPolicyUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([roleId, resourceFamily])
+  @@map("role_access_policies")
+}
+
+model EmployeeAccessOverride {
+  id             String                     @id @default(uuid())
+  employeeId     String                     @map("employee_id")
+  resourceFamily PlatformResourceFamilyEnum @map("resource_family")
+  level          PlatformAccessActionEnum   @default(VIEW)
+  scopeMode      AccessScopeModeEnum?
+  reason         String?
+  effectiveFrom  DateTime?                  @map("effective_from")
+  effectiveTo    DateTime?                  @map("effective_to")
+  createdById    String                     @map("created_by_id")
+  createdAt      DateTime                   @default(now()) @map("created_at")
+  updatedAt      DateTime                   @updatedAt @map("updated_at")
+
+  employee  Employee @relation("EmployeeAccessOverrideSubject", fields: [employeeId], references: [id], onDelete: Cascade)
+  createdBy Employee @relation("EmployeeAccessOverrideCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([employeeId, resourceFamily])
+  @@map("employee_access_overrides")
+}
+
+model ResourceAccessGrant {
+  id           String                   @id @default(uuid())
+  resourceType String                   @map("resource_type")
+  resourceId   String                   @map("resource_id")
+  employeeId   String                   @map("employee_id")
+  level        PlatformAccessActionEnum
+  grantedById  String                   @map("granted_by_id")
+  reason       String?
+  expiresAt    DateTime?                @map("expires_at")
+  revokedAt    DateTime?                @map("revoked_at")
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  employee  Employee @relation("ResourceAccessGrantEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  grantedBy Employee @relation("ResourceAccessGrantGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+
+  @@unique([resourceType, resourceId, employeeId])
+  @@index([employeeId])
+  @@index([resourceType, resourceId])
+  @@index([expiresAt])
+  @@map("resource_access_grants")
+}

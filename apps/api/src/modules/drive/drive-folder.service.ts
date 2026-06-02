@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient, type DriveSpaceEnum, type FilePurposeEnum } from '@nbos/database';
@@ -25,6 +31,17 @@ import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
 import { buildLinkCreateInput } from './drive-metadata';
 import { assertDriveFolderEntityScopeAccessible } from './drive-folder-entity-access';
+import {
+  attachManualGrantCount,
+  countDriveFileManualGrants,
+  countDriveFolderManualGrants,
+  manualGrantCountMapToRecord,
+} from './drive-manual-grant-counts';
+import {
+  buildDriveExplicitFolderGrantWhere,
+  employeeCanManageDriveFolderGrants,
+  employeeHasActiveDriveFolderGrant,
+} from './drive-resource-access-grant.sync';
 
 const ROOT_PARENT_TOKEN = 'root';
 const COPY_RESTRICTED_VISIBILITIES = new Set<string>(['PERSONAL', 'RESTRICTED']);
@@ -41,6 +58,16 @@ export class DriveFolderService {
     private readonly r2: DriveR2Client,
     private readonly config: ConfigService,
   ) {}
+
+  async getFolderManualGrantCounts(folderIds: string[]): Promise<Record<string, number>> {
+    const counts = await countDriveFolderManualGrants(this.prisma, folderIds);
+    return manualGrantCountMapToRecord(counts);
+  }
+
+  async getFileManualGrantCounts(fileAssetIds: string[]): Promise<Record<string, number>> {
+    const counts = await countDriveFileManualGrants(this.prisma, fileAssetIds);
+    return manualGrantCountMapToRecord(counts);
+  }
 
   async listFolder(
     params: DriveFolderQueryParams,
@@ -67,7 +94,7 @@ export class DriveFolderService {
     const fileContainerId = parentId ?? rootStorage.id;
     await this.assertFolderContainerScope(fileContainerId, entityScope);
 
-    const folderWhere =
+    const baseFolderWhere =
       parentId === null
         ? {
             space,
@@ -78,6 +105,12 @@ export class DriveFolderService {
             ...scopeWhere,
           }
         : { space, parentId, deletedAt: null, ...ownerWhere, ...scopeWhere };
+    const grantScope =
+      parentId === null
+        ? { space, parentId: null, deletedAt: null, ...scopeWhere }
+        : { space, parentId, deletedAt: null, ...scopeWhere };
+    const explicitGrantWhere = await buildDriveExplicitFolderGrantWhere(this.prisma, userId);
+    const folderWhere = { OR: [baseFolderWhere, { AND: [explicitGrantWhere, grantScope] }] };
 
     const [folders, placements] = await Promise.all([
       this.prisma.driveFolder.findMany({
@@ -99,13 +132,34 @@ export class DriveFolderService {
       }),
     ]);
 
+    const files = placements
+      .map((placement) => placement.fileAsset)
+      .filter((file): file is NonNullable<typeof file> => file != null);
+    const [folderGrantCounts, fileGrantCounts] = await Promise.all([
+      countDriveFolderManualGrants(
+        this.prisma,
+        folders.map((folder) => folder.id),
+      ),
+      countDriveFileManualGrants(
+        this.prisma,
+        files.map((file) => file.id),
+      ),
+    ]);
+
+    const foldersWithCounts = attachManualGrantCount(folders, folderGrantCounts).map((folder) =>
+      jsonSafeForHttp(folder),
+    );
+    const filesWithCounts = attachManualGrantCount(files, fileGrantCounts).map((file) =>
+      jsonSafeForHttp(file),
+    );
+
     return jsonSafeForHttp({
       space,
       parentId,
       scopeEntityType: entityScope?.scopeEntityType ?? null,
       scopeEntityId: entityScope?.scopeEntityId ?? null,
-      folders,
-      files: placements.map((placement) => placement.fileAsset).filter(Boolean),
+      folders: foldersWithCounts,
+      files: filesWithCounts,
       rootStorageFolderId: rootStorage.id,
     });
   }
@@ -233,6 +287,9 @@ export class DriveFolderService {
   async assertCanUseFolder(folderId: string, userId: string, access?: DriveEntityContextAccess) {
     const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
     if (!folder || folder.deletedAt) throw new NotFoundException(`Folder ${folderId} not found`);
+    if (await employeeHasActiveDriveFolderGrant(this.prisma, folderId, userId)) {
+      return folder;
+    }
     if (folder.space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);
     }
@@ -244,6 +301,19 @@ export class DriveFolderService {
       );
     }
     return folder;
+  }
+
+  async assertCanManageFolderGrants(
+    folderId: string,
+    userId: string,
+    access?: DriveEntityContextAccess,
+  ) {
+    const folder = await this.assertCanUseFolder(folderId, userId, access);
+    const isOwner = folder.ownerId === userId || folder.createdById === userId;
+    if (isOwner || (await employeeCanManageDriveFolderGrants(this.prisma, folderId, userId))) {
+      return folder;
+    }
+    throw new ForbiddenException('You cannot manage access for this folder.');
   }
 
   async placeFile(
@@ -447,6 +517,9 @@ export class DriveFolderService {
     }
     if (!scopeMatchesFolder(folder, entityScope)) {
       throw new NotFoundException(`Folder ${folderId} not found`);
+    }
+    if (await employeeHasActiveDriveFolderGrant(this.prisma, folderId, userId)) {
+      return;
     }
     if (space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);

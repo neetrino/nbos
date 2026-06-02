@@ -20,6 +20,7 @@ import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
 import type { ApiFieldError } from '@/lib/api-errors';
 import { DeliveryStageTimelineCard } from './DeliveryStageTimelineCard';
 import { ProductStageGateCard } from './ProductStageGateCard';
+import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
 
 interface ProductOverviewTabProps {
   product: FullProduct;
@@ -79,6 +80,7 @@ export function ProductOverviewTab({
         gateRequiredFields={gateRequiredFields}
         forceVisible={gateRequiredFields.has('description')}
       />
+      <ProductParticipantsSection productId={product.id} />
     </div>
   );
 }

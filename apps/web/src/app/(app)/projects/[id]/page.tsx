@@ -10,6 +10,7 @@ import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
 import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
+import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -53,6 +54,8 @@ export default function ProjectDetailPage() {
       <ProjectContactsSection project={project} onProjectUpdated={setProject} />
 
       <ProjectInfoCard project={project} />
+
+      <ProjectParticipantsSection projectId={project.id} />
 
       <ProjectExtensionsSnapshot project={project} />
 

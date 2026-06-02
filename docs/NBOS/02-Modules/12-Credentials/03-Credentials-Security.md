@@ -31,7 +31,7 @@ Secret скрыт по умолчанию.
 Reveal/copy должны требовать:
 
 - permission check;
-- optional step-up auth для critical secrets;
+- **tiered step-up:** LOW/MEDIUM — login session; HIGH/CRITICAL — daily vault unlock (24h server session);
 - audit log;
 - auto-hide;
 - clipboard clear best effort;
@@ -39,20 +39,19 @@ Reveal/copy должны требовать:
 
 ## Step-Up Auth
 
-Для опасных действий нужна повторная проверка пользователя:
+Для опасных действий нужна повторная проверка пользователя **каждый раз** (vault daily unlock **не** применяется):
 
-- reveal critical secret;
 - full export;
 - emergency access;
-- permission change для critical credential;
-- просмотр старых версий secret;
-- permanent delete.
+- permanent delete archived credential.
+
+Для reveal/copy **critical** live secrets и historical versions — **daily vault unlock** (24h), не пароль на каждый клик.
 
 Step-up может быть:
 
 - повторный пароль;
-- 2FA;
-- short-lived security session.
+- 2FA (future);
+- short-lived vault security session (implemented для HIGH/CRITICAL copy/reveal).
 
 ## Emergency Access / Break Glass
 

@@ -1,5 +1,11 @@
 import { Controller, Get, Post, Put, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequirePermission,
+} from '../../../common/decorators';
+import { financeSubscriptionAccessFromUser } from '../finance-module-access';
 import { SubscriptionsService } from './subscriptions.service';
 
 @ApiTags('Finance / Subscriptions')
@@ -9,8 +15,10 @@ export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Get()
+  @RequirePermission('FINANCE_SUBSCRIPTIONS', 'VIEW')
   @ApiOperation({ summary: 'Get all subscriptions' })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
@@ -31,24 +39,34 @@ export class SubscriptionsController {
       search,
       dateFrom,
       dateTo,
+      access: financeSubscriptionAccessFromUser(user),
     });
   }
 
   @Get('stats')
+  @RequirePermission('FINANCE_SUBSCRIPTIONS', 'VIEW')
   @ApiOperation({ summary: 'Get subscription statistics' })
   async getStats(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('partnerId') partnerId?: string,
   ) {
-    return this.subscriptionsService.getStats({ dateFrom, dateTo, partnerId });
+    return this.subscriptionsService.getStats({
+      dateFrom,
+      dateTo,
+      partnerId,
+      access: financeSubscriptionAccessFromUser(user),
+    });
   }
 
   @Get('grid')
+  @RequirePermission('FINANCE_SUBSCRIPTIONS', 'VIEW')
   @ApiOperation({
     summary: 'Subscription coverage grid for a calendar year (Invoice Card coverage + money state)',
   })
   async getGrid(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('year') year?: string,
     @Query('projectId') projectId?: string,
     @Query('partnerId') partnerId?: string,
@@ -65,6 +83,7 @@ export class SubscriptionsController {
       status,
       type,
       search,
+      access: financeSubscriptionAccessFromUser(user),
     });
   }
 
