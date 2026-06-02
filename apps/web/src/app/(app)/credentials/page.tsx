@@ -203,21 +203,10 @@ export default function CredentialsPage() {
         <CredentialVaultTiles
           credentials={credentials}
           loading={loading}
-          listScope={vaultListScope}
           showCreate={showCreate}
           onCreateOpen={() => openCreate()}
           onOpenCredential={openCredential}
-          onCopyLogin={(login) => copyToClipboard(login)}
-          onOpenUrl={(id) => {
-            void (async () => {
-              try {
-                const { url } = await credentialsApi.recordUrlOpened(id);
-                window.open(url, '_blank', 'noopener,noreferrer');
-              } catch {
-                toast.error('Could not open URL');
-              }
-            })();
-          }}
+          onCopyLogin={copyToClipboard}
           onCopyPassword={(id) => setTileCopyCredentialId(id)}
         />
       );
