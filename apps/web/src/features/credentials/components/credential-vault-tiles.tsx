@@ -14,10 +14,18 @@ import { CREDENTIAL_VAULT_TILE_GRID_CLASS } from '@/features/credentials/constan
 
 export { CREDENTIAL_VAULT_TILE_GRID_CLASS };
 
+export interface CredentialVaultTilesSelectionProps {
+  enabled: boolean;
+  selectionActive: boolean;
+  isSelected: (id: string) => boolean;
+  onToggle: (id: string) => void;
+}
+
 export interface CredentialVaultTilesProps {
   credentials: CredentialListItem[];
   loading: boolean;
   showCreate: boolean;
+  selection?: CredentialVaultTilesSelectionProps;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   onCopyLogin: (login: string) => void;
@@ -29,6 +37,7 @@ export function CredentialVaultTiles({
   credentials,
   loading,
   showCreate,
+  selection,
   onCreateOpen,
   onOpenCredential,
   onCopyLogin,
@@ -75,6 +84,10 @@ export function CredentialVaultTiles({
           onCopyLogin={onCopyLogin}
           onCopyPassword={onCopyPassword}
           passwordFlashCredentialId={passwordFlashCredentialId}
+          selectionEnabled={selection?.enabled}
+          selectionActive={selection?.selectionActive ?? false}
+          selected={selection?.isSelected(credential.id)}
+          onToggleSelected={() => selection?.onToggle(credential.id)}
         />
       ))}
     </div>

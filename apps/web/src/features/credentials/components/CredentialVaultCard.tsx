@@ -9,6 +9,11 @@ import {
   formatCredentialAccessLabel,
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
+import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
+import {
+  credentialVaultCheckboxRevealClass,
+  isCredentialVaultCheckboxTarget,
+} from '@/features/credentials/constants/credential-vault-selection-checkbox';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
@@ -66,6 +71,10 @@ export interface CredentialVaultCardProps {
   onCopyLogin?: (login: string) => void;
   onCopyPassword?: (credentialId: string) => void;
   passwordFlashCredentialId?: string | null;
+  selectionEnabled?: boolean;
+  selectionActive?: boolean;
+  selected?: boolean;
+  onToggleSelected?: () => void;
 }
 
 export function CredentialVaultCard({
@@ -75,6 +84,10 @@ export function CredentialVaultCard({
   onCopyLogin,
   onCopyPassword,
   passwordFlashCredentialId,
+  selectionEnabled = false,
+  selectionActive = false,
+  selected = false,
+  onToggleSelected,
 }: CredentialVaultCardProps) {
   const category = getCredentialCategoryMeta(credential.category);
   const criticality = getCredentialCriticality(credential.criticality);
@@ -101,7 +114,10 @@ export function CredentialVaultCard({
       role="button"
       tabIndex={0}
       className={shellClassForVariant(variant)}
-      onClick={() => onOpen(credential.id)}
+      onClick={(event) => {
+        if (isCredentialVaultCheckboxTarget(event.target)) return;
+        onOpen(credential.id);
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -113,6 +129,26 @@ export function CredentialVaultCard({
         className={cn('absolute top-0 bottom-0 left-0 w-0.5', category.accentBarClass)}
         aria-hidden
       />
+      {selectionEnabled && onToggleSelected ? (
+        <div
+          className={cn(
+            'absolute top-2 right-2 z-10',
+            credentialVaultCheckboxRevealClass(
+              selectionActive,
+              selected,
+              'group-hover/card:opacity-100',
+            ),
+          )}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <CredentialVaultSelectCheckbox
+            checked={selected}
+            ariaLabel={`Select ${credential.name}`}
+            onToggle={onToggleSelected}
+          />
+        </div>
+      ) : null}
       <div className={VAULT_CARD_BODY_CLASS}>
         <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
         {showCopyStrip && onCopyLogin ? (

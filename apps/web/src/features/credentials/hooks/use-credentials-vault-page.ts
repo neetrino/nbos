@@ -18,6 +18,7 @@ import {
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
 import { buildCredentialVaultRecentQueryParams } from '@/features/credentials/utils/credential-vault-recent-filters';
+import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
 import { useCredentialsVaultRecent } from '@/features/credentials/hooks/use-credentials-vault-recent';
 import { credentialsApi } from '@/lib/api/credentials';
 import { usePermission } from '@/lib/permissions';
@@ -59,6 +60,14 @@ export function useCredentialsVaultPage() {
   const [listExcludeIds, setListExcludeIds] = useState<string[]>([]);
 
   const recentEnabled = vaultShowsRecentStrip(viewMode, vaultListScope);
+  const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
+  const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
+  const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${search}`;
+  const selection = useCredentialVaultSelection(
+    selectionEnabled,
+    pageCredentialIds,
+    selectionResetKey,
+  );
   const recentFilterInput = useMemo(
     () => ({ search, quickCategory, filters, quickFilters }),
     [search, quickCategory, filters, quickFilters],
@@ -273,5 +282,8 @@ export function useCredentialsVaultPage() {
     refreshRecent,
     showRecentBlock,
     searchQuery,
+    selectionEnabled,
+    selection,
+    pageCredentialIds,
   };
 }

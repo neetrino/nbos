@@ -13,6 +13,7 @@ import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/consta
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultPagination } from '@/features/credentials/components/credential-vault-pagination';
+import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialVaultRecentStrip } from '@/features/credentials/components/credential-vault-recent-strip';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
@@ -115,6 +116,19 @@ export function CredentialsVaultPage() {
         onToggleQuick={vault.toggleQuickFilter}
       />
 
+      {vault.selection.selectionActive && (
+        <CredentialVaultBulkBar
+          count={vault.selection.selectedCount}
+          archivedList={vault.vaultListScope === 'archived'}
+          busy={vault.loading}
+          showSelectAll={vault.pageCredentialIds.length > 0}
+          selectedIds={vault.selection.selectedIdList}
+          onSelectAll={vault.selection.selectAllOnPage}
+          onClear={vault.selection.clearSelection}
+          onCompleted={handleSaved}
+        />
+      )}
+
       {vault.showRecentBlock && (
         <CredentialVaultRecentStrip
           credentials={vault.recentCredentials}
@@ -140,6 +154,28 @@ export function CredentialsVaultPage() {
           visibleLogins={vault.visibleLogins}
           quickCategoryChips={vault.quickCategoryChips}
           passwordFlashCredentialId={vault.passwordFlashCredentialId}
+          tableSelection={
+            vault.selectionEnabled
+              ? {
+                  enabled: true,
+                  selectionActive: vault.selection.selectionActive,
+                  isSelected: vault.selection.isSelected,
+                  onToggle: vault.selection.toggleSelected,
+                  onTogglePage: vault.selection.selectAllOnPage,
+                  pageIds: vault.pageCredentialIds,
+                }
+              : undefined
+          }
+          tilesSelection={
+            vault.selectionEnabled
+              ? {
+                  enabled: true,
+                  selectionActive: vault.selection.selectionActive,
+                  isSelected: vault.selection.isSelected,
+                  onToggle: vault.selection.toggleSelected,
+                }
+              : undefined
+          }
           onCreateOpen={() => vault.openCreate()}
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}

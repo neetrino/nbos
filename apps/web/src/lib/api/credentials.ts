@@ -108,6 +108,30 @@ export const credentialsApi = {
   async restore(id: string): Promise<void> {
     await api.post(`/api/credentials/${id}/restore`, {});
   },
+  async bulkArchive(credentialIds: string[]): Promise<{
+    succeeded: number;
+    skipped: number;
+    credentialIds: string[];
+  }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/archive', { credentialIds });
+    return resp.data;
+  },
+  async bulkRestore(credentialIds: string[]): Promise<{
+    succeeded: number;
+    skipped: number;
+    credentialIds: string[];
+  }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/restore', { credentialIds });
+    return resp.data;
+  },
   async getById(id: string): Promise<CredentialDetail> {
     const resp = await api.get<CredentialDetail>(`/api/credentials/${id}`);
     return resp.data;

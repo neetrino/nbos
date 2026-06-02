@@ -10,6 +10,8 @@ import { CredentialVaultTiles } from '@/features/credentials/components/credenti
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
+import type { CredentialVaultTableSelectionProps } from '@/features/credentials/components/credential-vault-table';
+import type { CredentialVaultTilesSelectionProps } from '@/features/credentials/components/credential-vault-tiles';
 
 export interface CredentialsVaultMainViewProps {
   viewMode: CredentialVaultViewMode;
@@ -21,6 +23,8 @@ export interface CredentialsVaultMainViewProps {
   visibleLogins: Set<string>;
   quickCategoryChips: readonly CredentialCategoryOption[];
   passwordFlashCredentialId: string | null;
+  tableSelection?: CredentialVaultTableSelectionProps;
+  tilesSelection?: CredentialVaultTilesSelectionProps;
   onCreateOpen: () => void;
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
@@ -43,6 +47,8 @@ export function CredentialsVaultMainView({
   visibleLogins,
   quickCategoryChips,
   passwordFlashCredentialId,
+  tableSelection,
+  tilesSelection,
   onCreateOpen,
   onCreateInCategory,
   onOpenCredential,
@@ -65,6 +71,7 @@ export function CredentialsVaultMainView({
         onCopyLogin={onCopyLogin}
         onCopyPassword={onCopyPassword}
         passwordFlashCredentialId={passwordFlashCredentialId}
+        selection={tilesSelection}
       />
     );
   }
@@ -98,6 +105,7 @@ export function CredentialsVaultMainView({
       onRequestPurge={onRequestPurge}
       onRestored={onRestored}
       showCreate={showCreate}
+      selection={tableSelection}
     />
   );
 }

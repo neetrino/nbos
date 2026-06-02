@@ -31,6 +31,7 @@ import {
   listCredentialSecretVersions,
   revealCredentialSecretVersion,
 } from './credentials-secret-versions.operations';
+import { bulkArchiveCredentials, bulkRestoreCredentials } from './credentials-bulk.operations';
 import {
   archiveCredential,
   createCredential,
@@ -161,8 +162,16 @@ export class CredentialsService {
     return archiveCredential(this.runtime, id, access);
   }
 
+  bulkArchive(credentialIds: string[], access: CredentialsAccessContext) {
+    return bulkArchiveCredentials(this.runtime, access, credentialIds);
+  }
+
   restore(id: string, access: CredentialsAccessContext) {
     return restoreCredential(this.runtime, id, access);
+  }
+
+  bulkRestore(credentialIds: string[], access: CredentialsAccessContext) {
+    return bulkRestoreCredentials(this.runtime, access, credentialIds);
   }
 
   permanentlyDelete(id: string, access: CredentialsAccessContext, stepUpPassword?: string) {

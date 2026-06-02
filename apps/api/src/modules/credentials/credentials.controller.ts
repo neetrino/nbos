@@ -15,6 +15,7 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import { credentialsAccessFromUser } from './credentials-access';
 import { CredentialsService } from './credentials.service';
 import { normalizeCredentialTab } from './credential-tab';
+import { normalizeBulkCredentialIds } from './credential-bulk.ids';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -133,14 +134,41 @@ export class CredentialsController {
     @Body() body: { credentialIds?: string[]; fields?: string[]; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
+    const credentialIds = Array.isArray(body.credentialIds)
+      ? normalizeBulkCredentialIds(body.credentialIds)
+      : undefined;
     return this.credentialsService.exportCredentialsFile(
       {
-        credentialIds: Array.isArray(body.credentialIds) ? body.credentialIds : undefined,
+        credentialIds,
         fields: Array.isArray(body.fields) ? body.fields : undefined,
         stepUpPassword: body.stepUpPassword,
       },
       credentialsAccessFromUser(user),
     );
+  }
+
+  @Post('bulk/archive')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Archive multiple credentials (visibility-checked)' })
+  async bulkArchive(
+    @Body() body: { credentialIds?: string[] },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    return this.credentialsService.bulkArchive(credentialIds, credentialsAccessFromUser(user));
+  }
+
+  @Post('bulk/restore')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Restore multiple archived credentials' })
+  async bulkRestore(
+    @Body() body: { credentialIds?: string[] },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    return this.credentialsService.bulkRestore(credentialIds, credentialsAccessFromUser(user));
   }
 
   @Get(':id/manual-access')

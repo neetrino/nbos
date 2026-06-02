@@ -8,14 +8,26 @@ import { Table, TableHeader, TableBody, TableHead, TableRow } from '@/components
 import { EmptyState } from '@/components/shared';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { PermissionGate } from '@/lib/permissions';
+import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
+import { credentialVaultCheckboxRevealClass } from '@/features/credentials/constants/credential-vault-selection-checkbox';
 
 export type VaultListScope = 'active' | 'archived';
+
+export interface CredentialVaultTableSelectionProps {
+  enabled: boolean;
+  selectionActive: boolean;
+  isSelected: (id: string) => boolean;
+  onToggle: (id: string) => void;
+  onTogglePage: () => void;
+  pageIds: string[];
+}
 
 export interface CredentialVaultTableProps {
   credentials: CredentialListItem[];
   loading: boolean;
   listScope: VaultListScope;
   visibleLogins: Set<string>;
+  selection?: CredentialVaultTableSelectionProps;
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onCreateOpen: () => void;
@@ -39,8 +51,14 @@ export function CredentialVaultTable({
   onRequestPurge,
   onRestored,
   showCreate,
+  selection,
 }: CredentialVaultTableProps) {
   const isArchivedList = listScope === 'archived';
+  const pageIds = selection?.pageIds ?? [];
+  const allPageSelected =
+    selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+  const somePageSelected =
+    selection?.enabled && pageIds.some((id) => selection.isSelected(id)) && !allPageSelected;
   if (loading) {
     return (
       <div className="space-y-2">
@@ -70,11 +88,31 @@ export function CredentialVaultTable({
     );
   }
 
+  const bulkSelectionStarted = selection?.selectionActive ?? false;
+
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
+    <div className="group/vault-table border-border overflow-hidden rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>
+            {selection?.enabled ? (
+              <TableHead className="w-10">
+                <div
+                  className={credentialVaultCheckboxRevealClass(
+                    bulkSelectionStarted,
+                    allPageSelected,
+                    'group-hover/vault-table:opacity-100',
+                  )}
+                >
+                  <CredentialVaultSelectCheckbox
+                    checked={Boolean(allPageSelected)}
+                    indeterminate={somePageSelected}
+                    ariaLabel="Select all on page"
+                    onToggle={() => selection.onTogglePage()}
+                  />
+                </div>
+              </TableHead>
+            ) : null}
             <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Type</TableHead>
@@ -96,6 +134,10 @@ export function CredentialVaultTable({
               cred={cred}
               isArchivedList={isArchivedList}
               isLoginVisible={visibleLogins.has(cred.id)}
+              selectionEnabled={selection?.enabled ?? false}
+              selectionActive={bulkSelectionStarted}
+              selected={selection?.isSelected(cred.id) ?? false}
+              onToggleSelected={() => selection?.onToggle(cred.id)}
               onToggleLogin={onToggleLogin}
               onCopy={onCopy}
               onOpenCredential={onOpenCredential}
