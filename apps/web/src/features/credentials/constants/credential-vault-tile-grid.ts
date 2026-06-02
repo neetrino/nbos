@@ -1,3 +1,6 @@
-/** Shared responsive tile grid for vault tiles view (max 5 columns on large screens). */
+/** Minimum tile track width (px) before wrapping. Kept in sync with grid class below. */
+export const CREDENTIAL_VAULT_TILE_MIN_WIDTH_PX = 240;
+
+/** Fluid tile grid — as many columns as fit at the current width (no fixed breakpoints). */
 export const CREDENTIAL_VAULT_TILE_GRID_CLASS =
-  'grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+  'grid gap-2 grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))]';
