@@ -29,7 +29,10 @@ export class CredentialsController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'credentialType', required: false })
   @ApiQuery({ name: 'accessLevel', required: false })
+  @ApiQuery({ name: 'ownerId', required: false })
+  @ApiQuery({ name: 'needsRotation', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({
     name: 'tab',
@@ -47,20 +50,28 @@ export class CredentialsController {
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('category') category?: string,
+    @Query('credentialType') credentialType?: string,
     @Query('accessLevel') accessLevel?: string,
+    @Query('ownerId') ownerId?: string,
+    @Query('needsRotation') needsRotation?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
     @Query('includeArchived') includeArchived?: string,
   ) {
     const archivedFlag =
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
+    const rotationFlag =
+      needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
     const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
       category,
+      credentialType,
       accessLevel,
+      ownerId,
+      needsRotation: rotationFlag,
       search,
       tab: normalizeCredentialTab(tab),
       employeeId: access.employeeId,

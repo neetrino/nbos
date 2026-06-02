@@ -69,11 +69,15 @@ interface CredentialQueryParams {
   pageSize?: number;
   projectId?: string;
   category?: string;
+  credentialType?: string;
   accessLevel?: string;
   search?: string;
   tab?: CredentialTab;
   employeeId?: string;
+  ownerId?: string;
   departmentIds?: string[];
+  /** When true, rows with nextRotationAt due within 14 days or overdue. */
+  needsRotation?: boolean;
   /** RBAC CREDENTIALS VIEW scope from the caller. */
   viewScope?: string;
   /** When true, list only archived rows (same visibility rules). */
@@ -180,11 +184,14 @@ export class CredentialsService {
       pageSize = 20,
       projectId,
       category,
+      credentialType,
       accessLevel,
       search,
       tab,
       employeeId,
+      ownerId,
       departmentIds = [],
+      needsRotation = false,
       viewScope,
       includeArchived = false,
     } = params;
@@ -199,7 +206,16 @@ export class CredentialsService {
 
     if (projectId) where.projectId = projectId;
     if (category) where.category = category as Prisma.CredentialWhereInput['category'];
+    if (credentialType) {
+      where.credentialType = credentialType as Prisma.CredentialWhereInput['credentialType'];
+    }
     if (accessLevel) where.accessLevel = accessLevel as Prisma.CredentialWhereInput['accessLevel'];
+    if (ownerId) where.ownerId = ownerId;
+    if (needsRotation) {
+      const dueSoonLimit = new Date();
+      dueSoonLimit.setUTCDate(dueSoonLimit.getUTCDate() + 14);
+      where.nextRotationAt = { lte: dueSoonLimit };
+    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
