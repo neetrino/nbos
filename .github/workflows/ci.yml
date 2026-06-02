@@ -94,4 +94,13 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
 
       - name: Run gitleaks
-        run: gitleaks detect --source . --verbose --redact
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gitleaks detect --source . --verbose --redact \
+              --log-opts "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            gitleaks detect --source . --verbose --redact \
+              --log-opts "${{ github.event.before }}..${{ github.sha }}"
+          else
+            gitleaks detect --source . --verbose --redact
+          fi

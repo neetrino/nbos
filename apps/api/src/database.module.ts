@@ -25,9 +25,7 @@ export const PRISMA_TOKEN = 'PRISMA_CLIENT';
   exports: [PRISMA_TOKEN],
 })
 export class DatabaseModule implements OnModuleDestroy {
-  constructor(
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-  ) {}
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async onModuleDestroy() {
     await this.prisma.$disconnect();

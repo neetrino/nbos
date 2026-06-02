@@ -7,3 +7,8 @@ pnpm-lock.yaml
 prisma/migrations
 packages/database/src/generated/prisma
 .git
+.claude
+apps/web/.clerk
+apps/web/next-env.d.ts
+docs/archive
+docs/reference
