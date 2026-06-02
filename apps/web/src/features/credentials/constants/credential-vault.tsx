@@ -26,4 +26,7 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
 
 export const CREDENTIAL_VAULT_PAGE_SIZE = 50;
 
+/** Compact cards in the recently-used strip (canon: 4–5). */
+export const CREDENTIAL_VAULT_RECENT_LIMIT = 5;
+
 export type CredentialQuickFilterKey = 'mine' | 'needsRotation';

@@ -81,6 +81,15 @@ export class CredentialsController {
     });
   }
 
+  @Get('recent')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({
+    summary: 'Recently used credentials for current user (from audit activity)',
+  })
+  async findRecent(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.findRecent(credentialsAccessFromUser(user));
+  }
+
   @Get(':id')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({

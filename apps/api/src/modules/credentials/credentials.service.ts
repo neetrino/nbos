@@ -13,6 +13,7 @@ import type {
 } from './credential-domain.types';
 import type { CredentialsAccessContext } from './credentials-access';
 import { findAllCredentials } from './credentials-list.operations';
+import { findRecentCredentials } from './credentials-recent.operations';
 import {
   copyCredentialSecret,
   exportCredentialsBundle,
@@ -59,6 +60,10 @@ export class CredentialsService {
 
   findAll(params: CredentialQueryParams) {
     return findAllCredentials(this.runtime, params);
+  }
+
+  findRecent(access: CredentialsAccessContext) {
+    return findRecentCredentials(this.runtime, access);
   }
 
   findById(id: string, access: CredentialsAccessContext) {
