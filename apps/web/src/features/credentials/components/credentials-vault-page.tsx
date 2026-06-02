@@ -70,9 +70,6 @@ export function CredentialsVaultPage() {
         }
         trailing={
           <>
-            <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-              {vault.total} credentials
-            </span>
             <PermissionGate module="CREDENTIALS" action="VIEW">
               <CredentialsPageSettingsSheet
                 vaultListScope={vault.vaultListScope}
@@ -95,14 +92,19 @@ export function CredentialsVaultPage() {
         <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
-      <CredentialQuickFilterChips
-        vaultScope={vault.activeTab}
-        categoryChips={vault.quickCategoryChips}
-        activeCategory={vault.quickCategory}
-        onCategoryChange={vault.setQuickCategory}
-        activeQuick={vault.quickFilters}
-        onToggleQuick={vault.toggleQuickFilter}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <CredentialQuickFilterChips
+          vaultScope={vault.activeTab}
+          categoryChips={vault.quickCategoryChips}
+          activeCategory={vault.quickCategory}
+          onCategoryChange={vault.setQuickCategory}
+          activeQuick={vault.quickFilters}
+          onToggleQuick={vault.toggleQuickFilter}
+        />
+        <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+          {vault.total} credentials
+        </span>
+      </div>
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
