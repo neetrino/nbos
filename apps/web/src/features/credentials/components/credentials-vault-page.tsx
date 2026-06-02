@@ -35,8 +35,14 @@ function showRecentStrip(
 export function CredentialsVaultPage() {
   const vault = useCredentialsVaultPage();
   const recentEnabled = showRecentStrip(vault.viewMode, vault.vaultListScope);
-  const { recentCredentials, recentLoading, refreshRecent } =
-    useCredentialsVaultRecent(recentEnabled);
+  const searchQuery = vault.search.trim();
+  const { recentCredentials, recentLoading, refreshRecent } = useCredentialsVaultRecent(
+    recentEnabled,
+    vault.activeTab,
+    searchQuery,
+  );
+  const showRecentBlock =
+    recentEnabled && (recentLoading || recentCredentials.length > 0 || searchQuery.length === 0);
 
   useCredentialVaultOpenQuery(vault.openCredential);
 
@@ -129,10 +135,11 @@ export function CredentialsVaultPage() {
         onToggleQuick={vault.toggleQuickFilter}
       />
 
-      {recentEnabled && (
+      {showRecentBlock && (
         <CredentialVaultRecentStrip
           credentials={recentCredentials}
           loading={recentLoading}
+          searchActive={searchQuery.length > 0}
           onOpenCredential={vault.openCredential}
           onCopyLogin={vault.copyToClipboard}
           onCopyPassword={vault.setTileCopyCredentialId}

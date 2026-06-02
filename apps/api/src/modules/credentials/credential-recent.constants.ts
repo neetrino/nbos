@@ -1,5 +1,8 @@
 /** Max credentials returned for the recent strip. */
-export const CREDENTIAL_RECENT_LIMIT = 5;
+export const CREDENTIAL_RECENT_LIMIT = 10;
+
+/** Audit dedupe pool before tab/search filtering (may shrink below limit). */
+export const CREDENTIAL_RECENT_CANDIDATE_POOL = 40;
 
 /** Audit rows scanned before dedupe (per user, recent window). */
 export const CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT = 100;

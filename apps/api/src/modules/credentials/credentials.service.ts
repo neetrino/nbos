@@ -74,8 +74,8 @@ export class CredentialsService {
     return findAllCredentials(this.runtime, params);
   }
 
-  findRecent(access: CredentialsAccessContext) {
-    return findRecentCredentials(this.runtime, access);
+  findRecent(access: CredentialsAccessContext, query?: { tab?: string; search?: string }) {
+    return findRecentCredentials(this.runtime, access, query);
   }
 
   findById(id: string, access: CredentialsAccessContext) {

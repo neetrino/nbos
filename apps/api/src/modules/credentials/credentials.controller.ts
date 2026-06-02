@@ -86,8 +86,14 @@ export class CredentialsController {
   @ApiOperation({
     summary: 'Recently used credentials for current user (from audit activity)',
   })
-  async findRecent(@CurrentUser() user: CurrentUserPayload) {
-    return this.credentialsService.findRecent(credentialsAccessFromUser(user));
+  @ApiQuery({ name: 'tab', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  async findRecent(
+    @Query('tab') tab: string | undefined,
+    @Query('search') search: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.findRecent(credentialsAccessFromUser(user), { tab, search });
   }
 
   @Post('export/file')

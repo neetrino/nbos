@@ -10,9 +10,9 @@ import { PermissionGate } from '@/lib/permissions';
 
 const TILE_SKELETON_COUNT = 12;
 
-/** 4 columns on small viewports; 5–6 on large (vault tiles canon). */
-export const CREDENTIAL_VAULT_TILE_GRID_CLASS =
-  'grid grid-cols-4 gap-2 lg:grid-cols-5 2xl:grid-cols-6';
+import { CREDENTIAL_VAULT_TILE_GRID_CLASS } from '@/features/credentials/constants/credential-vault-tile-grid';
+
+export { CREDENTIAL_VAULT_TILE_GRID_CLASS };
 
 export interface CredentialVaultTilesProps {
   credentials: CredentialListItem[];
