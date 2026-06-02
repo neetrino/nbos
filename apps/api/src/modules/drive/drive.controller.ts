@@ -23,6 +23,7 @@ import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
 import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
+import { DriveAccessContextService } from './drive-access-context.service';
 import { ApplyDriveCleanupDto } from './apply-drive-cleanup.dto';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
@@ -53,6 +54,7 @@ export class DriveController {
     private readonly driveProjectHub: DriveProjectHubService,
     private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
     private readonly driveCleanupApply: DriveCleanupApplyService,
+    private readonly driveAccessContext: DriveAccessContextService,
   ) {}
 
   @Get('folders')
@@ -77,11 +79,7 @@ export class DriveController {
     return this.driveFolders.listFolder(
       { space, parentId, scopeEntityType, scopeEntityId },
       user.id,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -126,11 +124,7 @@ export class DriveController {
       space ?? '',
       user.id,
       { scopeEntityType, scopeEntityId },
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -142,11 +136,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: CreateDriveFolderDto,
   ) {
-    return this.driveFolders.createFolder(body, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolders.createFolder(
+      body,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Patch('folders/:folderId')
@@ -158,11 +152,12 @@ export class DriveController {
     @Param('folderId') folderId: string,
     @Body() body: RenameDriveFolderDto,
   ) {
-    return this.driveFolders.renameFolder(folderId, body, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolders.renameFolder(
+      folderId,
+      body,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Delete('folders/:folderId')
@@ -174,11 +169,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('folderId') folderId: string,
   ) {
-    await this.driveFolders.deleteFolder(folderId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    await this.driveFolders.deleteFolder(
+      folderId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('folders/:folderId/grants')
@@ -190,11 +185,12 @@ export class DriveController {
     @Param('folderId') folderId: string,
     @Body() body: CreateFileAssetGrantDto,
   ) {
-    return this.driveFolderGrants.createGrant(folderId, body, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolderGrants.createGrant(
+      folderId,
+      body,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('folders/:folderId/grants')
@@ -205,11 +201,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('folderId') folderId: string,
   ) {
-    return this.driveFolderGrants.listGrants(folderId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolderGrants.listGrants(
+      folderId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Delete('folders/:folderId/grants/:grantId')
@@ -221,11 +217,12 @@ export class DriveController {
     @Param('folderId') folderId: string,
     @Param('grantId') grantId: string,
   ) {
-    return this.driveFolderGrants.revokeGrant(folderId, grantId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolderGrants.revokeGrant(
+      folderId,
+      grantId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('folders/:folderId/files/:fileId/move')
@@ -243,11 +240,7 @@ export class DriveController {
       body.targetFolderId,
       fileId,
       user.id,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -260,11 +253,12 @@ export class DriveController {
     @Param('fileId') fileId: string,
     @Body() body: CopyFolderFileDto,
   ) {
-    return this.driveFolders.copyFile(body.targetFolderId, fileId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolders.copyFile(
+      body.targetFolderId,
+      fileId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Delete('folders/:folderId/files/:fileId')
@@ -277,11 +271,12 @@ export class DriveController {
     @Param('folderId') folderId: string,
     @Param('fileId') fileId: string,
   ) {
-    await this.driveFolders.removeFile(folderId, fileId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    await this.driveFolders.removeFile(
+      folderId,
+      fileId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('folders/:folderId/files')
@@ -293,11 +288,12 @@ export class DriveController {
     @Param('folderId') folderId: string,
     @Body() body: AddFolderFileDto,
   ) {
-    return this.driveFolders.addFileToFolder(folderId, body.fileAssetId.trim(), user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveFolders.addFileToFolder(
+      folderId,
+      body.fileAssetId.trim(),
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('project-hub/:projectId')
@@ -310,11 +306,10 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('projectId') projectId: string,
   ) {
-    return this.driveProjectHub.getSummary(projectId.trim(), {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveProjectHub.getSummary(
+      projectId.trim(),
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('files')
@@ -371,11 +366,7 @@ export class DriveController {
         sharedWithMe: sharedWithMe === 'true',
         trash: trash === 'true' || trash === '1',
       },
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -390,12 +381,11 @@ export class DriveController {
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
   ) {
-    return this.driveService.getLibraryContextSummary(entityType, entityId, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-      documentsAccess: buildDocumentsReadAccess(user),
-    });
+    return this.driveService.getLibraryContextSummary(
+      entityType,
+      entityId,
+      await this.driveAccessContext.fromRequestWithDocuments(user, request.permissionScope),
+    );
   }
 
   @Get('files/library-link-aggregates')
@@ -413,12 +403,11 @@ export class DriveController {
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
   ) {
-    return this.driveService.getLibraryRelatedLinkAggregates(entityType, entityId, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-      documentsAccess: buildDocumentsReadAccess(user),
-    });
+    return this.driveService.getLibraryRelatedLinkAggregates(
+      entityType,
+      entityId,
+      await this.driveAccessContext.fromRequestWithDocuments(user, request.permissionScope),
+    );
   }
 
   @Get('cleanup-summary')
@@ -486,11 +475,7 @@ export class DriveController {
         exportKind: body.exportKind,
         exportParams: body.exportParams,
       },
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -530,11 +515,7 @@ export class DriveController {
     return this.driveService.getAssetViewUrl(
       id,
       docId ? { forDocumentId: docId, documentsAccess: buildDocumentsReadAccess(user) } : undefined,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }
 
@@ -545,11 +526,9 @@ export class DriveController {
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
   ) {
-    return this.driveService.getLifecycleCounts({
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.getLifecycleCounts(
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/permanent-delete')
@@ -562,11 +541,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.permanentlyDeleteFileAsset(id, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.permanentlyDeleteFileAsset(
+      id,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('files/:id')
@@ -577,11 +556,10 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.getFileAsset(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.getFileAsset(
+      id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('library')
@@ -602,11 +580,7 @@ export class DriveController {
     return this.driveUploadSessions.listDriveLibrary(
       contextType,
       contextId,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
       buildDocumentsReadAccess(user),
     );
   }
@@ -622,11 +596,7 @@ export class DriveController {
     return this.driveUploadSessions.createUploadSession(
       body,
       user.id,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
       buildDocumentsReadAccess(user),
     );
   }
@@ -644,11 +614,7 @@ export class DriveController {
       sessionId,
       user.id,
       body,
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds,
-        driveScope: request.permissionScope,
-      },
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
       buildDocumentsReadAccess(user),
     );
   }
@@ -680,12 +646,11 @@ export class DriveController {
     @Param('id') id: string,
     @Body() body: CreateFileLinkDto,
   ) {
-    return this.driveService.linkFileAsset(id, body, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-      documentsAccess: buildDocumentsReadAccess(user),
-    });
+    return this.driveService.linkFileAsset(
+      id,
+      body,
+      await this.driveAccessContext.fromRequestWithDocuments(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/grants')
@@ -697,11 +662,12 @@ export class DriveController {
     @Param('id') id: string,
     @Body() body: CreateFileAssetGrantDto,
   ) {
-    return this.driveService.createFileAssetGrant(id, body, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.createFileAssetGrant(
+      id,
+      body,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Get('files/:id/grants')
@@ -712,11 +678,10 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.listFileAssetGrants(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.listFileAssetGrants(
+      id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Delete('files/:id/grants/:grantId')
@@ -728,11 +693,12 @@ export class DriveController {
     @Param('id') id: string,
     @Param('grantId') grantId: string,
   ) {
-    return this.driveService.revokeFileAssetGrant(id, grantId, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.revokeFileAssetGrant(
+      id,
+      grantId,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/version-upload-url')
@@ -744,11 +710,11 @@ export class DriveController {
     @Param('id') id: string,
     @Body() body: CreateFileVersionUploadDto,
   ) {
-    return this.driveService.createVersionUploadUrl(id, body, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.createVersionUploadUrl(
+      id,
+      body,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/versions')
@@ -760,11 +726,12 @@ export class DriveController {
     @Param('id') id: string,
     @Body() body: CompleteFileVersionDto,
   ) {
-    return this.driveService.completeFileVersion(id, user.id, body, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.completeFileVersion(
+      id,
+      user.id,
+      body,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Delete('files/:id/links/:linkId')
@@ -777,11 +744,11 @@ export class DriveController {
     @Param('id') id: string,
     @Param('linkId') linkId: string,
   ) {
-    await this.driveService.unlinkFileAsset(id, linkId, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    await this.driveService.unlinkFileAsset(
+      id,
+      linkId,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/archive')
@@ -792,11 +759,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.archiveFileAsset(id, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.archiveFileAsset(
+      id,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/restore')
@@ -807,11 +774,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.restoreFileAsset(id, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.restoreFileAsset(
+      id,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/archive-batch')
@@ -822,11 +789,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: { ids: string[] },
   ) {
-    return this.driveService.archiveFileAssets(body.ids ?? [], user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.archiveFileAssets(
+      body.ids ?? [],
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/restore-batch')
@@ -837,11 +804,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: { ids: string[] },
   ) {
-    return this.driveService.restoreFileAssets(body.ids ?? [], user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.restoreFileAssets(
+      body.ids ?? [],
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/:id/restore-from-trash')
@@ -852,11 +819,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.restoreTrashFileAsset(id, user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.restoreTrashFileAsset(
+      id,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/restore-trash-batch')
@@ -867,11 +834,11 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: { ids: string[] },
   ) {
-    return this.driveService.restoreTrashFileAssets(body.ids ?? [], user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.restoreTrashFileAssets(
+      body.ids ?? [],
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 
   @Post('files/move-to-trash-batch')
@@ -882,10 +849,10 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: { ids: string[] },
   ) {
-    return this.driveService.moveFileAssetsToTrash(body.ids ?? [], user.id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveService.moveFileAssetsToTrash(
+      body.ids ?? [],
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
   }
 }

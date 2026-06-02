@@ -15,9 +15,11 @@ import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.servic
 import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
+import { PlatformAccessModule } from '../platform-access/platform-access.module';
+import { DriveAccessContextService } from './drive-access-context.service';
 
 @Module({
-  imports: [NotificationModule, AuditModule],
+  imports: [NotificationModule, AuditModule, PlatformAccessModule],
   controllers: [DriveController],
   providers: [
     DriveR2Client,
@@ -33,6 +35,7 @@ import { AuditModule } from '../audit/audit.module';
     DriveTypedExportResolver,
     DriveCleanupCandidatesService,
     DriveCleanupApplyService,
+    DriveAccessContextService,
   ],
   exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
 })
