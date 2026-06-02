@@ -40,7 +40,7 @@ export function CredentialsVaultPage() {
   };
 
   const handleSaved = () => {
-    void vault.fetchCredentials();
+    void vault.fetchCredentials({ silent: true });
   };
 
   return (

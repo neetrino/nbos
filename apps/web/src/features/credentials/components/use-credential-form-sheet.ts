@@ -30,6 +30,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     setRevealed: state.setRevealed,
     loadDetail: state.loadDetail,
     commitFormSnapshot: state.commitFormSnapshot,
+    captureFormRollback: state.captureFormRollback,
   });
 
   return {

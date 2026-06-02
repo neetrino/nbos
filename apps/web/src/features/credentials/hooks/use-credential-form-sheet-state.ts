@@ -13,7 +13,10 @@ import {
   type CredentialManualGrant,
   type CredentialSecretField,
 } from '@/lib/api/credentials';
-import { buildCredentialFormSnap } from '@/features/credentials/utils/credential-form-sheet-snapshot';
+import {
+  buildCredentialFormSnap,
+  type CredentialFormRollbackState,
+} from '@/features/credentials/utils/credential-form-sheet-snapshot';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
@@ -139,6 +142,68 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     comment,
     nextRotationAt,
     manualGrants,
+  ]);
+
+  const captureFormRollback = useCallback((): (() => void) => {
+    const saved: CredentialFormRollbackState = {
+      name,
+      category,
+      credentialType,
+      criticality,
+      environment,
+      provider,
+      url,
+      login,
+      phone,
+      comment,
+      nextRotationAt,
+      accessLevel,
+      password,
+      apiKey,
+      envData,
+      snap,
+      manualGrants: manualGrants.map((g) => ({
+        ...g,
+        employee: { ...g.employee },
+      })),
+    };
+    return () => {
+      setName(saved.name);
+      setCategory(saved.category);
+      setCredentialType(saved.credentialType);
+      setCriticality(saved.criticality);
+      setEnvironment(saved.environment);
+      setProvider(saved.provider);
+      setUrl(saved.url);
+      setLogin(saved.login);
+      setPhone(saved.phone);
+      setComment(saved.comment);
+      setNextRotationAt(saved.nextRotationAt);
+      setAccessLevel(saved.accessLevel);
+      setPassword(saved.password);
+      setApiKey(saved.apiKey);
+      setEnvData(saved.envData);
+      setManualGrants(saved.manualGrants);
+      setSnap(saved.snap);
+    };
+  }, [
+    accessLevel,
+    apiKey,
+    category,
+    comment,
+    credentialType,
+    criticality,
+    envData,
+    environment,
+    login,
+    manualGrants,
+    name,
+    nextRotationAt,
+    password,
+    phone,
+    provider,
+    snap,
+    url,
   ]);
 
   const applyDetail = useCallback(
@@ -285,6 +350,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     dirty,
     loadDetail,
     commitFormSnapshot,
+    captureFormRollback,
     accessDenied,
     setAccessDenied,
   };

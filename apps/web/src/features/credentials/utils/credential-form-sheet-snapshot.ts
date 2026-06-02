@@ -15,6 +15,15 @@ export type CredentialFormSnapFields = {
   manualGrants: CredentialManualGrant[];
 };
 
+/** Full form state restored when a background save fails. */
+export type CredentialFormRollbackState = CredentialFormSnapFields & {
+  accessLevel: string;
+  password: string;
+  apiKey: string;
+  envData: string;
+  snap: string;
+};
+
 /** Stable JSON for dirty detection on the credential Sheet. */
 export function buildCredentialFormSnap(fields: CredentialFormSnapFields): string {
   const manual = fields.manualGrants.map((g) => ({

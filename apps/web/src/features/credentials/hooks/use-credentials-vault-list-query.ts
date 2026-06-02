@@ -87,11 +87,11 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
   );
 
   const fetchPage = useCallback(
-    async (targetPage: number, mode: 'replace' | 'append') => {
+    async (targetPage: number, mode: 'replace' | 'append', options?: { silent?: boolean }) => {
       const p = paramsRef.current;
       const generation = ++fetchGenerationRef.current;
-      if (mode === 'replace') setLoading(true);
-      else setLoadingMore(true);
+      if (mode === 'replace' && !options?.silent) setLoading(true);
+      else if (mode === 'append') setLoadingMore(true);
 
       try {
         const isBoardView = p.viewMode === 'category-board';
@@ -161,13 +161,16 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
     void fetchPage(loadedBoardPage + 1, 'append');
   }, [fetchPage, hasMore, isBoard, loadedBoardPage, loading, loadingMore]);
 
-  const refetch = useCallback(() => {
-    if (isBoard) {
-      void fetchPage(1, 'replace');
-      return;
-    }
-    void fetchPage(params.page, 'replace');
-  }, [fetchPage, isBoard, params.page]);
+  const refetch = useCallback(
+    (options?: { silent?: boolean }) => {
+      if (isBoard) {
+        void fetchPage(1, 'replace', options);
+        return;
+      }
+      void fetchPage(params.page, 'replace', options);
+    },
+    [fetchPage, isBoard, params.page],
+  );
 
   return {
     credentials,
