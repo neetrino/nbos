@@ -20,10 +20,6 @@ import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils
 import { buildCredentialVaultRecentQueryParams } from '@/features/credentials/utils/credential-vault-recent-filters';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
 import { useCredentialsVaultRecent } from '@/features/credentials/hooks/use-credentials-vault-recent';
-import type {
-  CredentialVaultSavedView,
-  CredentialVaultSavedViewSnapshot,
-} from '@/features/credentials/constants/credential-vault-saved-view.types';
 import { credentialsApi } from '@/lib/api/credentials';
 import { usePermission } from '@/lib/permissions';
 
@@ -237,35 +233,6 @@ export function useCredentialsVaultPage() {
     [setPreferences],
   );
 
-  const applySavedView = useCallback(
-    (view: CredentialVaultSavedView) => {
-      setPreferences({
-        activeTab: view.activeTab,
-        vaultListScope: view.vaultListScope,
-        viewMode: view.viewMode,
-      });
-      setSearch(view.search);
-      setFilters({ ...view.filters });
-      setQuickCategory(view.quickCategory);
-      setQuickFilters(new Set(view.quickFilters));
-      selection.clearSelection();
-    },
-    [setPreferences, selection.clearSelection],
-  );
-
-  const getSavedViewSnapshot = useCallback(
-    (): CredentialVaultSavedViewSnapshot => ({
-      activeTab,
-      vaultListScope,
-      viewMode,
-      search,
-      filters,
-      quickCategory,
-      quickFilters,
-    }),
-    [activeTab, vaultListScope, viewMode, search, filters, quickCategory, quickFilters],
-  );
-
   return {
     credentials,
     loading,
@@ -318,7 +285,5 @@ export function useCredentialsVaultPage() {
     selectionEnabled,
     selection,
     pageCredentialIds,
-    applySavedView,
-    getSavedViewSnapshot,
   };
 }

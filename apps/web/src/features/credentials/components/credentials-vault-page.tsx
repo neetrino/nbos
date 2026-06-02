@@ -18,15 +18,12 @@ import { CredentialVaultRecentStrip } from '@/features/credentials/components/cr
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
-import { CredentialVaultSavedViewsBar } from '@/features/credentials/components/credential-vault-saved-views-bar';
-import { useCredentialVaultSavedViews } from '@/features/credentials/hooks/use-credential-vault-saved-views';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
   const vault = useCredentialsVaultPage();
-  const savedViews = useCredentialVaultSavedViews(vault.applySavedView);
 
   useCredentialVaultOpenQuery(vault.openCredential);
 
@@ -117,13 +114,6 @@ export function CredentialsVaultPage() {
         onCategoryChange={vault.setQuickCategory}
         activeQuick={vault.quickFilters}
         onToggleQuick={vault.toggleQuickFilter}
-      />
-
-      <CredentialVaultSavedViewsBar
-        views={savedViews.views}
-        onApply={savedViews.applyView}
-        onSave={(name) => savedViews.saveView(name, vault.getSavedViewSnapshot())}
-        onRemove={savedViews.removeView}
       />
 
       {vault.selection.selectionActive && (
