@@ -12,27 +12,52 @@ Credentials должен быть быстрым рабочим инструме
 
 Обязательные зоны:
 
-- global search;
-- saved views;
-- left filters;
-- list/card/table view;
+- стандартные NBOS tabs/search/actions;
+- scope tabs;
+- quick filters;
+- compact recently/frequently used strip;
+- list/tiles/category-board view switch;
 - quick actions;
-- detail drawer.
+- unified Sheet.
 
-## Основные Views
+## Scope Tabs
 
-| View                  | Для чего                                   |
-| --------------------- | ------------------------------------------ |
-| `All Vault`           | все credentials, доступные пользователю    |
-| `Project Credentials` | credentials по проектам                    |
-| `Product Credentials` | credentials по продуктам                   |
-| `Shared With Me`      | доступы, которыми поделились с сотрудником |
-| `My Credentials`      | личные рабочие доступы сотрудника          |
-| `Favorites`           | часто используемые доступы                 |
-| `Recently Used`       | недавно открытые/скопированные доступы     |
-| `Needs Rotation`      | доступы, где rotation due/overdue          |
-| `Access Requests`     | запросы на доступ                          |
-| `Admin / Security`    | audit, export, emergency, health           |
+Scope tabs определяют область vault, а не внешний вид списка.
+
+| Scope        | Для чего                                           | Create   |
+| ------------ | -------------------------------------------------- | -------- |
+| `All`        | все credentials, доступные пользователю            | скрыт    |
+| `Personal`   | личные рабочие credentials сотрудника              | доступен |
+| `Department` | рабочие credentials department/company context     | доступен |
+| `Secret`     | чувствительные credentials с ограниченным доступом | доступен |
+| `Archived`   | архивированные credentials                         | скрыт    |
+
+`All` используется для поиска, просмотра, открытия Sheet и quick actions. Создание из `All` не допускается: пользователь должен сначала перейти в `Personal`, `Department` или `Secret`.
+
+## View Modes
+
+View modes меняют только способ отображения текущего scope/filter.
+
+| View mode        | Для чего                          | Показывать снаружи                                                          |
+| ---------------- | --------------------------------- | --------------------------------------------------------------------------- |
+| `List`           | плотный просмотр, поиск, контроль | title, login, type/category, provider, owner/rotation badges, quick actions |
+| `Tiles`          | быстро использовать credential    | title, login, provider/type, `copy login`, `copy password`, `open URL`      |
+| `Category Board` | визуальный порядок по category    | category columns, compact credential cards, `+` in each column              |
+
+`Category Board` — это view mode внутри Credentials, не отдельный board-модуль. В каждой колонке есть `+`; create Sheet наследует category колонки.
+
+## Recently / Frequently Used
+
+`Recently used` / `Frequently used` — компактный strip под стандартными tabs/search и quick filters.
+
+Правила:
+
+- показывать только в `List` и `Tiles`;
+- не показывать в `Category Board`;
+- визуально использовать существующие card/tile компоненты, без отдельного “чужого” блока;
+- показывать 4-5 compact cards в строке, если хватает места;
+- card дает quick actions: `copy login`, `copy secret`, `open URL`;
+- click по card body открывает Sheet.
 
 ## Search
 
@@ -73,6 +98,19 @@ Credentials должен быть быстрым рабочим инструме
 - Recently used;
 - Created/updated period.
 
+Быстрые фильтры под search:
+
+- Hosting;
+- Domain;
+- Mail;
+- Admin;
+- API;
+- Database;
+- Mine;
+- Needs Rotation.
+
+`Needs Rotation` — filter/saved view, не scope tab.
+
 ## Credential List Item
 
 В списке должно быть видно:
@@ -90,9 +128,21 @@ Credentials должен быть быстрым рабочим инструме
 
 Secret не показывается в списке.
 
-## Credential Detail Drawer / Card
+## Credential Sheet
 
-Карточка должна иметь блоки:
+Один Sheet используется для create, open и edit из любого места:
+
+- Credentials list;
+- Tiles;
+- Category Board;
+- Delivery Board;
+- Product page;
+- Finance;
+- другие модули.
+
+Click по row/card открывает Sheet. Исключения: `copy login`, `copy secret`, `open URL` работают как quick actions без открытия Sheet.
+
+Sheet должен иметь блоки:
 
 - Overview;
 - Secret Fields;
@@ -103,6 +153,8 @@ Secret не показывается в списке.
 - Related Files / Drive supporting docs;
 - Related Tasks / Incidents;
 - Versions.
+
+Dangerous actions (`archive`, `restore`, `permanent delete`) находятся в Settings/Advanced внутри Sheet.
 
 ## Quick Actions
 

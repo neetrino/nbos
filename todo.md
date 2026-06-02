@@ -16,6 +16,7 @@
 | 4   | Criticality / rotation | Auto при create; 4 уровня; override в **Settings** внутри Sheet                              | ✅     |
 | 5   | Comment                | Одно поле, **always private** (encrypted); в Sheet **виден сразу** при доступе (без step-up) | ✅     |
 | —   | Create/Edit UI         | **Sheet** вместо modal dialog; удалить dialog после реализации                               | ✅     |
+| —   | Vault UI shell         | Scope tabs + 3 view modes + compact Recent/Frequent + unified Sheet                          | ✅     |
 
 **Блокер Слайса A (form):** закрыть п.3 → затем Sheet + dynamic fields.
 
@@ -42,8 +43,14 @@
 
 ### List / vault (можно параллельно п.3)
 
+- [ ] Scope tabs: `All`, `Personal`, `Department`, `Secret`, `Archived`
+- [ ] Hide create button in `All` and `Archived`; create only from `Personal` / `Department` / `Secret`
+- [ ] View switch: `List`, `Tiles`, `Category Board`
+- [ ] `Category Board`: columns by scope category + `+` on each column presets category in create Sheet
+- [ ] Compact `Recently/Frequently used` strip for `List` and `Tiles` only; hidden in `Category Board`
+- [ ] Quick filters under search: Hosting, Domain, Mail, Admin, API, Database, Mine, Needs Rotation
 - [ ] Фильтры API + UI: kind/category (как решим в п.3), rotationStatus, productId, ownerId
-- [ ] Tab/view **Needs Rotation**
+- [ ] **Needs Rotation** as quick filter / saved view, not scope tab
 - [ ] Step-up dialog вместо `window.prompt` (для password/api/env reveal)
 - [ ] Project CredentialsTab → «Open in Vault» / deep-link to Sheet
 - [ ] Pagination (убрать hardcoded `pageSize: 200`)
@@ -92,6 +99,27 @@
 - List filters, seed, migration mapping
 
 **Не начинать** рефактор form/sheet до выбора модели.
+
+---
+
+## Открытый вопрос — access model / уровни доступа
+
+**Статус:** обсуждается отдельно от UI shell; не фиксировать в implementation без отдельного подтверждения.
+
+**Контекст текущего runtime:**
+
+- Есть `accessLevel` + `allowedEmployees`.
+- Есть RBAC scopes `CREDENTIALS_VIEW`, `CREDENTIALS_EDIT`, `CREDENTIALS_DELETE`.
+- `CREDENTIALS_VIEW=ALL` bypasses row-level visibility.
+- `EDIT/DELETE` сейчас не per-credential роли, а global RBAC capability + row visibility.
+
+**Вопросы к решению:**
+
+- Global owner / CEO access ко всем credentials, включая Personal.
+- Кто автоматически получает `PROJECT_TEAM` credentials.
+- Можно ли `DEPARTMENT` credentials показывать всем сотрудникам department или нужен level/seat policy.
+- Нужно ли расширять manual people access за пределы `SECRET`.
+- Delete policy: оставить только для Founder/CEO/Director-level через `CREDENTIALS_DELETE`.
 
 ---
 

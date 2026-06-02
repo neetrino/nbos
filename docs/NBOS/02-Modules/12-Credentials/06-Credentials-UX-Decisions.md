@@ -32,10 +32,57 @@
 - При create: **auto-assign** по kind/type (и контексту); пользователь не выбирает на основном экране.
 - **Settings** (кнопка в Sheet) → Advanced: ручной override criticality, next rotation, прочие редкие поля.
 
+### Vault shell / main screen
+
+- Главный экран Credentials использует существующий NBOS page canon: стандартные tabs/search/actions, без нового визуального паттерна.
+- Scope tabs: `All`, `Personal`, `Department`, `Secret`, `Archived`.
+- `All` — режим просмотра/поиска/использования по всем доступным credentials. **Create button скрыта** в `All`.
+- Создать credential можно только внутри конкретного scope: `Personal`, `Department`, `Secret`. Выбранный scope автоматически передается в create Sheet.
+- Под стандартными tabs/search может быть компактный блок `Recently used` / `Frequently used`, визуально как часть страницы, с тонким разделителем и compact cards.
+- `Recently/Frequently used` показывать только в `List` и `Tiles` view. В `Category Board` не показывать.
+
+### View modes
+
+Credentials module имеет 3 режима отображения одних и тех же данных:
+
+| View mode        | Назначение                          | Внешний минимум                                                            |
+| ---------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `List`           | управление, поиск, плотный просмотр | name, login, type/category, provider, owner/rotation badges, quick actions |
+| `Tiles`          | быстро использовать доступ          | name, login, provider/type, `copy login`, `copy password`, `open URL`      |
+| `Category Board` | визуальный порядок по category      | columns by category, credential cards, `+` create на каждой колонке        |
+
+- `Category Board` — это именно view mode, не отдельный board-модуль.
+- В `Category Board` каждая колонка = category текущего scope.
+- Кнопка `+` в колонке открывает create Sheet с уже выбранной `category` этой колонки.
+- Карточки/строки не должны показывать лишние details; детали живут в Sheet.
+
+### Sheet everywhere
+
+- Один `CredentialFormSheet` / `CredentialSheet` используется для create, open, edit.
+- Sheet открывается из List, Tiles, Category Board, Delivery Board, Product page, Finance и других модулей поверх текущего экрана.
+- Click по row/card открывает Sheet.
+- Исключения: click по `copy login`, `copy password`, `open URL` выполняет quick action без открытия Sheet.
+- Sheet следует существующему NBOS sheet canon и design components; новый визуальный стиль не придумывать.
+- Delete/archive/permanent delete живут в `Settings` внутри Sheet, не как главные действия рядом с copy/use.
+
 ### Прочее (Slice A backlog)
 
 - Step-up dialog вместо `window.prompt` для reveal/copy секретных полей.
 - Фильтры, tab Needs Rotation, pagination — см. `todo.md` Слайс A.
+
+---
+
+## Открыто — access model / уровни доступа
+
+Финальное решение по access model еще обсуждается отдельно от UI shell.
+
+Текущее направление для обсуждения:
+
+- не ломать текущую runtime-модель `accessLevel` + RBAC scopes без необходимости;
+- сохранить global owner/CEO access через platform/RBAC-level policy;
+- уточнить, кто автоматически получает `PROJECT_TEAM` и `DEPARTMENT` credentials;
+- решить, нужны ли дополнительные policy по level/seat для department credentials;
+- не смешивать access model decision с UI/view-mode decision.
 
 ---
 
