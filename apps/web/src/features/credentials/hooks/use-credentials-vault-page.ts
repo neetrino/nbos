@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import type {
   CredentialQuickFilterKey,
@@ -56,6 +56,7 @@ export function useCredentialsVaultPage() {
   const [purgeTarget, setPurgeTarget] = useState<CredentialDeleteTarget | null>(null);
   const [tileCopyCredentialId, setTileCopyCredentialId] = useState<string | null>(null);
   const [passwordFlashCredentialId, setPasswordFlashCredentialId] = useState<string | null>(null);
+  const fetchGenerationRef = useRef(0);
 
   const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
@@ -80,6 +81,7 @@ export function useCredentialsVaultPage() {
   );
 
   const fetchCredentials = useCallback(async () => {
+    const generation = ++fetchGenerationRef.current;
     setLoading(true);
     try {
       const category =
@@ -104,15 +106,23 @@ export function useCredentialsVaultPage() {
         includeArchived: vaultListScope === 'archived',
         sort: listSort,
       });
+      if (generation !== fetchGenerationRef.current) {
+        return;
+      }
       setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
       setTotalPages(data.meta.totalPages);
       setTotal(data.meta.total);
     } catch {
+      if (generation !== fetchGenerationRef.current) {
+        return;
+      }
       setCredentials([]);
       setTotalPages(1);
       setTotal(0);
     } finally {
-      setLoading(false);
+      if (generation === fetchGenerationRef.current) {
+        setLoading(false);
+      }
     }
   }, [
     search,
