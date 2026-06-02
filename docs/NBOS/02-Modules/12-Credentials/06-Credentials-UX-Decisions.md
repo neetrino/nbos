@@ -57,23 +57,24 @@
 
 Credentials module имеет 3 режима отображения одних и тех же данных:
 
-| View mode        | Назначение                          | Внешний минимум                                                                                                                                      |
-| ---------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `List`           | управление, поиск, плотный просмотр | name, login, type/category, provider, owner/rotation badges, quick actions                                                                           |
-| `Tiles`          | быстро использовать доступ          | compact grid (4→6); category badges + accent; login/pass pills (icon + value; inset line + copy on card hover); click pill copies; card hover shadow |
-| `Category Board` | визуальный порядок по category      | columns by category, credential cards, `+` create на каждой колонке                                                                                  |
+| View mode        | Назначение                          | Внешний минимум                                                                      |
+| ---------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `List`           | управление, поиск, плотный просмотр | name, login, type/category, provider, owner/rotation badges, quick actions           |
+| `Tiles`          | быстро использовать доступ          | compact grid (4→6); shared `CredentialVaultCard` variant `grid`                      |
+| `Category Board` | визуальный порядок по category      | Kanban columns; shared `CredentialVaultCard` variant `kanban`; `+` create per column |
 
 - `Category Board` — это именно view mode, не отдельный board-модуль.
 - В `Category Board` каждая колонка = category текущего scope.
 - Кнопка `+` в колонке открывает create Sheet с уже выбранной `category` этой колонки.
 - Карточки/строки не должны показывать лишние details; детали живут в Sheet.
+- **Vault card:** один компонент `CredentialVaultCard` для Tiles и Category Board (`variant`: `grid` | `kanban`); login/pass copy pills + green flash — shared `CredentialVaultSecretPills`. List остаётся table.
 
 ### Sheet everywhere
 
 - Один `CredentialFormSheet` / `CredentialSheet` используется для create, open, edit.
 - Sheet открывается из List, Tiles, Category Board, Delivery Board, Product page, Finance и других модулей поверх текущего экрана.
 - Click по row/card открывает Sheet.
-- Исключения: click по login/pass pill в Tiles копирует без Sheet; password copy — через step-up.
+- Исключения: click по login/pass pill на vault card (Tiles / Category Board) копирует без Sheet; password copy — через step-up.
 - Sheet следует существующему NBOS sheet canon и design components; новый визуальный стиль не придумывать.
 - Delete/archive/permanent delete живут в `Settings` внутри Sheet, не как главные действия рядом с copy/use.
 

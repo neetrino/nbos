@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { KanbanBoard } from '@/components/shared';
 import type { KanbanColumnQuickCreateConfig } from '@/components/shared/kanban/kanban.types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { CredentialVaultCard } from '@/features/credentials/components/CredentialVaultCard';
 import { categoriesForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import {
   buildCredentialCategoryKanbanColumns,
@@ -12,10 +14,10 @@ import {
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import { CredentialVaultCategoryCard } from './CredentialVaultCategoryCard';
 
 const COLUMN_SKELETON_COUNT = 4;
 const CARD_SKELETON_COUNT = 3;
+const KANBAN_CARD_SKELETON_HEIGHT_CLASS = 'h-[100px]';
 
 export interface CredentialVaultCategoryBoardProps {
   credentials: CredentialListItem[];
@@ -25,6 +27,9 @@ export interface CredentialVaultCategoryBoardProps {
   categoryColumns?: readonly CredentialCategoryOption[];
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
+  onCopyLogin?: (login: string) => void;
+  onCopyPassword?: (credentialId: string) => void;
+  passwordFlashCredentialId?: string | null;
 }
 
 export function CredentialVaultCategoryBoard({
@@ -35,6 +40,9 @@ export function CredentialVaultCategoryBoard({
   categoryColumns,
   onCreateInCategory,
   onOpenCredential,
+  onCopyLogin,
+  onCopyPassword,
+  passwordFlashCredentialId,
 }: CredentialVaultCategoryBoardProps) {
   const columns = useMemo(() => {
     const defs = categoryColumns ?? categoriesForVaultScope(vaultScope);
@@ -60,7 +68,10 @@ export function CredentialVaultCategoryBoard({
           >
             <Skeleton className="h-8 w-full rounded-md" />
             {Array.from({ length: CARD_SKELETON_COUNT }).map((__, cardIndex) => (
-              <Skeleton key={cardIndex} className="h-[88px] w-full rounded-xl" />
+              <Skeleton
+                key={cardIndex}
+                className={cn(KANBAN_CARD_SKELETON_HEIGHT_CLASS, 'w-full rounded-xl')}
+              />
             ))}
           </div>
         ))}
@@ -77,7 +88,14 @@ export function CredentialVaultCategoryBoard({
         getItemId={(item) => item.id}
         columnQuickCreate={quickCreate}
         renderCard={(credential) => (
-          <CredentialVaultCategoryCard credential={credential} onOpen={onOpenCredential} />
+          <CredentialVaultCard
+            credential={credential}
+            variant="kanban"
+            onOpen={onOpenCredential}
+            onCopyLogin={onCopyLogin}
+            onCopyPassword={onCopyPassword}
+            passwordFlashCredentialId={passwordFlashCredentialId}
+          />
         )}
       />
     </div>

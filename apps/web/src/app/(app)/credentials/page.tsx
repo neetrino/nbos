@@ -30,10 +30,8 @@ import {
   CredentialVaultTable,
   type VaultListScope,
 } from '@/features/credentials/components/credential-vault-table';
-import {
-  CREDENTIAL_VAULT_TILE_COPY_FEEDBACK_MS,
-  CredentialVaultTiles,
-} from '@/features/credentials/components/credential-vault-tiles';
+import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
+import { CredentialVaultTiles } from '@/features/credentials/components/credential-vault-tiles';
 import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
 import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
@@ -76,7 +74,7 @@ export default function CredentialsPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [purgeTarget, setPurgeTarget] = useState<{ id: string; name: string } | null>(null);
   const [tileCopyCredentialId, setTileCopyCredentialId] = useState<string | null>(null);
-  const [tilePasswordFlashId, setTilePasswordFlashId] = useState<string | null>(null);
+  const [passwordFlashCredentialId, setPasswordFlashCredentialId] = useState<string | null>(null);
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -212,7 +210,7 @@ export default function CredentialsPage() {
           onOpenCredential={openCredential}
           onCopyLogin={copyToClipboard}
           onCopyPassword={(id) => setTileCopyCredentialId(id)}
-          passwordFlashCredentialId={tilePasswordFlashId}
+          passwordFlashCredentialId={passwordFlashCredentialId}
         />
       );
     }
@@ -226,6 +224,9 @@ export default function CredentialsPage() {
           categoryColumns={quickCategoryChips}
           onCreateInCategory={(cat) => openCreate(cat)}
           onOpenCredential={openCredential}
+          onCopyLogin={copyToClipboard}
+          onCopyPassword={(id) => setTileCopyCredentialId(id)}
+          passwordFlashCredentialId={passwordFlashCredentialId}
         />
       );
     }
@@ -367,10 +368,10 @@ export default function CredentialsPage() {
           await navigator.clipboard.writeText(value);
           toast.success('Password copied');
           setTileCopyCredentialId(null);
-          setTilePasswordFlashId(flashId);
+          setPasswordFlashCredentialId(flashId);
           window.setTimeout(() => {
-            setTilePasswordFlashId((current) => (current === flashId ? null : current));
-          }, CREDENTIAL_VAULT_TILE_COPY_FEEDBACK_MS);
+            setPasswordFlashCredentialId((current) => (current === flashId ? null : current));
+          }, CREDENTIAL_VAULT_COPY_FEEDBACK_MS);
         }}
       />
 
