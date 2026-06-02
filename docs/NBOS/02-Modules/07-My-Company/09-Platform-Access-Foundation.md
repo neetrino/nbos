@@ -153,10 +153,12 @@ Shared Prisma participation filters live in `apps/api/src/modules/platform-acces
 
 **Runtime (partial):** `FileAssetGrant` create/update/revoke dual-writes `ResourceAccessGrant` with `resourceType=drive_file_asset`; file list/action access reads both grant stores (`drive-resource-access-grant.sync.ts`).
 
+**Runtime (partial):** folder-level `ResourceAccessGrant` (`drive_folder`) with folder→file inherited access for active `DriveFolderItem` placements in the granted subtree (`drive-folder-grant-inherit.ts`, merged in `buildDriveExplicitFileGrantWhere`).
+
+**Runtime (partial):** effective `driveScope` merges RBAC `DRIVE_VIEW` ceiling with Settings role/personal policy for family `DRIVE` (`drive-effective-scope.ts`, `DriveAccessContextService`).
+
 **Still backlog:**
 
-- folder-level `ResourceAccessGrant` (`drive_folder`);
-- role/personal `DRIVE` family policies via `PlatformAccessResolverService`;
 - inherited multi-link confidentiality edge cases (see Drive permissions canon).
 
 ### Finance
