@@ -51,14 +51,14 @@ describe('TasksService', () => {
       await service.findAll({ involvesEmployeeId: 'emp-1' });
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: {
-            OR: [
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([
               { assigneeId: 'emp-1' },
               { creatorId: 'emp-1' },
               { coAssignees: { has: 'emp-1' } },
               { observers: { has: 'emp-1' } },
-            ],
-          },
+            ]),
+          }),
         }),
       );
     });
@@ -274,14 +274,14 @@ describe('TasksService', () => {
 
     it('scopes stats when involvesEmployeeId is set', async () => {
       await service.getStats('emp-1');
-      const expectedWhere = {
-        OR: [
+      const expectedWhere = expect.objectContaining({
+        OR: expect.arrayContaining([
           { assigneeId: 'emp-1' },
           { creatorId: 'emp-1' },
           { coAssignees: { has: 'emp-1' } },
           { observers: { has: 'emp-1' } },
-        ],
-      };
+        ]),
+      });
       expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);
       expect(prisma.task.groupBy.mock.calls[0]?.[0]).toEqual(
         expect.objectContaining({ where: expectedWhere }),

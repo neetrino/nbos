@@ -1,11 +1,17 @@
 import { type Prisma, PrismaClient } from '@nbos/database';
 import { resolveOrderStatus } from '../finance-status.utils';
+import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
+import {
+  mergeInvoiceWhere,
+  resolveInvoiceParticipationWhere,
+} from './finance-invoice-participation.where';
 
 interface InvoiceStatsParams {
   dateFrom?: string;
   dateTo?: string;
   /** Align KPI aggregates with `GET /finance/invoices?subscriptionId=` drill-down. */
   subscriptionId?: string;
+  access?: FinanceInvoiceAccessContext;
 }
 
 interface CreateInvoiceTaxStatusInput {
@@ -27,27 +33,38 @@ export async function getInvoiceStats(
     ...sub,
     ...(createdAt ? { createdAt } : {}),
   };
-  const hasCreatedWhere = Object.keys(whereCreated).length > 0;
+  const participationWhere = await resolveInvoiceParticipationWhere(prisma, params.access);
+  const scopedWhere = mergeInvoiceWhere(whereCreated, participationWhere);
+  const hasScopedWhere = Object.keys(scopedWhere).length > 0;
 
   const [total, byMoney, totalRevenue, outstanding, overdue] = await Promise.all([
-    hasCreatedWhere ? prisma.invoice.count({ where: whereCreated }) : prisma.invoice.count(),
+    hasScopedWhere ? prisma.invoice.count({ where: scopedWhere }) : prisma.invoice.count(),
     prisma.invoice.groupBy({
       by: ['moneyStatus'],
-      ...(hasCreatedWhere ? { where: whereCreated } : {}),
+      ...(hasScopedWhere ? { where: scopedWhere } : {}),
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { moneyStatus: 'PAID', ...sub, ...(paidDate ? { paidDate } : {}) },
+      where: mergeInvoiceWhere(
+        { moneyStatus: 'PAID', ...sub, ...(paidDate ? { paidDate } : {}) },
+        participationWhere,
+      ),
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { moneyStatus: { not: 'PAID' }, ...sub, ...(createdAt ? { createdAt } : {}) },
+      where: mergeInvoiceWhere(
+        { moneyStatus: { not: 'PAID' }, ...sub, ...(createdAt ? { createdAt } : {}) },
+        participationWhere,
+      ),
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { moneyStatus: 'OVERDUE', ...sub, ...(createdAt ? { createdAt } : {}) },
+      where: mergeInvoiceWhere(
+        { moneyStatus: 'OVERDUE', ...sub, ...(createdAt ? { createdAt } : {}) },
+        participationWhere,
+      ),
       _count: true,
       _sum: { amount: true },
     }),

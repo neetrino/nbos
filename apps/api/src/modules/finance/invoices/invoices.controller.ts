@@ -11,6 +11,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequirePermission,
+} from '../../../common/decorators';
+import { financeInvoiceAccessFromUser } from './finance-invoice-access';
 import { InvoicesService } from './invoices.service';
 
 @ApiTags('Finance / Invoices')
@@ -20,8 +26,10 @@ export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 
   @Get()
+  @RequirePermission('FINANCE_INVOICES', 'VIEW')
   @ApiOperation({ summary: 'Get all invoices' })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('moneyStatus') moneyStatus?: string,
@@ -42,17 +50,25 @@ export class InvoicesController {
       search,
       dateFrom,
       dateTo,
+      access: financeInvoiceAccessFromUser(user),
     });
   }
 
   @Get('stats')
+  @RequirePermission('FINANCE_INVOICES', 'VIEW')
   @ApiOperation({ summary: 'Get invoice statistics' })
   async getStats(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('subscriptionId') subscriptionId?: string,
   ) {
-    return this.invoicesService.getStats({ dateFrom, dateTo, subscriptionId });
+    return this.invoicesService.getStats({
+      dateFrom,
+      dateTo,
+      subscriptionId,
+      access: financeInvoiceAccessFromUser(user),
+    });
   }
 
   @Get(':id')
