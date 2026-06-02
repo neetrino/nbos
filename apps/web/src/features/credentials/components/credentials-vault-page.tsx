@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +14,7 @@ import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/consta
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
-import { CredentialVaultPagination } from '@/features/credentials/components/credential-vault-pagination';
+import { CredentialVaultPaginationFooter } from '@/features/credentials/components/credential-vault-pagination-footer';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
@@ -24,6 +25,10 @@ import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
   const vault = useCredentialsVaultPage();
+  const [boardScrollRoot, setBoardScrollRoot] = useState<HTMLElement | null>(null);
+  const bindBoardScrollContainer = useCallback((node: HTMLDivElement | null) => {
+    setBoardScrollRoot(node);
+  }, []);
 
   useCredentialVaultOpenQuery(vault.openCredential);
 
@@ -120,12 +125,21 @@ export function CredentialsVaultPage() {
       )}
 
       <div
-        className={vault.viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col' : undefined}
+        ref={vault.viewMode === 'category-board' ? bindBoardScrollContainer : undefined}
+        className={
+          vault.viewMode === 'category-board'
+            ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
+            : undefined
+        }
       >
         <CredentialsVaultMainView
           viewMode={vault.viewMode}
           credentials={vault.credentials}
           loading={vault.loading}
+          loadingMore={vault.loadingMore}
+          hasMore={vault.hasMore}
+          boardScrollRoot={boardScrollRoot}
+          onBoardLoadMore={vault.loadMore}
           showCreate={vault.showCreate}
           activeTab={vault.activeTab}
           vaultListScope={vault.vaultListScope}
@@ -169,12 +183,16 @@ export function CredentialsVaultPage() {
         />
       </div>
 
-      <CredentialVaultPagination
-        page={vault.page}
-        totalPages={vault.totalPages}
-        total={vault.total}
-        onPageChange={vault.setPage}
-      />
+      {vault.showPagedFooter ? (
+        <CredentialVaultPaginationFooter
+          page={vault.page}
+          pageSize={vault.pageSize}
+          total={vault.total}
+          totalPages={vault.totalPages}
+          onPageChange={vault.setPage}
+          onPageSizeChange={vault.setPageSize}
+        />
+      ) : null}
 
       <CredentialsVaultPageOverlays
         activeTab={vault.activeTab}

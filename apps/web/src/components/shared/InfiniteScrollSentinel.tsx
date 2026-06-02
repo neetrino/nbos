@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-interface InfiniteScrollSentinelProps {
+export interface InfiniteScrollSentinelProps {
   onReach: () => void;
   disabled?: boolean;
   /** Scroll container to observe within; defaults to the viewport. */
@@ -11,8 +11,7 @@ interface InfiniteScrollSentinelProps {
 }
 
 /**
- * Invisible marker that triggers `onReach` when scrolled into view, used to
- * append the next page in infinite-scroll lists and board columns.
+ * Invisible marker that triggers `onReach` when scrolled into view.
  */
 export function InfiniteScrollSentinel({
   onReach,

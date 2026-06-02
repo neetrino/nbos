@@ -24,6 +24,4 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
   },
 ];
 
-export const CREDENTIAL_VAULT_PAGE_SIZE = 50;
-
 export type CredentialQuickFilterKey = 'mine' | 'needsRotation';

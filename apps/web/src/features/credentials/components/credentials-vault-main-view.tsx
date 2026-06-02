@@ -17,6 +17,10 @@ export interface CredentialsVaultMainViewProps {
   viewMode: CredentialVaultViewMode;
   credentials: CredentialListItem[];
   loading: boolean;
+  loadingMore?: boolean;
+  hasMore?: boolean;
+  boardScrollRoot?: HTMLElement | null;
+  onBoardLoadMore?: () => void;
   showCreate: boolean;
   activeTab: CredentialVaultScope;
   vaultListScope: VaultListScope;
@@ -41,6 +45,10 @@ export function CredentialsVaultMainView({
   viewMode,
   credentials,
   loading,
+  loadingMore,
+  hasMore,
+  boardScrollRoot,
+  onBoardLoadMore,
   showCreate,
   activeTab,
   vaultListScope,
@@ -80,6 +88,10 @@ export function CredentialsVaultMainView({
       <CredentialVaultCategoryBoard
         credentials={credentials}
         loading={loading}
+        loadingMore={loadingMore}
+        hasMore={hasMore}
+        scrollRoot={boardScrollRoot}
+        onLoadMore={onBoardLoadMore}
         vaultScope={activeTab}
         showCreate={showCreate}
         categoryColumns={quickCategoryChips}

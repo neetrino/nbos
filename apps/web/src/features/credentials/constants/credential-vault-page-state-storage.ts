@@ -2,6 +2,11 @@
 
 import { useCallback, useSyncExternalStore } from 'react';
 import type { CredentialVaultViewMode } from '@/features/credentials/constants/credential-vault';
+import {
+  CREDENTIAL_VAULT_PAGED_DEFAULT_SIZE,
+  normalizeCredentialVaultPageSize,
+  type CredentialVaultPageSizeOption,
+} from '@/features/credentials/constants/credential-vault-pagination';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
 export type CredentialVaultListScope = 'active' | 'archived';
@@ -10,6 +15,7 @@ export type CredentialVaultPagePreferences = {
   viewMode: CredentialVaultViewMode;
   activeTab: CredentialVaultScope;
   vaultListScope: CredentialVaultListScope;
+  pageSize: CredentialVaultPageSizeOption;
 };
 
 const STORAGE_KEY = 'nbos:credentials:vault-page-state';
@@ -23,6 +29,7 @@ export const DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES: CredentialVaultPagePrefe
   viewMode: 'list',
   activeTab: 'all',
   vaultListScope: 'active',
+  pageSize: CREDENTIAL_VAULT_PAGED_DEFAULT_SIZE,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,6 +48,7 @@ function parseStoredPreferences(raw: string | null): CredentialVaultPagePreferen
     const viewMode = parsed.viewMode;
     const activeTab = parsed.activeTab;
     const vaultListScope = parsed.vaultListScope;
+    const pageSize = parsed.pageSize;
     return {
       viewMode:
         typeof viewMode === 'string' && VALID_VIEW_MODES.has(viewMode as CredentialVaultViewMode)
@@ -55,6 +63,9 @@ function parseStoredPreferences(raw: string | null): CredentialVaultPagePreferen
         VALID_LIST_SCOPES.has(vaultListScope as CredentialVaultListScope)
           ? (vaultListScope as CredentialVaultListScope)
           : DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES.vaultListScope,
+      pageSize: normalizeCredentialVaultPageSize(
+        typeof pageSize === 'number' ? pageSize : Number(pageSize),
+      ),
     };
   } catch {
     return DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES;

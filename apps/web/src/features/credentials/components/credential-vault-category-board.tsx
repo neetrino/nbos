@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { KanbanBoard } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import type { KanbanColumnQuickCreateConfig } from '@/components/shared/kanban/kanban.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,10 @@ const KANBAN_CARD_SKELETON_HEIGHT_CLASS = 'h-[100px]';
 export interface CredentialVaultCategoryBoardProps {
   credentials: CredentialListItem[];
   loading: boolean;
+  loadingMore?: boolean;
+  hasMore?: boolean;
+  scrollRoot?: HTMLElement | null;
+  onLoadMore?: () => void;
   vaultScope: CredentialVaultScope;
   showCreate: boolean;
   categoryColumns?: readonly CredentialCategoryOption[];
@@ -35,6 +40,10 @@ export interface CredentialVaultCategoryBoardProps {
 export function CredentialVaultCategoryBoard({
   credentials,
   loading,
+  loadingMore = false,
+  hasMore = false,
+  scrollRoot,
+  onLoadMore,
   vaultScope,
   showCreate,
   categoryColumns,
@@ -80,24 +89,36 @@ export function CredentialVaultCategoryBoard({
   }
 
   return (
-    <div className="min-h-0 flex-1">
-      <KanbanBoard
-        columns={columns}
-        columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
-        emptyMessage="No credentials"
-        getItemId={(item) => item.id}
-        columnQuickCreate={quickCreate}
-        renderCard={(credential) => (
-          <CredentialVaultCard
-            credential={credential}
-            variant="kanban"
-            onOpen={onOpenCredential}
-            onCopyLogin={onCopyLogin}
-            onCopyPassword={onCopyPassword}
-            passwordFlashCredentialId={passwordFlashCredentialId}
-          />
-        )}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <div className="min-h-0 flex-1">
+        <KanbanBoard
+          columns={columns}
+          columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
+          emptyMessage="No credentials"
+          getItemId={(item) => item.id}
+          columnQuickCreate={quickCreate}
+          renderCard={(credential) => (
+            <CredentialVaultCard
+              credential={credential}
+              variant="kanban"
+              onOpen={onOpenCredential}
+              onCopyLogin={onCopyLogin}
+              onCopyPassword={onCopyPassword}
+              passwordFlashCredentialId={passwordFlashCredentialId}
+            />
+          )}
+        />
+      </div>
+      {onLoadMore ? (
+        <InfiniteScrollSentinel
+          onReach={onLoadMore}
+          disabled={!hasMore || loading || loadingMore}
+          root={scrollRoot}
+        />
+      ) : null}
+      {loadingMore ? (
+        <p className="text-muted-foreground py-1 text-center text-xs">Loading more…</p>
+      ) : null}
     </div>
   );
 }

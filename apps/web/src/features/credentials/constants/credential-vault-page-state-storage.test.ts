@@ -44,6 +44,7 @@ describe('credential-vault-page-state-storage', () => {
       viewMode: 'tiles',
       activeTab: 'project',
       vaultListScope: 'active',
+      pageSize: 30,
     });
   });
 

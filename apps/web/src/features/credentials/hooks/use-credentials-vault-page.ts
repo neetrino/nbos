@@ -1,30 +1,31 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import type {
   CredentialQuickFilterKey,
   CredentialVaultViewMode,
 } from '@/features/credentials/constants/credential-vault';
-import { CREDENTIAL_VAULT_PAGE_SIZE } from '@/features/credentials/constants/credential-vault';
 import {
   CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
   defaultCredentialVaultSortFilter,
   normalizeCredentialVaultSortFilter,
   resolveCredentialVaultListSort,
 } from '@/features/credentials/constants/credential-vault-list-sort';
+import {
+  isCredentialVaultPageSizeOption,
+  type CredentialVaultPageSizeOption,
+} from '@/features/credentials/constants/credential-vault-pagination';
 import { useCredentialVaultPagePreferences } from '@/features/credentials/constants/credential-vault-page-state-storage';
 import { quickCategoryChipsForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
-import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import {
   canCreateInVaultScope,
   type CredentialVaultScope,
-  vaultScopeToListTab,
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
-import { credentialsApi } from '@/lib/api/credentials';
+import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
 
 export interface CredentialDeleteTarget {
@@ -36,12 +37,8 @@ export interface CredentialDeleteTarget {
 export function useCredentialsVaultPage() {
   const { me } = usePermission();
   const [preferences, setPreferences] = useCredentialVaultPagePreferences();
-  const { viewMode, activeTab, vaultListScope } = preferences;
-  const [credentials, setCredentials] = useState<CredentialListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { viewMode, activeTab, vaultListScope, pageSize } = preferences;
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>(() => ({
     ...CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
@@ -56,16 +53,6 @@ export function useCredentialsVaultPage() {
   const [purgeTarget, setPurgeTarget] = useState<CredentialDeleteTarget | null>(null);
   const [tileCopyCredentialId, setTileCopyCredentialId] = useState<string | null>(null);
   const [passwordFlashCredentialId, setPasswordFlashCredentialId] = useState<string | null>(null);
-  const fetchGenerationRef = useRef(0);
-
-  const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
-  const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
-  const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${search}`;
-  const selection = useCredentialVaultSelection(
-    selectionEnabled,
-    pageCredentialIds,
-    selectionResetKey,
-  );
 
   const listSort = useMemo(
     () => resolveCredentialVaultListSort(filters, vaultListScope),
@@ -80,69 +67,35 @@ export function useCredentialsVaultPage() {
     [filters, vaultListScope],
   );
 
-  const fetchCredentials = useCallback(async () => {
-    const generation = ++fetchGenerationRef.current;
-    setLoading(true);
-    try {
-      const category =
-        quickCategory ??
-        (filters.category && filters.category !== 'all' ? filters.category : undefined);
-      const data = await credentialsApi.getAll({
-        page,
-        pageSize: CREDENTIAL_VAULT_PAGE_SIZE,
-        search: search || undefined,
-        category,
-        credentialType:
-          filters.credentialType && filters.credentialType !== 'all'
-            ? filters.credentialType
-            : undefined,
-        accessLevel:
-          activeTab === 'all' && filters.accessLevel && filters.accessLevel !== 'all'
-            ? filters.accessLevel
-            : undefined,
-        ownerId: activeTab === 'all' && quickFilters.has('mine') && me?.id ? me.id : undefined,
-        needsRotation: quickFilters.has('needsRotation') ? true : undefined,
-        tab: vaultListScope === 'archived' ? undefined : vaultScopeToListTab(activeTab),
-        includeArchived: vaultListScope === 'archived',
-        sort: listSort,
-      });
-      if (generation !== fetchGenerationRef.current) {
-        return;
-      }
-      setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
-      setTotalPages(data.meta.totalPages);
-      setTotal(data.meta.total);
-    } catch {
-      if (generation !== fetchGenerationRef.current) {
-        return;
-      }
-      setCredentials([]);
-      setTotalPages(1);
-      setTotal(0);
-    } finally {
-      if (generation === fetchGenerationRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [
+  const listQuery = useCredentialsVaultListQuery({
+    viewMode,
+    page,
+    pageSize,
     search,
     filters,
     quickCategory,
     quickFilters,
     activeTab,
     vaultListScope,
-    page,
-    me?.id,
     listSort,
-  ]);
+    meId: me?.id,
+  });
+
+  const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
+    listQuery;
+
+  const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
+  const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
+  const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${pageSize}|${search}|${viewMode}`;
+  const selection = useCredentialVaultSelection(
+    selectionEnabled,
+    pageCredentialIds,
+    selectionResetKey,
+  );
 
   useEffect(() => {
     setPage(1);
-  }, [search, filters, quickCategory, quickFilters, activeTab, vaultListScope]);
-
-  useEffect(() => {
-    void fetchCredentials();
-  }, [fetchCredentials]);
+  }, [search, filters, quickCategory, quickFilters, activeTab, vaultListScope, viewMode, pageSize]);
 
   const openCreate = useCallback((category?: string) => {
     setCreatePresetCategory(category);
@@ -215,12 +168,21 @@ export function useCredentialsVaultPage() {
     }
   }, []);
 
+  const setPageSize = useCallback(
+    (size: CredentialVaultPageSizeOption) => {
+      if (!isCredentialVaultPageSizeOption(size)) return;
+      setPreferences({ pageSize: size });
+    },
+    [setPreferences],
+  );
+
   const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
   const filterConfigs = useMemo(
     () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope),
     [activeTab, vaultListScope],
   );
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
+  const showPagedFooter = viewMode === 'list' || viewMode === 'tiles';
 
   const setViewMode = useCallback(
     (mode: CredentialVaultViewMode) => {
@@ -243,10 +205,16 @@ export function useCredentialsVaultPage() {
   return {
     credentials,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     page,
     setPage,
+    pageSize,
+    setPageSize,
     totalPages,
     total,
+    showPagedFooter,
     search,
     setSearch,
     filters,
@@ -272,7 +240,7 @@ export function useCredentialsVaultPage() {
     setTileCopyCredentialId,
     passwordFlashCredentialId,
     setPasswordFlashCredentialId,
-    fetchCredentials,
+    fetchCredentials: refetch,
     openCreate,
     openCredential,
     toggleLogin,
