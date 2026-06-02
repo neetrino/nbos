@@ -32,6 +32,11 @@ import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access
 import { buildLinkCreateInput } from './drive-metadata';
 import { assertDriveFolderEntityScopeAccessible } from './drive-folder-entity-access';
 import {
+  attachManualGrantCount,
+  countDriveFileManualGrants,
+  countDriveFolderManualGrants,
+} from './drive-manual-grant-counts';
+import {
   buildDriveExplicitFolderGrantWhere,
   employeeCanManageDriveFolderGrants,
   employeeHasActiveDriveFolderGrant,
@@ -116,13 +121,27 @@ export class DriveFolderService {
       }),
     ]);
 
+    const files = placements
+      .map((placement) => placement.fileAsset)
+      .filter((file): file is NonNullable<typeof file> => file != null);
+    const [folderGrantCounts, fileGrantCounts] = await Promise.all([
+      countDriveFolderManualGrants(
+        this.prisma,
+        folders.map((folder) => folder.id),
+      ),
+      countDriveFileManualGrants(
+        this.prisma,
+        files.map((file) => file.id),
+      ),
+    ]);
+
     return jsonSafeForHttp({
       space,
       parentId,
       scopeEntityType: entityScope?.scopeEntityType ?? null,
       scopeEntityId: entityScope?.scopeEntityId ?? null,
-      folders,
-      files: placements.map((placement) => placement.fileAsset).filter(Boolean),
+      folders: attachManualGrantCount(folders, folderGrantCounts),
+      files: attachManualGrantCount(files, fileGrantCounts),
       rootStorageFolderId: rootStorage.id,
     });
   }

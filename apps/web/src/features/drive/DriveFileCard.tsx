@@ -29,6 +29,7 @@ import {
 import { formatDriveLabel, formatFileSize } from './drive-format';
 import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
+import { DriveManualGrantCountBadge } from './drive-manual-grant-count-badge';
 import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
 import { DRIVE_FILE_DRAG_MIME, stringifyDriveFileDragPayload } from './drive-file-drag';
 
@@ -238,6 +239,9 @@ function DriveFileCardTileRow({
         }
         onClick={() => onSelect(file)}
       />
+      <div className="pointer-events-none absolute bottom-2 left-2 z-10">
+        <DriveManualGrantCountBadge count={file.manualGrantCount} compact />
+      </div>
       {showMenu && menu ? (
         <div className={cn('absolute top-2 right-2 z-10', CARD_CONTROL_HOVER)}>
           <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
@@ -299,7 +303,10 @@ function DriveFileCardListRow({
           <DriveFileCardThumbnail file={file} />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
+            <DriveManualGrantCountBadge count={file.manualGrantCount} compact />
+          </div>
           <p className="text-muted-foreground mt-0.5 truncate text-xs">
             {formatFileSize(file.sizeBytes)}
           </p>
@@ -380,7 +387,12 @@ function DriveFileCardGrid({
           <DriveFileCardThumbnail file={file} />
         </div>
         <div className="min-w-0 p-3">
-          <h3 className="text-foreground line-clamp-2 text-sm font-semibold">{file.displayName}</h3>
+          <div className="flex items-start gap-1.5">
+            <h3 className="text-foreground line-clamp-2 min-w-0 flex-1 text-sm font-semibold">
+              {file.displayName}
+            </h3>
+            <DriveManualGrantCountBadge count={file.manualGrantCount} compact />
+          </div>
           <p className="text-muted-foreground mt-1 truncate text-xs">
             {formatFileSize(file.sizeBytes)}
           </p>

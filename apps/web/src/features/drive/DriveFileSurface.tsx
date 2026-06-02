@@ -30,6 +30,7 @@ import {
   parseDriveFileDragPayload,
   stringifyDriveFileDragPayload,
 } from './drive-file-drag';
+import { DriveManualGrantCountBadge } from './drive-manual-grant-count-badge';
 
 const FILE_TABLE_GRID_CLASS =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
@@ -340,7 +341,10 @@ function FileTableRow({
       />
       <span className="flex min-w-0 items-center gap-2">
         <FileTypeIcon fileType={file.fileType} className="text-muted-foreground size-4 shrink-0" />
-        <span className="truncate font-medium">{file.displayName}</span>
+        <span className="flex min-w-0 items-center gap-1.5 truncate font-medium">
+          <span className="truncate">{file.displayName}</span>
+          <DriveManualGrantCountBadge count={file.manualGrantCount} compact />
+        </span>
       </span>
       <span className="text-muted-foreground truncate text-xs">
         {formatDriveLabel(file.purpose)}

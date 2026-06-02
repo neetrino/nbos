@@ -102,7 +102,7 @@ export async function revokeDriveFileResourceAccessGrant(
   });
 }
 
-async function loadPlatformGrantResourceIds(
+export async function loadPlatformGrantResourceIds(
   prisma: InstanceType<typeof PrismaClient>,
   resourceType: typeof DRIVE_FILE_ASSET_RESOURCE_TYPE | typeof DRIVE_FOLDER_RESOURCE_TYPE,
   employeeId: string,
@@ -203,8 +203,17 @@ export async function buildDriveExplicitFileGrantWhere(
   employeeId: string,
   permissions?: readonly FileGrantPermission[],
 ): Promise<Prisma.FileAssetWhereInput> {
+  const { buildDriveFolderInheritedFileGrantWhere } = await import('./drive-folder-grant-inherit');
   const legacy = activeFileAssetGrantWhere(employeeId, permissions);
   const platformIds = await loadPlatformGrantFileIds(prisma, employeeId, permissions);
-  if (platformIds.length === 0) return legacy;
-  return { OR: [legacy, { id: { in: platformIds } }] };
+  const folderInherited = await buildDriveFolderInheritedFileGrantWhere(
+    prisma,
+    employeeId,
+    permissions,
+  );
+  const parts: Prisma.FileAssetWhereInput[] = [legacy, folderInherited];
+  if (platformIds.length > 0) {
+    parts.push({ id: { in: platformIds } });
+  }
+  return { OR: parts };
 }

@@ -2,6 +2,8 @@ import { api } from '../api';
 
 export interface FileAsset {
   id: string;
+  /** Active manual grants on this file. */
+  manualGrantCount?: number;
   displayName: string;
   originalName: string | null;
   fileType: string;
@@ -141,6 +143,8 @@ export interface DriveFolder {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Active manual grants (ResourceAccessGrant / FileAssetGrant). */
+  manualGrantCount?: number;
 }
 
 export type DriveFolderListParams = {

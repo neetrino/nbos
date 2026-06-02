@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { formatDriveDate } from './drive-format';
 import { DriveTileShell } from './DriveTileShell';
 import { DRIVE_FOLDER_CHIPS_ROW_CLASS } from './drive-view-layout';
+import { DriveManualGrantCountBadge } from './drive-manual-grant-count-badge';
 
 type DriveFolderRowLayout = 'cards' | 'list' | 'tiles';
 
@@ -111,7 +112,8 @@ function DriveFolderChip({
         className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2 rounded-full text-left outline-none focus-visible:ring-2"
       >
         <Folder className="text-primary/80 size-4 shrink-0" strokeWidth={2} aria-hidden />
-        <span className="text-foreground truncate text-sm font-medium">{folder.name}</span>
+        <span className="text-foreground min-w-0 truncate text-sm font-medium">{folder.name}</span>
+        <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
       </button>
       {showMenu ? (
         <FolderOverflowMenu
@@ -201,6 +203,9 @@ export function DriveFolderCardRow({
           icon={<Folder className="size-5" strokeWidth={2} aria-hidden />}
           onClick={() => onOpenFolder(folder)}
         />
+        <div className="pointer-events-none absolute bottom-2 left-2 z-10">
+          <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+        </div>
         {showMenu ? (
           <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
             <FolderOverflowMenu
@@ -249,7 +254,10 @@ export function DriveFolderCardRow({
         >
           <Folder className="text-muted-foreground size-5 shrink-0" strokeWidth={2} />
           <div className="min-w-0 flex-1">
-            <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
+              <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+            </div>
             <p className="text-muted-foreground text-[11px] leading-tight">{folder.space}</p>
           </div>
         </button>
@@ -298,7 +306,10 @@ export function DriveFolderCardRow({
           <Folder className={FOLDER_CARD_ICON_CLASS} strokeWidth={1.35} aria-hidden />
         </div>
         <div className="min-h-0 shrink-0 space-y-0.5 pt-1">
-          <p className="text-foreground line-clamp-2 text-sm font-semibold">{folder.name}</p>
+          <div className="flex items-center justify-center gap-1">
+            <p className="text-foreground line-clamp-2 text-sm font-semibold">{folder.name}</p>
+            <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+          </div>
           <p className="text-muted-foreground text-[11px] leading-tight tracking-wide uppercase">
             {folder.space}
           </p>
@@ -425,7 +436,10 @@ export function DriveFolderTableRow({
           }}
         >
           <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
-          <span className="truncate font-medium">{folder.name}</span>
+          <span className="flex min-w-0 items-center gap-1.5 truncate font-medium">
+            <span className="truncate">{folder.name}</span>
+            <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+          </span>
           <span className="text-muted-foreground text-xs">Folder</span>
           <span className="text-muted-foreground text-xs">{folder.space}</span>
           <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
@@ -483,7 +497,10 @@ export function DriveFolderTableRow({
         }}
       >
         <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
-        <span className="truncate font-medium">{folder.name}</span>
+        <span className="flex min-w-0 items-center gap-1.5 truncate font-medium">
+          <span className="truncate">{folder.name}</span>
+          <DriveManualGrantCountBadge count={folder.manualGrantCount} compact />
+        </span>
         <span className="text-muted-foreground text-xs">Folder</span>
         <span className="text-muted-foreground text-xs">{folder.space}</span>
         <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
