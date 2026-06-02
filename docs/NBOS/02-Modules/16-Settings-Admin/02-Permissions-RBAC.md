@@ -6,6 +6,12 @@
 
 `Permissions / RBAC` отвечает за то, что пользователь может делать в системе.
 
+Этот документ описывает **technical permissions**: action permissions, permission roles and technical scopes. Он не является source of truth для Project/Product team membership и manual resource overrides.
+
+Project/Product access foundation живет в:
+
+- `../07-My-Company/09-Platform-Access-Foundation.md`
+
 Важно разделять:
 
 ```text
@@ -70,6 +76,20 @@ Scope определяет границу доступа:
 | `OWN`        | Только свои записи   |
 | `DEPARTMENT` | Записи своего отдела |
 | `ALL`        | Все записи           |
+
+Эти technical scopes описывают общий RBAC уровень. Для project/product-scoped resources требуется entity-level foundation:
+
+```text
+Permission Role says: can view/edit module/resource family.
+Platform Access Foundation says: which project/product/resource this employee can access.
+```
+
+Например:
+
+- `credentials.edit` может быть разрешен technical permission role;
+- конкретный project credential все равно доступен только если employee проходит Role Access Level / Personal Access Level / ProjectTeamMember / ProductTeamMember / Manual Override policy.
+
+Не добавлять ad hoc credentials-only/project-only scope logic в Settings RBAC; использовать Platform Access Foundation.
 
 ## Правило entity-level enforcement
 
@@ -150,6 +170,13 @@ Seat: Finance Director -> default Permission Role: Finance Admin
 - роли от каждого seat;
 - manual overrides;
 - итоговый effective access.
+
+Для project/product resources effective access должен включать:
+
+- Role Access Levels;
+- Personal Access Levels;
+- ProjectTeamMember/ProductTeamMember;
+- Manual resource overrides.
 
 ## Audit requirements
 

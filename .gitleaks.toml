@@ -1,0 +1,12 @@
+# NBOS gitleaks config — blocks real secrets; allowlists known historical doc/mock false positives.
+title = "nbos"
+
+[allowlist]
+description = "Removed mock credentials and rule examples; seed uses explicit DEMO prefixes"
+commits = [
+  "d37a2d59bf607449b5d0736fb8524e5f83eb4847",
+  "0b43d1418eaac8706144c0d6237b43c0c28a66c8",
+]
+regexes = [
+  '''(?i)(demo|example|placeholder|revoked|your[_-])''',
+]

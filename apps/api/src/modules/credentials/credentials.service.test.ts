@@ -19,6 +19,13 @@ vi.mock('argon2', () => ({
 const TEST_KEY = 'test-key-for-credentials';
 
 const accessUser1 = { employeeId: 'user-1', departmentIds: [] as string[] };
+const accessOwnerAll = {
+  employeeId: 'owner-1',
+  departmentIds: [] as string[],
+  viewScope: 'ALL',
+  editScope: 'ALL',
+  deleteScope: 'ALL',
+};
 
 function createMockConfigService() {
   return {
@@ -138,7 +145,7 @@ describe('CredentialsService', () => {
       prisma.credential.findMany.mockResolvedValue([]);
       prisma.credential.count.mockResolvedValue(0);
 
-      await service.findAll({ search: 'aws' });
+      await service.findAll({ search: 'aws', employeeId: 'user-1', departmentIds: [] });
 
       expect(prisma.credential.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -147,6 +154,44 @@ describe('CredentialsService', () => {
           }),
         }),
       );
+    });
+
+    it('skips credential-level visibility filter when RBAC viewScope is ALL', async () => {
+      prisma.credential.findMany.mockResolvedValue([]);
+      prisma.credential.count.mockResolvedValue(0);
+
+      await service.findAll({
+        employeeId: 'owner-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+      });
+
+      const call = prisma.credential.findMany.mock.calls[0]?.[0] as { where: { OR?: unknown } };
+      expect(call.where.OR).toBeUndefined();
+    });
+
+    it('lists all SECRET credentials on secret tab when RBAC viewScope is ALL', async () => {
+      prisma.credential.findMany.mockResolvedValue([]);
+      prisma.credential.count.mockResolvedValue(0);
+
+      await service.findAll({
+        tab: 'secret',
+        employeeId: 'owner-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+      });
+
+      expect(prisma.credential.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            accessLevel: 'SECRET',
+          }),
+        }),
+      );
+      const call = prisma.credential.findMany.mock.calls[0]?.[0] as {
+        where: { allowedEmployees?: unknown };
+      };
+      expect(call.where.allowedEmployees).toBeUndefined();
     });
 
     it('adds health metadata for rotation due/overdue flags', async () => {
@@ -213,6 +258,30 @@ describe('CredentialsService', () => {
 
       await expect(service.findById('secret-1', accessUser1)).rejects.toThrow(NotFoundException);
       expect(auditService.log).not.toHaveBeenCalled();
+    });
+
+    it('returns foreign SECRET credential when RBAC viewScope is ALL', async () => {
+      const mockCred = {
+        id: 'secret-1',
+        name: 'Root vault',
+        password: 'enc:tag:secret',
+        apiKey: null,
+        envData: null,
+        projectId: null,
+        project: null,
+      };
+      prisma.credential.findFirst.mockResolvedValue(mockCred);
+
+      const result = await service.findById('secret-1', accessOwnerAll);
+
+      expect(result).toEqual(expect.objectContaining({ id: 'secret-1' }));
+      expect(prisma.credential.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ id: 'secret-1', archivedAt: null }),
+        }),
+      );
+      const call = prisma.credential.findFirst.mock.calls[0]?.[0] as { where: { OR?: unknown } };
+      expect(call.where.OR).toBeUndefined();
     });
   });
 

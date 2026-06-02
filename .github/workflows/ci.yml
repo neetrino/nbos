@@ -11,6 +11,8 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  # Prisma 7 config requires DIRECT_URL; generate does not connect to the DB.
+  DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
 
 jobs:
   quality:
@@ -33,9 +35,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        env:
-          # Prisma 7 config requires DIRECT_URL; generate does not connect to the DB.
-          DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
         run: pnpm db:generate
 
       - name: Format check
@@ -94,4 +93,13 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
 
       - name: Run gitleaks
-        run: gitleaks detect --source . --verbose --redact
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gitleaks detect --source . --verbose --redact \
+              --log-opts "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            gitleaks detect --source . --verbose --redact \
+              --log-opts "${{ github.event.before }}..${{ github.sha }}"
+          else
+            gitleaks detect --source . --verbose --redact
+          fi
