@@ -1,4 +1,9 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
+import {
+  buildDealParticipationWhere,
+  buildProductParticipationWhere,
+  buildProjectParticipationWhere,
+} from '../platform-access/platform-team-graph.where';
 import type { DriveEntityAccess } from './drive-access.types';
 
 const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
@@ -10,62 +15,6 @@ const SENSITIVE_CONFIDENTIALITIES = [
 ] as const;
 
 type InheritedLinkTarget = { entityType: string; entityId: string };
-
-function projectDeliveryGraphWhere(scopedEmployeeIds: string[]): Prisma.ProjectWhereInput {
-  return {
-    OR: [
-      {
-        products: {
-          some: {
-            OR: [
-              { pmId: { in: scopedEmployeeIds } },
-              { developerId: { in: scopedEmployeeIds } },
-              { designerId: { in: scopedEmployeeIds } },
-              { technicalSpecialistId: { in: scopedEmployeeIds } },
-              { qaLeadId: { in: scopedEmployeeIds } },
-            ],
-          },
-        },
-      },
-      { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
-      {
-        orders: {
-          some: {
-            deal: {
-              OR: [
-                { sellerId: { in: scopedEmployeeIds } },
-                { sellerAssistantId: { in: scopedEmployeeIds } },
-                { pmId: { in: scopedEmployeeIds } },
-              ],
-            },
-          },
-        },
-      },
-    ],
-  };
-}
-
-function productDeliveryGraphWhere(scopedEmployeeIds: string[]): Prisma.ProductWhereInput {
-  return {
-    OR: [
-      { pmId: { in: scopedEmployeeIds } },
-      { developerId: { in: scopedEmployeeIds } },
-      { designerId: { in: scopedEmployeeIds } },
-      { technicalSpecialistId: { in: scopedEmployeeIds } },
-      { qaLeadId: { in: scopedEmployeeIds } },
-    ],
-  };
-}
-
-function dealDeliveryGraphWhere(scopedEmployeeIds: string[]): Prisma.DealWhereInput {
-  return {
-    OR: [
-      { sellerId: { in: scopedEmployeeIds } },
-      { sellerAssistantId: { in: scopedEmployeeIds } },
-      { pmId: { in: scopedEmployeeIds } },
-    ],
-  };
-}
 
 function taskParticipationWhere(scopedEmployeeIds: string[]): Prisma.TaskWhereInput {
   return {
@@ -81,7 +30,7 @@ function taskParticipationWhere(scopedEmployeeIds: string[]): Prisma.TaskWhereIn
 function workspaceParticipationWhere(scopedEmployeeIds: string[]): Prisma.WorkSpaceWhereInput {
   return {
     OR: [
-      { product: productDeliveryGraphWhere(scopedEmployeeIds) },
+      { product: buildProductParticipationWhere(scopedEmployeeIds) },
       {
         extension: {
           OR: [
@@ -90,7 +39,7 @@ function workspaceParticipationWhere(scopedEmployeeIds: string[]): Prisma.WorkSp
           ],
         },
       },
-      { project: projectDeliveryGraphWhere(scopedEmployeeIds) },
+      { project: buildProjectParticipationWhere(scopedEmployeeIds) },
     ],
   };
 }
@@ -119,17 +68,17 @@ async function collectInheritedLinkTargets(
 ): Promise<InheritedLinkTarget[]> {
   const [projects, deals, products, tasks, workspaces] = await Promise.all([
     prisma.project.findMany({
-      where: projectDeliveryGraphWhere(scopedEmployeeIds),
+      where: buildProjectParticipationWhere(scopedEmployeeIds),
       select: { id: true },
       take: INHERITED_LINK_ENTITY_CAP,
     }),
     prisma.deal.findMany({
-      where: dealDeliveryGraphWhere(scopedEmployeeIds),
+      where: buildDealParticipationWhere(scopedEmployeeIds),
       select: { id: true },
       take: INHERITED_LINK_ENTITY_CAP,
     }),
     prisma.product.findMany({
-      where: productDeliveryGraphWhere(scopedEmployeeIds),
+      where: buildProductParticipationWhere(scopedEmployeeIds),
       select: { id: true, extensions: { select: { id: true }, take: 30 } },
       take: INHERITED_LINK_ENTITY_CAP,
     }),

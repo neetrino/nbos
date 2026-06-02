@@ -5,6 +5,11 @@ import {
   normalizeDocumentsViewScope,
   resolveDocumentsReadContext,
 } from '../documents/documents-access-read';
+import {
+  buildDealParticipationWhere,
+  buildProductParticipationWhere,
+  buildProjectParticipationWhere,
+} from '../platform-access/platform-team-graph.where';
 import type { DriveEntityContextAccess } from './drive-access.types';
 import { requireText } from './drive-metadata';
 
@@ -44,62 +49,6 @@ function assertScopedEmployeeMatch(
     return;
   }
   throw new NotFoundException('Drive context not found.');
-}
-
-function projectDeliveryGraphWhere(scopedEmployeeIds: string[]) {
-  return {
-    OR: [
-      {
-        products: {
-          some: {
-            OR: [
-              { pmId: { in: scopedEmployeeIds } },
-              { developerId: { in: scopedEmployeeIds } },
-              { designerId: { in: scopedEmployeeIds } },
-              { technicalSpecialistId: { in: scopedEmployeeIds } },
-              { qaLeadId: { in: scopedEmployeeIds } },
-            ],
-          },
-        },
-      },
-      { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
-      {
-        orders: {
-          some: {
-            deal: {
-              OR: [
-                { sellerId: { in: scopedEmployeeIds } },
-                { sellerAssistantId: { in: scopedEmployeeIds } },
-                { pmId: { in: scopedEmployeeIds } },
-              ],
-            },
-          },
-        },
-      },
-    ],
-  };
-}
-
-function productDeliveryGraphWhere(scopedEmployeeIds: string[]) {
-  return {
-    OR: [
-      { pmId: { in: scopedEmployeeIds } },
-      { developerId: { in: scopedEmployeeIds } },
-      { designerId: { in: scopedEmployeeIds } },
-      { technicalSpecialistId: { in: scopedEmployeeIds } },
-      { qaLeadId: { in: scopedEmployeeIds } },
-    ],
-  };
-}
-
-function dealDeliveryGraphWhere(scopedEmployeeIds: string[]) {
-  return {
-    OR: [
-      { sellerId: { in: scopedEmployeeIds } },
-      { sellerAssistantId: { in: scopedEmployeeIds } },
-      { pmId: { in: scopedEmployeeIds } },
-    ],
-  };
 }
 
 async function assertDocumentReadable(
@@ -191,15 +140,25 @@ async function assertEntityScopedByEmployees(
           assigneeId: true,
           coAssignees: true,
           observers: true,
+          projectId: true,
         },
       });
       if (!row) throw new NotFoundException('Drive context not found.');
-      assertScopedEmployeeMatch(scopedEmployeeIds, [
+      const taskParticipantIds = [
         row.creatorId,
         row.assigneeId,
         ...row.coAssignees,
         ...row.observers,
-      ]);
+      ];
+      if (taskParticipantIds.some((id) => Boolean(id) && scopedEmployeeIds.has(id!))) {
+        return;
+      }
+      if (!row.projectId) throw new NotFoundException('Drive context not found.');
+      const projectRow = await prisma.project.findFirst({
+        where: { id: row.projectId, ...buildProjectParticipationWhere([...scopedEmployeeIds]) },
+        select: { id: true },
+      });
+      if (!projectRow) throw new NotFoundException('Drive context not found.');
       return;
     }
     case 'LEAD': {
@@ -221,24 +180,11 @@ async function assertEntityScopedByEmployees(
       return;
     }
     case 'PRODUCT': {
-      const row = await prisma.product.findUnique({
-        where: { id: entityId },
-        select: {
-          pmId: true,
-          developerId: true,
-          designerId: true,
-          technicalSpecialistId: true,
-          qaLeadId: true,
-        },
+      const row = await prisma.product.findFirst({
+        where: { id: entityId, ...buildProductParticipationWhere([...scopedEmployeeIds]) },
+        select: { id: true },
       });
       if (!row) throw new NotFoundException('Drive context not found.');
-      assertScopedEmployeeMatch(scopedEmployeeIds, [
-        row.pmId,
-        row.developerId,
-        row.designerId,
-        row.technicalSpecialistId,
-        row.qaLeadId,
-      ]);
       return;
     }
     case 'EXTENSION': {
@@ -277,7 +223,7 @@ async function assertProjectScopedAccessible(
   const row = await prisma.project.findFirst({
     where: {
       id: entityId,
-      ...projectDeliveryGraphWhere(scopedEmployeeIds),
+      ...buildProjectParticipationWhere(scopedEmployeeIds),
     },
     select: { id: true },
   });
@@ -301,7 +247,7 @@ async function assertWorkspaceScopedAccessible(
       id: entityId,
       OR: [
         {
-          product: productDeliveryGraphWhere(scopedEmployeeIds),
+          product: buildProductParticipationWhere(scopedEmployeeIds),
         },
         {
           extension: {
@@ -312,7 +258,7 @@ async function assertWorkspaceScopedAccessible(
           },
         },
         {
-          project: projectDeliveryGraphWhere(scopedEmployeeIds),
+          project: buildProjectParticipationWhere(scopedEmployeeIds),
         },
       ],
     },
@@ -387,8 +333,8 @@ async function assertCompanyScopedAccessible(
     where: {
       id: entityId,
       OR: [
-        { projects: { some: projectDeliveryGraphWhere(scopedEmployeeIds) } },
-        { deals: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
+        { projects: { some: buildProjectParticipationWhere(scopedEmployeeIds) } },
+        { deals: { some: buildDealParticipationWhere(scopedEmployeeIds) } },
       ],
     },
     select: { id: true },
@@ -412,8 +358,8 @@ async function assertContactScopedAccessible(
     where: {
       id: entityId,
       OR: [
-        { projects: { some: projectDeliveryGraphWhere(scopedEmployeeIds) } },
-        { deals: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
+        { projects: { some: buildProjectParticipationWhere(scopedEmployeeIds) } },
+        { deals: { some: buildDealParticipationWhere(scopedEmployeeIds) } },
         { leads: { some: { assignedTo: { in: scopedEmployeeIds } } } },
         { tickets: { some: { assignedTo: { in: scopedEmployeeIds } } } },
       ],
@@ -439,10 +385,12 @@ async function assertPartnerScopedAccessible(
     where: {
       id: entityId,
       OR: [
-        { dealsAsSource: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
-        { orders: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
-        { subscriptions: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
-        { partnerAccruals: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
+        { dealsAsSource: { some: buildDealParticipationWhere(scopedEmployeeIds) } },
+        { orders: { some: { project: buildProjectParticipationWhere(scopedEmployeeIds) } } },
+        { subscriptions: { some: { project: buildProjectParticipationWhere(scopedEmployeeIds) } } },
+        {
+          partnerAccruals: { some: { project: buildProjectParticipationWhere(scopedEmployeeIds) } },
+        },
       ],
     },
     select: { id: true },

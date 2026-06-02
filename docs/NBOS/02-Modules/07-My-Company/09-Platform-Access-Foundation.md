@@ -139,25 +139,43 @@ Inherited: Product team + Role access
 
 ---
 
-## Future Module Contracts
+## Module integration contracts (Phase 2)
+
+Shared Prisma participation filters live in `apps/api/src/modules/platform-access/platform-team-graph.where.ts`:
+
+- `buildProjectParticipationWhere` — `ProjectTeamMember` + legacy delivery/sales graph;
+- `buildProductParticipationWhere` — `ProductTeamMember` + legacy product FK slots;
+- `buildDealParticipationWhere` — seller/PM deal fields (used inside project graph).
 
 ### Drive
 
-Drive should later reuse ProjectTeamMember/ProductTeamMember for:
+**Runtime (partial):** scoped Drive entity context and inherited file links use the shared participation filters for `PROJECT`, `PRODUCT`, finance-linked entities (`INVOICE`, `PAYMENT`, `EXPENSE`), and `TASK` (assignees **or** project team).
 
-- project drive;
-- product drive;
-- manual file/folder overrides.
+**Still backlog:**
+
+- `ResourceAccessGrant` for manual file/folder override (Drive-specific resource type);
+- role/personal `DRIVE` family policies via `PlatformAccessResolverService`;
+- inherited multi-link confidentiality edge cases (see Drive permissions canon).
 
 ### Finance
 
-Finance should combine project/product access with finance-specific role gates.
+Finance row access = **RBAC module scopes** (`FINANCE_*` permissions) **plus** project/product participation when data is project-scoped.
 
-Example: a seller may see only finance data related to their sales/project context, while Finance roles get broader finance operations access.
+| Context               | Rule                                                                    |
+| --------------------- | ----------------------------------------------------------------------- |
+| Global finance ops    | Role with `FINANCE_*` `ALL` / department scope                          |
+| Seller / PM on a deal | `buildProjectParticipationWhere` on invoice/payment/expense `projectId` |
+| Manual override       | Future `ResourceAccessGrant` on finance document (not shipped)          |
+
+Portfolio/client views already mask sections via `portfolio-access-mask.ts`; wire project graph checks where list endpoints are still scope-only.
 
 ### Project Hub / Tasks
 
-Project Hub and Tasks should consume ProjectTeamMember/ProductTeamMember rather than inferring access from loose product fields forever.
+**Runtime (partial):** Drive `TASK` context accepts project team membership when the user is not a direct assignee/observer.
+
+**UI:** `ProjectParticipantsSection` / `ProductParticipantsSection` are source of truth for team edits; APIs sync legacy FKs via `ProductTeamSyncService`.
+
+**Still backlog:** Tasks module list/detail filters should import the same participation helpers instead of duplicating product FK checks.
 
 ---
 
