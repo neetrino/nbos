@@ -29,6 +29,10 @@ describe('ExtensionsService', () => {
   const checklistTemplates = {
     assertStageInstancesCompleted: vi.fn().mockResolvedValue(undefined),
   };
+  const productTeamSync = {
+    syncProductSlots: vi.fn().mockResolvedValue(undefined),
+    syncExtensionAssignee: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -38,6 +42,7 @@ describe('ExtensionsService', () => {
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite.mockClear();
     checklistTemplates.assertStageInstancesCompleted.mockClear();
+    productTeamSync.syncExtensionAssignee.mockClear();
     service = new ExtensionsService(
       prisma as never,
       notifications,
@@ -46,6 +51,7 @@ describe('ExtensionsService', () => {
       auditService as never,
       deliveryStageChecklistSync as never,
       checklistTemplates as never,
+      productTeamSync as never,
     );
   });
 

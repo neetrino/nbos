@@ -101,6 +101,15 @@ model Employee {
   checklistTemplateVersionsCreated ChecklistTemplateVersion[]          @relation("ChecklistTemplateVersionCreatedBy")
   checklistInstancesCompleted      ChecklistInstance[]                 @relation("ChecklistInstanceCompletedBy")
   partnerAgreementsOwned             Partner[]                           @relation("PartnerAgreementOwner")
+  projectTeamMemberships             ProjectTeamMember[]                 @relation("ProjectTeamMemberEmployee")
+  projectTeamMembersAdded            ProjectTeamMember[]                 @relation("ProjectTeamMemberAddedBy")
+  productTeamMemberships             ProductTeamMember[]                 @relation("ProductTeamMemberEmployee")
+  productTeamMembersAdded            ProductTeamMember[]                 @relation("ProductTeamMemberAddedBy")
+  roleAccessPoliciesUpdated          RoleAccessPolicy[]                  @relation("RoleAccessPolicyUpdatedBy")
+  employeeAccessOverrides            EmployeeAccessOverride[]            @relation("EmployeeAccessOverrideSubject")
+  employeeAccessOverridesCreated     EmployeeAccessOverride[]            @relation("EmployeeAccessOverrideCreatedBy")
+  resourceAccessGrants               ResourceAccessGrant[]               @relation("ResourceAccessGrantEmployee")
+  resourceAccessGrantsGranted        ResourceAccessGrant[]               @relation("ResourceAccessGrantGrantedBy")
 
   @@map("employees")
 }

@@ -25,6 +25,10 @@ describe('ProductsService', () => {
   const checklistTemplates = {
     assertStageInstancesCompleted: vi.fn().mockResolvedValue(undefined),
   };
+  const productTeamSync = {
+    syncProductSlots: vi.fn().mockResolvedValue(undefined),
+    syncExtensionAssignee: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -33,6 +37,7 @@ describe('ProductsService', () => {
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
     checklistTemplates.assertStageInstancesCompleted.mockClear();
+    productTeamSync.syncProductSlots.mockClear();
     service = new ProductsService(
       prisma as never,
       notifications,
@@ -40,6 +45,7 @@ describe('ProductsService', () => {
       auditService as never,
       deliveryStageChecklistSync as never,
       checklistTemplates as never,
+      productTeamSync as never,
     );
   });
 

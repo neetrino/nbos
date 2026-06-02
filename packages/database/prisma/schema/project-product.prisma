@@ -38,6 +38,7 @@ model Project {
   partnerServiceTerms       PartnerServiceTerm[]
   additionalContacts        ProjectAdditionalContact[]
   invoices                  Invoice[]
+  teamMembers               ProjectTeamMember[]
 
   @@map("projects")
 }
@@ -184,6 +185,7 @@ model Product {
   partnerAccruals           PartnerAccrual[]
   checklistTemplate         ChecklistTemplate?         @relation(fields: [checklistTemplateId], references: [id], onDelete: SetNull)
   accessSlotBindings        ProductAccessSlotBinding[]
+  teamMembers               ProductTeamMember[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])

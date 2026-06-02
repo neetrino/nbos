@@ -3,6 +3,7 @@ import { AuditModule } from '../../audit/audit.module';
 import { ChecklistTemplatesModule } from '../../checklist-templates/checklist-templates.module';
 import { PartnerAccrualModule } from '../../finance/partner-accrual/partner-accrual.module';
 import { NotificationModule } from '../../notifications/notification.module';
+import { PlatformAccessModule } from '../../platform-access/platform-access.module';
 import { ProductsService } from './products.service';
 import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
 
@@ -11,7 +12,13 @@ import { ProductAccessSlotBindingsService } from './product-access-slot-bindings
  * so that `GET /api/projects/products` is not captured by `GET /api/projects/:id`.
  */
 @Module({
-  imports: [NotificationModule, PartnerAccrualModule, AuditModule, ChecklistTemplatesModule],
+  imports: [
+    NotificationModule,
+    PartnerAccrualModule,
+    AuditModule,
+    ChecklistTemplatesModule,
+    PlatformAccessModule,
+  ],
   providers: [ProductsService, ProductAccessSlotBindingsService],
   exports: [ProductsService, ProductAccessSlotBindingsService],
 })

@@ -4,6 +4,7 @@ import { ChecklistTemplatesModule } from '../../checklist-templates/checklist-te
 import { PartnerAccrualModule } from '../../finance/partner-accrual/partner-accrual.module';
 import { NotificationModule } from '../../notifications/notification.module';
 import { SupportModule } from '../../support/support.module';
+import { PlatformAccessModule } from '../../platform-access/platform-access.module';
 import { ExtensionsService } from './extensions.service';
 
 /**
@@ -17,6 +18,7 @@ import { ExtensionsService } from './extensions.service';
     SupportModule,
     AuditModule,
     ChecklistTemplatesModule,
+    PlatformAccessModule,
   ],
   providers: [ExtensionsService],
   exports: [ExtensionsService],
