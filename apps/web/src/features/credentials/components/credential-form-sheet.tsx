@@ -1,24 +1,13 @@
 'use client';
 
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import {
-  DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
-  EntityDetailSheetContent,
-  StatusBadge,
-} from '@/components/shared';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import {
-  getAccessLevel,
-  getCredentialCriticality,
-} from '@/features/credentials/constants/credentials';
+import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { CredentialEmergencyAccessPanel } from './credential-emergency-access-panel';
-import { CredentialFormSheetFields } from './credential-form-sheet-fields';
-import { CredentialFormSheetPanels } from './credential-form-sheet-panels';
+import { CredentialFormSheetBody } from './credential-form-sheet-body';
+import { CredentialFormSheetHeader } from './credential-form-sheet-header';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
 import { useCredentialFormSheet } from './use-credential-form-sheet';
 import type { CredentialFormSheetProps } from './credential-form-sheet-types';
@@ -51,13 +40,14 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
     stepUpMode,
     runStepUp,
     accessDenied,
+    manualGrants,
+    setManualGrants,
   } = form;
 
   const showEmergency =
     accessDenied && credentialId && canUseCredentialEmergencyAccess(me?.role.slug);
 
-  const accessMeta = getAccessLevel(accessLevel);
-  const critMeta = getCredentialCriticality(criticality);
+  const headerResetKey = `${open}|${credentialId ?? 'create'}`;
 
   return (
     <>
@@ -65,40 +55,19 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
         <EntityDetailSheetContent open={open} layout="full" width="medium">
           <div className="flex h-full min-h-0 flex-col">
             {!accessDenied && (
-              <div className="border-border flex shrink-0 items-start justify-between gap-3 border-b px-6 py-4">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="border-0 bg-transparent p-0 text-lg font-semibold shadow-none focus-visible:ring-0"
-                    placeholder="Credential name"
-                    aria-label="Name"
-                  />
-                  <div className="flex flex-wrap items-center gap-2">
-                    {accessMeta && (
-                      <StatusBadge label={accessMeta.label} variant={accessMeta.variant} />
-                    )}
-                    {critMeta && !isCreate && (
-                      <StatusBadge label={critMeta.label} variant={critMeta.variant} />
-                    )}
-                    <span className="text-muted-foreground text-xs">{categoryLabel}</span>
-                  </div>
-                </div>
-                {!isCreate && credentialId && onRequestArchive ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem onClick={() => setShowSettings((v) => !v)}>
-                      Advanced settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => onRequestArchive(credentialId, name)}
-                    >
-                      <Trash2 className="mr-2 size-4" />
-                      Archive
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                ) : null}
-              </div>
+              <CredentialFormSheetHeader
+                isCreate={isCreate}
+                credentialId={credentialId}
+                name={name}
+                onNameChange={setName}
+                accessLevel={accessLevel}
+                categoryLabel={categoryLabel}
+                criticality={criticality}
+                showSettings={showSettings}
+                onToggleSettings={() => setShowSettings((v) => !v)}
+                onRequestArchive={onRequestArchive}
+                resetKey={headerResetKey}
+              />
             )}
 
             {loading ? (
@@ -121,22 +90,21 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
               </ScrollArea>
             ) : (
               <ScrollArea className="min-h-0 flex-1">
-                <CredentialFormSheetFields form={form} />
-                {!isCreate && credentialId ? (
-                  <CredentialFormSheetPanels
-                    sheetOpen={open}
-                    credentialId={credentialId}
-                    accessLevel={accessLevel}
-                    detail={form.detail}
-                  />
-                ) : null}
+                <CredentialFormSheetBody
+                  form={form}
+                  sheetOpen={open}
+                  credentialId={credentialId}
+                  manualGrants={manualGrants}
+                  manualLoading={loading}
+                  onManualGrantsChange={setManualGrants}
+                />
               </ScrollArea>
             )}
 
             {!accessDenied && (
               <DetailSheetFormFooter
-                visible={isCreate || dirty}
-                dirty={isCreate ? name.trim().length > 0 : dirty}
+                visible={dirty}
+                dirty={dirty}
                 saving={saving}
                 onSave={() => void handleSave()}
                 onCancel={() => (isCreate ? onOpenChange(false) : void loadDetail())}

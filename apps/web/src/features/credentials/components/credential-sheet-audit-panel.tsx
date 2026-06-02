@@ -14,17 +14,27 @@ export interface CredentialSheetAuditPanelProps {
   entries: AuditLogEntry[];
   loading: boolean;
   onReload: () => void;
+  /** Inside {@link DetailSheetTabBar} — hide duplicate section chrome. */
+  embedded?: boolean;
 }
 
 export function CredentialSheetAuditPanel({
   entries,
   loading,
   onReload,
+  embedded = false,
 }: CredentialSheetAuditPanelProps) {
   return (
-    <section className="border-border grid gap-3 border-t pt-5" aria-label="Audit log">
+    <section
+      className={embedded ? 'grid gap-3 pt-3' : 'border-border grid gap-3 border-t pt-5'}
+      aria-label="Audit log"
+    >
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium">Activity</h3>
+        {embedded ? (
+          <span className="sr-only">Activity</span>
+        ) : (
+          <h3 className="text-sm font-medium">Activity</h3>
+        )}
         <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={onReload}>
           Refresh
         </Button>

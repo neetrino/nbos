@@ -26,7 +26,7 @@ export interface CredentialFormSheetStateSlice {
   comment: string;
   accessLevel: string;
   nextRotationAt: string;
-  draftManualGrants: { employeeId: string; level: 'VIEW' | 'EDIT' }[];
+  manualGrants: { employeeId: string; level: 'VIEW' | 'EDIT'; expiresAt: string | null }[];
   stepUpField: CredentialSecretField | null;
   stepUpMode: 'reveal' | 'copy';
   setRevealed: Dispatch<SetStateAction<Partial<Record<CredentialSecretField, string>>>>;
@@ -63,8 +63,8 @@ export function useCredentialFormSheetActions(
         secureNotes: state.comment.trim() || undefined,
         accessLevel: state.accessLevel,
         manualGrants:
-          state.isCreate && state.draftManualGrants.length > 0
-            ? state.draftManualGrants.map((g) => ({
+          state.isCreate && state.manualGrants.length > 0
+            ? state.manualGrants.map((g) => ({
                 employeeId: g.employeeId,
                 level: g.level,
                 expiresAt: g.expiresAt,
@@ -84,6 +84,14 @@ export function useCredentialFormSheetActions(
         body.criticality = state.criticality;
         body.nextRotationAt = state.nextRotationAt || null;
         await credentialsApi.update(state.credentialId, body);
+        await credentialsApi.replaceManualAccess(
+          state.credentialId,
+          state.manualGrants.map((g) => ({
+            employeeId: g.employeeId,
+            level: g.level,
+            expiresAt: g.expiresAt,
+          })),
+        );
         toast.success('Credential saved');
         await state.loadDetail();
         onSaved?.();

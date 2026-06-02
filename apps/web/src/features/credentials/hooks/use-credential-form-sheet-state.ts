@@ -13,7 +13,7 @@ import {
   type CredentialManualGrant,
   type CredentialSecretField,
 } from '@/lib/api/credentials';
-import { employeesApi, type Employee } from '@/lib/api/employees';
+import { buildCredentialFormSnap } from '@/features/credentials/utils/credential-form-sheet-snapshot';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
@@ -48,8 +48,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [comment, setComment] = useState('');
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [nextRotationAt, setNextRotationAt] = useState('');
-  const [draftManualGrants, setDraftManualGrants] = useState<CredentialManualGrant[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [manualGrants, setManualGrants] = useState<CredentialManualGrant[]>([]);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
   const [stepUpField, setStepUpField] = useState<CredentialSecretField | null>(null);
@@ -85,41 +84,81 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setEnvData('');
     setComment('');
     setNextRotationAt('');
-    setDraftManualGrants([]);
+    setManualGrants([]);
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
 
-  const applyDetail = useCallback((d: CredentialDetail) => {
-    setDetail(d);
-    setName(d.name);
-    setCategory(d.category);
-    setCredentialType(d.credentialType);
-    setCriticality(d.criticality);
-    setEnvironment(d.environment ?? '');
-    setProvider(d.provider ?? '');
-    setUrl(d.url ?? '');
-    setLogin(d.login ?? '');
-    setPhone(d.phone ?? '');
-    setPassword('');
-    setApiKey('');
-    setEnvData('');
-    setComment(d.comment ?? '');
-    setAccessLevel(d.accessLevel);
-    setNextRotationAt(d.nextRotationAt?.slice(0, 10) ?? '');
-    setRevealed({});
-    setSnap(
-      JSON.stringify({ name: d.name, category: d.category, credentialType: d.credentialType }),
-    );
-  }, []);
+  const applyFormSnapshot = useCallback(
+    (fields: {
+      name: string;
+      category: string;
+      credentialType: string;
+      criticality: string;
+      environment: string;
+      provider: string;
+      url: string;
+      login: string;
+      phone: string;
+      comment: string;
+      nextRotationAt: string;
+      manualGrants: CredentialManualGrant[];
+    }) => {
+      setSnap(buildCredentialFormSnap(fields));
+    },
+    [],
+  );
+
+  const applyDetail = useCallback(
+    (d: CredentialDetail, grants: CredentialManualGrant[]) => {
+      setDetail(d);
+      setName(d.name);
+      setCategory(d.category);
+      setCredentialType(d.credentialType);
+      setCriticality(d.criticality);
+      setEnvironment(d.environment ?? '');
+      setProvider(d.provider ?? '');
+      setUrl(d.url ?? '');
+      setLogin(d.login ?? '');
+      setPhone(d.phone ?? '');
+      setPassword('');
+      setApiKey('');
+      setEnvData('');
+      setComment(d.comment ?? '');
+      setAccessLevel(d.accessLevel);
+      const rotationDate = d.nextRotationAt?.slice(0, 10) ?? '';
+      setNextRotationAt(rotationDate);
+      setManualGrants(grants);
+      setRevealed({});
+      applyFormSnapshot({
+        name: d.name,
+        category: d.category,
+        credentialType: d.credentialType,
+        criticality: d.criticality,
+        environment: d.environment ?? '',
+        provider: d.provider ?? '',
+        url: d.url ?? '',
+        login: d.login ?? '',
+        phone: d.phone ?? '',
+        comment: d.comment ?? '',
+        nextRotationAt: rotationDate,
+        manualGrants: grants,
+      });
+    },
+    [applyFormSnapshot],
+  );
 
   const loadDetail = useCallback(async () => {
     if (!credentialId) return;
     setLoading(true);
     setAccessDenied(false);
     try {
-      applyDetail(await credentialsApi.getById(credentialId));
+      const [detailRow, manual] = await Promise.all([
+        credentialsApi.getById(credentialId),
+        credentialsApi.getManualAccess(credentialId),
+      ]);
+      applyDetail(detailRow, manual.grants);
     } catch {
       setAccessDenied(true);
       toast.error('No access to this credential');
@@ -147,16 +186,22 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     prevPresetRef.current = presetKey;
   }, [open, presetKey, isCreate, resetCreate, loadDetail]);
 
-  useEffect(() => {
-    if (open && (accessLevel === 'SECRET' || !isCreate)) {
-      void employeesApi.getAll({ pageSize: 200 }).then((r) => setEmployees(r.items));
-    }
-  }, [open, accessLevel, isCreate]);
-
   const dirty = isCreate
-    ? name.trim().length > 0
-    : JSON.stringify({ name, category, credentialType, comment }) !== snap ||
-      Boolean(password || apiKey || envData);
+    ? name.trim().length > 0 || manualGrants.length > 0
+    : buildCredentialFormSnap({
+        name,
+        category,
+        credentialType,
+        comment,
+        environment,
+        provider,
+        url,
+        login,
+        phone,
+        criticality,
+        nextRotationAt,
+        manualGrants,
+      }) !== snap || Boolean(password || apiKey || envData);
 
   return {
     isCreate,
@@ -193,10 +238,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     accessLevel,
     nextRotationAt,
     setNextRotationAt,
-    draftManualGrants,
-    setDraftManualGrants,
+    manualGrants,
+    setManualGrants,
     open,
-    employees,
     detail,
     revealed,
     setRevealed,

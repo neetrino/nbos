@@ -2,7 +2,7 @@
 
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import {
   Select,
   SelectContent,
@@ -28,52 +28,49 @@ export function CredentialManualAccessGrantRow({
   const dateValue = grant.expiresAt ? grant.expiresAt.slice(0, 10) : '';
 
   return (
-    <div className="border-border grid gap-2 rounded-lg border px-3 py-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="min-w-0 truncate text-sm">
-          {grant.employee.firstName} {grant.employee.lastName}
-        </span>
-        <div className="flex shrink-0 items-center gap-1">
-          <Select
-            value={grant.level}
-            onValueChange={(v) => {
-              if (v === 'VIEW' || v === 'EDIT') onLevelChange(grant.employeeId, v);
-            }}
-          >
-            <SelectTrigger className="h-8 w-[5.5rem] text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="VIEW">View</SelectItem>
-              <SelectItem value="EDIT">Edit</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            title="Remove manual access"
-            onClick={() => onRemove(grant.employeeId)}
-          >
-            <Trash2 size={14} className="text-destructive" />
-          </Button>
-        </div>
-      </div>
-      <div className="grid gap-1">
-        <label className="text-muted-foreground text-[11px]" htmlFor={`exp-${grant.employeeId}`}>
-          Expires (optional)
-        </label>
-        <Input
-          id={`exp-${grant.employeeId}`}
-          type="date"
+    <div className="border-border flex flex-wrap items-end gap-2 rounded-lg border px-3 py-2">
+      <span className="min-w-[8rem] flex-1 truncate text-sm">
+        {grant.employee.firstName} {grant.employee.lastName}
+      </span>
+      <div className="grid gap-0.5">
+        <span className="text-muted-foreground text-[11px]">Expires</span>
+        <NbosDatePicker
+          variant="compact"
+          mode="date"
           value={dateValue}
-          className="h-8 text-xs"
-          onChange={(e) => {
-            const next = e.target.value.trim();
-            onExpiresAtChange(grant.employeeId, next ? `${next}T23:59:59.999Z` : null);
+          clearable
+          placeholder="—"
+          aria-label={`Expires for ${grant.employee.firstName} ${grant.employee.lastName}`}
+          className="w-[10.5rem]"
+          onChange={(next) => {
+            const trimmed = next.trim();
+            onExpiresAtChange(grant.employeeId, trimmed ? `${trimmed}T23:59:59.999Z` : null);
           }}
         />
       </div>
+      <Select
+        value={grant.level}
+        onValueChange={(v) => {
+          if (v === 'VIEW' || v === 'EDIT') onLevelChange(grant.employeeId, v);
+        }}
+      >
+        <SelectTrigger className="h-8 w-[5.5rem] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="VIEW">View</SelectItem>
+          <SelectItem value="EDIT">Edit</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        title="Remove manual access"
+        onClick={() => onRemove(grant.employeeId)}
+      >
+        <Trash2 size={14} className="text-destructive" />
+      </Button>
     </div>
   );
 }

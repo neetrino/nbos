@@ -1,67 +1,62 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useCallback, useMemo } from 'react';
+import { User } from 'lucide-react';
+import { RelationPickerField } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CredentialManualAccessGrantRow } from './credential-manual-access-grant-row';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
-import type { Employee } from '@/lib/api/employees';
 
 export interface CredentialManualAccessPanelProps {
   grants: CredentialManualGrant[];
-  employees: Employee[];
-  loading: boolean;
-  saving: boolean;
+  loading?: boolean;
   inheritedSummary: string;
   onGrantsChange: (grants: CredentialManualGrant[]) => void;
-  onSave: () => void;
-  showSave?: boolean;
 }
 
 export function CredentialManualAccessPanel({
   grants,
-  employees,
-  loading,
-  saving,
+  loading = false,
   inheritedSummary,
   onGrantsChange,
-  onSave,
-  showSave = true,
 }: CredentialManualAccessPanelProps) {
-  const grantIds = new Set(grants.map((g) => g.employeeId));
-  const addable = employees.filter((e) => !grantIds.has(e.id));
+  const grantIds = useMemo(() => new Set(grants.map((g) => g.employeeId)), [grants]);
+  const searchEmployees = useEmployeeRelationSearch(grantIds);
+  const employeePicker = useRelationPickerActions('employee', 'credential-manual-access');
 
-  const addEmployee = (employeeId: string) => {
-    const emp = employees.find((e) => e.id === employeeId);
-    if (!emp) return;
-    onGrantsChange([
-      ...grants,
-      {
-        employeeId: emp.id,
-        level: 'VIEW',
-        expiresAt: null,
-        employee: {
-          id: emp.id,
-          firstName: emp.firstName,
-          lastName: emp.lastName,
-          email: emp.email,
+  const addEmployee = useCallback(
+    (employeeId: string, label: string) => {
+      const nameParts = label.trim().split(/\s+/);
+      const firstName = nameParts[0] ?? label;
+      const lastName = nameParts.slice(1).join(' ') || '—';
+      onGrantsChange([
+        ...grants,
+        {
+          employeeId,
+          level: 'VIEW',
+          expiresAt: null,
+          employee: {
+            id: employeeId,
+            firstName,
+            lastName,
+            email: '',
+          },
+          grantedAt: new Date().toISOString(),
+          grantedBy: null,
         },
-        grantedAt: new Date().toISOString(),
-        grantedBy: null,
-      },
-    ]);
-  };
+      ]);
+    },
+    [grants, onGrantsChange],
+  );
 
-  const patchGrant = (employeeId: string, patch: Partial<CredentialManualGrant>) => {
-    onGrantsChange(grants.map((g) => (g.employeeId === employeeId ? { ...g, ...patch } : g)));
-  };
+  const patchGrant = useCallback(
+    (employeeId: string, patch: Partial<CredentialManualGrant>) => {
+      onGrantsChange(grants.map((g) => (g.employeeId === employeeId ? { ...g, ...patch } : g)));
+    },
+    [grants, onGrantsChange],
+  );
 
   return (
     <section className="border-border grid gap-3 border-t pt-5" aria-label="Manual access">
@@ -92,29 +87,17 @@ export function CredentialManualAccessPanel({
         </div>
       )}
 
-      {addable.length > 0 && (
-        <div className="grid min-w-0 gap-1">
-          <Label className="text-xs">Add employee</Label>
-          <Select onValueChange={(id) => id && addEmployee(id)}>
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select…" />
-            </SelectTrigger>
-            <SelectContent>
-              {addable.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.firstName} {emp.lastName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {showSave ? (
-        <Button type="button" size="sm" disabled={saving || loading} onClick={() => void onSave()}>
-          {saving ? 'Saving…' : 'Save manual access'}
-        </Button>
-      ) : null}
+      <RelationPickerField
+        label="Add employee"
+        entityKind="employee"
+        value={null}
+        selectionLabel={null}
+        placeholder="Search employee…"
+        icon={<User size={12} />}
+        onSearch={searchEmployees}
+        onSelect={(id, label) => addEmployee(id, label)}
+        {...employeePicker}
+      />
     </section>
   );
 }

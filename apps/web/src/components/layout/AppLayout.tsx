@@ -8,6 +8,7 @@ import { Topbar } from './Topbar';
 import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
+import { EmployeeDirectoryWarmup } from '@/lib/employees';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <HeaderContextProvider>
+      <EmployeeDirectoryWarmup />
       <div
         className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
         style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}

@@ -20,11 +20,13 @@ function fieldLabel(field: string): string {
 export interface CredentialSecretVersionsPanelProps {
   credentialId: string;
   sheetOpen: boolean;
+  embedded?: boolean;
 }
 
 export function CredentialSecretVersionsPanel({
   credentialId,
   sheetOpen,
+  embedded = false,
 }: CredentialSecretVersionsPanelProps) {
   const { me } = usePermission();
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
@@ -51,9 +53,16 @@ export function CredentialSecretVersionsPanel({
   };
 
   return (
-    <section className="border-border grid gap-3 border-t pt-5" aria-label="Secret history">
+    <section
+      className={embedded ? 'grid gap-3 pt-3' : 'border-border grid gap-3 border-t pt-5'}
+      aria-label="Secret history"
+    >
       <div>
-        <h3 className="text-sm font-medium">Secret history</h3>
+        {embedded ? (
+          <span className="sr-only">Secret history</span>
+        ) : (
+          <h3 className="text-sm font-medium">Secret history</h3>
+        )}
         <p className="text-muted-foreground mt-1 text-xs">
           Previous encrypted values saved when secrets change. Reveal requires step-up and executive
           or vault-wide access.

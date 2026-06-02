@@ -24,7 +24,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     comment: state.comment,
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt,
-    draftManualGrants: state.draftManualGrants,
+    manualGrants: state.manualGrants,
     stepUpField: state.stepUpField,
     stepUpMode: state.stepUpMode,
     setRevealed: state.setRevealed,

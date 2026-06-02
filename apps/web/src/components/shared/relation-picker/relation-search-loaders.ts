@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
 import { projectsApi } from '@/lib/api/projects';
 import { productsApi } from '@/lib/api/products';
+import { searchEmployeesForPicker } from '@/lib/employees';
 import type { RelationPickerSearchFn } from './relation-picker.types';
 
 const DEFAULT_PAGE_SIZE = 8;
@@ -59,6 +60,16 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
       }));
     },
     [pageSize],
+  );
+}
+
+/** Empty query: cached page 1 (20). Typed query: API search (20). */
+export function useEmployeeRelationSearch(
+  excludeIds?: ReadonlySet<string>,
+): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => searchEmployeesForPicker(query, excludeIds),
+    [excludeIds],
   );
 }
 

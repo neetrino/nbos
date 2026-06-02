@@ -53,9 +53,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     comment,
     setComment,
     accessLevel,
-    draftManualGrants,
-    setDraftManualGrants,
-    employees,
+    manualGrants,
+    setManualGrants,
     detail,
     revealed,
     setStepUpField,
@@ -68,7 +67,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
   } = form;
 
   return (
-    <div className="space-y-6 px-6 py-5">
+    <div className="space-y-6">
       {!categoryLocked && (
         <div className="grid gap-2">
           <Label>Category</Label>
@@ -165,14 +164,9 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
       {isCreate && accessLevel === 'SECRET' && (
         <CredentialManualAccessPanel
-          grants={draftManualGrants}
-          employees={employees}
-          loading={false}
-          saving={false}
+          grants={manualGrants}
           inheritedSummary={credentialInheritedAccessSummary(accessLevel, detail)}
-          onGrantsChange={setDraftManualGrants}
-          onSave={() => undefined}
-          showSave={false}
+          onGrantsChange={setManualGrants}
         />
       )}
 
