@@ -2,21 +2,16 @@ import type { CredentialsAccessContext } from './credentials-access';
 import {
   CREDENTIAL_RECENT_AUDIT_ACTIONS,
   CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT,
-  CREDENTIAL_RECENT_CANDIDATE_POOL,
   CREDENTIAL_RECENT_EXCLUDED_ENTITY_IDS,
-  CREDENTIAL_RECENT_LIMIT,
   CREDENTIAL_RECENT_LOOKBACK_DAYS,
 } from './credential-recent.constants';
-import { buildRecentCredentialsWhere } from './credential-recent-where';
 import { dedupeRecentCredentialIds } from './credential-recent-dedupe';
-import { CREDENTIAL_LIST_SELECT } from './credential-list-select';
-import { toCredentialWithoutSecrets } from './credential-health.utils';
+import { normalizeCredentialTab } from './credential-tab';
+import { resolveRecentCredentialItems } from './credential-recent-resolve';
+import type { CredentialRecentQuery } from './credential-recent.types';
 import type { CredentialsRuntime } from './credentials-runtime';
 
-export interface CredentialRecentQuery {
-  tab?: string;
-  search?: string;
-}
+export type { CredentialRecentQuery } from './credential-recent.types';
 
 function recentLookbackSince(): Date {
   const since = new Date();
@@ -42,30 +37,12 @@ export async function findRecentCredentials(
     select: { entityId: true, createdAt: true },
   });
 
-  const candidateIds = dedupeRecentCredentialIds(auditRows, CREDENTIAL_RECENT_CANDIDATE_POOL);
+  const candidateIds = dedupeRecentCredentialIds(auditRows, CREDENTIAL_RECENT_AUDIT_SCAN_LIMIT);
   if (candidateIds.length === 0) {
-    return { items: [] as ReturnType<typeof toCredentialWithoutSecrets>[] };
+    return { items: [] as Awaited<ReturnType<typeof resolveRecentCredentialItems>> };
   }
 
-  const where = await buildRecentCredentialsWhere(
-    runtime,
-    access,
-    candidateIds,
-    query.tab,
-    query.search,
-  );
-
-  const rows = await runtime.prisma.credential.findMany({
-    where,
-    select: CREDENTIAL_LIST_SELECT,
-  });
-
-  const byId = new Map(rows.map((row) => [row.id, row]));
-  const items = candidateIds
-    .map((id) => byId.get(id))
-    .filter((row): row is NonNullable<typeof row> => row !== undefined)
-    .slice(0, CREDENTIAL_RECENT_LIMIT)
-    .map((row) => toCredentialWithoutSecrets(row));
-
+  const tab = normalizeCredentialTab(query.tab) ?? 'all';
+  const items = await resolveRecentCredentialItems(runtime, access, candidateIds, tab, query);
   return { items };
 }

@@ -35,6 +35,8 @@ export interface CredentialQueryParams {
   needsRotation?: boolean;
   viewScope?: string;
   includeArchived?: boolean;
+  /** Omit these ids from the paginated list (e.g. recently used strip). */
+  excludeCredentialIds?: string[];
 }
 
 export interface ExportCredentialsInput {

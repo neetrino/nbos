@@ -27,9 +27,13 @@ export async function findAllCredentials(
     needsRotation = false,
     viewScope,
     includeArchived = false,
+    excludeCredentialIds = [],
   } = params;
 
   const where: Prisma.CredentialWhereInput = {};
+  if (excludeCredentialIds.length > 0) {
+    where.id = { notIn: excludeCredentialIds };
+  }
   if (includeArchived) where.archivedAt = { not: null };
   else where.archivedAt = null;
 

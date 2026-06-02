@@ -102,6 +102,12 @@ export const MODULE_VISIT_REGISTRY: Record<RegisteredModuleKey, ModuleVisitConfi
     isModulePath: (pathname) => startsWithPath(pathname, '/my-company'),
     isValidPath: (pathname) => startsWithPath(pathname, '/my-company'),
   },
+  credentials: {
+    kind: 'flat',
+    defaultPath: '/credentials',
+    isModulePath: (pathname) => startsWithPath(pathname, '/credentials'),
+    isValidPath: (pathname) => startsWithPath(pathname, '/credentials'),
+  },
 };
 
 export function isRegisteredModuleKey(key: string): key is RegisteredModuleKey {

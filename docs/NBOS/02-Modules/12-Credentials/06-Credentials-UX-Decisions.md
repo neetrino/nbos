@@ -40,7 +40,7 @@
 - Создать credential можно только внутри конкретного scope: `My`, `Team`, `Project`, `Secret`. Выбранный scope автоматически передается в create Sheet.
 - Под стандартными tabs/search может быть компактный блок `Recently used` / `Frequently used`, визуально как часть страницы, с тонким разделителем и compact cards.
 - `Recently/Frequently used` показывать только в `List` и `Tiles` view. В `Category Board` не показывать.
-- **Implemented (2026-06-06):** `GET /api/credentials/recent?tab=&search=` — top 10 по audit (30d), scoped per vault tab (`my`/`team`/`project`/`secret`/`all`); при поиске — только совпадения из recent, иначе блок скрыт. Grid как Tiles (`4` / `5` / `6` cols). Deep-link: `/credentials?open=<id>`.
+- **Implemented (2026-06-06):** `GET /api/credentials/recent?tab=&search=&category=&credentialType=&needsRotation=` — top 10 по audit (30d), scoped per vault tab (`my`/`team`/`project`/`secret`/`all`) с проходом по audit до 100 id; те же quick/search фильтры, что и список. При поиске без совпадений — блок скрыт. **Partition:** id из recent исключаются из основного списка (`excludeIds` на list) — одна карточка в одном месте. Grid как Tiles (`4` / `5` / `6` cols). Deep-link: `/credentials?open=<id>`.
 
 ### Vault scopes
 

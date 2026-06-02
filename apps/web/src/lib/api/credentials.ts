@@ -95,6 +95,9 @@ export const credentialsApi = {
   async getRecent(params?: {
     tab?: string;
     search?: string;
+    category?: string;
+    credentialType?: string;
+    needsRotation?: boolean;
   }): Promise<{ items: CredentialDetail[] }> {
     const resp = await api.get<{ items: CredentialDetail[] }>('/api/credentials/recent', {
       params,

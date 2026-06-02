@@ -8,10 +8,7 @@ import {
   IntegratedSearchFilters,
   ViewModeSwitch,
 } from '@/components/shared';
-import {
-  CREDENTIAL_VAULT_VIEW_OPTIONS,
-  type CredentialVaultViewMode,
-} from '@/features/credentials/constants/credential-vault';
+import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
@@ -21,28 +18,11 @@ import { CredentialsVaultMainView } from '@/features/credentials/components/cred
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
-import { useCredentialsVaultRecent } from '@/features/credentials/hooks/use-credentials-vault-recent';
 import { CredentialVaultExportButton } from '@/features/credentials/components/credential-vault-export-button';
 import { PermissionGate } from '@/lib/permissions';
 
-function showRecentStrip(
-  viewMode: CredentialVaultViewMode,
-  vaultListScope: 'active' | 'archived',
-): boolean {
-  return vaultListScope === 'active' && (viewMode === 'list' || viewMode === 'tiles');
-}
-
 export function CredentialsVaultPage() {
   const vault = useCredentialsVaultPage();
-  const recentEnabled = showRecentStrip(vault.viewMode, vault.vaultListScope);
-  const searchQuery = vault.search.trim();
-  const { recentCredentials, recentLoading, refreshRecent } = useCredentialsVaultRecent(
-    recentEnabled,
-    vault.activeTab,
-    searchQuery,
-  );
-  const showRecentBlock =
-    recentEnabled && (recentLoading || recentCredentials.length > 0 || searchQuery.length === 0);
 
   useCredentialVaultOpenQuery(vault.openCredential);
 
@@ -55,7 +35,7 @@ export function CredentialsVaultPage() {
 
   const handleSaved = () => {
     void vault.fetchCredentials();
-    void refreshRecent();
+    void vault.refreshRecent();
   };
 
   return (
@@ -135,11 +115,11 @@ export function CredentialsVaultPage() {
         onToggleQuick={vault.toggleQuickFilter}
       />
 
-      {showRecentBlock && (
+      {vault.showRecentBlock && (
         <CredentialVaultRecentStrip
-          credentials={recentCredentials}
-          loading={recentLoading}
-          searchActive={searchQuery.length > 0}
+          credentials={vault.recentCredentials}
+          loading={vault.recentLoading}
+          searchActive={vault.searchQuery.length > 0}
           onOpenCredential={vault.openCredential}
           onCopyLogin={vault.copyToClipboard}
           onCopyPassword={vault.setTileCopyCredentialId}

@@ -57,6 +57,11 @@ describe('module-last-visit-storage', () => {
     expect(readModuleSectionHref('crm', 'leads')).toBe('/crm/leads');
   });
 
+  it('remembers credentials last visit', () => {
+    writeModuleLastVisitFromPathname('/credentials');
+    expect(readModuleEntryHref('credentials')).toBe('/credentials');
+  });
+
   it('migrates legacy finance storage key', () => {
     storage.set(
       'nbos:finance:zone-last-href',

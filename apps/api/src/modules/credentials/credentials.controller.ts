@@ -44,6 +44,11 @@ export class CredentialsController {
     required: false,
     description: 'List archived credentials only',
   })
+  @ApiQuery({
+    name: 'excludeIds',
+    required: false,
+    description: 'Comma-separated credential ids to omit (recent strip partition)',
+  })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
@@ -57,11 +62,18 @@ export class CredentialsController {
     @Query('search') search?: string,
     @Query('tab') tab?: string,
     @Query('includeArchived') includeArchived?: string,
+    @Query('excludeIds') excludeIds?: string,
   ) {
     const archivedFlag =
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
     const rotationFlag =
       needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
+    const excludeCredentialIds = excludeIds
+      ? excludeIds
+          .split(',')
+          .map((id) => id.trim())
+          .filter((id) => id.length > 0)
+      : undefined;
     const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -78,6 +90,7 @@ export class CredentialsController {
       departmentIds: access.departmentIds,
       viewScope: access.viewScope,
       includeArchived: archivedFlag,
+      excludeCredentialIds,
     });
   }
 
@@ -88,12 +101,26 @@ export class CredentialsController {
   })
   @ApiQuery({ name: 'tab', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'credentialType', required: false })
+  @ApiQuery({ name: 'needsRotation', required: false })
   async findRecent(
     @Query('tab') tab: string | undefined,
     @Query('search') search: string | undefined,
+    @Query('category') category: string | undefined,
+    @Query('credentialType') credentialType: string | undefined,
+    @Query('needsRotation') needsRotation: string | undefined,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.findRecent(credentialsAccessFromUser(user), { tab, search });
+    const rotationFlag =
+      needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
+    return this.credentialsService.findRecent(credentialsAccessFromUser(user), {
+      tab,
+      search,
+      category,
+      credentialType,
+      needsRotation: rotationFlag || undefined,
+    });
   }
 
   @Post('export/file')

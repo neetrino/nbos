@@ -33,5 +33,5 @@ export type ModuleVisitState = SectionModuleVisitState | FlatModuleVisitState;
 
 export type RegisteredModuleKey = Extract<
   SidebarModuleKey,
-  'finance' | 'crm' | 'marketing' | 'support' | 'clients' | 'my-company'
+  'finance' | 'crm' | 'marketing' | 'support' | 'clients' | 'my-company' | 'credentials'
 >;
