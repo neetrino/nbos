@@ -182,6 +182,20 @@ DB сохраняет оба поля:
    - etc.
 6. Category can still be changed in Sheet when user explicitly needs it, but it must not duplicate type selection visually.
 
+### Vault scope category sets (2026-06-02)
+
+One DB enum (`ADMIN`, `DOMAIN`, `HOSTING`, `SERVICE`, `APP`, `MAIL`, `API_KEY`, `DATABASE`, `OTHER`), but **UI category options depend on vault scope** — not one global dropdown list.
+
+| Vault scope | Allowed categories in Sheet / Board columns / quick chips            |
+| ----------- | -------------------------------------------------------------------- |
+| `My`        | MAIL, SERVICE, APP, OTHER                                            |
+| `Team`      | SERVICE, MAIL, APP, OTHER                                            |
+| `Project`   | ADMIN, DOMAIN, HOSTING, DATABASE, API_KEY, APP, MAIL, SERVICE, OTHER |
+| `Secret`    | ADMIN, API_KEY, DATABASE, HOSTING, DOMAIN, OTHER                     |
+| `All`       | full enum (search across all accessible credentials)                 |
+
+Implementation: `apps/web/src/features/credentials/constants/credential-vault-categories.ts`. Delivery slot `allowedCategories` intersects with the active scope set.
+
 ### Enum / migration rules
 
 - Do **not** add `ENV`, `SSH`, `RECOVERY_CODES` to `CredentialCategoryEnum`; those are secret formats, not categories.

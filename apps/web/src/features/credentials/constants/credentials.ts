@@ -33,16 +33,22 @@ export const CREDENTIAL_CRITICALITIES = [
   { value: 'CRITICAL', label: 'Critical', variant: 'red' as StatusVariant },
 ] as const;
 
+/** Stored access levels on credentials (not the vault «All» scope tab). */
 export const ACCESS_LEVELS = [
   { value: 'SECRET', label: 'Secret', variant: 'red' as StatusVariant },
-  { value: 'PROJECT_TEAM', label: 'Project Team', variant: 'blue' as StatusVariant },
+  { value: 'PROJECT_TEAM', label: 'Project', variant: 'blue' as StatusVariant },
   { value: 'DEPARTMENT', label: 'Team', variant: 'purple' as StatusVariant },
-  { value: 'ALL', label: 'All', variant: 'green' as StatusVariant },
-  { value: 'PERSONAL', label: 'Personal', variant: 'gray' as StatusVariant },
+  { value: 'ALL', label: 'Company', variant: 'green' as StatusVariant },
+  { value: 'PERSONAL', label: 'My', variant: 'gray' as StatusVariant },
 ] as const;
 
 export function getAccessLevel(value: string) {
   return ACCESS_LEVELS.find((l) => l.value === value);
+}
+
+/** Human label for access column; vault «All» tab is not a stored access level. */
+export function formatCredentialAccessLabel(accessLevel: string): string {
+  return getAccessLevel(accessLevel)?.label ?? accessLevel.replaceAll('_', ' ');
 }
 
 export function getCredentialCriticality(value: string) {

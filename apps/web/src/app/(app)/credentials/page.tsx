@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, KeyRound, FolderKanban, Lock, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +34,7 @@ import { CredentialVaultTiles } from '@/features/credentials/components/credenti
 import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
 import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
+import { quickCategoryChipsForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import {
   canCreateInVaultScope,
   type CredentialVaultScope,
@@ -89,8 +90,10 @@ export default function CredentialsPage() {
             ? filters.credentialType
             : undefined,
         accessLevel:
-          filters.accessLevel && filters.accessLevel !== 'all' ? filters.accessLevel : undefined,
-        ownerId: quickFilters.has('mine') && me?.id ? me.id : undefined,
+          activeTab === 'all' && filters.accessLevel && filters.accessLevel !== 'all'
+            ? filters.accessLevel
+            : undefined,
+        ownerId: activeTab === 'all' && quickFilters.has('mine') && me?.id ? me.id : undefined,
         needsRotation: quickFilters.has('needsRotation') ? true : undefined,
         tab: vaultListScope === 'archived' ? undefined : vaultScopeToListTab(activeTab),
         includeArchived: vaultListScope === 'archived',
@@ -149,23 +152,48 @@ export default function CredentialsPage() {
     });
   };
 
-  const filterConfigs = [
-    {
-      key: 'category',
-      label: 'Category',
-      options: CREDENTIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
-    },
-    {
-      key: 'credentialType',
-      label: 'Type',
-      options: CREDENTIAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'accessLevel',
-      label: 'Access',
-      options: ACCESS_LEVELS.map((l) => ({ value: l.value, label: l.label })),
-    },
-  ];
+  const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
+
+  const filterConfigs = useMemo(() => {
+    const base = [
+      {
+        key: 'category',
+        label: 'Category',
+        options: CREDENTIAL_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
+      },
+      {
+        key: 'credentialType',
+        label: 'Type',
+        options: CREDENTIAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      },
+    ];
+    if (activeTab !== 'all') return base;
+    return [
+      ...base,
+      {
+        key: 'accessLevel',
+        label: 'Access type',
+        options: ACCESS_LEVELS.map((l) => ({ value: l.value, label: l.label })),
+      },
+    ];
+  }, [activeTab]);
+
+  const handleTabChange = (tab: CredentialVaultScope) => {
+    setActiveTab(tab);
+    setQuickCategory(null);
+    if (tab !== 'all') {
+      setFilters((prev) => {
+        const next = { ...prev };
+        delete next.accessLevel;
+        return next;
+      });
+      setQuickFilters((prev) => {
+        const next = new Set(prev);
+        next.delete('mine');
+        return next;
+      });
+    }
+  };
 
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
 
@@ -200,6 +228,7 @@ export default function CredentialsPage() {
           credentials={credentials}
           loading={loading}
           showCreate={showCreate}
+          categoryColumns={quickCategoryChips}
           onCreateInCategory={(cat) => openCreate(cat)}
           onOpenCredential={openCredential}
         />
@@ -230,33 +259,25 @@ export default function CredentialsPage() {
         tabs={
           <PageHeroTabs
             value={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             options={CREDENTIAL_TAB_OPTIONS}
             ariaLabel="Credential scope"
           />
         }
         search={
-          <div className="flex w-full flex-col gap-3">
-            <IntegratedSearchFilters
-              search={search}
-              onSearchChange={setSearch}
-              searchPlaceholder="Search by name, provider…"
-              filters={filterConfigs}
-              filterValues={filters}
-              onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-              onClearAll={() => {
-                setFilters({});
-                setQuickCategory(null);
-                setQuickFilters(new Set());
-              }}
-            />
-            <CredentialQuickFilterChips
-              activeCategory={quickCategory}
-              onCategoryChange={setQuickCategory}
-              activeQuick={quickFilters}
-              onToggleQuick={toggleQuickFilter}
-            />
-          </div>
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by name, provider…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => {
+              setFilters({});
+              setQuickCategory(null);
+              setQuickFilters(new Set());
+            }}
+          />
         }
         viewMode={
           <ViewModeSwitch
@@ -296,6 +317,15 @@ export default function CredentialsPage() {
             )}
           </>
         }
+      />
+
+      <CredentialQuickFilterChips
+        vaultScope={activeTab}
+        categoryChips={quickCategoryChips}
+        activeCategory={quickCategory}
+        onCategoryChange={setQuickCategory}
+        activeQuick={quickFilters}
+        onToggleQuick={toggleQuickFilter}
       />
 
       {vaultView}

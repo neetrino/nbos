@@ -185,6 +185,47 @@ describe('CredentialsService', () => {
       expect(call.where.OR).toBeUndefined();
     });
 
+    it('scopes my tab to PERSONAL credentials owned by the employee', async () => {
+      prisma.credential.findMany.mockResolvedValue([]);
+      prisma.credential.count.mockResolvedValue(0);
+
+      await service.findAll({
+        tab: 'personal',
+        employeeId: 'emp-1',
+        departmentIds: ['dept-1'],
+        viewScope: 'ALL',
+      });
+
+      expect(prisma.credential.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            accessLevel: 'PERSONAL',
+            ownerId: 'emp-1',
+          }),
+        }),
+      );
+    });
+
+    it('scopes project tab to PROJECT_TEAM access level', async () => {
+      prisma.credential.findMany.mockResolvedValue([]);
+      prisma.credential.count.mockResolvedValue(0);
+
+      await service.findAll({
+        tab: 'project',
+        employeeId: 'emp-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+      });
+
+      expect(prisma.credential.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            accessLevel: 'PROJECT_TEAM',
+          }),
+        }),
+      );
+    });
+
     it('lists all SECRET credentials on secret tab when RBAC viewScope is ALL', async () => {
       prisma.credential.findMany.mockResolvedValue([]);
       prisma.credential.count.mockResolvedValue(0);

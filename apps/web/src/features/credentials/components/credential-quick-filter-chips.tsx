@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  CREDENTIAL_QUICK_CATEGORY_FILTERS,
-  type CredentialQuickFilterKey,
-} from '@/features/credentials/constants/credential-vault';
+import type { CredentialQuickFilterKey } from '@/features/credentials/constants/credential-vault';
+import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
+import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
 export interface CredentialQuickFilterChipsProps {
+  vaultScope: CredentialVaultScope;
+  categoryChips: readonly CredentialCategoryOption[];
   activeCategory: string | null;
   onCategoryChange: (category: string | null) => void;
   activeQuick: Set<CredentialQuickFilterKey>;
@@ -15,14 +16,18 @@ export interface CredentialQuickFilterChipsProps {
 }
 
 export function CredentialQuickFilterChips({
+  vaultScope,
+  categoryChips,
   activeCategory,
   onCategoryChange,
   activeQuick,
   onToggleQuick,
 }: CredentialQuickFilterChipsProps) {
+  const showMineChip = vaultScope === 'all';
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {CREDENTIAL_QUICK_CATEGORY_FILTERS.map((chip) => {
+      {categoryChips.map((chip) => {
         const active = activeCategory === chip.value;
         return (
           <Button
@@ -37,15 +42,17 @@ export function CredentialQuickFilterChips({
           </Button>
         );
       })}
-      <Button
-        type="button"
-        size="sm"
-        variant={activeQuick.has('mine') ? 'default' : 'outline'}
-        className="h-7 rounded-full px-3 text-xs"
-        onClick={() => onToggleQuick('mine')}
-      >
-        Mine
-      </Button>
+      {showMineChip && (
+        <Button
+          type="button"
+          size="sm"
+          variant={activeQuick.has('mine') ? 'default' : 'outline'}
+          className="h-7 rounded-full px-3 text-xs"
+          onClick={() => onToggleQuick('mine')}
+        >
+          Mine
+        </Button>
+      )}
       <Button
         type="button"
         size="sm"

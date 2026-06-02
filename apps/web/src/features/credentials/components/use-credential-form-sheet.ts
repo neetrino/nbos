@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
 import {
-  accessLevelForVaultScope,
-  type CredentialVaultScope,
-} from '@/features/credentials/vault-scope';
+  categoriesForVaultScope,
+  defaultCategoryForVaultScope,
+  isCategoryAllowedInVaultScope,
+} from '@/features/credentials/constants/credential-vault-categories';
+import { accessLevelForVaultScope } from '@/features/credentials/vault-scope';
 import {
   credentialsApi,
   type CredentialDetail,
@@ -17,14 +19,6 @@ import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from './credential-form-sheet-types';
 
 const CREATE_DEFAULT_SUCCESS_TOAST = 'Credential created';
-
-function defaultCategory(allowed?: string[], initial?: string): string {
-  const options = allowed?.length
-    ? CREDENTIAL_CATEGORIES.filter((c) => allowed.includes(c.value))
-    : CREDENTIAL_CATEGORIES;
-  if (options.length === 1) return options[0].value;
-  return initial ?? options[0]?.value ?? 'SERVICE';
-}
 
 export function useCredentialFormSheet(props: CredentialFormSheetProps) {
   const {
@@ -73,19 +67,21 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
   const [stepUpMode, setStepUpMode] = useState<'reveal' | 'copy'>('reveal');
   const [snap, setSnap] = useState('');
 
-  const categoryOptions = useMemo(
-    () =>
-      allowedCategories?.length
-        ? CREDENTIAL_CATEGORIES.filter((c) => allowedCategories.includes(c.value))
-        : CREDENTIAL_CATEGORIES,
-    [allowedCategories],
-  );
+  const categoryOptions = useMemo(() => {
+    const scopePool = categoriesForVaultScope(
+      vaultScope,
+      !isCreate ? category : (initialCategory ?? null),
+    );
+    if (!allowedCategories?.length) return scopePool;
+    const narrowed = scopePool.filter((c) => allowedCategories.includes(c.value));
+    return narrowed.length > 0 ? narrowed : scopePool;
+  }, [allowedCategories, vaultScope, isCreate, category, initialCategory]);
   const categoryLocked = categoryOptions.length === 1;
   const categoryLabel = CREDENTIAL_CATEGORIES.find((c) => c.value === category)?.label ?? category;
 
   const resetCreate = useCallback(() => {
     setName(initialName ?? '');
-    setCategory(defaultCategory(allowedCategories, initialCategory));
+    setCategory(defaultCategoryForVaultScope(vaultScope, initialCategory, allowedCategories));
     setCredentialType(initialCredentialType ?? 'LOGIN_PASSWORD');
     setCriticality('MEDIUM');
     setEnvironment('');

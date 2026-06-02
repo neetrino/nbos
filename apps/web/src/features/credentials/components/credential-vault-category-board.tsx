@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared';
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
+import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { PermissionGate } from '@/lib/permissions';
 
@@ -17,16 +18,19 @@ export interface CredentialVaultCategoryBoardProps {
   credentials: CredentialListItem[];
   loading: boolean;
   showCreate: boolean;
+  /** Column set for current vault scope; defaults to all categories. */
+  categoryColumns?: readonly CredentialCategoryOption[];
   onCreateInCategory: (category: CredentialCategoryValue) => void;
   onOpenCredential: (id: string) => void;
 }
 
 function groupCredentialsByCategory(
   credentials: CredentialListItem[],
+  columns: readonly CredentialCategoryOption[],
 ): Map<CredentialCategoryValue, CredentialListItem[]> {
   const grouped = new Map<CredentialCategoryValue, CredentialListItem[]>();
-  for (const category of CREDENTIAL_CATEGORIES) {
-    grouped.set(category.value, []);
+  for (const category of columns) {
+    grouped.set(category.value as CredentialCategoryValue, []);
   }
   for (const credential of credentials) {
     const category = credential.category as CredentialCategoryValue;
@@ -125,6 +129,7 @@ export function CredentialVaultCategoryBoard({
   credentials,
   loading,
   showCreate,
+  categoryColumns = CREDENTIAL_CATEGORIES,
   onCreateInCategory,
   onOpenCredential,
 }: CredentialVaultCategoryBoardProps) {
@@ -156,16 +161,16 @@ export function CredentialVaultCategoryBoard({
     );
   }
 
-  const grouped = groupCredentialsByCategory(credentials);
+  const grouped = groupCredentialsByCategory(credentials, categoryColumns);
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">
-      {CREDENTIAL_CATEGORIES.map((category) => (
+      {categoryColumns.map((category) => (
         <CategoryColumn
           key={category.value}
           label={category.label}
-          category={category.value}
-          items={grouped.get(category.value) ?? []}
+          category={category.value as CredentialCategoryValue}
+          items={grouped.get(category.value as CredentialCategoryValue) ?? []}
           showCreate={showCreate}
           onCreateInCategory={onCreateInCategory}
           onOpenCredential={onOpenCredential}

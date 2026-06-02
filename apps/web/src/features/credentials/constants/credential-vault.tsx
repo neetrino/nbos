@@ -26,14 +26,4 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
 
 export const CREDENTIAL_VAULT_PAGE_SIZE = 50;
 
-/** Quick-filter category chips (maps to `category` API param). */
-export const CREDENTIAL_QUICK_CATEGORY_FILTERS = [
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'DOMAIN', label: 'Domain' },
-  { value: 'MAIL', label: 'Mail' },
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'API_KEY', label: 'API' },
-  { value: 'DATABASE', label: 'Database' },
-] as const;
-
 export type CredentialQuickFilterKey = 'mine' | 'needsRotation';
