@@ -11,7 +11,7 @@ import {
 } from '@/features/credentials/constants/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 
-export type CredentialVaultCardVariant = 'grid' | 'kanban';
+type CredentialVaultCardVariant = 'grid' | 'kanban';
 
 const VAULT_CARD_BADGE_CLASS = 'h-4 shrink-0 px-1.5 py-0 text-[10px] leading-none';
 

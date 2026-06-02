@@ -14,9 +14,6 @@ const TILE_SKELETON_COUNT = 12;
 export const CREDENTIAL_VAULT_TILE_GRID_CLASS =
   'grid grid-cols-4 gap-2 lg:grid-cols-5 2xl:grid-cols-6';
 
-/** @deprecated Use {@link CREDENTIAL_VAULT_COPY_FEEDBACK_MS} from credential-vault-copy. */
-export { CREDENTIAL_VAULT_COPY_FEEDBACK_MS as CREDENTIAL_VAULT_TILE_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
-
 export interface CredentialVaultTilesProps {
   credentials: CredentialListItem[];
   loading: boolean;

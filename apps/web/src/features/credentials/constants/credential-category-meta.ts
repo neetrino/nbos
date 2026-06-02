@@ -25,6 +25,18 @@ const CATEGORY_ACCENT_BAR: Record<string, string> = {
   OTHER: 'bg-gray-400',
 };
 
+const DEFAULT_CATEGORY_ACCENT = CATEGORY_ACCENT_BAR.OTHER;
+
+function categoryValueOrOther(category: string): string {
+  const known = CREDENTIAL_CATEGORIES.some((item) => item.value === category);
+  return known ? category : 'OTHER';
+}
+
+/** Tailwind `bg-*` for kanban column stage bar and card accent (single source). */
+export function credentialCategoryAccentBarClass(category: string): string {
+  return CATEGORY_ACCENT_BAR[categoryValueOrOther(category)] ?? DEFAULT_CATEGORY_ACCENT;
+}
+
 export interface CredentialCategoryMeta {
   label: string;
   badgeVariant: StatusVariant;
@@ -40,6 +52,6 @@ export function getCredentialCategoryMeta(category: string): CredentialCategoryM
   return {
     label: entry?.label ?? 'Other',
     badgeVariant: CATEGORY_BADGE_VARIANTS[value] ?? 'gray',
-    accentBarClass: CATEGORY_ACCENT_BAR[value] ?? CATEGORY_ACCENT_BAR.OTHER,
+    accentBarClass: credentialCategoryAccentBarClass(category),
   };
 }

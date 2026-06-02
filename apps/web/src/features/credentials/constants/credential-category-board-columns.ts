@@ -1,22 +1,8 @@
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { KanbanColumn } from '@/components/shared/kanban/kanban.types';
+import { credentialCategoryAccentBarClass } from '@/features/credentials/constants/credential-category-meta';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-
-/** Kanban header colors per credential category (platform `KanbanBoard` stage bars). */
-const CREDENTIAL_CATEGORY_COLUMN_COLORS: Record<string, string> = {
-  ADMIN: 'bg-slate-600',
-  DOMAIN: 'bg-blue-500',
-  HOSTING: 'bg-cyan-600',
-  SERVICE: 'bg-violet-500',
-  APP: 'bg-indigo-500',
-  MAIL: 'bg-sky-500',
-  API_KEY: 'bg-amber-500',
-  DATABASE: 'bg-emerald-600',
-  OTHER: 'bg-gray-400',
-};
-
-const DEFAULT_COLUMN_COLOR = 'bg-gray-400';
 
 export const CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH = 280;
 
@@ -35,7 +21,7 @@ export function buildCredentialCategoryKanbanColumns(
   }
 
   return categoryColumns.map((col) => {
-    const color = CREDENTIAL_CATEGORY_COLUMN_COLORS[col.value] ?? DEFAULT_COLUMN_COLOR;
+    const color = credentialCategoryAccentBarClass(col.value);
     return {
       key: col.value,
       label: col.label,
