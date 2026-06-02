@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import {
   Select,
@@ -11,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CREDENTIAL_MANUAL_ACCESS_ACCESS_SELECT_CLASS } from '@/features/credentials/constants/credential-manual-access-inline-controls';
-import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
@@ -29,7 +29,7 @@ export function CredentialManualAccessGrantRow({
   onExpiresAtChange,
   onRemove,
 }: CredentialManualAccessGrantRowProps) {
-  const router = useRouter();
+  const relations = useEntityRelations();
   const dateValue = grant.expiresAt ? grant.expiresAt.slice(0, 10) : '';
   const label = `${grant.employee.firstName} ${grant.employee.lastName}`.trim();
 
@@ -37,10 +37,9 @@ export function CredentialManualAccessGrantRow({
     <RelationPickerChip
       label={label}
       subtitle={grant.employee.email || null}
+      icon={<EmployeePersonAvatar label={label} />}
       entityKind="employee"
-      onOpen={() =>
-        router.push(`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(grant.employeeId)}`)
-      }
+      onOpen={() => void relations.openEntity('employee', grant.employeeId)}
       onClear={() => onRemove(grant.employeeId)}
       trailing={
         <span className={MANUAL_ACCESS_TRAILING_GAP_CLASS}>

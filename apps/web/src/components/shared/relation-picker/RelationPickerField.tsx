@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   RELATION_PICKER_CHIP_STACK_CLASS,
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
   RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
-  RELATION_PICKER_PERSON_AVATAR_CLASS,
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
@@ -29,21 +29,9 @@ function isMultiProps(props: RelationPickerFieldProps): props is RelationPickerF
   return props.multiple === true;
 }
 
-function initialsFromLabel(label: string): string {
-  const parts = label.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  const a = parts[0]?.[0] ?? '';
-  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : (parts[0]?.[1] ?? '');
-  return `${a}${b}`.toUpperCase() || '?';
-}
-
-function personAvatar(label: string): ReactNode {
-  return <div className={RELATION_PICKER_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
-}
-
 function chipIcon(kind: RelationEntityKind, label: string): ReactNode {
   if (kind === 'contact' || kind === 'employee') {
-    return personAvatar(label);
+    return <EmployeePersonAvatar label={label} />;
   }
   return (
     <RelationPickerEntityIcon
