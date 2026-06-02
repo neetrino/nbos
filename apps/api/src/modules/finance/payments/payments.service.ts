@@ -293,10 +293,10 @@ export class PaymentsService {
     const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
     const monthScopedPaymentDate = this.buildMonthScopedDateRange(paymentDate, monthStart);
     const participationWhere = await resolvePaymentParticipationWhere(this.prisma, params.access);
-    const dateWhere = paymentDate ? { paymentDate } : {};
+    const dateWhere: Prisma.PaymentWhereInput = paymentDate ? { paymentDate } : {};
     const scopedDateWhere = mergeFinanceWhere(dateWhere, participationWhere);
     const scopedMonthWhere = mergeFinanceWhere(
-      { paymentDate: monthScopedPaymentDate },
+      { paymentDate: monthScopedPaymentDate } satisfies Prisma.PaymentWhereInput,
       participationWhere,
     );
 

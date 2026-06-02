@@ -10,6 +10,7 @@ import {
   buildProductParticipationWhere,
   buildProjectParticipationWhere,
 } from '../platform-access/platform-team-graph.where';
+import { assertTaskProjectParticipationAccessible } from '../tasks/task-project-list-filter.ops';
 import type { DriveEntityContextAccess } from './drive-access.types';
 import { requireText } from './drive-metadata';
 
@@ -140,7 +141,6 @@ async function assertEntityScopedByEmployees(
           assigneeId: true,
           coAssignees: true,
           observers: true,
-          projectId: true,
         },
       });
       if (!row) throw new NotFoundException('Drive context not found.');
@@ -153,12 +153,7 @@ async function assertEntityScopedByEmployees(
       if (taskParticipantIds.some((id) => Boolean(id) && scopedEmployeeIds.has(id!))) {
         return;
       }
-      if (!row.projectId) throw new NotFoundException('Drive context not found.');
-      const projectRow = await prisma.project.findFirst({
-        where: { id: row.projectId, ...buildProjectParticipationWhere([...scopedEmployeeIds]) },
-        select: { id: true },
-      });
-      if (!projectRow) throw new NotFoundException('Drive context not found.');
+      await assertTaskProjectParticipationAccessible(prisma, entityId, [...scopedEmployeeIds]);
       return;
     }
     case 'LEAD': {
