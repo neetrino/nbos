@@ -47,6 +47,9 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
     [params.quickFilters],
   );
 
+  /** Only affects API when quick filter "mine" is on; avoid refetch when `/api/me` arrives. */
+  const ownerIdKey = params.quickFilters.has('mine') ? (params.meId ?? '') : '';
+
   const filterKey = useMemo(
     () =>
       [
@@ -60,7 +63,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.activeTab,
         params.vaultListScope,
         params.listSort,
-        params.meId,
+        ownerIdKey,
         params.viewMode,
         isBoard ? 'board' : `${params.page}|${params.pageSize}`,
       ].join('|'),
@@ -75,7 +78,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       params.activeTab,
       params.vaultListScope,
       params.listSort,
-      params.meId,
+      ownerIdKey,
       params.viewMode,
       isBoard,
       params.page,
