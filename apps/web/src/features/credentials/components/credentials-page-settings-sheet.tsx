@@ -83,11 +83,11 @@ export function CredentialsPageSettingsSheet({
             </Button>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="justify-start gap-2"
               onClick={() => handleVaultListScopeChange('archived')}
             >
-              <Archive className="size-4 shrink-0" aria-hidden />
+              <Archive className="text-destructive size-4 shrink-0" aria-hidden />
               View archived credentials
             </Button>
           </>
