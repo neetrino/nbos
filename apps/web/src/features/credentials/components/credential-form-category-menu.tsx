@@ -48,7 +48,7 @@ export function CredentialFormCategoryMenu({
           <DropdownMenuItem
             key={opt.value}
             onClick={() => onCategoryChange(opt.value)}
-            className={opt.value === category ? 'bg-accent' : undefined}
+            className={opt.value === category ? 'bg-accent text-accent-foreground' : undefined}
           >
             {opt.label}
           </DropdownMenuItem>
