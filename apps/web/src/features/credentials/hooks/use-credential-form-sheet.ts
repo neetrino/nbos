@@ -36,6 +36,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       setStepUpMode: state.setStepUpMode,
       setRevealed: state.setRevealed,
       loadDetail: state.loadDetail,
+      promoteAfterCreate: state.promoteAfterCreate,
       commitFormSnapshot: state.commitFormSnapshot,
       captureFormRollback: state.captureFormRollback,
       orphanedSecretsAcknowledged: state.orphanedSecretsAcknowledged,

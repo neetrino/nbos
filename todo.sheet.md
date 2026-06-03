@@ -45,14 +45,11 @@
 
 ## 2. ENV bundle UX (целевой)
 
-**Режим: Vercel-style table (primary) + paste strip (secondary).**
+**Режим: Vercel-style table — bulk paste внутри таблицы (без отдельного блока + Parse).**
 
 ```
-┌─ Paste .env (collapse) ─────────────────────────────┐
-│ KEY=value ...                    [Parse & apply]   │
-└────────────────────────────────────────────────────┘
-
 ┌ KEY ────────────────┬ VALUE ────────────┬ actions ┐
+│ paste .env into Key or Value cell → auto-split     │
 │ DATABASE_URL        │ ••••••••         │ 👁 📋   │
 │ NEXT_PUBLIC_*       │ ••••••••         │ 👁 📋   │
 │ ...                 │                  │         │
@@ -65,7 +62,7 @@
 - **Copy row:** clipboard `KEY=value` одной строки.
 - **Download:** blob `.env` из текущих entries (decrypted в sheet после reveal или на create из draft).
 - Edit existing: load → parse → table; paste заменяет/мержит с confirm.
-- Убрать «два режима» — один UI: таблица всегда, paste сверху.
+- Один UI: таблица; paste в Key/Value (bulk или одна пара), вручную через Add variable.
 
 **Файлы:** `credential-env-editor.tsx` → `credential-env-table-editor.tsx`.
 
@@ -185,7 +182,7 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 2. Type-specific blocks (provider picker if applicable → secrets → context)
 3. Provider _(если не в type-block)_
 4. Comment / recovery textarea
-5. Manual access (create SECRET)
+5. ~~Manual access (create)~~ — only on edit tab **Manual access**
 
 **Category не в body** (кроме locked: только header badge).
 

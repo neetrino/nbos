@@ -19,10 +19,8 @@ import {
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
-import { CredentialManualAccessPanel } from './credential-manual-access-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
 import { CredentialAppStoreFields } from './credential-app-store-fields';
-import { credentialInheritedAccessSummary } from '@/features/credentials/utils/credential-inherited-access-summary';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -88,9 +86,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setEnvData,
     comment,
     setComment,
-    accessLevel,
-    manualGrants,
-    setManualGrants,
     detail,
     revealed,
     requestSecretAction,
@@ -182,14 +177,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
             placeholder="Private notes (encrypted)"
           />
         </div>
-      )}
-
-      {isCreate && accessLevel === 'SECRET' && (
-        <CredentialManualAccessPanel
-          grants={manualGrants}
-          inheritedSummary={credentialInheritedAccessSummary(accessLevel, detail)}
-          onGrantsChange={setManualGrants}
-        />
       )}
 
       {!isCreate && showSettings && (

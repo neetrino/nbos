@@ -205,11 +205,13 @@ function CredentialsVaultPageContent() {
         activeTab={vault.activeTab}
         sheetOpen={vault.sheetOpen}
         sheetCredentialId={vault.sheetCredentialId}
+        sheetInitialItem={vault.sheetInitialItem}
         createPresetCategory={vault.createPresetCategory}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
         tileCopyTarget={vault.tileCopyTarget}
         onCloseSheet={vault.closeSheet}
+        onCredentialCreated={vault.handleCredentialCreated}
         onSaved={handleSaved}
         onRequestArchive={(id, name) => {
           vault.closeSheet(false);

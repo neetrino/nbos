@@ -21,6 +21,7 @@ import {
   defaultCategoryForVaultScope,
 } from '@/features/credentials/constants/credential-vault-categories';
 import { accessLevelForVaultScope } from '@/features/credentials/vault-scope';
+import { credentialDetailPlaceholderFromListItem } from '@/features/credentials/utils/credential-detail-placeholder';
 import {
   credentialsApi,
   type CredentialDetail,
@@ -39,6 +40,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     open,
     onOpenChange,
     credentialId = null,
+    initialItem = null,
     vaultScope = 'project',
     initialName,
     initialCategory,
@@ -344,39 +346,101 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     [applyFormSnapshot],
   );
 
-  const loadDetail = useCallback(async () => {
-    if (!credentialId) return;
-    setLoading(true);
-    setAccessDenied(false);
-    try {
-      const detailRow = await credentialsApi.getById(credentialId);
-      applyDetail(detailRow, detailRow.manualGrants ?? []);
-    } catch {
-      setAccessDenied(true);
-      toast.error('No access to this credential');
-    } finally {
-      setLoading(false);
-    }
-  }, [applyDetail, credentialId]);
+  const dirtyRef = useRef(false);
+
+  /** Fills server-only fields without clobbering edits made during a background fetch. */
+  const mergeServerDetail = useCallback((d: CredentialDetail) => {
+    setDetail(d);
+    setManualGrants(d.manualGrants ?? []);
+    setComment((prev) => (prev.trim().length === 0 ? (d.comment ?? '') : prev));
+  }, []);
+
+  const loadDetail = useCallback(
+    async (opts?: { background?: boolean }) => {
+      if (!credentialId) return;
+      if (!opts?.background) setLoading(true);
+      setAccessDenied(false);
+      try {
+        const detailRow = await credentialsApi.getById(credentialId);
+        if (opts?.background && dirtyRef.current) {
+          mergeServerDetail(detailRow);
+        } else {
+          applyDetail(detailRow, detailRow.manualGrants ?? []);
+        }
+      } catch {
+        setAccessDenied(true);
+        toast.error('No access to this credential');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [applyDetail, credentialId, mergeServerDetail],
+  );
+
+  const promoteAfterCreate = useCallback(
+    (created: CredentialDetail) => {
+      applyDetail(created, created.manualGrants ?? []);
+      setShowSettings(false);
+    },
+    [applyDetail],
+  );
 
   const prevOpenRef = useRef(false);
   const prevPresetRef = useRef(presetKey);
+  const prevCredentialIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!open) {
       prevOpenRef.current = false;
+      prevPresetRef.current = presetKey;
+      prevCredentialIdRef.current = null;
       setShowSettings(false);
       setAccessDenied(false);
       return;
     }
+
     const opening = !prevOpenRef.current;
     const presetChanged = prevPresetRef.current !== presetKey;
+    const credentialChanged = prevCredentialIdRef.current !== credentialId;
+
+    const openExisting = () => {
+      if (initialItem && initialItem.id === credentialId) {
+        if (detail?.id !== credentialId) {
+          applyDetail(credentialDetailPlaceholderFromListItem(initialItem), []);
+        }
+        void loadDetail({ background: true });
+        return;
+      }
+      if (detail?.id === credentialId) {
+        void loadDetail({ background: true });
+        return;
+      }
+      void loadDetail();
+    };
+
     if (opening || presetChanged) {
-      if (isCreate) resetCreate();
-      else void loadDetail();
+      if (!credentialId) {
+        resetCreate();
+      } else {
+        openExisting();
+      }
+    } else if (credentialChanged && credentialId) {
+      openExisting();
     }
+
     prevOpenRef.current = true;
     prevPresetRef.current = presetKey;
-  }, [open, presetKey, isCreate, resetCreate, loadDetail]);
+    prevCredentialIdRef.current = credentialId;
+  }, [
+    open,
+    presetKey,
+    credentialId,
+    initialItem,
+    detail?.id,
+    resetCreate,
+    applyDetail,
+    loadDetail,
+  ]);
 
   const dirty = isCreate
     ? name.trim().length > 0 || manualGrants.length > 0
@@ -394,6 +458,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         nextRotationAt,
         manualGrants,
       }) !== snap || Boolean(password || passphrase || apiKey || envData);
+
+  dirtyRef.current = dirty;
 
   return {
     isCreate,
@@ -454,6 +520,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     categoryLabel,
     dirty,
     loadDetail,
+    promoteAfterCreate,
     commitFormSnapshot,
     captureFormRollback,
     orphanedSecretsAcknowledged,

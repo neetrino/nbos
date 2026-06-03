@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import { credentialsApi, type CredentialSecretField } from '@/lib/api/credentials';
+import {
+  credentialsApi,
+  type CredentialDetail,
+  type CredentialSecretField,
+} from '@/lib/api/credentials';
 import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
 import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -39,6 +43,7 @@ export interface CredentialFormSheetStateSlice {
   setStepUpMode: Dispatch<SetStateAction<'reveal' | 'copy'>>;
   setRevealed: Dispatch<SetStateAction<Partial<Record<CredentialSecretField, string>>>>;
   loadDetail: () => Promise<void>;
+  promoteAfterCreate: (created: CredentialDetail) => void;
   commitFormSnapshot: () => void;
   captureFormRollback: () => () => void;
   orphanedSecretsAcknowledged: boolean;
@@ -85,7 +90,15 @@ export function useCredentialFormSheetActions(
   state: CredentialFormSheetStateSlice,
   vault: CredentialVaultSessionValue,
 ) {
-  const { onOpenChange, projectId, productId, successToast, onCreated, onSaved } = props;
+  const {
+    onOpenChange,
+    projectId,
+    productId,
+    successToast,
+    continueAfterCreate = false,
+    onCreated,
+    onSaved,
+  } = props;
   const { creatorId } = useTaskCreatorId();
   const [saving, setSaving] = useState(false);
 
@@ -143,8 +156,12 @@ export function useCredentialFormSheetActions(
         if (state.accessLevel === 'PERSONAL' && creatorId) body.ownerId = creatorId;
         const created = await credentialsApi.create(body);
         if (successToast !== false) toast.success(successToast ?? CREATE_DEFAULT_SUCCESS_TOAST);
-        onOpenChange(false);
         onCreated?.(created);
+        if (continueAfterCreate) {
+          state.promoteAfterCreate(created);
+        } else {
+          onOpenChange(false);
+        }
         onSaved?.();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Could not save');
@@ -158,6 +175,7 @@ export function useCredentialFormSheetActions(
       saveEditInBackground();
     }
   }, [
+    continueAfterCreate,
     creatorId,
     onCreated,
     onOpenChange,

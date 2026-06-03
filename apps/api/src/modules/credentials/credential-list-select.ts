@@ -1,3 +1,8 @@
+/**
+ * List projection without encrypted blobs (`password`, `apiKey`, `envData`, `secureNotes`).
+ * Secret presence flags are computed in SQL via {@link loadCredentialSecretsPresence}
+ * so large ciphertext (e.g. `env_data`) never leaves the database for a list page.
+ */
 export const CREDENTIAL_LIST_SELECT = {
   id: true,
   projectId: true,
@@ -26,10 +31,6 @@ export const CREDENTIAL_LIST_SELECT = {
   createdAt: true,
   updatedAt: true,
   archivedAt: true,
-  password: true,
-  apiKey: true,
-  envData: true,
-  secureNotes: true,
   project: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
   owner: { select: { id: true, firstName: true, lastName: true } },

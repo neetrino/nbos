@@ -28,6 +28,7 @@ import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-cr
 import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
+import type { CredentialDetail } from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -96,6 +97,11 @@ export function useCredentialsVaultPage() {
     setSheetCredentialId,
     setSheetOpen,
   });
+
+  const sheetInitialItem = useMemo(
+    () => credentials.find((c) => c.id === sheetCredentialId) ?? null,
+    [credentials, sheetCredentialId],
+  );
 
   const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
@@ -181,6 +187,16 @@ export function useCredentialsVaultPage() {
     setQuickFilters(new Set());
   }, [vaultListScope]);
 
+  const handleCredentialCreated = useCallback(
+    (created: CredentialDetail) => {
+      setSheetCredentialId(created.id);
+      setCreatePresetCategory(undefined);
+      pushOpenCredentialToUrl(created.id);
+      void refetch();
+    },
+    [pushOpenCredentialToUrl, refetch],
+  );
+
   const closeSheet = useCallback(
     (open: boolean) => {
       setSheetOpen(open);
@@ -256,6 +272,7 @@ export function useCredentialsVaultPage() {
     setVaultListScope,
     sheetOpen,
     sheetCredentialId,
+    sheetInitialItem,
     createPresetCategory,
     deleteTarget,
     setDeleteTarget,
@@ -274,6 +291,7 @@ export function useCredentialsVaultPage() {
     handleTabChange,
     clearFilters,
     closeSheet,
+    handleCredentialCreated,
     quickCategoryChips,
     filterConfigs,
     showCreate,

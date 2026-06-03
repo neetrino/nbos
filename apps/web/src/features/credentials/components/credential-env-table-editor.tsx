@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ClipboardEvent } from 'react';
 import { Copy, Download, Eye, Plus, Trash2 } from 'lucide-react';
 import {
   entriesFromEnvBundleSerialized,
@@ -10,12 +10,16 @@ import {
 } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { CredentialEnvPasteDialog } from '@/features/credentials/components/credential-env-paste-dialog';
 import { downloadEnvBundleFile } from '@/features/credentials/utils/download-env-bundle-file';
+import {
+  clipLooksLikeEnvBundle,
+  clipSingleEnvPair,
+} from '@/features/credentials/utils/env-bundle-clipboard';
 import { mergeEnvBundleEntries } from '@/features/credentials/utils/merge-env-bundle-entries';
 import { toast } from 'sonner';
+
+const EMPTY_ENV_ROW: EnvBundleEntry = { key: '', value: '' };
 
 export interface CredentialEnvTableEditorProps {
   value: string;
@@ -36,7 +40,6 @@ export function CredentialEnvTableEditor({
   onCopy,
   isExisting,
 }: CredentialEnvTableEditorProps) {
-  const [pasteText, setPasteText] = useState('');
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
@@ -46,10 +49,14 @@ export function CredentialEnvTableEditor({
     return entriesFromEnvBundleSerialized(value);
   }, [localEntries, value]);
 
+  const rowsForTable = useMemo(() => (entries.length > 0 ? entries : [EMPTY_ENV_ROW]), [entries]);
+
   const displayEntries = useMemo(() => {
     if (revealedValue) return entriesFromEnvBundleSerialized(revealedValue);
-    return entries;
-  }, [entries, revealedValue]);
+    return rowsForTable;
+  }, [rowsForTable, revealedValue]);
+
+  const hasStoredKeys = entries.some((row) => row.key.trim().length > 0);
 
   const commitEntries = (next: EnvBundleEntry[]) => {
     setLocalEntries(next);
@@ -58,20 +65,18 @@ export function CredentialEnvTableEditor({
 
   const finishPaste = (next: EnvBundleEntry[], message: string) => {
     commitEntries(next);
-    setPasteText('');
     setPendingPasteEntries([]);
     setPasteDialogOpen(false);
     toast.success(message);
   };
 
-  const applyPaste = () => {
-    const parsed = parseEnvBundleText(pasteText);
+  const tryApplyBulk = (text: string) => {
+    const parsed = parseEnvBundleText(text);
     if (parsed.entries.length === 0) {
       toast.error('No valid KEY=value lines found');
       return;
     }
-    const hasExisting = entries.some((row) => row.key.trim().length > 0);
-    if (hasExisting) {
+    if (hasStoredKeys) {
       setPendingPasteEntries(parsed.entries);
       setPasteDialogOpen(true);
       return;
@@ -79,17 +84,38 @@ export function CredentialEnvTableEditor({
     finishPaste(parsed.entries, `Applied ${parsed.entries.length} variables`);
   };
 
+  const handleCellPaste = (index: number, event: ClipboardEvent<HTMLInputElement>) => {
+    const clip = event.clipboardData.getData('text/plain');
+    if (!clip.trim()) return;
+
+    if (clipLooksLikeEnvBundle(clip)) {
+      event.preventDefault();
+      tryApplyBulk(clip);
+      return;
+    }
+
+    const single = clipSingleEnvPair(clip);
+    if (single) {
+      event.preventDefault();
+      const base = entries.length > 0 ? [...entries] : [EMPTY_ENV_ROW];
+      base[index] = single;
+      commitEntries(base);
+    }
+  };
+
   const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
-    const next = entries.map((row, i) => (i === index ? { ...row, ...patch } : row));
-    commitEntries(next);
+    const base = entries.length > 0 ? [...entries] : [EMPTY_ENV_ROW];
+    base[index] = { ...base[index], ...patch };
+    commitEntries(base);
   };
 
   const removeRow = (index: number) => {
-    commitEntries(entries.filter((_, i) => i !== index));
+    const next = entries.filter((_, i) => i !== index);
+    commitEntries(next.length > 0 ? next : []);
   };
 
   const addRow = () => {
-    commitEntries([...entries, { key: '', value: '' }]);
+    commitEntries([...entries, EMPTY_ENV_ROW]);
   };
 
   const copyRow = async (entry: EnvBundleEntry) => {
@@ -99,28 +125,6 @@ export function CredentialEnvTableEditor({
 
   return (
     <div className="grid gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor="cred-env-paste">Paste .env</Label>
-        <Textarea
-          id="cred-env-paste"
-          value={pasteText}
-          onChange={(e) => setPasteText(e.target.value)}
-          placeholder="KEY=value"
-          className="font-mono text-xs"
-          disabled={disabled}
-          rows={3}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={disabled || !pasteText.trim()}
-          onClick={applyPaste}
-        >
-          Parse and apply
-        </Button>
-      </div>
-
       {isExisting ? (
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" onClick={onReveal}>
@@ -140,23 +144,20 @@ export function CredentialEnvTableEditor({
           <span>Value</span>
           <span className="text-right">Actions</span>
         </div>
-        {entries.length === 0 ? (
-          <p className="text-muted-foreground px-3 py-4 text-sm">No variables yet.</p>
-        ) : (
-          entries.map((row, index) => (
-            <EnvRow
-              key={`${row.key}-${index}`}
-              row={row}
-              maskedValue={displayEntries[index]?.value ?? ''}
-              showMasked={Boolean(isExisting && !revealedValue)}
-              disabled={disabled}
-              onKeyChange={(key) => updateRow(index, { key })}
-              onValueChange={(val) => updateRow(index, { value: val })}
-              onRemove={() => removeRow(index)}
-              onCopy={() => void copyRow(displayEntries[index] ?? row)}
-            />
-          ))
-        )}
+        {rowsForTable.map((row, index) => (
+          <EnvRow
+            key={`${row.key}-${index}`}
+            row={row}
+            maskedValue={displayEntries[index]?.value ?? ''}
+            showMasked={Boolean(isExisting && !revealedValue)}
+            disabled={disabled}
+            onKeyChange={(key) => updateRow(index, { key })}
+            onValueChange={(val) => updateRow(index, { value: val })}
+            onPaste={(event) => handleCellPaste(index, event)}
+            onRemove={() => removeRow(index)}
+            onCopy={() => void copyRow(displayEntries[index] ?? row)}
+          />
+        ))}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -168,7 +169,7 @@ export function CredentialEnvTableEditor({
           type="button"
           variant="outline"
           size="sm"
-          disabled={entries.length === 0}
+          disabled={!hasStoredKeys}
           onClick={() => downloadEnvBundleFile(displayEntries)}
         >
           <Download className="mr-1 size-3.5" />
@@ -200,6 +201,7 @@ function EnvRow({
   disabled,
   onKeyChange,
   onValueChange,
+  onPaste,
   onRemove,
   onCopy,
 }: {
@@ -209,6 +211,7 @@ function EnvRow({
   disabled?: boolean;
   onKeyChange: (key: string) => void;
   onValueChange: (value: string) => void;
+  onPaste: (event: ClipboardEvent<HTMLInputElement>) => void;
   onRemove: () => void;
   onCopy: () => void;
 }) {
@@ -217,12 +220,16 @@ function EnvRow({
       <Input
         value={row.key}
         onChange={(e) => onKeyChange(e.target.value)}
+        onPaste={onPaste}
+        placeholder="KEY or paste .env"
         className="font-mono text-xs"
         disabled={disabled}
       />
       <Input
         value={showMasked ? '••••••••' : maskedValue}
         onChange={(e) => onValueChange(e.target.value)}
+        onPaste={onPaste}
+        placeholder="value"
         className="font-mono text-xs"
         disabled={disabled || showMasked}
         readOnly={showMasked}

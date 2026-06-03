@@ -6,17 +6,21 @@ import { DeleteCredentialDialog } from '@/features/credentials/components/Delete
 import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
 import type { CredentialDeleteTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
 import type { CredentialTileCopyTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
+import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
 export interface CredentialsVaultPageOverlaysProps {
   activeTab: CredentialVaultScope;
   sheetOpen: boolean;
   sheetCredentialId: string | null;
+  sheetInitialItem: CredentialListItem | null;
   createPresetCategory: string | undefined;
   deleteTarget: CredentialDeleteTarget | null;
   purgeTarget: CredentialDeleteTarget | null;
   tileCopyTarget: CredentialTileCopyTarget | null;
   onCloseSheet: (open: boolean) => void;
+  onCredentialCreated: (created: CredentialDetail) => void;
   onSaved: () => void;
   onRequestArchive: (id: string, name: string) => void;
   onDeleteTargetChange: (open: boolean) => void;
@@ -29,11 +33,13 @@ export function CredentialsVaultPageOverlays({
   activeTab,
   sheetOpen,
   sheetCredentialId,
+  sheetInitialItem,
   createPresetCategory,
   deleteTarget,
   purgeTarget,
   tileCopyTarget,
   onCloseSheet,
+  onCredentialCreated,
   onSaved,
   onRequestArchive,
   onDeleteTargetChange,
@@ -47,9 +53,12 @@ export function CredentialsVaultPageOverlays({
         open={sheetOpen}
         onOpenChange={onCloseSheet}
         credentialId={sheetCredentialId}
+        initialItem={sheetInitialItem}
         vaultScope={activeTab}
         initialCategory={createPresetCategory}
-        presetKey={`${createPresetCategory ?? ''}-${activeTab}`}
+        presetKey={sheetCredentialId ?? `create-${createPresetCategory ?? ''}-${activeTab}`}
+        continueAfterCreate
+        onCreated={onCredentialCreated}
         onSaved={onSaved}
         onRequestArchive={onRequestArchive}
       />
