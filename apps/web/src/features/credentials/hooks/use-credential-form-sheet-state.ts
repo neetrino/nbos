@@ -115,6 +115,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setAppStorePlatform('APPLE');
     setPendingTypeChange(null);
     setOrphanedSecretsAcknowledged(false);
+    setSnap('');
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
 
   const draftClearHandlers = useMemo(
@@ -362,7 +363,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setAccessDenied(false);
       try {
         const detailRow = await credentialsApi.getById(credentialId);
-        if (opts?.background && dirtyRef.current) {
+        const preserveInProgressEdits =
+          opts?.background && dirtyRef.current && snap !== '' && detail?.id === credentialId;
+        if (preserveInProgressEdits) {
           mergeServerDetail(detailRow);
         } else {
           applyDetail(detailRow, detailRow.manualGrants ?? []);
@@ -374,7 +377,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         setLoading(false);
       }
     },
-    [applyDetail, credentialId, mergeServerDetail],
+    [applyDetail, credentialId, detail?.id, mergeServerDetail, snap],
   );
 
   const promoteAfterCreate = useCallback(
@@ -396,6 +399,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       prevCredentialIdRef.current = null;
       setShowSettings(false);
       setAccessDenied(false);
+      resetCreate();
       return;
     }
 
@@ -444,20 +448,22 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const dirty = isCreate
     ? name.trim().length > 0 || manualGrants.length > 0
-    : buildCredentialFormSnap({
-        name,
-        category,
-        credentialType,
-        comment,
-        providerId,
-        url,
-        login,
-        phones,
-        appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
-        criticality,
-        nextRotationAt,
-        manualGrants,
-      }) !== snap || Boolean(password || passphrase || apiKey || envData);
+    : snap === ''
+      ? false
+      : buildCredentialFormSnap({
+          name,
+          category,
+          credentialType,
+          comment,
+          providerId,
+          url,
+          login,
+          phones,
+          appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
+          criticality,
+          nextRotationAt,
+          manualGrants,
+        }) !== snap || Boolean(password || passphrase || apiKey || envData);
 
   dirtyRef.current = dirty;
 

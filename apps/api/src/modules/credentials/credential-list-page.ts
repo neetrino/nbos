@@ -16,11 +16,11 @@ async function withSecretsPresence(
   if (items.length === 0) return items;
   const presence = await loadCredentialSecretsPresence(
     runtime.prisma,
-    items.map((item) => item.id as string),
+    items.map((item) => item.id),
   );
   return items.map((item) => ({
     ...item,
-    secretsPresent: presence.get(item.id as string) ?? item.secretsPresent,
+    secretsPresent: presence.get(item.id) ?? item.secretsPresent,
   }));
 }
 

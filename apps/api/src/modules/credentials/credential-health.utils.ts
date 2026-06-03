@@ -42,6 +42,7 @@ export function buildSecretsPresent(row: Record<string, unknown>): CredentialSec
 
 export function toCredentialWithoutSecrets(credential: Record<string, unknown>) {
   const { password, passphrase, apiKey, envData, secureNotes, ...rest } = credential;
+  const id = typeof credential.id === 'string' ? credential.id : '';
   const nextRotationAt =
     credential.nextRotationAt instanceof Date ? credential.nextRotationAt : null;
   const criticality = typeof credential.criticality === 'string' ? credential.criticality : null;
@@ -50,6 +51,7 @@ export function toCredentialWithoutSecrets(credential: Record<string, unknown>) 
 
   return {
     ...rest,
+    id,
     secretsPresent: buildSecretsPresent({ password, passphrase, apiKey, envData, secureNotes }),
     health: buildCredentialHealth(nextRotationAt, criticality, accessLevel, ownerId),
   };
