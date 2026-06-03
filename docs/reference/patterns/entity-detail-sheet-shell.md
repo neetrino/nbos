@@ -9,6 +9,18 @@
 | `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace) |
 | `auxiliary` | 36rem fixed                                                 | **Close only**                    |
 
+### Center-rise shell (`EntityCenterSheetContent`)
+
+Compact forms that should not use the full right panel (e.g. Credentials vault entry):
+
+```tsx
+<EntityCenterSheetContent width="medium">
+  {children}
+</EntityCenterSheetContent>
+```
+
+Max height **95vh**, centered, animates from bottom. No floating rail — close control inside the panel.
+
 ```tsx
 // Deal-scale entity
 <EntityDetailSheetContent open={open} layout="full" sourcePageHref={href} />

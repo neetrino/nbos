@@ -95,6 +95,12 @@ export {
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS,
+  CENTER_SHEET_WIDTH_AUXILIARY_CLASS,
+  CENTER_SHEET_WIDTH_COMPACT_CLASS,
+  CENTER_SHEET_WIDTH_MEDIUM_CLASS,
+  SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
+  SHEET_VIEWPORT_INSET_CLASS,
+  SHEET_VIEWPORT_MAX_HEIGHT_CLASS,
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_PANEL_DIVIDER_CLASS,
@@ -126,6 +132,11 @@ export {
   type EntityDetailSheetLayout,
   type EntityDetailSheetWidth,
 } from './EntityDetailSheetContent';
+export {
+  EntityCenterSheetContent,
+  type EntityCenterSheetContentProps,
+  type EntityCenterSheetWidth,
+} from './EntityCenterSheetContent';
 export {
   QuickCreateTaskDialog,
   type QuickCreateTaskDialogProps,

@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
+import { DetailSheetFormFooter, EntityCenterSheetContent } from '@/components/shared';
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { CredentialEmergencyAccessPanel } from './credential-emergency-access-panel';
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
@@ -78,8 +78,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <EntityDetailSheetContent open={open} layout="full" width="medium">
-          <div className="flex h-full min-h-0 flex-col">
+        <EntityCenterSheetContent width="medium">
+          <div className="flex min-h-0 flex-1 flex-col">
             {!accessDenied && (
               <CredentialFormSheetHeader
                 isCreate={isCreate}
@@ -141,7 +141,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               />
             )}
           </div>
-        </EntityDetailSheetContent>
+        </EntityCenterSheetContent>
       </Sheet>
 
       <CredentialTypeChangeDialog
