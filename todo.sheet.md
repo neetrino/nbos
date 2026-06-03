@@ -218,13 +218,13 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ### Фаза 1b — Sheet UX
 
-- [ ] Header category dropdown (R3)
-- [ ] Reorder body: type first; remove category from body
-- [ ] `credential-field-config` — labels, order, SSH textarea
-- [ ] Type change dialog + checkbox (R1, R2)
-- [ ] Hide `OTHER_SECRET` from create (R6)
-- [ ] DOMAIN/HOSTING/MAIL: provider picker первым
-- [ ] APP_STORE: segmented iOS/Android + readonly URL
+- [x] Header category dropdown (R3)
+- [x] Reorder body: type first; remove category from body
+- [x] `credential-field-config` — labels, order, SSH textarea
+- [x] Type change dialog + checkbox (R1, R2)
+- [x] Hide `OTHER_SECRET` from create (R6)
+- [x] DOMAIN/HOSTING/MAIL: provider picker первым
+- [x] APP_STORE: segmented iOS/Android + readonly URL (UI state; DB column в 1c)
 
 ### Фаза 1c — Schema (credentials fields)
 

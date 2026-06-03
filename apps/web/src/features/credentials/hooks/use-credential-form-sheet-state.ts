@@ -1,7 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
+import {
+  CREDENTIAL_CATEGORIES,
+  CREDENTIAL_TYPES,
+} from '@/features/credentials/constants/credentials';
+import {
+  inferAppStorePlatformFromUrl,
+  urlForAppStorePlatform,
+  type AppStorePlatform,
+} from '@/features/credentials/constants/credential-app-store-platform';
+import {
+  classifyCredentialTypeChange,
+  clearCredentialDraftForTypeChange,
+} from '@/features/credentials/utils/credential-type-change-policy';
 import {
   categoriesForVaultScope,
   defaultCategoryForVaultScope,
@@ -59,6 +71,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [stepUpMode, setStepUpMode] = useState<'reveal' | 'copy'>('reveal');
   const [accessDenied, setAccessDenied] = useState(false);
   const [snap, setSnap] = useState('');
+  const [appStorePlatform, setAppStorePlatform] = useState<AppStorePlatform>('APPLE');
+  const [pendingTypeChange, setPendingTypeChange] = useState<string | null>(null);
 
   const categoryOptions = useMemo(() => {
     const scopePool = categoriesForVaultScope(
@@ -93,7 +107,53 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
+    setAppStorePlatform('APPLE');
+    setPendingTypeChange(null);
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
+
+  const draftClearHandlers = useMemo(
+    () => ({
+      setLogin,
+      setPassword,
+      setApiKey,
+      setEnvData,
+      setUrl,
+      setPhone,
+    }),
+    [],
+  );
+
+  const applyCredentialType = useCallback((nextType: string) => {
+    setCredentialType(nextType);
+    if (nextType === 'APP_STORE_ACCOUNT') {
+      setAppStorePlatform('APPLE');
+      setUrl(urlForAppStorePlatform('APPLE'));
+    }
+  }, []);
+
+  const requestCredentialTypeChange = useCallback(
+    (nextType: string) => {
+      if (nextType === credentialType) return;
+      if (isCreate) {
+        clearCredentialDraftForTypeChange(credentialType, nextType, draftClearHandlers);
+        applyCredentialType(nextType);
+        return;
+      }
+      const level = classifyCredentialTypeChange(credentialType, nextType, detail?.secretsPresent);
+      if (level === 'green') {
+        applyCredentialType(nextType);
+        return;
+      }
+      setPendingTypeChange(nextType);
+    },
+    [applyCredentialType, credentialType, detail?.secretsPresent, draftClearHandlers, isCreate],
+  );
+
+  const confirmPendingTypeChange = useCallback(() => {
+    if (!pendingTypeChange) return;
+    applyCredentialType(pendingTypeChange);
+    setPendingTypeChange(null);
+  }, [applyCredentialType, pendingTypeChange]);
 
   const applyFormSnapshot = useCallback(
     (fields: {
@@ -221,7 +281,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setEnvironment(d.environment ?? '');
       setProviderId(d.providerId ?? null);
       setProviderName(d.provider ?? '');
-      setUrl(d.url ?? '');
+      const loadedUrl = d.url ?? '';
+      setUrl(loadedUrl);
+      if (d.credentialType === 'APP_STORE_ACCOUNT') {
+        setAppStorePlatform(inferAppStorePlatformFromUrl(loadedUrl));
+      }
       setLogin(d.login ?? '');
       setPhone(d.phone ?? '');
       setPassword('');
@@ -316,7 +380,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     category,
     setCategory,
     credentialType,
-    setCredentialType,
+    requestCredentialTypeChange,
+    pendingTypeChange,
+    setPendingTypeChange,
+    confirmPendingTypeChange,
+    appStorePlatform,
+    setAppStorePlatform,
     criticality,
     setCriticality,
     environment,

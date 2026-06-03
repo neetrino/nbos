@@ -1,11 +1,13 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Eye, Copy } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { CredentialEnvEditor } from './credential-env-editor';
-import { fieldsForCredentialType } from '@/features/credentials/credential-field-config';
+import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialFormDynamicFieldsProps {
@@ -49,7 +51,7 @@ export function CredentialFormDynamicFields({
   onReveal,
   onCopy,
 }: CredentialFormDynamicFieldsProps) {
-  const fields = fieldsForCredentialType(credentialType);
+  const specs = dynamicFieldSpecsForType(credentialType);
   const isExisting = Boolean(credentialId);
 
   const secretActions = (field: CredentialSecretField, label: string) => {
@@ -72,86 +74,178 @@ export function CredentialFormDynamicFields({
 
   return (
     <div className="grid gap-4">
-      {fields.includes('url') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-url">URL</Label>
-          <Input id="cred-url" value={url} onChange={(e) => onUrlChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('login') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-login">Login</Label>
-          <Input id="cred-login" value={login} onChange={(e) => onLoginChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('phone') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-phone">Phone</Label>
-          <Input id="cred-phone" value={phone} onChange={(e) => onPhoneChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('password') &&
-        (isExisting && secretsPresent?.password ? (
-          <div className="grid gap-2">
-            <Label>Password</Label>
-            {secretActions('password', 'password')}
-            <Input
-              type="password"
-              placeholder="Leave empty to keep current"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              autoComplete="off"
+      {specs.map((spec) => {
+        if (spec.kind === 'env') {
+          return (
+            <EnvFieldBlock
+              key={spec.field}
+              isExisting={isExisting}
+              envData={envData}
+              onEnvDataChange={onEnvDataChange}
+              secretsPresent={secretsPresent}
+              secretActions={secretActions}
             />
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            <Label htmlFor="cred-password">Password</Label>
-            <Input
-              id="cred-password"
-              type="password"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'login') {
+          return (
+            <TextField
+              key={spec.field}
+              id="cred-login"
+              label={spec.label}
+              value={login}
+              onChange={onLoginChange}
             />
-          </div>
-        ))}
-      {fields.includes('apiKey') &&
-        (isExisting && secretsPresent?.apiKey ? (
-          <div className="grid gap-2">
-            <Label>API key</Label>
-            {secretActions('apiKey', 'API key')}
-            <Input
-              type="password"
-              placeholder="Leave empty to keep current"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'phone') {
+          return (
+            <TextField
+              key={spec.field}
+              id="cred-phone"
+              label={spec.label}
+              value={phone}
+              onChange={onPhoneChange}
             />
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            <Label htmlFor="cred-apikey">API key</Label>
-            <Input
-              id="cred-apikey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'url') {
+          return (
+            <TextField
+              key={spec.field}
+              id="cred-url"
+              label={spec.label}
+              value={url}
+              onChange={onUrlChange}
             />
-          </div>
-        ))}
-      {fields.includes('envData') &&
-        (isExisting && secretsPresent?.envData ? (
-          <div className="grid gap-2">
-            <Label>ENV bundle</Label>
-            {secretActions('envData', 'ENV')}
-            <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
-          </div>
-        ) : (
-          <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
-        ))}
+          );
+        }
+
+        if (spec.field === 'password') {
+          return (
+            <SecretField
+              key={spec.field}
+              spec={spec}
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.password)}
+              draft={password}
+              onDraftChange={onPasswordChange}
+              secretActions={secretActions('password', spec.label)}
+            />
+          );
+        }
+
+        if (spec.field === 'apiKey') {
+          return (
+            <SecretField
+              key={spec.field}
+              spec={spec}
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.apiKey)}
+              draft={apiKey}
+              onDraftChange={onApiKeyChange}
+              secretActions={secretActions('apiKey', spec.label)}
+            />
+          );
+        }
+
+        return null;
+      })}
     </div>
   );
 }
 
-// silence unused FIELD_LABELS if needed - actually remove FIELD_LABELS if unused
+function TextField({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function SecretField({
+  spec,
+  isExisting,
+  hasStored,
+  draft,
+  onDraftChange,
+  secretActions,
+}: {
+  spec: { label: string; kind: string; placeholder?: string };
+  isExisting: boolean;
+  hasStored: boolean;
+  draft: string;
+  onDraftChange: (v: string) => void;
+  secretActions: React.ReactNode;
+}) {
+  const showRotate = isExisting && hasStored;
+
+  if (spec.kind === 'textarea') {
+    return (
+      <div className="grid gap-2">
+        <Label htmlFor="cred-private-key">{spec.label}</Label>
+        {showRotate ? secretActions : null}
+        <Textarea
+          id="cred-private-key"
+          value={draft}
+          onChange={(e) => onDraftChange(e.target.value)}
+          className="min-h-[120px] font-mono text-xs"
+          placeholder={showRotate ? 'Paste new key to rotate' : 'Paste private key'}
+          autoComplete="off"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="cred-secret-field">{spec.label}</Label>
+      {showRotate ? secretActions : null}
+      <Input
+        id="cred-secret-field"
+        type="password"
+        value={draft}
+        onChange={(e) => onDraftChange(e.target.value)}
+        placeholder={showRotate ? 'Leave empty to keep current' : undefined}
+        autoComplete="off"
+      />
+    </div>
+  );
+}
+
+function EnvFieldBlock({
+  isExisting,
+  envData,
+  onEnvDataChange,
+  secretsPresent,
+  secretActions,
+}: {
+  isExisting: boolean;
+  envData: string;
+  onEnvDataChange: (v: string) => void;
+  secretsPresent?: CredentialSecretsPresent | null;
+  revealed?: Partial<Record<CredentialSecretField, string>>;
+  secretActions: (field: CredentialSecretField, label: string) => ReactNode;
+}) {
+  return (
+    <div className="grid gap-2">
+      <Label>ENV bundle</Label>
+      {isExisting && secretsPresent?.envData ? secretActions('envData', 'ENV') : null}
+      <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
+    </div>
+  );
+}

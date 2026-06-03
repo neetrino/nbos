@@ -9,6 +9,8 @@ import { CredentialEmergencyAccessPanel } from './credential-emergency-access-pa
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
 import { CredentialFormSheetHeader } from './credential-form-sheet-header';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
+import { CredentialTypeChangeDialog } from './credential-type-change-dialog';
+import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 import {
   CredentialVaultSessionProvider,
   useCredentialVaultSessionContext,
@@ -43,8 +45,16 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     name,
     setName,
     accessLevel,
+    category,
+    setCategory,
+    categoryOptions,
+    categoryLocked,
     categoryLabel,
     criticality,
+    credentialType,
+    pendingTypeChange,
+    setPendingTypeChange,
+    confirmPendingTypeChange,
     showSettings,
     setShowSettings,
     dirty,
@@ -77,7 +87,11 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
                 name={name}
                 onNameChange={setName}
                 accessLevel={accessLevel}
+                category={category}
                 categoryLabel={categoryLabel}
+                categoryOptions={categoryOptions}
+                categoryLocked={categoryLocked}
+                onCategoryChange={setCategory}
                 criticality={criticality}
                 showSettings={showSettings}
                 onToggleSettings={() => setShowSettings((v) => !v)}
@@ -129,6 +143,22 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
           </div>
         </EntityDetailSheetContent>
       </Sheet>
+
+      <CredentialTypeChangeDialog
+        open={pendingTypeChange !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingTypeChange(null);
+        }}
+        fromLabel={
+          CREDENTIAL_TYPES.find((t) => t.value === credentialType)?.label ?? credentialType
+        }
+        toLabel={
+          CREDENTIAL_TYPES.find((t) => t.value === pendingTypeChange)?.label ??
+          pendingTypeChange ??
+          ''
+        }
+        onConfirm={confirmPendingTypeChange}
+      />
 
       <CredentialStepUpDialog
         open={stepUpField !== null}

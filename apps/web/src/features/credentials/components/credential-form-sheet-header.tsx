@@ -10,6 +10,8 @@ import {
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
 import { cn } from '@/lib/utils';
+import { CredentialFormCategoryMenu } from './credential-form-category-menu';
+import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 
 export interface CredentialFormSheetHeaderProps {
   isCreate: boolean;
@@ -17,7 +19,11 @@ export interface CredentialFormSheetHeaderProps {
   name: string;
   onNameChange: (value: string) => void;
   accessLevel: string;
+  category: string;
   categoryLabel: string;
+  categoryOptions: readonly CredentialCategoryOption[];
+  categoryLocked: boolean;
+  onCategoryChange: (value: string) => void;
   criticality: string;
   showSettings: boolean;
   onToggleSettings: () => void;
@@ -31,7 +37,11 @@ export function CredentialFormSheetHeader({
   name,
   onNameChange,
   accessLevel,
+  category,
   categoryLabel,
+  categoryOptions,
+  categoryLocked,
+  onCategoryChange,
   criticality,
   showSettings,
   onToggleSettings,
@@ -110,7 +120,13 @@ export function CredentialFormSheetHeader({
           {critMeta && !isCreate ? (
             <StatusBadge label={critMeta.label} variant={critMeta.variant} />
           ) : null}
-          <span className="text-muted-foreground text-xs">{categoryLabel}</span>
+          <CredentialFormCategoryMenu
+            category={category}
+            categoryLabel={categoryLabel}
+            categoryOptions={categoryOptions}
+            categoryLocked={categoryLocked}
+            onCategoryChange={onCategoryChange}
+          />
         </div>
       </div>
       {!isCreate && credentialId && onRequestArchive ? (
