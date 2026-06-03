@@ -26,7 +26,10 @@ function stripMatchingQuotes(value: string): string {
 function parseEnvLine(line: string): EnvBundleEntry | null {
   const match = ENV_LINE_PATTERN.exec(line);
   if (!match) return null;
-  return { key: match[1], value: stripMatchingQuotes(match[2]) };
+  const key = match[1];
+  const rawValue = match[2];
+  if (key === undefined || rawValue === undefined) return null;
+  return { key, value: stripMatchingQuotes(rawValue) };
 }
 
 /** Parses pasted `.env` text into key/value entries with preview warnings. */
@@ -38,6 +41,7 @@ export function parseEnvBundleText(text: string): ParsedEnvBundle {
   const lines = text.split(/\r?\n/);
   for (let i = 0; i < lines.length; i += 1) {
     const raw = lines[i];
+    if (raw === undefined) continue;
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
 

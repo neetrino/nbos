@@ -8,8 +8,12 @@ export async function enrichDriveFolderListing(
   const fileIds = listing.files.map((f) => f.id);
 
   const [folderCounts, fileCounts] = await Promise.all([
-    folderIds.length > 0 ? driveApi.getFolderGrantCounts(folderIds) : Promise.resolve({}),
-    fileIds.length > 0 ? driveApi.getFileGrantCounts(fileIds) : Promise.resolve({}),
+    folderIds.length > 0
+      ? driveApi.getFolderGrantCounts(folderIds)
+      : Promise.resolve({} as Record<string, number>),
+    fileIds.length > 0
+      ? driveApi.getFileGrantCounts(fileIds)
+      : Promise.resolve({} as Record<string, number>),
   ]);
 
   return {

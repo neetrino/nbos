@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, Copy, Check, ExternalLink, KeyRound } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
 import { credentialsApi } from '@/lib/api/credentials';
 import type { ProjectCredential } from '@/lib/api/projects';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface CredentialsTabProps {
@@ -88,12 +89,13 @@ export function CredentialsTab({ credentials }: CredentialsTabProps) {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {access && <StatusBadge label={access.label} variant={access.variant} />}
-                <Button type="button" variant="outline" size="sm" className="h-8 gap-1" asChild>
-                  <Link href={buildCredentialVaultHref(cred.id)}>
-                    <KeyRound size={12} aria-hidden />
-                    Open in Vault
-                  </Link>
-                </Button>
+                <Link
+                  href={buildCredentialVaultHref(cred.id)}
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-8 gap-1')}
+                >
+                  <KeyRound size={12} aria-hidden />
+                  Open in Vault
+                </Link>
                 {cred.url && (
                   <Button
                     type="button"

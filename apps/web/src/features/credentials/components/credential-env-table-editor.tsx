@@ -105,7 +105,8 @@ export function CredentialEnvTableEditor({
 
   const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
     const base = entries.length > 0 ? [...entries] : [EMPTY_ENV_ROW];
-    base[index] = { ...base[index], ...patch };
+    const current = base[index] ?? EMPTY_ENV_ROW;
+    base[index] = { ...current, ...patch };
     commitEntries(base);
   };
 

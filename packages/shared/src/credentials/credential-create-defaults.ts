@@ -55,7 +55,7 @@ export function resolveCredentialCreateDefaults(
     criticality = maxCriticality(criticality, 'HIGH');
   }
 
-  const intervalDays = ROTATION_INTERVAL_DAYS[criticality] ?? ROTATION_INTERVAL_DAYS.MEDIUM;
+  const intervalDays = ROTATION_INTERVAL_DAYS[criticality] ?? ROTATION_INTERVAL_DAYS.MEDIUM ?? 180;
   const nextRotationAt = addUtcDays(new Date(), intervalDays).toISOString();
 
   return { criticality, nextRotationAt };

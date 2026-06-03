@@ -1,10 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  CREDENTIAL_CATEGORIES,
-  CREDENTIAL_TYPES,
-} from '@/features/credentials/constants/credentials';
+import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
 import {
   inferAppStorePlatformFromUrl,
   urlForAppStorePlatform,
@@ -38,7 +35,6 @@ import type { CredentialFormSheetProps } from '@/features/credentials/components
 export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const {
     open,
-    onOpenChange,
     credentialId = null,
     initialItem = null,
     vaultScope = 'project',

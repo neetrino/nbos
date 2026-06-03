@@ -51,8 +51,9 @@ export function CredentialVaultTable({
 }: CredentialVaultTableProps) {
   const isArchivedList = listScope === 'archived';
   const pageIds = selection?.pageIds ?? [];
-  const allPageSelected =
-    selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+  const allPageSelected = Boolean(
+    selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id)),
+  );
   const somePageSelected =
     selection?.enabled && pageIds.some((id) => selection.isSelected(id)) && !allPageSelected;
   if (loading) {

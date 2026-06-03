@@ -31,7 +31,6 @@ export function isRiskyRolePolicyChange(
     if (next.scopeMode === 'NONE') return true;
     if (prev?.defaultLevel === 'EDIT' && next.defaultLevel === 'VIEW') return true;
     if (prev?.scopeMode === 'ALL' && next.scopeMode !== 'ALL') return true;
-    if (prev?.scopeMode === 'ASSIGNED' && next.scopeMode === 'NONE') return true;
   }
   return false;
 }
