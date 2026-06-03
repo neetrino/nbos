@@ -16,8 +16,8 @@
 
 ## Что дальше (по приоритету)
 
-1. **Access — Tasks:** workspace lists; detail auth.
-2. **Access — Finance:** payroll-only expense paths review.
+1. **Access — Finance:** payroll-only expense paths review.
+2. **Access — Drive:** multi-link confidentiality (cleanup register).
 3. **Access — Finance:** payroll-only expense paths review.
 4. **Access — Slice D:** manual `ResourceAccessGrant` contract для Drive/Finance (док + shared types).
 5. **Access — Finance:** seller-only boundaries (не весь finance проекта).

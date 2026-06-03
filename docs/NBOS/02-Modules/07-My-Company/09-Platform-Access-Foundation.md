@@ -204,7 +204,9 @@ Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 
 **Runtime (partial):** `GET /tasks?projectId=` asserts viewer project participation via `assertProjectTasksAccessible` when `TASKS_VIEW` ≠ `ALL`.
 
-**Still backlog:** workspace-only lists without `projectId`; task detail authorization beyond list gate.
+**Runtime (partial):** `GET /tasks?workspaceId=` gates via `assertWorkSpaceTasksAccessible`; workspace-only lists without `projectId` apply `buildTasksParticipationWhere` when `TASKS_VIEW` ≠ `ALL`.
+
+**Runtime (partial):** `GET /tasks/:id` and task mutations call `assertTaskAccessible` with the same participation graph.
 
 ---
 
