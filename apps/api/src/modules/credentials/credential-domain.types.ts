@@ -1,13 +1,20 @@
 import type { CredentialTab } from './credential-tab';
 import type { CredentialListSort } from './credential-list-sort';
 
-export const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
+export const SENSITIVE_FIELDS = [
+  'password',
+  'passphrase',
+  'apiKey',
+  'envData',
+  'secureNotes',
+] as const;
 export type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
 
 export const CREDENTIAL_SECRET_FIELD_NAMES = SENSITIVE_FIELDS;
 
 export interface CredentialSecretsPresent {
   password: boolean;
+  passphrase: boolean;
   apiKey: boolean;
   envData: boolean;
   secureNotes: boolean;
@@ -70,6 +77,9 @@ export interface CreateCredentialDto {
   apiKey?: string;
   envData?: string;
   phone?: string;
+  phones?: string[];
+  passphrase?: string;
+  appStorePlatform?: string;
   notes?: string;
   publicNotes?: string;
   secureNotes?: string;
@@ -99,6 +109,9 @@ export interface UpdateCredentialDto {
   apiKey?: string;
   envData?: string;
   phone?: string;
+  phones?: string[];
+  passphrase?: string;
+  appStorePlatform?: string;
   notes?: string;
   publicNotes?: string;
   secureNotes?: string;

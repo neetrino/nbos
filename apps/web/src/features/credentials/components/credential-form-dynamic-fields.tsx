@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { CredentialEnvEditor } from './credential-env-editor';
+import { CredentialEnvTableEditor } from './credential-env-table-editor';
 import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 
@@ -17,10 +17,10 @@ export interface CredentialFormDynamicFieldsProps {
   onLoginChange: (v: string) => void;
   password: string;
   onPasswordChange: (v: string) => void;
+  passphrase: string;
+  onPassphraseChange: (v: string) => void;
   apiKey: string;
   onApiKeyChange: (v: string) => void;
-  phone: string;
-  onPhoneChange: (v: string) => void;
   url: string;
   onUrlChange: (v: string) => void;
   envData: string;
@@ -38,10 +38,10 @@ export function CredentialFormDynamicFields({
   onLoginChange,
   password,
   onPasswordChange,
+  passphrase,
+  onPassphraseChange,
   apiKey,
   onApiKeyChange,
-  phone,
-  onPhoneChange,
   url,
   onUrlChange,
   envData,
@@ -77,14 +77,19 @@ export function CredentialFormDynamicFields({
       {specs.map((spec) => {
         if (spec.kind === 'env') {
           return (
-            <EnvFieldBlock
-              key={spec.field}
-              isExisting={isExisting}
-              envData={envData}
-              onEnvDataChange={onEnvDataChange}
-              secretsPresent={secretsPresent}
-              secretActions={secretActions}
-            />
+            <div key={spec.field} className="grid gap-2">
+              <Label>{spec.label}</Label>
+              {isExisting && secretsPresent?.envData ? secretActions('envData', 'ENV') : null}
+              <CredentialEnvTableEditor
+                value={envData}
+                onChange={onEnvDataChange}
+                isExisting={isExisting}
+                revealedValue={revealed?.envData ?? null}
+                onReveal={() => onReveal?.('envData')}
+                onCopy={() => onCopy?.('envData')}
+                disabled={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
+              />
+            </div>
           );
         }
 
@@ -96,18 +101,6 @@ export function CredentialFormDynamicFields({
               label={spec.label}
               value={login}
               onChange={onLoginChange}
-            />
-          );
-        }
-
-        if (spec.field === 'phone') {
-          return (
-            <TextField
-              key={spec.field}
-              id="cred-phone"
-              label={spec.label}
-              value={phone}
-              onChange={onPhoneChange}
             />
           );
         }
@@ -134,6 +127,20 @@ export function CredentialFormDynamicFields({
               draft={password}
               onDraftChange={onPasswordChange}
               secretActions={secretActions('password', spec.label)}
+            />
+          );
+        }
+
+        if (spec.field === 'passphrase') {
+          return (
+            <SecretField
+              key={spec.field}
+              spec={spec}
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.passphrase)}
+              draft={passphrase}
+              onDraftChange={onPassphraseChange}
+              secretActions={secretActions('passphrase', spec.label)}
             />
           );
         }
@@ -223,29 +230,6 @@ function SecretField({
         placeholder={showRotate ? 'Leave empty to keep current' : undefined}
         autoComplete="off"
       />
-    </div>
-  );
-}
-
-function EnvFieldBlock({
-  isExisting,
-  envData,
-  onEnvDataChange,
-  secretsPresent,
-  secretActions,
-}: {
-  isExisting: boolean;
-  envData: string;
-  onEnvDataChange: (v: string) => void;
-  secretsPresent?: CredentialSecretsPresent | null;
-  revealed?: Partial<Record<CredentialSecretField, string>>;
-  secretActions: (field: CredentialSecretField, label: string) => ReactNode;
-}) {
-  return (
-    <div className="grid gap-2">
-      <Label>ENV bundle</Label>
-      {isExisting && secretsPresent?.envData ? secretActions('envData', 'ENV') : null}
-      <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
     </div>
   );
 }

@@ -35,6 +35,7 @@ export interface CredentialsExportFileResult {
 
 export interface CredentialSecretsPresent {
   password: boolean;
+  passphrase: boolean;
   apiKey: boolean;
   envData: boolean;
   secureNotes: boolean;
@@ -61,6 +62,8 @@ export interface CredentialDetail {
   url: string | null;
   login: string | null;
   phone?: string | null;
+  phones?: string[];
+  appStorePlatform?: 'APPLE' | 'GOOGLE' | null;
   notes?: string | null;
   publicNotes?: string | null;
   /** Decrypted private comment (`secureNotes`); visible without step-up when user can view credential. */

@@ -7,6 +7,8 @@ import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/cr
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
+import { normalizeCredentialPhones } from '@/features/credentials/utils/credential-phones-normalize';
+import type { AppStorePlatform } from '@/features/credentials/constants/credential-app-store-platform';
 
 const CREATE_DEFAULT_SUCCESS_TOAST = 'Credential created';
 
@@ -21,8 +23,10 @@ export interface CredentialFormSheetStateSlice {
   providerId: string | null;
   url: string;
   login: string;
-  phone: string;
+  phones: string[];
+  appStorePlatform: AppStorePlatform;
   password: string;
+  passphrase: string;
   apiKey: string;
   envData: string;
   comment: string;
@@ -51,8 +55,15 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     providerId: state.providerId,
     url: state.url.trim() || undefined,
     login: state.login.trim() || undefined,
-    phone: state.phone.trim() || undefined,
+    phones: (() => {
+      const list = normalizeCredentialPhones(state.phones);
+      return list.length > 0 ? list : undefined;
+    })(),
+    phone: normalizeCredentialPhones(state.phones)[0] || undefined,
     password: state.password.trim() || undefined,
+    passphrase: state.passphrase.trim() || undefined,
+    appStorePlatform:
+      state.credentialType === 'APP_STORE_ACCOUNT' ? state.appStorePlatform : undefined,
     apiKey: state.apiKey.trim() || undefined,
     envData: state.envData.trim() || undefined,
     secureNotes: state.comment.trim() || undefined,

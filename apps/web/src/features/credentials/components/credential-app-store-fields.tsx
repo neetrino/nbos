@@ -7,12 +7,15 @@ import {
   type AppStorePlatform,
   urlForAppStorePlatform,
 } from '@/features/credentials/constants/credential-app-store-platform';
+import { CredentialPhonesField } from './credential-phones-field';
 
 export interface CredentialAppStoreFieldsProps {
   platform: AppStorePlatform;
   onPlatformChange: (platform: AppStorePlatform) => void;
   url: string;
   onUrlChange: (url: string) => void;
+  phones: string[];
+  onPhonesChange: (phones: string[]) => void;
 }
 
 export function CredentialAppStoreFields({
@@ -20,6 +23,8 @@ export function CredentialAppStoreFields({
   onPlatformChange,
   url,
   onUrlChange,
+  phones,
+  onPhonesChange,
 }: CredentialAppStoreFieldsProps) {
   const selectPlatform = (next: AppStorePlatform) => {
     onPlatformChange(next);
@@ -45,6 +50,7 @@ export function CredentialAppStoreFields({
         <Label htmlFor="cred-app-store-url">Portal URL</Label>
         <Input id="cred-app-store-url" value={url} readOnly className="bg-muted/40" aria-readonly />
       </div>
+      <CredentialPhonesField phones={phones} onChange={onPhonesChange} />
     </div>
   );
 }

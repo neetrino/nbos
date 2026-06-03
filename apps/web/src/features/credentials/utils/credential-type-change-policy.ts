@@ -31,6 +31,7 @@ export function visibleSecretFieldsForType(credentialType: string): CredentialSe
   const fields = fieldsForCredentialType(credentialType);
   const out: CredentialSecretField[] = [];
   if (fields.includes('password')) out.push('password');
+  if (fields.includes('passphrase')) out.push('passphrase');
   if (fields.includes('apiKey')) out.push('apiKey');
   if (fields.includes('envData')) out.push('envData');
   return out;
@@ -49,7 +50,7 @@ export function classifyCredentialTypeChange(
   if (!secretsPresent) return 'green';
 
   const targetVisible = new Set(visibleSecretFieldsForType(toType));
-  const orphaned = (['password', 'apiKey', 'envData'] as const).filter(
+  const orphaned = (['password', 'passphrase', 'apiKey', 'envData'] as const).filter(
     (field) => secretsPresent[field] && !targetVisible.has(field),
   );
   return orphaned.length > 0 ? 'red' : 'green';
@@ -58,10 +59,11 @@ export function classifyCredentialTypeChange(
 export interface CredentialDraftClearHandlers {
   setLogin: (v: string) => void;
   setPassword: (v: string) => void;
+  setPassphrase: (v: string) => void;
   setApiKey: (v: string) => void;
   setEnvData: (v: string) => void;
   setUrl: (v: string) => void;
-  setPhone: (v: string) => void;
+  setPhones: (phones: string[]) => void;
 }
 
 function fieldKeysForType(type: string): Set<CredentialFormField> {
@@ -77,8 +79,9 @@ export function clearCredentialDraftForTypeChange(
   const allowed = fieldKeysForType(toType);
   if (!allowed.has('login')) handlers.setLogin('');
   if (!allowed.has('password')) handlers.setPassword('');
+  if (!allowed.has('passphrase')) handlers.setPassphrase('');
   if (!allowed.has('apiKey')) handlers.setApiKey('');
   if (!allowed.has('envData')) handlers.setEnvData('');
   if (!allowed.has('url')) handlers.setUrl('');
-  if (!allowed.has('phone')) handlers.setPhone('');
+  if (!allowed.has('phone')) handlers.setPhones(['']);
 }

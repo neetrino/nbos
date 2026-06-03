@@ -6,6 +6,7 @@ describe('classifyCredentialTypeChange', () => {
     expect(
       classifyCredentialTypeChange('LOGIN_PASSWORD', 'SSH_PRIVATE_KEY', {
         password: true,
+        passphrase: false,
         apiKey: false,
         envData: false,
         secureNotes: false,
@@ -17,6 +18,7 @@ describe('classifyCredentialTypeChange', () => {
     expect(
       classifyCredentialTypeChange('SSH_PRIVATE_KEY', 'API_KEY', {
         password: true,
+        passphrase: false,
         apiKey: false,
         envData: false,
         secureNotes: false,

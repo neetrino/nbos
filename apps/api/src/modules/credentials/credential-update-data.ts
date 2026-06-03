@@ -39,9 +39,14 @@ export function buildCredentialUpdateData(
     ...(data.url !== undefined && { url: data.url }),
     ...(data.login !== undefined && { login: data.login }),
     ...(data.password !== undefined && { password: encrypted.password }),
+    ...(data.passphrase !== undefined && { passphrase: encrypted.passphrase }),
     ...(data.apiKey !== undefined && { apiKey: encrypted.apiKey }),
     ...(data.envData !== undefined && { envData: encrypted.envData }),
     ...(data.phone !== undefined && { phone: data.phone }),
+    ...(data.phones !== undefined && { phones: data.phones }),
+    ...(data.appStorePlatform !== undefined && {
+      appStorePlatform: data.appStorePlatform as Prisma.CredentialUpdateInput['appStorePlatform'],
+    }),
     ...(data.notes !== undefined && { notes: data.notes, publicNotes: data.notes }),
     ...(data.publicNotes !== undefined && {
       notes: data.publicNotes,

@@ -67,3 +67,9 @@ export function parseEnvBundleText(text: string): ParsedEnvBundle {
 export function serializeEnvBundle(entries: EnvBundleEntry[]): string {
   return entries.map((e) => `${e.key}=${e.value}`).join('\n');
 }
+
+/** Parses stored bundle text into entries (same format as paste). */
+export function entriesFromEnvBundleSerialized(serialized: string): EnvBundleEntry[] {
+  if (!serialized.trim()) return [];
+  return parseEnvBundleText(serialized).entries;
+}

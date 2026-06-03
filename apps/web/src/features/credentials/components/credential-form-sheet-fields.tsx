@@ -82,8 +82,10 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setPassword,
     apiKey,
     setApiKey,
-    phone,
-    setPhone,
+    phones,
+    setPhones,
+    passphrase,
+    setPassphrase,
     url,
     setUrl,
     envData,
@@ -129,6 +131,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         onPlatformChange={setAppStorePlatform}
         url={url}
         onUrlChange={setUrl}
+        phones={phones}
+        onPhonesChange={setPhones}
       />
     ) : null;
 
@@ -167,8 +171,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         onPasswordChange={setPassword}
         apiKey={apiKey}
         onApiKeyChange={setApiKey}
-        phone={phone}
-        onPhoneChange={setPhone}
+        passphrase={passphrase}
+        onPassphraseChange={setPassphrase}
         url={url}
         onUrlChange={setUrl}
         envData={envData}

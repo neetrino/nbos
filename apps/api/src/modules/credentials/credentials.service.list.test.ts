@@ -40,7 +40,13 @@ describe('CredentialsService findAll', () => {
         id: '1',
         name: 'Admin Panel',
         provider: 'AWS',
-        secretsPresent: { password: false, apiKey: false, envData: false, secureNotes: false },
+        secretsPresent: {
+          password: false,
+          passphrase: false,
+          apiKey: false,
+          envData: false,
+          secureNotes: false,
+        },
       }),
     ]);
     expect(result.meta.total).toBe(1);
@@ -214,6 +220,7 @@ describe('CredentialsService findById', () => {
     expect(result).not.toHaveProperty('password');
     expect(result.secretsPresent).toEqual({
       password: true,
+      passphrase: false,
       apiKey: false,
       envData: false,
       secureNotes: false,

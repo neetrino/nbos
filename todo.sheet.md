@@ -228,14 +228,14 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ### Фаза 1c — Schema (credentials fields)
 
-- [ ] `passphrase` encrypted column + SSH fields
-- [ ] `phones` array + multi-phone UI with hover Add
-- [ ] `appStorePlatform` enum column
+- [x] `passphrase` encrypted column + SSH fields
+- [x] `phones` array + multi-phone UI with hover Add
+- [x] `appStorePlatform` enum column
 
 ### Фаза 1c — ENV table editor
 
-- [ ] Table rows, per-row copy, download `.env`
-- [ ] Paste strip + parse apply
+- [x] Table rows, per-row copy, download `.env`
+- [x] Paste strip + parse apply
 
 ### Фаза 2
 

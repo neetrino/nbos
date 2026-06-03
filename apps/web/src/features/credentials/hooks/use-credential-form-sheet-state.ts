@@ -14,6 +14,7 @@ import {
   classifyCredentialTypeChange,
   clearCredentialDraftForTypeChange,
 } from '@/features/credentials/utils/credential-type-change-policy';
+import { phonesFromCredentialDetail } from '@/features/credentials/utils/credential-phones-normalize';
 import {
   categoriesForVaultScope,
   defaultCategoryForVaultScope,
@@ -57,8 +58,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [providerName, setProviderName] = useState('');
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phones, setPhones] = useState<string[]>(['']);
   const [password, setPassword] = useState('');
+  const [passphrase, setPassphrase] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [envData, setEnvData] = useState('');
   const [comment, setComment] = useState('');
@@ -97,8 +99,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setProviderName('');
     setUrl('');
     setLogin('');
-    setPhone('');
+    setPhones(['']);
     setPassword('');
+    setPassphrase('');
     setApiKey('');
     setEnvData('');
     setComment('');
@@ -115,10 +118,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     () => ({
       setLogin,
       setPassword,
+      setPassphrase,
       setApiKey,
       setEnvData,
       setUrl,
-      setPhone,
+      setPhones: (v: string[]) => setPhones(v.length > 0 ? v : ['']),
     }),
     [],
   );
@@ -126,8 +130,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const applyCredentialType = useCallback((nextType: string) => {
     setCredentialType(nextType);
     if (nextType === 'APP_STORE_ACCOUNT') {
-      setAppStorePlatform('APPLE');
-      setUrl(urlForAppStorePlatform('APPLE'));
+      const platform: AppStorePlatform = 'APPLE';
+      setAppStorePlatform(platform);
+      setUrl(urlForAppStorePlatform(platform));
     }
   }, []);
 
@@ -165,7 +170,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       providerId: string | null;
       url: string;
       login: string;
-      phone: string;
+      phones: string[];
+      appStorePlatform: string;
       comment: string;
       nextRotationAt: string;
       manualGrants: CredentialManualGrant[];
@@ -185,7 +191,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       providerId,
       url,
       login,
-      phone,
+      phones,
+      appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
       comment,
       nextRotationAt,
       manualGrants,
@@ -200,7 +207,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     providerId,
     url,
     login,
-    phone,
+    phones,
+    appStorePlatform,
     comment,
     nextRotationAt,
     manualGrants,
@@ -217,11 +225,13 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       providerName,
       url,
       login,
-      phone,
+      phones,
+      appStorePlatform,
       comment,
       nextRotationAt,
       accessLevel,
       password,
+      passphrase,
       apiKey,
       envData,
       snap,
@@ -240,11 +250,13 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setProviderName(saved.providerName);
       setUrl(saved.url);
       setLogin(saved.login);
-      setPhone(saved.phone);
+      setPhones(saved.phones);
+      setAppStorePlatform(saved.appStorePlatform as AppStorePlatform);
       setComment(saved.comment);
       setNextRotationAt(saved.nextRotationAt);
       setAccessLevel(saved.accessLevel);
       setPassword(saved.password);
+      setPassphrase(saved.passphrase);
       setApiKey(saved.apiKey);
       setEnvData(saved.envData);
       setManualGrants(saved.manualGrants);
@@ -264,7 +276,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     name,
     nextRotationAt,
     password,
-    phone,
+    phones,
+    appStorePlatform,
+    passphrase,
     providerId,
     providerName,
     snap,
@@ -283,12 +297,17 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setProviderName(d.provider ?? '');
       const loadedUrl = d.url ?? '';
       setUrl(loadedUrl);
+      const platform: AppStorePlatform =
+        d.appStorePlatform === 'GOOGLE' || d.appStorePlatform === 'APPLE'
+          ? d.appStorePlatform
+          : inferAppStorePlatformFromUrl(loadedUrl);
       if (d.credentialType === 'APP_STORE_ACCOUNT') {
-        setAppStorePlatform(inferAppStorePlatformFromUrl(loadedUrl));
+        setAppStorePlatform(platform);
       }
       setLogin(d.login ?? '');
-      setPhone(d.phone ?? '');
+      setPhones(phonesFromCredentialDetail(d));
       setPassword('');
+      setPassphrase('');
       setApiKey('');
       setEnvData('');
       setComment(d.comment ?? '');
@@ -306,7 +325,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         providerId: d.providerId ?? null,
         url: d.url ?? '',
         login: d.login ?? '',
-        phone: d.phone ?? '',
+        phones: phonesFromCredentialDetail(d),
+        appStorePlatform: d.credentialType === 'APP_STORE_ACCOUNT' ? platform : '',
         comment: d.comment ?? '',
         nextRotationAt: rotationDate,
         manualGrants: grants,
@@ -363,11 +383,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         providerId,
         url,
         login,
-        phone,
+        phones,
+        appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
         criticality,
         nextRotationAt,
         manualGrants,
-      }) !== snap || Boolean(password || apiKey || envData);
+      }) !== snap || Boolean(password || passphrase || apiKey || envData);
 
   return {
     isCreate,
@@ -400,8 +421,10 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setUrl,
     login,
     setLogin,
-    phone,
-    setPhone,
+    phones,
+    setPhones,
+    passphrase,
+    setPassphrase,
     password,
     setPassword,
     apiKey,

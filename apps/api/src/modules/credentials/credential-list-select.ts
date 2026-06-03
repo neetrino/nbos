@@ -16,6 +16,8 @@ export const CREDENTIAL_LIST_SELECT = {
   url: true,
   login: true,
   phone: true,
+  phones: true,
+  appStorePlatform: true,
   accessLevel: true,
   allowedEmployees: true,
   publicNotes: true,

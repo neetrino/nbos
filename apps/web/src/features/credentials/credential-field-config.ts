@@ -1,6 +1,13 @@
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 
-export type CredentialFormField = 'login' | 'password' | 'apiKey' | 'phone' | 'url' | 'envData';
+export type CredentialFormField =
+  | 'login'
+  | 'password'
+  | 'passphrase'
+  | 'apiKey'
+  | 'phone'
+  | 'url'
+  | 'envData';
 
 export type DynamicFieldKind = 'text' | 'password' | 'textarea' | 'env';
 
@@ -15,18 +22,23 @@ const TYPE_FIELDS: Record<string, CredentialFormField[]> = {
   LOGIN_PASSWORD: ['url', 'login', 'password'],
   API_KEY: ['url', 'apiKey'],
   DATABASE: ['url', 'login', 'password'],
-  SSH_PRIVATE_KEY: ['url', 'login', 'password'],
+  SSH_PRIVATE_KEY: ['url', 'login', 'password', 'passphrase'],
   ENV_BUNDLE: ['envData'],
   DOMAIN_REGISTRAR: ['url', 'login', 'password'],
   HOSTING_SERVER: ['url', 'login', 'password'],
-  APP_STORE_ACCOUNT: ['login', 'password', 'phone'],
+  APP_STORE_ACCOUNT: ['login', 'password'],
   MAIL_SMTP: ['url', 'login', 'password'],
   RECOVERY_CODES: [],
   OTHER_SECRET: ['apiKey'],
 };
 
 const FIELD_LABELS: Record<string, Partial<Record<CredentialFormField, string>>> = {
-  SSH_PRIVATE_KEY: { url: 'Host', login: 'Username', password: 'Private key' },
+  SSH_PRIVATE_KEY: {
+    url: 'Host',
+    login: 'Username',
+    password: 'Private key',
+    passphrase: 'Passphrase (optional)',
+  },
   DATABASE: { url: 'Connection URL', login: 'Username', password: 'Password' },
   API_KEY: { apiKey: 'API key / token', url: 'Dashboard URL' },
   DOMAIN_REGISTRAR: { url: 'Registrar panel URL', login: 'Account email', password: 'Password' },
@@ -49,6 +61,7 @@ const DEFAULT_LABELS: Record<CredentialFormField, string> = {
   apiKey: 'API key',
   phone: 'Phone',
   envData: 'ENV bundle',
+  passphrase: 'Passphrase',
 };
 
 export const CREDENTIAL_TYPES_FOR_CREATE = CREDENTIAL_TYPES.filter(
@@ -67,7 +80,7 @@ export function dynamicFieldSpecsForType(credentialType: string): DynamicFieldSp
         ? 'env'
         : field === 'password' && credentialType === 'SSH_PRIVATE_KEY'
           ? 'textarea'
-          : field === 'password' || field === 'apiKey'
+          : field === 'password' || field === 'passphrase' || field === 'apiKey'
             ? 'password'
             : 'text';
     return { field, label, kind };

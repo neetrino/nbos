@@ -1,4 +1,5 @@
 import type { CredentialManualGrant } from '@/lib/api/credentials';
+import { normalizeCredentialPhones } from '@/features/credentials/utils/credential-phones-normalize';
 
 export type CredentialFormSnapFields = {
   name: string;
@@ -9,7 +10,8 @@ export type CredentialFormSnapFields = {
   providerId: string | null;
   url: string;
   login: string;
-  phone: string;
+  phones: string[];
+  appStorePlatform: string;
   criticality: string;
   nextRotationAt: string;
   manualGrants: CredentialManualGrant[];
@@ -20,8 +22,11 @@ export type CredentialFormRollbackState = CredentialFormSnapFields & {
   providerName: string;
   accessLevel: string;
   password: string;
+  passphrase: string;
   apiKey: string;
   envData: string;
+  phones: string[];
+  appStorePlatform: string;
   snap: string;
 };
 
@@ -41,7 +46,8 @@ export function buildCredentialFormSnap(fields: CredentialFormSnapFields): strin
     providerId: fields.providerId,
     url: fields.url.trim(),
     login: fields.login.trim(),
-    phone: fields.phone.trim(),
+    phones: normalizeCredentialPhones(fields.phones).join('\n'),
+    appStorePlatform: fields.appStorePlatform,
     criticality: fields.criticality,
     nextRotationAt: fields.nextRotationAt.trim(),
     manual,
