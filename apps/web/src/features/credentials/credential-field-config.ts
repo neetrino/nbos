@@ -97,6 +97,7 @@ export function isProviderFirstForType(credentialType: string): boolean {
   return isProviderRequiredForType(credentialType);
 }
 
-export function showsProviderPicker(_credentialType: string): boolean {
-  return true;
+/** Provider catalog applies only to domain, hosting, and mail credential types. */
+export function showsProviderPicker(credentialType: string): boolean {
+  return isProviderRequiredForType(credentialType);
 }

@@ -14,6 +14,7 @@ import {
   classifyCredentialTypeChange,
   clearCredentialDraftForTypeChange,
 } from '@/features/credentials/utils/credential-type-change-policy';
+import { showsProviderPicker } from '@/features/credentials/credential-field-config';
 import { phonesFromCredentialDetail } from '@/features/credentials/utils/credential-phones-normalize';
 import {
   categoriesForVaultScope,
@@ -125,12 +126,20 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setEnvData,
       setUrl,
       setPhones: (v: string[]) => setPhones(v.length > 0 ? v : ['']),
+      clearProvider: () => {
+        setProviderId(null);
+        setProviderName('');
+      },
     }),
     [],
   );
 
   const applyCredentialType = useCallback((nextType: string) => {
     setCredentialType(nextType);
+    if (!showsProviderPicker(nextType)) {
+      setProviderId(null);
+      setProviderName('');
+    }
     if (nextType === 'APP_STORE_ACCOUNT') {
       const platform: AppStorePlatform = 'APPLE';
       setAppStorePlatform(platform);

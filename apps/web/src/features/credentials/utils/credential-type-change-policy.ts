@@ -1,6 +1,9 @@
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 import type { CredentialFormField } from '@/features/credentials/credential-field-config';
-import { fieldsForCredentialType } from '@/features/credentials/credential-field-config';
+import {
+  fieldsForCredentialType,
+  isProviderRequiredForType,
+} from '@/features/credentials/credential-field-config';
 import {
   classifyCredentialTypeChange,
   laneForCredentialType,
@@ -31,6 +34,7 @@ export interface CredentialDraftClearHandlers {
   setEnvData: (v: string) => void;
   setUrl: (v: string) => void;
   setPhones: (phones: string[]) => void;
+  clearProvider?: () => void;
 }
 
 function fieldKeysForType(type: string): Set<CredentialFormField> {
@@ -51,4 +55,5 @@ export function clearCredentialDraftForTypeChange(
   if (!allowed.has('envData')) handlers.setEnvData('');
   if (!allowed.has('url')) handlers.setUrl('');
   if (!allowed.has('phone')) handlers.setPhones(['']);
+  if (!isProviderRequiredForType(toType)) handlers.clearProvider?.();
 }

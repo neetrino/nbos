@@ -7,6 +7,7 @@ import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/cr
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
+import { showsProviderPicker } from '@/features/credentials/credential-field-config';
 import { normalizeCredentialPhones } from '@/features/credentials/utils/credential-phones-normalize';
 import type { AppStorePlatform } from '@/features/credentials/constants/credential-app-store-platform';
 
@@ -55,7 +56,7 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     credentialType: state.credentialType,
     criticality: state.criticality,
     environment: state.environment.trim() || undefined,
-    providerId: state.providerId,
+    providerId: showsProviderPicker(state.credentialType) ? state.providerId : null,
     url: state.url.trim() || undefined,
     login: state.login.trim() || undefined,
     phones: (() => {
