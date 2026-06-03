@@ -188,8 +188,12 @@ export function useCredentialFormSheetActions(
   ]);
 
   const executeSecretAction = useCallback(
-    async (field: CredentialSecretField, mode: 'reveal' | 'copy', pwd?: string) => {
-      if (!state.credentialId) return;
+    async (
+      field: CredentialSecretField,
+      mode: 'reveal' | 'copy',
+      pwd?: string,
+    ): Promise<boolean> => {
+      if (!state.credentialId) return false;
       const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
 
       const run = async (stepUpPassword?: string) => {
@@ -215,30 +219,34 @@ export function useCredentialFormSheetActions(
       if (!needsUnlock) {
         try {
           await run();
+          return true;
         } catch {
           toast.error('Could not access secret');
+          return false;
         }
-        return;
       }
 
       if (pwd) {
         try {
           await run(pwd);
+          return true;
         } catch {
           toast.error('Could not access secret');
+          return false;
         }
-        return;
       }
 
       try {
         await run();
+        return true;
       } catch (error) {
         if (isCredentialVaultStepUpRequired(error)) {
           state.setStepUpField(field);
           state.setStepUpMode(mode);
-          return;
+          return false;
         }
         toast.error('Could not access secret');
+        return false;
       }
     },
     [state, vault],
@@ -260,5 +268,10 @@ export function useCredentialFormSheetActions(
     [executeSecretAction, state],
   );
 
-  return { saving, handleSave, runStepUp, requestSecretAction };
+  const copySecretField = useCallback(
+    (field: CredentialSecretField) => executeSecretAction(field, 'copy'),
+    [executeSecretAction],
+  );
+
+  return { saving, handleSave, runStepUp, requestSecretAction, copySecretField };
 }

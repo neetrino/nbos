@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { AtSign, Check, Copy, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
+import {
+  CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS,
+  CREDENTIAL_VAULT_COPY_FEEDBACK_MS,
+} from '@/features/credentials/constants/credential-vault-copy';
 
 const PASSWORD_MASK = '••••••';
 
@@ -19,7 +22,7 @@ const SECRET_COPY_ICON_CLASS = cn(
 );
 
 const SECRET_PILL_COPIED_CLASS = cn(
-  'bg-emerald-500/15 text-emerald-800 shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)] dark:text-emerald-300',
+  CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS,
   'group-hover/card:bg-emerald-500/15 group-hover/card:shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)]',
 );
 

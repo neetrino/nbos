@@ -89,6 +89,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     detail,
     revealed,
     requestSecretAction,
+    copySecretField,
     showSettings,
     criticality,
     setCriticality,
@@ -152,7 +153,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         secretsPresent={detail?.secretsPresent}
         revealed={revealed}
         onReveal={(field) => requestSecretAction(field, 'reveal')}
-        onCopy={(field) => requestSecretAction(field, 'copy')}
+        onCopy={(field) => copySecretField(field)}
       />
 
       {credentialType === 'RECOVERY_CODES' ? (

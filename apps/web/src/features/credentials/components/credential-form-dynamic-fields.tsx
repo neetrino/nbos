@@ -1,11 +1,13 @@
 'use client';
 
-import { Copy } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS } from '@/features/credentials/constants/credential-vault-copy';
+import { useCredentialVaultCopyFeedback } from '@/features/credentials/hooks/use-credential-vault-copy-feedback';
 import { CredentialEnvTableEditor } from './credential-env-table-editor';
 import { CredentialVaultSecretField } from './credential-vault-secret-field';
 import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
@@ -31,7 +33,7 @@ export interface CredentialFormDynamicFieldsProps {
   secretsPresent?: CredentialSecretsPresent | null;
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
-  onCopy?: (field: CredentialSecretField) => void;
+  onCopy?: (field: CredentialSecretField) => void | Promise<boolean>;
 }
 
 export function CredentialFormDynamicFields({
@@ -88,7 +90,6 @@ export function CredentialFormDynamicFields({
               value={login}
               onChange={onLoginChange}
               showCopy={login.trim().length > 0}
-              onCopy={() => void copyPlainFieldValue(login)}
             />
           );
         }
@@ -119,7 +120,7 @@ export function CredentialFormDynamicFields({
               onDraftChange={onPasswordChange}
               revealedValue={revealed?.password}
               onReveal={() => onReveal?.('password')}
-              onCopy={() => onCopy?.('password')}
+              onCopy={onCopy ? () => onCopy('password') : undefined}
             />
           );
         }
@@ -138,7 +139,7 @@ export function CredentialFormDynamicFields({
               onDraftChange={onPassphraseChange}
               revealedValue={revealed?.passphrase}
               onReveal={() => onReveal?.('passphrase')}
-              onCopy={() => onCopy?.('passphrase')}
+              onCopy={onCopy ? () => onCopy('passphrase') : undefined}
             />
           );
         }
@@ -157,7 +158,7 @@ export function CredentialFormDynamicFields({
               onDraftChange={onApiKeyChange}
               revealedValue={revealed?.apiKey}
               onReveal={() => onReveal?.('apiKey')}
-              onCopy={() => onCopy?.('apiKey')}
+              onCopy={onCopy ? () => onCopy('apiKey') : undefined}
             />
           );
         }
@@ -193,11 +194,16 @@ function PlainTextField({
   );
 }
 
-async function copyPlainFieldValue(value: string) {
+async function copyPlainFieldValue(value: string): Promise<boolean> {
   const text = value.trim();
-  if (!text) return;
+  if (!text) return false;
   await navigator.clipboard.writeText(text);
   toast.success('Copied');
+  return true;
+}
+
+function preventCopyButtonBlur(event: React.MouseEvent<HTMLButtonElement>) {
+  event.preventDefault();
 }
 
 function GuardedTextField({
@@ -207,7 +213,6 @@ function GuardedTextField({
   value,
   onChange,
   showCopy = false,
-  onCopy,
 }: {
   guardKey: string;
   id: string;
@@ -215,24 +220,31 @@ function GuardedTextField({
   value: string;
   onChange: (v: string) => void;
   showCopy?: boolean;
-  onCopy?: () => void;
 }) {
   const guard = useAutofillGuard(guardKey);
+  const { copied, markCopied } = useCredentialVaultCopyFeedback();
+
+  const handleCopy = () => {
+    void copyPlainFieldValue(value).then((ok) => {
+      if (ok) markCopied();
+    });
+  };
 
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
       <div className="relative">
-        {showCopy && onCopy ? (
+        {showCopy ? (
           <div className="absolute top-1/2 right-1 z-10 flex -translate-y-1/2 items-center">
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              onClick={onCopy}
+              onMouseDown={preventCopyButtonBlur}
+              onClick={handleCopy}
               aria-label={`Copy ${label}`}
             >
-              <Copy size={14} />
+              {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
             </Button>
           </div>
         ) : null}
@@ -246,7 +258,10 @@ function GuardedTextField({
             if (!guard.acceptChange) return;
             onChange(e.target.value);
           }}
-          className={cn(showCopy && onCopy ? 'pr-10' : undefined)}
+          className={cn(
+            showCopy ? 'pr-10' : undefined,
+            copied ? CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS : undefined,
+          )}
           {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
         />
       </div>

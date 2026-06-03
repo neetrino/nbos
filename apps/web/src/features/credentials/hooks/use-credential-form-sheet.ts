@@ -52,6 +52,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     handleSave: actions.handleSave,
     runStepUp: actions.runStepUp,
     requestSecretAction: actions.requestSecretAction,
+    copySecretField: actions.copySecretField,
     submitLabel: props.submitLabel ?? 'Save',
     onOpenChange: props.onOpenChange,
   };
