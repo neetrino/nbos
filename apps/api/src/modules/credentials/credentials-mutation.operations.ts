@@ -3,6 +3,7 @@ import type { Prisma } from '@nbos/database';
 import { resolveCredentialCreateDefaults } from '@nbos/shared';
 import type { CredentialsAccessContext } from './credentials-access';
 import type { CreateCredentialDto, UpdateCredentialDto } from './credential-domain.types';
+import { assertCredentialTypeChangeAllowed } from './credential-type-change-guard';
 import { nullableDate } from './credential-date.utils';
 import { encryptSensitiveFields, decryptFieldIfEncrypted } from './credential-crypto.mapper';
 import { mapCredentialForApi } from './credential-api.mapper';
@@ -149,6 +150,8 @@ export async function updateCredential(
     },
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
+
+  assertCredentialTypeChangeAllowed(existing, data);
 
   const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
   const changedFields = detectChangedCredentialFields(data, existing);

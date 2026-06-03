@@ -239,8 +239,8 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ### Фаза 2
 
-- [ ] API guard type change (mirror lanes)
-- [ ] Update `06-Credentials-UX-Decisions.md`
+- [x] API guard type change (mirror lanes)
+- [x] Update `06-Credentials-UX-Decisions.md`
 - [ ] Legacy OTHER migration playbook
 
 ---

@@ -4,31 +4,25 @@
 
 ## Архив
 
-| План                                                                                  | Статус                                                               |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [2.todo-Credentials.archived.md](./docs/archive/todos/2.todo-Credentials.archived.md) | **MVP complete** — vault, Sheet, manual access, security canon, bulk |
+| План                                                                                  | Статус                                                                       |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [1.todo-Access.archived.md](./docs/archive/todos/1.todo-Access.archived.md)           | **Complete** — Platform Access Phase 1 + Phase 2 (Drive/Finance/Tasks reuse) |
+| [2.todo-Credentials.archived.md](./docs/archive/todos/2.todo-Credentials.archived.md) | **MVP complete** — vault, Sheet, manual access, security canon, bulk         |
 
 ## Активно
 
-| План                                   | Фокус                                                     |
-| -------------------------------------- | --------------------------------------------------------- |
-| [1.todo-Access.md](./1.todo-Access.md) | Platform Access **Phase 2** — reuse в Drive/Finance/Tasks |
+_Нет отдельного root todo-плана. Следующие задачи — по модульным cleanup registers и roadmap._
 
 ## Что дальше (по приоритету)
 
-1. **Access — Finance:** payroll-only expense paths review.
-2. **Access — Drive:** multi-link confidentiality (cleanup register).
-3. **Access — Finance:** payroll-only expense paths review.
-4. **Access — Slice D:** manual `ResourceAccessGrant` contract для Drive/Finance (док + shared types).
-5. **Access — Finance:** seller-only boundaries (не весь finance проекта).
-6. **Access — Tasks:** workspace lists без `projectId`; detail auth; Drive multi-link confidentiality.
-7. **Drive UX (backlog):** «Copy link» / restricted link — по канону.
+1. **Drive:** per-file list menu `allowed-actions` + trash lifecycle — `docs/NBOS/02-Modules/11-Drive/07-Drive-Cleanup-Register.md` §9.
+2. **Tasks (optional):** `findByEntity` / checklist access hardening — `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md` (Platform access).
+3. **Drive UX (backlog):** «Copy link» / restricted link — по канону Drive.
 
-## Сделано недавно (Drive Slice F)
+## Сделано недавно (Platform Access + Drive)
 
-- Folder grants API + Share dialog (Credentials-style).
-- Наследование доступа папка → файлы (subtree + `buildDriveExplicitFileGrantWhere`).
-- Grant count на listing; UI: один badge, cards/tiles/list, fluid tiles grid.
+- Platform Access Foundation Phase 2: Finance seller/payroll, Tasks gates, Drive multi-link + Share/Move/Copy API + detail UI `allowed-actions`.
+- Folder grants API + Share dialog; folder→file inherit; grant count на listing.
 
 ## Канон и прогресс
 
@@ -37,4 +31,4 @@
 
 ## Почему split
 
-Access — платформенная модель; Credentials стал первым потребителем foundation. Следующие модули переиспользуют `ProjectTeamMember`, `ProductTeamMember`, `ResourceAccessGrant`, role/personal policies.
+Access и Credentials вынесены в archive после закрытия MVP/Phase 2. Новые scoped-модули опираются на `ProjectTeamMember`, `ProductTeamMember`, `ResourceAccessGrant`, role/personal policies — канон `09-Platform-Access-Foundation.md`.

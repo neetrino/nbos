@@ -41,6 +41,9 @@ export interface CredentialFormSheetStateSlice {
   loadDetail: () => Promise<void>;
   commitFormSnapshot: () => void;
   captureFormRollback: () => () => void;
+  orphanedSecretsAcknowledged: boolean;
+  detailCredentialType: string | null;
+  clearOrphanedSecretsAcknowledged: () => void;
 }
 
 import type { CredentialVaultSessionValue } from '@/features/credentials/hooks/use-credential-vault-session';
@@ -69,6 +72,12 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     secureNotes: state.comment.trim() || undefined,
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
+    acknowledgeOrphanedSecrets:
+      state.orphanedSecretsAcknowledged &&
+      state.detailCredentialType !== null &&
+      state.credentialType !== state.detailCredentialType
+        ? true
+        : undefined,
   };
 }
 
@@ -101,6 +110,7 @@ export function useCredentialFormSheetActions(
           credentialsApi.replaceManualAccess(credentialId, grants),
         ]);
         toast.success('Credential saved');
+        state.clearOrphanedSecretsAcknowledged();
         onSaved?.();
       } catch (err) {
         rollback();

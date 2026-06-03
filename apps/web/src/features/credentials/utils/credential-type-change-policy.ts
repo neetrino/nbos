@@ -1,30 +1,16 @@
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 import type { CredentialFormField } from '@/features/credentials/credential-field-config';
 import { fieldsForCredentialType } from '@/features/credentials/credential-field-config';
+import {
+  classifyCredentialTypeChange,
+  laneForCredentialType,
+  type CredentialTypeLane,
+  type CredentialTypeChangeLevel,
+} from '@nbos/shared';
 
-export type CredentialTypeLane = 'L1' | 'L2' | 'L3';
+export type { CredentialTypeLane, CredentialTypeChangeLevel as TypeChangeLevel };
 
-export type TypeChangeLevel = 'green' | 'red';
-
-const L1_TYPES = new Set([
-  'LOGIN_PASSWORD',
-  'DATABASE',
-  'SSH_PRIVATE_KEY',
-  'DOMAIN_REGISTRAR',
-  'HOSTING_SERVER',
-  'APP_STORE_ACCOUNT',
-  'MAIL_SMTP',
-]);
-
-const L2_TYPES = new Set(['API_KEY', 'OTHER_SECRET']);
-const L3_TYPES = new Set(['ENV_BUNDLE']);
-
-export function laneForCredentialType(credentialType: string): CredentialTypeLane | null {
-  if (L1_TYPES.has(credentialType)) return 'L1';
-  if (L2_TYPES.has(credentialType)) return 'L2';
-  if (L3_TYPES.has(credentialType)) return 'L3';
-  return null;
-}
+export { classifyCredentialTypeChange, laneForCredentialType };
 
 /** Secret columns visible in the form for a given type. */
 export function visibleSecretFieldsForType(credentialType: string): CredentialSecretField[] {
@@ -35,25 +21,6 @@ export function visibleSecretFieldsForType(credentialType: string): CredentialSe
   if (fields.includes('apiKey')) out.push('apiKey');
   if (fields.includes('envData')) out.push('envData');
   return out;
-}
-
-export function classifyCredentialTypeChange(
-  fromType: string,
-  toType: string,
-  secretsPresent: CredentialSecretsPresent | null | undefined,
-): TypeChangeLevel {
-  if (fromType === toType) return 'green';
-  const fromLane = laneForCredentialType(fromType);
-  const toLane = laneForCredentialType(toType);
-  if (fromLane && toLane && fromLane === toLane) return 'green';
-
-  if (!secretsPresent) return 'green';
-
-  const targetVisible = new Set(visibleSecretFieldsForType(toType));
-  const orphaned = (['password', 'passphrase', 'apiKey', 'envData'] as const).filter(
-    (field) => secretsPresent[field] && !targetVisible.has(field),
-  );
-  return orphaned.length > 0 ? 'red' : 'green';
 }
 
 export interface CredentialDraftClearHandlers {

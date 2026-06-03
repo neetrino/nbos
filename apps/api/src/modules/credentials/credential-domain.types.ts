@@ -122,4 +122,6 @@ export interface UpdateCredentialDto {
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
   rotationReason?: string;
+  /** Required when a type change would orphan stored secrets (sheet R1 checkbox). */
+  acknowledgeOrphanedSecrets?: boolean;
 }

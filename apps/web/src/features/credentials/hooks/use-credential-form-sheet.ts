@@ -39,6 +39,9 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       loadDetail: state.loadDetail,
       commitFormSnapshot: state.commitFormSnapshot,
       captureFormRollback: state.captureFormRollback,
+      orphanedSecretsAcknowledged: state.orphanedSecretsAcknowledged,
+      detailCredentialType: state.detailCredentialType,
+      clearOrphanedSecretsAcknowledged: state.clearOrphanedSecretsAcknowledged,
     },
     vault,
   );

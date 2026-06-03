@@ -75,6 +75,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [snap, setSnap] = useState('');
   const [appStorePlatform, setAppStorePlatform] = useState<AppStorePlatform>('APPLE');
   const [pendingTypeChange, setPendingTypeChange] = useState<string | null>(null);
+  const [orphanedSecretsAcknowledged, setOrphanedSecretsAcknowledged] = useState(false);
 
   const categoryOptions = useMemo(() => {
     const scopePool = categoriesForVaultScope(
@@ -112,6 +113,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setRevealed({});
     setAppStorePlatform('APPLE');
     setPendingTypeChange(null);
+    setOrphanedSecretsAcknowledged(false);
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
 
   const draftClearHandlers = useMemo(
@@ -146,9 +148,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       }
       const level = classifyCredentialTypeChange(credentialType, nextType, detail?.secretsPresent);
       if (level === 'green') {
+        setOrphanedSecretsAcknowledged(false);
         applyCredentialType(nextType);
         return;
       }
+      setOrphanedSecretsAcknowledged(false);
       setPendingTypeChange(nextType);
     },
     [applyCredentialType, credentialType, detail?.secretsPresent, draftClearHandlers, isCreate],
@@ -156,9 +160,14 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const confirmPendingTypeChange = useCallback(() => {
     if (!pendingTypeChange) return;
+    setOrphanedSecretsAcknowledged(true);
     applyCredentialType(pendingTypeChange);
     setPendingTypeChange(null);
   }, [applyCredentialType, pendingTypeChange]);
+
+  const clearOrphanedSecretsAcknowledged = useCallback(() => {
+    setOrphanedSecretsAcknowledged(false);
+  }, []);
 
   const applyFormSnapshot = useCallback(
     (fields: {
@@ -316,6 +325,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setNextRotationAt(rotationDate);
       setManualGrants(grants);
       setRevealed({});
+      setOrphanedSecretsAcknowledged(false);
       applyFormSnapshot({
         name: d.name,
         category: d.category,
@@ -453,6 +463,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     loadDetail,
     commitFormSnapshot,
     captureFormRollback,
+    orphanedSecretsAcknowledged,
+    clearOrphanedSecretsAcknowledged,
+    detailCredentialType: detail?.credentialType ?? null,
     accessDenied,
     setAccessDenied,
   };

@@ -3,7 +3,7 @@
 > Платформенная модель access levels для Project/Product-scoped данных. Credentials использует ее первым, но модель не является credentials-only.
 
 **Дата:** 2026-06-02  
-**Статус:** Phase 1 implemented (schema, team APIs, access policies settings, project/product participants UI). Credentials enforcement — Phase 2 after Category vs Type decision.
+**Статус:** Phase 1 + Phase 2 **shipped** (Credentials, Drive, Finance, Tasks reuse). Work plan archived: `docs/archive/todos/1.todo-Access.archived.md`. Optional backlog — module cleanup registers (Drive §9, Tasks «Platform access»).
 
 ---
 
