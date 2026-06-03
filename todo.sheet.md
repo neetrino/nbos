@@ -10,7 +10,9 @@
 | R2  | Orphan secrets                        | Не удалять автоматически; остаются в vault до явной rotation/clear                               |
 | R3  | Category UX                           | Dropdown в **header** рядом с title/settings (как CRM `$Deals` на скрине 2), не блок в body      |
 | R4  | Type UX                               | `Select` с 11 пунктами (MVP); provider — **searchable picker** (`SearchField` / relation-style)  |
-| R5  | Provider catalog                      | **Код** (`packages/shared`), значение — в `credentials.provider` (уже `TEXT`)                    |
+| R5  | Provider catalog                      | **Одна таблица в DB** + inline create в picker (как Project в Deal); `credentials.providerId` FK |
+| R9  | Provider «группы»                     | **Не делаем** отдельные списки mail/hosting/domain — один справочник компаний                    |
+| R10 | Data migration                        | **Не нужна** — тестовые данные, пересид после schema                                             |
 | R6  | OTHER_SECRET                          | Убрать из create UI; enum в DB оставить для legacy; не показывать в type list                    |
 | R7  | APP_STORE platform                    | Один тип `APP_STORE_ACCOUNT` + sub-field `appStorePlatform` + segmented iOS/Android в sheet      |
 | R8  | Новые поля                            | Добавляем в schema когда реально нужны (passphrase, phones[]); reuse `login` = username/email    |
@@ -69,31 +71,47 @@
 
 ---
 
-## 3. Provider (единый каталог)
+## 3. Provider — один справочник компаний (DB)
 
-### Где хранить список
+### Зачем раньше упоминались «группы»
 
-| Что                                       | Где                                                   |
-| ----------------------------------------- | ----------------------------------------------------- |
-| Каталог 40–50 имён, группы, иконки (опц.) | `packages/shared/src/credentials/provider-catalog.ts` |
-| Выбранное значение                        | `credentials.provider` (TEXT, уже в Prisma)           |
-| Admin UI для списка                       | **Не сейчас** — дополняем кодом при необходимости     |
+`mail_smtp`, `hosting_server`, … — идея **подсказок сортировки в dropdown**, не отдельных списков.
 
-**Почему не отдельная DB table:** редкие правки, version control, нет seed/migration на каждый новый хостер; custom «Other» всё равно пишется в `provider` текстом.
+Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picker**, одна таблица.
 
-### Группы в каталоге
+Позже опционально: `capabilities String[]` (`domain`, `hosting`, `mail`) — только hint, не разные списки.
 
-```ts
-type ProviderCatalogGroup = 'domain_registrar' | 'hosting_server' | 'mail_smtp' | 'general'; // API, DB, login, etc.
-```
+### Где в базе
 
-- **DOMAIN_REGISTRAR / HOSTING_SERVER:** picker **первым полем** в body; список top AM/RU/global (~25–30) + `Other` → раскрывает free-text.
-- **MAIL_SMTP:** тот же компонент, группы `mail_smtp` + `hosting_server` (overlap).
-- Остальные типы: optional provider (search), не обязателен.
+**Таблица** `credential_providers` (company-level):
 
-### UI компонент
+- `id`, `name` (display), `slug` (unique, auto из name), `website?`, `isSeeded`, `archivedAt?`
 
-`CredentialProviderPicker` — обёртка над паттерном `SearchField` (static filter, не API search).
+**На credential:** `providerId` FK → `CredentialProvider`. Убрать TEXT `provider` после пересида (R10).
+
+Не путать с `MailProviderConnection` (OAuth/IMAP account).
+
+### API
+
+- `GET /credentials/providers?q=` — search
+- `POST /credentials/providers` — inline create `{ name }`
+
+### UI — `CredentialProviderPicker`
+
+Один компонент для всех типов; обязателен для DOMAIN / HOSTING / MAIL.
+
+Как Project picker: search + **Create provider** внизу dropdown → POST → select.
+
+### Admin UI
+
+| Фаза     | Что                                                 |
+| -------- | --------------------------------------------------- |
+| 1        | Только picker + inline create — **достаточно**      |
+| 2 (опц.) | Settings → Providers: rename, archive, merge дублей |
+
+### Seed
+
+~30 провайдеров в seed; credentials demo пересид после schema.
 
 ---
 
@@ -190,18 +208,25 @@ type ProviderCatalogGroup = 'domain_registrar' | 'hosting_server' | 'mail_smtp' 
 
 ## 10. Implementation phases
 
-### Фаза 1 — UX без schema (можно начать сразу)
+### Фаза 1a — Provider registry (DB + API + picker)
+
+- [ ] Prisma `CredentialProvider` + `credentials.providerId` (drop TEXT `provider` после seed)
+- [ ] Seed ~30 providers (R10: без миграции старых creds)
+- [ ] GET/POST `/credentials/providers`
+- [ ] `CredentialProviderPicker` (SearchField-style + Create provider)
+- [ ] Wire в sheet для DOMAIN/HOSTING/MAIL (+ optional elsewhere)
+
+### Фаза 1b — Sheet UX
 
 - [ ] Header category dropdown (R3)
 - [ ] Reorder body: type first; remove category from body
 - [ ] `credential-field-config` — labels, order, SSH textarea
 - [ ] Type change dialog + checkbox (R1, R2)
 - [ ] Hide `OTHER_SECRET` from create (R6)
-- [ ] `provider-catalog.ts` + `CredentialProviderPicker`
-- [ ] DOMAIN/HOSTING/MAIL: provider on top
-- [ ] APP_STORE: segmented iOS/Android + readonly URL (store platform in `provider` or notes until column)
+- [ ] DOMAIN/HOSTING/MAIL: provider picker первым
+- [ ] APP_STORE: segmented iOS/Android + readonly URL
 
-### Фаза 1b — Schema
+### Фаза 1c — Schema (credentials fields)
 
 - [ ] `passphrase` encrypted column + SSH fields
 - [ ] `phones` array + multi-phone UI with hover Add
