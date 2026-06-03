@@ -18,7 +18,28 @@ One shared table `credential_providers` for hosting, domain, mail, cloud, and Sa
 
 ---
 
-## Seeded providers (39 MVP + 2 demo)
+## Seeded providers (global MVP + Armenia spike + 2 demo)
+
+### Armenia (hosting, domain, telecom)
+
+| Name               | Website                  |
+| ------------------ | ------------------------ |
+| HayHost            | https://hayhost.am       |
+| REG.am             | https://www.reg.am       |
+| Name.am            | https://www.name.am      |
+| TeamCloud          | https://teamcloud.am     |
+| OVIO               | https://ovio.am          |
+| ABCDomain          | https://www.abcdomain.am |
+| Internet.am        | https://www.internet.am  |
+| Arminco            | https://www.arminco.com  |
+| Web.am             | https://www.web.am       |
+| Host.am            | https://www.host.am      |
+| Arpinet            | https://www.arpinet.am   |
+| Ucom               | https://www.ucom.am      |
+| Viva               | https://www.viva.am      |
+| Rostelecom Armenia | https://www.rtarmenia.am |
+| Netsys             | https://www.netsys.am    |
+| Amnic              | https://www.amnic.net    |
 
 ### Hosting & cloud
 
@@ -42,8 +63,6 @@ One shared table `credential_providers` for hosting, domain, mail, cloud, and Sa
 | Name      | Website                   |
 | --------- | ------------------------- |
 | Reg.ru    | https://www.reg.ru        |
-| Name.am   | https://www.name.am       |
-| Amnic     | https://www.amnic.net     |
 | Namecheap | https://www.namecheap.com |
 | GoDaddy   | https://www.godaddy.com   |
 

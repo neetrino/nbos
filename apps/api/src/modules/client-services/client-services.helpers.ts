@@ -51,7 +51,13 @@ export function serializeClientServiceRow<T extends { ourCost?: unknown; clientC
 export const clientServiceListInclude = {
   project: { select: { id: true, code: true, name: true } },
   product: { select: { id: true, name: true } },
-  providerAccount: { select: { id: true, name: true, provider: true } },
+  providerAccount: {
+    select: {
+      id: true,
+      name: true,
+      provider: { select: { id: true, name: true, slug: true, website: true } },
+    },
+  },
   _count: { select: { invoices: true, expensePlans: true, expenses: true } },
   invoices: { select: { moneyStatus: true }, orderBy: { createdAt: 'desc' }, take: 100 },
   expenses: { select: { status: true }, orderBy: { createdAt: 'desc' }, take: 100 },

@@ -29,10 +29,28 @@ const HOSTING_AND_CLOUD_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'Supabase', website: 'https://supabase.com' },
 ];
 
+/** Armenia — hosting, domain, telecom (product spike list). */
+const ARMENIA_PROVIDERS: CredentialProviderSeedRow[] = [
+  { name: 'HayHost', website: 'https://hayhost.am' },
+  { name: 'REG.am', website: 'https://www.reg.am' },
+  { name: 'Name.am', website: 'https://www.name.am' },
+  { name: 'TeamCloud', website: 'https://teamcloud.am' },
+  { name: 'OVIO', website: 'https://ovio.am' },
+  { name: 'ABCDomain', website: 'https://www.abcdomain.am' },
+  { name: 'Internet.am', website: 'https://www.internet.am' },
+  { name: 'Arminco', website: 'https://www.arminco.com' },
+  { name: 'Web.am', website: 'https://www.web.am' },
+  { name: 'Host.am', website: 'https://www.host.am' },
+  { name: 'Arpinet', website: 'https://www.arpinet.am' },
+  { name: 'Ucom', website: 'https://www.ucom.am' },
+  { name: 'Viva', website: 'https://www.viva.am' },
+  { name: 'Rostelecom Armenia', website: 'https://www.rtarmenia.am' },
+  { name: 'Netsys', website: 'https://www.netsys.am' },
+  { name: 'Amnic', website: 'https://www.amnic.net' },
+];
+
 const DOMAIN_REGISTRAR_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'Reg.ru', website: 'https://www.reg.ru' },
-  { name: 'Name.am', website: 'https://www.name.am' },
-  { name: 'Amnic', website: 'https://www.amnic.net' },
   { name: 'Namecheap', website: 'https://www.namecheap.com' },
   { name: 'GoDaddy', website: 'https://www.godaddy.com' },
 ];
@@ -79,6 +97,7 @@ const DEMO_PROVIDERS: CredentialProviderSeedRow[] = [
 
 /** Shared catalog: hosting, domain, mail, cloud, SaaS (one list). Canon: `08-Credential-Provider-Catalog.md`. */
 export const CREDENTIAL_PROVIDER_SEEDS: CredentialProviderSeedRow[] = [
+  ...ARMENIA_PROVIDERS,
   ...HOSTING_AND_CLOUD_PROVIDERS,
   ...DOMAIN_REGISTRAR_PROVIDERS,
   ...MAIL_AND_WORKSPACE_PROVIDERS,
