@@ -1,7 +1,11 @@
 'use client';
 
+import { Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { CredentialEnvTableEditor } from './credential-env-table-editor';
 import { CredentialVaultSecretField } from './credential-vault-secret-field';
 import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
@@ -83,6 +87,8 @@ export function CredentialFormDynamicFields({
               label={spec.label}
               value={login}
               onChange={onLoginChange}
+              showCopy={login.trim().length > 0}
+              onCopy={() => void copyPlainFieldValue(login)}
             />
           );
         }
@@ -187,36 +193,63 @@ function PlainTextField({
   );
 }
 
+async function copyPlainFieldValue(value: string) {
+  const text = value.trim();
+  if (!text) return;
+  await navigator.clipboard.writeText(text);
+  toast.success('Copied');
+}
+
 function GuardedTextField({
   guardKey,
   id,
   label,
   value,
   onChange,
+  showCopy = false,
+  onCopy,
 }: {
   guardKey: string;
   id: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
+  showCopy?: boolean;
+  onCopy?: () => void;
 }) {
   const guard = useAutofillGuard(guardKey);
 
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        name={id}
-        value={value}
-        readOnly={guard.readOnly}
-        onFocus={guard.onFocus}
-        onChange={(e) => {
-          if (!guard.acceptChange) return;
-          onChange(e.target.value);
-        }}
-        {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
-      />
+      <div className="relative">
+        {showCopy && onCopy ? (
+          <div className="absolute top-1/2 right-1 z-10 flex -translate-y-1/2 items-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={onCopy}
+              aria-label={`Copy ${label}`}
+            >
+              <Copy size={14} />
+            </Button>
+          </div>
+        ) : null}
+        <Input
+          id={id}
+          name={id}
+          value={value}
+          readOnly={guard.readOnly}
+          onFocus={guard.onFocus}
+          onChange={(e) => {
+            if (!guard.acceptChange) return;
+            onChange(e.target.value);
+          }}
+          className={cn(showCopy && onCopy ? 'pr-10' : undefined)}
+          {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
+        />
+      </div>
     </div>
   );
 }
