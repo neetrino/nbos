@@ -40,6 +40,7 @@ describe('CredentialsService mutations', () => {
     const created = await service.create(input, 'user-1');
     expect(created.secretsPresent).toEqual({
       password: true,
+      passphrase: false,
       apiKey: true,
       envData: true,
       secureNotes: false,
