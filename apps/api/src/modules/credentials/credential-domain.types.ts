@@ -62,7 +62,7 @@ export interface CreateCredentialDto {
   credentialType?: string;
   criticality?: string;
   environment?: string;
-  provider?: string;
+  providerId?: string | null;
   name: string;
   url?: string;
   login?: string;
@@ -91,7 +91,7 @@ export interface UpdateCredentialDto {
   credentialType?: string;
   criticality?: string;
   environment?: string;
-  provider?: string;
+  providerId?: string | null;
   name?: string;
   url?: string;
   login?: string;

@@ -1,5 +1,6 @@
 import { createCipheriv, createHash, randomBytes } from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
+import { resolveCredentialProviderId, seedCredentialProviders } from './seed-credential-providers';
 import type {
   CredentialAccessLevelEnum,
   CredentialCategoryEnum,
@@ -563,10 +564,16 @@ async function createCredentialRows(
   prisma: PrismaClient,
   rows: CredentialSeedRow[],
   encKey: string,
+  slugToProviderId: Map<string, string>,
 ): Promise<Map<string, string>> {
   const nameToId = new Map<string, string>();
   for (const row of rows) {
     const encrypted = encryptSecrets(ensureDemoSecrets(row), encKey);
+    const providerId = await resolveCredentialProviderId(
+      prisma,
+      encrypted.provider,
+      slugToProviderId,
+    );
     const created = await prisma.credential.create({
       data: {
         name: encrypted.name,
@@ -580,7 +587,7 @@ async function createCredentialRows(
         clientServiceRecordId: encrypted.clientServiceRecordId,
         ownerId: encrypted.ownerId,
         rotationOwnerId: encrypted.rotationOwnerId,
-        provider: encrypted.provider,
+        providerId,
         environment: encrypted.environment,
         url: encrypted.url,
         login: encrypted.login,
@@ -714,11 +721,13 @@ export async function seedCredentialsDemo(
     orderBy: { code: 'asc' },
   });
 
+  const slugToProviderId = await seedCredentialProviders(prisma);
+
   const showcase = buildShowcaseRows(ctx, now).map(ensureDemoSecrets);
   const generated = buildGeneratedRows(projects, ctx, now);
   const allRows = [...showcase, ...generated];
 
-  const nameToId = await createCredentialRows(prisma, allRows, encKey);
+  const nameToId = await createCredentialRows(prisma, allRows, encKey, slugToProviderId);
   await linkDomainsAndClientServices(prisma, nameToId);
   const bindingCount = await seedProductAccessSlotBindings(prisma, ctx, nameToId);
 

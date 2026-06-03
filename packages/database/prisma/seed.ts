@@ -63,6 +63,7 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.expense.deleteMany();
   await prisma.credential.deleteMany();
+  await prisma.credentialProvider.deleteMany();
   await prisma.emailRecipient.deleteMany();
   await prisma.emailMessage.deleteMany();
   await prisma.emailThread.deleteMany();

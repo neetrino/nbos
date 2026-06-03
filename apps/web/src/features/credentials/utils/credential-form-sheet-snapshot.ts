@@ -6,7 +6,7 @@ export type CredentialFormSnapFields = {
   credentialType: string;
   comment: string;
   environment: string;
-  provider: string;
+  providerId: string | null;
   url: string;
   login: string;
   phone: string;
@@ -17,6 +17,7 @@ export type CredentialFormSnapFields = {
 
 /** Full form state restored when a background save fails. */
 export type CredentialFormRollbackState = CredentialFormSnapFields & {
+  providerName: string;
   accessLevel: string;
   password: string;
   apiKey: string;
@@ -37,7 +38,7 @@ export function buildCredentialFormSnap(fields: CredentialFormSnapFields): strin
     credentialType: fields.credentialType,
     comment: fields.comment,
     environment: fields.environment.trim(),
-    provider: fields.provider.trim(),
+    providerId: fields.providerId,
     url: fields.url.trim(),
     login: fields.login.trim(),
     phone: fields.phone.trim(),

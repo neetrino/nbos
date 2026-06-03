@@ -1,6 +1,6 @@
 import type { Prisma } from '@nbos/database';
 import { CREDENTIAL_LIST_SELECT } from './credential-list-select';
-import { toCredentialWithoutSecrets } from './credential-health.utils';
+import { mapCredentialForApi } from './credential-api.mapper';
 import type { CredentialQueryParams } from './credential-domain.types';
 import type { CredentialListSort } from './credential-list-sort';
 import { loadRecentOrderedCredentialIds } from './credential-list-recent-ids';
@@ -10,7 +10,7 @@ import type { CredentialsRuntime } from './credentials-runtime';
 async function fetchCredentialsByOrderedIds(
   runtime: CredentialsRuntime,
   ids: string[],
-): Promise<ReturnType<typeof toCredentialWithoutSecrets>[]> {
+): Promise<ReturnType<typeof mapCredentialForApi>[]> {
   if (ids.length === 0) return [];
   const rows = await runtime.prisma.credential.findMany({
     where: { id: { in: ids } },
@@ -20,7 +20,7 @@ async function fetchCredentialsByOrderedIds(
   return ids
     .map((id) => byId.get(id))
     .filter((row): row is NonNullable<typeof row> => row !== undefined)
-    .map((row) => toCredentialWithoutSecrets(row));
+    .map((row) => mapCredentialForApi(row));
 }
 
 export async function findCredentialListPageStandard(
@@ -45,7 +45,7 @@ export async function findCredentialListPageStandard(
   ]);
 
   return {
-    items: rows.map((row) => toCredentialWithoutSecrets(row)),
+    items: rows.map((row) => mapCredentialForApi(row)),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
   };
 }

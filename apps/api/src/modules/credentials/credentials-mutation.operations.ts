@@ -5,7 +5,7 @@ import type { CredentialsAccessContext } from './credentials-access';
 import type { CreateCredentialDto, UpdateCredentialDto } from './credential-domain.types';
 import { nullableDate } from './credential-date.utils';
 import { encryptSensitiveFields, decryptFieldIfEncrypted } from './credential-crypto.mapper';
-import { toCredentialWithoutSecrets } from './credential-health.utils';
+import { mapCredentialForApi } from './credential-api.mapper';
 import { buildCredentialUpdateData, detectChangedCredentialFields } from './credential-update-data';
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
 import { assertPermanentDeleteStepUp } from './credential-permanent-delete.policy';
@@ -18,6 +18,11 @@ import {
   syncCredentialManualGrants,
 } from './credential-manual-grants';
 import type { CredentialsRuntime } from './credentials-runtime';
+
+const CREDENTIAL_DETAIL_INCLUDE = {
+  project: { select: { id: true, name: true } },
+  provider: { select: { id: true, name: true, slug: true, website: true } },
+} as const;
 
 export async function findCredentialById(
   runtime: CredentialsRuntime,
@@ -35,7 +40,7 @@ export async function findCredentialById(
         'view',
       )),
     },
-    include: { project: { select: { id: true, name: true } } },
+    include: CREDENTIAL_DETAIL_INCLUDE,
   });
   if (!credential) throw new NotFoundException(`Credential ${id} not found`);
 
@@ -47,9 +52,8 @@ export async function findCredentialById(
     projectId: credential.projectId ?? undefined,
   });
 
-  const base = toCredentialWithoutSecrets(credential);
   const comment = decryptComment(runtime, credential.secureNotes);
-  return { ...base, comment };
+  return { ...mapCredentialForApi(credential), comment };
 }
 
 function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | null {
@@ -83,7 +87,7 @@ export async function createCredential(
         (data.criticality as Prisma.CredentialCreateInput['criticality']) ??
         (autoDefaults.criticality as Prisma.CredentialCreateInput['criticality']),
       environment: data.environment,
-      provider: data.provider,
+      providerId: data.providerId ?? undefined,
       name: data.name,
       url: data.url,
       login: data.login,
@@ -100,7 +104,7 @@ export async function createCredential(
       accessLevel,
       allowedEmployees: data.allowedEmployees ?? [],
     },
-    include: { project: { select: { id: true, name: true } } },
+    include: CREDENTIAL_DETAIL_INCLUDE,
   });
 
   await runtime.auditService.log({
@@ -120,7 +124,7 @@ export async function createCredential(
     await syncCredentialManualGrants(runtime.prisma, credential.id, createGrants, userId);
   }
 
-  return toCredentialWithoutSecrets(credential);
+  return mapCredentialForApi(credential);
 }
 
 export async function updateCredential(
@@ -159,7 +163,7 @@ export async function updateCredential(
   const credential = await runtime.prisma.credential.update({
     where: { id },
     data: buildCredentialUpdateData(data, encrypted),
-    include: { project: { select: { id: true, name: true } } },
+    include: CREDENTIAL_DETAIL_INCLUDE,
   });
 
   await runtime.auditService.log({
@@ -187,7 +191,7 @@ export async function updateCredential(
     );
   }
 
-  return toCredentialWithoutSecrets(credential);
+  return mapCredentialForApi(credential);
 }
 
 export async function archiveCredential(

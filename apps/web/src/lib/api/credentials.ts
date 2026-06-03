@@ -55,6 +55,7 @@ export interface CredentialDetail {
   credentialType: string;
   criticality: string;
   environment: string | null;
+  providerId: string | null;
   provider: string | null;
   name: string;
   url: string | null;
@@ -87,7 +88,27 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface CredentialProviderOption {
+  id: string;
+  name: string;
+  slug: string;
+  website: string | null;
+}
+
 export const credentialsApi = {
+  async searchProviders(query = '', limit = 20): Promise<CredentialProviderOption[]> {
+    const resp = await api.get<CredentialProviderOption[]>('/api/credentials/providers', {
+      params: { q: query.trim() || undefined, limit },
+    });
+    return resp.data;
+  },
+  async createProvider(body: {
+    name: string;
+    website?: string;
+  }): Promise<CredentialProviderOption> {
+    const resp = await api.post<CredentialProviderOption>('/api/credentials/providers', body);
+    return resp.data;
+  },
   async getAll(params?: Record<string, unknown>): Promise<ListData<CredentialDetail>> {
     const resp = await api.get<ListData<CredentialDetail>>('/api/credentials', { params });
     return resp.data;

@@ -32,7 +32,9 @@ export function buildCredentialUpdateData(
       criticality: data.criticality as Prisma.CredentialUpdateInput['criticality'],
     }),
     ...(data.environment !== undefined && { environment: data.environment }),
-    ...(data.provider !== undefined && { provider: data.provider }),
+    ...(data.providerId !== undefined && {
+      providerId: data.providerId,
+    }),
     ...(data.name && { name: data.name }),
     ...(data.url !== undefined && { url: data.url }),
     ...(data.login !== undefined && { login: data.login }),

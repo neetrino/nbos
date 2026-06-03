@@ -210,11 +210,11 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ### Фаза 1a — Provider registry (DB + API + picker)
 
-- [ ] Prisma `CredentialProvider` + `credentials.providerId` (drop TEXT `provider` после seed)
-- [ ] Seed ~30 providers (R10: без миграции старых creds)
-- [ ] GET/POST `/credentials/providers`
-- [ ] `CredentialProviderPicker` (SearchField-style + Create provider)
-- [ ] Wire в sheet для DOMAIN/HOSTING/MAIL (+ optional elsewhere)
+- [x] Prisma `CredentialProvider` + `credentials.providerId` (drop TEXT `provider` после seed)
+- [x] Seed ~30 providers (R10: без миграции старых creds)
+- [x] GET/POST `/credentials/providers`
+- [x] `CredentialProviderPicker` (SearchField-style + Create provider)
+- [x] Wire в sheet (type → provider picker → fields)
 
 ### Фаза 1b — Sheet UX
 

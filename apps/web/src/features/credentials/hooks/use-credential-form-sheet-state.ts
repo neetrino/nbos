@@ -41,7 +41,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
   const [criticality, setCriticality] = useState('MEDIUM');
   const [environment, setEnvironment] = useState('');
-  const [provider, setProvider] = useState('');
+  const [providerId, setProviderId] = useState<string | null>(null);
+  const [providerName, setProviderName] = useState('');
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
   const [phone, setPhone] = useState('');
@@ -78,7 +79,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setCredentialType(initialCredentialType ?? 'LOGIN_PASSWORD');
     setCriticality('MEDIUM');
     setEnvironment('');
-    setProvider('');
+    setProviderId(null);
+    setProviderName('');
     setUrl('');
     setLogin('');
     setPhone('');
@@ -100,7 +102,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       credentialType: string;
       criticality: string;
       environment: string;
-      provider: string;
+      providerId: string | null;
       url: string;
       login: string;
       phone: string;
@@ -120,7 +122,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       credentialType,
       criticality,
       environment,
-      provider,
+      providerId,
       url,
       login,
       phone,
@@ -135,7 +137,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     credentialType,
     criticality,
     environment,
-    provider,
+    providerId,
     url,
     login,
     phone,
@@ -151,7 +153,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       credentialType,
       criticality,
       environment,
-      provider,
+      providerId,
+      providerName,
       url,
       login,
       phone,
@@ -173,7 +176,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCredentialType(saved.credentialType);
       setCriticality(saved.criticality);
       setEnvironment(saved.environment);
-      setProvider(saved.provider);
+      setProviderId(saved.providerId);
+      setProviderName(saved.providerName);
       setUrl(saved.url);
       setLogin(saved.login);
       setPhone(saved.phone);
@@ -201,7 +205,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     nextRotationAt,
     password,
     phone,
-    provider,
+    providerId,
+    providerName,
     snap,
     url,
   ]);
@@ -214,7 +219,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCredentialType(d.credentialType);
       setCriticality(d.criticality);
       setEnvironment(d.environment ?? '');
-      setProvider(d.provider ?? '');
+      setProviderId(d.providerId ?? null);
+      setProviderName(d.provider ?? '');
       setUrl(d.url ?? '');
       setLogin(d.login ?? '');
       setPhone(d.phone ?? '');
@@ -233,7 +239,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         credentialType: d.credentialType,
         criticality: d.criticality,
         environment: d.environment ?? '',
-        provider: d.provider ?? '',
+        providerId: d.providerId ?? null,
         url: d.url ?? '',
         login: d.login ?? '',
         phone: d.phone ?? '',
@@ -290,7 +296,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         credentialType,
         comment,
         environment,
-        provider,
+        providerId,
         url,
         login,
         phone,
@@ -315,8 +321,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setCriticality,
     environment,
     setEnvironment,
-    provider,
-    setProvider,
+    providerId,
+    providerName,
+    setProviderSelection: (id: string | null, name: string) => {
+      setProviderId(id);
+      setProviderName(name);
+    },
     url,
     setUrl,
     login,

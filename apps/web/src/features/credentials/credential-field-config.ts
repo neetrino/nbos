@@ -21,3 +21,13 @@ export function fieldsForCredentialType(credentialType: string): CredentialFormF
 export function commentLabelForType(credentialType: string): string {
   return credentialType === 'RECOVERY_CODES' ? 'Recovery codes' : 'Comment';
 }
+
+const PROVIDER_REQUIRED_TYPES = ['DOMAIN_REGISTRAR', 'HOSTING_SERVER', 'MAIL_SMTP'] as const;
+
+export function isProviderRequiredForType(credentialType: string): boolean {
+  return (PROVIDER_REQUIRED_TYPES as readonly string[]).includes(credentialType);
+}
+
+export function showsProviderPicker(_credentialType: string): boolean {
+  return true;
+}

@@ -1,7 +1,7 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -11,10 +11,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
-import { commentLabelForType } from '@/features/credentials/credential-field-config';
+import {
+  commentLabelForType,
+  showsProviderPicker,
+} from '@/features/credentials/credential-field-config';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
+import { CredentialProviderPicker } from './credential-provider-picker';
 import { credentialInheritedAccessSummary } from '@/features/credentials/utils/credential-inherited-access-summary';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
@@ -34,8 +38,9 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setCredentialType,
     categoryOptions,
     categoryLocked,
-    provider,
-    setProvider,
+    providerId,
+    providerName,
+    setProviderSelection,
     environment,
     setEnvironment,
     login,
@@ -104,23 +109,23 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="cred-provider">Provider</Label>
-          <Input
-            id="cred-provider"
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="cred-environment">Environment</Label>
-          <Input
-            id="cred-environment"
-            value={environment}
-            onChange={(e) => setEnvironment(e.target.value)}
-          />
-        </div>
+      {showsProviderPicker(credentialType) ? (
+        <CredentialProviderPicker
+          credentialType={credentialType}
+          providerId={providerId}
+          providerName={providerName}
+          onChange={setProviderSelection}
+        />
+      ) : null}
+
+      <div className="grid gap-2">
+        <Label htmlFor="cred-environment">Environment</Label>
+        <Input
+          id="cred-environment"
+          value={environment}
+          onChange={(e) => setEnvironment(e.target.value)}
+          placeholder="Production, Staging…"
+        />
       </div>
 
       <CredentialFormDynamicFields
