@@ -165,11 +165,12 @@ Shared Prisma participation filters live in `apps/api/src/modules/platform-acces
 
 Finance row access = **RBAC module scopes** (`FINANCE_*` permissions) **plus** project/product participation when data is project-scoped.
 
-| Context               | Rule                                                                    |
-| --------------------- | ----------------------------------------------------------------------- |
-| Global finance ops    | Role with `FINANCE_*` `ALL` / department scope                          |
-| Seller / PM on a deal | `buildProjectParticipationWhere` on invoice/payment/expense `projectId` |
-| Manual override       | Future `ResourceAccessGrant` on finance document (not shipped)          |
+| Context                  | Rule                                                                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Global finance ops       | Role with `FINANCE_*` `ALL` / department scope                                                                        |
+| Seller on a deal         | `buildDealParticipationWhere` on invoice order/deal graph (`finance-deal-participation.where.ts`; role slug `seller`) |
+| PM / delivery on project | `buildProjectParticipationWhere` on invoice/payment/expense `projectId`                                               |
+| Manual override          | Future `ResourceAccessGrant` on finance document (not shipped)                                                        |
 
 Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 

@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
 import { buildProjectParticipationWhere } from '../../platform-access/platform-team-graph.where';
+import { buildInvoiceDealParticipationWhere } from '../finance-deal-participation.where';
 import {
   financeScopedBypassRowFilter,
   loadFinanceScopedEmployeeIds,
@@ -22,13 +23,22 @@ export function buildInvoiceProjectParticipationWhere(
   };
 }
 
+export function buildInvoiceParticipationWhere(
+  scopedEmployeeIds: string[],
+  dealScoped: boolean,
+): Prisma.InvoiceWhereInput {
+  return dealScoped
+    ? buildInvoiceDealParticipationWhere(scopedEmployeeIds)
+    : buildInvoiceProjectParticipationWhere(scopedEmployeeIds);
+}
+
 export async function resolveInvoiceParticipationWhere(
   prisma: InstanceType<typeof PrismaClient>,
   access: FinanceInvoiceAccessContext | undefined,
 ): Promise<Prisma.InvoiceWhereInput | undefined> {
   if (!access || financeScopedBypassRowFilter(access.viewScope)) return undefined;
   const scopedIds = await loadFinanceScopedEmployeeIds(prisma, access);
-  return buildInvoiceProjectParticipationWhere(scopedIds);
+  return buildInvoiceParticipationWhere(scopedIds, Boolean(access.dealScopedParticipation));
 }
 
 export const mergeInvoiceWhere = mergeFinanceWhere<Prisma.InvoiceWhereInput>;

@@ -16,12 +16,13 @@
 
 ## Что дальше (по приоритету)
 
-1. **Access — Finance:** seller-only boundaries.
-2. **Access — Slice D:** reuse contract docs + shared grant resource types.
-3. **Access — Slice D:** manual `ResourceAccessGrant` contract для Drive/Finance (док + shared types).
-4. **Access — Finance:** seller-only boundaries (не весь finance проекта).
-5. **Access — Tasks:** workspace lists без `projectId`; detail auth; Drive multi-link confidentiality.
-6. **Drive UX (backlog):** «Copy link» / restricted link — по канону.
+1. **Access — Slice D:** reuse contract docs + shared grant resource types.
+2. **Access — Tasks:** workspace lists; detail auth.
+3. **Access — Finance:** payroll-only expense paths review.
+4. **Access — Slice D:** manual `ResourceAccessGrant` contract для Drive/Finance (док + shared types).
+5. **Access — Finance:** seller-only boundaries (не весь finance проекта).
+6. **Access — Tasks:** workspace lists без `projectId`; detail auth; Drive multi-link confidentiality.
+7. **Drive UX (backlog):** «Copy link» / restricted link — по канону.
 
 ## Сделано недавно (Drive Slice F)
 

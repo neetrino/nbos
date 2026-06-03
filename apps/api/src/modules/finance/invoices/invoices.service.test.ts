@@ -70,10 +70,30 @@ describe('InvoicesService', () => {
 
     it('scopes list by project participation when view scope is not ALL', async () => {
       await service.findAll({
-        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'ASSIGNED' },
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
       });
       const listCall = prisma.invoice.findMany.mock.calls[0]?.[0] as { where?: { OR?: unknown[] } };
       expect(listCall?.where?.OR).toEqual(
+        expect.arrayContaining([{ project: expect.objectContaining({ OR: expect.any(Array) }) }]),
+      );
+    });
+
+    it('scopes seller list by deal participation, not full project graph', async () => {
+      await service.findAll({
+        access: {
+          employeeId: 'emp-1',
+          departmentIds: [],
+          viewScope: 'OWN',
+          dealScopedParticipation: true,
+        },
+      });
+      const listCall = prisma.invoice.findMany.mock.calls[0]?.[0] as { where?: { OR?: unknown[] } };
+      expect(listCall?.where?.OR).toEqual(
+        expect.arrayContaining([
+          { order: { deal: expect.objectContaining({ OR: expect.any(Array) }) } },
+        ]),
+      );
+      expect(listCall?.where?.OR).not.toEqual(
         expect.arrayContaining([{ project: expect.objectContaining({ OR: expect.any(Array) }) }]),
       );
     });
