@@ -9,8 +9,11 @@ export const SHEET_VIEWPORT_INSET_CLASS = 'top-[2.5vh] bottom-[2.5vh]';
 /** Max panel height; use with {@link SHEET_VIEWPORT_INSET_CLASS} on edge-attached sheets. */
 export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[95vh]';
 
+/** Offset from panel top to floating rail — clears rounded corners (right + center sheets). */
+export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
+
 /** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
-export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.25rem)]';
+export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]';
 
 /** Bottom-center sheet height — flush with viewport bottom (mirrors right sheet edge attach). */
 export const SHEET_CENTER_VIEWPORT_HEIGHT_CLASS = 'h-[90vh] max-h-[90vh]';
@@ -24,7 +27,7 @@ export const SHEET_CENTER_SHELL_CLASS =
 
 /** Rail column inside {@link SHEET_CENTER_SHELL_CLASS} — clears panel top rounded corner. */
 export const SHEET_CENTER_RAIL_COLUMN_CLASS =
-  'pointer-events-auto flex w-11 shrink-0 flex-col items-end gap-1.5 self-start pt-[1.25rem]';
+  'pointer-events-auto flex w-11 shrink-0 flex-col items-end gap-1.5 self-start pt-[1.5rem]';
 
 /** Center sheet panel surface (inside shell — not viewport-fixed). */
 export const SHEET_CENTER_PANEL_SURFACE_CLASS =

@@ -200,7 +200,7 @@ function SheetContent({
       {rightFloatingRail ? (
         <div
           className={cn(
-            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:translate-x-px',
+            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
             SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailVisible
               ? 'pointer-events-auto translate-x-0 opacity-100'
