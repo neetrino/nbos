@@ -486,7 +486,7 @@ function buildGeneratedRows(
     'HOSTING_SERVER',
     'DOMAIN_REGISTRAR',
     'MAIL_SMTP',
-    'OTHER_SECRET',
+    'RECOVERY_CODES',
   ];
   const accessLevels: CredentialAccessLevelEnum[] = [
     'PROJECT_TEAM',

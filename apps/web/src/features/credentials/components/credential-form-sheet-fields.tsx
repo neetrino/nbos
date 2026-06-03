@@ -40,11 +40,7 @@ function TypeSelect({
   onTypeChange: (value: string) => void;
   isCreate: boolean;
 }) {
-  const types = isCreate
-    ? CREDENTIAL_TYPES_FOR_CREATE
-    : CREDENTIAL_TYPES.filter(
-        (t) => t.value !== 'OTHER_SECRET' || credentialType === 'OTHER_SECRET',
-      );
+  const types = isCreate ? CREDENTIAL_TYPES_FOR_CREATE : CREDENTIAL_TYPES;
 
   return (
     <div className="grid gap-2">

@@ -29,7 +29,6 @@ const TYPE_FIELDS: Record<string, CredentialFormField[]> = {
   APP_STORE_ACCOUNT: ['login', 'password'],
   MAIL_SMTP: ['url', 'login', 'password'],
   RECOVERY_CODES: [],
-  OTHER_SECRET: ['apiKey'],
 };
 
 const FIELD_LABELS: Record<string, Partial<Record<CredentialFormField, string>>> = {
@@ -51,7 +50,6 @@ const FIELD_LABELS: Record<string, Partial<Record<CredentialFormField, string>>>
     phone: 'Phone (2FA)',
   },
   LOGIN_PASSWORD: { url: 'URL', login: 'Login', password: 'Password' },
-  OTHER_SECRET: { apiKey: 'Secret value', url: 'Reference URL' },
 };
 
 const DEFAULT_LABELS: Record<CredentialFormField, string> = {
@@ -64,9 +62,7 @@ const DEFAULT_LABELS: Record<CredentialFormField, string> = {
   passphrase: 'Passphrase',
 };
 
-export const CREDENTIAL_TYPES_FOR_CREATE = CREDENTIAL_TYPES.filter(
-  (t) => t.value !== 'OTHER_SECRET',
-);
+export const CREDENTIAL_TYPES_FOR_CREATE = CREDENTIAL_TYPES;
 
 export function fieldsForCredentialType(credentialType: string): CredentialFormField[] {
   return TYPE_FIELDS[credentialType] ?? ['login', 'password'];

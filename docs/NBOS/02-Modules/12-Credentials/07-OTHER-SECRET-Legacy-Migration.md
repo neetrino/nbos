@@ -1,19 +1,17 @@
 # OTHER_SECRET — legacy type migration playbook
 
-> **Status:** accepted · **Date:** 2026-06-03  
-> `OTHER_SECRET` остаётся в `CredentialTypeEnum` для существующих строк; **новые** credentials этим типом не создаются (R6).
+> **Status:** completed (enum removed) · **Date:** 2026-06-03  
+> Migration `20260603180000_remove_credential_type_other_secret`: все строки `OTHER_SECRET` → `API_KEY`, значение удалено из `CredentialTypeEnum`.
 
 ---
 
-## Current policy
+## Historical policy (before enum removal)
 
-| Area          | Rule                                                                  |
-| ------------- | --------------------------------------------------------------------- |
-| Create UI     | `OTHER_SECRET` скрыт из type dropdown (`CREDENTIAL_TYPES_FOR_CREATE`) |
-| Edit UI       | Тип виден только если запись уже `OTHER_SECRET`                       |
-| Vault list    | Badge **Legacy** рядом с типом                                        |
-| Secrets       | Значение в колонке `apiKey` (generic secret)                          |
-| API / DB enum | **Не удалять** до нулевого счётчика строк и явной миграции            |
+| Area      | Rule                                             |
+| --------- | ------------------------------------------------ |
+| Create UI | `OTHER_SECRET` был скрыт из type dropdown        |
+| Secrets   | Generic secret хранился в `apiKey`               |
+| Removal   | Строки → `API_KEY`; enum value удалён (см. ниже) |
 
 ---
 
@@ -76,21 +74,12 @@ When product approves a dedicated type (e.g. `OAUTH_CLIENT`):
 
 ---
 
-## Removing `OTHER_SECRET` from enum (last step only)
+## Enum removal (done)
 
-Preconditions:
-
-- [ ] `COUNT(*) WHERE credential_type = 'OTHER_SECRET'` = 0 (including archived, or explicit archive policy)
-- [ ] No Delivery slots / presets reference `OTHER_SECRET`
-- [ ] Bitrix / import mappings updated (`05-Credentials-Integrations.md`)
-- [ ] Web filters and tests updated
-
-Steps:
-
-1. Ship data migration (if any stragglers) using the reclassification guide.
-2. Prisma migration: map enum away or use PostgreSQL enum replace strategy.
-3. Remove from `CREDENTIAL_TYPES`, field config, shared lane sets.
-4. Full seed + regression on vault list/sheet/reveal.
+- [x] Data: `UPDATE credentials SET credential_type = 'API_KEY' WHERE credential_type = 'OTHER_SECRET'`
+- [x] Migration `20260603180000_remove_credential_type_other_secret`
+- [x] Prisma schema, web `CREDENTIAL_TYPES`, field config, `@nbos/shared` lanes
+- [x] Legacy vault badge removed; seed uses `RECOVERY_CODES` instead of `OTHER_SECRET` in generator pool
 
 ---
 

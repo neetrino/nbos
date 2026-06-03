@@ -16,7 +16,6 @@ const TYPE_BASE_CRITICALITY: Record<string, string> = {
   HOSTING_SERVER: 'HIGH',
   APP_STORE_ACCOUNT: 'HIGH',
   MAIL_SMTP: 'MEDIUM',
-  OTHER_SECRET: 'MEDIUM',
 };
 
 const CRITICALITY_RANK: Record<string, number> = {

@@ -110,10 +110,10 @@ One shared table `credential_providers` for hosting, domain, mail, cloud, and Sa
 
 ### Demo (seed only)
 
-| Name       | Notes                             |
-| ---------- | --------------------------------- |
-| NBOS       | Internal demo project credentials |
-| LegacyMaps | Demo legacy `OTHER_SECRET` row    |
+| Name       | Notes                                     |
+| ---------- | ----------------------------------------- |
+| NBOS       | Internal demo project credentials         |
+| LegacyMaps | Demo archived credential (provider label) |
 
 ---
 

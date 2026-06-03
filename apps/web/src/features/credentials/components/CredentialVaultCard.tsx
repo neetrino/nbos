@@ -15,7 +15,6 @@ import {
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import { isLegacyCredentialType } from '@/features/credentials/utils/credential-type-display';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
 
@@ -109,9 +108,6 @@ export function CredentialVaultCard({
     });
   }
   metaItems.push({ key: 'access', label: accessLabel, variant: 'gray' });
-  if (isLegacyCredentialType(credential.credentialType)) {
-    metaItems.push({ key: 'legacy-type', label: 'Legacy', variant: 'amber' });
-  }
 
   return (
     <div

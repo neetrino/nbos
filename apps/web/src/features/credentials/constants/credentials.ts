@@ -23,7 +23,6 @@ export const CREDENTIAL_TYPES = [
   { value: 'APP_STORE_ACCOUNT', label: 'App Store account' },
   { value: 'MAIL_SMTP', label: 'Mail / SMTP' },
   { value: 'RECOVERY_CODES', label: 'Recovery codes' },
-  { value: 'OTHER_SECRET', label: 'Other secret' },
 ] as const;
 
 export const CREDENTIAL_CRITICALITIES = [

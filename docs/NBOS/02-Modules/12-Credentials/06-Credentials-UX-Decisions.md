@@ -258,10 +258,10 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 - MVP seed list (~38 rows): `08-Credential-Provider-Catalog.md` + `seed-credential-providers.ts`.
 - Picker: search + inline create; one DB table (R5, R9).
 
-### OTHER_SECRET legacy (2026-06-03)
+### OTHER_SECRET (removed 2026-06-03)
 
-- Hidden from create; existing rows show **Legacy** in vault list.
-- Reclassification and enum removal: `07-OTHER-SECRET-Legacy-Migration.md`.
+- Enum value removed; former rows migrated to `API_KEY`.
+- History: `07-OTHER-SECRET-Legacy-Migration.md`.
 
 ---
 

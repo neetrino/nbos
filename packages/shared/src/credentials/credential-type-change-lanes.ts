@@ -22,7 +22,7 @@ const L1_TYPES = new Set([
   'MAIL_SMTP',
 ]);
 
-const L2_TYPES = new Set(['API_KEY', 'OTHER_SECRET']);
+const L2_TYPES = new Set(['API_KEY']);
 const L3_TYPES = new Set(['ENV_BUNDLE']);
 
 /** Non-secret form fields per type (used for draft clearing on web). */
@@ -37,7 +37,6 @@ const TYPE_FORM_FIELDS: Record<string, readonly string[]> = {
   APP_STORE_ACCOUNT: ['login', 'password'],
   MAIL_SMTP: ['url', 'login', 'password'],
   RECOVERY_CODES: [],
-  OTHER_SECRET: ['apiKey'],
 };
 
 export function laneForCredentialType(credentialType: string): CredentialTypeLane | null {

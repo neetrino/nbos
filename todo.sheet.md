@@ -13,7 +13,7 @@
 | R5  | Provider catalog                      | **Одна таблица в DB** + inline create в picker (как Project в Deal); `credentials.providerId` FK |
 | R9  | Provider «группы»                     | **Не делаем** отдельные списки mail/hosting/domain — один справочник компаний                    |
 | R10 | Data migration                        | **Не нужна** — тестовые данные, пересид после schema                                             |
-| R6  | OTHER_SECRET                          | Убрать из create UI; enum в DB оставить для legacy; не показывать в type list                    |
+| R6  | OTHER_SECRET                          | ~~enum удалён~~; строки → `API_KEY`; см. `07-OTHER-SECRET-Legacy-Migration.md`                   |
 | R7  | APP_STORE platform                    | Один тип `APP_STORE_ACCOUNT` + sub-field `appStorePlatform` + segmented iOS/Android в sheet      |
 | R8  | Новые поля                            | Добавляем в schema когда реально нужны (passphrase, phones[]); reuse `login` = username/email    |
 
@@ -161,16 +161,13 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ---
 
-## 7. OTHER_SECRET
+## 7. OTHER_SECRET — done
 
-| Действие                       | Когда                                                     |
-| ------------------------------ | --------------------------------------------------------- |
-| Скрыть из create type dropdown | Фаза 1                                                    |
-| Существующие записи            | Остаются, badge «Legacy» в list                           |
-| Новый тип вместо OTHER         | Когда появится реальный кейс (добавим в enum + migration) |
-| Удаление enum                  | Только после empty table + миграция данных                |
-
-**Не удалять enum в Фазе 1** — риск для DB и ссылок.
+| Действие                       | Статус                                                  |
+| ------------------------------ | ------------------------------------------------------- |
+| Скрыть из create type dropdown | ✅                                                      |
+| Миграция данных → `API_KEY`    | ✅ `20260603180000_remove_credential_type_other_secret` |
+| Удаление enum                  | ✅                                                      |
 
 ---
 
