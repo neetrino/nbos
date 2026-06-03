@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CredentialEnvPasteDialog } from '@/features/credentials/components/credential-env-paste-dialog';
 import { downloadEnvBundleFile } from '@/features/credentials/utils/download-env-bundle-file';
+import { mergeEnvBundleEntries } from '@/features/credentials/utils/merge-env-bundle-entries';
 import { toast } from 'sonner';
 
 export interface CredentialEnvTableEditorProps {
@@ -36,6 +38,8 @@ export function CredentialEnvTableEditor({
 }: CredentialEnvTableEditorProps) {
   const [pasteText, setPasteText] = useState('');
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
+  const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
+  const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
 
   const entries = useMemo(() => {
     if (localEntries.length > 0) return localEntries;
@@ -52,15 +56,27 @@ export function CredentialEnvTableEditor({
     onChange(serializeEnvBundle(next));
   };
 
+  const finishPaste = (next: EnvBundleEntry[], message: string) => {
+    commitEntries(next);
+    setPasteText('');
+    setPendingPasteEntries([]);
+    setPasteDialogOpen(false);
+    toast.success(message);
+  };
+
   const applyPaste = () => {
     const parsed = parseEnvBundleText(pasteText);
     if (parsed.entries.length === 0) {
       toast.error('No valid KEY=value lines found');
       return;
     }
-    commitEntries(parsed.entries);
-    setPasteText('');
-    toast.success(`Applied ${parsed.entries.length} variables`);
+    const hasExisting = entries.some((row) => row.key.trim().length > 0);
+    if (hasExisting) {
+      setPendingPasteEntries(parsed.entries);
+      setPasteDialogOpen(true);
+      return;
+    }
+    finishPaste(parsed.entries, `Applied ${parsed.entries.length} variables`);
   };
 
   const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
@@ -159,6 +175,20 @@ export function CredentialEnvTableEditor({
           Download .env
         </Button>
       </div>
+
+      <CredentialEnvPasteDialog
+        open={pasteDialogOpen}
+        onOpenChange={setPasteDialogOpen}
+        incomingCount={pendingPasteEntries.length}
+        existingCount={entries.filter((row) => row.key.trim()).length}
+        onReplace={() =>
+          finishPaste(pendingPasteEntries, `Replaced with ${pendingPasteEntries.length} variables`)
+        }
+        onMerge={() => {
+          const merged = mergeEnvBundleEntries(entries, pendingPasteEntries);
+          finishPaste(merged, `Merged to ${merged.length} variables`);
+        }}
+      />
     </div>
   );
 }

@@ -24,6 +24,7 @@ export interface CredentialListItem {
   };
   secretsPresent?: {
     password: boolean;
+    passphrase?: boolean;
     apiKey: boolean;
     envData: boolean;
     secureNotes: boolean;

@@ -10,6 +10,10 @@ import {
 } from '@/features/credentials/constants/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
+import {
+  formatCredentialTypeLabel,
+  isLegacyCredentialType,
+} from '@/features/credentials/utils/credential-type-display';
 
 export interface CredentialVaultTableRowCellsProps {
   cred: CredentialListItem;
@@ -38,7 +42,12 @@ export function CredentialVaultTableRowCells({
       </TableCell>
       <TableCell className="text-xs">{cred.category}</TableCell>
       <TableCell className="text-muted-foreground text-xs">
-        {cred.credentialType.replaceAll('_', ' ')}
+        <div className="flex flex-wrap items-center gap-1">
+          <span>{formatCredentialTypeLabel(cred.credentialType)}</span>
+          {isLegacyCredentialType(cred.credentialType) ? (
+            <StatusBadge label="Legacy" variant="amber" className="h-4 px-1.5 py-0 text-[10px]" />
+          ) : null}
+        </div>
       </TableCell>
       <TableCell>
         {criticality && <StatusBadge label={criticality.label} variant={criticality.variant} />}

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import {
   urlForAppStorePlatform,
 } from '@/features/credentials/constants/credential-app-store-platform';
 import { CredentialPhonesField } from './credential-phones-field';
+import { ApplePlatformIcon, GooglePlayPlatformIcon } from './credential-app-store-platform-icons';
 
 export interface CredentialAppStoreFieldsProps {
   platform: AppStorePlatform;
@@ -37,11 +39,13 @@ export function CredentialAppStoreFields({
       <div className="flex gap-2">
         <PlatformChip
           label="Apple"
+          icon={<ApplePlatformIcon />}
           active={platform === 'APPLE'}
           onClick={() => selectPlatform('APPLE')}
         />
         <PlatformChip
           label="Google Play"
+          icon={<GooglePlayPlatformIcon />}
           active={platform === 'GOOGLE'}
           onClick={() => selectPlatform('GOOGLE')}
         />
@@ -57,10 +61,12 @@ export function CredentialAppStoreFields({
 
 function PlatformChip({
   label,
+  icon,
   active,
   onClick,
 }: {
   label: string;
+  icon: ReactNode;
   active: boolean;
   onClick: () => void;
 }) {
@@ -69,12 +75,13 @@ function PlatformChip({
       type="button"
       onClick={onClick}
       className={cn(
-        'border-border flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+        'border-border flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
         active
           ? 'border-primary bg-primary/10 text-foreground'
           : 'text-muted-foreground hover:bg-muted/50',
       )}
     >
+      {icon}
       {label}
     </button>
   );

@@ -241,15 +241,15 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 - [x] API guard type change (mirror lanes)
 - [x] Update `06-Credentials-UX-Decisions.md`
-- [ ] Legacy OTHER migration playbook
+- [x] Legacy OTHER migration playbook (`07-OTHER-SECRET-Legacy-Migration.md`)
 
 ---
 
 ## 11. Открыто (мелочи)
 
 - [ ] Точный список 25–30 providers (AM/RU/global) — product sign-off
-- [ ] Иконки Apple/Google в segmented — assets или lucide
-- [ ] ENV: merge vs replace при paste (default replace with confirm)
+- [x] Иконки Apple/Google в segmented — inline SVG в sheet
+- [x] ENV: merge vs replace при paste (dialog при непустой таблице)
 
 ---
 

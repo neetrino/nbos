@@ -253,6 +253,11 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 - **API** enforces the same rule via `assertCredentialTypeChangeAllowed` (`packages/shared` `classifyCredentialTypeChange` + `UpdateCredentialDto.acknowledgeOrphanedSecrets`).
 - Orphaned secrets remain encrypted in DB; they are hidden in the form until the user switches back to a compatible type.
 
+### OTHER_SECRET legacy (2026-06-03)
+
+- Hidden from create; existing rows show **Legacy** in vault list.
+- Reclassification and enum removal: `07-OTHER-SECRET-Legacy-Migration.md`.
+
 ---
 
 ## Ссылки
