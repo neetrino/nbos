@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, EntityCenterSheetContent } from '@/components/shared';
+import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { CredentialEmergencyAccessPanel } from './credential-emergency-access-panel';
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
@@ -74,12 +75,13 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     accessDenied && credentialId && canUseCredentialEmergencyAccess(me?.role.slug);
 
   const headerResetKey = `${open}|${credentialId ?? 'create'}`;
+  const sourcePageHref = credentialId ? buildCredentialVaultHref(credentialId) : '/credentials';
 
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <EntityCenterSheetContent width="medium">
-          <div className="flex min-h-0 flex-1 flex-col">
+        <EntityCenterSheetContent open={open} width="medium" sourcePageHref={sourcePageHref}>
+          <div className="flex h-full min-h-0 flex-col">
             {!accessDenied && (
               <CredentialFormSheetHeader
                 isCreate={isCreate}

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { SheetContent } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { EntitySheetFloatingRail } from './entity-sheet-floating-rail';
 import {
   CENTER_SHEET_WIDTH_AUXILIARY_CLASS,
   CENTER_SHEET_WIDTH_COMPACT_CLASS,
@@ -30,43 +31,60 @@ type SheetContentProps = React.ComponentProps<typeof SheetContent>;
 
 export type EntityCenterSheetContentProps = Omit<
   SheetContentProps,
-  'side' | 'floatingClose' | 'floatingRail' | 'floatingRailVisible' | 'floatingRailAnchorClassName'
+  | 'side'
+  | 'showCloseButton'
+  | 'floatingClose'
+  | 'floatingRail'
+  | 'floatingRailVisible'
+  | 'floatingRailAnchorClassName'
 > & {
-  /** Default `medium` — matches compact entity forms (credentials, quick settings). */
+  open: boolean;
   width?: EntityCenterSheetWidth;
-  /** Replaces preset content width. */
   contentClassName?: string;
+  sourcePageHref?: string;
+  workspaceHref?: string | null;
+  trailingRail?: ReactNode;
+  floatingRailContent?: ReactNode;
+  showRailActions?: boolean;
   children: ReactNode;
 };
 
 /**
- * Centered sheet that rises from the bottom (max 95vh).
- * Use for compact entity forms — not full Deal/Lead detail cards.
- *
- * Prefer {@link EntityDetailSheetContent} for wide right-side entity detail.
+ * Bottom-center sheet (90vh). Rail is a flex sibling of the panel — always left of the sheet.
  */
 export function EntityCenterSheetContent({
+  open,
   width = 'medium',
   contentClassName,
+  sourcePageHref = '#',
+  workspaceHref,
+  trailingRail,
+  floatingRailContent,
+  showRailActions = true,
   className,
   children,
-  showCloseButton = true,
   ...props
 }: EntityCenterSheetContentProps) {
+  const defaultRail =
+    showRailActions && !floatingRailContent ? (
+      <EntitySheetFloatingRail
+        sourcePageHref={sourcePageHref}
+        workspaceHref={workspaceHref}
+        trailing={trailingRail}
+      />
+    ) : undefined;
+
   return (
     <SheetContent
       side="center"
-      showCloseButton={showCloseButton}
-      floatingClose={false}
-      className={cn(
-        'gap-0 overflow-hidden',
-        resolveCenterWidthClass(width),
-        contentClassName,
-        className,
-      )}
+      showCloseButton={false}
+      floatingClose
+      floatingRailVisible={open}
+      floatingRail={floatingRailContent ?? defaultRail}
+      className={cn('gap-0 p-0', resolveCenterWidthClass(width), contentClassName, className)}
       {...props}
     >
-      {children}
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">{children}</div>
     </SheetContent>
   );
 }

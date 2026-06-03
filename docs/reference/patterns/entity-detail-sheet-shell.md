@@ -14,12 +14,12 @@
 Compact forms that should not use the full right panel (e.g. Credentials vault entry):
 
 ```tsx
-<EntityCenterSheetContent width="medium">
+<EntityCenterSheetContent open={open} width="medium" sourcePageHref={href}>
   {children}
 </EntityCenterSheetContent>
 ```
 
-Max height **95vh**, centered, animates from bottom. No floating rail — close control inside the panel.
+Max height **90vh**, flush with the bottom edge. Rail + panel share one fixed flex shell — rail is always immediately left of the panel (width-independent).
 
 ```tsx
 // Deal-scale entity
