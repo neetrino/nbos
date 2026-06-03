@@ -21,6 +21,12 @@ function makeConfigMock() {
   };
 }
 
+const driveAllAccess = {
+  employeeId: 'user-1',
+  departmentIds: [] as string[],
+  driveScope: 'ALL',
+};
+
 describe('DriveFolderService', () => {
   let prisma: MockPrisma;
   let service: DriveFolderService;
@@ -51,7 +57,11 @@ describe('DriveFolderService', () => {
       sizeBytes: 123n,
       checksum: 'abc',
       deletedAt: null,
+      ownerId: 'user-1',
+      createdById: 'user-1',
+      status: 'ACTIVE',
     });
+    prisma.fileLink.count.mockResolvedValue(0);
     service = new DriveFolderService(
       prisma as never,
       makeR2Mock() as never,
@@ -62,7 +72,7 @@ describe('DriveFolderService', () => {
   it('removes only the folder placement', async () => {
     prisma.driveFolderItem.findFirst.mockResolvedValue({ id: 'placement-1' });
 
-    await service.removeFile('folder-1', 'file-1', 'user-1');
+    await service.removeFile('folder-1', 'file-1', 'user-1', driveAllAccess);
 
     expect(prisma.driveFolderItem.update).toHaveBeenCalledWith({
       where: { id: 'placement-1' },
@@ -74,7 +84,7 @@ describe('DriveFolderService', () => {
     prisma.driveFolderItem.findFirst.mockResolvedValue({ id: 'placement-1' });
     prisma.driveFolderItem.update.mockResolvedValue({ fileAsset: { id: 'file-1' } });
 
-    await service.moveFile('folder-1', 'folder-2', 'file-1', 'user-1');
+    await service.moveFile('folder-1', 'folder-2', 'file-1', 'user-1', driveAllAccess);
 
     expect(prisma.driveFolderItem.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -96,7 +106,7 @@ describe('DriveFolderService', () => {
     prisma.fileAsset.create.mockResolvedValue({ id: 'file-copy', links: [], versions: [] });
     mockSend.mockResolvedValue({});
 
-    const copied = await service.copyFile('folder-2', 'file-1', 'user-1');
+    const copied = await service.copyFile('folder-2', 'file-1', 'user-1', driveAllAccess);
 
     expect(copied.id).toBe('file-copy');
     expect(mockSend).toHaveBeenCalled();
@@ -113,6 +123,12 @@ describe('DriveFolderService', () => {
   });
 
   it('links a copied file to the scoped target folder entity', async () => {
+    prisma.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      code: 'P1',
+      name: 'Alpha Project',
+    });
+    prisma.project.findFirst.mockResolvedValue({ id: 'project-1' });
     prisma.driveFolder.findUnique.mockResolvedValue({
       id: 'folder-2',
       space: 'COMPANY',
@@ -124,7 +140,7 @@ describe('DriveFolderService', () => {
     prisma.fileAsset.create.mockResolvedValue({ id: 'file-copy', links: [], versions: [] });
     mockSend.mockResolvedValue({});
 
-    await service.copyFile('folder-2', 'file-1', 'user-1');
+    await service.copyFile('folder-2', 'file-1', 'user-1', driveAllAccess);
 
     expect(prisma.fileAsset.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -159,7 +175,7 @@ describe('DriveFolderService', () => {
       deletedAt: null,
     });
 
-    await expect(service.copyFile('folder-1', 'file-1', 'user-1')).rejects.toThrow(
+    await expect(service.copyFile('folder-1', 'file-1', 'user-1', driveAllAccess)).rejects.toThrow(
       'Restricted or sensitive Drive files cannot be copied as independent files.',
     );
     expect(prisma.fileAsset.create).not.toHaveBeenCalled();
@@ -176,9 +192,9 @@ describe('DriveFolderService', () => {
     });
     prisma.fileLink.count.mockResolvedValueOnce(1);
 
-    await expect(service.copyFile('personal-folder', 'file-1', 'user-1')).rejects.toThrow(
-      'Business-linked Drive files cannot be copied into Personal Drive.',
-    );
+    await expect(
+      service.copyFile('personal-folder', 'file-1', 'user-1', driveAllAccess),
+    ).rejects.toThrow('Business-linked Drive files cannot be copied into Personal Drive.');
     expect(prisma.fileAsset.create).not.toHaveBeenCalled();
   });
 
@@ -312,9 +328,9 @@ describe('DriveFolderService', () => {
   it('refuses folder placement changes when file is not accessible', async () => {
     prisma.fileAsset.findFirst.mockResolvedValueOnce(null);
 
-    await expect(service.removeFile('folder-1', 'file-1', 'user-1')).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(
+      service.removeFile('folder-1', 'file-1', 'user-1', driveAllAccess),
+    ).rejects.toThrow(NotFoundException);
     expect(prisma.driveFolderItem.findFirst).not.toHaveBeenCalled();
   });
 

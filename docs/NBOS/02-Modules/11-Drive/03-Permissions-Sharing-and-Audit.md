@@ -29,7 +29,8 @@ Can access file =
 - upload session проверяет target context и при create, и при complete;
 - folder placement сам по себе не даёт доступ к файлу, если file-level access не проходит;
 - actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
-- inherited access по `FileLink` graphs использует tiered multi-link confidentiality resolver (`drive-multi-link-confidentiality.where.ts`); оставшийся backlog — полная матрица action grants по канону §3 и context-specific list filters в UI hub sections.
+- inherited access по `FileLink` graphs использует tiered multi-link confidentiality resolver (`drive-multi-link-confidentiality.where.ts`);
+- **Share/Move/Copy matrix:** `drive-file-action-policy.ts` + `assertDriveFileActionAllowed` на link/share/grants/folder move|copy|remove|archive|permanent-delete; `GET /drive/files/:id/allowed-actions` для UI; backlog — hub section filters и trash lifecycle UI по overview §7.4.
 - `PROJECT` уже не опирается на наличие старого linked file: Drive проверяет direct project participation через delivery/sales graph проекта.
 - `WORK_SPACE` уже не опирается на наличие старого linked file: Drive проверяет direct workspace participation через связанные product / extension / project delivery graphs.
 - `INVOICE`, `PAYMENT`, `EXPENSE` в Drive больше не проходят по одному existence-check: для scoped access они должны быть привязаны к доступному project graph.

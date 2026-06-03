@@ -42,14 +42,9 @@ import {
   employeeCanManageDriveFolderGrants,
   employeeHasActiveDriveFolderGrant,
 } from './drive-resource-access-grant.sync';
+import { assertDriveFileActionAllowed } from './drive-file-action-guard.op';
 
 const ROOT_PARENT_TOKEN = 'root';
-const COPY_RESTRICTED_VISIBILITIES = new Set<string>(['PERSONAL', 'RESTRICTED']);
-const COPY_SENSITIVE_CONFIDENTIALITIES = new Set<string>([
-  'FINANCE_SENSITIVE',
-  'LEGAL_SENSITIVE',
-  'SECRET_ADJACENT',
-]);
 
 @Injectable()
 export class DriveFolderService {
@@ -341,7 +336,7 @@ export class DriveFolderService {
     access?: DriveEntityAccess,
   ) {
     await this.assertCanUseFolder(folderId, userId, access);
-    await this.assertCanAccessFileAsset(fileAssetId, access);
+    await this.assertDriveFilePlacementAction(fileAssetId, 'ADD_PLACEMENT', access);
     const existing = await this.prisma.driveFolderItem.findFirst({
       where: { folderId, fileAssetId, itemType: 'FILE', removedAt: null },
     });
@@ -376,7 +371,7 @@ export class DriveFolderService {
     access?: DriveEntityContextAccess,
   ) {
     await this.assertCanUseFolder(folderId, userId, access);
-    await this.assertCanAccessFileAsset(fileAssetId, access);
+    await this.assertDriveFilePlacementAction(fileAssetId, 'REMOVE_PLACEMENT', access);
     const placement = await this.findActiveFilePlacement(folderId, fileAssetId);
     await this.prisma.$transaction(async (tx) => {
       await tx.driveFolderItem.update({
@@ -403,7 +398,7 @@ export class DriveFolderService {
   ) {
     await this.assertCanUseFolder(sourceFolderId, userId, access);
     await this.assertCanUseFolder(targetFolderId, userId, access);
-    await this.assertCanAccessFileAsset(fileAssetId, access);
+    await this.assertDriveFilePlacementAction(fileAssetId, 'MOVE_PLACEMENT', access);
     const placement = await this.findActiveFilePlacement(sourceFolderId, fileAssetId);
     const moved = await this.prisma.$transaction(async (tx) => {
       const row = await tx.driveFolderItem.update({
@@ -431,8 +426,10 @@ export class DriveFolderService {
     access?: DriveEntityAccess,
   ) {
     const targetFolder = await this.assertCanUseFolder(targetFolderId, userId, access);
+    await assertDriveFileActionAllowed(this.prisma, fileAssetId, access, 'COPY', {
+      targetFolderSpace: targetFolder.space,
+    });
     const source = await this.getAccessibleFileAsset(fileAssetId, access);
-    await this.assertCopyAllowed(source.id, source, targetFolder);
     const storageKey = await this.copyStorageObject(
       source.storageKey,
       source.displayName,
@@ -607,7 +604,13 @@ export class DriveFolderService {
     return folder.parentId === null && folder.name === DRIVE_ROOT_STORAGE_FOLDER_NAME;
   }
 
-  private async assertCanAccessFileAsset(fileAssetId: string, access?: DriveEntityAccess) {
+  private async assertDriveFilePlacementAction(
+    fileAssetId: string,
+    action: 'ADD_PLACEMENT' | 'MOVE_PLACEMENT' | 'REMOVE_PLACEMENT',
+    access?: DriveEntityAccess,
+  ) {
+    if (!access?.employeeId) return;
+    await assertDriveFileActionAllowed(this.prisma, fileAssetId, access, action);
     await this.getAccessibleFileAsset(fileAssetId, access);
   }
 
@@ -623,35 +626,6 @@ export class DriveFolderService {
       throw new NotFoundException(`File asset ${fileAssetId} not found`);
     }
     return source;
-  }
-
-  private async assertCopyAllowed(
-    sourceFileAssetId: string,
-    source: { visibility: string; confidentiality: string },
-    targetFolder: {
-      space: DriveSpaceEnum;
-      scopeEntityType: string | null;
-      scopeEntityId: string | null;
-    },
-  ) {
-    if (
-      COPY_RESTRICTED_VISIBILITIES.has(source.visibility) ||
-      COPY_SENSITIVE_CONFIDENTIALITIES.has(source.confidentiality)
-    ) {
-      throw new BadRequestException(
-        'Restricted or sensitive Drive files cannot be copied as independent files.',
-      );
-    }
-    if (targetFolder.space === 'PERSONAL') {
-      const activeLinks = await this.prisma.fileLink.count({
-        where: { fileAssetId: sourceFileAssetId, unlinkedAt: null },
-      });
-      if (activeLinks > 0) {
-        throw new BadRequestException(
-          'Business-linked Drive files cannot be copied into Personal Drive.',
-        );
-      }
-    }
   }
 }
 
