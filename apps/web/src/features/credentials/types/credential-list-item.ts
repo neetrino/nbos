@@ -4,7 +4,6 @@ export interface CredentialListItem {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string | null;
   provider: string | null;
   url: string | null;
   login: string | null;

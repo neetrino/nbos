@@ -6,7 +6,6 @@ export type CredentialFormSnapFields = {
   category: string;
   credentialType: string;
   comment: string;
-  environment: string;
   providerId: string | null;
   url: string;
   login: string;
@@ -42,7 +41,6 @@ export function buildCredentialFormSnap(fields: CredentialFormSnapFields): strin
     category: fields.category,
     credentialType: fields.credentialType,
     comment: fields.comment,
-    environment: fields.environment.trim(),
     providerId: fields.providerId,
     url: fields.url.trim(),
     login: fields.login.trim(),

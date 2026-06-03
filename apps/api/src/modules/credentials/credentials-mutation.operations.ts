@@ -87,7 +87,6 @@ export async function createCredential(
       criticality:
         (data.criticality as Prisma.CredentialCreateInput['criticality']) ??
         (autoDefaults.criticality as Prisma.CredentialCreateInput['criticality']),
-      environment: data.environment,
       providerId: data.providerId ?? undefined,
       name: data.name,
       url: data.url,

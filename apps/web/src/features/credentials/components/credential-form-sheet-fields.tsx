@@ -72,8 +72,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     providerId,
     providerName,
     setProviderSelection,
-    environment,
-    setEnvironment,
     login,
     setLogin,
     password,
@@ -138,16 +136,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     <div className="space-y-6">
       {typeBlock}
       {providerBlock}
-
-      <div className="grid gap-2">
-        <Label htmlFor="cred-environment">Environment</Label>
-        <Input
-          id="cred-environment"
-          value={environment}
-          onChange={(e) => setEnvironment(e.target.value)}
-          placeholder="Production, Staging…"
-        />
-      </div>
 
       {appStoreBlock}
 

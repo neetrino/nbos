@@ -55,7 +55,6 @@ export interface CredentialDetail {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string | null;
   providerId: string | null;
   provider: string | null;
   name: string;

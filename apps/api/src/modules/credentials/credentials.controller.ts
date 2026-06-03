@@ -359,7 +359,6 @@ export class CredentialsController {
       category: string;
       credentialType?: string;
       criticality?: string;
-      environment?: string;
       providerId?: string | null;
       name: string;
       url?: string;
@@ -397,7 +396,6 @@ export class CredentialsController {
       category?: string;
       credentialType?: string;
       criticality?: string;
-      environment?: string;
       providerId?: string | null;
       name?: string;
       url?: string;

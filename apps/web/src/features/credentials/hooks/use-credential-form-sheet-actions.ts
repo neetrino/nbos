@@ -20,7 +20,6 @@ export interface CredentialFormSheetStateSlice {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string;
   providerId: string | null;
   url: string;
   login: string;
@@ -55,7 +54,6 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     category: state.category,
     credentialType: state.credentialType,
     criticality: state.criticality,
-    environment: state.environment.trim() || undefined,
     providerId: showsProviderPicker(state.credentialType) ? state.providerId : null,
     url: state.url.trim() || undefined,
     login: state.login.trim() || undefined,

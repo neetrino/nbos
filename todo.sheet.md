@@ -154,7 +154,6 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 1. Provider (catalog picker, required)
 2. What is stored? _(если create — type уже выбран контекстом)_
 3. URL / Login / Password
-4. Environment
 
 Примеры registrar: Reg.ru, Namecheap, GoDaddy, Cloudflare Registrar, Amnic, …  
 Примеры hosting: Beget, Timeweb, DigitalOcean, Hetzner, AWS, …
@@ -184,7 +183,7 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 1. **What is stored?** (primary `Select`)
 2. Type-specific blocks (provider picker if applicable → secrets → context)
-3. Provider + Environment _(если не дублируется с п.2)_
+3. Provider _(если не в type-block)_
 4. Comment / recovery textarea
 5. Manual access (create SECRET)
 

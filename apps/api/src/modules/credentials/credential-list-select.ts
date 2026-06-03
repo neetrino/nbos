@@ -9,7 +9,6 @@ export const CREDENTIAL_LIST_SELECT = {
   category: true,
   credentialType: true,
   criticality: true,
-  environment: true,
   providerId: true,
   provider: { select: { id: true, name: true } },
   name: true,

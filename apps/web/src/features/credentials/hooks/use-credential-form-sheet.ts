@@ -17,7 +17,6 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       category: state.category,
       credentialType: state.credentialType,
       criticality: state.criticality,
-      environment: state.environment,
       providerId: state.providerId,
       url: state.url,
       login: state.login,

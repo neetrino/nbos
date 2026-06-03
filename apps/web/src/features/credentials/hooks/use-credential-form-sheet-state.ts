@@ -54,7 +54,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [category, setCategory] = useState('SERVICE');
   const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
   const [criticality, setCriticality] = useState('MEDIUM');
-  const [environment, setEnvironment] = useState('');
   const [providerId, setProviderId] = useState<string | null>(null);
   const [providerName, setProviderName] = useState('');
   const [url, setUrl] = useState('');
@@ -96,7 +95,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setCategory(defaultCategoryForVaultScope(vaultScope, initialCategory, allowedCategories));
     setCredentialType(initialCredentialType ?? 'LOGIN_PASSWORD');
     setCriticality('MEDIUM');
-    setEnvironment('');
     setProviderId(null);
     setProviderName('');
     setUrl('');
@@ -184,7 +182,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category: string;
       credentialType: string;
       criticality: string;
-      environment: string;
       providerId: string | null;
       url: string;
       login: string;
@@ -205,7 +202,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category,
       credentialType,
       criticality,
-      environment,
       providerId,
       url,
       login,
@@ -221,7 +217,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     category,
     credentialType,
     criticality,
-    environment,
     providerId,
     url,
     login,
@@ -238,7 +233,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category,
       credentialType,
       criticality,
-      environment,
       providerId,
       providerName,
       url,
@@ -263,7 +257,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCategory(saved.category);
       setCredentialType(saved.credentialType);
       setCriticality(saved.criticality);
-      setEnvironment(saved.environment);
       setProviderId(saved.providerId);
       setProviderName(saved.providerName);
       setUrl(saved.url);
@@ -288,7 +281,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     credentialType,
     criticality,
     envData,
-    environment,
     login,
     manualGrants,
     name,
@@ -310,7 +302,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCategory(d.category);
       setCredentialType(d.credentialType);
       setCriticality(d.criticality);
-      setEnvironment(d.environment ?? '');
       setProviderId(d.providerId ?? null);
       setProviderName(d.provider ?? '');
       const loadedUrl = d.url ?? '';
@@ -340,7 +331,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         category: d.category,
         credentialType: d.credentialType,
         criticality: d.criticality,
-        environment: d.environment ?? '',
         providerId: d.providerId ?? null,
         url: d.url ?? '',
         login: d.login ?? '',
@@ -398,7 +388,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         category,
         credentialType,
         comment,
-        environment,
         providerId,
         url,
         login,
@@ -428,8 +417,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setAppStorePlatform,
     criticality,
     setCriticality,
-    environment,
-    setEnvironment,
     providerId,
     providerName,
     setProviderSelection: (id: string | null, name: string) => {

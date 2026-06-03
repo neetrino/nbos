@@ -215,7 +215,6 @@ Category нужна для группировки и фильтрации, но 
 | `Context`           | По ситуации  | Project/Product/Service/Department                                                           |
 | `Provider`          | По ситуации  | FK `credential_providers` (catalog + inline create); см. `08-Credential-Provider-Catalog.md` |
 | `URL`               | По ситуации  | Страница входа или admin panel                                                               |
-| `Environment`       | По ситуации  | Production / Staging / Development                                                           |
 | `Notes`             | Нет          | Только non-secret notes                                                                      |
 | `Secure Notes`      | Нет          | Secret notes, шифруются                                                                      |
 
@@ -223,7 +222,7 @@ Category нужна для группировки и фильтрации, но 
 
 Рекомендуемый формат названия:
 
-`{Project/Product/Client} - {Provider/Service} - {Environment} - {Purpose}`
+`{Project/Product/Client} - {Provider/Service} - {Purpose}` (при необходимости prod/staging — в тексте названия, отдельного поля нет)
 
 Примеры:
 
