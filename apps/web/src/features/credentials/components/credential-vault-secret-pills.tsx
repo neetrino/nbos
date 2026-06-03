@@ -14,19 +14,21 @@ const SECRET_PILL_CLASS = cn(
   'flex h-7 w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-transparent px-2 text-left shadow-none outline-none',
   'transition-[background-color,box-shadow,opacity] duration-200',
   'group-hover/card:bg-muted/25 group-hover/card:shadow-[inset_0_0_0_1px_var(--border)]',
+  'group-hover:bg-muted/25 group-hover:shadow-[inset_0_0_0_1px_var(--border)]',
 );
 
 const SECRET_COPY_ICON_CLASS = cn(
   'flex size-7 shrink-0 items-center justify-center opacity-0 transition-opacity duration-200',
-  'group-hover/card:opacity-100',
+  'group-hover/card:opacity-100 group-hover:opacity-100',
 );
 
 const SECRET_PILL_COPIED_CLASS = cn(
   CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS,
   'group-hover/card:bg-emerald-500/15 group-hover/card:shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)]',
+  'group-hover:bg-emerald-500/15 group-hover:shadow-[inset_0_0_0_1px_rgb(16_185_129/0.45)]',
 );
 
-interface CredentialVaultSecretPillProps {
+export interface CredentialVaultSecretPillProps {
   icon: ReactNode;
   value: string;
   copyLabel: string;
@@ -35,7 +37,7 @@ interface CredentialVaultSecretPillProps {
   onCopy: () => void;
 }
 
-function CredentialVaultSecretPill({
+export function CredentialVaultSecretPill({
   icon,
   value,
   copyLabel,

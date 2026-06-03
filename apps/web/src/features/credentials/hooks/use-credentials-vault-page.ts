@@ -52,7 +52,6 @@ export function useCredentialsVaultPage() {
   }));
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
-  const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
@@ -134,15 +133,6 @@ export function useCredentialsVaultPage() {
     },
     [pushOpenCredentialToUrl],
   );
-
-  const toggleLogin = useCallback((id: string) => {
-    setVisibleLogins((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
 
   const copyToClipboard = useCallback((text: string) => {
     void navigator.clipboard.writeText(text);
@@ -266,7 +256,6 @@ export function useCredentialsVaultPage() {
     quickFilters,
     viewMode,
     setViewMode,
-    visibleLogins,
     activeTab,
     vaultListScope,
     setVaultListScope,
@@ -285,7 +274,6 @@ export function useCredentialsVaultPage() {
     fetchCredentials: refetch,
     openCreate,
     openCredential,
-    toggleLogin,
     copyToClipboard,
     toggleQuickFilter,
     handleTabChange,

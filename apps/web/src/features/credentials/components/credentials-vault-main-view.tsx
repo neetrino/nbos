@@ -29,7 +29,6 @@ export interface CredentialsVaultMainViewProps {
   showCreate: boolean;
   activeTab: CredentialVaultScope;
   vaultListScope: VaultListScope;
-  visibleLogins: Set<string>;
   quickCategoryChips: readonly CredentialCategoryOption[];
   activeCategory: string | null;
   passwordFlashCredentialId: string | null;
@@ -40,8 +39,6 @@ export interface CredentialsVaultMainViewProps {
   onOpenCredential: (id: string) => void;
   onCopyLogin: (text: string) => void;
   onCopyPassword: (id: string, criticality: string) => void;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
   onRequestDelete: (id: string, name: string) => void;
   onRequestPurge: (id: string, name: string, criticality: string) => void;
   onRestored: () => void;
@@ -58,7 +55,6 @@ export function CredentialsVaultMainView({
   showCreate,
   activeTab,
   vaultListScope,
-  visibleLogins,
   quickCategoryChips,
   activeCategory,
   passwordFlashCredentialId,
@@ -69,8 +65,6 @@ export function CredentialsVaultMainView({
   onOpenCredential,
   onCopyLogin,
   onCopyPassword,
-  onToggleLogin,
-  onCopy,
   onRequestDelete,
   onRequestPurge,
   onRestored,
@@ -124,14 +118,11 @@ export function CredentialsVaultMainView({
       credentials={credentials}
       loading={loading}
       listScope={vaultListScope}
-      visibleLogins={visibleLogins}
-      onToggleLogin={onToggleLogin}
-      onCopy={onCopy}
+      passwordFlashCredentialId={passwordFlashCredentialId}
+      onCopyLogin={onCopyLogin}
+      onCopyPassword={onCopyPassword}
       onCreateOpen={onCreateOpen}
       onOpenCredential={onOpenCredential}
-      onRequestDelete={onRequestDelete}
-      onRequestPurge={onRequestPurge}
-      onRestored={onRestored}
       showCreate={showCreate}
       selection={tableSelection}
     />

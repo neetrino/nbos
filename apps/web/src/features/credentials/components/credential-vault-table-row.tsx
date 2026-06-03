@@ -3,10 +3,7 @@
 import { TableRow, TableCell } from '@/components/ui/table';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { CredentialVaultTableRowCells } from '@/features/credentials/components/credential-vault-table-row-cells';
-import {
-  CredentialVaultTableActionsCell,
-  CredentialVaultTableUrlCell,
-} from '@/features/credentials/components/credential-vault-table-row-actions';
+import { CredentialVaultTableUrlCell } from '@/features/credentials/components/credential-vault-table-row-actions';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
@@ -16,33 +13,27 @@ import {
 export interface CredentialVaultTableRowProps {
   cred: CredentialListItem;
   isArchivedList: boolean;
-  isLoginVisible: boolean;
+  passwordCopied: boolean;
   selectionEnabled: boolean;
   selectionActive: boolean;
   selected: boolean;
   onToggleSelected: () => void;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
+  onCopyLogin: (login: string) => void;
+  onCopyPassword: (credentialId: string, criticality: string) => void;
   onOpenCredential: (id: string) => void;
-  onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string, criticality: string) => void;
-  onRestored: () => void;
 }
 
 export function CredentialVaultTableRow({
   cred,
   isArchivedList,
-  isLoginVisible,
+  passwordCopied,
   selectionEnabled,
   selectionActive,
   selected,
   onToggleSelected,
-  onToggleLogin,
-  onCopy,
+  onCopyLogin,
+  onCopyPassword,
   onOpenCredential,
-  onRequestDelete,
-  onRequestPurge,
-  onRestored,
 }: CredentialVaultTableRowProps) {
   return (
     <TableRow
@@ -75,22 +66,12 @@ export function CredentialVaultTableRow({
       ) : null}
       <CredentialVaultTableRowCells
         cred={cred}
-        isLoginVisible={isLoginVisible}
-        onToggleLogin={onToggleLogin}
-        onCopy={onCopy}
+        passwordCopied={passwordCopied}
+        onCopyLogin={onCopyLogin}
+        onCopyPassword={onCopyPassword}
       />
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CredentialVaultTableUrlCell cred={cred} isArchivedList={isArchivedList} />
-      </TableCell>
-      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-        <CredentialVaultTableActionsCell
-          cred={cred}
-          isArchivedList={isArchivedList}
-          onOpenCredential={onOpenCredential}
-          onRequestDelete={onRequestDelete}
-          onRequestPurge={onRequestPurge}
-          onRestored={onRestored}
-        />
       </TableCell>
     </TableRow>
   );

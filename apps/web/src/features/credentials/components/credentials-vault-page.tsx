@@ -149,7 +149,6 @@ function CredentialsVaultPageContent() {
           showCreate={vault.showCreate}
           activeTab={vault.activeTab}
           vaultListScope={vault.vaultListScope}
-          visibleLogins={vault.visibleLogins}
           quickCategoryChips={vault.quickCategoryChips}
           activeCategory={vault.quickCategory}
           passwordFlashCredentialId={vault.passwordFlashCredentialId}
@@ -180,8 +179,6 @@ function CredentialsVaultPageContent() {
           onOpenCredential={vault.openCredential}
           onCopyLogin={vault.copyToClipboard}
           onCopyPassword={(id, criticality) => void copyVaultPassword({ id, criticality })}
-          onToggleLogin={vault.toggleLogin}
-          onCopy={vault.copyToClipboard}
           onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
           onRequestPurge={(id, name, criticality) =>
             vault.setPurgeTarget({ id, name, criticality })

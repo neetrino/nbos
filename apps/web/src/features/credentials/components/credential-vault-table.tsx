@@ -26,15 +26,12 @@ export interface CredentialVaultTableProps {
   credentials: CredentialListItem[];
   loading: boolean;
   listScope: VaultListScope;
-  visibleLogins: Set<string>;
+  passwordFlashCredentialId: string | null;
   selection?: CredentialVaultTableSelectionProps;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
+  onCopyLogin: (text: string) => void;
+  onCopyPassword: (id: string, criticality: string) => void;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
-  onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string, criticality: string) => void;
-  onRestored: () => void;
   showCreate: boolean;
 }
 
@@ -42,14 +39,11 @@ export function CredentialVaultTable({
   credentials,
   loading,
   listScope,
-  visibleLogins,
-  onToggleLogin,
-  onCopy,
+  passwordFlashCredentialId,
+  onCopyLogin,
+  onCopyPassword,
   onCreateOpen,
   onOpenCredential,
-  onRequestDelete,
-  onRequestPurge,
-  onRestored,
   showCreate,
   selection,
 }: CredentialVaultTableProps) {
@@ -114,17 +108,15 @@ export function CredentialVaultTable({
               </TableHead>
             ) : null}
             <TableHead>Name</TableHead>
+            <TableHead>Login</TableHead>
+            <TableHead>Password</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Risk</TableHead>
-            <TableHead>Provider</TableHead>
-            <TableHead>Login</TableHead>
             <TableHead>Access</TableHead>
-            <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>Rotation</TableHead>
             <TableHead>URL</TableHead>
-            <TableHead className="w-28 text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -133,17 +125,14 @@ export function CredentialVaultTable({
               key={cred.id}
               cred={cred}
               isArchivedList={isArchivedList}
-              isLoginVisible={visibleLogins.has(cred.id)}
+              passwordCopied={passwordFlashCredentialId === cred.id}
               selectionEnabled={selection?.enabled ?? false}
               selectionActive={bulkSelectionStarted}
               selected={selection?.isSelected(cred.id) ?? false}
               onToggleSelected={() => selection?.onToggle(cred.id)}
-              onToggleLogin={onToggleLogin}
-              onCopy={onCopy}
+              onCopyLogin={onCopyLogin}
+              onCopyPassword={onCopyPassword}
               onOpenCredential={onOpenCredential}
-              onRequestDelete={onRequestDelete}
-              onRequestPurge={onRequestPurge}
-              onRestored={onRestored}
             />
           ))}
         </TableBody>
