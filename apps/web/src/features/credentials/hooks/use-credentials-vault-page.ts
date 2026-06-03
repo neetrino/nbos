@@ -25,6 +25,7 @@ import {
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
+import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
 
@@ -89,6 +90,13 @@ export function useCredentialsVaultPage() {
   const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
     listQuery;
 
+  const { pushOpenCredentialToUrl, stripOpenCredentialFromUrl } = useCredentialVaultSheetUrlSync({
+    credentials,
+    loading,
+    setSheetCredentialId,
+    setSheetOpen,
+  });
+
   const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
   const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${pageSize}|${search}|${viewMode}`;
@@ -102,16 +110,24 @@ export function useCredentialsVaultPage() {
     setPage(1);
   }, [search, filters, quickCategory, quickFilters, activeTab, vaultListScope, viewMode, pageSize]);
 
-  const openCreate = useCallback((category?: string) => {
-    setCreatePresetCategory(category);
-    setSheetCredentialId(null);
-    setSheetOpen(true);
-  }, []);
+  const openCreate = useCallback(
+    (category?: string) => {
+      setCreatePresetCategory(category);
+      setSheetCredentialId(null);
+      stripOpenCredentialFromUrl();
+      setSheetOpen(true);
+    },
+    [stripOpenCredentialFromUrl],
+  );
 
-  const openCredential = useCallback((id: string) => {
-    setSheetCredentialId(id);
-    setSheetOpen(true);
-  }, []);
+  const openCredential = useCallback(
+    (id: string) => {
+      setSheetCredentialId(id);
+      setSheetOpen(true);
+      pushOpenCredentialToUrl(id);
+    },
+    [pushOpenCredentialToUrl],
+  );
 
   const toggleLogin = useCallback((id: string) => {
     setVisibleLogins((prev) => {
@@ -165,13 +181,17 @@ export function useCredentialsVaultPage() {
     setQuickFilters(new Set());
   }, [vaultListScope]);
 
-  const closeSheet = useCallback((open: boolean) => {
-    setSheetOpen(open);
-    if (!open) {
-      setSheetCredentialId(null);
-      setCreatePresetCategory(undefined);
-    }
-  }, []);
+  const closeSheet = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        setSheetCredentialId(null);
+        setCreatePresetCategory(undefined);
+        stripOpenCredentialFromUrl();
+      }
+    },
+    [stripOpenCredentialFromUrl],
+  );
 
   const setPageSize = useCallback(
     (size: CredentialVaultPageSizeOption) => {

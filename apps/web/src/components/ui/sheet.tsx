@@ -36,10 +36,12 @@ const SHEET_FLOATING_CLOSE_BUTTON_CLASS =
 function SheetFloatingRailStack({
   floatingRail,
   floatingRailVisible = true,
+  showClose = true,
   className,
 }: {
   floatingRail?: React.ReactNode;
   floatingRailVisible?: boolean;
+  showClose?: boolean;
   className?: string;
 }) {
   return (
@@ -52,23 +54,25 @@ function SheetFloatingRailStack({
         className,
       )}
     >
-      <SheetPrimitive.Close
-        data-slot="sheet-close-floating"
-        render={
-          <Button
-            type="button"
-            variant="default"
-            size="icon"
-            className={SHEET_FLOATING_CLOSE_BUTTON_CLASS}
-            aria-label="Close panel"
-            title="Close"
-          />
-        }
-      >
-        <XIcon className="size-5" />
-        <span className={SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
+      {showClose ? (
+        <SheetPrimitive.Close
+          data-slot="sheet-close-floating"
+          render={
+            <Button
+              type="button"
+              variant="default"
+              size="icon"
+              className={SHEET_FLOATING_CLOSE_BUTTON_CLASS}
+              aria-label="Close panel"
+              title="Close"
+            />
+          }
+        >
+          <XIcon className="size-5" />
+          <span className={SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      ) : null}
       {floatingRail}
     </div>
   );
@@ -190,6 +194,7 @@ function SheetContent({
             <SheetFloatingRailStack
               floatingRail={floatingRail}
               floatingRailVisible={floatingRailVisible}
+              showClose={floatingClose}
             />
           }
           panel={popup}
@@ -216,6 +221,7 @@ function SheetContent({
           <SheetFloatingRailStack
             floatingRail={floatingRail}
             floatingRailVisible={floatingRailVisible}
+            showClose={floatingClose}
           />
         </div>
       ) : null}

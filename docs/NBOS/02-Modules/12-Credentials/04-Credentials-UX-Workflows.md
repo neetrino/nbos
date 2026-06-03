@@ -142,6 +142,8 @@ Secret не показывается в списке.
 
 Click по row/card открывает Sheet. Исключения: `copy login`, `copy secret`, `open URL` работают как quick actions без открытия Sheet.
 
+**Shareable URL (vault list):** пока Sheet открыт, в адресе остаётся `?openCredentialId={uuid}` на `/credentials` (как `openLeadId` / `openExpense`). Floating rail: **Copy link** (текущий URL) и **Open** (та же ссылка в новой вкладке). Вне vault — ссылка из Product/Credentials tab ведёт на vault deep link.
+
 Sheet должен иметь блоки:
 
 - Overview;

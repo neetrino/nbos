@@ -20,7 +20,6 @@ import { CredentialsVaultMainView } from '@/features/credentials/components/cred
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
-import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { PermissionGate } from '@/lib/permissions';
@@ -39,8 +38,6 @@ function CredentialsVaultPageContent() {
   const bindBoardScrollContainer = useCallback((node: HTMLDivElement | null) => {
     setBoardScrollRoot(node);
   }, []);
-
-  useCredentialVaultOpenQuery(vault.openCredential);
 
   const handlePasswordCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);

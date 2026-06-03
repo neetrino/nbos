@@ -15,6 +15,7 @@ import {
   resolveSecretRotationSource,
 } from './credential-archive-secret-versions';
 import {
+  loadCredentialManualGrants,
   manualGrantsFromEmployeeIds,
   syncCredentialManualGrants,
 } from './credential-manual-grants';
@@ -45,16 +46,18 @@ export async function findCredentialById(
   });
   if (!credential) throw new NotFoundException(`Credential ${id} not found`);
 
-  await runtime.auditService.log({
-    entityType: 'credential',
-    entityId: id,
-    action: 'credential.view',
-    userId: access.employeeId,
-    projectId: credential.projectId ?? undefined,
-  });
-
   const comment = decryptComment(runtime, credential.secureNotes);
-  return { ...mapCredentialForApi(credential), comment };
+  const [manualGrants] = await Promise.all([
+    loadCredentialManualGrants(runtime.prisma, id),
+    runtime.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.view',
+      userId: access.employeeId,
+      projectId: credential.projectId ?? undefined,
+    }),
+  ]);
+  return { ...mapCredentialForApi(credential), comment, manualGrants };
 }
 
 function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | null {

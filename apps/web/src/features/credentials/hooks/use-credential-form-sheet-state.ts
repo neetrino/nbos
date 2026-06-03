@@ -349,11 +349,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setLoading(true);
     setAccessDenied(false);
     try {
-      const [detailRow, manual] = await Promise.all([
-        credentialsApi.getById(credentialId),
-        credentialsApi.getManualAccess(credentialId),
-      ]);
-      applyDetail(detailRow, manual.grants);
+      const detailRow = await credentialsApi.getById(credentialId);
+      applyDetail(detailRow, detailRow.manualGrants ?? []);
     } catch {
       setAccessDenied(true);
       toast.error('No access to this credential');

@@ -75,6 +75,8 @@ export interface CredentialDetail {
   createdAt: string;
   updatedAt?: string;
   secretsPresent: CredentialSecretsPresent;
+  /** Manual access grants, returned inline with detail to avoid a second round-trip. */
+  manualGrants?: CredentialManualGrant[];
   health?: {
     status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
     dueInDays: number | null;

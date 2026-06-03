@@ -46,6 +46,10 @@ export type EntityCenterSheetContentProps = Omit<
   trailingRail?: ReactNode;
   floatingRailContent?: ReactNode;
   showRailActions?: boolean;
+  /** When false: no floating X rail — dismiss via backdrop / Esc (credentials vault). */
+  floatingClose?: boolean;
+  /** In-panel close control (only when `floatingClose` is false). */
+  showCloseButton?: boolean;
   children: ReactNode;
 };
 
@@ -61,12 +65,14 @@ export function EntityCenterSheetContent({
   trailingRail,
   floatingRailContent,
   showRailActions = true,
+  floatingClose = true,
+  showCloseButton = false,
   className,
   children,
   ...props
 }: EntityCenterSheetContentProps) {
   const defaultRail =
-    showRailActions && !floatingRailContent ? (
+    floatingClose && showRailActions && !floatingRailContent ? (
       <EntitySheetFloatingRail
         sourcePageHref={sourcePageHref}
         workspaceHref={workspaceHref}
@@ -77,8 +83,8 @@ export function EntityCenterSheetContent({
   return (
     <SheetContent
       side="center"
-      showCloseButton={false}
-      floatingClose
+      showCloseButton={showCloseButton}
+      floatingClose={floatingClose}
       floatingRailVisible={open}
       floatingRail={floatingRailContent ?? defaultRail}
       className={cn('gap-0 p-0', resolveCenterWidthClass(width), contentClassName, className)}
