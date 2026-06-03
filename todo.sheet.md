@@ -247,7 +247,7 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 
 ## 11. Открыто (мелочи)
 
-- [ ] Точный список 25–30 providers (AM/RU/global) — product sign-off
+- [x] Точный список 25–30 providers (AM/RU/global) — `08-Credential-Provider-Catalog.md` + seed
 - [x] Иконки Apple/Google в segmented — inline SVG в sheet
 - [x] ENV: merge vs replace при paste (dialog при непустой таблице)
 

@@ -14,12 +14,8 @@ export interface CredentialProviderSeedRow {
   website?: string;
 }
 
-/** Shared catalog: hosting, domain, mail, cloud, SaaS (one list). */
-export const CREDENTIAL_PROVIDER_SEEDS: CredentialProviderSeedRow[] = [
+const HOSTING_AND_CLOUD_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'Beget', website: 'https://beget.com' },
-  { name: 'Reg.ru', website: 'https://www.reg.ru' },
-  { name: 'Name.am', website: 'https://www.name.am' },
-  { name: 'Amnic', website: 'https://www.amnic.net' },
   { name: 'Timeweb', website: 'https://timeweb.com' },
   { name: 'Selectel', website: 'https://selectel.ru' },
   { name: 'Hostinger', website: 'https://www.hostinger.com' },
@@ -29,31 +25,67 @@ export const CREDENTIAL_PROVIDER_SEEDS: CredentialProviderSeedRow[] = [
   { name: 'Google Cloud', website: 'https://cloud.google.com' },
   { name: 'Vercel', website: 'https://vercel.com' },
   { name: 'Cloudflare', website: 'https://www.cloudflare.com' },
+  { name: 'Neon', website: 'https://neon.tech' },
+  { name: 'Supabase', website: 'https://supabase.com' },
+];
+
+const DOMAIN_REGISTRAR_PROVIDERS: CredentialProviderSeedRow[] = [
+  { name: 'Reg.ru', website: 'https://www.reg.ru' },
+  { name: 'Name.am', website: 'https://www.name.am' },
+  { name: 'Amnic', website: 'https://www.amnic.net' },
   { name: 'Namecheap', website: 'https://www.namecheap.com' },
   { name: 'GoDaddy', website: 'https://www.godaddy.com' },
-  { name: 'Google', website: 'https://google.com' },
-  { name: 'Yandex', website: 'https://yandex.ru' },
-  { name: 'Mail.ru', website: 'https://mail.ru' },
+];
+
+const MAIL_AND_WORKSPACE_PROVIDERS: CredentialProviderSeedRow[] = [
+  { name: 'Google Workspace', website: 'https://workspace.google.com' },
   { name: 'Microsoft', website: 'https://www.microsoft.com' },
   { name: 'Zoho', website: 'https://www.zoho.com' },
+  { name: 'Yandex', website: 'https://yandex.ru' },
+  { name: 'Mail.ru', website: 'https://mail.ru' },
   { name: 'SendGrid', website: 'https://sendgrid.com' },
-  { name: 'Google Workspace', website: 'https://workspace.google.com' },
-  { name: 'Neon', website: 'https://neon.tech' },
+  { name: 'Mailgun', website: 'https://www.mailgun.com' },
+];
+
+const DEV_AND_API_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'GitHub', website: 'https://github.com' },
   { name: 'GitLab', website: 'https://about.gitlab.com' },
   { name: 'Stripe', website: 'https://stripe.com' },
   { name: 'OpenAI', website: 'https://openai.com' },
+  { name: 'Firebase', website: 'https://firebase.google.com' },
+];
+
+const APP_STORE_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'Apple', website: 'https://developer.apple.com' },
   { name: 'Google Play', website: 'https://play.google.com/console' },
-  { name: 'Firebase', website: 'https://firebase.google.com' },
+];
+
+const SAAS_TOOL_PROVIDERS: CredentialProviderSeedRow[] = [
+  { name: 'Google', website: 'https://google.com' },
   { name: 'WordPress', website: 'https://wordpress.com' },
   { name: 'Adobe', website: 'https://www.adobe.com' },
   { name: 'Figma', website: 'https://www.figma.com' },
   { name: 'HubSpot', website: 'https://www.hubspot.com' },
   { name: 'Telegram', website: 'https://telegram.org' },
   { name: 'Slack', website: 'https://slack.com' },
+  { name: 'Notion', website: 'https://www.notion.so' },
+];
+
+/** Demo-only labels referenced in `seed-credentials-demo.ts`. */
+const DEMO_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'NBOS', website: 'https://nbos.local' },
   { name: 'LegacyMaps' },
+];
+
+/** Shared catalog: hosting, domain, mail, cloud, SaaS (one list). Canon: `08-Credential-Provider-Catalog.md`. */
+export const CREDENTIAL_PROVIDER_SEEDS: CredentialProviderSeedRow[] = [
+  ...HOSTING_AND_CLOUD_PROVIDERS,
+  ...DOMAIN_REGISTRAR_PROVIDERS,
+  ...MAIL_AND_WORKSPACE_PROVIDERS,
+  ...DEV_AND_API_PROVIDERS,
+  ...APP_STORE_PROVIDERS,
+  ...SAAS_TOOL_PROVIDERS,
+  ...DEMO_PROVIDERS,
 ];
 
 /** Inserts catalog rows; returns slug → id (includes upsert for re-runs). */

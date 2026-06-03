@@ -253,6 +253,11 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 - **API** enforces the same rule via `assertCredentialTypeChangeAllowed` (`packages/shared` `classifyCredentialTypeChange` + `UpdateCredentialDto.acknowledgeOrphanedSecrets`).
 - Orphaned secrets remain encrypted in DB; they are hidden in the form until the user switches back to a compatible type.
 
+### Provider catalog (2026-06-03)
+
+- MVP seed list (~38 rows): `08-Credential-Provider-Catalog.md` + `seed-credential-providers.ts`.
+- Picker: search + inline create; one DB table (R5, R9).
+
 ### OTHER_SECRET legacy (2026-06-03)
 
 - Hidden from create; existing rows show **Legacy** in vault list.

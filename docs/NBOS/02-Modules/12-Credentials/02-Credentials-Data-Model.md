@@ -204,20 +204,20 @@ Category нужна для группировки и фильтрации, но 
 
 ### Общие Поля
 
-| Поле                | Обязательное | Описание                                                                                   |
-| ------------------- | ------------ | ------------------------------------------------------------------------------------------ |
-| `Title`             | Да           | Понятное название credential                                                               |
-| `Type`              | Да           | Login, API Key, Database, SSH, ENV и т.д.                                                  |
-| `Category`          | Да           | Domain, Hosting, Service, Finance и т.д.; preset из scope/context/board/slot, где возможно |
-| `Owner / Custodian` | Да           | Кто отвечает за credential                                                                 |
-| `Access Policy`     | Да           | Кто может видеть/копировать secret                                                         |
-| `Criticality`       | Да           | Low / Medium / High / Critical                                                             |
-| `Context`           | По ситуации  | Project/Product/Service/Department                                                         |
-| `Provider`          | По ситуации  | Beget, Vercel, Cloudflare, Neon                                                            |
-| `URL`               | По ситуации  | Страница входа или admin panel                                                             |
-| `Environment`       | По ситуации  | Production / Staging / Development                                                         |
-| `Notes`             | Нет          | Только non-secret notes                                                                    |
-| `Secure Notes`      | Нет          | Secret notes, шифруются                                                                    |
+| Поле                | Обязательное | Описание                                                                                     |
+| ------------------- | ------------ | -------------------------------------------------------------------------------------------- |
+| `Title`             | Да           | Понятное название credential                                                                 |
+| `Type`              | Да           | Login, API Key, Database, SSH, ENV и т.д.                                                    |
+| `Category`          | Да           | Domain, Hosting, Service, Finance и т.д.; preset из scope/context/board/slot, где возможно   |
+| `Owner / Custodian` | Да           | Кто отвечает за credential                                                                   |
+| `Access Policy`     | Да           | Кто может видеть/копировать secret                                                           |
+| `Criticality`       | Да           | Low / Medium / High / Critical                                                               |
+| `Context`           | По ситуации  | Project/Product/Service/Department                                                           |
+| `Provider`          | По ситуации  | FK `credential_providers` (catalog + inline create); см. `08-Credential-Provider-Catalog.md` |
+| `URL`               | По ситуации  | Страница входа или admin panel                                                               |
+| `Environment`       | По ситуации  | Production / Staging / Development                                                           |
+| `Notes`             | Нет          | Только non-secret notes                                                                      |
+| `Secure Notes`      | Нет          | Secret notes, шифруются                                                                      |
 
 ### Naming Convention
 
