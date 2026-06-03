@@ -8,6 +8,13 @@ export interface ExpensePayrollListScopeParams {
 
 const PAYROLL_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 
+/** Pay Now / payroll drill-down: project participation must not hide salary-line expenses. */
+export function isPayrollExpenseListScope(params: ExpensePayrollListScopeParams): boolean {
+  const month = normalizePayrollMonthParam(params.payrollMonth);
+  const employeeId = params.payrollEmployeeId?.trim() || undefined;
+  return params.payrollLinked === true || Boolean(month || employeeId);
+}
+
 /** Applies payroll salary-line scope to expense list/stats `where` (NBOS Pay Now). */
 export function applyPayrollExpenseListScope(
   where: Prisma.ExpenseWhereInput,

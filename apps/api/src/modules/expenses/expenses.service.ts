@@ -53,7 +53,8 @@ import {
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import { mergeFinanceWhere } from '../finance/finance-scoped-access';
-import { resolveExpenseParticipationWhere } from '../finance/finance-module-participation.where';
+import { assertExpenseAccessible } from './expense-access.op';
+import { resolveExpenseListParticipationWhere } from './expense-list-participation.op';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -122,7 +123,11 @@ export class ExpensesService {
       payrollMonth,
       payrollEmployeeId,
     });
-    const participationWhere = await resolveExpenseParticipationWhere(this.prisma, params.access);
+    const participationWhere = await resolveExpenseListParticipationWhere(
+      this.prisma,
+      params.access,
+      { payrollLinked, payrollMonth, payrollEmployeeId },
+    );
     const where = mergeFinanceWhere(baseWhere, participationWhere);
 
     const [items, total] = await Promise.all([
@@ -165,7 +170,8 @@ export class ExpensesService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, id, access);
     const row = await this.prisma.expense.findUnique({
       where: { id },
       include: {
@@ -192,15 +198,21 @@ export class ExpensesService {
     };
   }
 
-  async addPayment(id: string, input: AddExpensePaymentInput) {
+  async addPayment(
+    id: string,
+    input: AddExpensePaymentInput,
+    access?: ExpenseQueryParams['access'],
+  ) {
+    await assertExpenseAccessible(this.prisma, id, access);
     await createExpensePaymentRecord(this.prisma, id, input, {
       notify: this.notifications,
       journal: this.operationalJournal,
     });
-    return this.findById(id);
+    return this.findById(id, access);
   }
 
-  async deletePayment(expenseId: string, paymentId: string) {
+  async deletePayment(expenseId: string, paymentId: string, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, expenseId, access);
     const row = await this.prisma.expensePayment.findFirst({
       where: { id: paymentId, expenseId },
     });
@@ -211,10 +223,10 @@ export class ExpensesService {
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
     await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
     await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId, this.notifications);
-    return this.findById(expenseId);
+    return this.findById(expenseId, access);
   }
 
-  async create(data: CreateExpenseDto) {
+  async create(data: CreateExpenseDto, access?: ExpenseQueryParams['access']) {
     if (data.expensePlanId) {
       const plan = await this.prisma.expensePlan.findUnique({
         where: { id: data.expensePlanId },
@@ -270,10 +282,11 @@ export class ExpensesService {
       projectId: created.projectId,
     });
 
-    return this.findById(created.id);
+    return this.findById(created.id, access);
   }
 
-  async update(id: string, data: UpdateExpenseDto) {
+  async update(id: string, data: UpdateExpenseDto, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, id, access);
     const existing = await this.prisma.expense.findUnique({
       where: { id },
       select: { dueDate: true },
@@ -340,11 +353,11 @@ export class ExpensesService {
     if (data.amount !== undefined) {
       await syncExpenseStatusWithPaymentLedger(this.prisma, id);
     }
-    return this.findById(id);
+    return this.findById(id, access);
   }
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, id, access);
     return this.prisma.expense.delete({ where: { id } });
   }
 
@@ -377,7 +390,15 @@ export class ExpensesService {
       payrollMonth: params.payrollMonth,
       payrollEmployeeId: params.payrollEmployeeId,
     });
-    const participationWhere = await resolveExpenseParticipationWhere(this.prisma, params.access);
+    const participationWhere = await resolveExpenseListParticipationWhere(
+      this.prisma,
+      params.access,
+      {
+        payrollLinked: params.payrollLinked === true,
+        payrollMonth: params.payrollMonth,
+        payrollEmployeeId: params.payrollEmployeeId,
+      },
+    );
     const statsWhere = mergeFinanceWhere(scopeWhere, participationWhere);
 
     return fetchExpenseStatsAggregates(this.prisma, statsWhere);

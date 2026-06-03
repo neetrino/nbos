@@ -169,18 +169,21 @@ export class ExpensesController {
   }
 
   @Get(':id')
+  @RequirePermission('FINANCE_EXPENSES', 'VIEW')
   @ApiOperation({
     summary: 'Get expense by ID',
     description:
       'Ledger JSON may include linkedPayrollRun (payroll) and linkedExpensePlan (expense plan link).',
   })
-  async findOne(@Param('id') id: string) {
-    return this.expensesService.findById(id);
+  async findOne(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.expensesService.findById(id, financeExpenseAccessFromUser(user));
   }
 
   @Post(':id/payments')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @ApiOperation({ summary: 'Record a partial or full payment against an expense' })
   async addPayment(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: {
@@ -189,21 +192,29 @@ export class ExpensesController {
       notes?: string;
     },
   ) {
-    return this.expensesService.addPayment(id, body);
+    return this.expensesService.addPayment(id, body, financeExpenseAccessFromUser(user));
   }
 
   @Delete(':expenseId/payments/:paymentId')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @ApiOperation({ summary: 'Remove a recorded payment line from an expense' })
   async removePayment(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('expenseId') expenseId: string,
     @Param('paymentId') paymentId: string,
   ) {
-    return this.expensesService.deletePayment(expenseId, paymentId);
+    return this.expensesService.deletePayment(
+      expenseId,
+      paymentId,
+      financeExpenseAccessFromUser(user),
+    );
   }
 
   @Post()
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @ApiOperation({ summary: 'Create expense' })
   async create(
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       name: string;
@@ -221,12 +232,14 @@ export class ExpensesController {
       expensePlanId?: string;
     },
   ) {
-    return this.expensesService.create(body);
+    return this.expensesService.create(body, financeExpenseAccessFromUser(user));
   }
 
   @Put(':id')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @ApiOperation({ summary: 'Update expense' })
   async update(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: {
@@ -244,13 +257,14 @@ export class ExpensesController {
       notes?: string;
     },
   ) {
-    return this.expensesService.update(id, body);
+    return this.expensesService.update(id, body, financeExpenseAccessFromUser(user));
   }
 
   @Delete(':id')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete expense' })
-  async remove(@Param('id') id: string) {
-    await this.expensesService.delete(id);
+  async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    await this.expensesService.delete(id, financeExpenseAccessFromUser(user));
   }
 }
