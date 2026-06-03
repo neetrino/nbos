@@ -1,14 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Eye, Copy } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { CredentialEnvTableEditor } from './credential-env-table-editor';
+import { CredentialVaultSecretField } from './credential-vault-secret-field';
 import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
+import { CREDENTIAL_VAULT_INPUT_IGNORE_PROPS } from '@/features/credentials/constants/credential-vault-input-props';
+import { useAutofillGuard } from '@/features/credentials/hooks/use-credential-field-autofill-guard';
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialFormDynamicFieldsProps {
@@ -30,16 +28,6 @@ export interface CredentialFormDynamicFieldsProps {
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
   onCopy?: (field: CredentialSecretField) => void;
-}
-
-/** Chrome treats login+password as sign-in; block injected values until user focuses. */
-function useAutofillGuard(scopeKey: string) {
-  const [editable, setEditable] = useState(false);
-  useEffect(() => {
-    setEditable(false);
-  }, [scopeKey]);
-  const onFocus = useCallback(() => setEditable(true), []);
-  return { readOnly: !editable, onFocus, acceptChange: editable };
 }
 
 export function CredentialFormDynamicFields({
@@ -113,11 +101,12 @@ export function CredentialFormDynamicFields({
 
         if (spec.field === 'password') {
           return (
-            <SecretField
+            <CredentialVaultSecretField
               key={spec.field}
               guardKey={`${guardScope}-password`}
               fieldId="nbos-cred-password"
-              spec={spec}
+              label={spec.label}
+              kind={spec.kind === 'textarea' ? 'textarea' : 'password'}
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.password)}
               draft={password}
@@ -131,11 +120,12 @@ export function CredentialFormDynamicFields({
 
         if (spec.field === 'passphrase') {
           return (
-            <SecretField
+            <CredentialVaultSecretField
               key={spec.field}
               guardKey={`${guardScope}-passphrase`}
               fieldId="nbos-cred-passphrase"
-              spec={spec}
+              label={spec.label}
+              kind="password"
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.passphrase)}
               draft={passphrase}
@@ -149,11 +139,12 @@ export function CredentialFormDynamicFields({
 
         if (spec.field === 'apiKey') {
           return (
-            <SecretField
+            <CredentialVaultSecretField
               key={spec.field}
               guardKey={`${guardScope}-api-key`}
               fieldId="nbos-cred-api-key"
-              spec={spec}
+              label={spec.label}
+              kind="password"
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.apiKey)}
               draft={apiKey}
@@ -185,7 +176,13 @@ function PlainTextField({
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} autoComplete="off" />
+      <Input
+        id={id}
+        name={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
+      />
     </div>
   );
 }
@@ -218,102 +215,8 @@ function GuardedTextField({
           if (!guard.acceptChange) return;
           onChange(e.target.value);
         }}
-        autoComplete="off"
+        {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
       />
-    </div>
-  );
-}
-
-function SecretField({
-  guardKey,
-  fieldId,
-  spec,
-  isExisting,
-  hasStored,
-  draft,
-  onDraftChange,
-  revealedValue,
-  onReveal,
-  onCopy,
-}: {
-  guardKey: string;
-  fieldId: string;
-  spec: { label: string; kind: string; placeholder?: string };
-  isExisting: boolean;
-  hasStored: boolean;
-  draft: string;
-  onDraftChange: (v: string) => void;
-  revealedValue?: string;
-  onReveal?: () => void;
-  onCopy?: () => void;
-}) {
-  const guard = useAutofillGuard(guardKey);
-  const showActions = isExisting && hasStored;
-  const displayValue = draft.length > 0 ? draft : (revealedValue ?? '');
-  const inputType = revealedValue || draft.length > 0 ? 'text' : 'password';
-  const actionPadding = showActions ? 'pr-20' : undefined;
-
-  const handleChange = (next: string) => {
-    if (!guard.acceptChange) return;
-    onDraftChange(next);
-  };
-
-  const actionButtons = showActions ? (
-    <div
-      className={cn(
-        'absolute z-10 flex items-center gap-0.5',
-        spec.kind === 'textarea' ? 'top-2 right-2' : 'top-1/2 right-1 -translate-y-1/2',
-      )}
-    >
-      <Button type="button" variant="ghost" size="icon-sm" onClick={onReveal}>
-        <Eye size={14} aria-label={`Reveal ${spec.label}`} />
-      </Button>
-      <Button type="button" variant="ghost" size="icon-sm" onClick={onCopy}>
-        <Copy size={14} aria-label={`Copy ${spec.label}`} />
-      </Button>
-    </div>
-  ) : null;
-
-  if (spec.kind === 'textarea') {
-    return (
-      <div className="grid gap-2">
-        <Label htmlFor={fieldId}>{spec.label}</Label>
-        <div className="relative">
-          {actionButtons}
-          <Textarea
-            id={fieldId}
-            name={fieldId}
-            value={displayValue}
-            readOnly={guard.readOnly}
-            onFocus={guard.onFocus}
-            onChange={(e) => handleChange(e.target.value)}
-            className={cn('min-h-[120px] font-mono text-xs', actionPadding)}
-            placeholder={showActions ? 'Paste new key to rotate' : 'Paste private key'}
-            autoComplete="new-password"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-2">
-      <Label htmlFor={fieldId}>{spec.label}</Label>
-      <div className="relative">
-        {actionButtons}
-        <Input
-          id={fieldId}
-          name={fieldId}
-          type={inputType}
-          value={displayValue}
-          readOnly={guard.readOnly}
-          onFocus={guard.onFocus}
-          onChange={(e) => handleChange(e.target.value)}
-          className={actionPadding}
-          placeholder={showActions && !displayValue ? 'Leave empty to keep current' : undefined}
-          autoComplete="new-password"
-        />
-      </div>
     </div>
   );
 }

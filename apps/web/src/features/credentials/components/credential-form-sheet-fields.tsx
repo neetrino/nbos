@@ -128,7 +128,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     ) : null;
 
   return (
-    <div className="space-y-6">
+    <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
       {typeBlock}
       {providerBlock}
 
@@ -187,6 +187,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
           onNextRotationAtChange={setNextRotationAt}
         />
       )}
-    </div>
+    </form>
   );
 }
