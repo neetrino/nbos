@@ -137,6 +137,7 @@ export async function exportCredentialsBundle(
       ownerId: true,
       projectId: true,
       password: true,
+      passphrase: true,
       apiKey: true,
       envData: true,
       secureNotes: true,

@@ -116,11 +116,11 @@ export interface ClientServiceLinkedTask {
   workspaceId: string | null;
 }
 
-export function buildClientServiceListInclude(): Prisma.ClientServiceRecordInclude {
+export function buildClientServiceListInclude(): typeof clientServiceListInclude {
   return clientServiceListInclude;
 }
 
-export function buildClientServiceDetailInclude(): Prisma.ClientServiceRecordInclude {
+export function buildClientServiceDetailInclude(): typeof clientServiceDetailInclude {
   return clientServiceDetailInclude;
 }
 
