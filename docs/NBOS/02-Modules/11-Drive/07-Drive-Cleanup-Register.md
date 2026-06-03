@@ -22,7 +22,7 @@
 - entity-level RBAC scope на list/get (`OWN` / `DEPARTMENT` / `ALL`);
 - Phase 1 hardening: legacy raw-R2 HTTP routes disabled, `/drive/library` uses common file access filtering, folder placements enforce file-level access, upload session create/complete re-check target context, lifecycle audit actor is server-owned.
 
-**Still backlog:** hub UI для allowed-actions + trash lifecycle UI (overview §7.4), расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
+**Still backlog:** list menu per-file `allowed-actions` (detail sheet wired 2026-06-02) + trash lifecycle UI (overview §7.4), расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
 
 **Legacy:** raw `GET/POST/DELETE /drive/:projectId...` routes disabled on `2026-05-18` and are no longer an active Drive surface.
 
@@ -103,7 +103,7 @@
 | Export API           | `PARTIAL` | `POST /drive/zip-exports` — selection + typed kinds (`project`/`product`/`client`/`finance`/`task_attachments`); cancel queued job; Offer/Meeting/Call/Partner/Full backup **MISSING**      |
 | Cleanup API          | `PARTIAL` | `GET /drive/cleanup/candidates` (review only) + upload-session purge; confirmed destructive cleanup actions **MISSING**                                                                     |
 | Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                   |
-| Permission resolver  | `PARTIAL` | **2026-06-02:** multi-link confidentiality + Share/Move/Copy policy (`drive-file-action-policy.ts`); backlog — hub UI filters                                                               |
+| Permission resolver  | `PARTIAL` | **2026-06-02:** multi-link confidentiality + Share/Move/Copy policy; detail UI wired (`allowed-actions`); backlog — list menu gates, hub section filters                                    |
 
 ### 3.2.1. Phase 1 hardening closed
 
@@ -406,7 +406,7 @@ This avoids breaking existing uploaded files.
 **Next recommended order:**
 
 1. Reusable upload + purpose selector on CRM/Product/Task cards (module integrations §4).
-2. Drive hub UI: wire `GET /drive/files/:id/allowed-actions` + trash lifecycle (overview §7.4).
+2. Drive: per-file list menu `allowed-actions` (detail wired) + trash lifecycle (overview §7.4).
 3. Export catalog (Project/Product/Client/Offer types, TTL, cancel) per doc 06 §5.
 4. Cleanup candidates dashboard (DB-first orphan review, not R2 listing).
 5. Rich preview (PDF/image/video).
