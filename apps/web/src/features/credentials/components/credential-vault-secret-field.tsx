@@ -56,6 +56,7 @@ export function CredentialVaultSecretField({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const pendingEditAfterRevealRef = useRef(false);
+  const [trackedGuardKey, setTrackedGuardKey] = useState(guardKey);
 
   const secretText = draft.length > 0 ? draft : (revealedValue ?? '');
   const hasStoredSecret = isExisting && hasStored;
@@ -63,10 +64,10 @@ export function CredentialVaultSecretField({
   const showMaskPlaceholder = awaitingReveal;
   const isEmpty = !hasStoredSecret && secretText.length === 0;
 
-  useEffect(() => {
+  if (trackedGuardKey !== guardKey) {
+    setTrackedGuardKey(guardKey);
     setShowPlain(false);
-    pendingEditAfterRevealRef.current = false;
-  }, [guardKey]);
+  }
 
   const inputValue = showMaskPlaceholder ? STORED_SECRET_MASK : secretText;
   const showCopy = hasStoredSecret;
@@ -91,9 +92,13 @@ export function CredentialVaultSecretField({
   }, [guard, kind]);
 
   useEffect(() => {
+    pendingEditAfterRevealRef.current = false;
+  }, [guardKey]);
+
+  useEffect(() => {
     if (!pendingEditAfterRevealRef.current || secretText.length === 0) return;
     pendingEditAfterRevealRef.current = false;
-    focusWithCursorAtEnd();
+    queueMicrotask(() => focusWithCursorAtEnd());
   }, [secretText, focusWithCursorAtEnd]);
 
   const handleFocus = () => {

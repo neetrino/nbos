@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -86,18 +86,14 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
   const headerResetKey = `${open}|${credentialId ?? 'create'}`;
   const sourcePageHref = credentialId ? buildCredentialVaultHref(credentialId) : '/credentials';
   const [activeTab, setActiveTab] = useState<CredentialFormSheetTab>('general');
-  const prevSheetOpenRef = useRef(false);
-  const prevCredentialIdRef = useRef<string | null>(null);
+  const [trackedHeaderResetKey, setTrackedHeaderResetKey] = useState(headerResetKey);
 
-  useEffect(() => {
-    const opened = open && !prevSheetOpenRef.current;
-    const idChanged = credentialId !== prevCredentialIdRef.current;
-    if (open && (opened || idChanged)) {
-      setActiveTab('general');
-    }
-    prevSheetOpenRef.current = open;
-    prevCredentialIdRef.current = credentialId;
-  }, [open, credentialId]);
+  if (open && trackedHeaderResetKey !== headerResetKey) {
+    setTrackedHeaderResetKey(headerResetKey);
+    setActiveTab('general');
+  } else if (!open && trackedHeaderResetKey !== headerResetKey) {
+    setTrackedHeaderResetKey(headerResetKey);
+  }
 
   const showFormFooter = !accessDenied && !loading;
 

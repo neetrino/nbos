@@ -8,14 +8,19 @@ export function useDriveFileAllowedActions(
   targetFolderSpace?: 'COMPANY' | 'PERSONAL',
 ): readonly string[] | null {
   const [actions, setActions] = useState<readonly string[] | null>(null);
+  const fetchKey = fileId ? `${fileId}|${targetFolderSpace ?? ''}` : null;
+  const [trackedFetchKey, setTrackedFetchKey] = useState(fetchKey);
+
+  if (trackedFetchKey !== fetchKey) {
+    setTrackedFetchKey(fetchKey);
+    if (actions !== null) {
+      setActions(null);
+    }
+  }
 
   useEffect(() => {
-    if (!fileId) {
-      setActions(null);
-      return;
-    }
+    if (!fileId) return;
     let cancelled = false;
-    setActions(null);
     void driveApi
       .getFileAllowedActions(fileId, targetFolderSpace)
       .then((result) => {

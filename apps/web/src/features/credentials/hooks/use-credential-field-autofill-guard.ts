@@ -1,14 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 /** Blocks browser autofill until the user focuses the field (login/password pairs). */
 export function useAutofillGuard(scopeKey: string) {
   const [editable, setEditable] = useState(false);
+  const [trackedScopeKey, setTrackedScopeKey] = useState(scopeKey);
 
-  useEffect(() => {
+  if (trackedScopeKey !== scopeKey) {
+    setTrackedScopeKey(scopeKey);
     setEditable(false);
-  }, [scopeKey]);
+  }
 
   const onFocus = useCallback(() => setEditable(true), []);
 

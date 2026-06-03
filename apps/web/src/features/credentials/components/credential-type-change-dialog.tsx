@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -29,12 +29,13 @@ export function CredentialTypeChangeDialog({
 }: CredentialTypeChangeDialogProps) {
   const [acknowledged, setAcknowledged] = useState(false);
 
-  useEffect(() => {
-    if (!open) setAcknowledged(false);
-  }, [open]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) setAcknowledged(false);
+    onOpenChange(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Change credential type?</DialogTitle>
@@ -56,7 +57,7 @@ export function CredentialTypeChangeDialog({
           </Label>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button type="button" disabled={!acknowledged} onClick={onConfirm}>

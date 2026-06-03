@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import type {
   CredentialQuickFilterKey,
@@ -112,9 +112,13 @@ export function useCredentialsVaultPage() {
     selectionResetKey,
   );
 
-  useEffect(() => {
+  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
+  const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
+
+  if (trackedPageResetKey !== pageResetKey) {
+    setTrackedPageResetKey(pageResetKey);
     setPage(1);
-  }, [search, filters, quickCategory, quickFilters, activeTab, vaultListScope, viewMode, pageSize]);
+  }
 
   const openCreate = useCallback(
     (category?: string) => {

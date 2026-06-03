@@ -62,11 +62,13 @@ export function CredentialFormSheetHeader({
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(name);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const [trackedResetKey, setTrackedResetKey] = useState(resetKey);
 
-  useEffect(() => {
+  if (trackedResetKey !== resetKey) {
+    setTrackedResetKey(resetKey);
     setEditingName(false);
     setNameDraft(name);
-  }, [resetKey, name]);
+  }
 
   useEffect(() => {
     if (editingName) {
