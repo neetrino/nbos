@@ -46,6 +46,26 @@ Explicit access to one concrete resource.
 
 Manual override не выдает delete/admin. Delete/Admin остается high-level RBAC/platform permission.
 
+### ResourceAccessGrant reuse contract (Slice D)
+
+Единая таблица `ResourceAccessGrant` (`resource_type`, `resource_id`, `employee_id`, `level`, `expires_at`, `revoked_at`, `reason`).
+
+Константы: `@nbos/shared` → `RESOURCE_GRANT_RESOURCE_TYPE`, `RESOURCE_GRANT_RESOURCE_TYPES`.
+
+| `resource_type`    | Module      | Manual UI           | Levels (platform) | Enforcement notes                                                               |
+| ------------------ | ----------- | ------------------- | ----------------- | ------------------------------------------------------------------------------- |
+| `credential`       | Credentials | Sheet Manual Access | `VIEW`, `EDIT`    | Row filter + sheet; legacy `allowedEmployees` backfilled                        |
+| `drive_file_asset` | Drive       | File Share dialog   | `VIEW`, `EDIT`    | Dual-write from `FileAssetGrant`; permission in `reason` (`drive_permission:*`) |
+| `drive_folder`     | Drive       | Folder Share dialog | `VIEW`, `EDIT`    | Folder grant opens folder; files in subtree via `drive-folder-grant-inherit.ts` |
+| `finance_*`        | Finance     | — (planned)         | `VIEW`, `EDIT`    | Not shipped; row access = RBAC + participation graph today                      |
+
+Rules:
+
+- Manual grant **never** replaces module RBAC gate (user still needs `*_VIEW` / action permission).
+- `level` = `VIEW` | `EDIT` only at platform layer; module-specific actions (EXPORT, SHARE, …) stored in Drive `reason` or legacy grant tables until unified.
+- Revoke sets `revoked_at`; expired grants ignored in `activeResourceAccessGrantWhere`.
+- Audit: grant create/update/revoke per module (Credentials shipped; Drive via grant APIs).
+
 ---
 
 ## Project / Product Team Model

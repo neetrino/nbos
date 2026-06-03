@@ -6,7 +6,9 @@ import type {
   CredentialManualGrantRow,
 } from './credential-manual-grant.types';
 
-const RESOURCE_TYPE_CREDENTIAL = 'credential';
+import { RESOURCE_GRANT_RESOURCE_TYPE } from '@nbos/shared';
+
+const RESOURCE_TYPE_CREDENTIAL = RESOURCE_GRANT_RESOURCE_TYPE.CREDENTIAL;
 
 function parseGrantExpiresAt(value: string | null | undefined): Date | null {
   if (value == null || value === '') return null;

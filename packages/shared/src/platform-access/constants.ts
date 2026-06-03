@@ -34,8 +34,31 @@ export const TEAM_MEMBER_SOURCES = [
 ] as const;
 export type TeamMemberSource = (typeof TEAM_MEMBER_SOURCES)[number];
 
-export const RESOURCE_GRANT_RESOURCE_TYPES = ['credential'] as const;
+/** Shipped `ResourceAccessGrant.resource_type` values (API enforcement). */
+export const RESOURCE_GRANT_RESOURCE_TYPES = [
+  'credential',
+  'drive_file_asset',
+  'drive_folder',
+] as const;
 export type ResourceGrantResourceType = (typeof RESOURCE_GRANT_RESOURCE_TYPES)[number];
+
+/** Canonical string literals for grants — use instead of module-local copies. */
+export const RESOURCE_GRANT_RESOURCE_TYPE = {
+  CREDENTIAL: 'credential',
+  DRIVE_FILE_ASSET: 'drive_file_asset',
+  DRIVE_FOLDER: 'drive_folder',
+} as const satisfies Record<string, ResourceGrantResourceType>;
+
+/** Documented future types; not enforced until module ships manual override UI. */
+export const RESOURCE_GRANT_RESOURCE_TYPES_PLANNED = [
+  'finance_invoice',
+  'finance_payment',
+  'finance_expense',
+] as const;
+
+export function isResourceGrantResourceType(value: string): value is ResourceGrantResourceType {
+  return (RESOURCE_GRANT_RESOURCE_TYPES as readonly string[]).includes(value);
+}
 
 /** Maps legacy `Product` FK fields to platform access slots. */
 export const PRODUCT_SLOT_FIELD_MAP = {

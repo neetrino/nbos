@@ -1,13 +1,14 @@
 import type { PlatformAccessActionEnum, Prisma, PrismaClient } from '@nbos/database';
+import { RESOURCE_GRANT_RESOURCE_TYPE } from '@nbos/shared';
 import { activeResourceAccessGrantWhere } from '../credentials/credential-active-grant.where';
 import type { FileGrantPermission } from './drive-grant-permissions';
 import { FILE_GRANT_PERMISSIONS } from './drive-grant-permissions';
 
 /** Platform {@link ResourceAccessGrant} resource type for Drive file assets. */
-export const DRIVE_FILE_ASSET_RESOURCE_TYPE = 'drive_file_asset';
+export const DRIVE_FILE_ASSET_RESOURCE_TYPE = RESOURCE_GRANT_RESOURCE_TYPE.DRIVE_FILE_ASSET;
 
 /** Platform {@link ResourceAccessGrant} resource type for Drive folders. */
-export const DRIVE_FOLDER_RESOURCE_TYPE = 'drive_folder';
+export const DRIVE_FOLDER_RESOURCE_TYPE = RESOURCE_GRANT_RESOURCE_TYPE.DRIVE_FOLDER;
 
 const PERMISSION_PREFIX = 'drive_permission:';
 
