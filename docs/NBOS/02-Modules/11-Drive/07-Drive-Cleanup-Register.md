@@ -103,7 +103,7 @@
 | Export API           | `PARTIAL` | `POST /drive/zip-exports` — selection + typed kinds (`project`/`product`/`client`/`finance`/`task_attachments`); cancel queued job; Offer/Meeting/Call/Partner/Full backup **MISSING**      |
 | Cleanup API          | `PARTIAL` | `GET /drive/cleanup/candidates` (review only) + upload-session purge; confirmed destructive cleanup actions **MISSING**                                                                     |
 | Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                   |
-| Permission resolver  | `PARTIAL` | **2026-05-18:** layered scope + sensitivity + action grants + entity context gates on library/folders/upload/link; inherited access по всем FileLink graphs — backlog                       |
+| Permission resolver  | `PARTIAL` | **2026-06-02:** multi-link inherited confidentiality (general / finance / legal link families); backlog — full Share/Move/Copy matrix §3                                                    |
 
 ### 3.2.1. Phase 1 hardening closed
 

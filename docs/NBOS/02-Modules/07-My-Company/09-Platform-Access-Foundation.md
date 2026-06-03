@@ -179,7 +179,7 @@ Shared Prisma participation filters live in `apps/api/src/modules/platform-acces
 
 **Still backlog:**
 
-- inherited multi-link confidentiality edge cases (see Drive permissions canon).
+- inherited multi-link confidentiality resolver (see Drive permissions canon §1 runtime `2026-06-02`).
 
 ### Finance
 

@@ -21,14 +21,15 @@ Can access file =
   + explicit grants
 ```
 
-Текущее состояние runtime на `2026-05-18`:
+Текущее состояние runtime на `2026-06-02`:
 
 - DB-backed file APIs, `/drive/library`, preview/export flows и folder placements используют общий file access filter;
-- общий file access filter теперь дополнительно режет `PERSONAL`, `RESTRICTED`, `FINANCE_SENSITIVE`, `LEGAL_SENSITIVE`, `SECRET_ADJACENT`, если пользователь не owner/uploader и не имеет explicit grant;
+- общий file access filter режет `PERSONAL` / `RESTRICTED` без owner/uploader/grant;
+- **multi-link inherited confidentiality:** `PUBLIC_INTERNAL` / `CONFIDENTIAL` — delivery links only; `FINANCE_SENSITIVE` — finance links (`INVOICE`, `PAYMENT`, `EXPENSE`) with accessible project anchor; `LEGAL_SENSITIVE` — partner/client links; `SECRET_ADJACENT` — no inherited path;
 - upload session проверяет target context и при create, и при complete;
 - folder placement сам по себе не даёт доступ к файлу, если file-level access не проходит;
 - actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
-- inherited access по всем `FileLink` graphs и edge-case confidentiality policies остаются backlog там, где нет явного runtime rule.
+- inherited access по `FileLink` graphs использует tiered multi-link confidentiality resolver (`drive-multi-link-confidentiality.where.ts`); оставшийся backlog — полная матрица action grants по канону §3 и context-specific list filters в UI hub sections.
 - `PROJECT` уже не опирается на наличие старого linked file: Drive проверяет direct project participation через delivery/sales graph проекта.
 - `WORK_SPACE` уже не опирается на наличие старого linked file: Drive проверяет direct workspace participation через связанные product / extension / project delivery graphs.
 - `INVOICE`, `PAYMENT`, `EXPENSE` в Drive больше не проходят по одному existence-check: для scoped access они должны быть привязаны к доступному project graph.

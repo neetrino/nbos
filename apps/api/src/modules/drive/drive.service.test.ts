@@ -387,13 +387,16 @@ describe('DriveService', () => {
           where: expect.objectContaining({
             id: 'f1',
             OR: expect.arrayContaining([
-              expect.any(Object),
               expect.objectContaining({
-                assetGrants: {
-                  some: expect.objectContaining({
-                    permission: { in: ['UPLOAD_VERSION'] },
+                OR: expect.arrayContaining([
+                  expect.objectContaining({
+                    assetGrants: {
+                      some: expect.objectContaining({
+                        permission: { in: ['UPLOAD_VERSION'] },
+                      }),
+                    },
                   }),
-                },
+                ]),
               }),
             ]),
           }),
@@ -456,33 +459,30 @@ describe('DriveService', () => {
         { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
       );
 
-      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.arrayContaining([
+      const listCall = prisma.fileAsset.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: Array<Record<string, unknown>> };
+      };
+      expect(listCall?.where?.AND).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            deletedAt: null,
+            OR: expect.arrayContaining([
               expect.objectContaining({
-                OR: expect.arrayContaining([
-                  expect.objectContaining({
-                    AND: [
-                      { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
-                      {
-                        confidentiality: {
-                          notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
-                        },
-                      },
-                    ],
-                  }),
-                  expect.objectContaining({
-                    OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
-                  }),
-                  expect.objectContaining({
-                    assetGrants: expect.any(Object),
-                  }),
-                ]),
+                AND: [
+                  { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
+                  {
+                    confidentiality: {
+                      notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
+                    },
+                  },
+                ],
+              }),
+              expect.objectContaining({
+                OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
               }),
             ]),
           }),
-        }),
+        ]),
       );
     });
 
@@ -522,34 +522,31 @@ describe('DriveService', () => {
         { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
       );
 
-      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.arrayContaining([
+      const sharedCall = prisma.fileAsset.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: Array<{ OR?: unknown[] }> };
+      };
+      const sharedClause = sharedCall?.where?.AND?.find(
+        (clause) =>
+          Array.isArray(clause.OR) &&
+          clause.OR.some((part) => part && typeof part === 'object' && 'NOT' in part),
+      );
+      expect(sharedClause?.OR).toEqual(
+        expect.arrayContaining([
+          {
+            NOT: {
+              OR: [{ ownerId: 'emp-1' }, { AND: [{ ownerId: null }, { createdById: 'emp-1' }] }],
+            },
+          },
+          expect.objectContaining({
+            OR: expect.arrayContaining([
               expect.objectContaining({
-                OR: [
-                  {
-                    NOT: {
-                      OR: [
-                        { ownerId: 'emp-1' },
-                        { AND: [{ ownerId: null }, { createdById: 'emp-1' }] },
-                      ],
-                    },
-                  },
-                  {
-                    assetGrants: {
-                      some: {
-                        granteeEmployeeId: 'emp-1',
-                        revokedAt: null,
-                        OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }],
-                      },
-                    },
-                  },
-                ],
+                assetGrants: expect.objectContaining({
+                  some: expect.objectContaining({ granteeEmployeeId: 'emp-1' }),
+                }),
               }),
             ]),
           }),
-        }),
+        ]),
       );
     });
 

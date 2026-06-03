@@ -528,7 +528,11 @@ describe('DriveUploadSessionService', () => {
               OR: expect.arrayContaining([
                 { ownerId: 'user-1' },
                 { createdById: 'user-1' },
-                expect.objectContaining({ assetGrants: expect.any(Object) }),
+                expect.objectContaining({
+                  OR: expect.arrayContaining([
+                    expect.objectContaining({ assetGrants: expect.any(Object) }),
+                  ]),
+                }),
               ]),
             }),
           ]),
