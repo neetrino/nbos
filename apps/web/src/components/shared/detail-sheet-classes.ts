@@ -3,6 +3,25 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
+/** Vertical inset from viewport edges — pairs with {@link SHEET_VIEWPORT_MAX_HEIGHT_CLASS}. */
+export const SHEET_VIEWPORT_INSET_CLASS = 'top-[2.5vh] bottom-[2.5vh]';
+
+/** Max panel height; use with {@link SHEET_VIEWPORT_INSET_CLASS} on edge-attached sheets. */
+export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[95vh]';
+
+/** Floating rail vertical anchor aligned with inset right sheets. */
+export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+0.625rem)]';
+
+/** Center-rise sheet width presets (compact entity forms, credentials). */
+export const CENTER_SHEET_WIDTH_MEDIUM_CLASS =
+  'flex w-[min(48rem,calc(100%-2rem))] flex-col gap-0 overflow-hidden p-0';
+
+export const CENTER_SHEET_WIDTH_COMPACT_CLASS =
+  'flex w-[min(42rem,calc(100%-2rem))] flex-col gap-0 overflow-hidden p-0';
+
+export const CENTER_SHEET_WIDTH_AUXILIARY_CLASS =
+  'flex w-[min(36rem,calc(100%-2rem))] flex-col gap-0 overflow-hidden p-0';
+
 /** Matches Lead/Deal detail width: 75vw on `sm+`. */
 export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]';

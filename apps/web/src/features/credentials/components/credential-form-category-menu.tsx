@@ -26,7 +26,9 @@ export function CredentialFormCategoryMenu({
   onCategoryChange,
 }: CredentialFormCategoryMenuProps) {
   if (categoryLocked) {
-    return <span className="text-muted-foreground text-xs">{categoryLabel}</span>;
+    return (
+      <span className="text-muted-foreground shrink-0 text-sm font-medium">{categoryLabel}</span>
+    );
   }
 
   return (
@@ -34,12 +36,12 @@ export function CredentialFormCategoryMenu({
       <DropdownMenuTrigger
         type="button"
         className={cn(
-          'text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5',
-          'rounded-md text-xs font-medium outline-none',
+          'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1',
+          'rounded-md px-1.5 py-1 text-sm font-medium outline-none',
         )}
       >
         {categoryLabel}
-        <ChevronDown className="size-3 opacity-70" aria-hidden />
+        <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[10rem]">
         {categoryOptions.map((opt) => (

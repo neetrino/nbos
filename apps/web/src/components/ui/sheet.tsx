@@ -65,7 +65,7 @@ function SheetContent({
   forceNestedBackdrop = false,
   ...props
 }: SheetPrimitive.Popup.Props & {
-  side?: 'top' | 'right' | 'bottom' | 'left';
+  side?: 'top' | 'right' | 'bottom' | 'left' | 'center';
   showCloseButton?: boolean;
   /** Right sheet: close control sits outside the panel (CRM-style). */
   floatingClose?: boolean;
@@ -94,7 +94,7 @@ function SheetContent({
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          'bg-background fixed flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]',
+          'bg-background fixed flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=center]:bottom-[2.5vh] data-[side=center]:left-1/2 data-[side=center]:h-auto data-[side=center]:max-h-[95vh] data-[side=center]:-translate-x-1/2 data-[side=center]:rounded-2xl data-[side=center]:border data-[side=center]:data-ending-style:translate-y-[2.5rem] data-[side=center]:data-starting-style:translate-y-[2.5rem] data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-[2.5vh] data-[side=right]:h-auto data-[side=right]:max-h-[95vh] data-[side=right]:w-3/4 data-[side=right]:rounded-l-2xl data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]',
           nestedStackClass,
           className,
         )}
@@ -122,7 +122,7 @@ function SheetContent({
       {floatingRailEnabled ? (
         <div
           className={cn(
-            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:top-10 sm:translate-x-px',
+            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:top-[calc(2.5vh+0.625rem)] sm:translate-x-px',
             floatingRailVisible
               ? 'pointer-events-auto translate-x-0 opacity-100'
               : 'pointer-events-none translate-x-[2.5rem] opacity-0',
