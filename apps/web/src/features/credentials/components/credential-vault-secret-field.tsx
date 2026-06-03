@@ -80,12 +80,11 @@ export function CredentialVaultSecretField({
     setShowPlain(true);
   }, [awaitingReveal, onReveal]);
 
-  const enableEditingAfterReveal = useCallback(() => {
+  const focusWithCursorAtEnd = useCallback(() => {
     guard.onFocus();
-    const el = kind === 'textarea' ? textareaRef.current : inputRef.current;
-    if (!el) return;
     requestAnimationFrame(() => {
-      el.focus();
+      const el = kind === 'textarea' ? textareaRef.current : inputRef.current;
+      if (!el) return;
       const end = el.value.length;
       el.setSelectionRange(end, end);
     });
@@ -94,13 +93,18 @@ export function CredentialVaultSecretField({
   useEffect(() => {
     if (!pendingEditAfterRevealRef.current || secretText.length === 0) return;
     pendingEditAfterRevealRef.current = false;
-    enableEditingAfterReveal();
-  }, [secretText, enableEditingAfterReveal]);
+    focusWithCursorAtEnd();
+  }, [secretText, focusWithCursorAtEnd]);
 
   const handleFocus = () => {
     if (awaitingReveal) {
       pendingEditAfterRevealRef.current = true;
       revealSecret();
+      return;
+    }
+    if (!showPlain && secretText.length > 0) {
+      setShowPlain(true);
+      focusWithCursorAtEnd();
       return;
     }
     guard.onFocus();
