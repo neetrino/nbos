@@ -16,6 +16,7 @@ import {
   commentLabelForType,
   showsProviderPicker,
 } from '@/features/credentials/credential-field-config';
+import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
@@ -46,7 +47,9 @@ function TypeSelect({
       <Label>What is stored?</Label>
       <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
         <SelectTrigger>
-          <SelectValue />
+          <SelectValue placeholder="Select type">
+            {(value: string | null) => (value ? formatCredentialTypeLabel(value) : null)}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {types.map((type) => (

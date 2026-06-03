@@ -6,6 +6,7 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
+import { SHEET_FLOATING_RAIL_TOP_INSET_CLASS } from '@/components/shared/detail-sheet-classes';
 
 /** Above sheet overlay/popup (z-50) so the rail stays clickable. */
 const SHEET_FLOATING_RAIL_Z_INDEX = 60;
@@ -122,7 +123,8 @@ function SheetContent({
       {floatingRailEnabled ? (
         <div
           className={cn(
-            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:top-[calc(2.5vh+0.625rem)] sm:translate-x-px',
+            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:translate-x-px',
+            SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailVisible
               ? 'pointer-events-auto translate-x-0 opacity-100'
               : 'pointer-events-none translate-x-[2.5rem] opacity-0',

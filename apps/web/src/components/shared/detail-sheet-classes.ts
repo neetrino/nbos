@@ -9,8 +9,8 @@ export const SHEET_VIEWPORT_INSET_CLASS = 'top-[2.5vh] bottom-[2.5vh]';
 /** Max panel height; use with {@link SHEET_VIEWPORT_INSET_CLASS} on edge-attached sheets. */
 export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[95vh]';
 
-/** Floating rail vertical anchor aligned with inset right sheets. */
-export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+0.625rem)]';
+/** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
+export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.25rem)]';
 
 /** Center-rise sheet width presets (compact entity forms, credentials). */
 export const CENTER_SHEET_WIDTH_MEDIUM_CLASS =
