@@ -220,7 +220,7 @@ Google / Yandex / Beget / Name.am = domain + hosting + mail → **один picke
 - [x] `credential-field-config` — labels, order, SSH textarea
 - [x] Type change dialog + checkbox (R1, R2)
 - [x] Hide `OTHER_SECRET` from create (R6)
-- [x] DOMAIN/HOSTING/MAIL: provider picker первым
+- [x] DOMAIN/HOSTING/MAIL: provider picker под «What is stored?»
 - [x] APP_STORE: segmented iOS/Android + readonly URL (UI state; DB column в 1c)
 
 ### Фаза 1c — Schema (credentials fields)

@@ -52,7 +52,7 @@ export function CredentialFormSheetBody({
 
   if (!isEdit) {
     return (
-      <div className="px-6 pb-6">
+      <div className="px-6 pt-6 pb-6">
         <CredentialFormSheetFields form={form} />
       </div>
     );
@@ -66,7 +66,7 @@ export function CredentialFormSheetBody({
         onTabChange={(value) => setActiveTab(value as CredentialFormSheetTab)}
         className="border-border shrink-0 border-b px-6"
       />
-      <div className="px-6 pt-5 pb-6">
+      <div className="px-6 pt-6 pb-6">
         {activeTab === 'general' ? <CredentialFormSheetFields form={form} /> : null}
         {activeTab === 'manual-access' ? (
           <CredentialManualAccessPanel

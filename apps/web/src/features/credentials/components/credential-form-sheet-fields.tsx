@@ -14,7 +14,6 @@ import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 import {
   CREDENTIAL_TYPES_FOR_CREATE,
   commentLabelForType,
-  isProviderFirstForType,
   showsProviderPicker,
 } from '@/features/credentials/credential-field-config';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
@@ -134,17 +133,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
   return (
     <div className="space-y-6">
-      {isProviderFirstForType(credentialType) ? (
-        <>
-          {providerBlock}
-          {typeBlock}
-        </>
-      ) : (
-        <>
-          {typeBlock}
-          {providerBlock}
-        </>
-      )}
+      {typeBlock}
+      {providerBlock}
 
       <div className="grid gap-2">
         <Label htmlFor="cred-environment">Environment</Label>
