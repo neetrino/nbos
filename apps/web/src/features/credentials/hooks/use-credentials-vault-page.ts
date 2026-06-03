@@ -28,7 +28,7 @@ import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-cr
 import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
-import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialDetail, CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -39,6 +39,7 @@ export interface CredentialDeleteTarget {
 export interface CredentialTileCopyTarget {
   id: string;
   criticality: string;
+  field?: CredentialSecretField;
 }
 
 export function useCredentialsVaultPage() {

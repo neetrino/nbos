@@ -8,6 +8,7 @@ export interface CredentialListItem {
   url: string | null;
   login: string | null;
   phone: string | null;
+  appStorePlatform?: 'APPLE' | 'GOOGLE' | null;
   accessLevel: string;
   allowedEmployees: string[];
   ownerId?: string | null;

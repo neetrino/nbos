@@ -1,36 +1,72 @@
 'use client';
 
-import { AtSign, FolderKanban, KeyRound, Lock, Shield } from 'lucide-react';
+import { FolderKanban, KeyRound, Shield } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import {
   getAccessLevel,
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
-import { CredentialVaultSecretPill } from '@/features/credentials/components/credential-vault-secret-pills';
+import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
+import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
-
-const PASSWORD_MASK = '••••••';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialVaultTableRowCellsProps {
   cred: CredentialListItem;
-  passwordCopied: boolean;
-  onCopyLogin: (login: string) => void;
-  onCopyPassword: (credentialId: string, criticality: string) => void;
+  secretFlashCredentialId: string | null;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
+}
+
+function previewCellFallback(cred: CredentialListItem, itemIndex: number) {
+  const model = buildCredentialVaultPreview(cred);
+  if (model.infoOnly && itemIndex === 0) {
+    return <CredentialVaultPreviewStrip credential={cred} itemIndex={0} />;
+  }
+  return <span className="text-muted-foreground text-sm">—</span>;
 }
 
 export function CredentialVaultTableRowCells({
   cred,
-  passwordCopied,
-  onCopyLogin,
-  onCopyPassword,
+  secretFlashCredentialId,
+  onCopyText,
+  onCopySecret,
 }: CredentialVaultTableRowCellsProps) {
   const access = getAccessLevel(cred.accessLevel);
   const criticality = getCredentialCriticality(cred.criticality);
   const healthBadge = credentialHealthBadge(cred.health);
-  const showPassword = Boolean(cred.secretsPresent?.password);
+  const preview = buildCredentialVaultPreview(cred);
+
+  const renderPreviewCell = (itemIndex: number) => {
+    const item = preview.items[itemIndex];
+    if (!item) {
+      return previewCellFallback(cred, itemIndex);
+    }
+    if (item.type === 'info') {
+      return itemIndex === 0 ? (
+        <CredentialVaultPreviewStrip
+          credential={cred}
+          onCopyText={onCopyText}
+          onCopySecret={onCopySecret}
+          itemIndex={0}
+        />
+      ) : (
+        <span className="text-muted-foreground text-sm">—</span>
+      );
+    }
+    return (
+      <CredentialVaultPreviewStrip
+        credential={cred}
+        secretFlashCredentialId={secretFlashCredentialId}
+        onCopyText={onCopyText}
+        onCopySecret={onCopySecret}
+        itemIndex={itemIndex}
+      />
+    );
+  };
 
   return (
     <>
@@ -41,30 +77,10 @@ export function CredentialVaultTableRowCells({
         </div>
       </TableCell>
       <TableCell className="max-w-[180px]" onClick={(e) => e.stopPropagation()}>
-        {cred.login ? (
-          <CredentialVaultSecretPill
-            icon={<AtSign size={12} strokeWidth={2} />}
-            value={cred.login}
-            copyLabel="Copy login"
-            onCopy={() => onCopyLogin(cred.login!)}
-          />
-        ) : (
-          <span className="text-muted-foreground text-sm">—</span>
-        )}
+        {renderPreviewCell(0)}
       </TableCell>
       <TableCell className="max-w-[140px]" onClick={(e) => e.stopPropagation()}>
-        {showPassword ? (
-          <CredentialVaultSecretPill
-            icon={<Lock size={12} strokeWidth={2} />}
-            value={PASSWORD_MASK}
-            copyLabel="Copy password"
-            copied={passwordCopied}
-            mono
-            onCopy={() => onCopyPassword(cred.id, cred.criticality)}
-          />
-        ) : (
-          <span className="text-muted-foreground text-sm">—</span>
-        )}
+        {renderPreviewCell(1)}
       </TableCell>
       <TableCell className="text-xs">{cred.category}</TableCell>
       <TableCell className="text-muted-foreground text-xs">

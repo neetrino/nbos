@@ -15,6 +15,7 @@ import {
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 
 const COLUMN_SKELETON_COUNT = 4;
 const CARD_SKELETON_COUNT = 3;
@@ -32,9 +33,9 @@ export interface CredentialVaultCategoryBoardProps {
   categoryColumns?: readonly CredentialCategoryOption[];
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
-  onCopyLogin?: (login: string) => void;
-  onCopyPassword?: (credentialId: string, criticality: string) => void;
-  passwordFlashCredentialId?: string | null;
+  onCopyText?: (text: string) => void;
+  onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
+  secretFlashCredentialId?: string | null;
 }
 
 export function CredentialVaultCategoryBoard({
@@ -49,9 +50,9 @@ export function CredentialVaultCategoryBoard({
   categoryColumns,
   onCreateInCategory,
   onOpenCredential,
-  onCopyLogin,
-  onCopyPassword,
-  passwordFlashCredentialId,
+  onCopyText,
+  onCopySecret,
+  secretFlashCredentialId,
 }: CredentialVaultCategoryBoardProps) {
   const columns = useMemo(() => {
     const defs = categoryColumns ?? categoriesForVaultScope(vaultScope);
@@ -102,9 +103,9 @@ export function CredentialVaultCategoryBoard({
               credential={credential}
               variant="kanban"
               onOpen={onOpenCredential}
-              onCopyLogin={onCopyLogin}
-              onCopyPassword={onCopyPassword}
-              passwordFlashCredentialId={passwordFlashCredentialId}
+              onCopyText={onCopyText}
+              onCopySecret={onCopySecret}
+              secretFlashCredentialId={secretFlashCredentialId}
             />
           )}
         />

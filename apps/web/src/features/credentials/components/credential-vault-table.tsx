@@ -22,14 +22,16 @@ export interface CredentialVaultTableSelectionProps {
   pageIds: string[];
 }
 
+import type { CredentialSecretField } from '@/lib/api/credentials';
+
 export interface CredentialVaultTableProps {
   credentials: CredentialListItem[];
   loading: boolean;
   listScope: VaultListScope;
-  passwordFlashCredentialId: string | null;
+  secretFlashCredentialId: string | null;
   selection?: CredentialVaultTableSelectionProps;
-  onCopyLogin: (text: string) => void;
-  onCopyPassword: (id: string, criticality: string) => void;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   showCreate: boolean;
@@ -39,9 +41,9 @@ export function CredentialVaultTable({
   credentials,
   loading,
   listScope,
-  passwordFlashCredentialId,
-  onCopyLogin,
-  onCopyPassword,
+  secretFlashCredentialId,
+  onCopyText,
+  onCopySecret,
   onCreateOpen,
   onOpenCredential,
   showCreate,
@@ -125,13 +127,13 @@ export function CredentialVaultTable({
               key={cred.id}
               cred={cred}
               isArchivedList={isArchivedList}
-              passwordCopied={passwordFlashCredentialId === cred.id}
+              secretFlashCredentialId={secretFlashCredentialId}
               selectionEnabled={selection?.enabled ?? false}
               selectionActive={bulkSelectionStarted}
               selected={selection?.isSelected(cred.id) ?? false}
               onToggleSelected={() => selection?.onToggle(cred.id)}
-              onCopyLogin={onCopyLogin}
-              onCopyPassword={onCopyPassword}
+              onCopyText={onCopyText}
+              onCopySecret={onCopySecret}
               onOpenCredential={onOpenCredential}
             />
           ))}

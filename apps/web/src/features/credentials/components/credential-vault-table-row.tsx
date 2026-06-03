@@ -10,29 +10,31 @@ import {
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
 
+import type { CredentialSecretField } from '@/lib/api/credentials';
+
 export interface CredentialVaultTableRowProps {
   cred: CredentialListItem;
   isArchivedList: boolean;
-  passwordCopied: boolean;
+  secretFlashCredentialId: string | null;
   selectionEnabled: boolean;
   selectionActive: boolean;
   selected: boolean;
   onToggleSelected: () => void;
-  onCopyLogin: (login: string) => void;
-  onCopyPassword: (credentialId: string, criticality: string) => void;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onOpenCredential: (id: string) => void;
 }
 
 export function CredentialVaultTableRow({
   cred,
   isArchivedList,
-  passwordCopied,
+  secretFlashCredentialId,
   selectionEnabled,
   selectionActive,
   selected,
   onToggleSelected,
-  onCopyLogin,
-  onCopyPassword,
+  onCopyText,
+  onCopySecret,
   onOpenCredential,
 }: CredentialVaultTableRowProps) {
   return (
@@ -66,9 +68,9 @@ export function CredentialVaultTableRow({
       ) : null}
       <CredentialVaultTableRowCells
         cred={cred}
-        passwordCopied={passwordCopied}
-        onCopyLogin={onCopyLogin}
-        onCopyPassword={onCopyPassword}
+        secretFlashCredentialId={secretFlashCredentialId}
+        onCopyText={onCopyText}
+        onCopySecret={onCopySecret}
       />
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CredentialVaultTableUrlCell cred={cred} isArchivedList={isArchivedList} />

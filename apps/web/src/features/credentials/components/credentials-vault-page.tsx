@@ -39,14 +39,14 @@ function CredentialsVaultPageContent() {
     setBoardScrollRoot(node);
   }, []);
 
-  const handlePasswordCopied = (flashId: string) => {
+  const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
     window.setTimeout(() => {
       vault.setPasswordFlashCredentialId((current) => (current === flashId ? null : current));
     }, CREDENTIAL_VAULT_COPY_FEEDBACK_MS);
   };
 
-  const copyVaultPassword = useVaultPasswordCopy(vault.setTileCopyTarget, handlePasswordCopied);
+  const copyVaultSecret = useVaultPasswordCopy(vault.setTileCopyTarget, handleSecretCopied);
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
@@ -151,7 +151,7 @@ function CredentialsVaultPageContent() {
           vaultListScope={vault.vaultListScope}
           quickCategoryChips={vault.quickCategoryChips}
           activeCategory={vault.quickCategory}
-          passwordFlashCredentialId={vault.passwordFlashCredentialId}
+          secretFlashCredentialId={vault.passwordFlashCredentialId}
           tableSelection={
             vault.selectionEnabled
               ? {
@@ -177,8 +177,10 @@ function CredentialsVaultPageContent() {
           onCreateOpen={() => vault.openCreate()}
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}
-          onCopyLogin={vault.copyToClipboard}
-          onCopyPassword={(id, criticality) => void copyVaultPassword({ id, criticality })}
+          onCopyText={vault.copyToClipboard}
+          onCopySecret={(id, criticality, field) =>
+            void copyVaultSecret({ id, criticality, field })
+          }
           onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
           onRequestPurge={(id, name, criticality) =>
             vault.setPurgeTarget({ id, name, criticality })
@@ -225,10 +227,9 @@ function CredentialsVaultPageContent() {
         }}
         onTileCopyConfirm={async (pwd) => {
           if (!vault.tileCopyTarget) return;
-          await copyVaultPassword(vault.tileCopyTarget, pwd);
+          await copyVaultSecret(vault.tileCopyTarget, pwd);
           vault.setTileCopyTarget(null);
         }}
-        onPasswordCopied={handlePasswordCopied}
       />
     </div>
   );

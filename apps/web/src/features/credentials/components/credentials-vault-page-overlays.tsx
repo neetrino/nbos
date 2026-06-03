@@ -66,7 +66,7 @@ export function CredentialsVaultPageOverlays({
       <CredentialStepUpDialog
         open={tileCopyTarget !== null}
         onOpenChange={onTileCopyOpenChange}
-        title="Unlock vault to copy password"
+        title="Unlock vault to copy secret"
         onConfirm={onTileCopyConfirm}
       />
 

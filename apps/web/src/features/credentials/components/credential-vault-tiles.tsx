@@ -21,6 +21,8 @@ export interface CredentialVaultTilesSelectionProps {
   onToggle: (id: string) => void;
 }
 
+import type { CredentialSecretField } from '@/lib/api/credentials';
+
 export interface CredentialVaultTilesProps {
   credentials: CredentialListItem[];
   loading: boolean;
@@ -28,9 +30,9 @@ export interface CredentialVaultTilesProps {
   selection?: CredentialVaultTilesSelectionProps;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
-  onCopyLogin: (login: string) => void;
-  onCopyPassword?: (credentialId: string, criticality: string) => void;
-  passwordFlashCredentialId?: string | null;
+  onCopyText: (text: string) => void;
+  onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
+  secretFlashCredentialId?: string | null;
 }
 
 export function CredentialVaultTiles({
@@ -40,9 +42,9 @@ export function CredentialVaultTiles({
   selection,
   onCreateOpen,
   onOpenCredential,
-  onCopyLogin,
-  onCopyPassword,
-  passwordFlashCredentialId,
+  onCopyText,
+  onCopySecret,
+  secretFlashCredentialId,
 }: CredentialVaultTilesProps) {
   if (loading) {
     return (
@@ -81,9 +83,9 @@ export function CredentialVaultTiles({
           credential={credential}
           variant="grid"
           onOpen={onOpenCredential}
-          onCopyLogin={onCopyLogin}
-          onCopyPassword={onCopyPassword}
-          passwordFlashCredentialId={passwordFlashCredentialId}
+          onCopyText={onCopyText}
+          onCopySecret={onCopySecret}
+          secretFlashCredentialId={secretFlashCredentialId}
           selectionEnabled={selection?.enabled}
           selectionActive={selection?.selectionActive ?? false}
           selected={selection?.isSelected(credential.id)}
