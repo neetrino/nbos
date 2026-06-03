@@ -3,11 +3,14 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
-/** Vertical inset from viewport edges — pairs with {@link SHEET_VIEWPORT_MAX_HEIGHT_CLASS}. */
+/** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
+export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
+
+/** @deprecated Use {@link SHEET_VIEWPORT_TOP_INSET_CLASS} — right sheet no longer insets bottom. */
 export const SHEET_VIEWPORT_INSET_CLASS = 'top-[2.5vh] bottom-[2.5vh]';
 
-/** Max panel height; use with {@link SHEET_VIEWPORT_INSET_CLASS} on edge-attached sheets. */
-export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[95vh]';
+/** Max height when top inset is {@link SHEET_VIEWPORT_TOP_INSET_CLASS} and bottom is flush. */
+export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[calc(100vh-2.5vh)]';
 
 /** Offset from panel top to floating rail — clears rounded corners (right + center sheets). */
 export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
