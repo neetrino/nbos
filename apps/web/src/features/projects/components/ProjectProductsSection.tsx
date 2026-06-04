@@ -18,13 +18,14 @@ import {
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
 import {
+  PROJECT_ENTITY_LIST_CLASS,
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
-  type ProjectProductsViewMode,
+  type ProjectDetailViewMode,
 } from './project-detail-layout.constants';
 
 const PRODUCT_TAB_ALL = 'all';
 
-const PRODUCT_VIEW_OPTIONS: ViewModeOption<ProjectProductsViewMode>[] = [
+const PRODUCT_VIEW_OPTIONS: ViewModeOption<ProjectDetailViewMode>[] = [
   {
     value: 'card',
     label: 'Cards',
@@ -44,8 +45,8 @@ interface ProjectProductsSectionProps {
   products: ProjectProductSummary[];
   statusFilter: string | null;
   setStatusFilter: (status: string | null) => void;
-  viewMode: ProjectProductsViewMode;
-  onViewModeChange: (mode: ProjectProductsViewMode) => void;
+  viewMode: ProjectDetailViewMode;
+  onViewModeChange: (mode: ProjectDetailViewMode) => void;
   onCreateProduct: () => void;
   onOpenProduct: (productId: string) => void;
 }
@@ -115,7 +116,7 @@ export function ProjectProductsSection({
           onCreateProduct={onCreateProduct}
         />
       ) : viewMode === 'list' ? (
-        <div className="border-border divide-border divide-y overflow-hidden rounded-xl border">
+        <div className={PROJECT_ENTITY_LIST_CLASS}>
           {products.map((product) => (
             <ProductListRow key={product.id} product={product} onOpenProduct={onOpenProduct} />
           ))}

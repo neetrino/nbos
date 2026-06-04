@@ -7,10 +7,8 @@ import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
 import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
-import {
-  PROJECT_DETAIL_SIDEBAR_CLASS,
-  type ProjectProductsViewMode,
-} from '@/features/projects/components/project-detail-layout.constants';
+import { PROJECT_DETAIL_SIDEBAR_CLASS } from '@/features/projects/components/project-detail-layout.constants';
+import { useProjectDetailViewMode } from '@/features/projects/hooks/use-project-detail-view-mode';
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
@@ -22,7 +20,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [productsViewMode, setProductsViewMode] = useState<ProjectProductsViewMode>('card');
+  const [detailViewMode, setDetailViewMode] = useProjectDetailViewMode();
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -62,8 +60,8 @@ export default function ProjectDetailPage() {
             products={products}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-            viewMode={productsViewMode}
-            onViewModeChange={setProductsViewMode}
+            viewMode={detailViewMode}
+            onViewModeChange={setDetailViewMode}
             onCreateProduct={() => setShowCreateProduct(true)}
             onOpenProduct={(productId) =>
               router.push(`/projects/${params.id}/products/${productId}`)
@@ -71,6 +69,7 @@ export default function ProjectDetailPage() {
           />
           <ProjectExtensionsSection
             extensions={project.extensions}
+            viewMode={detailViewMode}
             onOpenExtension={(extension) =>
               router.push(`/projects/${params.id}/products/${extension.productId}?tab=extensions`)
             }

@@ -9,17 +9,21 @@ import {
   getExtensionStatus,
 } from '@/features/projects/constants/projects';
 import {
+  PROJECT_ENTITY_LIST_CLASS,
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
   PROJECT_SECTION_TITLE_CLASS,
+  type ProjectDetailViewMode,
 } from './project-detail-layout.constants';
 
 interface ProjectExtensionsSectionProps {
   extensions: ProjectExtensionSummary[];
+  viewMode: ProjectDetailViewMode;
   onOpenExtension: (extension: ProjectExtensionSummary) => void;
 }
 
 export function ProjectExtensionsSection({
   extensions,
+  viewMode,
   onOpenExtension,
 }: ProjectExtensionsSectionProps) {
   if (extensions.length === 0) return null;
@@ -28,21 +32,81 @@ export function ProjectExtensionsSection({
     <div className="min-w-0 space-y-4 overflow-hidden">
       <div className="flex items-center gap-3">
         <h2 className={PROJECT_SECTION_TITLE_CLASS}>Extensions</h2>
-        <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+        <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
           {extensions.length}
         </span>
       </div>
 
-      <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
-        {extensions.map((extension) => (
-          <ExtensionCard
-            key={extension.id}
-            extension={extension}
-            onOpen={() => onOpenExtension(extension)}
-          />
-        ))}
-      </div>
+      {viewMode === 'list' ? (
+        <div className={PROJECT_ENTITY_LIST_CLASS}>
+          {extensions.map((extension) => (
+            <ExtensionListRow
+              key={extension.id}
+              extension={extension}
+              onOpen={() => onOpenExtension(extension)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
+          {extensions.map((extension) => (
+            <ExtensionCard
+              key={extension.id}
+              extension={extension}
+              onOpen={() => onOpenExtension(extension)}
+            />
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function ExtensionListRow({
+  extension,
+  onOpen,
+}: {
+  extension: ProjectExtensionSummary;
+  onOpen: () => void;
+}) {
+  const status = getExtensionStatus(extension.status);
+  const size = getExtensionSize(extension.size);
+  const statusLabel = extension.deliveryLifecycle
+    ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
+    : status?.label;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="hover:bg-secondary/50 group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
+    >
+      <Puzzle className="text-muted-foreground size-4 shrink-0" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-semibold">{extension.name}</span>
+          {size && <span className="text-muted-foreground text-xs">{size.label}</span>}
+        </div>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+          <span className="truncate">{extension.product.name}</span>
+          {extension.assignee && (
+            <span className="inline-flex items-center gap-1">
+              <User size={11} aria-hidden />
+              {extension.assignee.firstName} {extension.assignee.lastName}
+            </span>
+          )}
+          <span>{extension._count.tasks} tasks</span>
+        </div>
+      </div>
+      {statusLabel && (
+        <StatusBadge label={statusLabel} variant={status?.variant ?? 'gray'} className="shrink-0" />
+      )}
+      <ArrowRight
+        size={14}
+        className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+        aria-hidden
+      />
+    </button>
   );
 }
 
