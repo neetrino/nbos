@@ -155,7 +155,8 @@ export function ProjectParticipantsSection({
 
       {!isDense && (
         <p className="text-muted-foreground mt-3 text-sm">
-          Owner, CEO, and project admins can add participants (as Member) and promote to Admin.
+          Product roles (PM, dev, design, seller, …) sync here as Member automatically. Owner, CEO,
+          and project admins can add people manually and promote to Admin.
         </p>
       )}
 
