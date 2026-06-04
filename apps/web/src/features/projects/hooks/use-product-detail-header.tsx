@@ -31,6 +31,7 @@ export function useProductDetailHeader(
         <ProductDetailHeader
           product={product}
           siblingProducts={siblingProducts}
+          projectHref={`/projects/${projectId}`}
           onSelectProduct={onSelectProduct}
         />
       ),

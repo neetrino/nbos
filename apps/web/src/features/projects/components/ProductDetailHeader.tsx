@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronsUpDown, Package } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 export interface ProductDetailHeaderProps {
   product: FullProduct;
   siblingProducts: Product[];
+  projectHref: string;
   onSelectProduct: (productId: string) => void;
 }
 
@@ -21,6 +23,7 @@ type StageBadge = ReturnType<typeof getProductDeliveryStageBadgeDisplay>;
 export function ProductDetailHeader({
   product,
   siblingProducts,
+  projectHref,
   onSelectProduct,
 }: ProductDetailHeaderProps) {
   const [showSwitcher, setShowSwitcher] = useState(false);
@@ -32,19 +35,27 @@ export function ProductDetailHeader({
       <div className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500" aria-hidden>
         <Package className="size-4" />
       </div>
-      {hasProductSwitcher ? (
-        <ProductNameSwitcher
-          productName={product.name}
-          stageStatus={stageStatus}
-          open={showSwitcher}
-          onOpenChange={setShowSwitcher}
-          siblingProducts={siblingProducts}
-          currentProductId={product.id}
-          onSelectProduct={onSelectProduct}
-        />
-      ) : (
-        <ProductTitleRow productName={product.name} stageStatus={stageStatus} />
-      )}
+      <div className="min-w-0 flex-1">
+        {hasProductSwitcher ? (
+          <ProductNameSwitcher
+            productName={product.name}
+            stageStatus={stageStatus}
+            open={showSwitcher}
+            onOpenChange={setShowSwitcher}
+            siblingProducts={siblingProducts}
+            currentProductId={product.id}
+            onSelectProduct={onSelectProduct}
+          />
+        ) : (
+          <ProductTitleRow productName={product.name} stageStatus={stageStatus} />
+        )}
+        <Link
+          href={projectHref}
+          className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors"
+        >
+          {product.project.name}
+        </Link>
+      </div>
     </div>
   );
 }
