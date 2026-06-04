@@ -9,8 +9,12 @@ import {
   type EnvBundleEntry,
 } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
-import { CredentialEnvPasteDialog } from '@/features/credentials/components/credential-env-paste-dialog';
 import { CredentialEnvTableRow } from '@/features/credentials/components/credential-env-table-row';
+import {
+  EnvTableConfirmDialog,
+  EnvTablePasteChoiceDialog,
+} from '@/features/credentials/components/credential-env-table-dialogs';
+import { useEnvTableConfirm } from '@/features/credentials/hooks/use-env-table-confirm';
 import { CREDENTIAL_ENV_TABLE_PREVIEW_ROWS } from '@/features/credentials/constants/credential-env-table';
 import {
   ENV_TABLE_VALUE_EMPTY_PLACEHOLDER,
@@ -27,7 +31,7 @@ import {
   clipLooksLikeEnvBundle,
   clipSingleEnvPair,
 } from '@/features/credentials/utils/env-bundle-clipboard';
-import { mergeEnvBundleEntries } from '@/features/credentials/utils/merge-env-bundle-entries';
+import { findEnvRowIndexByKey } from '@/features/credentials/utils/credential-env-table-guards';
 import { toast } from 'sonner';
 
 const EMPTY_ENV_ROW: EnvBundleEntry = { key: '', value: '' };
@@ -62,7 +66,6 @@ export function CredentialEnvTableEditor({
 }: CredentialEnvTableEditorProps) {
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
-  const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
 
   useEffect(() => {
@@ -123,12 +126,42 @@ export function CredentialEnvTableEditor({
     onChange(serializeEnvBundle(next));
   };
 
-  const finishPaste = (next: EnvBundleEntry[], message: string) => {
+  const applyRowsWithToast = (next: EnvBundleEntry[], message: string) => {
     commitEntries(next);
     setPendingPasteEntries([]);
-    setPasteDialogOpen(false);
     toast.success(message);
   };
+
+  const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
+    const base = tableRows.length > 0 ? [...tableRows] : [EMPTY_ENV_ROW];
+    const current = base[index] ?? EMPTY_ENV_ROW;
+    base[index] = { ...current, ...patch };
+    commitEntries(base);
+  };
+
+  const confirm = useEnvTableConfirm({
+    tableRows,
+    serverKeySet,
+    revealedByKey,
+    pendingPasteEntries,
+    onApplyRows: applyRowsWithToast,
+    onRemoveIndex: (index) => {
+      const next = tableRows.filter((_, i) => i !== index);
+      commitEntries(next.length > 0 ? next : []);
+    },
+    onApplyKey: (index, key) => updateRow(index, { key }),
+    onResolveKeyOverwrite: (index, newKey) => {
+      const trimmed = newKey.trim();
+      const otherIndex = findEnvRowIndexByKey(tableRows, trimmed, index);
+      let next = [...tableRows];
+      if (otherIndex >= 0) next = next.filter((_, i) => i !== otherIndex);
+      const idx = otherIndex >= 0 && index > otherIndex ? index - 1 : index;
+      const current = next[idx] ?? EMPTY_ENV_ROW;
+      next[idx] = { ...current, key: newKey };
+      commitEntries(next.length > 0 ? next : [EMPTY_ENV_ROW]);
+    },
+    onClearPastePending: () => setPendingPasteEntries([]),
+  });
 
   const tryApplyBulk = (text: string) => {
     const parsed = parseEnvBundleText(text);
@@ -138,10 +171,10 @@ export function CredentialEnvTableEditor({
     }
     if (hasStoredKeys) {
       setPendingPasteEntries(parsed.entries);
-      setPasteDialogOpen(true);
+      confirm.openPasteChoice();
       return;
     }
-    finishPaste(parsed.entries, `Applied ${parsed.entries.length} variables`);
+    applyRowsWithToast(parsed.entries, `Applied ${parsed.entries.length} variables`);
   };
 
   const handleCellPaste = (index: number, event: ClipboardEvent<HTMLInputElement>) => {
@@ -161,18 +194,6 @@ export function CredentialEnvTableEditor({
       base[index] = single;
       commitEntries(base);
     }
-  };
-
-  const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
-    const base = tableRows.length > 0 ? [...tableRows] : [EMPTY_ENV_ROW];
-    const current = base[index] ?? EMPTY_ENV_ROW;
-    base[index] = { ...current, ...patch };
-    commitEntries(base);
-  };
-
-  const removeRow = (index: number) => {
-    const next = tableRows.filter((_, i) => i !== index);
-    commitEntries(next.length > 0 ? next : []);
   };
 
   const addRow = () => {
@@ -272,10 +293,10 @@ export function CredentialEnvTableEditor({
             maskValue={envRowValueIsMasked(row, showMasked, serverKeySet)}
             valueMaskDisplay={ENV_TABLE_VALUE_MASK_DISPLAY}
             valueEmptyPlaceholder={ENV_TABLE_VALUE_EMPTY_PLACEHOLDER}
-            onKeyChange={(key) => updateRow(index, { key })}
+            onKeyChange={(key) => confirm.requestKeyChange(index, key)}
             onValueChange={(val) => updateRow(index, { value: val })}
             onPaste={(event) => handleCellPaste(index, event)}
-            onRemove={() => removeRow(index)}
+            onRemove={() => confirm.requestRemove(index)}
             onCopy={() => void copyRow(row)}
           />
         ))}
@@ -295,19 +316,15 @@ export function CredentialEnvTableEditor({
         ) : null}
       </div>
 
-      <CredentialEnvPasteDialog
-        open={pasteDialogOpen}
-        onOpenChange={setPasteDialogOpen}
-        incomingCount={pendingPasteEntries.length}
+      <EnvTablePasteChoiceDialog
+        isOpen={confirm.pasteChoiceOpen}
+        onOpenChange={confirm.setPasteChoiceOpen}
         existingCount={tableRows.filter((row) => row.key.trim()).length}
-        onReplace={() =>
-          finishPaste(pendingPasteEntries, `Replaced with ${pendingPasteEntries.length} variables`)
-        }
-        onMerge={() => {
-          const merged = mergeEnvBundleEntries(tableRows, pendingPasteEntries);
-          finishPaste(merged, `Merged to ${merged.length} variables`);
-        }}
+        incomingCount={pendingPasteEntries.length}
+        onMerge={() => confirm.requestPasteMerge()}
+        onReplace={() => confirm.requestPasteReplace()}
       />
+      <EnvTableConfirmDialog dialogProps={confirm.deleteDialogProps} />
     </div>
   );
 }

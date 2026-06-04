@@ -1,5 +1,6 @@
 'use client';
 
+import { DeleteConfirmDialog, type DeleteConfirmDialogProps } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,25 +10,25 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-export interface CredentialEnvPasteDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  incomingCount: number;
+export interface EnvTablePasteChoiceDialogProps {
+  isOpen: boolean;
+  onOpenChange: (next: boolean) => void;
   existingCount: number;
-  onReplace: () => void;
+  incomingCount: number;
   onMerge: () => void;
+  onReplace: () => void;
 }
 
-export function CredentialEnvPasteDialog({
-  open,
+export function EnvTablePasteChoiceDialog({
+  isOpen,
   onOpenChange,
-  incomingCount,
   existingCount,
-  onReplace,
+  incomingCount,
   onMerge,
-}: CredentialEnvPasteDialogProps) {
+  onReplace,
+}: EnvTablePasteChoiceDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Apply pasted variables?</DialogTitle>
@@ -50,4 +51,13 @@ export function CredentialEnvPasteDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function EnvTableConfirmDialog({
+  dialogProps,
+}: {
+  dialogProps: DeleteConfirmDialogProps | null;
+}) {
+  if (!dialogProps) return null;
+  return <DeleteConfirmDialog {...dialogProps} />;
 }
