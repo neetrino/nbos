@@ -1,11 +1,8 @@
 import type { BlockerDirectAction } from '@/features/shared/blocker-actions';
-
-const PRODUCT_TAB = {
-  overview: 'overview',
-  tasks: 'tasks',
-  extensions: 'extensions',
-  tickets: 'tickets',
-} as const;
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
 
 /**
  * Deep link for a Product stage-gate blocker shortcut (product-centric navigation).
@@ -15,18 +12,29 @@ export function resolveProductStageGateActionHref(args: {
   productId: string;
   action: Pick<BlockerDirectAction, 'key'>;
 }): string {
-  const base = `/projects/${args.projectId}/products/${args.productId}`;
   switch (args.action.key) {
     case 'pm-intake':
-      return `${base}?tab=${PRODUCT_TAB.overview}`;
+      return buildProductDetailPageHref(
+        args.projectId,
+        args.productId,
+        PRODUCT_DETAIL_TAB.overview,
+      );
     case 'product-workspace-tasks':
-      return `${base}?tab=${PRODUCT_TAB.tasks}`;
+      return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.tasks);
     case 'product-support-tickets':
-      return `${base}?tab=${PRODUCT_TAB.tickets}`;
+      return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.tickets);
     case 'product-extensions':
-      return `${base}?tab=${PRODUCT_TAB.extensions}`;
+      return buildProductDetailPageHref(
+        args.projectId,
+        args.productId,
+        PRODUCT_DETAIL_TAB.extensions,
+      );
     default:
-      return `${base}?tab=${PRODUCT_TAB.overview}`;
+      return buildProductDetailPageHref(
+        args.projectId,
+        args.productId,
+        PRODUCT_DETAIL_TAB.overview,
+      );
   }
 }
 
@@ -38,13 +46,20 @@ export function resolveExtensionStageGateActionHref(args: {
   productId: string;
   action: Pick<BlockerDirectAction, 'key'>;
 }): string {
-  const base = `/projects/${args.projectId}/products/${args.productId}`;
   switch (args.action.key) {
     case 'extension-workspace-tasks':
-      return `${base}?tab=${PRODUCT_TAB.tasks}`;
+      return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.tasks);
     case 'extension-intake':
-      return `${base}?tab=${PRODUCT_TAB.extensions}`;
+      return buildProductDetailPageHref(
+        args.projectId,
+        args.productId,
+        PRODUCT_DETAIL_TAB.extensions,
+      );
     default:
-      return `${base}?tab=${PRODUCT_TAB.extensions}`;
+      return buildProductDetailPageHref(
+        args.projectId,
+        args.productId,
+        PRODUCT_DETAIL_TAB.extensions,
+      );
   }
 }

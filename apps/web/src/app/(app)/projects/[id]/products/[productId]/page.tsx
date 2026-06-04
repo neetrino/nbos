@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   LayoutDashboard,
   ListChecks,
@@ -26,6 +26,12 @@ import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
+import {
+  parseProductDetailTab,
+  PRODUCT_DETAIL_TAB_DEFAULT,
+  PRODUCT_DETAIL_TAB_QUERY,
+  type ProductDetailTab,
+} from '@/features/projects/constants/product-detail-tab';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -35,18 +41,21 @@ const TAB_ITEMS = [
   { value: 'technical', label: 'Technical', icon: ServerCog },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
   { value: 'finance', label: 'Finance', icon: DollarSign },
-] as const;
-
-type ProductTab = (typeof TAB_ITEMS)[number]['value'];
+] as const satisfies ReadonlyArray<{
+  value: ProductDetailTab;
+  label: string;
+  icon: typeof LayoutDashboard;
+}>;
 
 function ProductDetailPageContent() {
   const params = useParams<{ id: string; productId: string }>();
+  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [siblingProducts, setSiblingProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ProductTab>(getInitialTab(searchParams.get('tab')));
+  const activeTab = parseProductDetailTab(searchParams.get(PRODUCT_DETAIL_TAB_QUERY));
   const [projectData, setProjectData] = useState<{
     credentials: unknown[];
     orders: unknown[];
@@ -103,9 +112,20 @@ function ProductDetailPageContent() {
     fetchSiblings();
   }, [fetchProduct, fetchSiblings]);
 
-  useEffect(() => {
-    setActiveTab(getInitialTab(searchParams.get('tab')));
-  }, [searchParams]);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const tab = parseProductDetailTab(value);
+      const nextParams = new URLSearchParams(searchParams.toString());
+      if (tab === PRODUCT_DETAIL_TAB_DEFAULT) {
+        nextParams.delete(PRODUCT_DETAIL_TAB_QUERY);
+      } else {
+        nextParams.set(PRODUCT_DETAIL_TAB_QUERY, tab);
+      }
+      const query = nextParams.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
 
   useEffect(() => {
     if (activeTab === 'credentials' || activeTab === 'finance') {
@@ -132,11 +152,7 @@ function ProductDetailPageContent() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(getInitialTab(value))}
-        className="flex-1"
-      >
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
         <TabsList>
           {TAB_ITEMS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
@@ -213,8 +229,4 @@ export default function ProductDetailPage() {
       <ProductDetailPageContent />
     </Suspense>
   );
-}
-
-function getInitialTab(value: string | null): ProductTab {
-  return TAB_ITEMS.some((tab) => tab.value === value) ? (value as ProductTab) : 'overview';
 }
