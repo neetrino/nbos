@@ -13,6 +13,10 @@ import {
 } from '@/features/projects/constants/projects';
 import {
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
+  PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS,
+  PROJECT_SECTION_TOOLBAR_CLASS,
+  PROJECT_SECTION_TOOLBAR_TABS_CLASS,
+  PROJECT_SECTION_TOOLBAR_TITLE_CLASS,
   type ProjectProductsViewMode,
 } from './project-detail-layout.constants';
 
@@ -57,38 +61,42 @@ export function ProjectProductsSection({
   const byStatus = (status: string) =>
     project.products.filter((product) => product.status === status).length;
 
+  const hasProducts = project.products.length > 0;
+
   return (
     <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold">Products</h2>
-            <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-              {products.length}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {project.products.length > 0 && (
-              <ViewModeSwitch
-                value={viewMode}
-                onChange={onViewModeChange}
-                options={PRODUCT_VIEW_OPTIONS}
-                ariaLabel="Products view mode"
-              />
-            )}
-            <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
-              <Plus size={14} />
-              New Product
-            </Button>
-          </div>
+      <div className={PROJECT_SECTION_TOOLBAR_CLASS}>
+        <div className={PROJECT_SECTION_TOOLBAR_TITLE_CLASS}>
+          <h2 className="text-lg font-bold">Products</h2>
+          <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+            {project.products.length}
+          </span>
         </div>
-        {project.products.length > 0 && (
-          <ProductStatusFilters
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            byStatus={byStatus}
-          />
-        )}
+
+        {hasProducts ? (
+          <div className={PROJECT_SECTION_TOOLBAR_TABS_CLASS}>
+            <ProductStatusFilters
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              byStatus={byStatus}
+            />
+          </div>
+        ) : null}
+
+        <div className={PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS}>
+          {hasProducts ? (
+            <ViewModeSwitch
+              value={viewMode}
+              onChange={onViewModeChange}
+              options={PRODUCT_VIEW_OPTIONS}
+              ariaLabel="Products view mode"
+            />
+          ) : null}
+          <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
+            <Plus size={14} aria-hidden />
+            Product
+          </Button>
+        </div>
       </div>
 
       {products.length === 0 ? (
@@ -130,12 +138,18 @@ function ProductStatusFilters({
     <Tabs
       value={tabValue}
       onValueChange={(value) => setStatusFilter(value === PRODUCT_STATUS_FILTER_ALL ? null : value)}
-      className="w-full"
+      className="w-max min-w-full"
     >
-      <TabsList variant="line" className="w-full justify-start">
-        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL}>All</TabsTrigger>
+      <TabsList variant="line" className="inline-flex h-auto w-max flex-nowrap justify-start">
+        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL} className="shrink-0">
+          All
+        </TabsTrigger>
         {statusesWithProducts.map((status) => (
-          <TabsTrigger key={status.value} value={status.value}>
+          <TabsTrigger
+            key={status.value}
+            value={status.value}
+            className="shrink-0 whitespace-nowrap"
+          >
             {status.label} ({byStatus(status.value)})
           </TabsTrigger>
         ))}
