@@ -279,12 +279,7 @@ function ProductCard({
           <span>{product._count.tickets} tickets</span>
         </div>
         {status && statusLabel && (
-          <StatusBadge
-            label={statusLabel}
-            variant={status.variant}
-            className="max-w-full min-w-0 shrink truncate"
-            title={statusLabel}
-          />
+          <StatusBadge label={statusLabel} variant={status.variant} title={statusLabel} />
         )}
         <DeliveryDealCardHoverActions
           onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}

@@ -190,7 +190,6 @@ export function ExtensionEntityCard({
           <StatusBadge
             label={statusLabel}
             variant={status?.variant ?? 'gray'}
-            className="max-w-full min-w-0 shrink truncate"
             title={statusLabel}
           />
         ) : null}
