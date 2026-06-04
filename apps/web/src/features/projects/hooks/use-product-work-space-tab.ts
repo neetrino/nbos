@@ -1,14 +1,16 @@
 'use client';
 
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
+  fetchMoreWorkSpaceTabTasks,
   fetchProductWorkSpaceTabData,
   invalidateWorkSpaceTaskQueries,
   productWorkSpaceQueryKeys,
+  type TaskListMeta,
   type WorkSpaceTabData,
 } from '@/features/tasks/work-spaces/work-space-queries';
 
@@ -18,10 +20,13 @@ export type UseProductWorkSpaceTabResult = {
   setTasks: Dispatch<SetStateAction<Task[]>>;
   sprints: WorkSpaceSprint[];
   setSprints: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
+  taskMeta: TaskListMeta | null;
   loading: boolean;
+  loadingMoreTasks: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   refreshTasksFromServer: () => Promise<void>;
+  loadMoreTasks: () => Promise<void>;
   handleWorkspaceUpdate: (updated: WorkSpace) => Promise<void>;
 };
 
@@ -36,6 +41,7 @@ export function useProductWorkSpaceTab(
 ): UseProductWorkSpaceTabResult {
   const queryClient = useQueryClient();
   const queryKey = productWorkSpaceQueryKeys.tab(productId);
+  const [loadingMoreTasks, setLoadingMoreTasks] = useState(false);
 
   const query = useQuery({
     queryKey,
@@ -103,6 +109,17 @@ export function useProductWorkSpaceTab(
     await query.refetch();
   }, [query]);
 
+  const loadMoreTasks = useCallback(async () => {
+    if (!data?.taskMeta || data.taskMeta.page >= data.taskMeta.totalPages) return;
+    setLoadingMoreTasks(true);
+    try {
+      const next = await fetchMoreWorkSpaceTabTasks(data);
+      patchTabData(next);
+    } finally {
+      setLoadingMoreTasks(false);
+    }
+  }, [data, patchTabData]);
+
   const error = query.error
     ? getApiErrorMessage(query.error, 'Work Space could not be loaded.')
     : null;
@@ -113,10 +130,13 @@ export function useProductWorkSpaceTab(
     setTasks,
     sprints: data?.sprints ?? [],
     setSprints,
+    taskMeta: data?.taskMeta ?? null,
     loading: query.isLoading && !data,
+    loadingMoreTasks,
     error,
     refetch,
     refreshTasksFromServer,
+    loadMoreTasks,
     handleWorkspaceUpdate,
   };
 }

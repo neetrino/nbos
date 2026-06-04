@@ -46,6 +46,9 @@ export function WorkSpaceDetailPage() {
     error,
     refetch,
     refreshTasksFromServer,
+    loadMoreTasks,
+    loadingMoreTasks,
+    taskMeta,
     handleWorkspaceUpdate,
   } = useWorkSpaceDetail(params.id);
   const [editOpen, setEditOpen] = useState(false);
@@ -153,6 +156,9 @@ export function WorkSpaceDetailPage() {
         quickCreateRef={openQuickCreateRef}
         syncTaskSheetToUrl
         refreshTasksFromServer={refreshTasksFromServer}
+        taskListTotal={taskMeta?.total}
+        onLoadMoreTasks={() => void loadMoreTasks()}
+        loadingMoreTasks={loadingMoreTasks}
       />
 
       <EditWorkSpaceDialog

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useCallback,
   useEffect,
@@ -8,22 +10,15 @@ import {
 } from 'react';
 import type { KanbanColumn } from '@/components/shared';
 import {
-  applyTaskToKanbanColumn,
-  KANBAN_STATUS_MAP,
-  getDueDateForDeadlineColumn,
   buildDeadlineKanbanColumns,
-  buildWorkspaceKanbanColumns,
   buildMyPlanColumns,
+  buildWorkspaceKanbanColumns,
   buildWorkspacePlanningColumns,
   resolvePlanningColumnKey,
-  reorderTasksInColumn,
-  taskMatchesDeadlineColumn,
-  taskMatchesKanbanStatusColumn,
-  taskMatchesMyPlanColumn,
+  useTaskBoardMutations,
+  type TaskBoardAction,
 } from '@/features/tasks/task-board';
-import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
-
 import { taskInvolvesEmployee } from '@/features/tasks/utils/task-involves-employee';
 import {
   filterTasksForWorkspaceView,
@@ -83,6 +78,19 @@ export function useWorkspaceRuntimeBoard(
     };
   }, [myPlanOwnerId]);
 
+  const boardMutations = useTaskBoardMutations({
+    tasks,
+    setTasks,
+    boardView,
+    quickCreateColumnKey,
+    setQuickCreateColumnKey,
+    setQuickCreateOpen,
+    setDefaultCreateDueDate,
+    myPlanOwnerId,
+    myPlanStages,
+    setMyPlanStages,
+  });
+
   const myPlanStagesForView = myPlanOwnerId ? myPlanStages : [];
 
   const viewTasks = useMemo(() => {
@@ -110,235 +118,27 @@ export function useWorkspaceRuntimeBoard(
   const myPlanBoardTasks = useMemo(() => {
     if (boardView !== 'my-plan') return viewTasks;
     if (!myPlanOwnerId) return [];
-    return viewTasks.filter((t) => taskInvolvesEmployee(t, myPlanOwnerId));
+    return viewTasks.filter((task) => taskInvolvesEmployee(task, myPlanOwnerId));
   }, [boardView, viewTasks, myPlanOwnerId]);
-
-  const handleAction = useCallback(
-    async (taskId: string, action: TaskBoardAction) => {
-      const updated = await tasksApi[action](taskId);
-      setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    },
-    [setTasks],
-  );
 
   const handlePlanningMove = useCallback(
     async (taskId: string, _from: string, toColumn: string) => {
       const planningStatus = resolvePlanningColumnKey(toColumn);
-      const task = tasks.find((t) => t.id === taskId);
+      const task = tasks.find((item) => item.id === taskId);
       if (!task || task.planningStatus === planningStatus) return;
 
-      const prevTasks = tasks;
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, planningStatus } : t)));
+      const previousTasks = tasks;
+      setTasks((prev) =>
+        prev.map((item) => (item.id === taskId ? { ...item, planningStatus } : item)),
+      );
 
       try {
         await tasksApi.update(taskId, { planningStatus });
       } catch {
-        setTasks(prevTasks);
+        setTasks(previousTasks);
       }
     },
     [tasks, setTasks],
-  );
-
-  const handleKanbanReorder = useCallback(
-    (taskId: string, columnKey: string, toIndex: number) => {
-      setTasks((prev) =>
-        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
-          taskMatchesKanbanStatusColumn(task, columnKey),
-        ),
-      );
-    },
-    [setTasks],
-  );
-
-  const handleDeadlineReorder = useCallback(
-    (taskId: string, columnKey: string, toIndex: number) => {
-      setTasks((prev) =>
-        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
-          taskMatchesDeadlineColumn(task, columnKey),
-        ),
-      );
-    },
-    [setTasks],
-  );
-
-  const handleMyPlanReorder = useCallback(
-    (taskId: string, columnKey: string, toIndex: number) => {
-      setTasks((prev) =>
-        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
-          taskMatchesMyPlanColumn(task, columnKey),
-        ),
-      );
-    },
-    [setTasks],
-  );
-
-  const handleKanbanMove = useCallback(
-    async (taskId: string, _from: string, toColumn: string) => {
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
-
-      const targetStatus = KANBAN_STATUS_MAP[toColumn] ?? toColumn.toUpperCase().replace(/ /g, '_');
-
-      const normalizedCurrent =
-        task.status === 'NEW' && targetStatus === 'OPEN' ? 'OPEN' : task.status;
-      if (normalizedCurrent === targetStatus) return;
-
-      const prevTasks = tasks;
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t)));
-
-      try {
-        if (
-          targetStatus === 'IN_PROGRESS' &&
-          (task.status === 'OPEN' || task.status === 'NEW' || task.status === 'ON_HOLD')
-        ) {
-          await tasksApi.start(taskId);
-        } else if (targetStatus === 'COMPLETED' || targetStatus === 'DONE') {
-          await tasksApi.complete(taskId);
-        } else if (targetStatus === 'OPEN' && task.status !== 'OPEN' && task.status !== 'NEW') {
-          await tasksApi.reopen(taskId);
-        } else {
-          await tasksApi.update(taskId, { status: targetStatus });
-        }
-      } catch {
-        setTasks(prevTasks);
-      }
-    },
-    [tasks, setTasks],
-  );
-
-  const handleMyPlanMove = useCallback(
-    async (taskId: string, _from: string, toStageId: string) => {
-      const prevTasks = tasks;
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, myPlanStageId: toStageId } : t)),
-      );
-
-      try {
-        await tasksApi.update(taskId, { myPlanStageId: toStageId });
-      } catch {
-        setTasks(prevTasks);
-      }
-    },
-    [tasks, setTasks],
-  );
-
-  const handleDeadlineMove = useCallback(
-    async (taskId: string, _from: string, toColumnKey: string) => {
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
-
-      const prevTasks = tasks;
-
-      if (toColumnKey === 'done') {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, status: 'COMPLETED' as const } : t)),
-        );
-        try {
-          await tasksApi.complete(taskId);
-        } catch {
-          setTasks(prevTasks);
-        }
-        return;
-      }
-
-      const newDueDate = getDueDateForDeadlineColumn(toColumnKey);
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === taskId
-            ? {
-                ...t,
-                dueDate: newDueDate,
-                status:
-                  task.status === 'COMPLETED' || task.status === 'DONE'
-                    ? ('OPEN' as const)
-                    : t.status,
-              }
-            : t,
-        ),
-      );
-
-      try {
-        const updates: Record<string, unknown> = { dueDate: newDueDate };
-        if (task.status === 'COMPLETED' || task.status === 'DONE') {
-          await tasksApi.reopen(taskId);
-          await tasksApi.update(taskId, updates);
-        } else {
-          await tasksApi.update(taskId, updates);
-        }
-      } catch {
-        setTasks(prevTasks);
-      }
-    },
-    [tasks, setTasks],
-  );
-
-  const handleAddTaskInColumn = useCallback(
-    (columnKey: string) => {
-      setQuickCreateColumnKey(columnKey);
-      const useDeadline =
-        boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null;
-      setDefaultCreateDueDate(useDeadline);
-      setQuickCreateOpen(true);
-    },
-    [boardView],
-  );
-
-  const handleQuickCreateTask = useCallback(
-    async (task: Task) => {
-      let next = task;
-      if (quickCreateColumnKey) {
-        try {
-          next = await applyTaskToKanbanColumn(task, quickCreateColumnKey, boardView);
-        } catch {
-          next = task;
-        }
-      }
-      setTasks((prev) => [next, ...prev.filter((t) => t.id !== next.id)]);
-      setQuickCreateColumnKey(null);
-    },
-    [boardView, quickCreateColumnKey, setTasks],
-  );
-
-  const handleAddMyPlanStage = useCallback(
-    async (title: string, color: string) => {
-      if (!myPlanOwnerId) return;
-      try {
-        const stage = await tasksApi.createStage({
-          title,
-          color,
-          ownerId: myPlanOwnerId,
-        });
-        setMyPlanStages((prev) => [...prev, stage]);
-      } catch {
-        /* non-blocking */
-      }
-    },
-    [myPlanOwnerId],
-  );
-
-  const handleRenameMyPlanStage = useCallback(
-    async (columnKey: string, newTitle: string, newColor: string) => {
-      try {
-        const updated = await tasksApi.updateStage(columnKey, { title: newTitle, color: newColor });
-        setMyPlanStages((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      } catch {
-        /* non-blocking */
-      }
-    },
-    [],
-  );
-
-  const handleDeleteMyPlanStage = useCallback(
-    async (columnKey: string) => {
-      const prev = myPlanStages;
-      setMyPlanStages((s) => s.filter((st) => st.id !== columnKey));
-      try {
-        await tasksApi.deleteStage(columnKey);
-      } catch {
-        setMyPlanStages(prev);
-      }
-    },
-    [myPlanStages],
   );
 
   const boardScope = resolveWorkspaceBoardScope(viewFilters.filterValues);
@@ -358,18 +158,21 @@ export function useWorkspaceRuntimeBoard(
     defaultCreateDueDate,
     setDefaultCreateDueDate,
     setQuickCreateColumnKey,
-    handleQuickCreateTask,
-    handleAction,
-    handleKanbanMove,
-    handleKanbanReorder,
-    handleMyPlanMove,
-    handleMyPlanReorder,
-    handleDeadlineMove,
-    handleDeadlineReorder,
-    handleAddTaskInColumn,
-    handleAddMyPlanStage,
-    handleRenameMyPlanStage,
-    handleDeleteMyPlanStage,
+    handleQuickCreateTask: boardMutations.handleQuickCreateTask,
+    handleAction: boardMutations.handleAction as (
+      taskId: string,
+      action: TaskBoardAction,
+    ) => Promise<void>,
+    handleKanbanMove: boardMutations.handleKanbanMove,
+    handleKanbanReorder: boardMutations.handleKanbanReorder,
+    handleMyPlanMove: boardMutations.handleMyPlanMove,
+    handleMyPlanReorder: boardMutations.handleMyPlanReorder,
+    handleDeadlineMove: boardMutations.handleDeadlineMove,
+    handleDeadlineReorder: boardMutations.handleDeadlineReorder,
+    handleAddTaskInColumn: boardMutations.handleAddTaskInColumn,
+    handleAddMyPlanStage: boardMutations.handleAddMyPlanStage,
+    handleRenameMyPlanStage: boardMutations.handleRenameMyPlanStage,
+    handleDeleteMyPlanStage: boardMutations.handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks, boardScope),
     buildWorkspacePlanningColumns: () => buildWorkspacePlanningColumns(viewTasks),
     buildMyPlanColumns: () => buildMyPlanColumns(myPlanBoardTasks, myPlanStagesForView),

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { tasksApi, type Task } from '@/lib/api/tasks';
+import { fetchWorkspaceTaskPage } from '@/features/tasks/work-spaces/work-space-task-fetch';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { groupTasksForScrumPlanner, sprintCompletionPercent } from '../workspace-scrum-groups';
 import { WorkspaceScrumTaskRow } from './WorkspaceScrumTaskRow';
@@ -94,7 +95,7 @@ export function WorkspaceScrumPlanner({
       await workSpaceSprintsApi.start(workspaceId, sprintId);
       const [nextSprints, taskList] = await Promise.all([
         workSpaceSprintsApi.list(workspaceId),
-        tasksApi.getAll({ workspaceId, pageSize: 100 }),
+        fetchWorkspaceTaskPage(workspaceId),
       ]);
       setSprints(nextSprints);
       await applyServerTaskList(taskList.items);
@@ -224,7 +225,7 @@ export function WorkspaceScrumPlanner({
           onClosed={async () => {
             const [nextSprints, taskList] = await Promise.all([
               workSpaceSprintsApi.list(workspaceId),
-              tasksApi.getAll({ workspaceId, pageSize: 100 }),
+              fetchWorkspaceTaskPage(workspaceId),
             ]);
             setSprints(nextSprints);
             await applyServerTaskList(taskList.items);

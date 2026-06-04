@@ -20,6 +20,7 @@ import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
+import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
@@ -61,6 +62,9 @@ function TasksPageContent() {
     handleTaskUpdate,
     handleTaskDelete,
     handleTaskCreated,
+    taskMeta,
+    loadMoreTasks,
+    loadingMore,
     renderBoard,
   } = useTasksListPage();
 
@@ -129,7 +133,17 @@ function TasksPageContent() {
           description="Try another status scope or clear filters."
         />
       ) : (
-        renderBoard()
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {renderBoard()}
+          {taskMeta ? (
+            <TaskListLoadMoreBanner
+              loadedCount={displayTasks.length}
+              totalCount={taskMeta.total}
+              onLoadMore={() => void loadMoreTasks()}
+              loading={loadingMore}
+            />
+          ) : null}
+        </div>
       )}
 
       <TaskSheet

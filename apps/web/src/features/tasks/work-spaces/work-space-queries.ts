@@ -3,15 +3,22 @@ import { ApiError } from '@/lib/api-errors';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { mergeProductWorkSpaceTasks } from '@/features/tasks/work-spaces/work-space-utils';
+import {
+  appendUniqueTasks,
+  fetchLinkedProductTasks,
+  fetchWorkspaceSprints,
+  fetchWorkspaceTaskPage,
+  type TaskListMeta,
+} from '@/features/tasks/work-spaces/work-space-task-fetch';
+
+export type { TaskListMeta };
 
 export type WorkSpaceTabData = {
   workspace: WorkSpace;
   tasks: Task[];
+  taskMeta: TaskListMeta;
   sprints: WorkSpaceSprint[];
 };
-
-/** @deprecated use `WorkSpaceTabData` */
-export type ProductWorkSpaceTabData = WorkSpaceTabData;
 
 export const workSpaceQueryKeys = {
   productTab: (productId: string) => ['work-space', 'product', productId, 'tab'] as const,
@@ -64,22 +71,36 @@ export async function fetchProductWorkSpaceTabData(
 ): Promise<WorkSpaceTabData> {
   const workspace = await loadProductWorkSpace(productId, knownWorkSpaceId);
   const [workspaceTasks, linkedTasks] = await Promise.all([
-    tasksApi.getAll({ workspaceId: workspace.id, pageSize: 100 }),
-    tasksApi.getByEntity('PRODUCT', productId),
+    fetchWorkspaceTaskPage(workspace.id),
+    fetchLinkedProductTasks(productId),
   ]);
   const tasks = mergeProductWorkSpaceTasks(workspaceTasks.items, linkedTasks);
-  const sprints = workspace.scrumEnabled ? await workSpaceSprintsApi.list(workspace.id) : [];
-  return { workspace, tasks, sprints };
+  const sprints = await fetchWorkspaceSprints(workspace);
+  return { workspace, tasks, taskMeta: workspaceTasks.meta, sprints };
 }
 
 /** Workspace + tasks + sprints for standalone `/work-spaces/[id]`. */
 export async function fetchWorkSpaceDetailData(workspaceId: string): Promise<WorkSpaceTabData> {
   const workspace = await tasksApi.getWorkSpaceById(workspaceId);
-  const [taskData, sprintData] = await Promise.all([
-    tasksApi.getAll({ workspaceId, pageSize: 100 }),
-    workspace.scrumEnabled
-      ? workSpaceSprintsApi.list(workspaceId).catch(() => [] as WorkSpaceSprint[])
-      : Promise.resolve([] as WorkSpaceSprint[]),
+  const [taskData, sprints] = await Promise.all([
+    fetchWorkspaceTaskPage(workspaceId),
+    fetchWorkspaceSprints(workspace),
   ]);
-  return { workspace, tasks: taskData.items, sprints: sprintData };
+  return { workspace, tasks: taskData.items, taskMeta: taskData.meta, sprints };
+}
+
+/** Appends the next workspace task page; legacy linked tasks stay from the initial load. */
+export async function fetchMoreWorkSpaceTabTasks(
+  data: WorkSpaceTabData,
+): Promise<Pick<WorkSpaceTabData, 'tasks' | 'taskMeta'>> {
+  const nextPage = data.taskMeta.page + 1;
+  if (nextPage > data.taskMeta.totalPages) {
+    return { tasks: data.tasks, taskMeta: data.taskMeta };
+  }
+
+  const workspaceTasks = await fetchWorkspaceTaskPage(data.workspace.id, nextPage);
+  return {
+    tasks: appendUniqueTasks(data.tasks, workspaceTasks.items),
+    taskMeta: workspaceTasks.meta,
+  };
 }

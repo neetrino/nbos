@@ -118,10 +118,7 @@ export class WorkSpacesService {
   async findById(id: string) {
     const workspace = await this.prisma.workSpace.findUnique({
       where: { id },
-      include: {
-        ...WORK_SPACE_INCLUDE,
-        tasks: { orderBy: { workspaceSortOrder: 'asc' }, take: 50 },
-      },
+      include: WORK_SPACE_INCLUDE,
     });
     if (!workspace) throw new NotFoundException(`Work Space ${id} not found`);
     return workspace;

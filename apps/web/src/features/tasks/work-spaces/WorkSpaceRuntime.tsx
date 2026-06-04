@@ -19,6 +19,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
+import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -53,6 +54,9 @@ export type WorkSpaceRuntimeProps = {
   workspaceArea?: WorkspaceArea;
   /** Refetch task list from server (merged list on product tab). Used after sprint bulk changes. */
   refreshTasksFromServer?: () => Promise<void>;
+  taskListTotal?: number;
+  onLoadMoreTasks?: () => void;
+  loadingMoreTasks?: boolean;
 };
 
 export function WorkSpaceRuntime({
@@ -70,6 +74,9 @@ export function WorkSpaceRuntime({
   syncTaskSheetToUrl = false,
   workspaceArea = 'active',
   refreshTasksFromServer,
+  taskListTotal,
+  onLoadMoreTasks,
+  loadingMoreTasks = false,
 }: WorkSpaceRuntimeProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -356,6 +363,15 @@ export function WorkSpaceRuntime({
       ) : null}
 
       {showWorkspaceBoard ? (isPlanningArea ? renderPlanningArea() : renderBoard()) : null}
+
+      {taskListTotal !== undefined && onLoadMoreTasks ? (
+        <TaskListLoadMoreBanner
+          loadedCount={tasks.length}
+          totalCount={taskListTotal}
+          onLoadMore={onLoadMoreTasks}
+          loading={loadingMoreTasks}
+        />
+      ) : null}
 
       <TaskSheet
         taskId={selectedTaskId}

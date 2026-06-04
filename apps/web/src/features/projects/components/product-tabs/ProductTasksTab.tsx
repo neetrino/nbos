@@ -45,6 +45,9 @@ export function ProductTasksTab({
   refetch,
   handleWorkspaceUpdate,
   refreshTasksFromServer,
+  loadMoreTasks,
+  loadingMoreTasks,
+  taskMeta,
 }: ProductTasksTabProps) {
   const { creatorReady, creatorId } = useTaskCreatorId();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters();
@@ -151,6 +154,9 @@ export function ProductTasksTab({
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
         refreshTasksFromServer={refreshTasksFromServer}
+        taskListTotal={taskMeta?.total}
+        onLoadMoreTasks={() => void loadMoreTasks()}
+        loadingMoreTasks={loadingMoreTasks}
       />
 
       <EditWorkSpaceDialog

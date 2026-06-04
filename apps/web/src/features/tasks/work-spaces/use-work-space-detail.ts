@@ -1,14 +1,16 @@
 'use client';
 
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
+  fetchMoreWorkSpaceTabTasks,
   fetchWorkSpaceDetailData,
   invalidateWorkSpaceTaskQueries,
   workSpaceQueryKeys,
+  type TaskListMeta,
   type WorkSpaceTabData,
 } from '@/features/tasks/work-spaces/work-space-queries';
 
@@ -18,16 +20,20 @@ export type UseWorkSpaceDetailResult = {
   setTasks: Dispatch<SetStateAction<Task[]>>;
   sprints: WorkSpaceSprint[];
   setSprints: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
+  taskMeta: TaskListMeta | null;
   loading: boolean;
+  loadingMoreTasks: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   refreshTasksFromServer: () => Promise<void>;
+  loadMoreTasks: () => Promise<void>;
   handleWorkspaceUpdate: (updated: WorkSpace) => Promise<void>;
 };
 
 export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResult {
   const queryClient = useQueryClient();
   const queryKey = workSpaceQueryKeys.detail(workspaceId);
+  const [loadingMoreTasks, setLoadingMoreTasks] = useState(false);
 
   const query = useQuery({
     queryKey,
@@ -95,6 +101,17 @@ export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResul
     await query.refetch();
   }, [query]);
 
+  const loadMoreTasks = useCallback(async () => {
+    if (!data?.taskMeta || data.taskMeta.page >= data.taskMeta.totalPages) return;
+    setLoadingMoreTasks(true);
+    try {
+      const next = await fetchMoreWorkSpaceTabTasks(data);
+      patchDetailData(next);
+    } finally {
+      setLoadingMoreTasks(false);
+    }
+  }, [data, patchDetailData]);
+
   const error = query.error
     ? getApiErrorMessage(query.error, 'Work Space could not be loaded.')
     : null;
@@ -105,10 +122,13 @@ export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResul
     setTasks,
     sprints: data?.sprints ?? [],
     setSprints,
+    taskMeta: data?.taskMeta ?? null,
     loading: query.isLoading && !data,
+    loadingMoreTasks,
     error,
     refetch,
     refreshTasksFromServer,
+    loadMoreTasks,
     handleWorkspaceUpdate,
   };
 }
