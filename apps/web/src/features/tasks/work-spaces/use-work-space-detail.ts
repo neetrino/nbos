@@ -6,13 +6,13 @@ import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
-  fetchProductWorkSpaceTabData,
+  fetchWorkSpaceDetailData,
   invalidateWorkSpaceTaskQueries,
-  productWorkSpaceQueryKeys,
+  workSpaceQueryKeys,
   type WorkSpaceTabData,
 } from '@/features/tasks/work-spaces/work-space-queries';
 
-export type UseProductWorkSpaceTabResult = {
+export type UseWorkSpaceDetailResult = {
   workspace: WorkSpace | null;
   tasks: Task[];
   setTasks: Dispatch<SetStateAction<Task[]>>;
@@ -25,28 +25,20 @@ export type UseProductWorkSpaceTabResult = {
   handleWorkspaceUpdate: (updated: WorkSpace) => Promise<void>;
 };
 
-/**
- * Product Work Space tab — TanStack Query cache keyed by productId.
- * Fetch runs when `loadRequested` is true (Work Space tab active); cache survives tab switches.
- */
-export function useProductWorkSpaceTab(
-  productId: string,
-  loadRequested: boolean,
-  knownWorkSpaceId?: string | null,
-): UseProductWorkSpaceTabResult {
+export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResult {
   const queryClient = useQueryClient();
-  const queryKey = productWorkSpaceQueryKeys.tab(productId);
+  const queryKey = workSpaceQueryKeys.detail(workspaceId);
 
   const query = useQuery({
     queryKey,
-    queryFn: () => fetchProductWorkSpaceTabData(productId, knownWorkSpaceId),
-    enabled: loadRequested && Boolean(productId),
+    queryFn: () => fetchWorkSpaceDetailData(workspaceId),
+    enabled: Boolean(workspaceId),
   });
 
   const data = query.data;
   const workspace = data?.workspace ?? null;
 
-  const patchTabData = useCallback(
+  const patchDetailData = useCallback(
     (patch: Partial<WorkSpaceTabData>) => {
       queryClient.setQueryData<WorkSpaceTabData>(queryKey, (current) => {
         if (!current) return current;
@@ -82,21 +74,21 @@ export function useProductWorkSpaceTab(
     if (!workspace) return;
     invalidateWorkSpaceTaskQueries(queryClient, {
       workspaceId: workspace.id,
-      productId: workspace.productId ?? productId,
+      productId: workspace.productId,
     });
     await queryClient.refetchQueries({ queryKey });
-  }, [queryClient, queryKey, workspace, productId]);
+  }, [queryClient, queryKey, workspace]);
 
   const handleWorkspaceUpdate = useCallback(
     async (updated: WorkSpace) => {
       if (updated.scrumEnabled) {
         const nextSprints = await workSpaceSprintsApi.list(updated.id).catch(() => []);
-        patchTabData({ workspace: updated, sprints: nextSprints });
+        patchDetailData({ workspace: updated, sprints: nextSprints });
         return;
       }
-      patchTabData({ workspace: updated, sprints: [] });
+      patchDetailData({ workspace: updated, sprints: [] });
     },
-    [patchTabData],
+    [patchDetailData],
   );
 
   const refetch = useCallback(async () => {

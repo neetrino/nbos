@@ -24,6 +24,7 @@ export function WorkspaceScrumPlanner({
   onBacklogTaskCreated,
   creatorId,
   creatorReady,
+  refreshTasksFromServer,
 }: {
   workspaceId: string;
   tasks: Task[];
@@ -35,12 +36,24 @@ export function WorkspaceScrumPlanner({
   onBacklogTaskCreated: (task: Task) => void;
   creatorId: string | null;
   creatorReady: boolean;
+  refreshTasksFromServer?: () => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [closeSprint, setCloseSprint] = useState<WorkSpaceSprint | null>(null);
   const [closedOpen, setClosedOpen] = useState(false);
 
   const grouped = useMemo(() => groupTasksForScrumPlanner(tasks, sprints), [tasks, sprints]);
+
+  const applyServerTaskList = useCallback(
+    async (taskList: Task[]) => {
+      if (refreshTasksFromServer) {
+        await refreshTasksFromServer();
+        return;
+      }
+      setTasks(taskList);
+    },
+    [refreshTasksFromServer, setTasks],
+  );
 
   const moveTask = useCallback(
     async (taskId: string, sprintId: string | null) => {
@@ -84,7 +97,7 @@ export function WorkspaceScrumPlanner({
         tasksApi.getAll({ workspaceId, pageSize: 100 }),
       ]);
       setSprints(nextSprints);
-      setTasks(taskList.items);
+      await applyServerTaskList(taskList.items);
       toast.success('Sprint started.');
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Could not start sprint.'));
@@ -214,7 +227,7 @@ export function WorkspaceScrumPlanner({
               tasksApi.getAll({ workspaceId, pageSize: 100 }),
             ]);
             setSprints(nextSprints);
-            setTasks(taskList.items);
+            await applyServerTaskList(taskList.items);
             setCloseSprint(null);
           }}
         />

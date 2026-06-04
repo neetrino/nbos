@@ -66,7 +66,11 @@ function ProductDetailPageContent() {
 
   useProductDetailHeader(product, siblingProducts, params.id);
 
-  const workSpaceTab = useProductWorkSpaceTab(params.productId, activeTab === 'tasks');
+  const workSpaceTab = useProductWorkSpaceTab(
+    params.productId,
+    activeTab === 'tasks',
+    product?.workSpaceId ?? null,
+  );
 
   const fetchProduct = useCallback(async () => {
     if (!params.productId) return;

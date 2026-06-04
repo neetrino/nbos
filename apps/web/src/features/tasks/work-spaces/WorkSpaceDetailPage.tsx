@@ -15,8 +15,6 @@ import {
 } from '@/components/shared';
 import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
-import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
-import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsSheet } from './WorkSpaceDetailSettingsSheet';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
@@ -32,16 +30,24 @@ import {
   WORKSPACE_TASK_FILTER_CONFIGS,
 } from './workspace-runtime-filter-bar';
 import { useWorkSpaceDetailHeader } from './use-work-space-detail-header';
+import { useWorkSpaceDetail } from './use-work-space-detail';
 
 export function WorkSpaceDetailPage() {
   const params = useParams<{ id: string }>();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters();
-  const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [sprints, setSprints] = useState<WorkSpaceSprint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    workspace,
+    tasks,
+    setTasks,
+    sprints,
+    setSprints,
+    loading,
+    error,
+    refetch,
+    refreshTasksFromServer,
+    handleWorkspaceUpdate,
+  } = useWorkSpaceDetail(params.id);
   const [editOpen, setEditOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
   const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
@@ -51,30 +57,6 @@ export function WorkSpaceDetailPage() {
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
 
-  const fetchWorkspace = useCallback(async () => {
-    if (!params.id) return;
-    setLoading(true);
-    try {
-      const [workspaceData, taskData, sprintData] = await Promise.all([
-        tasksApi.getWorkSpaceById(params.id),
-        tasksApi.getAll({ workspaceId: params.id, pageSize: 100 }),
-        workSpaceSprintsApi.list(params.id).catch(() => [] as WorkSpaceSprint[]),
-      ]);
-      setWorkspace(workspaceData);
-      setTasks(taskData.items);
-      setSprints(workspaceData.scrumEnabled ? sprintData : []);
-      setError(null);
-    } catch {
-      setError('Work Space could not be loaded. Check the link and try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [params.id]);
-
-  useEffect(() => {
-    fetchWorkspace();
-  }, [fetchWorkspace]);
-
   useEffect(() => {
     if (boardView === 'planning') {
       setWorkspaceArea(WORKSPACE_AREA_PLANNING);
@@ -82,26 +64,23 @@ export function WorkSpaceDetailPage() {
     }
   }, [boardView]);
 
+  const onWorkspaceUpdate = useCallback(
+    async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
+      await handleWorkspaceUpdate(updated);
+      if (!updated.scrumEnabled) {
+        setWorkspaceArea(WORKSPACE_AREA_ACTIVE);
+      }
+    },
+    [handleWorkspaceUpdate],
+  );
+
   const contextHref = workspace ? buildWorkSpaceContextHref(workspace) : null;
   const defaultLink = useMemo(() => buildDefaultTaskLink(workspace), [workspace]);
-
-  const handleWorkspaceUpdate = useCallback(async (updated: WorkSpace) => {
-    setWorkspace(updated);
-    if (updated.scrumEnabled) {
-      const sprintData = await workSpaceSprintsApi
-        .list(updated.id)
-        .catch(() => [] as WorkSpaceSprint[]);
-      setSprints(sprintData);
-    } else {
-      setSprints([]);
-      setWorkspaceArea(WORKSPACE_AREA_ACTIVE);
-    }
-  }, []);
 
   useWorkSpaceDetailHeader(workspace);
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={fetchWorkspace} />;
+  if (error) return <ErrorState description={error} onRetry={() => void refetch()} />;
   if (!workspace) return null;
 
   return (
@@ -137,10 +116,7 @@ export function WorkSpaceDetailPage() {
               </Link>
             ) : null}
             {isPlanningArea ? (
-              <WorkSpaceScrumPlanningEnable
-                workspace={workspace}
-                onUpdated={handleWorkspaceUpdate}
-              />
+              <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
             ) : null}
             <EntityDriveNavAction onClick={() => setDriveOpen(true)} />
             <WorkSpaceDetailSettingsSheet
@@ -176,13 +152,14 @@ export function WorkSpaceDetailPage() {
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
         syncTaskSheetToUrl
+        refreshTasksFromServer={refreshTasksFromServer}
       />
 
       <EditWorkSpaceDialog
         workspace={workspace}
         open={editOpen}
         onOpenChange={setEditOpen}
-        onUpdated={handleWorkspaceUpdate}
+        onUpdated={onWorkspaceUpdate}
       />
 
       <WorkSpaceDriveSheet

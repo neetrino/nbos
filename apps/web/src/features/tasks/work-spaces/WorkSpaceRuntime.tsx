@@ -51,6 +51,8 @@ export type WorkSpaceRuntimeProps = {
    */
   syncTaskSheetToUrl?: boolean;
   workspaceArea?: WorkspaceArea;
+  /** Refetch task list from server (merged list on product tab). Used after sprint bulk changes. */
+  refreshTasksFromServer?: () => Promise<void>;
 };
 
 export function WorkSpaceRuntime({
@@ -67,6 +69,7 @@ export function WorkSpaceRuntime({
   quickCreateRef,
   syncTaskSheetToUrl = false,
   workspaceArea = 'active',
+  refreshTasksFromServer,
 }: WorkSpaceRuntimeProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -323,6 +326,7 @@ export function WorkSpaceRuntime({
           onBacklogTaskCreated={handleQuickCreateTask}
           creatorId={creatorId}
           creatorReady={creatorReady}
+          refreshTasksFromServer={refreshTasksFromServer}
         />
       ) : (
         <p className="text-muted-foreground border-border rounded-xl border border-dashed px-4 py-10 text-center text-sm">

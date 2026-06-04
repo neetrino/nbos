@@ -45,6 +45,10 @@ import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
 import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -176,8 +180,12 @@ export function DeliveryItemDetailSheet({
           projectName: item.product.project?.name ?? '—',
           projectHref: `/projects/${item.product.projectId}`,
           deadline: item.product.deadline,
-          workSpaceHref: `/projects/${item.product.projectId}/products/${item.product.id}?tab=tasks`,
-          sourcePageHref: `/projects/${item.product.projectId}/products/${item.product.id}`,
+          workSpaceHref: buildProductDetailPageHref(
+            item.product.projectId,
+            item.product.id,
+            PRODUCT_DETAIL_TAB.tasks,
+          ),
+          sourcePageHref: buildProductDetailPageHref(item.product.projectId, item.product.id),
           productId: item.product.id,
         }
       : item && item.kind === 'EXTENSION'
@@ -187,8 +195,16 @@ export function DeliveryItemDetailSheet({
             projectName: item.extension.project?.name ?? '—',
             projectHref: `/projects/${item.extension.projectId}`,
             deadline: null as string | null,
-            workSpaceHref: `/projects/${item.extension.projectId}/products/${item.extension.productId}?tab=tasks`,
-            sourcePageHref: `/projects/${item.extension.projectId}/products/${item.extension.productId}?tab=extensions`,
+            workSpaceHref: buildProductDetailPageHref(
+              item.extension.projectId,
+              item.extension.productId,
+              PRODUCT_DETAIL_TAB.tasks,
+            ),
+            sourcePageHref: buildProductDetailPageHref(
+              item.extension.projectId,
+              item.extension.productId,
+              PRODUCT_DETAIL_TAB.extensions,
+            ),
             productId: item.extension.productId,
           }
         : null;
@@ -201,12 +217,20 @@ export function DeliveryItemDetailSheet({
         : '';
   const financeTabHref =
     headerProps && panelProjectId
-      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=finance`
+      ? buildProductDetailPageHref(
+          panelProjectId,
+          headerProps.productId,
+          PRODUCT_DETAIL_TAB.finance,
+        )
       : '#';
   const projectHubHref = panelProjectId ? `/projects/${panelProjectId}` : '#';
   const credentialsTabHref =
     headerProps && panelProjectId
-      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=credentials`
+      ? buildProductDetailPageHref(
+          panelProjectId,
+          headerProps.productId,
+          PRODUCT_DETAIL_TAB.credentials,
+        )
       : '#';
 
   const handleCommitTitle = useCallback(

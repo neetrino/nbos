@@ -44,6 +44,7 @@ export function ProductTasksTab({
   error,
   refetch,
   handleWorkspaceUpdate,
+  refreshTasksFromServer,
 }: ProductTasksTabProps) {
   const { creatorReady, creatorId } = useTaskCreatorId();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters();
@@ -149,6 +150,7 @@ export function ProductTasksTab({
         setBoardView={setBoardView}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
+        refreshTasksFromServer={refreshTasksFromServer}
       />
 
       <EditWorkSpaceDialog

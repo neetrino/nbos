@@ -39,6 +39,17 @@ import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/de
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
 import type { DeliverySheetStageGateHighlight } from '@/features/projects/components/delivery-board/delivery-stage-gate-highlight';
 import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+  type ProductDetailTab,
+} from '@/features/projects/constants/product-detail-tab';
+
+const DELIVERY_BOARD_PRODUCT_TAB: Record<ProductBoardTab, ProductDetailTab> = {
+  tasks: PRODUCT_DETAIL_TAB.tasks,
+  tickets: PRODUCT_DETAIL_TAB.tickets,
+  extensions: PRODUCT_DETAIL_TAB.extensions,
+};
 
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   search: '',
@@ -198,7 +209,8 @@ function DeliveryBoardPageContent() {
     (productId: string, tab: ProductBoardTab) => {
       const target = scopedItems.find((i) => i.kind === 'PRODUCT' && i.product.id === productId);
       const pid = target && target.kind === 'PRODUCT' ? target.product.projectId : projectFilterId;
-      if (pid) router.push(`/projects/${pid}/products/${productId}?tab=${tab}`);
+      if (pid)
+        router.push(buildProductDetailPageHref(pid, productId, DELIVERY_BOARD_PRODUCT_TAB[tab]));
     },
     [router, scopedItems, projectFilterId],
   );

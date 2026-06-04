@@ -346,26 +346,29 @@ export class ProductsService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
+        workSpace: { select: { id: true } },
       },
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
+    const { workSpace, ...productRecord } = product;
     const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
       {
         ownerEntityType: 'PRODUCT',
-        ownerEntityId: product.id,
-        stage: attachProductDeliveryLifecycle(product).deliveryLifecycle.stage,
+        ownerEntityId: productRecord.id,
+        stage: attachProductDeliveryLifecycle(productRecord).deliveryLifecycle.stage,
       },
     ]);
-    const withLc = attachProductDeliveryLifecycle(product);
+    const withLc = attachProductDeliveryLifecycle(productRecord);
     const checklistStageProgress = pickProgressForEntity(
       checklistProgressMap,
       'PRODUCT',
-      product.id,
+      productRecord.id,
       withLc.deliveryLifecycle.stage,
     );
     return {
       ...withLc,
-      doneReadiness: buildProductDoneReadiness(product),
+      workSpaceId: workSpace?.id ?? null,
+      doneReadiness: buildProductDoneReadiness(productRecord),
       checklistStageProgress,
     };
   }

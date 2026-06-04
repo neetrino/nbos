@@ -12,6 +12,10 @@ import { useProjectDetailViewMode } from '@/features/projects/constants/project-
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -71,7 +75,13 @@ export default function ProjectDetailPage() {
             extensions={project.extensions}
             viewMode={detailViewMode}
             onOpenExtension={(extension) =>
-              router.push(`/projects/${params.id}/products/${extension.productId}?tab=extensions`)
+              router.push(
+                buildProductDetailPageHref(
+                  params.id,
+                  extension.productId,
+                  PRODUCT_DETAIL_TAB.extensions,
+                ),
+              )
             }
           />
         </div>
