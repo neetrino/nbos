@@ -36,11 +36,7 @@ import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/P
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
 import { PAYROLL_RUNS_VIEW_OPTIONS } from '@/features/finance/components/payroll/payroll-runs-view-options';
-import {
-  readPayrollRunsListViewMode,
-  writePayrollRunsListViewMode,
-  type PayrollRunsListViewMode,
-} from '@/features/finance/constants/payroll-runs-list-view';
+import { usePayrollRunsListViewMode } from '@/features/finance/constants/payroll-runs-list-view';
 import {
   buildPayrollIntegratedFilterConfigs,
   PAYROLL_FILTER_MONTH_FROM_KEY,
@@ -80,7 +76,7 @@ export function PayrollRunsListPageContent() {
   const [monthTo, setMonthTo] = useState<string | undefined>(() =>
     parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY)),
   );
-  const [view, setView] = useState<PayrollRunsListViewMode>(() => readPayrollRunsListViewMode());
+  const [view, handleViewChange] = usePayrollRunsListViewMode();
 
   useEffect(() => {
     setStatusFilter(
@@ -251,12 +247,6 @@ export function PayrollRunsListPageContent() {
     },
     [handleMonthFromChange, handleMonthToChange, handleStatusChange],
   );
-
-  const handleViewChange = useCallback((next: PayrollRunsListViewMode) => {
-    setView(next);
-    writePayrollRunsListViewMode(next);
-  }, []);
-
   const handleClearPayrollFilters = useCallback(() => {
     setStatusFilter('ALL');
     setMonthFrom(undefined);

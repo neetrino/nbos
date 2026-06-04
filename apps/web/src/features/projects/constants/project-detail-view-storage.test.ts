@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import {
   DEFAULT_PROJECT_DETAIL_VIEW_MODE,
   PROJECT_DETAIL_VIEW_STORAGE_KEY,
-  parseStoredViewMode,
   readProjectDetailViewFromStorage,
   writeProjectDetailViewToStorage,
 } from './project-detail-view-storage';
@@ -44,12 +43,6 @@ describe('project-detail-view-storage', () => {
     writeProjectDetailViewToStorage('list');
     expect(readProjectDetailViewFromStorage()).toBe('list');
     expect(window.localStorage.getItem(PROJECT_DETAIL_VIEW_STORAGE_KEY)).toBe('list');
-  });
-
-  it('parseStoredViewMode ignores invalid values', () => {
-    expect(parseStoredViewMode(null)).toBe(DEFAULT_PROJECT_DETAIL_VIEW_MODE);
-    expect(parseStoredViewMode('invalid')).toBe(DEFAULT_PROJECT_DETAIL_VIEW_MODE);
-    expect(parseStoredViewMode('')).toBe(DEFAULT_PROJECT_DETAIL_VIEW_MODE);
   });
 
   it('read ignores invalid stored values', () => {

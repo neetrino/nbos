@@ -14,8 +14,7 @@ import {
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
-  readBonusBoardViewMode,
-  writeBonusBoardViewMode,
+  useBonusBoardViewMode,
   type BonusBoardViewMode,
 } from '@/features/finance/constants/bonus-board-view';
 import { BONUS_BOARD_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-board-view-options';
@@ -82,14 +81,8 @@ export function BonusBoardPageContent() {
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
   const [boardScopeFilter, setBoardScopeFilter] = useState<string>(DEFAULT_BOARD_LIFECYCLE_SCOPE);
-  const [view, setView] = useState<BonusBoardViewMode>(() => readBonusBoardViewMode());
+  const [view, handleViewChange] = useBonusBoardViewMode();
   const [createOpen, setCreateOpen] = useState(false);
-
-  const handleViewChange = useCallback((mode: BonusBoardViewMode) => {
-    setView(mode);
-    writeBonusBoardViewMode(mode);
-  }, []);
-
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
     setProjectFilter(raw && raw.length > 0 ? raw : 'ALL');

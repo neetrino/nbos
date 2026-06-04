@@ -9,11 +9,7 @@ import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
-import {
-  readOrdersBoardViewMode,
-  writeOrdersBoardViewMode,
-} from '@/features/finance/constants/orders-board-view';
-import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
+import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   ordersApi,
@@ -50,11 +46,7 @@ export function useOrdersPageState({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [sheetRefreshKey, setSheetRefreshKey] = useState(0);
-  const [view, setViewState] = useState<OrderViewMode>(() => readOrdersBoardViewMode());
-  const setView = useCallback((next: OrderViewMode) => {
-    setViewState(next);
-    writeOrdersBoardViewMode(next);
-  }, []);
+  const [view, setView] = useOrdersBoardViewMode();
 
   const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
     () =>

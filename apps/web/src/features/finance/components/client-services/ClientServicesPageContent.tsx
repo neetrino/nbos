@@ -13,11 +13,7 @@ import {
   useDeleteConfirm,
   useModuleHeroSlots,
 } from '@/components/shared';
-import {
-  readClientServicesViewMode,
-  writeClientServicesViewMode,
-  type ClientServicesViewMode,
-} from '@/features/finance/constants/client-services-view';
+import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
 import { CLIENT_SERVICES_VIEW_OPTIONS } from './client-services-view-options';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
@@ -56,7 +52,7 @@ function ClientServicesPageInner() {
   const searchParams = useSearchParams();
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
-  const [view, setView] = useState<ClientServicesViewMode>(() => readClientServicesViewMode());
+  const [view, handleViewChange] = useClientServicesViewMode();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [stats, setStats] = useState<ClientServiceStats | null>(null);
@@ -67,12 +63,6 @@ function ClientServicesPageInner() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [billingFilter, setBillingFilter] = useState('all');
-
-  const handleViewChange = useCallback((next: ClientServicesViewMode) => {
-    setView(next);
-    writeClientServicesViewMode(next);
-  }, []);
-
   const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
 
   const baseParams = useMemo<ClientServiceRecordListParams>(

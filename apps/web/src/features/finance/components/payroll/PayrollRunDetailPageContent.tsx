@@ -19,9 +19,7 @@ import {
   PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
   isPayrollMatrixViewMode,
   isPayrollRunFullscreenViewMode,
-  readPayrollRunDetailViewMode,
-  type PayrollRunDetailViewMode,
-  writePayrollRunDetailViewMode,
+  usePayrollRunDetailViewMode,
 } from '@/features/finance/components/payroll/payroll-run-detail-view-options';
 import { PayrollEmployeeBonusHistoryWorkspace } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-workspace';
 import { usePayrollRunMatrixCache } from '@/features/finance/components/payroll/use-payroll-run-matrix-cache';
@@ -63,9 +61,7 @@ export function PayrollRunDetailPageContent({
   const [error, setError] = useState<string | null>(initialError);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [detailViewMode, setDetailViewMode] = useState<PayrollRunDetailViewMode>(() =>
-    readPayrollRunDetailViewMode(),
-  );
+  const [detailViewMode, handleDetailViewModeChange] = usePayrollRunDetailViewMode();
   const [matrixSearch, setMatrixSearch] = useState('');
   const [matrixTotals, setMatrixTotals] = useState<PayrollAllocationMatrix['totals'] | null>(null);
   const [sheetSalaryLineId, setSheetSalaryLineId] = useState<string | null>(null);
@@ -96,12 +92,6 @@ export function PayrollRunDetailPageContent({
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [matrixFullscreen]);
-
-  const handleDetailViewModeChange = useCallback((mode: PayrollRunDetailViewMode) => {
-    setDetailViewMode(mode);
-    writePayrollRunDetailViewMode(mode);
-  }, []);
-
   const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
     usePayrollRunSalaryLinesCsvExport(run);
   const { journalSubmitting, auditSubmitting, handleExportJournalCsv, handleExportAuditCsv } =

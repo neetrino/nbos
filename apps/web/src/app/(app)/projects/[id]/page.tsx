@@ -8,7 +8,7 @@ import { CreateProductDialog } from '@/features/projects/components/CreateProduc
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
 import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
 import { PROJECT_DETAIL_SIDEBAR_CLASS } from '@/features/projects/components/project-detail-layout.constants';
-import { useProjectDetailViewMode } from '@/features/projects/hooks/use-project-detail-view-mode';
+import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';

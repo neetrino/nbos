@@ -1,5 +1,8 @@
+'use client';
+
 import { CalendarRange, LayoutGrid, List, Users } from 'lucide-react';
 import type { ViewModeOption } from '@/components/shared';
+import { createPersistedScalarStore } from '@/lib/persisted-client-state';
 import type { PayrollMatrixViewMode } from '@/lib/api/payroll-allocation-matrix';
 
 export type PayrollRunDetailViewMode =
@@ -7,7 +10,6 @@ export type PayrollRunDetailViewMode =
   | 'EMPLOYEE_BONUS_HISTORY'
   | PayrollMatrixViewMode;
 
-const STORAGE_KEY = 'nbos:finance:payroll-run-detail-view';
 const DEFAULT_VIEW_MODE: PayrollRunDetailViewMode = 'EMPLOYEE_MATRIX';
 
 export const PAYROLL_RUN_DETAIL_VIEW_OPTIONS: ViewModeOption<PayrollRunDetailViewMode>[] = [
@@ -47,21 +49,6 @@ export function isPayrollRunFullscreenViewMode(mode: PayrollRunDetailViewMode): 
   return isPayrollMatrixViewMode(mode) || mode === 'EMPLOYEE_BONUS_HISTORY';
 }
 
-export function readPayrollRunDetailViewMode(): PayrollRunDetailViewMode {
-  if (typeof window === 'undefined') {
-    return DEFAULT_VIEW_MODE;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  return isPayrollRunDetailViewMode(raw) ? raw : DEFAULT_VIEW_MODE;
-}
-
-export function writePayrollRunDetailViewMode(mode: PayrollRunDetailViewMode): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.localStorage.setItem(STORAGE_KEY, mode);
-}
-
 function isPayrollRunDetailViewMode(value: string | null): value is PayrollRunDetailViewMode {
   return (
     value === 'SALARY_LINES' ||
@@ -70,3 +57,13 @@ function isPayrollRunDetailViewMode(value: string | null): value is PayrollRunDe
     value === 'ORDER_MATRIX'
   );
 }
+
+const payrollRunDetailViewStore = createPersistedScalarStore<PayrollRunDetailViewMode>({
+  storageKey: 'nbos:finance:payroll-run-detail-view',
+  defaultValue: DEFAULT_VIEW_MODE,
+  parse: (raw) => (isPayrollRunDetailViewMode(raw) ? raw : DEFAULT_VIEW_MODE),
+});
+
+export const readPayrollRunDetailViewMode = payrollRunDetailViewStore.read;
+export const writePayrollRunDetailViewMode = payrollRunDetailViewStore.write;
+export const usePayrollRunDetailViewMode = payrollRunDetailViewStore.useValue;

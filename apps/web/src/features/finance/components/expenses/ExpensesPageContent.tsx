@@ -54,10 +54,7 @@ import {
   expenseBoardScopeFromVariant,
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
-import {
-  readExpensesBoardViewMode,
-  writeExpensesBoardViewMode,
-} from '@/features/finance/constants/expenses-board-view';
+import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
@@ -106,12 +103,7 @@ export function ExpensesPageContent({
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     initialExpenseFilterRecord(pageVariant),
   );
-  const [view, setView] = useState<ExpensesViewMode>(() => readExpensesBoardViewMode());
-
-  const handleViewChange = useCallback((next: ExpensesViewMode) => {
-    setView(next);
-    writeExpensesBoardViewMode(next);
-  }, []);
+  const [view, handleViewChange] = useExpensesBoardViewMode();
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
