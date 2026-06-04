@@ -2,6 +2,8 @@
 
 import { User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
+import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct, ProductEmployee } from '@/lib/api/products';
@@ -10,7 +12,6 @@ import type {
   ExtensionPlanSnapshot,
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
-import { DeliveryTeamEmployeeChoiceDisplay } from './delivery-team-employee-display';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 interface DeliveryItemTeamSectionProps {
@@ -31,16 +32,21 @@ function personName(p: ProductEmployee | null | undefined): string {
 }
 
 function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefined }) {
+  const relations = useEntityRelations();
   const name = personName(seller);
+
   return (
     <div>
       <p className="text-muted-foreground mb-1 text-[10px] font-semibold tracking-wider uppercase">
         Seller
       </p>
-      {name ? (
-        <div className="border-border bg-background flex items-center gap-2.5 rounded-lg border px-2.5 py-2 shadow-sm">
-          <DeliveryTeamEmployeeChoiceDisplay label={name} />
-        </div>
+      {name && seller ? (
+        <RelationPickerChip
+          label={name}
+          subtitle={seller.email ?? null}
+          entityKind="employee"
+          onOpen={() => void relations.openEntity('employee', seller.id)}
+        />
       ) : (
         <div className="border-border bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-2.5 py-2 text-xs italic">
           Not assigned
