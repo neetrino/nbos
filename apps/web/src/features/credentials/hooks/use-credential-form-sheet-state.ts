@@ -61,6 +61,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [passphrase, setPassphrase] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [envData, setEnvData] = useState('');
+  /** Baseline ENV serialized form for dirty detection (keys preview / last save). */
+  const [envSnap, setEnvSnap] = useState('');
   const [comment, setComment] = useState('');
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [nextRotationAt, setNextRotationAt] = useState('');
@@ -104,6 +106,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setPassphrase('');
     setApiKey('');
     setEnvData('');
+    setEnvSnap('');
     setComment('');
     setNextRotationAt('');
     setManualGrants([]);
@@ -213,8 +216,10 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       nextRotationAt,
       manualGrants,
     });
+    setEnvSnap(envData.trim());
   }, [
     applyFormSnapshot,
+    envData,
     name,
     category,
     credentialType,
@@ -248,6 +253,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       passphrase,
       apiKey,
       envData,
+      envSnap,
       snap,
       manualGrants: manualGrants.map((g) => ({
         ...g,
@@ -272,6 +278,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setPassphrase(saved.passphrase);
       setApiKey(saved.apiKey);
       setEnvData(saved.envData);
+      setEnvSnap(saved.envSnap);
       setManualGrants(saved.manualGrants);
       setSnap(saved.snap);
     };
@@ -283,6 +290,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     credentialType,
     criticality,
     envData,
+    envSnap,
     login,
     manualGrants,
     name,
@@ -321,6 +329,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setPassphrase('');
       setApiKey('');
       setEnvData('');
+      setEnvSnap('');
       setComment(d.comment ?? '');
       setAccessLevel(d.accessLevel);
       const rotationDate = d.nextRotationAt?.slice(0, 10) ?? '';
@@ -467,7 +476,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
           criticality,
           nextRotationAt,
           manualGrants,
-        }) !== snap || Boolean(password || passphrase || apiKey || envData);
+        }) !== snap ||
+        Boolean(password || passphrase || apiKey) ||
+        (credentialType === 'ENV_BUNDLE' && envData.trim() !== envSnap);
 
   dirtyRef.current = dirty;
 
@@ -510,6 +521,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setApiKey,
     envData,
     setEnvData,
+    setEnvSnap,
     comment,
     setComment,
     accessLevel,

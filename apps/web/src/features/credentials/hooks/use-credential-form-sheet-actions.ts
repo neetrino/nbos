@@ -36,6 +36,7 @@ export interface CredentialFormSheetStateSlice {
   apiKey: string;
   envData: string;
   setEnvData: Dispatch<SetStateAction<string>>;
+  setEnvSnap: Dispatch<SetStateAction<string>>;
   comment: string;
   accessLevel: string;
   nextRotationAt: string;
@@ -285,7 +286,9 @@ export function useCredentialFormSheetActions(
     if (!value) return false;
     const entries = entriesFromEnvBundleSerialized(value);
     if (entries.length === 0) return false;
-    state.setEnvData(serializeEnvBundle(entries.map((entry) => ({ key: entry.key, value: '' }))));
+    const keyPreview = serializeEnvBundle(entries.map((entry) => ({ key: entry.key, value: '' })));
+    state.setEnvData(keyPreview);
+    state.setEnvSnap(keyPreview);
     return true;
   }, [accessSecretPlaintext, state]);
 

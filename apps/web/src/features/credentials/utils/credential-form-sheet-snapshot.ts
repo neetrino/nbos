@@ -24,6 +24,7 @@ export type CredentialFormRollbackState = CredentialFormSnapFields & {
   passphrase: string;
   apiKey: string;
   envData: string;
+  envSnap: string;
   phones: string[];
   appStorePlatform: string;
   snap: string;

@@ -28,6 +28,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       apiKey: state.apiKey,
       envData: state.envData,
       setEnvData: state.setEnvData,
+      setEnvSnap: state.setEnvSnap,
       comment: state.comment,
       accessLevel: state.accessLevel,
       nextRotationAt: state.nextRotationAt,
