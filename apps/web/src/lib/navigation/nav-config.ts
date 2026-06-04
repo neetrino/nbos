@@ -255,7 +255,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
   },
   {
     key: 'reports',
-    label: 'Analytics / Reports',
+    label: 'Analytics',
     href: '/reports',
     permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
