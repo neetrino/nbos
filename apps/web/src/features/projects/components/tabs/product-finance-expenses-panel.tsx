@@ -1,14 +1,13 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   ExpensesPageMainPanel,
   type ExpensesViewMode,
 } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
+import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { useExpenseKanbanStatusChange } from '@/features/finance/components/expenses/use-expense-kanban-status-change';
 import {
-  expenseDetailHref,
   projectExpensesBacklogDrilldownHref,
   projectExpensesDrilldownHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
@@ -17,7 +16,9 @@ import {
   EXPENSE_LIST_DEFAULT_SORT_ORDER,
 } from '@/features/finance/constants/expenses-list-query';
 import { useProductFinanceExpenses } from '@/features/projects/hooks/use-product-finance-expenses';
+import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import type { Expense } from '@/lib/api/finance';
+import { useRouter } from 'next/navigation';
 
 interface ProductFinanceExpensesPanelProps {
   projectId: string;
@@ -33,6 +34,7 @@ export function ProductFinanceExpensesPanel({
   view,
 }: ProductFinanceExpensesPanelProps) {
   const router = useRouter();
+  const expenseSheet = useProductEntityDetailSheet();
   const { expenses, loading, error, refetch, pageVariant, kanbanScope, fromBacklog } =
     useProductFinanceExpenses(projectId, search, filters);
 
@@ -56,9 +58,9 @@ export function ProductFinanceExpensesPanel({
 
   const handleOpenExpense = useCallback(
     (expense: Expense) => {
-      router.push(expenseDetailHref(expense.id, projectId, listSort, listOptions));
+      expenseSheet.openEntity(expense.id);
     },
-    [router, projectId, listOptions],
+    [expenseSheet],
   );
 
   const handleAddFirstExpense = useCallback(() => {
@@ -77,18 +79,34 @@ export function ProductFinanceExpensesPanel({
   );
 
   return (
-    <ExpensesPageMainPanel
-      loading={loading}
-      error={error}
-      onRetry={() => void refetch()}
-      expenses={expenses}
-      view={fromBacklog ? 'list' : view}
-      kanbanScope={kanbanScope}
-      fromBacklog={fromBacklog}
-      onOpenExpense={handleOpenExpense}
-      onRequestDelete={handleOpenExpense}
-      onAddFirstExpense={handleAddFirstExpense}
-      onKanbanMove={pageVariant === 'backlog' ? undefined : onKanbanMove}
-    />
+    <>
+      <ExpensesPageMainPanel
+        loading={loading}
+        error={error}
+        onRetry={() => void refetch()}
+        expenses={expenses}
+        view={fromBacklog ? 'list' : view}
+        kanbanScope={kanbanScope}
+        fromBacklog={fromBacklog}
+        onOpenExpense={handleOpenExpense}
+        onRequestDelete={handleOpenExpense}
+        onAddFirstExpense={handleAddFirstExpense}
+        onKanbanMove={pageVariant === 'backlog' ? undefined : onKanbanMove}
+      />
+
+      <ExpenseDetailSheet
+        expenseId={expenseSheet.entityId}
+        open={expenseSheet.isOpen}
+        onOpenChange={expenseSheet.handleOpenChange}
+        listProjectId={projectId}
+        listSort={listSort}
+        listHrefOptions={listOptions}
+        onExpenseUpdated={() => void refetch()}
+        onExpenseDeleted={() => {
+          expenseSheet.handleOpenChange(false);
+          void refetch();
+        }}
+      />
+    </>
   );
 }

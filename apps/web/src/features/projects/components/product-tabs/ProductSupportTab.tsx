@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import { ExternalLink, Headphones, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -15,12 +16,14 @@ import {
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
+import { SupportTicketActionOverlays } from '@/features/support/components/SupportTicketActionOverlays';
 import { SupportWorkflowScopeBanner } from '@/features/support/components/SupportWorkflowScopeBanner';
 import { SUPPORT_PAGE_VIEW_OPTIONS } from '@/features/support/constants/support-page-view-options';
 import { SUPPORT_TICKET_FILTER_CONFIGS } from '@/features/support/constants/support-ticket-filter-configs';
-import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import { buildPortfolioNewTicketHref } from '@/features/clients/constants/client-portfolio-deep-links';
 import type { UseProductSupportTabResult } from '@/features/projects/hooks/use-product-support-tab';
+import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
+import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
 interface ProductSupportTabProps extends UseProductSupportTabResult {
@@ -45,12 +48,22 @@ export function ProductSupportTab({
   actions,
 }: ProductSupportTabProps) {
   const router = useRouter();
+  const { me } = usePermission();
+  const ticketSheet = useProductEntityDetailSheet();
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
 
-  const openSupportModule = '/support';
+  const handleOpenDetail = useCallback(
+    (ticketId: string) => {
+      ticketSheet.openEntity(ticketId);
+    },
+    [ticketSheet],
+  );
 
-  const handleOpenDetail = (ticketId: string) => {
-    router.push(`/support?${SUPPORT_TICKET_OPEN_QUERY}=${encodeURIComponent(ticketId)}`);
-  };
+  const handleListInvalidate = useCallback(() => {
+    void refetch().then(() => {
+      setDetailRefreshKey((key) => key + 1);
+    });
+  }, [refetch]);
 
   if (loading && displayTickets.length === 0) {
     return <LoadingState count={3} />;
@@ -85,7 +98,7 @@ export function ProductSupportTab({
         trailing={
           <>
             <Link
-              href={openSupportModule}
+              href="/support"
               className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
             >
               Open Support
@@ -129,6 +142,16 @@ export function ProductSupportTab({
           onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
         />
       )}
+
+      <SupportTicketActionOverlays
+        ticketId={ticketSheet.entityId}
+        open={ticketSheet.isOpen}
+        onOpenChange={ticketSheet.handleOpenChange}
+        detailRefreshKey={detailRefreshKey}
+        meId={me?.id ?? null}
+        onListInvalidate={handleListInvalidate}
+        actions={actions}
+      />
     </div>
   );
 }

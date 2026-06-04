@@ -13,17 +13,19 @@ import {
   PageHero,
   ViewModeSwitch,
 } from '@/components/shared';
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultTable } from '@/features/credentials/components/credential-vault-table';
 import { CredentialVaultTiles } from '@/features/credentials/components/credential-vault-tiles';
 import { CredentialVaultCategoryBoard } from '@/features/credentials/components/credential-vault-category-board';
-import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { PRODUCT_CREDENTIALS_VIEW_OPTIONS } from '@/features/projects/constants/product-credentials-view-options';
 import { useProductCredentialsViewMode } from '@/features/projects/constants/product-credentials-view-storage';
 import { useProductCredentialsFilter } from '@/features/projects/hooks/use-product-credentials-filter';
 import type { UseProductCredentialsTabResult } from '@/features/projects/hooks/use-product-credentials-tab';
+import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
+import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -57,6 +59,8 @@ function ProductCredentialsTabContent({
   const router = useRouter();
   const [viewMode, setViewMode] = useProductCredentialsViewMode();
   const [secretFlashCredentialId, setSecretFlashCredentialId] = useState<string | null>(null);
+  const [sheetInitialItem, setSheetInitialItem] = useState<CredentialListItem | null>(null);
+  const credentialSheet = useProductEntityDetailSheet();
   const filter = useProductCredentialsFilter(credentials);
 
   const handleSecretCopied = useCallback((flashId: string) => {
@@ -82,9 +86,14 @@ function ProductCredentialsTabContent({
 
   const handleOpenCredential = useCallback(
     (id: string) => {
-      router.push(buildCredentialVaultHref(id));
+      const item =
+        credentials.find((row) => row.id === id) ??
+        filter.displayCredentials.find((row) => row.id === id) ??
+        null;
+      setSheetInitialItem(item);
+      credentialSheet.openEntity(id);
     },
-    [router],
+    [credentialSheet, credentials, filter.displayCredentials],
   );
 
   if (loading && credentials.length === 0) {
@@ -201,6 +210,17 @@ function ProductCredentialsTabContent({
           />
         </div>
       )}
+
+      <CredentialFormSheet
+        open={credentialSheet.isOpen}
+        onOpenChange={credentialSheet.handleOpenChange}
+        credentialId={credentialSheet.entityId}
+        initialItem={sheetInitialItem}
+        vaultScope="project"
+        presetKey={credentialSheet.entityId ?? 'product-credentials'}
+        continueAfterCreate
+        onSaved={() => void refetch()}
+      />
     </div>
   );
 }

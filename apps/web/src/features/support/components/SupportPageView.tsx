@@ -4,14 +4,11 @@ import { Headphones, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
-import { SupportEscalateDialog } from '@/features/support/components/SupportEscalateDialog';
 import { SupportPageHero } from '@/features/support/components/SupportPageHero';
 import { SupportWorkflowScopeBanner } from '@/features/support/components/SupportWorkflowScopeBanner';
-import { SupportStatusDialogs } from '@/features/support/components/SupportStatusDialogs';
-import { SupportTechnicalContextDialog } from '@/features/support/components/SupportTechnicalContextDialog';
+import { SupportTicketActionOverlays } from '@/features/support/components/SupportTicketActionOverlays';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
-import { SupportTicketDetailSheet } from '@/features/support/components/SupportTicketDetailSheet';
 import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
 import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
@@ -61,29 +58,14 @@ export function SupportPageView() {
         onStatusSelect={actions.handleStatusSelect}
       />
 
-      <SupportEscalateDialog
-        ticket={actions.escalateTicket}
-        reason={actions.escalateReason}
-        onReasonChange={actions.setEscalateReason}
-        onClose={() => {
-          actions.setEscalateTicket(null);
-          actions.setEscalateReason('');
-        }}
-        onConfirm={() => void actions.handleSubmitEscalation()}
-        submitting={Boolean(actions.actionId?.startsWith('escalate:'))}
-      />
-
-      <SupportTechnicalContextDialog
-        ticket={actions.technicalTicket}
-        profile={actions.technicalProfile}
-        profileLoading={actions.technicalProfileLoading}
-        assetId={actions.draftTechnicalAssetId}
-        environmentId={actions.draftTechnicalEnvId}
-        onAssetIdChange={actions.setDraftTechnicalAssetId}
-        onEnvironmentIdChange={actions.setDraftTechnicalEnvId}
-        onClose={() => actions.setTechnicalTicket(null)}
-        onSave={() => void actions.saveTechnicalContext()}
-        saving={Boolean(actions.actionId?.startsWith('tech:'))}
+      <SupportTicketActionOverlays
+        ticketId={page.openTicketIdFromUrl}
+        open={Boolean(page.openTicketIdFromUrl)}
+        onOpenChange={page.handleSupportDetailOpenChange}
+        detailRefreshKey={query.detailRefreshKey}
+        meId={page.meId}
+        onListInvalidate={() => void query.refreshSupportViews()}
+        actions={actions}
       />
 
       <SupportCreateTicketDialog
@@ -107,31 +89,6 @@ export function SupportPageView() {
         onContactIdChange={createForm.setCreateContactId}
         onSubmit={() => void createForm.submitCreateTicket()}
         submitting={createForm.createSubmitting}
-      />
-
-      <SupportStatusDialogs
-        statusDialog={actions.statusDialog}
-        resolutionDraft={actions.statusResolutionDraft}
-        closeReason={actions.statusCloseReason}
-        onResolutionDraftChange={actions.setStatusResolutionDraft}
-        onCloseReasonChange={actions.setStatusCloseReason}
-        onDismiss={() => actions.setStatusDialog(null)}
-        onSubmitResolve={() => void actions.submitResolveDialog()}
-        onSubmitClose={() => void actions.submitCloseDialog()}
-        statusSubmitting={Boolean(actions.actionId?.startsWith('status:'))}
-      />
-
-      <SupportTicketDetailSheet
-        ticketId={page.openTicketIdFromUrl}
-        open={Boolean(page.openTicketIdFromUrl)}
-        onOpenChange={page.handleSupportDetailOpenChange}
-        refreshKey={query.detailRefreshKey}
-        meId={page.meId}
-        onListInvalidate={() => void query.refreshSupportViews()}
-        onRequestResolve={actions.openResolveDialog}
-        onRequestClose={actions.openCloseDialog}
-        onRequestEscalate={actions.openEscalateDialog}
-        onRequestTechnical={actions.openTechnicalDialog}
       />
     </div>
   );

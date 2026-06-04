@@ -1,5 +1,6 @@
 import { StatusBadge } from '@/components/shared';
 import type { ProjectSubscription } from '@/lib/api/projects';
+import { cn } from '@/lib/utils';
 
 function formatAmount(amount: number | string): string {
   return Number(amount).toLocaleString('en-US');
@@ -18,8 +19,10 @@ const SUB_STATUS_MAP: Record<
 
 export function FinanceSubscriptionsSection({
   subscriptions,
+  onOpenSubscription,
 }: {
   subscriptions: ProjectSubscription[];
+  onOpenSubscription?: (subscription: ProjectSubscription) => void;
 }) {
   return (
     <section>
@@ -27,12 +30,22 @@ export function FinanceSubscriptionsSection({
       <div className="space-y-3">
         {subscriptions.map((sub) => {
           const st = SUB_STATUS_MAP[sub.status];
+          const clickable = Boolean(onOpenSubscription);
           return (
-            <div key={sub.id} className="bg-card border-border rounded-xl border p-4">
+            <button
+              key={sub.id}
+              type="button"
+              disabled={!clickable}
+              onClick={() => onOpenSubscription?.(sub)}
+              className={cn(
+                'bg-card border-border w-full rounded-xl border p-4 text-left',
+                clickable && 'hover:bg-muted/40 transition-colors',
+              )}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium">{sub.code}</p>
-                  {st && <StatusBadge label={st.label} variant={st.variant} />}
+                  {st ? <StatusBadge label={st.label} variant={st.variant} /> : null}
                 </div>
                 <p className="font-bold">{formatAmount(sub.amount)} / mo</p>
               </div>
@@ -40,7 +53,7 @@ export function FinanceSubscriptionsSection({
                 {sub.type.replace(/_/g, ' ')} · Billing day: {sub.billingDay} · Since{' '}
                 {new Date(sub.startDate).toLocaleDateString()}
               </p>
-            </div>
+            </button>
           );
         })}
       </div>

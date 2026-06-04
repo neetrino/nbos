@@ -1,11 +1,12 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ExternalLink, RefreshCw, ShoppingCart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
-import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
+import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
+import { SubscriptionDetailSheet } from '@/features/finance/components/subscriptions/SubscriptionDetailSheet';
 import { OrdersBoardView } from '@/features/finance/components/orders/OrdersBoardView';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import {
@@ -25,6 +26,7 @@ import {
 import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
 import type { Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
+import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import { cn } from '@/lib/utils';
 
 interface ProductFinanceSectionContentProps {
@@ -52,7 +54,22 @@ export function ProductFinanceSectionContent({
   subscriptions,
   projectId,
 }: ProductFinanceSectionContentProps) {
-  const router = useRouter();
+  const orderSheet = useProductEntityDetailSheet();
+  const subscriptionSheet = useProductEntityDetailSheet();
+
+  const handleOpenOrder = useCallback(
+    (order: Order) => {
+      orderSheet.openEntity(order.id);
+    },
+    [orderSheet],
+  );
+
+  const handleOpenSubscription = useCallback(
+    (subscription: ProjectSubscription) => {
+      subscriptionSheet.openEntity(subscription.id);
+    },
+    [subscriptionSheet],
+  );
 
   if (section === 'orders') {
     const displayOrders = filterProductFinanceOrders(financeOrders, search, filters);
@@ -70,20 +87,30 @@ export function ProductFinanceSectionContent({
       );
     }
 
-    return ordersView === 'list' ? (
-      <OrdersTable
-        orders={displayOrders}
-        boardScope={boardScope}
-        onOrderClick={(order) => router.push(ordersListWithOpenOrderHref(order.id))}
-        onCreateInvoice={() => undefined}
-      />
-    ) : (
-      <OrdersBoardView
-        orders={displayOrders}
-        boardScope={boardScope}
-        onOrderClick={(order) => router.push(ordersListWithOpenOrderHref(order.id))}
-        onCreateInvoice={() => undefined}
-      />
+    return (
+      <>
+        {ordersView === 'list' ? (
+          <OrdersTable
+            orders={displayOrders}
+            boardScope={boardScope}
+            onOrderClick={handleOpenOrder}
+            onCreateInvoice={() => undefined}
+          />
+        ) : (
+          <OrdersBoardView
+            orders={displayOrders}
+            boardScope={boardScope}
+            onOrderClick={handleOpenOrder}
+            onCreateInvoice={() => undefined}
+          />
+        )}
+        <OrderDetailSheet
+          orderId={orderSheet.entityId}
+          open={orderSheet.isOpen}
+          onOpenChange={orderSheet.handleOpenChange}
+          onCreateInvoice={() => undefined}
+        />
+      </>
     );
   }
 
@@ -100,7 +127,19 @@ export function ProductFinanceSectionContent({
         />
       );
     }
-    return <FinanceSubscriptionsSection subscriptions={rows} />;
+    return (
+      <>
+        <FinanceSubscriptionsSection
+          subscriptions={rows}
+          onOpenSubscription={handleOpenSubscription}
+        />
+        <SubscriptionDetailSheet
+          subscriptionId={subscriptionSheet.entityId}
+          open={subscriptionSheet.isOpen}
+          onOpenChange={subscriptionSheet.handleOpenChange}
+        />
+      </>
+    );
   }
 
   if (section === 'expenses') {
