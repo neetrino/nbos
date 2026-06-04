@@ -1,5 +1,5 @@
-/** Right sidebar width on project detail (readable text column). */
-export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-80 xl:w-[22rem]';
+/** Right sidebar width on project detail (+20% vs prior 20rem / 22rem). */
+export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-96 xl:w-[26.4rem]';
 
 export type ProjectProductsViewMode = 'card' | 'list';
 
