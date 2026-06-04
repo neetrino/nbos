@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
+import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
 import {
   PROJECT_DETAIL_SIDEBAR_CLASS,
   type ProjectProductsViewMode,
@@ -41,6 +41,8 @@ export default function ProjectDetailPage() {
     fetchProject();
   }, [fetchProject]);
 
+  useProjectDetailHeader(project);
+
   if (loading) {
     return <ProjectDetailLoading />;
   }
@@ -55,7 +57,6 @@ export default function ProjectDetailPage() {
     <div className="flex h-full min-h-0 flex-col gap-6">
       <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <ProjectHeader project={project} />
           <ProjectProductsSection
             project={project}
             products={products}
@@ -98,7 +99,6 @@ function ProjectDetailLoading() {
     <div className="flex h-full flex-col gap-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <Skeleton className="h-12 w-72" />
           <Skeleton className="h-48 w-full" />
         </div>
         <Skeleton className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'h-96 lg:self-start')} />
