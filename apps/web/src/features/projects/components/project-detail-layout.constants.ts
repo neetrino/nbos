@@ -3,12 +3,23 @@ import { APP_MAIN_CONTENT_MAX_HEIGHT_CLASS } from '@/components/layout/app-layou
 /** Right sidebar width on project detail (+20% vs prior 20rem / 22rem). */
 export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-96 xl:w-[26.4rem]';
 
-/** Sticky info panel — fills viewport below topbar + main inset. */
+/** Sticky info panel — flush to viewport right/bottom below topbar + main inset. */
 export const PROJECT_DETAIL_SIDEBAR_STICKY_CLASS = [
-  'lg:sticky lg:top-4 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
+  'lg:sticky lg:top-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
   APP_MAIN_CONTENT_MAX_HEIGHT_CLASS,
   'lg:min-h-[calc(100dvh-5rem)]',
 ].join(' ');
+
+/** Sidebar meets viewport right edge (counteracts main `px-6`). */
+export const PROJECT_DETAIL_SIDEBAR_EDGE_CLASS = [
+  PROJECT_DETAIL_SIDEBAR_STICKY_CLASS,
+  '-mr-6 rounded-none border-y-0 border-r-0 lg:rounded-l-xl lg:border-l',
+].join(' ');
+
+export const PROJECT_DETAIL_PAGE_ROW_CLASS =
+  'flex min-h-0 flex-1 flex-col gap-6 lg:min-h-[calc(100dvh-5rem)] lg:flex-row lg:gap-0';
+
+export const PROJECT_DETAIL_MAIN_COLUMN_CLASS = 'flex min-w-0 flex-1 flex-col gap-6 lg:pr-6';
 
 export type ProjectDetailViewMode = 'card' | 'list';
 

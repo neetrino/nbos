@@ -59,6 +59,7 @@ export interface ProjectProductSummary {
     id: string;
     status?: string;
     invoices?: Array<{ moneyStatus: string }>;
+    deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
   pm: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
@@ -95,6 +96,7 @@ export interface ProjectExtensionSummary {
     id: string;
     status?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
+    deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string };

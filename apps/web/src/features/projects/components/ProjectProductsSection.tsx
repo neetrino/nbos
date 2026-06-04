@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ArrowRight, Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
+import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHero,
@@ -17,6 +17,12 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
+import {
+  EntityDeliveryDealHoverActions,
+  EntityDeliveryDealHoverActionsInline,
+} from '@/features/projects/components/EntityDeliveryDealHoverActions';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
+import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import {
   PROJECT_ENTITY_LIST_CLASS,
   PROJECT_ENTITY_LIST_ROW_CLASS,
@@ -173,6 +179,8 @@ function ProductListRow({
   product: ProjectProductSummary;
   onOpenProduct: (productId: string) => void;
 }) {
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
+  const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const statusLabel = product.deliveryLifecycle
@@ -180,12 +188,12 @@ function ProductListRow({
     : status?.label;
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpenProduct(product.id)}
-      className={PROJECT_ENTITY_LIST_ROW_CLASS}
-    >
-      <div className="min-w-0 flex-1">
+    <div className={`${PROJECT_ENTITY_LIST_ROW_CLASS} group/entity-row`}>
+      <button
+        type="button"
+        onClick={() => onOpenProduct(product.id)}
+        className="min-w-0 flex-1 text-left"
+      >
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-semibold">{product.name}</span>
           {productType && (
@@ -210,11 +218,15 @@ function ProductListRow({
             {product._count.tickets} tickets
           </span>
         </div>
-      </div>
+      </button>
       {status && statusLabel && (
         <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
       )}
-    </button>
+      <EntityDeliveryDealHoverActionsInline
+        onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
+        onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
+      />
+    </div>
   );
 }
 
@@ -225,6 +237,8 @@ function ProductCard({
   product: ProjectProductSummary;
   onOpenProduct: (productId: string) => void;
 }) {
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
+  const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const statusLabel = product.deliveryLifecycle
@@ -234,7 +248,7 @@ function ProductCard({
   return (
     <div
       onClick={() => onOpenProduct(product.id)}
-      className="bg-card border-border hover:border-accent/50 group flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
+      className="bg-card border-border hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
     >
       <div className="min-w-0 shrink-0">
         <h4 className="truncate text-sm font-semibold">{product.name}</h4>
@@ -264,21 +278,18 @@ function ProductCard({
           <span>{product._count.extensions} ext.</span>
           <span>{product._count.tickets} tickets</span>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-1.5">
-          {status && statusLabel && (
-            <StatusBadge
-              label={statusLabel}
-              variant={status.variant}
-              className="max-w-full min-w-0 shrink truncate"
-              title={statusLabel}
-            />
-          )}
-          <ArrowRight
-            size={14}
-            className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            aria-hidden
+        {status && statusLabel && (
+          <StatusBadge
+            label={statusLabel}
+            variant={status.variant}
+            className="max-w-full min-w-0 shrink truncate"
+            title={statusLabel}
           />
-        </div>
+        )}
+        <EntityDeliveryDealHoverActions
+          onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
+          onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
+        />
       </div>
     </div>
   );

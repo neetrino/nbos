@@ -20,7 +20,7 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
 
   return (
     <aside
-      className={cn('bg-card border-border flex min-h-0 flex-col rounded-xl border p-5', className)}
+      className={cn('bg-card border-border flex min-h-0 flex-col border p-5', className)}
       aria-label="Project information"
     >
       <div className="flex items-start justify-between gap-3">

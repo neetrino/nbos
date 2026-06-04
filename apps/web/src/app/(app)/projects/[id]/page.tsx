@@ -1,26 +1,25 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
+import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
 import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
 import {
+  PROJECT_DETAIL_MAIN_COLUMN_CLASS,
+  PROJECT_DETAIL_PAGE_ROW_CLASS,
   PROJECT_DETAIL_SIDEBAR_CLASS,
-  PROJECT_DETAIL_SIDEBAR_STICKY_CLASS,
+  PROJECT_DETAIL_SIDEBAR_EDGE_CLASS,
 } from '@/features/projects/components/project-detail-layout.constants';
 import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
-import {
-  buildProductDetailPageHref,
-  PRODUCT_DETAIL_TAB,
-} from '@/features/projects/constants/product-detail-tab';
 
-export default function ProjectDetailPage() {
+function ProjectDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<FullProject | null>(null);
@@ -59,9 +58,9 @@ export default function ProjectDetailPage() {
     : project.products;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-6">
-      <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className={PROJECT_DETAIL_PAGE_ROW_CLASS}>
+        <div className={PROJECT_DETAIL_MAIN_COLUMN_CLASS}>
           <ProjectProductsSection
             project={project}
             products={products}
@@ -77,24 +76,20 @@ export default function ProjectDetailPage() {
           <ProjectExtensionsSection
             extensions={project.extensions}
             viewMode={detailViewMode}
-            onOpenExtension={(extension) =>
-              router.push(
-                buildProductDetailPageHref(
-                  params.id,
-                  extension.productId,
-                  PRODUCT_DETAIL_TAB.extensions,
-                ),
-              )
+            onOpenProduct={(productId) =>
+              router.push(`/projects/${params.id}/products/${productId}`)
             }
           />
         </div>
 
         <ProjectInfoPanel
-          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_STICKY_CLASS)}
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_EDGE_CLASS)}
           project={project}
           onProjectUpdated={setProject}
         />
       </div>
+
+      <EntityDetailSheetsHost project={project} onEntityUpdated={() => void fetchProject()} />
 
       <CreateProductDialog
         open={showCreateProduct}
@@ -106,15 +101,23 @@ export default function ProjectDetailPage() {
   );
 }
 
+export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={<ProjectDetailLoading />}>
+      <ProjectDetailPageContent />
+    </Suspense>
+  );
+}
+
 function ProjectDetailLoading() {
   return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
+    <div className="flex h-full flex-col">
+      <div className={PROJECT_DETAIL_PAGE_ROW_CLASS}>
+        <div className={PROJECT_DETAIL_MAIN_COLUMN_CLASS}>
           <Skeleton className="h-48 w-full" />
         </div>
         <Skeleton
-          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_STICKY_CLASS, 'h-96')}
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_EDGE_CLASS, 'h-96')}
         />
       </div>
     </div>

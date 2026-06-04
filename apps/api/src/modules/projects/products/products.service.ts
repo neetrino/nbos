@@ -333,6 +333,12 @@ export class ProductsService {
         extensions: {
           include: {
             assignee: { select: { id: true, firstName: true, lastName: true } },
+            order: {
+              select: {
+                id: true,
+                deal: { select: { id: true, code: true, name: true } },
+              },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },

@@ -118,6 +118,10 @@ export interface ProductExtensionRef {
   assignedTo: string | null;
   assignee: ProductEmployee | null;
   createdAt: string;
+  order?: {
+    id: string;
+    deal?: { id: string; code?: string; name?: string | null } | null;
+  } | null;
 }
 
 export interface ProductTaskRef {

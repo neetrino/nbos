@@ -1,7 +1,11 @@
 'use client';
 
-import { ArrowRight, Puzzle, User } from 'lucide-react';
+import { Puzzle, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import {
+  EntityDeliveryDealHoverActions,
+  EntityDeliveryDealHoverActionsInline,
+} from '@/features/projects/components/EntityDeliveryDealHoverActions';
 import {
   formatDeliveryLifecycleLabel,
   getExtensionSize,
@@ -17,10 +21,19 @@ import type { ExtensionEntityViewModel } from '@/features/projects/utils/extensi
 interface ExtensionEntityViewsProps {
   extensions: ExtensionEntityViewModel[];
   viewMode: 'card' | 'list';
-  onOpen?: (id: string) => void;
+  onOpenDeliveryCard: (id: string) => void;
+  onOpenDeal: (dealId: string) => void;
+  /** Optional — open parent product page when clicking the product name area. */
+  onOpenProduct?: (productId: string) => void;
 }
 
-export function ExtensionEntityViews({ extensions, viewMode, onOpen }: ExtensionEntityViewsProps) {
+export function ExtensionEntityViews({
+  extensions,
+  viewMode,
+  onOpenDeliveryCard,
+  onOpenDeal,
+  onOpenProduct,
+}: ExtensionEntityViewsProps) {
   if (viewMode === 'list') {
     return (
       <div className={PROJECT_ENTITY_LIST_CLASS}>
@@ -28,7 +41,8 @@ export function ExtensionEntityViews({ extensions, viewMode, onOpen }: Extension
           <ExtensionEntityListRow
             key={extension.id}
             extension={extension}
-            onOpen={onOpen ? () => onOpen(extension.id) : undefined}
+            onOpenDeliveryCard={() => onOpenDeliveryCard(extension.id)}
+            onOpenDeal={extension.dealId ? () => onOpenDeal(extension.dealId!) : undefined}
           />
         ))}
       </div>
@@ -41,7 +55,9 @@ export function ExtensionEntityViews({ extensions, viewMode, onOpen }: Extension
         <ExtensionEntityCard
           key={extension.id}
           extension={extension}
-          onOpen={onOpen ? () => onOpen(extension.id) : undefined}
+          onOpenDeliveryCard={() => onOpenDeliveryCard(extension.id)}
+          onOpenDeal={extension.dealId ? () => onOpenDeal(extension.dealId!) : undefined}
+          onOpenProduct={onOpenProduct}
         />
       ))}
     </div>
@@ -50,28 +66,23 @@ export function ExtensionEntityViews({ extensions, viewMode, onOpen }: Extension
 
 export function ExtensionEntityListRow({
   extension,
-  onOpen,
+  onOpenDeliveryCard,
+  onOpenDeal,
 }: {
   extension: ExtensionEntityViewModel;
-  onOpen?: () => void;
+  onOpenDeliveryCard: () => void;
+  onOpenDeal?: () => void;
 }) {
   const status = getExtensionStatus(extension.status);
   const size = getExtensionSize(extension.size);
   const statusLabel = extension.deliveryLifecycle
     ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
     : status?.label;
-  const Wrapper = onOpen ? 'button' : 'div';
 
   return (
-    <Wrapper
-      type={onOpen ? 'button' : undefined}
-      onClick={onOpen}
-      className={
-        onOpen ? PROJECT_ENTITY_LIST_ROW_CLASS : `${PROJECT_ENTITY_LIST_ROW_CLASS} cursor-default`
-      }
-    >
+    <div className={`${PROJECT_ENTITY_LIST_ROW_CLASS} group/entity-row`}>
       <Puzzle className="text-muted-foreground size-4 shrink-0" aria-hidden />
-      <div className="min-w-0 flex-1">
+      <button type="button" onClick={onOpenDeliveryCard} className="min-w-0 flex-1 text-left">
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-semibold">{extension.name}</span>
           {size && <span className="text-muted-foreground text-xs">{size.label}</span>}
@@ -89,20 +100,28 @@ export function ExtensionEntityListRow({
             <span>{new Date(extension.createdAt).toLocaleDateString()}</span>
           ) : null}
         </div>
-      </div>
+      </button>
       {statusLabel ? (
         <StatusBadge label={statusLabel} variant={status?.variant ?? 'gray'} className="shrink-0" />
       ) : null}
-    </Wrapper>
+      <EntityDeliveryDealHoverActionsInline
+        onOpenDeliveryCard={onOpenDeliveryCard}
+        onOpenDeal={onOpenDeal}
+      />
+    </div>
   );
 }
 
 export function ExtensionEntityCard({
   extension,
-  onOpen,
+  onOpenDeliveryCard,
+  onOpenDeal,
+  onOpenProduct,
 }: {
   extension: ExtensionEntityViewModel;
-  onOpen?: () => void;
+  onOpenDeliveryCard: () => void;
+  onOpenDeal?: () => void;
+  onOpenProduct?: (productId: string) => void;
 }) {
   const status = getExtensionStatus(extension.status);
   const size = getExtensionSize(extension.size);
@@ -112,31 +131,34 @@ export function ExtensionEntityCard({
 
   return (
     <div
-      role={onOpen ? 'button' : undefined}
-      tabIndex={onOpen ? 0 : undefined}
-      onClick={onOpen}
-      onKeyDown={
-        onOpen
-          ? (event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                onOpen();
-              }
-            }
-          : undefined
-      }
-      className={
-        onOpen
-          ? 'bg-card border-border hover:border-accent/50 group flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors'
-          : 'bg-card border-border flex h-full min-h-36 min-w-0 flex-col overflow-hidden rounded-xl border p-4'
-      }
+      role="button"
+      tabIndex={0}
+      onClick={onOpenDeliveryCard}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpenDeliveryCard();
+        }
+      }}
+      className="bg-card border-border hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
     >
       <div className="min-w-0 shrink-0">
         <div className="flex items-start gap-2">
           <Puzzle className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
           <div className="min-w-0 flex-1">
             <h4 className="truncate text-sm font-semibold">{extension.name}</h4>
-            {extension.productName ? (
+            {extension.productName && onOpenProduct ? (
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground truncate text-left text-xs underline-offset-2 hover:underline"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (extension.productId) onOpenProduct(extension.productId);
+                }}
+              >
+                {extension.productName}
+              </button>
+            ) : extension.productName ? (
               <p className="text-muted-foreground truncate text-xs">{extension.productName}</p>
             ) : null}
           </div>
@@ -164,23 +186,18 @@ export function ExtensionEntityCard({
         {extension.taskCount != null ? (
           <div className="text-muted-foreground text-[10px]">{extension.taskCount} tasks</div>
         ) : null}
-        <div className="flex min-w-0 items-center justify-end gap-1.5">
-          {statusLabel ? (
-            <StatusBadge
-              label={statusLabel}
-              variant={status?.variant ?? 'gray'}
-              className="max-w-full min-w-0 shrink truncate"
-              title={statusLabel}
-            />
-          ) : null}
-          {onOpen ? (
-            <ArrowRight
-              size={14}
-              className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-              aria-hidden
-            />
-          ) : null}
-        </div>
+        {statusLabel ? (
+          <StatusBadge
+            label={statusLabel}
+            variant={status?.variant ?? 'gray'}
+            className="max-w-full min-w-0 shrink truncate"
+            title={statusLabel}
+          />
+        ) : null}
+        <EntityDeliveryDealHoverActions
+          onOpenDeliveryCard={onOpenDeliveryCard}
+          onOpenDeal={onOpenDeal}
+        />
       </div>
     </div>
   );

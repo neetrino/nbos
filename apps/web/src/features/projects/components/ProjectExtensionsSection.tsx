@@ -3,20 +3,22 @@
 import { ExtensionEntityViews } from '@/features/projects/components/extension-entity-views';
 import { PROJECT_SECTION_TITLE_CLASS } from '@/features/projects/components/project-detail-layout.constants';
 import type { ProjectDetailViewMode } from '@/features/projects/components/project-detail-layout.constants';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { projectExtensionToViewModel } from '@/features/projects/utils/extension-entity-view-mappers';
 import type { ProjectExtensionSummary } from '@/lib/api/projects';
 
 interface ProjectExtensionsSectionProps {
   extensions: ProjectExtensionSummary[];
   viewMode: ProjectDetailViewMode;
-  onOpenExtension: (extension: ProjectExtensionSummary) => void;
+  onOpenProduct: (productId: string) => void;
 }
 
 export function ProjectExtensionsSection({
   extensions,
   viewMode,
-  onOpenExtension,
+  onOpenProduct,
 }: ProjectExtensionsSectionProps) {
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   if (extensions.length === 0) return null;
 
   const items = extensions.map((extension) => projectExtensionToViewModel(extension));
@@ -33,10 +35,9 @@ export function ProjectExtensionsSection({
       <ExtensionEntityViews
         extensions={items}
         viewMode={viewMode}
-        onOpen={(id) => {
-          const extension = extensions.find((row) => row.id === id);
-          if (extension) onOpenExtension(extension);
-        }}
+        onOpenDeliveryCard={(id) => openDeliveryItem(`extension-${id}`)}
+        onOpenDeal={(dealId) => openDeal(dealId)}
+        onOpenProduct={onOpenProduct}
       />
     </div>
   );

@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
+import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
@@ -191,7 +192,7 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="extensions" className="mt-5">
-          <ProductExtensionsTab extensions={product.extensions} />
+          <ProductExtensionsTab productId={product.id} extensions={product.extensions} />
         </TabsContent>
 
         <TabsContent value="support" className="mt-5 flex min-h-0 flex-1 flex-col">
@@ -225,6 +226,8 @@ function ProductDetailPageContent() {
           <ProductTechnicalTab {...technicalTab} />
         </TabsContent>
       </Tabs>
+
+      <EntityDetailSheetsHost product={product} onEntityUpdated={() => void fetchProduct()} />
     </div>
   );
 }

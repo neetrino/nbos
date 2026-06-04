@@ -6,8 +6,10 @@ export interface ExtensionEntityViewModel {
   size: string;
   status: string;
   assignee: { firstName: string; lastName: string } | null;
+  productId?: string;
   productName?: string;
   taskCount?: number;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   createdAt?: string;
+  dealId?: string | null;
 }
