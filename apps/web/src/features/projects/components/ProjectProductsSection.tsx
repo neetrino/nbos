@@ -19,6 +19,7 @@ import {
 } from '@/features/projects/constants/projects';
 import {
   PROJECT_ENTITY_LIST_CLASS,
+  PROJECT_ENTITY_LIST_ROW_CLASS,
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
   type ProjectDetailViewMode,
 } from './project-detail-layout.constants';
@@ -182,7 +183,7 @@ function ProductListRow({
     <button
       type="button"
       onClick={() => onOpenProduct(product.id)}
-      className="hover:bg-secondary/50 group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
+      className={PROJECT_ENTITY_LIST_ROW_CLASS}
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">

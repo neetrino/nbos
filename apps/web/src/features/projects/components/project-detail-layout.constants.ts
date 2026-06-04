@@ -6,9 +6,12 @@ export type ProjectDetailViewMode = 'card' | 'list';
 /** @deprecated Use {@link ProjectDetailViewMode}. */
 export type ProjectProductsViewMode = ProjectDetailViewMode;
 
-/** Shared list container for products / extensions on project detail. */
-export const PROJECT_ENTITY_LIST_CLASS =
-  'border-border divide-border divide-y overflow-hidden rounded-xl border';
+/** Stacked list rows on project detail (gap between card-like rows). */
+export const PROJECT_ENTITY_LIST_CLASS = 'flex min-w-0 flex-col gap-3';
+
+/** Single product/extension row — same surface as card view. */
+export const PROJECT_ENTITY_LIST_ROW_CLASS =
+  'bg-card border-border hover:border-accent/50 group flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors';
 
 /** Product cards: 1 → 2 (sm) → 3 (2xl) columns; avoids squeezed 4-up rows. */
 export const PROJECT_PRODUCTS_CARD_GRID_CLASS =

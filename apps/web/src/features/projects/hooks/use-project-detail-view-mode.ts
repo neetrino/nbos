@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import type { ProjectDetailViewMode } from '../components/project-detail-layout.constants';
 import {
+  getProjectDetailViewModeServerSnapshot,
   readProjectDetailViewFromStorage,
+  subscribeProjectDetailViewMode,
   writeProjectDetailViewToStorage,
 } from '../constants/project-detail-view-storage';
 
@@ -12,12 +14,13 @@ export function useProjectDetailViewMode(): [
   ProjectDetailViewMode,
   (mode: ProjectDetailViewMode) => void,
 ] {
-  const [viewMode, setViewModeState] = useState<ProjectDetailViewMode>(() =>
-    readProjectDetailViewFromStorage(),
+  const viewMode = useSyncExternalStore(
+    subscribeProjectDetailViewMode,
+    readProjectDetailViewFromStorage,
+    getProjectDetailViewModeServerSnapshot,
   );
 
   const setViewMode = useCallback((mode: ProjectDetailViewMode) => {
-    setViewModeState(mode);
     writeProjectDetailViewToStorage(mode);
   }, []);
 

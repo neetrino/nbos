@@ -10,6 +10,7 @@ import {
 } from '@/features/projects/constants/projects';
 import {
   PROJECT_ENTITY_LIST_CLASS,
+  PROJECT_ENTITY_LIST_ROW_CLASS,
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
   PROJECT_SECTION_TITLE_CLASS,
   type ProjectDetailViewMode,
@@ -76,11 +77,7 @@ function ExtensionListRow({
     : status?.label;
 
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="hover:bg-secondary/50 group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
-    >
+    <button type="button" onClick={onOpen} className={PROJECT_ENTITY_LIST_ROW_CLASS}>
       <Puzzle className="text-muted-foreground size-4 shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">

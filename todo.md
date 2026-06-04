@@ -1,6 +1,6 @@
 # NBOS Work Plans — index
 
-> Обновлено: 2026-06-02
+> Обновлено: 2026-06-04
 
 ## Архив
 
@@ -11,7 +11,23 @@
 
 ## Активно
 
-_Нет отдельного root todo-плана. Следующие задачи — по модульным cleanup registers и roadmap._
+### Project detail view — vault-паттерн (SSR-safe persistence)
+
+Эталон: `apps/web/src/features/credentials/constants/credential-vault-page-state-storage.ts`.
+
+| Шаг | Действие                                                                                                                   |
+| --- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | В `project-detail-view-storage.ts`: snapshot + cache, `parseStoredViewMode`, `CHANGE_EVENT`, `subscribe*`, server snapshot |
+| 2   | `writeProjectDetailViewToStorage` → dispatch event после `localStorage.setItem`                                            |
+| 3   | `use-project-detail-view-mode.ts` → `useSyncExternalStore` + `setViewMode(partial)` вместо `useState`                      |
+| 4   | Unit-тест: parse invalid / default, write + read round-trip (по образцу `credential-vault-page-state-storage.test.ts`)     |
+| 5   | Smoke: project detail — переключить List, reload, Products + Extensions в list; без flash `card` на SSR                    |
+
+Опционально позже: общий `lib/persisted-page-state` только если ≥3 фичи дублируют одинаковый boilerplate.
+
+---
+
+_Остальное — по модульным cleanup registers и roadmap._
 
 ## Что дальше (по приоритету)
 
