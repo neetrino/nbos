@@ -244,22 +244,38 @@ export class DashboardService {
 
   private async getMetrics(): Promise<DashboardMetricProjection> {
     const { start, end } = getTodayRange();
-    const [openTasks, dueTodayTasks, openDeals, pendingInvoices, openTickets, criticalTickets] =
-      await Promise.all([
-        this.prisma.task.count({ where: { status: { notIn: ['COMPLETED', 'ON_HOLD'] } } }),
-        this.prisma.task.count({
-          where: { dueDate: { gte: start, lt: end }, status: { not: 'COMPLETED' } },
-        }),
-        this.prisma.deal.count({ where: { status: { notIn: ['WON', 'FAILED'] } } }),
-        this.prisma.invoice.count({
-          where: { moneyStatus: { in: ['NEW', 'AWAITING_PAYMENT'] } },
-        }),
-        this.prisma.supportTicket.count({ where: { status: { notIn: ['RESOLVED', 'CLOSED'] } } }),
-        this.prisma.supportTicket.count({
-          where: { priority: 'P1', status: { notIn: ['RESOLVED', 'CLOSED'] } },
-        }),
-      ]);
-    return { dueTodayTasks, openTasks, openDeals, pendingInvoices, openTickets, criticalTickets };
+    const [
+      newLeads,
+      openTasks,
+      dueTodayTasks,
+      openDeals,
+      pendingInvoices,
+      openTickets,
+      criticalTickets,
+    ] = await Promise.all([
+      this.prisma.lead.count({ where: { status: 'NEW' } }),
+      this.prisma.task.count({ where: { status: { notIn: ['COMPLETED', 'ON_HOLD'] } } }),
+      this.prisma.task.count({
+        where: { dueDate: { gte: start, lt: end }, status: { not: 'COMPLETED' } },
+      }),
+      this.prisma.deal.count({ where: { status: { notIn: ['WON', 'FAILED'] } } }),
+      this.prisma.invoice.count({
+        where: { moneyStatus: { in: ['NEW', 'AWAITING_PAYMENT'] } },
+      }),
+      this.prisma.supportTicket.count({ where: { status: { notIn: ['RESOLVED', 'CLOSED'] } } }),
+      this.prisma.supportTicket.count({
+        where: { priority: 'P1', status: { notIn: ['RESOLVED', 'CLOSED'] } },
+      }),
+    ]);
+    return {
+      newLeads,
+      dueTodayTasks,
+      openTasks,
+      openDeals,
+      pendingInvoices,
+      openTickets,
+      criticalTickets,
+    };
   }
 
   private buildPriorities(metrics: DashboardMetricProjection): DashboardPriorityProjection[] {

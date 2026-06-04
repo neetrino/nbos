@@ -19,10 +19,10 @@ export const DASHBOARD_PINNED_ACTION_KEYS = [
 ] as const;
 
 export const DASHBOARD_WIDGET_KEYS = [
+  'new-leads',
   'open-deals',
-  'open-tasks',
   'open-support-tickets',
-  'detailed-reports',
+  'open-tasks',
 ] as const;
 
 export type DashboardPinnedActionKey = (typeof DASHBOARD_PINNED_ACTION_KEYS)[number];
