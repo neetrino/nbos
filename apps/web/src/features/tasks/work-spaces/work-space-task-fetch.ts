@@ -1,7 +1,6 @@
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { TASK_LIST_PAGE_SIZE } from '@/features/tasks/constants/task-list-pagination';
-import { mergeProductWorkSpaceTasks } from '@/features/tasks/work-spaces/work-space-utils';
 
 export type TaskListMeta = {
   total: number;
