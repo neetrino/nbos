@@ -77,7 +77,8 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
       state.credentialType === 'APP_STORE_ACCOUNT' ? state.appStorePlatform : undefined,
     apiKey: state.apiKey.trim() || undefined,
     envData: state.envData.trim() || undefined,
-    secureNotes: state.comment.trim() || undefined,
+    /** `null` clears comment; `undefined` would skip the field on PATCH. */
+    secureNotes: state.comment.trim() === '' ? null : state.comment.trim(),
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
     acknowledgeOrphanedSecrets:
