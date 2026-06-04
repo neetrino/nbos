@@ -2,19 +2,27 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 import { DollarSign, ExternalLink, TrendingDown, TrendingUp, CreditCard } from 'lucide-react';
+import { IntegratedSearchFilters, PageHero, ViewModeSwitch } from '@/components/shared';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
-import { useState, useMemo } from 'react';
 import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
 import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
 import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
-import { OrderBoardCard } from '@/features/finance/components/orders/OrderBoardCard';
+import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
+import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
+import { OrdersBoardView } from '@/features/finance/components/orders/OrdersBoardView';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
-import { ProductTabViewHero } from '@/features/projects/components/product-tabs/ProductTabViewHero';
-import { PROJECT_PRODUCTS_CARD_GRID_CLASS } from '@/features/projects/components/project-detail-layout.constants';
-import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
+import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { PRODUCT_ORDER_FILTER_CONFIGS } from '@/features/projects/constants/product-order-filter-configs';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import {
   FinanceDomainsSection,
@@ -56,7 +64,9 @@ export function FinanceTab({
   onAfterDriveUpload,
 }: FinanceTabProps) {
   const router = useRouter();
-  const [viewMode, setViewMode] = useProjectDetailViewMode();
+  const [view, setView] = useOrdersBoardViewMode();
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
 
   const scopedOrders = useMemo(() => {
@@ -68,6 +78,44 @@ export function FinanceTab({
     () => scopedOrders.map((order) => projectOrderToFinanceOrder(order, project)),
     [scopedOrders, project],
   );
+
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+  const hasStatusFilter = Boolean(filters.status) && filters.status !== 'all';
+
+  const displayOrders = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    let rows = financeOrders;
+    if (needle) {
+      rows = rows.filter(
+        (order) =>
+          order.code.toLowerCase().includes(needle) ||
+          order.project.name.toLowerCase().includes(needle) ||
+          order.type.toLowerCase().includes(needle),
+      );
+    }
+    if (hasStatusFilter) {
+      rows = rows.filter((order) => order.status === filters.status);
+      return rows;
+    }
+    return rows.filter((order) =>
+      matchesBoardLifecycleScope(order.status, ORDER_BOARD_STAGES, boardScope),
+    );
+  }, [financeOrders, search, hasStatusFilter, filters.status, boardScope]);
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const { boardScope: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [key]: value };
+    });
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFilters({});
+    setSearch('');
+  }, []);
 
   const totalRevenue = scopedOrders.reduce((s, o) => s + Number(o.totalAmount), 0);
   const paidInvoices = scopedOrders
@@ -137,9 +185,28 @@ export function FinanceTab({
       </div>
 
       <section className="space-y-4">
-        <ProductTabViewHero
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+        <PageHero
+          syncModuleTitle={false}
+          className="mt-0"
+          search={
+            <IntegratedSearchFilters
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search orders by code, type…"
+              filters={PRODUCT_ORDER_FILTER_CONFIGS}
+              filterValues={{
+                boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+                ...filters,
+              }}
+              onFilterChange={handleFilterChange}
+              onClearAll={clearFilters}
+            />
+          }
+          viewMode={
+            displayOrders.length > 0 ? (
+              <ViewModeSwitch value={view} onChange={setView} options={ORDER_VIEW_OPTIONS} />
+            ) : undefined
+          }
           trailing={
             <Link
               href="/finance/orders"
@@ -150,27 +217,23 @@ export function FinanceTab({
             </Link>
           }
         />
-        <h3 className="text-sm font-semibold">Orders ({scopedOrders.length})</h3>
-        {scopedOrders.length === 0 ? (
+        <h3 className="text-sm font-semibold">Orders ({displayOrders.length})</h3>
+        {displayOrders.length === 0 ? (
           <p className="text-muted-foreground text-sm">No orders linked to this product.</p>
-        ) : viewMode === 'list' ? (
+        ) : view === 'list' ? (
           <OrdersTable
-            orders={financeOrders}
-            boardScope="ACTIVE"
+            orders={displayOrders}
+            boardScope={boardScope}
             onOrderClick={handleOrderClick}
             onCreateInvoice={() => undefined}
           />
         ) : (
-          <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
-            {financeOrders.map((order) => (
-              <OrderBoardCard
-                key={order.id}
-                order={order}
-                onOrderClick={handleOrderClick}
-                onCreateInvoice={() => undefined}
-              />
-            ))}
-          </div>
+          <OrdersBoardView
+            orders={displayOrders}
+            boardScope={boardScope}
+            onOrderClick={handleOrderClick}
+            onCreateInvoice={() => undefined}
+          />
         )}
       </section>
 

@@ -4,7 +4,7 @@ export const PRODUCT_DETAIL_TAB_VALUES = [
   'overview',
   'tasks',
   'extensions',
-  'tickets',
+  'support',
   'technical',
   'credentials',
   'finance',
@@ -19,13 +19,22 @@ export const PRODUCT_DETAIL_TAB = {
   overview: 'overview',
   tasks: 'tasks',
   extensions: 'extensions',
-  tickets: 'tickets',
+  support: 'support',
+  /** @deprecated Use {@link PRODUCT_DETAIL_TAB.support}. Kept for legacy deep links. */
+  tickets: 'support',
   technical: 'technical',
   credentials: 'credentials',
   finance: 'finance',
 } as const satisfies Record<string, ProductDetailTab>;
 
+const LEGACY_TAB_ALIASES: Record<string, ProductDetailTab> = {
+  tickets: 'support',
+};
+
 export function parseProductDetailTab(value: string | null): ProductDetailTab {
+  if (value && LEGACY_TAB_ALIASES[value]) {
+    return LEGACY_TAB_ALIASES[value];
+  }
   if (value && PRODUCT_DETAIL_TAB_VALUES.includes(value as ProductDetailTab)) {
     return value as ProductDetailTab;
   }

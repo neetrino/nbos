@@ -8,19 +8,23 @@ import { buttonVariants } from '@/components/ui/button';
 import {
   EmptyState,
   ErrorState,
+  IntegratedSearchFilters,
   LoadingState,
   PageHero,
   ViewModeSwitch,
 } from '@/components/shared';
-import type { CredentialSecretField } from '@/lib/api/credentials';
+import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialVaultTable } from '@/features/credentials/components/credential-vault-table';
 import { CredentialVaultTiles } from '@/features/credentials/components/credential-vault-tiles';
+import { CredentialVaultCategoryBoard } from '@/features/credentials/components/credential-vault-category-board';
 import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { PRODUCT_CREDENTIALS_VIEW_OPTIONS } from '@/features/projects/constants/product-credentials-view-options';
 import { useProductCredentialsViewMode } from '@/features/projects/constants/product-credentials-view-storage';
+import { useProductCredentialsFilter } from '@/features/projects/hooks/use-product-credentials-filter';
 import type { UseProductCredentialsTabResult } from '@/features/projects/hooks/use-product-credentials-tab';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -53,6 +57,7 @@ function ProductCredentialsTabContent({
   const router = useRouter();
   const [viewMode, setViewMode] = useProductCredentialsViewMode();
   const [secretFlashCredentialId, setSecretFlashCredentialId] = useState<string | null>(null);
+  const filter = useProductCredentialsFilter(credentials);
 
   const handleSecretCopied = useCallback((flashId: string) => {
     setSecretFlashCredentialId(flashId);
@@ -90,13 +95,30 @@ function ProductCredentialsTabContent({
     return <ErrorState description={error} onRetry={() => void refetch()} />;
   }
 
+  const hasCredentials = credentials.length > 0;
+  const hasVisibleCredentials = filter.displayCredentials.length > 0;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5">
       <PageHero
+        title="Product credentials"
         syncModuleTitle={false}
         className="mt-0"
+        search={
+          hasCredentials ? (
+            <IntegratedSearchFilters
+              search={filter.search}
+              onSearchChange={filter.setSearch}
+              searchPlaceholder="Search by name, provider…"
+              filters={filter.filterConfigs}
+              filterValues={filter.filterValuesForUi}
+              onFilterChange={filter.handleFilterChange}
+              onClearAll={filter.clearFilters}
+            />
+          ) : undefined
+        }
         viewMode={
-          credentials.length > 0 ? (
+          hasCredentials ? (
             <ViewModeSwitch
               value={viewMode}
               onChange={setViewMode}
@@ -117,15 +139,32 @@ function ProductCredentialsTabContent({
         }
       />
 
-      {credentials.length === 0 ? (
+      {hasCredentials ? (
+        <CredentialQuickFilterChips
+          vaultScope="project"
+          categoryChips={filter.quickCategoryChips}
+          activeCategory={filter.quickCategory}
+          onCategoryChange={filter.setQuickCategory}
+          activeQuick={filter.quickFilters}
+          onToggleQuick={filter.toggleQuickFilter}
+        />
+      ) : null}
+
+      {!hasCredentials ? (
         <EmptyState
           icon={KeyRound}
           title="No credentials linked"
           description="Bind credentials to this product's access slots in Delivery or Credentials Vault."
         />
+      ) : !hasVisibleCredentials ? (
+        <EmptyState
+          icon={KeyRound}
+          title="No matching credentials"
+          description="Try adjusting search or filters."
+        />
       ) : viewMode === 'list' ? (
         <CredentialVaultTable
-          credentials={credentials}
+          credentials={filter.displayCredentials}
           loading={loading}
           listScope="active"
           secretFlashCredentialId={secretFlashCredentialId}
@@ -135,9 +174,9 @@ function ProductCredentialsTabContent({
           onOpenCredential={handleOpenCredential}
           showCreate={false}
         />
-      ) : (
+      ) : viewMode === 'tiles' ? (
         <CredentialVaultTiles
-          credentials={credentials}
+          credentials={filter.displayCredentials}
           loading={loading}
           showCreate={false}
           onCreateOpen={() => router.push('/credentials')}
@@ -146,6 +185,21 @@ function ProductCredentialsTabContent({
           onCopySecret={handleCopySecret}
           secretFlashCredentialId={secretFlashCredentialId}
         />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <CredentialVaultCategoryBoard
+            credentials={filter.displayCredentials}
+            loading={loading}
+            vaultScope="project"
+            showCreate={false}
+            categoryColumns={filter.boardCategoryColumns}
+            onCreateInCategory={() => router.push('/credentials')}
+            onOpenCredential={handleOpenCredential}
+            onCopyText={handleCopyText}
+            onCopySecret={handleCopySecret}
+            secretFlashCredentialId={secretFlashCredentialId}
+          />
+        </div>
       )}
     </div>
   );

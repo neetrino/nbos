@@ -5,12 +5,13 @@ import type { ProductCredentialsViewMode } from './product-credentials-view-opti
 
 export const PRODUCT_CREDENTIALS_VIEW_STORAGE_KEY = 'nbos.productDetail.credentialsViewMode';
 
-const DEFAULT_PRODUCT_CREDENTIALS_VIEW_MODE: ProductCredentialsViewMode = 'tiles';
+const DEFAULT_PRODUCT_CREDENTIALS_VIEW_MODE: ProductCredentialsViewMode = 'category-board';
 
 function parseStoredViewMode(raw: string | null): ProductCredentialsViewMode {
-  if (raw === 'list' || raw === 'tiles') {
+  if (raw === 'list' || raw === 'tiles' || raw === 'category-board') {
     return raw;
   }
+  if (raw === 'card') return 'tiles';
   return DEFAULT_PRODUCT_CREDENTIALS_VIEW_MODE;
 }
 

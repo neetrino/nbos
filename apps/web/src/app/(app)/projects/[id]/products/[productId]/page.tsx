@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Puzzle,
-  Ticket,
+  Headphones,
   KeyRound,
   DollarSign,
   ServerCog,
@@ -19,12 +19,13 @@ import { projectsApi } from '@/lib/api/projects';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
-import { ProductTicketsTab } from '@/features/projects/components/product-tabs/ProductTicketsTab';
+import { ProductSupportTab } from '@/features/projects/components/product-tabs/ProductSupportTab';
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { ProductCredentialsTab } from '@/features/projects/components/product-tabs/ProductCredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
 import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-credentials-tab';
+import { useProductSupportTab } from '@/features/projects/hooks/use-product-support-tab';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import {
@@ -38,7 +39,7 @@ const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
   { value: 'tasks', label: 'Work Space', icon: ListChecks },
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
-  { value: 'tickets', label: 'Tickets', icon: Ticket },
+  { value: 'support', label: 'Support', icon: Headphones },
   { value: 'technical', label: 'Technical', icon: ServerCog },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
   { value: 'finance', label: 'Finance', icon: DollarSign },
@@ -77,6 +78,8 @@ function ProductDetailPageContent() {
     params.id,
     activeTab === 'credentials',
   );
+
+  const supportTab = useProductSupportTab(params.productId, activeTab === 'support');
 
   const fetchProduct = useCallback(async () => {
     if (!params.productId) return;
@@ -161,7 +164,11 @@ function ProductDetailPageContent() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         <TabsList>
           {TAB_ITEMS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
@@ -184,23 +191,15 @@ function ProductDetailPageContent() {
           <ProductExtensionsTab extensions={product.extensions} />
         </TabsContent>
 
-        <TabsContent value="tickets" className="mt-5">
-          <ProductTicketsTab
-            tickets={product.tickets}
-            project={{
-              id: product.project.id,
-              code: product.project.code,
-              name: product.project.name,
-            }}
-            product={{ id: product.id, name: product.name, status: product.status }}
-          />
+        <TabsContent value="support" className="mt-5 flex min-h-0 flex-1 flex-col">
+          <ProductSupportTab {...supportTab} projectId={params.id} />
         </TabsContent>
 
         <TabsContent value="technical" className="mt-5">
           <ProductTechnicalTab productId={product.id} />
         </TabsContent>
 
-        <TabsContent value="credentials" className="mt-5">
+        <TabsContent value="credentials" className="mt-5 flex min-h-0 flex-1 flex-col">
           <ProductCredentialsTab {...credentialsTab} />
         </TabsContent>
 

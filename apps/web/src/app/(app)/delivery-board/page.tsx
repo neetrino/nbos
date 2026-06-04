@@ -47,7 +47,7 @@ import {
 
 const DELIVERY_BOARD_PRODUCT_TAB: Record<ProductBoardTab, ProductDetailTab> = {
   tasks: PRODUCT_DETAIL_TAB.tasks,
-  tickets: PRODUCT_DETAIL_TAB.tickets,
+  support: PRODUCT_DETAIL_TAB.support,
   extensions: PRODUCT_DETAIL_TAB.extensions,
 };
 

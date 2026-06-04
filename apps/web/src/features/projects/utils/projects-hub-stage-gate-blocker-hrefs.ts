@@ -22,7 +22,7 @@ export function resolveProductStageGateActionHref(args: {
     case 'product-workspace-tasks':
       return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.tasks);
     case 'product-support-tickets':
-      return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.tickets);
+      return buildProductDetailPageHref(args.projectId, args.productId, PRODUCT_DETAIL_TAB.support);
     case 'product-extensions':
       return buildProductDetailPageHref(
         args.projectId,
