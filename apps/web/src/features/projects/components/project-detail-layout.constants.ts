@@ -1,5 +1,14 @@
+import { APP_MAIN_CONTENT_MAX_HEIGHT_CLASS } from '@/components/layout/app-layout-constants';
+
 /** Right sidebar width on project detail (+20% vs prior 20rem / 22rem). */
 export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-96 xl:w-[26.4rem]';
+
+/** Sticky info panel — fills viewport below topbar + main inset. */
+export const PROJECT_DETAIL_SIDEBAR_STICKY_CLASS = [
+  'lg:sticky lg:top-4 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
+  APP_MAIN_CONTENT_MAX_HEIGHT_CLASS,
+  'lg:min-h-[calc(100dvh-5rem)]',
+].join(' ');
 
 export type ProjectDetailViewMode = 'card' | 'list';
 

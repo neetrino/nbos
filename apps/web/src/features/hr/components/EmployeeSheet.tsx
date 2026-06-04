@@ -12,7 +12,7 @@ import {
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
-import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
+import { TEAM_OPEN_EMPLOYEE_QUERY, TEAM_PAGE_HREF } from '@/features/hr/constants/team-open-query';
 import {
   TEAM_SHEET_FOOTER_CLASS,
   TEAM_SHEET_HEADER_CLASS,
@@ -212,7 +212,7 @@ export function EmployeeSheet({
         open={open}
         layout="full"
         width={TEAM_SHEET_WIDTH}
-        sourcePageHref={`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`}
+        sourcePageHref={`${TEAM_PAGE_HREF}?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`}
       >
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>

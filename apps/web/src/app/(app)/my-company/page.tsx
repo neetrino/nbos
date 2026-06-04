@@ -15,7 +15,7 @@ import {
   Target,
   Users2,
 } from 'lucide-react';
-import { ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
+import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
   departmentsApi,
   employeesApi,
@@ -169,7 +169,6 @@ export default function MyCompanyPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHero title="My Company" />
       <p className="text-muted-foreground text-sm">
         Org Structure is the company control center for departments, seats, employees, KPI,
         compensation, and SOP.

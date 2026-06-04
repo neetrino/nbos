@@ -7,7 +7,10 @@ import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
 import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
-import { PROJECT_DETAIL_SIDEBAR_CLASS } from '@/features/projects/components/project-detail-layout.constants';
+import {
+  PROJECT_DETAIL_SIDEBAR_CLASS,
+  PROJECT_DETAIL_SIDEBAR_STICKY_CLASS,
+} from '@/features/projects/components/project-detail-layout.constants';
 import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
@@ -87,7 +90,7 @@ export default function ProjectDetailPage() {
         </div>
 
         <ProjectInfoPanel
-          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'lg:self-start')}
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_STICKY_CLASS)}
           project={project}
           onProjectUpdated={setProject}
         />
@@ -110,7 +113,9 @@ function ProjectDetailLoading() {
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <Skeleton className="h-48 w-full" />
         </div>
-        <Skeleton className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'h-96 lg:self-start')} />
+        <Skeleton
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_STICKY_CLASS, 'h-96')}
+        />
       </div>
     </div>
   );

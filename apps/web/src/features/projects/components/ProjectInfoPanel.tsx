@@ -20,7 +20,7 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
 
   return (
     <aside
-      className={cn('bg-card border-border rounded-xl border p-5', className)}
+      className={cn('bg-card border-border flex min-h-0 flex-col rounded-xl border p-5', className)}
       aria-label="Project information"
     >
       <div className="flex items-start justify-between gap-3">
@@ -33,19 +33,23 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
         <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} className="shrink-0" />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col">
         {hasDescription ? (
           <DetailInfoSubsection first>
             <ProjectDetailsFields project={project} />
           </DetailInfoSubsection>
         ) : null}
 
-        <DetailInfoSubsection first={!hasDescription} className="pb-3">
+        <DetailInfoSubsection first={!hasDescription} className="shrink-0 pb-3">
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
         </DetailInfoSubsection>
 
-        <DetailInfoSubsection title="Team" className="mt-4 pt-6">
-          <ProjectParticipantsSection projectId={project.id} embedded />
+        <DetailInfoSubsection title="Team" className="mt-4 flex min-h-0 flex-1 flex-col pt-6">
+          <ProjectParticipantsSection
+            projectId={project.id}
+            embedded
+            className="flex min-h-0 flex-1 flex-col"
+          />
         </DetailInfoSubsection>
       </div>
     </aside>

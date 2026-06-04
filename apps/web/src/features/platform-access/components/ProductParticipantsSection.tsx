@@ -132,7 +132,7 @@ function TeamBody({
 
   if (embedded) {
     return (
-      <div className="max-h-52 space-y-2 overflow-y-auto pr-0.5">
+      <div className="space-y-2">
         {members.map((row) => (
           <div
             key={row.id}

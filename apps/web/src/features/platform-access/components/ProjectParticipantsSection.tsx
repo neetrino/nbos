@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
+  DETAIL_SHEET_TAB_LIST_CLASS,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -148,6 +149,7 @@ export function ProjectParticipantsSection({
           DETAIL_SHEET_SECTION_STRETCH_CLASS,
           'bg-card border-border rounded-xl border p-5',
         ],
+        embedded && 'flex min-h-0 flex-1 flex-col',
         className,
       )}
     >
@@ -163,7 +165,7 @@ export function ProjectParticipantsSection({
       <div
         className={cn(
           DETAIL_SHEET_SECTION_BODY_CLASS,
-          isDense ? 'mt-0 space-y-3' : 'mt-4 space-y-4',
+          isDense ? 'mt-0 flex min-h-0 flex-1 flex-col gap-3' : 'mt-4 space-y-4',
         )}
       >
         {addMemberPicker}
@@ -185,7 +187,7 @@ export function ProjectParticipantsSection({
           <div
             className={cn(
               RELATION_PICKER_CHIP_STACK_CLASS,
-              embedded && 'max-h-52 overflow-y-auto pr-0.5',
+              embedded && cn(DETAIL_SHEET_TAB_LIST_CLASS, 'overscroll-contain pr-0.5'),
             )}
           >
             {members.map((row) => (
