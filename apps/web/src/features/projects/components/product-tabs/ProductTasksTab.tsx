@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -14,8 +14,6 @@ import {
 } from '@/components/shared';
 import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
-import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
-import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { EditWorkSpaceDialog } from '@/features/tasks/work-spaces/EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsSheet } from '@/features/tasks/work-spaces/WorkSpaceDetailSettingsSheet';
 import { WorkSpaceRuntime } from '@/features/tasks/work-spaces/WorkSpaceRuntime';
@@ -32,19 +30,23 @@ import {
   useWorkspaceRuntimeTaskFilters,
   WORKSPACE_TASK_FILTER_CONFIGS,
 } from '@/features/tasks/work-spaces/workspace-runtime-filter-bar';
+import type { UseProductWorkSpaceTabResult } from '@/features/projects/hooks/use-product-work-space-tab';
 
-interface ProductTasksTabProps {
-  productId: string;
-}
+type ProductTasksTabProps = UseProductWorkSpaceTabResult;
 
-export function ProductTasksTab({ productId }: ProductTasksTabProps) {
-  const { creatorId, creatorReady } = useTaskCreatorId();
+export function ProductTasksTab({
+  workspace,
+  tasks,
+  setTasks,
+  sprints,
+  setSprints,
+  loading,
+  error,
+  refetch,
+  handleWorkspaceUpdate,
+}: ProductTasksTabProps) {
+  const { creatorReady, creatorId } = useTaskCreatorId();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
-  const [sprints, setSprints] = useState<WorkSpaceSprint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
@@ -53,36 +55,6 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
 
-  const fetchWorkSpaceTasks = useCallback(async () => {
-    setLoading(true);
-    try {
-      const productWorkspace = await tasksApi.ensureProductWorkSpace(productId);
-      const [workspaceTasks, linkedTasks] = await Promise.all([
-        tasksApi.getAll({ workspaceId: productWorkspace.id, pageSize: 100 }),
-        tasksApi.getByEntity('PRODUCT', productId),
-      ]);
-      setWorkspace(productWorkspace);
-      setTasks(mergeTasks(workspaceTasks.items, linkedTasks));
-      if (productWorkspace.scrumEnabled) {
-        setSprints(await workSpaceSprintsApi.list(productWorkspace.id));
-      } else {
-        setSprints([]);
-      }
-      setError(null);
-    } catch {
-      setWorkspace(null);
-      setTasks([]);
-      setSprints([]);
-      setError('Work Space could not be loaded.');
-    } finally {
-      setLoading(false);
-    }
-  }, [productId]);
-
-  useEffect(() => {
-    void fetchWorkSpaceTasks();
-  }, [fetchWorkSpaceTasks]);
-
   useEffect(() => {
     if (boardView === 'planning') {
       setWorkspaceArea(WORKSPACE_AREA_PLANNING);
@@ -90,18 +62,15 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
     }
   }, [boardView]);
 
-  const handleWorkspaceUpdate = useCallback(async (updated: WorkSpace) => {
-    setWorkspace(updated);
-    if (updated.scrumEnabled) {
-      setSprints(await workSpaceSprintsApi.list(updated.id).catch(() => []));
-    } else {
-      setSprints([]);
+  const onWorkspaceUpdate = async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
+    await handleWorkspaceUpdate(updated);
+    if (!updated.scrumEnabled) {
       setWorkspaceArea(WORKSPACE_AREA_ACTIVE);
     }
-  }, []);
+  };
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={fetchWorkSpaceTasks} />;
+  if (loading && !workspace) return <LoadingState count={2} className="max-w-xl" />;
+  if (error) return <ErrorState description={error} onRetry={() => void refetch()} />;
   if (!workspace) return null;
 
   const defaultLink = buildDefaultTaskLink(workspace);
@@ -135,10 +104,7 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
         trailing={
           <>
             {isPlanningArea ? (
-              <WorkSpaceScrumPlanningEnable
-                workspace={workspace}
-                onUpdated={handleWorkspaceUpdate}
-              />
+              <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
             ) : null}
             <Link
               href={`/work-spaces/${workspace.id}`}
@@ -189,17 +155,8 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
         workspace={workspace}
         open={editOpen}
         onOpenChange={setEditOpen}
-        onUpdated={handleWorkspaceUpdate}
+        onUpdated={onWorkspaceUpdate}
       />
     </div>
   );
-}
-
-function mergeTasks(primary: Task[], secondary: Task[]): Task[] {
-  const seen = new Set<string>();
-  return [...primary, ...secondary].filter((task) => {
-    if (seen.has(task.id)) return false;
-    seen.add(task.id);
-    return true;
-  });
 }

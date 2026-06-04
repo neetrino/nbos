@@ -89,6 +89,7 @@ const TabsContent = React.forwardRef<
     data-slot="tabs-content"
     className={cn(
       'flex-1 text-sm outline-none focus-visible:outline-none',
+      'data-[state=inactive]:hidden',
       'focus-visible:outline-ring/70 mt-2 outline-offset-2 focus-visible:outline focus-visible:outline-2',
       className,
     )}

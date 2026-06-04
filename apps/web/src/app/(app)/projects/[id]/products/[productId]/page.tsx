@@ -24,6 +24,7 @@ import { ProductTechnicalTab } from '@/features/projects/components/product-tabs
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
+import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 
 const TAB_ITEMS = [
@@ -55,6 +56,8 @@ function ProductDetailPageContent() {
   } | null>(null);
 
   useProductDetailHeader(product, siblingProducts, params.id);
+
+  const workSpaceTab = useProductWorkSpaceTab(params.productId, activeTab === 'tasks');
 
   const fetchProduct = useCallback(async () => {
     if (!params.productId) return;
@@ -149,7 +152,7 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">
-          <ProductTasksTab productId={product.id} />
+          <ProductTasksTab {...workSpaceTab} />
         </TabsContent>
 
         <TabsContent value="extensions" className="mt-5">

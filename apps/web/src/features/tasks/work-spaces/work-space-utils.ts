@@ -1,5 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
-import type { WorkSpace } from '@/lib/api/tasks';
+import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 
 export type WorkSpaceFilterValues = {
   type?: string;
@@ -134,4 +134,21 @@ export function groupWorkSpaces(workspaces: WorkSpace[]): Record<WorkSpaceGroupK
     },
     { standalone: [], product: [] },
   );
+}
+
+/** Load existing product workspace via GET; POST ensure only when missing (avoids legacy-attach on every open). */
+export async function resolveProductWorkSpace(productId: string): Promise<WorkSpace> {
+  const listed = await tasksApi.getWorkSpaces({ productId, pageSize: 1 });
+  if (listed.items[0]) return listed.items[0];
+  return tasksApi.ensureProductWorkSpace(productId);
+}
+
+/** Workspace tasks plus legacy product-linked tasks without workspaceId. */
+export function mergeProductWorkSpaceTasks(primary: Task[], linked: Task[]): Task[] {
+  const seen = new Set<string>();
+  return [...primary, ...linked].filter((task) => {
+    if (seen.has(task.id)) return false;
+    seen.add(task.id);
+    return true;
+  });
 }
