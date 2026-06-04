@@ -1,7 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { PAGE_HERO_TAB_SCROLL, useModuleHeroSlots } from '@/components/shared/page-hero';
+import { Button } from '@/components/ui/button';
 import {
   reportsApi,
   type ReportDataQualityWarning,
@@ -12,11 +15,11 @@ import {
   type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ReportsHeader, ReportViewTabs, type ReportsView } from './ReportsCenterChrome';
+import { ReportsViewTabs, type ReportsView } from './ReportsCenterChrome';
+import { buildReportsHeroSearch } from './build-reports-hero-search';
 import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
-import { ReportFilterBar } from './ReportFilterBar';
 import {
   buildInitialReportFilters,
   buildReportFilters,
@@ -100,25 +103,90 @@ export function ReportsCenter() {
     }
   }
 
+  const getTabRefresh = useCallback(
+    (viewId: ReportsView) => {
+      if (viewId === 'FINANCE') return finance.refresh;
+      if (viewId === 'SALES') return sales.refresh;
+      if (viewId === 'MARKETING') return marketing.refresh;
+      if (viewId === 'PROJECTS') return projects.refresh;
+      if (viewId === 'SPECIALISTS') return specialists.refresh;
+      return null;
+    },
+    [finance.refresh, marketing.refresh, projects.refresh, sales.refresh, specialists.refresh],
+  );
+
+  const handleRefresh = useCallback(() => {
+    void refreshActiveView(view, load, getTabRefresh);
+  }, [getTabRefresh, load, view]);
+
+  async function retryExport(jobId: string) {
+    setError(null);
+    try {
+      const retried = await reportsApi.retryExportJob(jobId);
+      setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
+      setView('EXPORTS');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
+    }
+  }
+
+  async function cancelExport(jobId: string) {
+    setError(null);
+    try {
+      const cancelled = await reportsApi.cancelExportJob(jobId);
+      setExportJobs((current) =>
+        current.map((item) => (item.id === cancelled.id ? cancelled : item)),
+      );
+      setView('EXPORTS');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
+    }
+  }
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setFilters(buildInitialReportFilters());
+  }, []);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      tabs: (
+        <div className={PAGE_HERO_TAB_SCROLL}>
+          <ReportsViewTabs view={view} onViewChange={setView} />
+        </div>
+      ),
+      search: buildReportsHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        filters,
+        onFiltersChange: setFilters,
+        savedViews,
+        onClearAll: handleClearFilters,
+      }),
+      trailing: (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          onClick={handleRefresh}
+          disabled={loading}
+          aria-label="Refresh reports"
+          title="Refresh"
+        >
+          <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
+        </Button>
+      ),
+    }),
+    [filters, handleClearFilters, handleRefresh, loading, savedViews, search, view],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   if (loading) return <LoadingState variant="cards" count={6} />;
   if (error) return <ErrorState title="Reports unavailable" description={error} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <ReportsHeader
-        view={view}
-        onRefresh={() => void refreshActiveView(view, load, tabRefreshers)}
-      />
-      <ReportViewTabs view={view} onViewChange={setView} />
-      <ReportFilterBar
-        definitions={definitions}
-        filters={filters}
-        search={search}
-        savedViews={savedViews}
-        onFiltersChange={setFilters}
-        onSearchChange={setSearch}
-        onSavedViewsChange={setSavedViews}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
       {view === 'SCHEDULED' ? (
         <ReportsSchedulePanel
           definitions={definitions}
@@ -174,39 +242,6 @@ export function ReportsCenter() {
       )}
     </div>
   );
-
-  function tabRefreshers(viewId: ReportsView) {
-    if (viewId === 'FINANCE') return finance.refresh;
-    if (viewId === 'SALES') return sales.refresh;
-    if (viewId === 'MARKETING') return marketing.refresh;
-    if (viewId === 'PROJECTS') return projects.refresh;
-    if (viewId === 'SPECIALISTS') return specialists.refresh;
-    return null;
-  }
-
-  async function retryExport(jobId: string) {
-    setError(null);
-    try {
-      const retried = await reportsApi.retryExportJob(jobId);
-      setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
-      setView('EXPORTS');
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
-    }
-  }
-
-  async function cancelExport(jobId: string) {
-    setError(null);
-    try {
-      const cancelled = await reportsApi.cancelExportJob(jobId);
-      setExportJobs((current) =>
-        current.map((item) => (item.id === cancelled.id ? cancelled : item)),
-      );
-      setView('EXPORTS');
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
-    }
-  }
 }
 
 function filterDefinitions(

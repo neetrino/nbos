@@ -1,5 +1,7 @@
 import type { SavedReportView } from '@/lib/api/reports';
 
+export type ReportPeriodPreset = 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR';
+
 export interface ReportFilterState {
   dateFrom: string;
   dateTo: string;
@@ -32,6 +34,29 @@ export function savedViewToFilters(view: SavedReportView): ReportFilterState {
     dateFrom: stringFilterValue(view.filters, 'dateFrom'),
     dateTo: stringFilterValue(view.filters, 'dateTo'),
     asOf: stringFilterValue(view.filters, 'asOf'),
+  };
+}
+
+export function buildReportPresetFilters(preset: ReportPeriodPreset): ReportFilterState {
+  const now = new Date();
+  if (preset === 'THIS_QUARTER') {
+    const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    const start = new Date(now.getFullYear(), quarterStartMonth, 1);
+    return dateRangeToFilters(start, now, now);
+  }
+  if (preset === 'THIS_YEAR') {
+    const start = new Date(now.getFullYear(), 0, 1);
+    return dateRangeToFilters(start, now, now);
+  }
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  return dateRangeToFilters(start, now, now);
+}
+
+function dateRangeToFilters(start: Date, end: Date, asOf: Date): ReportFilterState {
+  return {
+    dateFrom: toDateInputValue(start),
+    dateTo: toDateInputValue(end),
+    asOf: toDateInputValue(asOf),
   };
 }
 
