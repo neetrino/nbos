@@ -1,14 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import {
-  DETAIL_SHEET_PANEL_DIVIDER_CLASS,
-  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
-} from '@/components/shared';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
 import type { FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
+import { DetailInfoSubsection } from './detail-info-subsection';
 import { ProjectContactsSection } from './ProjectContactsSection';
 import { ProjectDetailsFields } from './ProjectInfoCard';
 import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
@@ -39,38 +35,19 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
 
       <div className="mt-4">
         {hasDescription ? (
-          <ProjectInfoSubsection first>
+          <DetailInfoSubsection first>
             <ProjectDetailsFields project={project} />
-          </ProjectInfoSubsection>
+          </DetailInfoSubsection>
         ) : null}
 
-        <ProjectInfoSubsection first={!hasDescription} className="pb-3">
+        <DetailInfoSubsection first={!hasDescription} className="pb-3">
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
-        </ProjectInfoSubsection>
+        </DetailInfoSubsection>
 
-        <ProjectInfoSubsection title="Team" className="mt-4 pt-6">
+        <DetailInfoSubsection title="Team" className="mt-4 pt-6">
           <ProjectParticipantsSection projectId={project.id} embedded />
-        </ProjectInfoSubsection>
+        </DetailInfoSubsection>
       </div>
     </aside>
-  );
-}
-
-function ProjectInfoSubsection({
-  title,
-  children,
-  first = false,
-  className,
-}: {
-  title?: string;
-  children: ReactNode;
-  first?: boolean;
-  className?: string;
-}) {
-  return (
-    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, 'space-y-3', className)}>
-      {title ? <h3 className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{title}</h3> : null}
-      {children}
-    </section>
   );
 }

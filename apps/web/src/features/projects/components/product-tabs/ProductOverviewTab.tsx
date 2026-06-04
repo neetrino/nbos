@@ -1,23 +1,17 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
-import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
-import { getProductType } from '@/features/projects/constants/projects';
 import {
   buildProductGateRequiredFields,
-  productStageGateFieldClass,
   resolveProductTabFromGateErrors,
   type ProductTabForGate,
 } from '@/features/projects/product-stage-gate-highlight';
 import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
 import { ProductStageGateCard } from './ProductStageGateCard';
-import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
-import { OverviewMetaGrid, OverviewMetaTile, OverviewPanel } from './product-overview-ui';
 import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
@@ -61,14 +55,11 @@ export function ProductOverviewTab({
     <div className="space-y-4">
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
       <div className="grid gap-4 xl:grid-cols-12 xl:items-start">
-        <div className="space-y-4 xl:col-span-4">
-          <ProductDetailsCard product={product} gateRequiredFields={gateRequiredFields} />
-          <ProductDescriptionCard
-            description={product.description}
-            gateRequiredFields={gateRequiredFields}
-            forceVisible={gateRequiredFields.has('description')}
-          />
-        </div>
+        <ProductInfoPanel
+          product={product}
+          gateRequiredFields={gateRequiredFields}
+          className="xl:col-span-4"
+        />
         <div className="xl:col-span-8">
           <ProductStageGateCard
             product={product}
@@ -81,7 +72,6 @@ export function ProductOverviewTab({
           />
         </div>
       </div>
-      <ProductParticipantsSection productId={product.id} compact />
     </div>
   );
 }
@@ -129,63 +119,6 @@ function ProductStats({
   );
 }
 
-function ProductDetailsCard({
-  product,
-  gateRequiredFields,
-}: {
-  product: FullProduct;
-  gateRequiredFields: ReadonlySet<string>;
-}) {
-  const productType = getProductType(product.productType);
-  const stageStatus = getProductDeliveryStageBadgeDisplay(product);
-
-  return (
-    <OverviewPanel title="Product Details">
-      <OverviewMetaGrid>
-        <OverviewMetaTile label="Type" value={productType?.label ?? '—'} />
-        <OverviewMetaTile
-          label="Stage"
-          value={
-            stageStatus ? (
-              <StatusBadge label={stageStatus.label} variant={stageStatus.variant} />
-            ) : (
-              '—'
-            )
-          }
-        />
-        {product.pm ? (
-          <OverviewMetaTile label="PM" value={`${product.pm.firstName} ${product.pm.lastName}`} />
-        ) : null}
-        <OverviewMetaTile
-          label="Deadline"
-          className={productStageGateFieldClass(gateRequiredFields, 'deadline', undefined)}
-          value={product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
-        />
-        <OverviewMetaTile
-          label="Order"
-          className={productStageGateFieldClass(gateRequiredFields, 'order', undefined)}
-          value={product.order ? 'Linked' : '—'}
-        />
-        <OverviewMetaTile
-          label="Project"
-          value={
-            <Link
-              href={`/projects/${product.projectId}`}
-              className="text-primary block truncate hover:underline"
-            >
-              {product.project.name}
-            </Link>
-          }
-        />
-        <OverviewMetaTile
-          label="Created"
-          value={new Date(product.createdAt).toLocaleDateString()}
-        />
-      </OverviewMetaGrid>
-    </OverviewPanel>
-  );
-}
-
 function StatChip({
   icon: Icon,
   label,
@@ -207,30 +140,5 @@ function StatChip({
         <p className="text-muted-foreground text-[11px]">{label}</p>
       </div>
     </div>
-  );
-}
-
-function ProductDescriptionCard({
-  description,
-  gateRequiredFields,
-  forceVisible,
-}: {
-  description: string | null;
-  gateRequiredFields: ReadonlySet<string>;
-  forceVisible: boolean;
-}) {
-  if (!description && !forceVisible) return null;
-
-  return (
-    <OverviewPanel
-      title="Description"
-      bodyClassName={productStageGateFieldClass(gateRequiredFields, 'description', undefined)}
-    >
-      {description ? (
-        <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
-      ) : (
-        <p className="text-muted-foreground text-sm">Description is required before Starting.</p>
-      )}
-    </OverviewPanel>
   );
 }

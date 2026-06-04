@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_SECTION_STRETCH_CLASS,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from '@/components/shared';
 import {
   Table,
   TableBody,
@@ -14,16 +20,19 @@ import {
 } from '@/components/ui/table';
 import { platformAccessApi, type ProductTeamMemberRow } from '@/lib/api/platform-access';
 import { formatProductSlot, formatTeamSource } from '../team-member-labels';
-import { OverviewPanel } from '@/features/projects/components/product-tabs/product-overview-ui';
+import { cn } from '@/lib/utils';
 
 interface ProductParticipantsSectionProps {
   productId: string;
-  compact?: boolean;
+  /** Inside {@link ProductInfoPanel} — minimal rows, no card chrome. */
+  embedded?: boolean;
+  className?: string;
 }
 
 export function ProductParticipantsSection({
   productId,
-  compact = false,
+  embedded = false,
+  className,
 }: ProductParticipantsSectionProps) {
   const [members, setMembers] = useState<ProductTeamMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,36 +56,37 @@ export function ProductParticipantsSection({
     void load();
   }, [load]);
 
-  const hint = 'Product-scoped access — slots sync from delivery roles on this product.';
+  return (
+    <section
+      className={cn(
+        !embedded && [
+          DETAIL_SHEET_SECTION_STRETCH_CLASS,
+          'bg-card border-border rounded-xl border p-5',
+        ],
+        className,
+      )}
+    >
+      {!embedded && (
+        <>
+          <div className="mb-4 flex items-center gap-2">
+            <Users size={18} className="text-muted-foreground" aria-hidden />
+            <h3 className="text-sm font-semibold">Product team (access)</h3>
+          </div>
+          <p className="text-muted-foreground mb-4 text-sm">
+            Product-scoped access only — slots sync from delivery roles on this product.
+          </p>
+        </>
+      )}
 
-  if (compact) {
-    return (
-      <OverviewPanel title="Product team (access)" hint={hint} bodyClassName="p-0">
+      <div className={cn(DETAIL_SHEET_SECTION_BODY_CLASS, embedded ? 'mt-0 space-y-3' : 'mt-0')}>
         <TeamBody
           error={error}
           loading={loading}
           members={members}
           onRetry={() => void load()}
-          compact
+          embedded={embedded}
         />
-      </OverviewPanel>
-    );
-  }
-
-  return (
-    <section className="bg-card border-border rounded-xl border p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <Users size={18} className="text-muted-foreground" aria-hidden />
-        <h3 className="text-sm font-semibold">Product team (access)</h3>
       </div>
-      <p className="text-muted-foreground mb-4 text-sm">{hint}</p>
-      <TeamBody
-        error={error}
-        loading={loading}
-        members={members}
-        onRetry={() => void load()}
-        compact={false}
-      />
     </section>
   );
 }
@@ -86,52 +96,64 @@ function TeamBody({
   loading,
   members,
   onRetry,
-  compact,
+  embedded,
 }: {
   error: string | null;
   loading: boolean;
   members: ProductTeamMemberRow[];
   onRetry: () => void;
-  compact: boolean;
+  embedded: boolean;
 }) {
   if (error) {
-    return (
-      <div className={compact ? 'p-4' : undefined}>
-        <ErrorState description={error} onRetry={onRetry} />
-      </div>
-    );
+    return <ErrorState description={error} onRetry={onRetry} />;
   }
 
   if (loading) {
-    return (
-      <div className={compact ? 'p-4' : undefined}>
-        <LoadingState count={compact ? 2 : 3} />
-      </div>
-    );
+    return <LoadingState count={embedded ? 2 : 3} />;
   }
 
   if (members.length === 0) {
+    if (embedded) {
+      return (
+        <p className="text-muted-foreground text-xs">
+          No product team yet. Assign delivery roles on this product to populate the team.
+        </p>
+      );
+    }
+
     return (
-      <div
-        className={
-          compact ? 'text-muted-foreground flex items-center gap-3 px-4 py-5 text-sm' : undefined
-        }
-      >
-        {compact ? (
-          <>
-            <Users className="size-8 shrink-0 opacity-30" aria-hidden />
-            <div className="text-left">
-              <p className="text-foreground text-sm font-medium">No product team yet</p>
-              <p className="text-xs">Assign delivery roles on this product to populate the team.</p>
+      <EmptyState
+        icon={Users}
+        title="No product team yet"
+        description="Assign delivery roles on this product to populate the team."
+      />
+    );
+  }
+
+  if (embedded) {
+    return (
+      <div className="max-h-52 space-y-2 overflow-y-auto pr-0.5">
+        {members.map((row) => (
+          <div
+            key={row.id}
+            className="bg-muted/30 flex items-start justify-between gap-2 rounded-lg px-2.5 py-2"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {row.employee.firstName} {row.employee.lastName}
+              </p>
+              <p className="text-muted-foreground truncate text-[11px]">{row.employee.email}</p>
             </div>
-          </>
-        ) : (
-          <EmptyState
-            icon={Users}
-            title="No product team yet"
-            description="Assign delivery roles on this product to populate the team."
-          />
-        )}
+            <div className="flex shrink-0 flex-col items-end gap-0.5">
+              <span className="text-xs capitalize">{formatProductSlot(row.slot)}</span>
+              {row.isPrimary && row.slot ? (
+                <Badge variant="outline" className="text-[10px]">
+                  primary
+                </Badge>
+              ) : null}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -139,40 +161,32 @@ function TeamBody({
   return (
     <Table>
       <TableHeader>
-        <TableRow className={compact ? 'hover:bg-transparent' : undefined}>
-          <TableHead className={compact ? 'h-8 text-xs' : undefined}>Name</TableHead>
-          <TableHead className={compact ? 'h-8 w-24 text-xs' : 'w-28'}>Slot</TableHead>
-          <TableHead className={compact ? 'h-8 w-20 text-xs' : 'w-24'}>Access</TableHead>
-          <TableHead className={compact ? 'h-8 w-28 text-xs' : 'w-32'}>Source</TableHead>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead className="w-28">Slot</TableHead>
+          <TableHead className="w-24">Access</TableHead>
+          <TableHead className="w-32">Source</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {members.map((row) => (
-          <TableRow key={row.id} className={compact ? 'hover:bg-muted/30' : undefined}>
-            <TableCell className={compact ? 'py-2 text-xs' : undefined}>
+          <TableRow key={row.id}>
+            <TableCell>
               <span className="font-medium">
                 {row.employee.firstName} {row.employee.lastName}
               </span>
-              <span className="text-muted-foreground block text-[11px]">{row.employee.email}</span>
+              <span className="text-muted-foreground block text-xs">{row.employee.email}</span>
             </TableCell>
-            <TableCell className={compact ? 'py-2 text-xs' : undefined}>
+            <TableCell>
               <span className="capitalize">{formatProductSlot(row.slot)}</span>
               {row.isPrimary && row.slot ? (
-                <Badge variant="outline" className="ml-1 text-[10px]">
+                <Badge variant="outline" className="ml-1 text-xs">
                   primary
                 </Badge>
               ) : null}
             </TableCell>
-            <TableCell className={compact ? 'py-2 text-xs' : undefined}>
-              {row.accessLevel}
-            </TableCell>
-            <TableCell
-              className={
-                compact
-                  ? 'text-muted-foreground py-2 text-xs capitalize'
-                  : 'text-muted-foreground text-sm capitalize'
-              }
-            >
+            <TableCell className="text-sm">{row.accessLevel}</TableCell>
+            <TableCell className="text-muted-foreground text-sm capitalize">
               {formatTeamSource(row.source)}
             </TableCell>
           </TableRow>
