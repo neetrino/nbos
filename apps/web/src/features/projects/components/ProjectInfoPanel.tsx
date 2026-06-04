@@ -22,6 +22,8 @@ interface ProjectInfoPanelProps {
 }
 
 export function ProjectInfoPanel({ project, onProjectUpdated, className }: ProjectInfoPanelProps) {
+  const hasDescription = Boolean(project.description?.trim());
+
   return (
     <aside
       className={cn('bg-card border-border rounded-xl border p-5', className)}
@@ -39,12 +41,14 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
       </div>
 
       <div className="mt-4">
-        <ProjectInfoSubsection first>
-          <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
-        </ProjectInfoSubsection>
+        {hasDescription ? (
+          <ProjectInfoSubsection first>
+            <ProjectDetailsFields project={project} />
+          </ProjectInfoSubsection>
+        ) : null}
 
-        <ProjectInfoSubsection title="Details">
-          <ProjectDetailsFields project={project} />
+        <ProjectInfoSubsection first={!hasDescription}>
+          <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
         </ProjectInfoSubsection>
 
         <ProjectInfoSubsection title="Team">
@@ -65,7 +69,7 @@ function ProjectInfoSubsection({
   first?: boolean;
 }) {
   return (
-    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, title ? 'space-y-3' : '')}>
+    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, 'space-y-3')}>
       {title ? <h3 className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{title}</h3> : null}
       {children}
     </section>

@@ -1,6 +1,5 @@
 'use client';
 
-import { Package } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
@@ -32,38 +31,12 @@ export function ProjectInfoCard({ project, className }: ProjectInfoCardProps) {
 }
 
 export function ProjectDetailsFields({ project }: { project: FullProject }) {
-  const hasDescription = Boolean(project.description?.trim());
+  const description = project.description?.trim();
+  if (!description) return null;
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-      <InfoRow
-        icon={Package}
-        label="Products / Extensions"
-        value={`${project._count.products} / ${project._count.extensions}`}
-      />
-      {hasDescription && (
-        <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
-      )}
-    </div>
-  );
-}
-
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <div className="text-muted-foreground flex min-w-0 items-center gap-2">
-        <Icon size={14} className="shrink-0" />
-        <span>{label}</span>
-      </div>
-      <span className="shrink-0 font-medium tabular-nums">{value}</span>
+      <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
     </div>
   );
 }
