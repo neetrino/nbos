@@ -22,7 +22,6 @@ import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
-import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -31,7 +30,11 @@ import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecyc
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
-import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
+import {
+  useWorkspaceRuntimeTaskFilters,
+  WorkspaceRuntimeFilterBar,
+  type WorkspaceRuntimeTaskFilters,
+} from './workspace-runtime-filter-bar';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
 import type { WorkspaceArea } from './workspace-area';
@@ -47,6 +50,9 @@ export type WorkSpaceRuntimeProps = {
   defaultTaskLink?: { entityType: string; entityId: string };
   /** When false, board view tabs + New Task live in the page header (standalone). */
   hideInlineBoardToolbar?: boolean;
+  /** When true, search/filters render in PageHero instead of inline FilterBar. */
+  hideFilterBar?: boolean;
+  taskViewFilters?: WorkspaceRuntimeTaskFilters;
   boardView?: WorkspaceBoardView;
   setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
   quickCreateRef?: MutableRefObject<(() => void) | null>;
@@ -67,6 +73,8 @@ export function WorkSpaceRuntime({
   mode,
   defaultTaskLink,
   hideInlineBoardToolbar = false,
+  hideFilterBar = false,
+  taskViewFilters: taskViewFiltersProp,
   boardView: boardViewProp,
   setBoardView: setBoardViewProp,
   quickCreateRef,
@@ -79,8 +87,9 @@ export function WorkSpaceRuntime({
   const openTaskIdFromUrl = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
 
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const [taskSearch, setTaskSearch] = useState('');
-  const [taskFilters, setTaskFilters] = useState<Record<string, string>>({});
+  const internalTaskFilters = useWorkspaceRuntimeTaskFilters();
+  const taskViewFilters = taskViewFiltersProp ?? internalTaskFilters;
+  const { search: taskSearch, filterValues: taskFilters } = taskViewFilters;
 
   const workspaceViewFilters = useMemo(
     () => ({ search: taskSearch, filterValues: taskFilters }),
@@ -224,21 +233,9 @@ export function WorkSpaceRuntime({
     };
   }, [quickCreateRef, openQuickCreate]);
 
-  const clearTaskViewFilters = useCallback(() => {
-    setTaskSearch('');
-    setTaskFilters({});
-  }, []);
+  const clearTaskViewFilters = taskViewFilters.onClearFilters;
 
-  const handleTaskFilterChange = useCallback((key: string, value: string) => {
-    setTaskFilters((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const handleTaskFilterChange = taskViewFilters.onFilterChange;
 
   const renderCard = useCallback(
     (task: Task) => (
@@ -359,16 +356,15 @@ export function WorkSpaceRuntime({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
-      <WorkspaceRuntimeFilterBar
-        search={taskSearch}
-        onSearchChange={setTaskSearch}
-        filterValues={{
-          boardScope: taskFilters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-          ...taskFilters,
-        }}
-        onFilterChange={handleTaskFilterChange}
-        onClearFilters={clearTaskViewFilters}
-      />
+      {!hideFilterBar ? (
+        <WorkspaceRuntimeFilterBar
+          search={taskSearch}
+          onSearchChange={taskViewFilters.onSearchChange}
+          filterValues={taskViewFilters.heroFilterValues}
+          onFilterChange={handleTaskFilterChange}
+          onClearFilters={clearTaskViewFilters}
+        />
+      ) : null}
 
       <TasksWorkflowScopeBanner scope={boardScope} />
 

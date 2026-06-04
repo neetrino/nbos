@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { FilterBar, type FilterConfig } from '@/components/shared';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
@@ -29,6 +30,49 @@ export const WORKSPACE_TASK_FILTER_CONFIGS: FilterConfig[] = [
     options: TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
   },
 ];
+
+export type WorkspaceRuntimeTaskFilters = {
+  search: string;
+  filterValues: Record<string, string>;
+  heroFilterValues: Record<string, string>;
+  onSearchChange: (value: string) => void;
+  onFilterChange: (key: string, value: string) => void;
+  onClearFilters: () => void;
+};
+
+/** Shared task search/filter state for workspace runtime and PageHero. */
+export function useWorkspaceRuntimeTaskFilters(): WorkspaceRuntimeTaskFilters {
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+  const onFilterChange = useCallback((key: string, value: string) => {
+    setFilterValues((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const next = { ...prev };
+        delete next.boardScope;
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  }, []);
+
+  const onClearFilters = useCallback(() => {
+    setSearch('');
+    setFilterValues({});
+  }, []);
+
+  return {
+    search,
+    filterValues,
+    heroFilterValues: {
+      boardScope: filterValues.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      ...filterValues,
+    },
+    onSearchChange: setSearch,
+    onFilterChange,
+    onClearFilters,
+  };
+}
 
 export function WorkspaceRuntimeFilterBar({
   search,
