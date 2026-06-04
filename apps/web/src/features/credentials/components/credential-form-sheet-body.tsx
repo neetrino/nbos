@@ -1,5 +1,7 @@
 'use client';
 
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 import { CredentialFormSheetFields } from './credential-form-sheet-fields';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
 import { CredentialSecretVersionsPanel } from './credential-secret-versions-panel';
@@ -32,6 +34,7 @@ export function CredentialFormSheetBody({
   const isEdit = Boolean(credentialId);
   const audit = useCredentialSheetAudit(credentialId, sheetOpen && activeTab === 'activity');
   const inheritedSummary = credentialInheritedAccessSummary(form.accessLevel, form.detail);
+  const stretchTab = activeTab === 'activity' || activeTab === 'secret-history';
 
   if (!isEdit) {
     return (
@@ -42,7 +45,7 @@ export function CredentialFormSheetBody({
   }
 
   return (
-    <div className="px-6 pt-6 pb-6">
+    <div className={cn('px-6 pt-6 pb-6', stretchTab && DETAIL_SHEET_TAB_BODY_STRETCH_CLASS)}>
       {activeTab === 'general' ? <CredentialFormSheetFields form={form} /> : null}
       {activeTab === 'manual-access' ? (
         <CredentialManualAccessPanel

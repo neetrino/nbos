@@ -1,8 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  DETAIL_SHEET_SECTION_STRETCH_CLASS,
+  DETAIL_SHEET_TAB_LIST_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
 import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { useCredentialSecretVersions } from '@/features/credentials/hooks/use-credential-secret-versions';
@@ -62,7 +67,11 @@ export function CredentialSecretVersionsPanel({
 
   return (
     <section
-      className={embedded ? 'grid gap-3 pt-3' : 'border-border grid gap-3 border-t pt-5'}
+      className={
+        embedded
+          ? cn(DETAIL_SHEET_SECTION_STRETCH_CLASS, 'gap-3 pt-3')
+          : 'border-border grid gap-3 border-t pt-5'
+      }
       aria-label="Secret history"
     >
       <div>
@@ -78,11 +87,16 @@ export function CredentialSecretVersionsPanel({
       </div>
 
       {loading ? (
-        <Skeleton className="h-16 w-full rounded-lg" />
+        <Skeleton className={cn('w-full rounded-lg', embedded ? 'min-h-32 flex-1' : 'h-16')} />
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-xs">No archived versions yet.</p>
       ) : (
-        <ul className="max-h-44 space-y-2 overflow-y-auto text-xs">
+        <ul
+          className={cn(
+            'space-y-2 text-xs',
+            embedded ? DETAIL_SHEET_TAB_LIST_CLASS : 'max-h-44 overflow-y-auto',
+          )}
+        >
           {items.map((row) => (
             <li
               key={row.id}
