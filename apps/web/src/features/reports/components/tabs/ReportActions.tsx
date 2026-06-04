@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowUpRight, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 
@@ -12,60 +11,64 @@ interface ReportActionsProps {
 }
 
 export function ReportActions({ definitions, creatingExportToken, onExport }: ReportActionsProps) {
-  if (definitions.length === 0) return null;
+  if (definitions.length === 0) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        No reports match the current search or filters.
+      </p>
+    );
+  }
 
   return (
-    <section className="border-border bg-card rounded-2xl border p-3">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold">Report actions</h2>
-        <p className="text-muted-foreground text-xs">Export and source links</p>
-      </div>
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {definitions.map((definition) => (
-          <div
-            key={definition.key}
-            className="border-border/80 flex min-w-0 items-center justify-between gap-2 rounded-xl border px-3 py-2"
-            title={definition.description}
-          >
-            <p className="min-w-0 truncate text-sm font-medium">{definition.title}</p>
-            <div className="flex shrink-0 items-center gap-1.5">
-              {definition.supportedExports.map((format) => {
-                const token = `${definition.key}:${format}`;
-                const loading = creatingExportToken === token;
-                return (
-                  <Button
-                    key={`${definition.key}-${format}`}
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    disabled={creatingExportToken !== null}
-                    onClick={() => onExport(definition, format)}
-                    className="h-7 px-2 text-xs"
-                  >
-                    <Download className="mr-1 h-3.5 w-3.5" />
-                    {loading ? '...' : format}
-                  </Button>
-                );
-              })}
-              {definition.drillDownHrefs.slice(0, 2).map((href) => (
-                <Link
-                  key={href}
-                  href={href}
-                  title={hrefLabel(href)}
-                  className="border-border text-muted-foreground hover:text-foreground inline-flex h-7 w-7 items-center justify-center rounded-lg border"
-                >
-                  <ArrowUpRight size={12} aria-hidden />
-                  <span className="sr-only">{hrefLabel(href)}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+    <ul className="space-y-3">
+      {definitions.map((definition) => (
+        <li key={definition.key} className="border-border/80 bg-muted/30 rounded-xl border p-3">
+          <p className="text-sm leading-snug font-medium">{definition.title}</p>
+          <p className="text-muted-foreground mt-1 truncate text-xs">{definition.description}</p>
+          <ReportExportButtons
+            definition={definition}
+            creatingExportToken={creatingExportToken}
+            onExport={onExport}
+          />
+        </li>
+      ))}
+    </ul>
   );
 }
 
-function hrefLabel(href: string): string {
-  return href.replace('/', '').replaceAll('/', ' / ') || 'Open source';
+function ReportExportButtons({
+  definition,
+  creatingExportToken,
+  onExport,
+}: {
+  definition: ReportDefinition;
+  creatingExportToken: string | null;
+  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
+}) {
+  if (definition.supportedExports.length === 0) {
+    return <p className="text-muted-foreground mt-3 text-xs">No export formats available.</p>;
+  }
+
+  return (
+    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      {definition.supportedExports.map((format) => {
+        const token = `${definition.key}:${format}`;
+        const loading = creatingExportToken === token;
+        return (
+          <Button
+            key={`${definition.key}-${format}`}
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={creatingExportToken !== null}
+            onClick={() => onExport(definition, format)}
+            className="h-9 w-full justify-center gap-1.5 px-3 text-xs"
+          >
+            <Download className="size-3.5 shrink-0" aria-hidden />
+            <span className="truncate">{loading ? '…' : format}</span>
+          </Button>
+        );
+      })}
+    </div>
+  );
 }

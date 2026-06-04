@@ -1,11 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { useModuleHeroSlots } from '@/components/shared/page-hero';
-import { Button } from '@/components/ui/button';
 import {
   reportsApi,
   type ReportDataQualityWarning,
@@ -18,9 +16,12 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { REPORTS_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/reports-visit-config';
 import { buildReportsHeroSearch } from './build-reports-hero-search';
+import { reportViewLabel } from './ReportsCenterChrome';
+import { ReportsPageSettingsSheet } from './ReportsPageSettingsSheet';
 import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
+import { ReportActions } from './tabs/ReportActions';
 import {
   buildInitialReportFilters,
   buildReportFilters,
@@ -115,22 +116,6 @@ export function ReportsCenter() {
     }
   }
 
-  const getTabRefresh = useCallback(
-    (viewId: ReportsViewId) => {
-      if (viewId === 'FINANCE') return finance.refresh;
-      if (viewId === 'SALES') return sales.refresh;
-      if (viewId === 'MARKETING') return marketing.refresh;
-      if (viewId === 'PROJECTS') return projects.refresh;
-      if (viewId === 'SPECIALISTS') return specialists.refresh;
-      return null;
-    },
-    [finance.refresh, marketing.refresh, projects.refresh, sales.refresh, specialists.refresh],
-  );
-
-  const handleRefresh = useCallback(() => {
-    void refreshActiveView(view, load, getTabRefresh);
-  }, [getTabRefresh, load, view]);
-
   async function retryExport(jobId: string) {
     setError(null);
     try {
@@ -160,6 +145,8 @@ export function ReportsCenter() {
     setFilters(buildInitialReportFilters());
   }, []);
 
+  const showReportActions = isReportDataView(view);
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: buildReportsHeroSearch({
@@ -170,21 +157,30 @@ export function ReportsCenter() {
         savedViews,
         onClearAll: handleClearFilters,
       }),
-      trailing: (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          onClick={handleRefresh}
-          disabled={loading}
-          aria-label="Refresh reports"
-          title="Refresh"
+      trailing: showReportActions ? (
+        <ReportsPageSettingsSheet
+          title={`${reportViewLabel(view)} — settings`}
+          description="Download report files for the current filters."
+          triggerAriaLabel={`${reportViewLabel(view)} settings`}
         >
-          <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
-        </Button>
-      ),
+          <ReportActions
+            definitions={visibleDefinitions}
+            creatingExportToken={creatingExportToken}
+            onExport={(definition, format) => void requestExport(definition, format)}
+          />
+        </ReportsPageSettingsSheet>
+      ) : null,
     }),
-    [filters, handleClearFilters, handleRefresh, loading, savedViews, search],
+    [
+      creatingExportToken,
+      filters,
+      handleClearFilters,
+      savedViews,
+      search,
+      showReportActions,
+      view,
+      visibleDefinitions,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -214,40 +210,15 @@ export function ReportsCenter() {
       ) : view === 'QUALITY' ? (
         <ReportsDataQualityPanel warnings={warnings} onRefresh={() => void load()} />
       ) : view === 'FINANCE' ? (
-        <FinanceReportsTab
-          definitions={visibleDefinitions}
-          state={finance}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <FinanceReportsTab state={finance} />
       ) : view === 'SALES' ? (
-        <SalesReportsTab
-          definitions={visibleDefinitions}
-          state={sales}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <SalesReportsTab state={sales} />
       ) : view === 'MARKETING' ? (
-        <MarketingReportsTab
-          definitions={visibleDefinitions}
-          state={marketing}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <MarketingReportsTab state={marketing} />
       ) : view === 'PROJECTS' ? (
-        <ProjectsReportsTab
-          definitions={visibleDefinitions}
-          state={projects}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <ProjectsReportsTab state={projects} />
       ) : (
-        <SpecialistsReportsTab
-          definitions={visibleDefinitions}
-          state={specialists}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <SpecialistsReportsTab state={specialists} />
       )}
     </div>
   );
@@ -287,15 +258,12 @@ async function loadReportShellData() {
   };
 }
 
-function refreshActiveView(
-  view: ReportsViewId,
-  reloadShell: () => Promise<void>,
-  getTabRefresh: (view: ReportsViewId) => (() => void) | null,
-) {
-  const refresh = getTabRefresh(view);
-  if (refresh) {
-    refresh();
-    return;
-  }
-  void reloadShell();
+function isReportDataView(view: ReportsViewId): boolean {
+  return (
+    view === 'FINANCE' ||
+    view === 'SALES' ||
+    view === 'MARKETING' ||
+    view === 'PROJECTS' ||
+    view === 'SPECIALISTS'
+  );
 }

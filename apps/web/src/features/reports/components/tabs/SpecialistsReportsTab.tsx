@@ -2,29 +2,19 @@
 
 import { CheckCircle2, ClipboardList, Flame, ListTodo } from 'lucide-react';
 import { TASK_PRIORITY_FLAME_FILLED_CLASS } from '@/components/shared/quick-create-task/quick-create-task-constants';
-import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { TaskStats } from '@/lib/api/tasks';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import { count } from '../../report-number-format';
 import { ChartCard } from '../charts/ChartCard';
 import { KpiCard } from '../charts/KpiCard';
 import { ReportBarChart, ReportPieChart, type ChartDatum } from '../charts/ReportCharts';
-import { ReportActions } from './ReportActions';
 import { ReportTabState } from './ReportTabState';
 
 interface SpecialistsReportsTabProps {
-  definitions: ReportDefinition[];
   state: LazyReportTabState<TaskStats>;
-  creatingExportToken: string | null;
-  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
-export function SpecialistsReportsTab({
-  definitions,
-  state,
-  creatingExportToken,
-  onExport,
-}: SpecialistsReportsTabProps) {
+export function SpecialistsReportsTab({ state }: SpecialistsReportsTabProps) {
   const data = state.data;
 
   return (
@@ -43,11 +33,6 @@ export function SpecialistsReportsTab({
           </div>
         </>
       ) : null}
-      <ReportActions
-        definitions={definitions}
-        creatingExportToken={creatingExportToken}
-        onExport={onExport}
-      />
     </div>
   );
 }
