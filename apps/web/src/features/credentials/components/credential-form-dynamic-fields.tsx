@@ -68,13 +68,15 @@ export function CredentialFormDynamicFields({
             <div key={spec.field} className="grid gap-2">
               <Label>{spec.label}</Label>
               <CredentialEnvTableEditor
+                instanceKey={guardScope}
                 value={envData}
                 onChange={onEnvDataChange}
                 isExisting={isExisting}
+                hasStoredBundle={Boolean(secretsPresent?.envData)}
+                valuesLocked={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
                 revealedValue={revealed?.envData ?? null}
                 onReveal={() => onReveal?.('envData')}
-                onCopy={() => onCopy?.('envData')}
-                disabled={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
+                onCopy={onCopy ? () => onCopy('envData') : undefined}
               />
             </div>
           );

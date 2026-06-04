@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState, type ClipboardEvent } from 'react';
-import { Copy, Download, Eye, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
+import { ChevronDown, Copy, Download, Eye, Plus } from 'lucide-react';
 import {
   entriesFromEnvBundleSerialized,
   parseEnvBundleText,
@@ -9,8 +9,9 @@ import {
   type EnvBundleEntry,
 } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { CredentialEnvPasteDialog } from '@/features/credentials/components/credential-env-paste-dialog';
+import { CredentialEnvTableRow } from '@/features/credentials/components/credential-env-table-row';
+import { CREDENTIAL_ENV_TABLE_PREVIEW_ROWS } from '@/features/credentials/constants/credential-env-table';
 import { downloadEnvBundleFile } from '@/features/credentials/utils/download-env-bundle-file';
 import {
   clipLooksLikeEnvBundle,
@@ -22,41 +23,88 @@ import { toast } from 'sonner';
 const EMPTY_ENV_ROW: EnvBundleEntry = { key: '', value: '' };
 
 export interface CredentialEnvTableEditorProps {
+  instanceKey: string;
   value: string;
   onChange: (serialized: string) => void;
-  disabled?: boolean;
+  hasStoredBundle?: boolean;
+  valuesLocked?: boolean;
   revealedValue?: string | null;
   onReveal?: () => void;
-  onCopy?: () => void;
+  onCopy?: () => void | Promise<boolean>;
   isExisting?: boolean;
 }
 
 export function CredentialEnvTableEditor({
+  instanceKey,
   value,
   onChange,
-  disabled,
+  hasStoredBundle = false,
+  valuesLocked = false,
   revealedValue,
   onReveal,
   onCopy,
   isExisting,
 }: CredentialEnvTableEditorProps) {
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
+  const [expanded, setExpanded] = useState(false);
   const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
+  const revealRequestedRef = useRef<string | null>(null);
 
-  const entries = useMemo(() => {
+  useEffect(() => {
+    setLocalEntries([]);
+    setExpanded(false);
+    revealRequestedRef.current = null;
+  }, [instanceKey]);
+
+  const parsedFromValue = useMemo(() => entriesFromEnvBundleSerialized(value), [value]);
+  const parsedFromRevealed = useMemo(
+    () => (revealedValue ? entriesFromEnvBundleSerialized(revealedValue) : []),
+    [revealedValue],
+  );
+
+  const effectiveEntries = useMemo(() => {
     if (localEntries.length > 0) return localEntries;
-    return entriesFromEnvBundleSerialized(value);
-  }, [localEntries, value]);
+    if (parsedFromValue.length > 0) return parsedFromValue;
+    if (parsedFromRevealed.length > 0) {
+      return parsedFromRevealed.map(({ key }) => ({ key, value: '' }));
+    }
+    return [];
+  }, [localEntries, parsedFromValue, parsedFromRevealed]);
 
-  const rowsForTable = useMemo(() => (entries.length > 0 ? entries : [EMPTY_ENV_ROW]), [entries]);
+  const rowsForTable = useMemo(
+    () => (effectiveEntries.length > 0 ? effectiveEntries : [EMPTY_ENV_ROW]),
+    [effectiveEntries],
+  );
 
   const displayEntries = useMemo(() => {
-    if (revealedValue) return entriesFromEnvBundleSerialized(revealedValue);
+    if (parsedFromRevealed.length > 0) return parsedFromRevealed;
     return rowsForTable;
-  }, [rowsForTable, revealedValue]);
+  }, [parsedFromRevealed, rowsForTable]);
 
-  const hasStoredKeys = entries.some((row) => row.key.trim().length > 0);
+  const hasStoredKeys =
+    rowsForTable.some((row) => row.key.trim().length > 0) || (isExisting && hasStoredBundle);
+
+  const canDownload =
+    rowsForTable.some((row) => row.key.trim().length > 0) &&
+    (!isExisting || Boolean(revealedValue?.trim()));
+
+  const showMasked = Boolean(isExisting && valuesLocked);
+  const hiddenRowCount = Math.max(0, rowsForTable.length - CREDENTIAL_ENV_TABLE_PREVIEW_ROWS);
+  const visibleRowRefs = useMemo(
+    () =>
+      rowsForTable
+        .map((row, index) => ({ row, index }))
+        .filter(({ index }) => expanded || index < CREDENTIAL_ENV_TABLE_PREVIEW_ROWS),
+    [expanded, rowsForTable],
+  );
+
+  useEffect(() => {
+    if (!isExisting || !hasStoredBundle || revealedValue) return;
+    if (revealRequestedRef.current === instanceKey) return;
+    revealRequestedRef.current = instanceKey;
+    onReveal?.();
+  }, [hasStoredBundle, instanceKey, isExisting, onReveal, revealedValue]);
 
   const commitEntries = (next: EnvBundleEntry[]) => {
     setLocalEntries(next);
@@ -97,42 +145,68 @@ export function CredentialEnvTableEditor({
     const single = clipSingleEnvPair(clip);
     if (single) {
       event.preventDefault();
-      const base = entries.length > 0 ? [...entries] : [EMPTY_ENV_ROW];
+      const base = effectiveEntries.length > 0 ? [...effectiveEntries] : [EMPTY_ENV_ROW];
       base[index] = single;
       commitEntries(base);
     }
   };
 
   const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
-    const base = entries.length > 0 ? [...entries] : [EMPTY_ENV_ROW];
+    const base = effectiveEntries.length > 0 ? [...effectiveEntries] : [EMPTY_ENV_ROW];
     const current = base[index] ?? EMPTY_ENV_ROW;
     base[index] = { ...current, ...patch };
     commitEntries(base);
   };
 
   const removeRow = (index: number) => {
-    const next = entries.filter((_, i) => i !== index);
+    const next = effectiveEntries.filter((_, i) => i !== index);
     commitEntries(next.length > 0 ? next : []);
   };
 
   const addRow = () => {
-    commitEntries([...entries, EMPTY_ENV_ROW]);
+    commitEntries([...effectiveEntries, EMPTY_ENV_ROW]);
+    if (rowsForTable.length >= CREDENTIAL_ENV_TABLE_PREVIEW_ROWS) {
+      setExpanded(true);
+    }
   };
 
   const copyRow = async (entry: EnvBundleEntry) => {
-    await navigator.clipboard.writeText(`${entry.key}=${entry.value}`);
+    const line = displayEntries.find((row) => row.key === entry.key) ?? entry;
+    if (!line.key.trim()) return;
+    await navigator.clipboard.writeText(`${line.key}=${line.value}`);
     toast.success('Copied line');
+  };
+
+  const handleRevealAll = () => {
+    if (revealedValue) return;
+    onReveal?.();
+  };
+
+  const handleCopyBundle = () => {
+    void onCopy?.();
   };
 
   return (
     <div className="grid gap-4">
       {isExisting ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onReveal}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!hasStoredBundle || Boolean(revealedValue)}
+            onClick={handleRevealAll}
+          >
             <Eye className="mr-1 size-3.5" />
             Reveal all
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onCopy}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!canDownload}
+            onClick={handleCopyBundle}
+          >
             <Copy className="mr-1 size-3.5" />
             Copy bundle
           </Button>
@@ -145,24 +219,37 @@ export function CredentialEnvTableEditor({
           <span>Value</span>
           <span className="text-right">Actions</span>
         </div>
-        {rowsForTable.map((row, index) => (
-          <EnvRow
-            key={`${row.key}-${index}`}
+        {visibleRowRefs.map(({ row, index }) => (
+          <CredentialEnvTableRow
+            key={`${instanceKey}-${row.key}-${index}`}
             row={row}
             maskedValue={displayEntries[index]?.value ?? ''}
-            showMasked={Boolean(isExisting && !revealedValue)}
-            disabled={disabled}
+            showMasked={showMasked}
             onKeyChange={(key) => updateRow(index, { key })}
             onValueChange={(val) => updateRow(index, { value: val })}
             onPaste={(event) => handleCellPaste(index, event)}
             onRemove={() => removeRow(index)}
-            onCopy={() => void copyRow(displayEntries[index] ?? row)}
+            onCopy={() => void copyRow(row)}
           />
         ))}
+        {hiddenRowCount > 0 && !expanded ? (
+          <div className="border-border border-t px-3 py-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-center gap-1"
+              onClick={() => setExpanded(true)}
+            >
+              <ChevronDown className="size-3.5" />
+              Show all ({rowsForTable.length} variables)
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={addRow}>
+        <Button type="button" variant="outline" size="sm" onClick={addRow}>
           <Plus className="mr-1 size-3.5" />
           Add variable
         </Button>
@@ -170,8 +257,8 @@ export function CredentialEnvTableEditor({
           type="button"
           variant="outline"
           size="sm"
-          disabled={!hasStoredKeys}
-          onClick={() => downloadEnvBundleFile(displayEntries)}
+          disabled={!canDownload}
+          onClick={() => downloadEnvBundleFile(displayEntries.filter((r) => r.key.trim()))}
         >
           <Download className="mr-1 size-3.5" />
           Download .env
@@ -182,79 +269,15 @@ export function CredentialEnvTableEditor({
         open={pasteDialogOpen}
         onOpenChange={setPasteDialogOpen}
         incomingCount={pendingPasteEntries.length}
-        existingCount={entries.filter((row) => row.key.trim()).length}
+        existingCount={effectiveEntries.filter((row) => row.key.trim()).length}
         onReplace={() =>
           finishPaste(pendingPasteEntries, `Replaced with ${pendingPasteEntries.length} variables`)
         }
         onMerge={() => {
-          const merged = mergeEnvBundleEntries(entries, pendingPasteEntries);
+          const merged = mergeEnvBundleEntries(effectiveEntries, pendingPasteEntries);
           finishPaste(merged, `Merged to ${merged.length} variables`);
         }}
       />
-    </div>
-  );
-}
-
-function EnvRow({
-  row,
-  maskedValue,
-  showMasked,
-  disabled,
-  onKeyChange,
-  onValueChange,
-  onPaste,
-  onRemove,
-  onCopy,
-}: {
-  row: EnvBundleEntry;
-  maskedValue: string;
-  showMasked: boolean;
-  disabled?: boolean;
-  onKeyChange: (key: string) => void;
-  onValueChange: (value: string) => void;
-  onPaste: (event: ClipboardEvent<HTMLInputElement>) => void;
-  onRemove: () => void;
-  onCopy: () => void;
-}) {
-  return (
-    <div className="border-border grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-t px-3 py-2">
-      <Input
-        value={row.key}
-        onChange={(e) => onKeyChange(e.target.value)}
-        onPaste={onPaste}
-        placeholder="KEY or paste .env"
-        className="font-mono text-xs"
-        disabled={disabled}
-      />
-      <Input
-        value={showMasked ? '••••••••' : maskedValue}
-        onChange={(e) => onValueChange(e.target.value)}
-        onPaste={onPaste}
-        placeholder="value"
-        className="font-mono text-xs"
-        disabled={disabled || showMasked}
-        readOnly={showMasked}
-      />
-      <div className="flex justify-end gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={onCopy}
-          aria-label="Copy line"
-        >
-          <Copy size={14} />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={onRemove}
-          aria-label="Remove line"
-        >
-          <Trash2 size={14} />
-        </Button>
-      </div>
     </div>
   );
 }
