@@ -23,12 +23,15 @@ import {
 interface ProjectContactsSectionProps {
   project: FullProject;
   onProjectUpdated: (project: FullProject) => void;
+  /** Render inside {@link ProjectInfoPanel} without card chrome. */
+  embedded?: boolean;
   className?: string;
 }
 
 export function ProjectContactsSection({
   project,
   onProjectUpdated,
+  embedded = false,
   className,
 }: ProjectContactsSectionProps) {
   const [draft, setDraft] = useState<ProjectContactsDraft>(() =>
@@ -88,14 +91,16 @@ export function ProjectContactsSection({
   return (
     <div
       className={cn(
-        DETAIL_SHEET_SECTION_STRETCH_CLASS,
-        'bg-card border-border space-y-4 rounded-xl border p-5',
+        !embedded && [
+          DETAIL_SHEET_SECTION_STRETCH_CLASS,
+          'bg-card border-border space-y-4 rounded-xl border p-5',
+        ],
         saving && 'opacity-70',
         className,
       )}
     >
-      <h3 className="text-sm font-semibold">Client contacts</h3>
-      <div className="flex flex-1 flex-col gap-4">
+      {!embedded && <h3 className="text-sm font-semibold">Client contacts</h3>}
+      <div className={cn('flex flex-col gap-3', !embedded && 'flex-1 gap-4')}>
         <RelationPickerField
           label="Contacts"
           entityKind="contact"

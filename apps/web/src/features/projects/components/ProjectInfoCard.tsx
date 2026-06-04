@@ -2,7 +2,6 @@
 
 import { Package } from 'lucide-react';
 import {
-  DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
 } from '@/components/shared';
@@ -14,9 +13,8 @@ interface ProjectInfoCardProps {
   className?: string;
 }
 
+/** Standalone card — prefer {@link ProjectInfoPanel} on project detail. */
 export function ProjectInfoCard({ project, className }: ProjectInfoCardProps) {
-  const hasDescription = Boolean(project.description?.trim());
-
   return (
     <div
       className={cn(
@@ -26,23 +24,26 @@ export function ProjectInfoCard({ project, className }: ProjectInfoCardProps) {
       )}
     >
       <h3 className="text-sm font-semibold">Project Details</h3>
-      <div className={cn(DETAIL_SHEET_SECTION_BODY_CLASS, 'mt-3')}>
-        <div className="space-y-2">
-          <InfoRow
-            icon={Package}
-            label="Products / Extensions"
-            value={`${project._count.products} / ${project._count.extensions}`}
-          />
-        </div>
-        {hasDescription && (
-          <div className={DETAIL_SHEET_PANEL_DIVIDER_CLASS}>
-            <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-widest uppercase">
-              Description
-            </p>
-            <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
-          </div>
-        )}
+      <div className="mt-3">
+        <ProjectDetailsFields project={project} />
       </div>
+    </div>
+  );
+}
+
+export function ProjectDetailsFields({ project }: { project: FullProject }) {
+  const hasDescription = Boolean(project.description?.trim());
+
+  return (
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <InfoRow
+        icon={Package}
+        label="Products / Extensions"
+        value={`${project._count.products} / ${project._count.extensions}`}
+      />
+      {hasDescription && (
+        <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
+      )}
     </div>
   );
 }

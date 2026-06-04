@@ -5,12 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
-import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
-import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
+import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
+import {
+  PROJECT_DETAIL_SIDEBAR_CLASS,
+  type ProjectProductsViewMode,
+} from '@/features/projects/components/project-detail-layout.constants';
+import { cn } from '@/lib/utils';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
-import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -19,6 +21,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [productsViewMode, setProductsViewMode] = useState<ProjectProductsViewMode>('card');
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -48,28 +51,31 @@ export default function ProjectDetailPage() {
     : project.products;
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       <ProjectHeader project={project} onBack={() => router.push('/projects')} />
 
-      <section
-        className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch lg:gap-5"
-        aria-label="Project overview"
-      >
-        <ProjectContactsSection project={project} onProjectUpdated={setProject} />
-        <ProjectInfoCard project={project} />
-        <ProjectParticipantsSection projectId={project.id} compact />
-      </section>
+      <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1 space-y-6">
+          <ProjectProductsSection
+            project={project}
+            products={products}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            viewMode={productsViewMode}
+            onViewModeChange={setProductsViewMode}
+            onCreateProduct={() => setShowCreateProduct(true)}
+            onOpenProduct={(productId) =>
+              router.push(`/projects/${params.id}/products/${productId}`)
+            }
+          />
+        </div>
 
-      <ProjectExtensionsSnapshot project={project} />
-
-      <ProjectProductsSection
-        project={project}
-        products={products}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        onCreateProduct={() => setShowCreateProduct(true)}
-        onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
-      />
+        <ProjectInfoPanel
+          className={PROJECT_DETAIL_SIDEBAR_CLASS}
+          project={project}
+          onProjectUpdated={setProject}
+        />
+      </div>
 
       <CreateProductDialog
         open={showCreateProduct}
@@ -85,10 +91,11 @@ function ProjectDetailLoading() {
   return (
     <div className="flex h-full flex-col gap-5">
       <Skeleton className="h-12 w-72" />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1 space-y-4">
+          <Skeleton className="h-48 w-full" />
+        </div>
+        <Skeleton className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'h-96')} />
       </div>
     </div>
   );

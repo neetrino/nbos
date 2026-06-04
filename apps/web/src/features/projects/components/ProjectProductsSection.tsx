@@ -1,9 +1,9 @@
 'use client';
 
-import { ArrowRight, Calendar, Package, Plus, User } from 'lucide-react';
+import { ArrowRight, Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StatusBadge } from '@/components/shared';
+import { StatusBadge, ViewModeSwitch, type ViewModeOption } from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
@@ -11,14 +11,32 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
+import type { ProjectProductsViewMode } from './project-detail-layout.constants';
 
 const PRODUCT_STATUS_FILTER_ALL = 'all';
+
+const PRODUCT_VIEW_OPTIONS: ViewModeOption<ProjectProductsViewMode>[] = [
+  {
+    value: 'card',
+    label: 'Cards',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Card view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 interface ProjectProductsSectionProps {
   project: FullProject;
   products: ProjectProductSummary[];
   statusFilter: string | null;
   setStatusFilter: (status: string | null) => void;
+  viewMode: ProjectProductsViewMode;
+  onViewModeChange: (mode: ProjectProductsViewMode) => void;
   onCreateProduct: () => void;
   onOpenProduct: (productId: string) => void;
 }
@@ -28,6 +46,8 @@ export function ProjectProductsSection({
   products,
   statusFilter,
   setStatusFilter,
+  viewMode,
+  onViewModeChange,
   onCreateProduct,
   onOpenProduct,
 }: ProjectProductsSectionProps) {
@@ -35,7 +55,7 @@ export function ProjectProductsSection({
     project.products.filter((product) => product.status === status).length;
 
   return (
-    <div className="flex-1 space-y-4">
+    <div className="min-w-0 flex-1 space-y-4">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
@@ -44,12 +64,22 @@ export function ProjectProductsSection({
               {products.length}
             </span>
           </div>
-          <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
-            <Plus size={14} />
-            New Product
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {project.products.length > 0 && (
+              <ViewModeSwitch
+                value={viewMode}
+                onChange={onViewModeChange}
+                options={PRODUCT_VIEW_OPTIONS}
+                ariaLabel="Products view mode"
+              />
+            )}
+            <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
+              <Plus size={14} />
+              New Product
+            </Button>
+          </div>
         </div>
-        {products.length > 0 && (
+        {project.products.length > 0 && (
           <ProductStatusFilters
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
@@ -64,8 +94,14 @@ export function ProjectProductsSection({
           setStatusFilter={setStatusFilter}
           onCreateProduct={onCreateProduct}
         />
+      ) : viewMode === 'list' ? (
+        <div className="border-border divide-border divide-y overflow-hidden rounded-xl border">
+          {products.map((product) => (
+            <ProductListRow key={product.id} product={product} onOpenProduct={onOpenProduct} />
+          ))}
+        </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} onOpenProduct={onOpenProduct} />
           ))}
@@ -135,6 +171,63 @@ function EmptyProductsState({
         {statusFilter ? 'Show All Products' : 'Create First Product'}
       </Button>
     </div>
+  );
+}
+
+function ProductListRow({
+  product,
+  onOpenProduct,
+}: {
+  product: ProjectProductSummary;
+  onOpenProduct: (productId: string) => void;
+}) {
+  const status = getProductStatus(product.status);
+  const productType = getProductType(product.productType);
+  const statusLabel = product.deliveryLifecycle
+    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
+    : status?.label;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpenProduct(product.id)}
+      className="hover:bg-secondary/50 group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-semibold">{product.name}</span>
+          {productType && (
+            <span className="text-muted-foreground text-xs">{productType.label}</span>
+          )}
+        </div>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+          {product.pm && (
+            <span className="inline-flex items-center gap-1">
+              <User size={11} aria-hidden />
+              {product.pm.firstName} {product.pm.lastName}
+            </span>
+          )}
+          {product.deadline && (
+            <span className="inline-flex items-center gap-1">
+              <Calendar size={11} aria-hidden />
+              {new Date(product.deadline).toLocaleDateString()}
+            </span>
+          )}
+          <span>
+            {product._count.tasks} tasks · {product._count.extensions} ext. ·{' '}
+            {product._count.tickets} tickets
+          </span>
+        </div>
+      </div>
+      {status && statusLabel && (
+        <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
+      )}
+      <ArrowRight
+        size={14}
+        className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+        aria-hidden
+      />
+    </button>
   );
 }
 
