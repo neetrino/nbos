@@ -157,7 +157,7 @@ export function CredentialEnvTableEditor({
   };
 
   const addRow = () => {
-    commitEntries([...effectiveEntries, EMPTY_ENV_ROW]);
+    commitEntries([EMPTY_ENV_ROW, ...effectiveEntries]);
     if (rowsForTable.length >= CREDENTIAL_ENV_TABLE_PREVIEW_ROWS) {
       setExpanded(true);
     }
