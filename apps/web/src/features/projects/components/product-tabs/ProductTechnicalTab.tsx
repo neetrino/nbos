@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { ExternalLink, Headphones } from 'lucide-react';
+import { ExternalLink, Headphones, Wrench } from 'lucide-react';
 import {
   EmptyState,
   ErrorState,
@@ -79,6 +79,7 @@ export function ProductTechnicalTab(props: ProductTechnicalTabProps) {
   if (!data) {
     return (
       <EmptyState
+        icon={Wrench}
         title="Technical profile unavailable"
         description="Could not load the technical map for this product."
       />

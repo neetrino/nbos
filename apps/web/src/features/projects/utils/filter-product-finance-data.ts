@@ -13,6 +13,7 @@ import {
 } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
+import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 
 function matchesFilterValue(filterValue: string | undefined, rowValue: string): boolean {
   return Boolean(filterValue) && filterValue !== 'all' && rowValue === filterValue;
@@ -62,11 +63,7 @@ export function filterProductFinanceSubscriptions(
 }
 
 export function productFinanceFilterValuesForUi(
-  section: 'orders',
-  filters: Record<string, string>,
-): Record<string, string>;
-export function productFinanceFilterValuesForUi(
-  section: string,
+  section: ProductFinanceSection,
   filters: Record<string, string>,
 ): Record<string, string> {
   if (section === 'orders') {

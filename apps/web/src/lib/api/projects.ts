@@ -165,10 +165,10 @@ export interface ProjectSubscription {
   id: string;
   code: string;
   type: string;
-  amount: string;
+  baseMonthlyAmount: string;
   billingDay: number;
   status: string;
-  startDate: string;
+  billingStartDate: string;
   endDate: string | null;
   invoices: ProjectInvoice[];
 }

@@ -174,39 +174,45 @@ export function DeliveryItemDetailSheet({
 
   const headerProps =
     item && item.kind === 'PRODUCT'
-      ? {
-          entityKind: 'PRODUCT' as const,
-          projectCode: item.product.project?.code ?? '—',
-          projectName: item.product.project?.name ?? '—',
-          projectHref: `/projects/${item.product.projectId}`,
-          deadline: item.product.deadline,
-          workSpaceHref: buildProductDetailPageHref(
-            item.product.projectId,
-            item.product.id,
-            PRODUCT_DETAIL_TAB.tasks,
-          ),
-          sourcePageHref: buildProductDetailPageHref(item.product.projectId, item.product.id),
-          productId: item.product.id,
-        }
-      : item && item.kind === 'EXTENSION'
-        ? {
-            entityKind: 'EXTENSION' as const,
-            projectCode: item.extension.project?.code ?? '—',
-            projectName: item.extension.project?.name ?? '—',
-            projectHref: `/projects/${item.extension.projectId}`,
-            deadline: null as string | null,
+      ? (() => {
+          const productProjectId = item.product.projectId ?? item.product.project?.id ?? '';
+          return {
+            entityKind: 'PRODUCT' as const,
+            projectCode: item.product.project?.code ?? '—',
+            projectName: item.product.project?.name ?? '—',
+            projectHref: `/projects/${productProjectId}`,
+            deadline: item.product.deadline,
             workSpaceHref: buildProductDetailPageHref(
-              item.extension.projectId,
-              item.extension.productId,
+              productProjectId,
+              item.product.id,
               PRODUCT_DETAIL_TAB.tasks,
             ),
-            sourcePageHref: buildProductDetailPageHref(
-              item.extension.projectId,
-              item.extension.productId,
-              PRODUCT_DETAIL_TAB.extensions,
-            ),
-            productId: item.extension.productId,
-          }
+            sourcePageHref: buildProductDetailPageHref(productProjectId, item.product.id),
+            productId: item.product.id,
+          };
+        })()
+      : item && item.kind === 'EXTENSION'
+        ? (() => {
+            const extensionProjectId = item.extension.projectId ?? item.extension.project?.id ?? '';
+            return {
+              entityKind: 'EXTENSION' as const,
+              projectCode: item.extension.project?.code ?? '—',
+              projectName: item.extension.project?.name ?? '—',
+              projectHref: `/projects/${extensionProjectId}`,
+              deadline: null as string | null,
+              workSpaceHref: buildProductDetailPageHref(
+                extensionProjectId,
+                item.extension.productId,
+                PRODUCT_DETAIL_TAB.tasks,
+              ),
+              sourcePageHref: buildProductDetailPageHref(
+                extensionProjectId,
+                item.extension.productId,
+                PRODUCT_DETAIL_TAB.extensions,
+              ),
+              productId: item.extension.productId,
+            };
+          })()
         : null;
 
   const panelProjectId =

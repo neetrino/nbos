@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,7 @@ export function ProductTechnicalEnvironmentsPanel({
   if (items.length === 0 && !showAdd && !search.trim()) {
     return (
       <EmptyState
+        icon={Layers}
         title="No environments"
         description="Add Production, Staging or Development environments for this product."
         action={

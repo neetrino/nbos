@@ -169,7 +169,7 @@ function SelectField({
   label: string;
   value: string;
   options: readonly string[];
-  onChange: (value: string) => void;
+  onChange: (value: string | null) => void;
 }) {
   return (
     <div className="space-y-1.5">

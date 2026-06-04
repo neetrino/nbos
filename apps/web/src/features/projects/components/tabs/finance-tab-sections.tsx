@@ -1,10 +1,10 @@
 import { StatusBadge } from '@/components/shared';
 import type { ProjectSubscription } from '@/lib/api/projects';
+import {
+  formatProjectFinanceAmount,
+  projectSubscriptionMonthlyAmount,
+} from '@/features/projects/utils/project-finance-amount';
 import { cn } from '@/lib/utils';
-
-function formatAmount(amount: number | string): string {
-  return Number(amount).toLocaleString('en-US');
-}
 
 const SUB_STATUS_MAP: Record<
   string,
@@ -47,11 +47,13 @@ export function FinanceSubscriptionsSection({
                   <p className="text-sm font-medium">{sub.code}</p>
                   {st ? <StatusBadge label={st.label} variant={st.variant} /> : null}
                 </div>
-                <p className="font-bold">{formatAmount(sub.amount)} / mo</p>
+                <p className="font-bold">
+                  {formatProjectFinanceAmount(projectSubscriptionMonthlyAmount(sub))} / mo
+                </p>
               </div>
               <p className="text-muted-foreground mt-1 text-xs">
                 {sub.type.replace(/_/g, ' ')} · Billing day: {sub.billingDay} · Since{' '}
-                {new Date(sub.startDate).toLocaleDateString()}
+                {new Date(sub.billingStartDate).toLocaleDateString()}
               </p>
             </button>
           );

@@ -32,6 +32,10 @@ import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/p
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
 import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
 import { buttonVariants } from '@/components/ui/button';
+import {
+  formatProjectFinanceAmount,
+  projectSubscriptionMonthlyAmount,
+} from '@/features/projects/utils/project-finance-amount';
 
 interface FinanceTabProps {
   orders: ProjectOrder[];
@@ -40,10 +44,6 @@ interface FinanceTabProps {
   projectId: string;
   project: { id: string; name: string; code: string };
   productOrderId?: string | null;
-}
-
-function formatAmount(amount: number | string): string {
-  return Number(amount).toLocaleString('en-US');
 }
 
 export function FinanceTab({
@@ -77,7 +77,7 @@ export function FinanceTab({
   const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const monthlyMRR = subscriptions
     .filter((s) => s.status === 'ACTIVE')
-    .reduce((s, sub) => s + Number(sub.amount), 0);
+    .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);
 
   const openFinanceHref =
     financeSection.activeSection === 'subscriptions'
@@ -95,25 +95,25 @@ export function FinanceTab({
           icon={DollarSign}
           tone="text-emerald-500"
           label="Total Revenue"
-          value={formatAmount(totalRevenue)}
+          value={formatProjectFinanceAmount(totalRevenue)}
         />
         <FinanceStatCard
           icon={TrendingUp}
           tone="text-blue-500"
           label="Received"
-          value={formatAmount(totalPaid)}
+          value={formatProjectFinanceAmount(totalPaid)}
         />
         <FinanceStatCard
           icon={TrendingDown}
           tone="text-red-500"
           label="Expenses"
-          value={formatAmount(totalExpenses)}
+          value={formatProjectFinanceAmount(totalExpenses)}
         />
         <FinanceStatCard
           icon={CreditCard}
           tone="text-purple-500"
           label="MRR"
-          value={formatAmount(monthlyMRR)}
+          value={formatProjectFinanceAmount(monthlyMRR)}
         />
       </div>
 
