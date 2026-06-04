@@ -4,7 +4,7 @@ import { Check, Loader2, Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { RelationEntityKind, RelationPickerOption } from './relation-picker.types';
-import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
+import { relationPickerOptionLeading } from './relation-picker-option-leading';
 
 const DROPDOWN_PANEL_CLASS =
   'absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900';
@@ -113,7 +113,7 @@ export function RelationPickerDropdown({
                     index === highlightIdx && !selected && 'bg-stone-50 dark:bg-stone-800',
                   )}
                 >
-                  <RelationPickerEntityIcon kind={entityKind} />
+                  {relationPickerOptionLeading(entityKind, option.label)}
                   <div className="min-w-0 flex-1">
                     <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {kindLabel}

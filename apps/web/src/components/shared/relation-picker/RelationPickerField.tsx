@@ -1,17 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   RELATION_PICKER_CHIP_STACK_CLASS,
   RELATION_PICKER_DROPDOWN_LIST_CLASS,
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-  RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
-import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
+import { relationPickerOptionLeading } from './relation-picker-option-leading';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
 import {
   RELATION_CREATE_LABELS,
@@ -28,19 +26,6 @@ function isMultiProps(props: RelationPickerFieldProps): props is RelationPickerF
   multiple: true;
 } {
   return props.multiple === true;
-}
-
-function chipIcon(kind: RelationEntityKind, label: string): ReactNode {
-  if (kind === 'contact' || kind === 'employee') {
-    return <EmployeePersonAvatar label={label} />;
-  }
-  return (
-    <RelationPickerEntityIcon
-      kind={kind}
-      variant="inline"
-      className={RELATION_PICKER_ENTITY_ICON_INLINE_CLASS}
-    />
-  );
 }
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
@@ -269,7 +254,7 @@ function ClosedRelationPicker({
           <RelationPickerChip
             key={chip.id}
             label={chip.label}
-            icon={chipIcon(entityKind, chip.label)}
+            icon={relationPickerOptionLeading(entityKind, chip.label, 'inline')}
             entityKind={entityKind}
             disabled={disabled}
             onOpen={onOpenSelected ? () => onOpenSelected(chip.id) : undefined}
@@ -306,7 +291,7 @@ function ClosedRelationPicker({
           <RelationPickerChip
             label={chipLabel}
             subtitle={props.selectionSubtitle}
-            icon={chipIcon(entityKind, chipLabel)}
+            icon={relationPickerOptionLeading(entityKind, chipLabel, 'inline')}
             entityKind={entityKind}
             disabled={disabled}
             onOpen={
