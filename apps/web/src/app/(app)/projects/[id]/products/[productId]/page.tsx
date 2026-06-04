@@ -199,7 +199,7 @@ function ProductDetailPageContent() {
           <ProductCredentialsTab {...credentialsTab} />
         </TabsContent>
 
-        <TabsContent value="finance" className="mt-5">
+        <TabsContent value="finance" className="mt-5 flex min-h-0 flex-1 flex-col">
           {projectData ? (
             <FinanceTab
               projectId={params.id}
@@ -213,7 +213,6 @@ function ProductDetailPageContent() {
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}
               domains={projectData.domains as never[]}
-              onAfterDriveUpload={() => void fetchProduct()}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>
