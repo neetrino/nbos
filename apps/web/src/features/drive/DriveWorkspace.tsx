@@ -968,7 +968,11 @@ export function DriveWorkspace() {
         }
       } catch (err) {
         if (requestId !== folderListingRequestId.current) return;
-        toast.error(err instanceof Error ? err.message : 'Failed to load record folders');
+        const message = err instanceof Error ? err.message : 'Failed to load record folders';
+        toast.error(message);
+        if (message.includes('Drive context not found')) {
+          setSystemLibraryLink(null);
+        }
       }
       return;
     }
@@ -2221,7 +2225,7 @@ export function DriveWorkspace() {
                         />
                       ),
                     }
-                  : browseEntityScopedFolders && libraryEntityFolderScope
+                  : browseEntityScopedFolders && libraryEntityFolderScope && scopedFolderListing
                     ? {
                         forLibraryKey: selectedLibrary.key,
                         children: (

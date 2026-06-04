@@ -13,6 +13,7 @@ import {
 import { assertTaskProjectParticipationAccessible } from '../tasks/task-project-list-filter.ops';
 import type { DriveEntityContextAccess } from './drive-access.types';
 import { requireText } from './drive-metadata';
+import { loadDriveScopedEmployeeIds } from './drive-scoped-employee-ids';
 
 const SCOPE_ALL = 'ALL';
 const SCOPE_DEPARTMENT = 'DEPARTMENT';
@@ -26,20 +27,7 @@ async function loadScopedEmployeeIds(
   prisma: InstanceType<typeof PrismaClient>,
   access: DriveEntityContextAccess,
 ): Promise<Set<string>> {
-  const ids = new Set<string>([access.employeeId]);
-  if (
-    normalizeDriveScope(access.driveScope) !== SCOPE_DEPARTMENT ||
-    access.departmentIds.length === 0
-  ) {
-    return ids;
-  }
-  const rows = await prisma.employeeDepartment.findMany({
-    where: { departmentId: { in: access.departmentIds } },
-    select: { employeeId: true },
-    distinct: ['employeeId'],
-  });
-  for (const row of rows) ids.add(row.employeeId);
-  return ids;
+  return new Set(await loadDriveScopedEmployeeIds(prisma, access));
 }
 
 function assertScopedEmployeeMatch(

@@ -33,6 +33,7 @@ export function DriveSpaceFolderTree({
 }) {
   const [tree, setTree] = useState<FolderTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
 
@@ -69,6 +70,7 @@ export function DriveSpaceFolderTree({
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const res = await driveApi.listFolderTree(
         entityScope
@@ -81,6 +83,9 @@ export function DriveSpaceFolderTree({
       const built = buildFolderTree(res.folders);
       setTree(built);
       setExpanded(new Set(built.map((n) => n.id)));
+    } catch (err: unknown) {
+      setTree([]);
+      setLoadError(err instanceof Error ? err.message : 'Failed to load folders');
     } finally {
       setLoading(false);
     }
@@ -108,6 +113,8 @@ export function DriveSpaceFolderTree({
     <div className="max-h-[min(360px,48vh)] overflow-y-auto py-0.5 pr-0.5">
       {loading ? (
         <p className="text-muted-foreground px-1 py-2 text-xs">Loading…</p>
+      ) : loadError ? (
+        <p className="text-destructive px-1 py-2 text-xs">{loadError}</p>
       ) : tree.length === 0 ? (
         <p className="text-muted-foreground px-1 py-2 text-xs">No folders yet</p>
       ) : (

@@ -17,6 +17,7 @@ import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
 import { PlatformAccessModule } from '../platform-access/platform-access.module';
 import { DriveAccessContextService } from './drive-access-context.service';
+import { DriveLibraryEntitiesService } from './drive-library-entities.service';
 
 @Module({
   imports: [NotificationModule, AuditModule, PlatformAccessModule],
@@ -36,6 +37,7 @@ import { DriveAccessContextService } from './drive-access-context.service';
     DriveCleanupCandidatesService,
     DriveCleanupApplyService,
     DriveAccessContextService,
+    DriveLibraryEntitiesService,
   ],
   exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
 })
