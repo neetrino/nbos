@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import { PRODUCT_FINANCE_SEARCH_DEBOUNCE_MS } from '@/features/projects/constants/product-finance.constants';
 import {
   parseProductFinanceSection,
   PRODUCT_FINANCE_SECTION_DEFAULT,
@@ -44,6 +45,15 @@ export function useProductFinanceSection() {
     useState<Record<ProductFinanceSection, SectionUiState>>(createInitialSectionState);
 
   const { search, filters } = sectionState[activeSection];
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const handle = window.setTimeout(
+      () => setDebouncedSearch(search.trim()),
+      PRODUCT_FINANCE_SEARCH_DEBOUNCE_MS,
+    );
+    return () => window.clearTimeout(handle);
+  }, [search]);
 
   const setActiveSection = useCallback(
     (section: ProductFinanceSection) => {
@@ -120,6 +130,7 @@ export function useProductFinanceSection() {
     activeSection,
     setActiveSection,
     search,
+    debouncedSearch,
     setSearch,
     filters,
     filterConfigs,

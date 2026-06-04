@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 interface ProductFinanceSectionContentProps {
   section: ProductFinanceSection;
   search: string;
+  debouncedSearch: string;
   filters: Record<string, string>;
   ordersView: OrderViewMode;
   expensesView: ExpensesViewMode;
@@ -42,6 +43,7 @@ interface ProductFinanceSectionContentProps {
 export function ProductFinanceSectionContent({
   section,
   search,
+  debouncedSearch,
   filters,
   ordersView,
   expensesView,
@@ -105,7 +107,7 @@ export function ProductFinanceSectionContent({
     return (
       <ProductFinanceExpensesPanel
         projectId={projectId}
-        search={search}
+        search={debouncedSearch}
         filters={filters}
         view={expensesView}
       />
@@ -115,7 +117,7 @@ export function ProductFinanceSectionContent({
   return (
     <ProductFinanceClientServicesPanel
       projectId={projectId}
-      search={search}
+      search={debouncedSearch}
       filters={filters}
       view={clientServicesView}
     />

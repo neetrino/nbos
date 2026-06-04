@@ -196,6 +196,7 @@ export function FinanceTab({
         <ProductFinanceSectionContent
           section={financeSection.activeSection}
           search={financeSection.search}
+          debouncedSearch={financeSection.debouncedSearch}
           filters={financeSection.filters}
           ordersView={ordersView}
           expensesView={expensesView}

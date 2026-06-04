@@ -34,7 +34,7 @@ export function ProductFinanceExpensesPanel({
 }: ProductFinanceExpensesPanelProps) {
   const router = useRouter();
   const { expenses, loading, error, refetch, pageVariant, kanbanScope, fromBacklog } =
-    useProductFinanceExpenses(projectId, true, search, filters);
+    useProductFinanceExpenses(projectId, search, filters);
 
   const listSort = {
     sortBy: EXPENSE_LIST_DEFAULT_SORT_BY,

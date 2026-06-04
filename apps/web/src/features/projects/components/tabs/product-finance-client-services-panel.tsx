@@ -33,6 +33,8 @@ export function ProductFinanceClientServicesPanel({
     [projectId, search, filters],
   );
 
+  const needsStats = view === 'status' || view === 'months';
+
   const statsParams = useMemo(
     () => ({
       projectId,
@@ -45,6 +47,8 @@ export function ProductFinanceClientServicesPanel({
   );
 
   useEffect(() => {
+    if (!needsStats) return;
+
     let active = true;
     void clientServicesApi
       .getStats(statsParams)
@@ -57,7 +61,7 @@ export function ProductFinanceClientServicesPanel({
     return () => {
       active = false;
     };
-  }, [statsParams, reloadToken]);
+  }, [needsStats, statsParams, reloadToken]);
 
   const handleOpen = useCallback(
     (serviceId: string) => {

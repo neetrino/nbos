@@ -24,7 +24,6 @@ function resolveExpensePageVariant(filters: Record<string, string>): ExpensesPag
 
 export function useProductFinanceExpenses(
   projectId: string,
-  enabled: boolean,
   search: string,
   filters: Record<string, string>,
 ) {
@@ -69,10 +68,8 @@ export function useProductFinanceExpenses(
   }, [projectId, listApiParams]);
 
   useEffect(() => {
-    if (enabled) {
-      void fetchExpenses();
-    }
-  }, [enabled, fetchExpenses]);
+    void fetchExpenses();
+  }, [fetchExpenses]);
 
   return {
     expenses,
