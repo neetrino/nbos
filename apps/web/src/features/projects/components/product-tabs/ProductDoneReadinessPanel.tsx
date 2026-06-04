@@ -3,24 +3,30 @@ import type { ProductDoneReadiness } from '@/lib/api/products';
 
 interface ProductDoneReadinessPanelProps {
   readiness: ProductDoneReadiness | undefined;
+  compact?: boolean;
 }
 
-export function ProductDoneReadinessPanel({ readiness }: ProductDoneReadinessPanelProps) {
+export function ProductDoneReadinessPanel({
+  readiness,
+  compact = false,
+}: ProductDoneReadinessPanelProps) {
   if (!readiness) return null;
 
   return (
-    <div className="mt-4 rounded-xl border p-3">
+    <div className={compact ? 'rounded-lg border px-3 py-2.5' : 'mt-4 rounded-xl border p-3'}>
       <div className="flex items-start gap-2">
         {readiness.canCompleteWithRuntimeData ? (
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
         ) : (
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600" />
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">Done readiness</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Runtime checks use current delivery, finance and documentation data.
-          </p>
+          <p className="text-xs font-semibold">Done readiness</p>
+          {!compact ? (
+            <p className="text-muted-foreground mt-1 text-xs">
+              Runtime checks use current delivery, finance and documentation data.
+            </p>
+          ) : null}
           <ReadinessIssueList title="Blockers" items={readiness.blockers} tone="blocker" />
           <ReadinessIssueList title="Warnings" items={readiness.warnings} tone="warning" />
           <ReadinessIssueList
@@ -46,11 +52,11 @@ function ReadinessIssueList({
   if (items.length === 0) return null;
 
   return (
-    <div className="mt-3">
-      <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+    <div className="mt-2">
+      <p className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
         {title}
       </p>
-      <ul className="mt-1 space-y-1">
+      <ul className="mt-0.5 space-y-0.5">
         {items.map((item) => (
           <li key={item.code} className={`flex items-start gap-1.5 text-xs ${getToneClass(tone)}`}>
             {tone === 'info' ? (

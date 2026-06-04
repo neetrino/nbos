@@ -24,6 +24,8 @@ import { ProductLifecycleActions } from './ProductLifecycleActions';
 import { ProductAcceptanceAction } from './ProductAcceptanceAction';
 import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 import { ProductStageGateSummary } from './ProductStageGateSummary';
+import { DeliveryStageTimelineStrip } from './DeliveryStageTimelineCard';
+import { OverviewPanel } from './product-overview-ui';
 import type { ProductTabForGate } from '@/features/projects/product-stage-gate-highlight';
 import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
 
@@ -59,6 +61,7 @@ export function ProductStageGateCard({
   const [actionError, setActionError] = useState<string | null>(null);
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
   const nextStatuses = getProductNextStatuses(product.status);
+  const lifecycle = product.deliveryLifecycle;
 
   const handleStatusChange = async (newStatus: string) => {
     const localErrors = getLocalProductStageGateErrors(product, newStatus);
@@ -147,10 +150,14 @@ export function ProductStageGateCard({
   };
 
   return (
-    <section className="bg-card border-border rounded-xl border p-5">
-      <h3 className="mb-4 text-sm font-semibold">Stage Gate</h3>
+    <OverviewPanel
+      title="Stage Gate"
+      hint="Delivery pipeline, readiness checks, and stage transitions"
+      bodyClassName="space-y-3"
+    >
+      {lifecycle ? <DeliveryStageTimelineStrip lifecycle={lifecycle} /> : null}
       <ProductStageGateSummary product={product} nextStatuses={nextStatuses} />
-      <ProductDoneReadinessPanel readiness={product.doneReadiness} />
+      <ProductDoneReadinessPanel readiness={product.doneReadiness} compact />
       <ProductAcceptanceAction
         product={product}
         disabled={updating}
@@ -186,7 +193,7 @@ export function ProductStageGateCard({
         }}
         onConfirm={handleLifecycleAction}
       />
-    </section>
+    </OverviewPanel>
   );
 }
 
@@ -205,14 +212,14 @@ function ProductStageGateActionBlockers({
   const directActions = resolveBlockerDirectActions({ context: 'product', errors: actionBlockers });
 
   return (
-    <div className="border-destructive/30 bg-destructive/5 mt-4 space-y-2 rounded-xl border p-3">
+    <div className="border-destructive/30 bg-destructive/5 space-y-2 rounded-lg border p-3">
       <p className="text-destructive text-xs font-semibold">Action required</p>
-      <ul className="text-muted-foreground space-y-1 text-xs">
+      <ul className="text-muted-foreground space-y-0.5 text-xs">
         {actionBlockers.map((error) => (
           <li key={error.field}>{error.message || `Resolve ${error.field}.`}</li>
         ))}
       </ul>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {directActions.map((action) => (
           <Button
             key={action.key}
@@ -242,13 +249,15 @@ function ProductStageActions({
   onStatusChange: (status: string) => void;
 }) {
   if (nextStatuses.length === 0) {
-    return <p className="text-muted-foreground text-sm">{getNoTransitionMessage(status)}</p>;
+    return <p className="text-muted-foreground text-xs">{getNoTransitionMessage(status)}</p>;
   }
 
   return (
-    <div className="space-y-3">
-      <p className="text-muted-foreground text-xs">Move product to the next stage:</p>
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
+      <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+        Move to next stage
+      </p>
+      <div className="flex flex-wrap gap-1.5">
         {nextStatuses.map((nextStatus) => (
           <StageButton
             key={nextStatus}
@@ -279,9 +288,9 @@ function StageButton({
       size="sm"
       disabled={disabled}
       onClick={() => onStatusChange(status)}
-      className="gap-1.5"
+      className="h-7 gap-1.5 px-2.5 text-xs"
     >
-      <div className={`h-2 w-2 rounded-full ${option?.color ?? 'bg-gray-400'}`} />
+      <div className={`h-1.5 w-1.5 rounded-full ${option?.color ?? 'bg-gray-400'}`} />
       {option?.label ?? status}
     </Button>
   );
