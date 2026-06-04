@@ -1,7 +1,7 @@
 'use client';
 
 import { Puzzle, User } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import {
   DeliveryDealCardHoverActions,
   DeliveryDealRowHoverActions,
@@ -130,9 +130,13 @@ export function ExtensionEntityCard({
     : status?.label;
 
   return (
-    <div
+    <KanbanCardShell
       role="button"
       tabIndex={0}
+      padding="lg"
+      transition="colors"
+      hoverShadow={false}
+      className="hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden"
       onClick={onOpenDeliveryCard}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -140,7 +144,6 @@ export function ExtensionEntityCard({
           onOpenDeliveryCard();
         }
       }}
-      className="bg-card border-border hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
     >
       <div className="min-w-0 shrink-0">
         <div className="flex items-start gap-2">
@@ -198,6 +201,6 @@ export function ExtensionEntityCard({
           onOpenDeal={onOpenDeal}
         />
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

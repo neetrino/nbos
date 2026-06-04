@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  KanbanCardShell,
   PageHero,
   PageHeroTabs,
   StatusBadge,
@@ -246,9 +247,12 @@ function ProductCard({
     : status?.label;
 
   return (
-    <div
+    <KanbanCardShell
+      padding="lg"
+      transition="colors"
+      hoverShadow={false}
+      className="hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden"
       onClick={() => onOpenProduct(product.id)}
-      className="bg-card border-border hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
     >
       <div className="min-w-0 shrink-0">
         <h4 className="truncate text-sm font-semibold">{product.name}</h4>
@@ -286,6 +290,6 @@ function ProductCard({
           onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
         />
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }
