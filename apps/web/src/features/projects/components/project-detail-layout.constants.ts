@@ -12,6 +12,10 @@ export const PROJECT_SECTION_TOOLBAR_CLASS = 'flex min-w-0 flex-wrap items-cente
 
 export const PROJECT_SECTION_TOOLBAR_TITLE_CLASS = 'flex shrink-0 items-center gap-2';
 
+/** Section headings (Products, Extensions) — below project name in app header. */
+export const PROJECT_SECTION_TITLE_CLASS =
+  'text-base font-semibold tracking-tight text-foreground/90';
+
 export const PROJECT_SECTION_TOOLBAR_TABS_CLASS =
   'min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:w-auto sm:flex-1 [&::-webkit-scrollbar]:hidden';
 

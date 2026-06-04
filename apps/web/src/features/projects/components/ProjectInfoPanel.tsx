@@ -31,8 +31,13 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
       className={cn('bg-card border-border rounded-xl border p-5', className)}
       aria-label="Project information"
     >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold">About project</h2>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold">About project</h2>
+          <p className="text-muted-foreground mt-0.5 text-xs font-medium tabular-nums">
+            {project.code}
+          </p>
+        </div>
         <Link
           href={buildDriveHrefWithProject(project.id)}
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0 gap-1.5')}

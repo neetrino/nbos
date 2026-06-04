@@ -16,7 +16,6 @@ import {
   PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS,
   PROJECT_SECTION_TOOLBAR_CLASS,
   PROJECT_SECTION_TOOLBAR_TABS_CLASS,
-  PROJECT_SECTION_TOOLBAR_TITLE_CLASS,
   type ProjectProductsViewMode,
 } from './project-detail-layout.constants';
 
@@ -66,22 +65,14 @@ export function ProjectProductsSection({
   return (
     <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
       <div className={PROJECT_SECTION_TOOLBAR_CLASS}>
-        <div className={PROJECT_SECTION_TOOLBAR_TITLE_CLASS}>
-          <h2 className="text-lg font-bold">Products</h2>
-          <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
-            {project.products.length}
-          </span>
+        <div className={PROJECT_SECTION_TOOLBAR_TABS_CLASS}>
+          <ProductStatusFilters
+            totalCount={project.products.length}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            byStatus={byStatus}
+          />
         </div>
-
-        {hasProducts ? (
-          <div className={PROJECT_SECTION_TOOLBAR_TABS_CLASS}>
-            <ProductStatusFilters
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              byStatus={byStatus}
-            />
-          </div>
-        ) : null}
 
         <div className={PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS}>
           {hasProducts ? (
@@ -123,10 +114,12 @@ export function ProjectProductsSection({
 }
 
 function ProductStatusFilters({
+  totalCount,
   statusFilter,
   setStatusFilter,
   byStatus,
 }: {
+  totalCount: number;
   statusFilter: string | null;
   setStatusFilter: (status: string | null) => void;
   byStatus: (status: string) => number;
@@ -141,8 +134,8 @@ function ProductStatusFilters({
       className="w-max min-w-full"
     >
       <TabsList variant="line" className="inline-flex h-auto w-max flex-nowrap justify-start">
-        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL} className="shrink-0">
-          All
+        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL} className="shrink-0 whitespace-nowrap">
+          All Products ({totalCount})
         </TabsTrigger>
         {statusesWithProducts.map((status) => (
           <TabsTrigger

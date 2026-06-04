@@ -8,7 +8,10 @@ import {
   getExtensionSize,
   getExtensionStatus,
 } from '@/features/projects/constants/projects';
-import { PROJECT_PRODUCTS_CARD_GRID_CLASS } from './project-detail-layout.constants';
+import {
+  PROJECT_PRODUCTS_CARD_GRID_CLASS,
+  PROJECT_SECTION_TITLE_CLASS,
+} from './project-detail-layout.constants';
 
 interface ProjectExtensionsSectionProps {
   extensions: ProjectExtensionSummary[];
@@ -24,7 +27,7 @@ export function ProjectExtensionsSection({
   return (
     <div className="min-w-0 space-y-4 overflow-hidden">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-bold">Extensions</h2>
+        <h2 className={PROJECT_SECTION_TITLE_CLASS}>Extensions</h2>
         <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
           {extensions.length}
         </span>
