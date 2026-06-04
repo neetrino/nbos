@@ -1,10 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { HardDrive } from 'lucide-react';
+import Link from 'next/link';
 import {
   DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
 } from '@/components/shared';
+import { buttonVariants } from '@/components/ui/button';
+import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
 import type { FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { ProjectContactsSection } from './ProjectContactsSection';
@@ -23,10 +27,19 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
       className={cn('bg-card border-border rounded-xl border p-5', className)}
       aria-label="Project information"
     >
-      <h2 className="text-sm font-semibold">About project</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">About project</h2>
+        <Link
+          href={buildDriveHrefWithProject(project.id)}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0 gap-1.5')}
+        >
+          <HardDrive className="size-4" aria-hidden />
+          Drive files
+        </Link>
+      </div>
 
       <div className="mt-4">
-        <ProjectInfoSubsection title="Client contacts" first>
+        <ProjectInfoSubsection first>
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
         </ProjectInfoSubsection>
 
@@ -47,13 +60,13 @@ function ProjectInfoSubsection({
   children,
   first = false,
 }: {
-  title: string;
+  title?: string;
   children: ReactNode;
   first?: boolean;
 }) {
   return (
-    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, 'space-y-3')}>
-      <h3 className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{title}</h3>
+    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, title ? 'space-y-3' : '')}>
+      {title ? <h3 className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{title}</h3> : null}
       {children}
     </section>
   );
