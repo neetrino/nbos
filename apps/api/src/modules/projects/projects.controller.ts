@@ -68,7 +68,7 @@ export class ProjectsController {
     @Param('id') id: string,
     @Body() body: { employeeId: string; role?: 'ADMIN' | 'MEMBER' },
   ) {
-    return this.projectTeamService.addMember(id, body, user.id);
+    return this.projectTeamService.addMember(id, body, user.id, user.role);
   }
 
   @Put(':id/team/:employeeId')
@@ -80,7 +80,7 @@ export class ProjectsController {
     @Param('employeeId') employeeId: string,
     @Body() body: { role?: 'ADMIN' | 'MEMBER' },
   ) {
-    return this.projectTeamService.updateMember(id, employeeId, body, user.id);
+    return this.projectTeamService.updateMember(id, employeeId, body, user.id, user.role);
   }
 
   @Delete(':id/team/:employeeId')
@@ -92,7 +92,7 @@ export class ProjectsController {
     @Param('id') id: string,
     @Param('employeeId') employeeId: string,
   ) {
-    await this.projectTeamService.removeMember(id, employeeId, user.id);
+    await this.projectTeamService.removeMember(id, employeeId, user.id, user.role);
   }
 
   @Get(':id')

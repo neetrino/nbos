@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Trash2, User, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -11,19 +10,11 @@ import {
   ErrorState,
   LoadingState,
   RELATION_PICKER_CHIP_STACK_CLASS,
-  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
   RelationPickerField,
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { cn } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -32,11 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PermissionGate } from '@/lib/permissions';
 import { platformAccessApi, type ProjectTeamMemberRow } from '@/lib/api/platform-access';
 import { toast } from 'sonner';
-import { formatTeamSource, projectTeamRoleShortLabel } from '../team-member-labels';
+import { useProjectTeamManagementAccess } from '../hooks/use-project-team-management-access';
+import { formatTeamSource } from '../team-member-labels';
 import { ProjectTeamMemberChipRow } from './ProjectTeamMemberChipRow';
+import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
 
 const DEFAULT_PROJECT_TEAM_ROLE = 'MEMBER' as const;
 
@@ -66,6 +58,7 @@ export function ProjectParticipantsSection({
     () => new Set(members.map((member) => member.employeeId)),
     [members],
   );
+  const { canManageTeam, canAssignAdmin } = useProjectTeamManagementAccess(members);
   const searchEmployees = useEmployeeRelationSearch(existingEmployeeIds);
   const employeePicker = useRelationPickerActions('employee', 'project-team');
 
@@ -88,6 +81,10 @@ export function ProjectParticipantsSection({
   }, [load]);
 
   const handleRoleChange = async (employeeId: string, role: 'ADMIN' | 'MEMBER') => {
+    if (role === 'ADMIN' && !canAssignAdmin) {
+      toast.error('Only Owner, CEO, or project admins can assign the Admin role.');
+      return;
+    }
     setBusyEmployeeId(employeeId);
     try {
       await platformAccessApi.updateProjectTeamMember(projectId, employeeId, { role });
@@ -129,22 +126,20 @@ export function ProjectParticipantsSection({
     }
   };
 
-  const addMemberPicker = (
-    <PermissionGate module="PROJECTS" action="EDIT">
-      <RelationPickerField
-        label="Add member"
-        entityKind="employee"
-        value={null}
-        selectionLabel={null}
-        placeholder="Search employee…"
-        icon={<User size={12} />}
-        disabled={addingMember || busyEmployeeId !== null}
-        onSearch={searchEmployees}
-        onSelect={(id, label) => void handleAddMember(id, label)}
-        {...employeePicker}
-      />
-    </PermissionGate>
-  );
+  const addMemberPicker = canManageTeam ? (
+    <RelationPickerField
+      label="Add member"
+      entityKind="employee"
+      value={null}
+      selectionLabel={null}
+      placeholder="Search employee…"
+      icon={<User size={12} />}
+      disabled={addingMember || busyEmployeeId !== null}
+      onSearch={searchEmployees}
+      onSelect={(id, label) => void handleAddMember(id, label)}
+      {...employeePicker}
+    />
+  ) : null;
 
   return (
     <section
@@ -160,7 +155,7 @@ export function ProjectParticipantsSection({
 
       {!isDense && (
         <p className="text-muted-foreground mt-3 text-sm">
-          New participants are added as Member; change role to Admin after adding if needed.
+          Owner, CEO, and project admins can add participants (as Member) and promote to Admin.
         </p>
       )}
 
@@ -197,6 +192,8 @@ export function ProjectParticipantsSection({
                 key={row.id}
                 row={row}
                 disabled={busyEmployeeId === row.employeeId || addingMember}
+                canManageTeam={canManageTeam}
+                canAssignAdmin={canAssignAdmin}
                 onRoleChange={handleRoleChange}
                 onRemove={handleRemove}
               />
@@ -226,43 +223,20 @@ export function ProjectParticipantsSection({
                       </span>
                     </TableCell>
                     <TableCell>
-                      <PermissionGate
-                        module="PROJECTS"
-                        action="EDIT"
-                        fallback={<Badge>{row.role}</Badge>}
-                      >
-                        <Select
-                          value={row.role}
-                          disabled={busyEmployeeId === row.employeeId}
-                          onValueChange={(v) =>
-                            void handleRoleChange(
-                              row.employeeId,
-                              (v as 'ADMIN' | 'MEMBER') ?? 'MEMBER',
-                            )
-                          }
-                        >
-                          <SelectTrigger
-                            size="sm"
-                            className={cn(
-                              RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
-                              'tracking-normal normal-case',
-                            )}
-                          >
-                            <SelectValue>{projectTeamRoleShortLabel(row.role)}</SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MEMBER">Member</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </PermissionGate>
+                      <ProjectTeamRoleControl
+                        role={row.role as 'ADMIN' | 'MEMBER'}
+                        disabled={busyEmployeeId === row.employeeId}
+                        canManageTeam={canManageTeam}
+                        canAssignAdmin={canAssignAdmin}
+                        onRoleChange={(role) => void handleRoleChange(row.employeeId, role)}
+                      />
                     </TableCell>
                     <TableCell className="text-sm">{row.accessLevel}</TableCell>
                     <TableCell className="text-muted-foreground text-sm capitalize">
                       {formatTeamSource(row.source)}
                     </TableCell>
                     <TableCell>
-                      <PermissionGate module="PROJECTS" action="EDIT">
+                      {canManageTeam ? (
                         <Button
                           type="button"
                           size="icon"
@@ -273,7 +247,7 @@ export function ProjectParticipantsSection({
                         >
                           <Trash2 size={16} />
                         </Button>
-                      </PermissionGate>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))}
