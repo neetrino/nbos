@@ -11,7 +11,10 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
-import type { ProjectProductsViewMode } from './project-detail-layout.constants';
+import {
+  PROJECT_PRODUCTS_CARD_GRID_CLASS,
+  type ProjectProductsViewMode,
+} from './project-detail-layout.constants';
 
 const PRODUCT_STATUS_FILTER_ALL = 'all';
 
@@ -55,7 +58,7 @@ export function ProjectProductsSection({
     project.products.filter((product) => product.status === status).length;
 
   return (
-    <div className="min-w-0 flex-1 space-y-4">
+    <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
@@ -101,7 +104,7 @@ export function ProjectProductsSection({
           ))}
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
           {products.map((product) => (
             <ProductCard key={product.id} product={product} onOpenProduct={onOpenProduct} />
           ))}
@@ -247,23 +250,18 @@ function ProductCard({
   return (
     <div
       onClick={() => onOpenProduct(product.id)}
-      className="bg-card border-border hover:border-accent/50 group cursor-pointer rounded-xl border p-4 transition-colors"
+      className="bg-card border-border hover:border-accent/50 group flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border p-4 transition-colors"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-semibold">{product.name}</h4>
-          {productType && (
-            <span className="text-muted-foreground text-xs">{productType.label}</span>
-          )}
-        </div>
-        {status && statusLabel && <StatusBadge label={statusLabel} variant={status.variant} />}
+      <div className="min-w-0 shrink-0">
+        <h4 className="truncate text-sm font-semibold">{product.name}</h4>
+        {productType && <span className="text-muted-foreground text-xs">{productType.label}</span>}
       </div>
 
-      <div className="mt-3 space-y-1.5">
+      <div className="mt-3 min-h-0 flex-1 space-y-1.5">
         {product.pm && (
           <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
             <User size={12} />
-            <span>
+            <span className="truncate">
               {product.pm.firstName} {product.pm.lastName}
             </span>
           </div>
@@ -276,16 +274,27 @@ function ProductCard({
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex gap-3 text-[10px]">
-          <span className="text-muted-foreground">{product._count.tasks} tasks</span>
-          <span className="text-muted-foreground">{product._count.extensions} ext.</span>
-          <span className="text-muted-foreground">{product._count.tickets} tickets</span>
+      <div className="mt-3 flex shrink-0 flex-col gap-2">
+        <div className="text-muted-foreground flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-[10px]">
+          <span>{product._count.tasks} tasks</span>
+          <span>{product._count.extensions} ext.</span>
+          <span>{product._count.tickets} tickets</span>
         </div>
-        <ArrowRight
-          size={14}
-          className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-        />
+        <div className="flex min-w-0 items-center justify-end gap-1.5">
+          {status && statusLabel && (
+            <StatusBadge
+              label={statusLabel}
+              variant={status.variant}
+              className="max-w-full min-w-0 shrink truncate"
+              title={statusLabel}
+            />
+          )}
+          <ArrowRight
+            size={14}
+            className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+            aria-hidden
+          />
+        </div>
       </div>
     </div>
   );
