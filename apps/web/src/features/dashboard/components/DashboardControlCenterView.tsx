@@ -116,7 +116,7 @@ export function DashboardLoadingSkeleton() {
         <div className="min-h-0 space-y-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
-              <Skeleton key={index} className="h-20 rounded-md" />
+              <Skeleton key={index} className="min-h-[4.75rem] rounded-xl" />
             ))}
           </div>
           <div className="grid gap-5 lg:grid-cols-2">

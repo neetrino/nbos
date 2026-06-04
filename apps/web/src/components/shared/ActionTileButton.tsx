@@ -28,6 +28,8 @@ export interface ActionTileButtonProps {
   /** Shown after the label (e.g. external-link hint). */
   trailing?: ReactNode;
   openInNewTab?: boolean;
+  /** Native button type when rendering as `<button>` (default `button`). */
+  buttonType?: 'button' | 'submit' | 'reset';
 }
 
 function ActionTileContent({
@@ -63,6 +65,7 @@ export function ActionTileButton({
   displayOnly = false,
   trailing,
   openInNewTab = true,
+  buttonType = 'button',
 }: ActionTileButtonProps) {
   const shellClass = cn(
     actionTileShellVariants({ tone, size }),
@@ -117,7 +120,7 @@ export function ActionTileButton({
 
   return (
     <button
-      type="button"
+      type={buttonType}
       disabled={disabled}
       title={disabled ? title : title}
       onClick={handleClick}

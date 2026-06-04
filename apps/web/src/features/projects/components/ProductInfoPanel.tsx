@@ -16,7 +16,7 @@ import { productStageGateFieldClass } from '@/features/projects/product-stage-ga
 import type { FullProduct } from '@/lib/api/products';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
-import { EntityDetailSheetPanelActions } from './EntityDetailSheetPanelActions';
+import { DeliveryDealPanelActions } from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import { DetailInfoSubsection } from './detail-info-subsection';
@@ -77,7 +77,7 @@ export function ProductInfoPanel({
         <EntityDriveNavAction href={buildDriveHrefWithProduct(product.id)} className="shrink-0" />
       </div>
 
-      <EntityDetailSheetPanelActions
+      <DeliveryDealPanelActions
         className="mt-4"
         onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
         onOpenDeal={dealId ? () => openDeal(dealId) : undefined}

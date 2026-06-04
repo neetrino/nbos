@@ -54,7 +54,7 @@ export const actionTileShellVariants = cva(
       size: {
         sm: 'gap-1.5 rounded-lg px-2 py-1 text-xs',
         md: 'gap-2.5 rounded-xl px-3 py-2.5 text-sm',
-        lg: 'gap-2.5 rounded-md px-2.5 py-2.5 text-sm',
+        lg: 'gap-2.5 rounded-xl px-3 py-3 text-sm shadow-sm',
       },
     },
     defaultVariants: {

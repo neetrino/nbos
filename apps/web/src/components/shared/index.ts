@@ -27,6 +27,7 @@ export {
 } from './IntegratedSearchFilters';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
 export { ActionTileButton, type ActionTileButtonProps } from './ActionTileButton';
+export { ActionTileHoverBar, type ActionTileHoverBarVariant } from './ActionTileHoverBar';
 export {
   actionTileIconVariants,
   actionTileShellVariants,

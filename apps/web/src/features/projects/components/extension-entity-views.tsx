@@ -3,9 +3,9 @@
 import { Puzzle, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import {
-  EntityDeliveryDealHoverActions,
-  EntityDeliveryDealHoverActionsInline,
-} from '@/features/projects/components/EntityDeliveryDealHoverActions';
+  DeliveryDealCardHoverActions,
+  DeliveryDealRowHoverActions,
+} from '@/features/projects/components/delivery-deal-action-tiles';
 import {
   formatDeliveryLifecycleLabel,
   getExtensionSize,
@@ -104,7 +104,7 @@ export function ExtensionEntityListRow({
       {statusLabel ? (
         <StatusBadge label={statusLabel} variant={status?.variant ?? 'gray'} className="shrink-0" />
       ) : null}
-      <EntityDeliveryDealHoverActionsInline
+      <DeliveryDealRowHoverActions
         onOpenDeliveryCard={onOpenDeliveryCard}
         onOpenDeal={onOpenDeal}
       />
@@ -194,7 +194,7 @@ export function ExtensionEntityCard({
             title={statusLabel}
           />
         ) : null}
-        <EntityDeliveryDealHoverActions
+        <DeliveryDealCardHoverActions
           onOpenDeliveryCard={onOpenDeliveryCard}
           onOpenDeal={onOpenDeal}
         />

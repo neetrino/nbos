@@ -18,9 +18,9 @@ import {
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
 import {
-  EntityDeliveryDealHoverActions,
-  EntityDeliveryDealHoverActionsInline,
-} from '@/features/projects/components/EntityDeliveryDealHoverActions';
+  DeliveryDealCardHoverActions,
+  DeliveryDealRowHoverActions,
+} from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import {
@@ -222,7 +222,7 @@ function ProductListRow({
       {status && statusLabel && (
         <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
       )}
-      <EntityDeliveryDealHoverActionsInline
+      <DeliveryDealRowHoverActions
         onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
         onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
       />
@@ -286,7 +286,7 @@ function ProductCard({
             title={statusLabel}
           />
         )}
-        <EntityDeliveryDealHoverActions
+        <DeliveryDealCardHoverActions
           onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
           onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
         />
