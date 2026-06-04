@@ -153,11 +153,7 @@ function ProductDetailPageContent() {
           ))}
           <Link
             href={driveHref}
-            className={cn(
-              tabsTriggerVariants({ listVariant: 'default' }),
-              'gap-1.5',
-              SIDEBAR_MODULE_VISUALS.drive.iconClass,
-            )}
+            className={cn(tabsTriggerVariants({ listVariant: 'default' }), 'gap-1.5')}
           >
             <DriveNavIcon size={14} aria-hidden />
             <span className="hidden sm:inline">Drive</span>
