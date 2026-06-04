@@ -52,10 +52,9 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6">
-      <ProjectHeader project={project} />
-
       <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1 space-y-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <ProjectHeader project={project} />
           <ProjectProductsSection
             project={project}
             products={products}
@@ -71,7 +70,7 @@ export default function ProjectDetailPage() {
         </div>
 
         <ProjectInfoPanel
-          className={PROJECT_DETAIL_SIDEBAR_CLASS}
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'lg:self-start')}
           project={project}
           onProjectUpdated={setProject}
         />
@@ -89,13 +88,13 @@ export default function ProjectDetailPage() {
 
 function ProjectDetailLoading() {
   return (
-    <div className="flex h-full flex-col gap-5">
-      <Skeleton className="h-12 w-72" />
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1 space-y-4">
+    <div className="flex h-full flex-col gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <Skeleton className="h-12 w-72" />
           <Skeleton className="h-48 w-full" />
         </div>
-        <Skeleton className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'h-96')} />
+        <Skeleton className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, 'h-96 lg:self-start')} />
       </div>
     </div>
   );
