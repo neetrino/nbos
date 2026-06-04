@@ -170,8 +170,6 @@ export function WorkSpaceDetailPage() {
         setSprints={setSprints}
         mode="standalone"
         defaultTaskLink={defaultLink ?? undefined}
-        hideInlineBoardToolbar
-        hideFilterBar
         taskViewFilters={taskViewFilters}
         boardView={boardView}
         setBoardView={setBoardView}

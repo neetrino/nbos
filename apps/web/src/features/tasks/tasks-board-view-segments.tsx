@@ -40,13 +40,6 @@ export const TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS: TasksBoardViewSegment<TasksLis
   { value: 'list', label: 'List', icon: <List size={14} /> },
 ];
 
-/** Active-area views for work spaces (Planning is a separate workspace area when Scrum is on). */
-export function getWorkspaceBoardViewSegments(
-  _scrumEnabled = false,
-): TasksBoardViewSegment<TasksListBoardView>[] {
-  return TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS;
-}
-
 export const WORKSPACE_BOARD_VIEW_OPTIONS: ViewModeOption<WorkspaceBoardView>[] =
   TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS.map((segment) => ({
     value: segment.value,

@@ -2,14 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { StatusBadge } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getWorkspaceBoardViewSegments } from '@/features/tasks/tasks-board-view-segments';
+import {
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  PageHero,
+  StatusBadge,
+  ViewModeSwitch,
+} from '@/components/shared';
+import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
+import { EditWorkSpaceDialog } from '@/features/tasks/work-spaces/EditWorkSpaceDialog';
+import { WorkSpaceDetailSettingsSheet } from '@/features/tasks/work-spaces/WorkSpaceDetailSettingsSheet';
 import { WorkSpaceRuntime } from '@/features/tasks/work-spaces/WorkSpaceRuntime';
 import { WorkSpaceAreaSegmented } from '@/features/tasks/work-spaces/WorkSpaceAreaSegmented';
 import { WorkSpaceScrumPlanningEnable } from '@/features/tasks/work-spaces/WorkSpaceScrumPlanningEnable';
@@ -20,6 +28,10 @@ import {
   WORKSPACE_AREA_ACTIVE,
   WORKSPACE_AREA_PLANNING,
 } from '@/features/tasks/work-spaces/workspace-area';
+import {
+  useWorkspaceRuntimeTaskFilters,
+  WORKSPACE_TASK_FILTER_CONFIGS,
+} from '@/features/tasks/work-spaces/workspace-runtime-filter-bar';
 
 interface ProductTasksTabProps {
   productId: string;
@@ -27,10 +39,13 @@ interface ProductTasksTabProps {
 
 export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
+  const taskViewFilters = useWorkspaceRuntimeTaskFilters();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
   const [sprints, setSprints] = useState<WorkSpaceSprint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
@@ -53,10 +68,12 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
       } else {
         setSprints([]);
       }
+      setError(null);
     } catch {
       setWorkspace(null);
       setTasks([]);
       setSprints([]);
+      setError('Work Space could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -65,6 +82,13 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   useEffect(() => {
     void fetchWorkSpaceTasks();
   }, [fetchWorkSpaceTasks]);
+
+  useEffect(() => {
+    if (boardView === 'planning') {
+      setWorkspaceArea(WORKSPACE_AREA_PLANNING);
+      setBoardView('kanban');
+    }
+  }, [boardView]);
 
   const handleWorkspaceUpdate = useCallback(async (updated: WorkSpace) => {
     setWorkspace(updated);
@@ -76,70 +100,75 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
     }
   }, []);
 
-  if (loading) {
-    return (
-      <div className="text-muted-foreground py-12 text-center text-sm">Loading Work Space...</div>
-    );
-  }
-
-  if (!workspace) {
-    return (
-      <div className="text-muted-foreground py-12 text-center text-sm">
-        Work Space could not be loaded.
-      </div>
-    );
-  }
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState description={error} onRetry={fetchWorkSpaceTasks} />;
+  if (!workspace) return null;
 
   const defaultLink = buildDefaultTaskLink(workspace);
   const legacyTaskCount = tasks.filter((task) => !task.workspaceId).length;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-        {legacyTaskCount > 0 ? (
-          <StatusBadge label={`${legacyTaskCount} legacy linked`} variant="amber" />
-        ) : null}
-        <WorkSpaceAreaSegmented value={workspaceArea} onValueChange={setWorkspaceArea} />
-        {isPlanningArea ? (
-          <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={handleWorkspaceUpdate} />
-        ) : null}
-        <Link
-          href={`/work-spaces/${workspace.id}`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          Open full Work Space
-        </Link>
-        {!isPlanningArea ? (
-          <>
-            <Tabs
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
+      <PageHero
+        syncModuleTitle={false}
+        tabs={<WorkSpaceAreaSegmented value={workspaceArea} onValueChange={setWorkspaceArea} />}
+        search={
+          <IntegratedSearchFilters
+            search={taskViewFilters.search}
+            onSearchChange={taskViewFilters.onSearchChange}
+            searchPlaceholder="Search by task, project, product, workspace…"
+            filters={WORKSPACE_TASK_FILTER_CONFIGS}
+            filterValues={taskViewFilters.heroFilterValues}
+            onFilterChange={taskViewFilters.onFilterChange}
+            onClearAll={taskViewFilters.onClearFilters}
+          />
+        }
+        viewMode={
+          isPlanningArea ? undefined : (
+            <ViewModeSwitch
               value={boardView}
-              onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
+              onChange={setBoardView}
+              options={WORKSPACE_BOARD_VIEW_OPTIONS}
+            />
+          )
+        }
+        trailing={
+          <>
+            {isPlanningArea ? (
+              <WorkSpaceScrumPlanningEnable
+                workspace={workspace}
+                onUpdated={handleWorkspaceUpdate}
+              />
+            ) : null}
+            <Link
+              href={`/work-spaces/${workspace.id}`}
+              className={buttonVariants({ variant: 'outline' })}
             >
-              <TabsList variant="segmented">
-                {getWorkspaceBoardViewSegments(workspace.scrumEnabled).map((segment) => (
-                  <TabsTrigger
-                    key={segment.value}
-                    value={segment.value}
-                    aria-label={segment.ariaLabel}
-                    className="gap-1.5 px-3 py-2"
-                  >
-                    {segment.icon}
-                    {segment.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-            <Button
-              onClick={() => openQuickCreateRef.current?.()}
-              disabled={newTaskDisabled}
-              title={newTaskDisabled ? 'Employee profile required' : undefined}
-            >
-              <Plus size={16} />
-              New Task
-            </Button>
+              Work Space <ArrowUpRight size={14} aria-hidden />
+            </Link>
+            <WorkSpaceDetailSettingsSheet
+              workspaceName={workspace.name}
+              tasks={tasks}
+              onEditWorkSpace={() => setEditOpen(true)}
+            />
+            {!isPlanningArea ? (
+              <Button
+                onClick={() => openQuickCreateRef.current?.()}
+                disabled={newTaskDisabled}
+                title={newTaskDisabled ? 'Employee profile required' : undefined}
+              >
+                <Plus size={16} aria-hidden />
+                New Task
+              </Button>
+            ) : null}
           </>
-        ) : null}
-      </div>
+        }
+        secondaryTabs={
+          legacyTaskCount > 0 ? (
+            <StatusBadge label={`${legacyTaskCount} legacy linked`} variant="amber" />
+          ) : undefined
+        }
+      />
 
       <WorkSpaceRuntime
         workspace={workspace}
@@ -149,11 +178,18 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
         setSprints={setSprints}
         mode="embedded"
         defaultTaskLink={defaultLink ?? undefined}
-        hideInlineBoardToolbar
+        taskViewFilters={taskViewFilters}
         boardView={boardView}
         setBoardView={setBoardView}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
+      />
+
+      <EditWorkSpaceDialog
+        workspace={workspace}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onUpdated={handleWorkspaceUpdate}
       />
     </div>
   );

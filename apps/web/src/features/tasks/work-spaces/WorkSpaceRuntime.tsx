@@ -10,10 +10,8 @@ import {
   type SetStateAction,
 } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TaskMiniCard, TaskListTableView, type TaskBoardAction } from '@/features/tasks/task-board';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
@@ -21,7 +19,6 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
-import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -30,11 +27,7 @@ import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecyc
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
-import {
-  useWorkspaceRuntimeTaskFilters,
-  WorkspaceRuntimeFilterBar,
-  type WorkspaceRuntimeTaskFilters,
-} from './workspace-runtime-filter-bar';
+import type { WorkspaceRuntimeTaskFilters } from './workspace-runtime-filter-bar';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
 import type { WorkspaceArea } from './workspace-area';
@@ -48,13 +41,9 @@ export type WorkSpaceRuntimeProps = {
   setSprints?: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
-  /** When false, board view tabs + New Task live in the page header (standalone). */
-  hideInlineBoardToolbar?: boolean;
-  /** When true, search/filters render in PageHero instead of inline FilterBar. */
-  hideFilterBar?: boolean;
-  taskViewFilters?: WorkspaceRuntimeTaskFilters;
-  boardView?: WorkspaceBoardView;
-  setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
+  taskViewFilters: WorkspaceRuntimeTaskFilters;
+  boardView: WorkspaceBoardView;
+  setBoardView: Dispatch<SetStateAction<WorkspaceBoardView>>;
   quickCreateRef?: MutableRefObject<(() => void) | null>;
   /**
    * When true (e.g. `/work-spaces/[id]`), task sheet syncs with `TASK_OPEN_QUERY` in the URL.
@@ -72,9 +61,7 @@ export function WorkSpaceRuntime({
   setSprints,
   mode,
   defaultTaskLink,
-  hideInlineBoardToolbar = false,
-  hideFilterBar = false,
-  taskViewFilters: taskViewFiltersProp,
+  taskViewFilters,
   boardView: boardViewProp,
   setBoardView: setBoardViewProp,
   quickCreateRef,
@@ -87,8 +74,6 @@ export function WorkSpaceRuntime({
   const openTaskIdFromUrl = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
 
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const internalTaskFilters = useWorkspaceRuntimeTaskFilters();
-  const taskViewFilters = taskViewFiltersProp ?? internalTaskFilters;
   const { search: taskSearch, filterValues: taskFilters } = taskViewFilters;
 
   const workspaceViewFilters = useMemo(
@@ -104,14 +89,10 @@ export function WorkSpaceRuntime({
     [],
   );
 
-  const controlledBoard =
-    hideInlineBoardToolbar && boardViewProp !== undefined && setBoardViewProp
-      ? { boardView: boardViewProp, setBoardView: setBoardViewProp }
-      : null;
+  const controlledBoard = { boardView: boardViewProp, setBoardView: setBoardViewProp };
 
   const {
     boardView,
-    setBoardView,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
@@ -235,8 +216,6 @@ export function WorkSpaceRuntime({
 
   const clearTaskViewFilters = taskViewFilters.onClearFilters;
 
-  const handleTaskFilterChange = taskViewFilters.onFilterChange;
-
   const renderCard = useCallback(
     (task: Task) => (
       <TaskMiniCard task={task} onAction={handleCardAction} onClick={handleTaskClick} />
@@ -316,7 +295,6 @@ export function WorkSpaceRuntime({
     );
   };
 
-  const newTaskDisabled = creatorReady && !creatorId;
   const hasActiveTaskViewQuery =
     Boolean(taskSearch.trim()) ||
     Object.entries(taskFilters).some(([, v]) => Boolean(v) && v !== 'all');
@@ -356,48 +334,7 @@ export function WorkSpaceRuntime({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
-      {!hideFilterBar ? (
-        <WorkspaceRuntimeFilterBar
-          search={taskSearch}
-          onSearchChange={taskViewFilters.onSearchChange}
-          filterValues={taskViewFilters.heroFilterValues}
-          onFilterChange={handleTaskFilterChange}
-          onClearFilters={clearTaskViewFilters}
-        />
-      ) : null}
-
       <TasksWorkflowScopeBanner scope={boardScope} />
-
-      {!hideInlineBoardToolbar && !isPlanningArea ? (
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-          <Tabs
-            value={boardView}
-            onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
-          >
-            <TabsList variant="segmented">
-              {TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS.map((segment) => (
-                <TabsTrigger
-                  key={segment.value}
-                  value={segment.value}
-                  aria-label={segment.ariaLabel}
-                  className="gap-1.5 px-3 py-2"
-                >
-                  {segment.icon}
-                  {segment.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <Button
-            onClick={openQuickCreate}
-            disabled={newTaskDisabled}
-            title={newTaskDisabled ? 'Employee profile required' : undefined}
-          >
-            <Plus size={16} />
-            New Task
-          </Button>
-        </div>
-      ) : null}
 
       {actionError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
