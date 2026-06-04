@@ -89,6 +89,10 @@ export function CredentialEnvTableEditor({
     rowsForTable.some((row) => row.key.trim().length > 0) &&
     (!isExisting || Boolean(revealedValue?.trim()));
 
+  const canCopyBundle =
+    (isExisting && hasStoredBundle && Boolean(onCopy)) ||
+    rowsForTable.some((row) => row.key.trim().length > 0);
+
   const showMasked = Boolean(isExisting && valuesLocked);
   const hiddenRowCount = Math.max(0, rowsForTable.length - CREDENTIAL_ENV_TABLE_PREVIEW_ROWS);
   const visibleRowRefs = useMemo(
@@ -182,8 +186,15 @@ export function CredentialEnvTableEditor({
     onReveal?.();
   };
 
-  const handleCopyBundle = () => {
-    void onCopy?.();
+  const handleCopyBundle = async () => {
+    if (isExisting && hasStoredBundle && onCopy) {
+      await onCopy();
+      return;
+    }
+    const entries = displayEntries.filter((row) => row.key.trim().length > 0);
+    if (entries.length === 0) return;
+    await navigator.clipboard.writeText(serializeEnvBundle(entries));
+    toast.success('Copied');
   };
 
   return (
@@ -204,8 +215,8 @@ export function CredentialEnvTableEditor({
             type="button"
             variant="outline"
             size="sm"
-            disabled={!canDownload}
-            onClick={handleCopyBundle}
+            disabled={!canCopyBundle}
+            onClick={() => void handleCopyBundle()}
           >
             <Copy className="mr-1 size-3.5" />
             Copy bundle
