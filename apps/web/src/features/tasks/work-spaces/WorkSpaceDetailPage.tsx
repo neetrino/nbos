@@ -28,7 +28,7 @@ import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
 import {
   useWorkspaceRuntimeTaskFilters,
   WORKSPACE_TASK_FILTER_CONFIGS,
-} from './workspace-runtime-filter-bar';
+} from './workspace-runtime-task-filters';
 import { useWorkSpaceDetailHeader } from './use-work-space-detail-header';
 import { useWorkSpaceDetail } from './use-work-space-detail';
 

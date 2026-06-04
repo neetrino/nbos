@@ -29,7 +29,7 @@ import {
 import {
   useWorkspaceRuntimeTaskFilters,
   WORKSPACE_TASK_FILTER_CONFIGS,
-} from '@/features/tasks/work-spaces/workspace-runtime-filter-bar';
+} from '@/features/tasks/work-spaces/workspace-runtime-task-filters';
 import type { UseProductWorkSpaceTabResult } from '@/features/projects/hooks/use-product-work-space-tab';
 
 type ProductTasksTabProps = UseProductWorkSpaceTabResult;

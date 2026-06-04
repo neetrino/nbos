@@ -30,7 +30,7 @@ Legend: `[x]` done · `[ ]` todo
 
 ## Phase C — Cleanup
 
-- [ ] **C1** — Rename `workspace-runtime-filter-bar.tsx` (deferred — import churn, no user impact)
+- [x] **C1** — Renamed `workspace-runtime-filter-bar.tsx` → `workspace-runtime-task-filters.ts`
 - [x] **C2** — `work-spaces.service.findById` no longer embeds `take: 50` tasks
 - [x] **C3** — Removed deprecated `ProductWorkSpaceTabData` alias
 

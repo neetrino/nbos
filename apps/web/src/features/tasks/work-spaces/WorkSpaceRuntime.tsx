@@ -28,7 +28,7 @@ import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecyc
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
-import type { WorkspaceRuntimeTaskFilters } from './workspace-runtime-filter-bar';
+import type { WorkspaceRuntimeTaskFilters } from './workspace-runtime-task-filters';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
 import type { WorkspaceArea } from './workspace-area';
