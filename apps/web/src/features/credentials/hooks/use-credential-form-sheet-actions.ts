@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { entriesFromEnvBundleSerialized, serializeEnvBundle } from '@nbos/shared';
 import {
   credentialsApi,
   type CredentialDetail,
   type CredentialSecretField,
 } from '@/lib/api/credentials';
+import { downloadEnvBundleFile } from '@/features/credentials/utils/download-env-bundle-file';
 import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
 import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -33,6 +35,8 @@ export interface CredentialFormSheetStateSlice {
   passphrase: string;
   apiKey: string;
   envData: string;
+  setEnvData: Dispatch<SetStateAction<string>>;
+  setEnvSnap: Dispatch<SetStateAction<string>>;
   comment: string;
   accessLevel: string;
   nextRotationAt: string;
@@ -73,7 +77,8 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
       state.credentialType === 'APP_STORE_ACCOUNT' ? state.appStorePlatform : undefined,
     apiKey: state.apiKey.trim() || undefined,
     envData: state.envData.trim() || undefined,
-    secureNotes: state.comment.trim() || undefined,
+    /** `null` clears comment; `undefined` would skip the field on PATCH. */
+    secureNotes: state.comment.trim() === '' ? null : state.comment.trim(),
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
     acknowledgeOrphanedSecrets:
@@ -187,70 +192,116 @@ export function useCredentialFormSheetActions(
     successToast,
   ]);
 
+  const accessSecretPlaintext = useCallback(
+    async (field: CredentialSecretField, pwd?: string): Promise<string | null> => {
+      if (!state.credentialId) return null;
+      const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
+
+      const run = async (stepUpPassword?: string) => {
+        const { value } = await credentialsApi.revealSecret(
+          state.credentialId!,
+          field,
+          stepUpPassword,
+        );
+        if (needsUnlock) await vault.markUnlockedFromStepUp();
+        return value;
+      };
+
+      try {
+        if (pwd) return await run(pwd);
+        if (!needsUnlock) return await run();
+        try {
+          return await run();
+        } catch (error) {
+          if (isCredentialVaultStepUpRequired(error)) {
+            state.setStepUpField(field);
+            state.setStepUpMode('copy');
+            return null;
+          }
+          throw error;
+        }
+      } catch {
+        toast.error('Could not access secret');
+        return null;
+      }
+    },
+    [state, vault],
+  );
+
   const executeSecretAction = useCallback(
     async (
       field: CredentialSecretField,
       mode: 'reveal' | 'copy',
       pwd?: string,
     ): Promise<boolean> => {
-      if (!state.credentialId) return false;
-      const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
+      const plaintext =
+        mode === 'copy'
+          ? await (async () => {
+              if (!state.credentialId) return null;
+              const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
+              const run = async (stepUpPassword?: string) => {
+                const { value } = await credentialsApi.copySecret(
+                  state.credentialId!,
+                  field,
+                  stepUpPassword,
+                );
+                if (needsUnlock) await vault.markUnlockedFromStepUp();
+                return value;
+              };
+              try {
+                if (pwd) return await run(pwd);
+                if (!needsUnlock) return await run();
+                try {
+                  return await run();
+                } catch (error) {
+                  if (isCredentialVaultStepUpRequired(error)) {
+                    state.setStepUpField(field);
+                    state.setStepUpMode('copy');
+                    return null;
+                  }
+                  throw error;
+                }
+              } catch {
+                toast.error('Could not access secret');
+                return null;
+              }
+            })()
+          : await accessSecretPlaintext(field, pwd);
 
-      const run = async (stepUpPassword?: string) => {
-        if (mode === 'reveal') {
-          const { value } = await credentialsApi.revealSecret(
-            state.credentialId!,
-            field,
-            stepUpPassword,
-          );
-          state.setRevealed((p) => ({ ...p, [field]: value }));
-        } else {
-          const { value } = await credentialsApi.copySecret(
-            state.credentialId!,
-            field,
-            stepUpPassword,
-          );
-          await navigator.clipboard.writeText(value);
-          toast.success('Copied');
-        }
-        if (needsUnlock) await vault.markUnlockedFromStepUp();
-      };
+      if (!plaintext) return false;
 
-      if (!needsUnlock) {
-        try {
-          await run();
-          return true;
-        } catch {
-          toast.error('Could not access secret');
-          return false;
-        }
-      }
-
-      if (pwd) {
-        try {
-          await run(pwd);
-          return true;
-        } catch {
-          toast.error('Could not access secret');
-          return false;
-        }
-      }
-
-      try {
-        await run();
+      if (mode === 'reveal') {
+        state.setRevealed((p) => ({ ...p, [field]: plaintext }));
         return true;
-      } catch (error) {
-        if (isCredentialVaultStepUpRequired(error)) {
-          state.setStepUpField(field);
-          state.setStepUpMode(mode);
-          return false;
-        }
-        toast.error('Could not access secret');
-        return false;
       }
+
+      await navigator.clipboard.writeText(plaintext);
+      toast.success('Copied');
+      return true;
     },
-    [state, vault],
+    [accessSecretPlaintext, state, vault],
   );
+
+  const hydrateEnvBundleKeyPreview = useCallback(async (): Promise<boolean> => {
+    const value = await accessSecretPlaintext('envData');
+    if (!value) return false;
+    const entries = entriesFromEnvBundleSerialized(value);
+    if (entries.length === 0) return false;
+    const keyPreview = serializeEnvBundle(entries.map((entry) => ({ key: entry.key, value: '' })));
+    state.setEnvData(keyPreview);
+    state.setEnvSnap(keyPreview);
+    return true;
+  }, [accessSecretPlaintext, state]);
+
+  const downloadEnvBundle = useCallback(async (): Promise<string | null> => {
+    const value = await accessSecretPlaintext('envData');
+    if (!value?.trim()) return null;
+    const entries = entriesFromEnvBundleSerialized(value);
+    if (entries.length === 0) return null;
+    downloadEnvBundleFile(entries);
+    toast.success('Downloaded .env');
+    return value;
+  }, [accessSecretPlaintext]);
 
   const requestSecretAction = useCallback(
     (field: CredentialSecretField, mode: 'reveal' | 'copy') => {
@@ -273,5 +324,13 @@ export function useCredentialFormSheetActions(
     [executeSecretAction],
   );
 
-  return { saving, handleSave, runStepUp, requestSecretAction, copySecretField };
+  return {
+    saving,
+    handleSave,
+    runStepUp,
+    requestSecretAction,
+    copySecretField,
+    hydrateEnvBundleKeyPreview,
+    downloadEnvBundle,
+  };
 }

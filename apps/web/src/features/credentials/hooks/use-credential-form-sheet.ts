@@ -2,6 +2,7 @@
 
 import { useCredentialFormSheetState } from '@/features/credentials/hooks/use-credential-form-sheet-state';
 import { useCredentialFormSheetActions } from '@/features/credentials/hooks/use-credential-form-sheet-actions';
+import { useEnvBundleKeyPreview } from '@/features/credentials/hooks/use-env-bundle-key-preview';
 import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
@@ -26,6 +27,8 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       passphrase: state.passphrase,
       apiKey: state.apiKey,
       envData: state.envData,
+      setEnvData: state.setEnvData,
+      setEnvSnap: state.setEnvSnap,
       comment: state.comment,
       accessLevel: state.accessLevel,
       nextRotationAt: state.nextRotationAt,
@@ -46,6 +49,18 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     vault,
   );
 
+  useEnvBundleKeyPreview({
+    open: props.open,
+    detailHydrated: state.detailHydrated,
+    credentialId: state.credentialId,
+    credentialType: state.credentialType,
+    criticality: state.criticality,
+    envData: state.envData,
+    hasStoredBundle: Boolean(state.detail?.secretsPresent?.envData),
+    revealedEnv: state.revealed.envData,
+    hydrateKeys: actions.hydrateEnvBundleKeyPreview,
+  });
+
   return {
     ...state,
     saving: actions.saving,
@@ -53,6 +68,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     runStepUp: actions.runStepUp,
     requestSecretAction: actions.requestSecretAction,
     copySecretField: actions.copySecretField,
+    downloadEnvBundle: actions.downloadEnvBundle,
     submitLabel: props.submitLabel ?? 'Save',
     onOpenChange: props.onOpenChange,
   };

@@ -4,7 +4,7 @@ import { Check, Loader2, Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { RelationEntityKind, RelationPickerOption } from './relation-picker.types';
-import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
+import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
 const DROPDOWN_PANEL_CLASS =
   'absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900';
@@ -30,6 +30,7 @@ type RelationPickerDropdownProps = {
   onSelect: (value: string, label: string) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  listMaxHeightClass: string;
 };
 
 export function RelationPickerDropdown({
@@ -50,6 +51,7 @@ export function RelationPickerDropdown({
   onSelect,
   onKeyDown,
   inputRef,
+  listMaxHeightClass,
 }: RelationPickerDropdownProps) {
   return (
     <div className="relative">
@@ -83,7 +85,7 @@ export function RelationPickerDropdown({
       </div>
 
       <div className={DROPDOWN_PANEL_CLASS}>
-        <div className="max-h-56 overflow-y-auto">
+        <div className={listMaxHeightClass}>
           {loading ? (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
               <Loader2 size={13} className="animate-spin" />
@@ -111,7 +113,7 @@ export function RelationPickerDropdown({
                     index === highlightIdx && !selected && 'bg-stone-50 dark:bg-stone-800',
                   )}
                 >
-                  <RelationPickerEntityIcon kind={entityKind} />
+                  {relationPickerOptionLeading(entityKind, option.label)}
                   <div className="min-w-0 flex-1">
                     <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {kindLabel}

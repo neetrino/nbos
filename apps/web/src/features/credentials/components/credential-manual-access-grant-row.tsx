@@ -1,6 +1,5 @@
 'use client';
 
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { NbosDatePicker } from '@/components/shared/date-picker';
@@ -39,7 +38,6 @@ export function CredentialManualAccessGrantRow({
     <RelationPickerChip
       label={label}
       subtitle={grant.employee.email || null}
-      icon={<EmployeePersonAvatar label={label} />}
       entityKind="employee"
       onOpen={() => void relations.openEntity('employee', grant.employeeId)}
       onClear={() => onRemove(grant.employeeId)}

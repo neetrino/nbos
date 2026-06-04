@@ -30,10 +30,12 @@ export interface CredentialFormDynamicFieldsProps {
   onUrlChange: (v: string) => void;
   envData: string;
   onEnvDataChange: (v: string) => void;
+  envSnap?: string;
   secretsPresent?: CredentialSecretsPresent | null;
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
   onCopy?: (field: CredentialSecretField) => void | Promise<boolean>;
+  onDownloadEnvBundle?: () => Promise<string | null>;
 }
 
 export function CredentialFormDynamicFields({
@@ -51,10 +53,12 @@ export function CredentialFormDynamicFields({
   onUrlChange,
   envData,
   onEnvDataChange,
+  envSnap = '',
   secretsPresent,
   revealed,
   onReveal,
   onCopy,
+  onDownloadEnvBundle,
 }: CredentialFormDynamicFieldsProps) {
   const specs = dynamicFieldSpecsForType(credentialType);
   const isExisting = Boolean(credentialId);
@@ -65,16 +69,19 @@ export function CredentialFormDynamicFields({
       {specs.map((spec) => {
         if (spec.kind === 'env') {
           return (
-            <div key={spec.field} className="grid gap-2">
-              <Label>{spec.label}</Label>
+            <div key={spec.field}>
               <CredentialEnvTableEditor
+                instanceKey={guardScope}
                 value={envData}
                 onChange={onEnvDataChange}
                 isExisting={isExisting}
+                hasStoredBundle={Boolean(secretsPresent?.envData)}
+                valuesLocked={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
                 revealedValue={revealed?.envData ?? null}
                 onReveal={() => onReveal?.('envData')}
-                onCopy={() => onCopy?.('envData')}
-                disabled={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
+                onCopy={onCopy ? () => onCopy('envData') : undefined}
+                onDownload={onDownloadEnvBundle}
+                storedKeysBaseline={envSnap}
               />
             </div>
           );

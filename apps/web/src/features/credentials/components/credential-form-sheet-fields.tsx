@@ -83,12 +83,14 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setUrl,
     envData,
     setEnvData,
+    envSnap,
     comment,
     setComment,
     detail,
     revealed,
     requestSecretAction,
     copySecretField,
+    downloadEnvBundle,
     showSettings,
     criticality,
     setCriticality,
@@ -149,10 +151,12 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         onUrlChange={setUrl}
         envData={envData}
         onEnvDataChange={setEnvData}
+        envSnap={envSnap}
         secretsPresent={detail?.secretsPresent}
         revealed={revealed}
         onReveal={(field) => requestSecretAction(field, 'reveal')}
         onCopy={(field) => copySecretField(field)}
+        onDownloadEnvBundle={downloadEnvBundle}
       />
 
       {credentialType === 'RECOVERY_CODES' ? (

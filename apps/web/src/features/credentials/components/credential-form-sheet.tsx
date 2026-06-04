@@ -9,6 +9,7 @@ import {
   DetailSheetTabBar,
   EntityDetailSheetContent,
 } from '@/components/shared';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
 import {
   CREDENTIAL_FORM_SHEET_TABS,
   type CredentialFormSheetTab,
@@ -155,14 +156,16 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
             </ScrollArea>
           ) : (
             <ScrollArea className="min-h-0 flex-1">
-              <CredentialFormSheetBody
-                form={form}
-                sheetOpen={open}
-                credentialId={credentialId}
-                activeTab={activeTab}
-                manualGrants={manualGrants}
-                onManualGrantsChange={setManualGrants}
-              />
+              <div className={DETAIL_SHEET_TAB_BODY_STRETCH_CLASS}>
+                <CredentialFormSheetBody
+                  form={form}
+                  sheetOpen={open}
+                  credentialId={credentialId}
+                  activeTab={activeTab}
+                  manualGrants={manualGrants}
+                  onManualGrantsChange={setManualGrants}
+                />
+              </div>
             </ScrollArea>
           )}
 

@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   RELATION_PICKER_CHIP_SHELL_CLASS,
-  RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
   RELATION_PICKER_REPLACE_ZONE_CLASS,
   RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
   RELATION_PICKER_SHEET_TARGET_GROUP_CLASS,
@@ -14,7 +13,7 @@ import {
   RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS,
 } from '../detail-sheet-classes';
 import type { RelationEntityKind } from './relation-picker.types';
-import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
+import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
 type RelationPickerChipProps = {
   label: string;
@@ -34,6 +33,16 @@ function usesPersonAvatar(kind: RelationEntityKind | undefined): boolean {
   return kind === 'contact' || kind === 'employee';
 }
 
+function relationChipLeading(
+  entityKind: RelationEntityKind | undefined,
+  label: string,
+  icon: ReactNode | undefined,
+): ReactNode {
+  if (icon) return icon;
+  if (!entityKind) return null;
+  return relationPickerOptionLeading(entityKind, label, 'inline');
+}
+
 export function RelationPickerChip({
   label,
   subtitle,
@@ -49,15 +58,7 @@ export function RelationPickerChip({
   const canReplace = Boolean(onReplace) && !disabled;
   const personLeading = usesPersonAvatar(entityKind);
 
-  const leading =
-    icon ??
-    (entityKind ? (
-      <RelationPickerEntityIcon
-        kind={entityKind}
-        variant="inline"
-        className={RELATION_PICKER_ENTITY_ICON_INLINE_CLASS}
-      />
-    ) : null);
+  const leading = relationChipLeading(entityKind, label, icon);
 
   const sheetLabel = (
     <span className="min-w-0">

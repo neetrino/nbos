@@ -109,6 +109,12 @@ export const DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS = 'sm:col-span-2';
 /** Body inside a stretched section — stacks fields and absorbs extra row height. */
 export const DETAIL_SHEET_SECTION_BODY_CLASS = 'flex flex-1 flex-col space-y-4';
 
+/** Scrollable list that fills remaining tab height (sheet tab panels). */
+export const DETAIL_SHEET_TAB_LIST_CLASS = 'min-h-0 flex-1 overflow-y-auto';
+
+/** Wrapper for sheet tab content that should fill the scroll viewport. */
+export const DETAIL_SHEET_TAB_BODY_STRETCH_CLASS = 'flex min-h-full flex-col';
+
 /** Neutral avatar chip for person pickers (avoids per-role accent colors). */
 export const DETAIL_SHEET_PERSON_AVATAR_CLASS =
   'bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold uppercase';
@@ -216,6 +222,12 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
+
+/** Default relation picker dropdown list (~4 rows). */
+export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
+
+/** Taller list for employee pickers in sheets (~6 rows with subtitle). */
+export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y-auto';
 
 /** Empty / add trigger aligned with relation chip width. */
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
