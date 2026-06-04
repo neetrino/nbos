@@ -31,7 +31,7 @@ function createInitialSectionState(): Record<ProductFinanceSection, SectionUiSta
       search: '',
       filters: { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' },
     },
-    domains: { ...EMPTY_SECTION_STATE },
+    'client-services': { ...EMPTY_SECTION_STATE },
   };
 }
 

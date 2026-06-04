@@ -1,17 +1,18 @@
 import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
 import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import {
+  CLIENT_SERVICE_FILTER_BILLING_KEY,
+  CLIENT_SERVICE_FILTER_STATUS_KEY,
+  CLIENT_SERVICE_FILTER_TYPE_KEY,
+} from '@/features/finance/components/client-services/build-client-service-integrated-filter-configs';
+import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   matchesBoardLifecycleScope,
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
-import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
-
-function matchesNeedle(value: string | null | undefined, needle: string): boolean {
-  return (value ?? '').toLowerCase().includes(needle);
-}
+import type { ProjectSubscription } from '@/lib/api/projects';
 
 function matchesFilterValue(filterValue: string | undefined, rowValue: string): boolean {
   return Boolean(filterValue) && filterValue !== 'all' && rowValue === filterValue;
@@ -60,23 +61,6 @@ export function filterProductFinanceSubscriptions(
   });
 }
 
-export function filterProductFinanceDomains(
-  domains: ProjectDomain[],
-  search: string,
-  filters: Record<string, string>,
-): ProjectDomain[] {
-  const needle = search.trim().toLowerCase();
-  return domains.filter((domain) => {
-    if (needle) {
-      if (!matchesNeedle(domain.domainName, needle) && !matchesNeedle(domain.provider, needle)) {
-        return false;
-      }
-    }
-    if (matchesFilterValue(filters.status, domain.status)) return false;
-    return true;
-  });
-}
-
 export function productFinanceFilterValuesForUi(
   section: 'orders',
   filters: Record<string, string>,
@@ -94,6 +78,14 @@ export function productFinanceFilterValuesForUi(
   if (section === 'expenses') {
     return {
       [EXPENSE_BOARD_SCOPE_FILTER_KEY]: filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] ?? 'active',
+      ...filters,
+    };
+  }
+  if (section === 'client-services') {
+    return {
+      [CLIENT_SERVICE_FILTER_TYPE_KEY]: filters[CLIENT_SERVICE_FILTER_TYPE_KEY] ?? 'all',
+      [CLIENT_SERVICE_FILTER_STATUS_KEY]: filters[CLIENT_SERVICE_FILTER_STATUS_KEY] ?? 'all',
+      [CLIENT_SERVICE_FILTER_BILLING_KEY]: filters[CLIENT_SERVICE_FILTER_BILLING_KEY] ?? 'all',
       ...filters,
     };
   }

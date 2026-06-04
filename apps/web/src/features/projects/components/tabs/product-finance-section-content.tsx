@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, Globe, RefreshCw, ShoppingCart } from 'lucide-react';
+import { ExternalLink, RefreshCw, ShoppingCart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
@@ -12,21 +12,19 @@ import {
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
-import {
-  FinanceDomainsSection,
-  FinanceSubscriptionsSection,
-} from '@/features/projects/components/tabs/finance-tab-sections';
-import { ProductFinanceExpensesPanel } from '@/features/projects/components/tabs/product-finance-expenses-panel';
 import type { ExpensesViewMode } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
+import type { ClientServicesViewMode } from '@/features/finance/constants/client-services-view';
+import { FinanceSubscriptionsSection } from '@/features/projects/components/tabs/finance-tab-sections';
+import { ProductFinanceClientServicesPanel } from '@/features/projects/components/tabs/product-finance-client-services-panel';
+import { ProductFinanceExpensesPanel } from '@/features/projects/components/tabs/product-finance-expenses-panel';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 import {
-  filterProductFinanceDomains,
   filterProductFinanceOrders,
   filterProductFinanceSubscriptions,
 } from '@/features/projects/utils/filter-product-finance-data';
 import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
 import type { Order } from '@/lib/api/finance';
-import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectSubscription } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 
 interface ProductFinanceSectionContentProps {
@@ -35,9 +33,9 @@ interface ProductFinanceSectionContentProps {
   filters: Record<string, string>;
   ordersView: OrderViewMode;
   expensesView: ExpensesViewMode;
+  clientServicesView: ClientServicesViewMode;
   financeOrders: Order[];
   subscriptions: ProjectSubscription[];
-  domains: ProjectDomain[];
   projectId: string;
 }
 
@@ -47,9 +45,9 @@ export function ProductFinanceSectionContent({
   filters,
   ordersView,
   expensesView,
+  clientServicesView,
   financeOrders,
   subscriptions,
-  domains,
   projectId,
 }: ProductFinanceSectionContentProps) {
   const router = useRouter();
@@ -114,19 +112,14 @@ export function ProductFinanceSectionContent({
     );
   }
 
-  const rows = filterProductFinanceDomains(domains, search, filters);
-  if (rows.length === 0) {
-    return (
-      <FinanceSectionEmpty
-        icon={Globe}
-        title="No domains"
-        description="No domains match your filters for this project."
-        href="/finance/client-services"
-        linkLabel="Open Client services in Finance"
-      />
-    );
-  }
-  return <FinanceDomainsSection domains={rows} />;
+  return (
+    <ProductFinanceClientServicesPanel
+      projectId={projectId}
+      search={search}
+      filters={filters}
+      view={clientServicesView}
+    />
+  );
 }
 
 function FinanceSectionEmpty({

@@ -21,26 +21,22 @@ import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-li
 import { cn } from '@/lib/utils';
 import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
 import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/expenses-view-options';
+import { CLIENT_SERVICES_VIEW_OPTIONS } from '@/features/finance/components/client-services/client-services-view-options';
 import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
+import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
-import type {
-  ProjectDomain,
-  ProjectExpense,
-  ProjectOrder,
-  ProjectSubscription,
-} from '@/lib/api/projects';
+import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
 import { buttonVariants } from '@/components/ui/button';
 
 interface FinanceTabProps {
   orders: ProjectOrder[];
   subscriptions: ProjectSubscription[];
   expenses: ProjectExpense[];
-  domains: ProjectDomain[];
   projectId: string;
   project: { id: string; name: string; code: string };
   productOrderId?: string | null;
@@ -54,7 +50,6 @@ export function FinanceTab({
   orders,
   subscriptions,
   expenses,
-  domains,
   projectId,
   project,
   productOrderId,
@@ -62,6 +57,7 @@ export function FinanceTab({
   const financeSection = useProductFinanceSection();
   const [ordersView, setOrdersView] = useOrdersBoardViewMode();
   const [expensesView, setExpensesView] = useExpensesBoardViewMode();
+  const [clientServicesView, setClientServicesView] = useClientServicesViewMode();
 
   const scopedOrders = useMemo(() => {
     if (!productOrderId) return orders;
@@ -88,7 +84,7 @@ export function FinanceTab({
       ? '/finance/subscriptions'
       : financeSection.activeSection === 'expenses'
         ? projectExpensesDrilldownHref(projectId)
-        : financeSection.activeSection === 'domains'
+        : financeSection.activeSection === 'client-services'
           ? '/finance/client-services'
           : '/finance/orders';
 
@@ -158,6 +154,13 @@ export function FinanceTab({
               onChange={setExpensesView}
               options={EXPENSES_VIEW_OPTIONS}
             />
+          ) : financeSection.activeSection === 'client-services' ? (
+            <ViewModeSwitch
+              value={clientServicesView}
+              onChange={setClientServicesView}
+              options={CLIENT_SERVICES_VIEW_OPTIONS}
+              ariaLabel="Client services view mode"
+            />
           ) : undefined
         }
         trailing={
@@ -183,7 +186,9 @@ export function FinanceTab({
       <div
         className={
           (financeSection.activeSection === 'orders' && ordersView === 'board') ||
-          (financeSection.activeSection === 'expenses' && expensesView === 'kanban')
+          (financeSection.activeSection === 'expenses' && expensesView === 'kanban') ||
+          (financeSection.activeSection === 'client-services' &&
+            (clientServicesView === 'status' || clientServicesView === 'months'))
             ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
             : undefined
         }
@@ -194,9 +199,9 @@ export function FinanceTab({
           filters={financeSection.filters}
           ordersView={ordersView}
           expensesView={expensesView}
+          clientServicesView={clientServicesView}
           financeOrders={financeOrders}
           subscriptions={subscriptions}
-          domains={domains}
           projectId={projectId}
         />
       </div>

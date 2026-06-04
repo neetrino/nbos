@@ -212,7 +212,6 @@ function ProductDetailPageContent() {
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}
-              domains={projectData.domains as never[]}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>

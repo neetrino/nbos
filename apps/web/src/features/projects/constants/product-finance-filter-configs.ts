@@ -1,4 +1,5 @@
 import type { FilterConfig } from '@/components/shared';
+import { buildClientServiceIntegratedFilterConfigs } from '@/features/finance/components/client-services/build-client-service-integrated-filter-configs';
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_STAGES,
@@ -12,13 +13,6 @@ import {
 } from '@/features/shared/board-lifecycle';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
-
-const PRODUCT_DOMAIN_STATUSES = [
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'EXPIRING_SOON', label: 'Expiring soon' },
-  { value: 'EXPIRED', label: 'Expired' },
-  { value: 'TRANSFERRED', label: 'Transferred' },
-] as const;
 
 export const PRODUCT_ORDER_FILTER_CONFIGS: FilterConfig[] = [
   {
@@ -68,13 +62,8 @@ export const PRODUCT_EXPENSE_FILTER_CONFIGS: FilterConfig[] = [
   },
 ];
 
-export const PRODUCT_DOMAIN_FILTER_CONFIGS: FilterConfig[] = [
-  {
-    key: 'status',
-    label: 'Status',
-    options: PRODUCT_DOMAIN_STATUSES.map((row) => ({ value: row.value, label: row.label })),
-  },
-];
+export const PRODUCT_CLIENT_SERVICE_FILTER_CONFIGS: FilterConfig[] =
+  buildClientServiceIntegratedFilterConfigs();
 
 export function productFinanceFilterConfigs(section: ProductFinanceSection): FilterConfig[] {
   switch (section) {
@@ -84,8 +73,8 @@ export function productFinanceFilterConfigs(section: ProductFinanceSection): Fil
       return PRODUCT_SUBSCRIPTION_FILTER_CONFIGS;
     case 'expenses':
       return PRODUCT_EXPENSE_FILTER_CONFIGS;
-    case 'domains':
-      return PRODUCT_DOMAIN_FILTER_CONFIGS;
+    case 'client-services':
+      return PRODUCT_CLIENT_SERVICE_FILTER_CONFIGS;
     default:
       return [];
   }
@@ -99,8 +88,8 @@ export function productFinanceSearchPlaceholder(section: ProductFinanceSection):
       return 'Search subscriptions by code, type…';
     case 'expenses':
       return 'Search expenses by name, category…';
-    case 'domains':
-      return 'Search domains by name, provider…';
+    case 'client-services':
+      return 'Search by name or provider…';
     default:
       return 'Search…';
   }

@@ -1,8 +1,5 @@
-import Link from 'next/link';
 import { StatusBadge } from '@/components/shared';
-import { buttonVariants } from '@/components/ui/button';
-import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
-import { cn } from '@/lib/utils';
+import type { ProjectSubscription } from '@/lib/api/projects';
 
 function formatAmount(amount: number | string): string {
   return Number(amount).toLocaleString('en-US');
@@ -46,52 +43,6 @@ export function FinanceSubscriptionsSection({
             </div>
           );
         })}
-      </div>
-    </section>
-  );
-}
-
-export function FinanceDomainsSection({ domains }: { domains: ProjectDomain[] }) {
-  return (
-    <section>
-      <h3 className="mb-3 text-sm font-semibold">Domains ({domains.length})</h3>
-      <div className="space-y-2">
-        {domains.map((dom) => (
-          <div
-            key={dom.id}
-            className="bg-card border-border flex items-center justify-between rounded-lg border px-4 py-3"
-          >
-            <div>
-              <p className="font-mono text-sm font-medium">{dom.domainName}</p>
-              <p className="text-muted-foreground text-xs">
-                {dom.provider ?? ''} ·{' '}
-                {dom.expiryDate
-                  ? `Expires ${new Date(dom.expiryDate).toLocaleDateString()}`
-                  : 'No expiry'}
-              </p>
-              {dom.clientServiceRecordId ? (
-                <Link
-                  href={`/finance/client-services?open=${dom.clientServiceRecordId}`}
-                  className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'h-auto px-0')}
-                >
-                  Client service record
-                </Link>
-              ) : null}
-            </div>
-            <StatusBadge
-              label={dom.status.replace(/_/g, ' ')}
-              variant={
-                dom.status === 'ACTIVE'
-                  ? 'green'
-                  : dom.status === 'EXPIRING_SOON'
-                    ? 'amber'
-                    : dom.status === 'EXPIRED'
-                      ? 'red'
-                      : 'gray'
-              }
-            />
-          </div>
-        ))}
       </div>
     </section>
   );
