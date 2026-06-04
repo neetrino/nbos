@@ -21,9 +21,10 @@ import { ProductTasksTab } from '@/features/projects/components/product-tabs/Pro
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
 import { ProductTicketsTab } from '@/features/projects/components/product-tabs/ProductTicketsTab';
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
-import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
+import { ProductCredentialsTab } from '@/features/projects/components/product-tabs/ProductCredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
+import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-credentials-tab';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import {
@@ -57,7 +58,6 @@ function ProductDetailPageContent() {
   const [loading, setLoading] = useState(true);
   const activeTab = parseProductDetailTab(searchParams.get(PRODUCT_DETAIL_TAB_QUERY));
   const [projectData, setProjectData] = useState<{
-    credentials: unknown[];
     orders: unknown[];
     subscriptions: unknown[];
     expenses: unknown[];
@@ -70,6 +70,12 @@ function ProductDetailPageContent() {
     params.productId,
     activeTab === 'tasks',
     product?.workSpaceId ?? null,
+  );
+
+  const credentialsTab = useProductCredentialsTab(
+    params.productId,
+    params.id,
+    activeTab === 'credentials',
   );
 
   const fetchProduct = useCallback(async () => {
@@ -100,7 +106,6 @@ function ProductDetailPageContent() {
     try {
       const data = await projectsApi.getById(params.id);
       setProjectData({
-        credentials: data.credentials,
         orders: data.orders,
         subscriptions: data.subscriptions,
         expenses: data.expenses,
@@ -132,7 +137,7 @@ function ProductDetailPageContent() {
   );
 
   useEffect(() => {
-    if (activeTab === 'credentials' || activeTab === 'finance') {
+    if (activeTab === 'finance') {
       if (!projectData) fetchProjectData();
     }
   }, [activeTab, projectData, fetchProjectData]);
@@ -180,7 +185,15 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="tickets" className="mt-5">
-          <ProductTicketsTab tickets={product.tickets} />
+          <ProductTicketsTab
+            tickets={product.tickets}
+            project={{
+              id: product.project.id,
+              code: product.project.code,
+              name: product.project.name,
+            }}
+            product={{ id: product.id, name: product.name, status: product.status }}
+          />
         </TabsContent>
 
         <TabsContent value="technical" className="mt-5">
@@ -188,17 +201,19 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="credentials" className="mt-5">
-          {projectData ? (
-            <CredentialsTab credentials={projectData.credentials as never[]} />
-          ) : (
-            <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>
-          )}
+          <ProductCredentialsTab {...credentialsTab} />
         </TabsContent>
 
         <TabsContent value="finance" className="mt-5">
           {projectData ? (
             <FinanceTab
               projectId={params.id}
+              project={{
+                id: product.project.id,
+                code: product.project.code,
+                name: product.project.name,
+              }}
+              productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}

@@ -1,84 +1,90 @@
 'use client';
 
-import { Ticket } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { ExternalLink, Ticket } from 'lucide-react';
+import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared';
+import { ProductTabViewHero } from '@/features/projects/components/product-tabs/ProductTabViewHero';
+import { ProductTicketsSummary } from '@/features/projects/components/product-tabs/ProductTicketsSummary';
+import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
+import { productTicketToSupportTicket } from '@/features/projects/utils/product-ticket-support-adapter';
+import { SupportTicketCard } from '@/features/support/components/SupportTicketCard';
+import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
+import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
+import { PROJECT_PRODUCTS_CARD_GRID_CLASS } from '@/features/projects/components/project-detail-layout.constants';
 import type { ProductTicketRef } from '@/lib/api/products';
-import { ProductTicketsSummary } from './ProductTicketsSummary';
+import { cn } from '@/lib/utils';
 
 interface ProductTicketsTabProps {
   tickets: ProductTicketRef[];
+  project: { id: string; code: string; name: string };
+  product: { id: string; name: string; status: string };
 }
 
-const PRIORITY_VARIANTS: Record<string, 'red' | 'orange' | 'amber' | 'blue' | 'gray'> = {
-  P1: 'red',
-  P2: 'orange',
-  P3: 'amber',
-  P4: 'blue',
-};
+export function ProductTicketsTab({ tickets, project, product }: ProductTicketsTabProps) {
+  const router = useRouter();
+  const [viewMode, setViewMode] = useProjectDetailViewMode();
 
-const STATUS_VARIANTS: Record<string, 'blue' | 'purple' | 'amber' | 'green' | 'gray'> = {
-  OPEN: 'blue',
-  IN_PROGRESS: 'purple',
-  WAITING: 'amber',
-  RESOLVED: 'green',
-  CLOSED: 'gray',
-};
+  const supportTickets = useMemo(
+    () => tickets.map((ticket) => productTicketToSupportTicket(ticket, project, product)),
+    [tickets, project, product],
+  );
 
-export function ProductTicketsTab({ tickets }: ProductTicketsTabProps) {
+  const handleOpenDetail = useCallback(
+    (ticketId: string) => {
+      router.push(`/support?${SUPPORT_TICKET_OPEN_QUERY}=${encodeURIComponent(ticketId)}`);
+    },
+    [router],
+  );
+
   if (tickets.length === 0) {
     return (
-      <div className="text-muted-foreground py-12 text-center">
-        <Ticket size={40} className="mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No support tickets for this product.</p>
-      </div>
+      <EmptyState
+        icon={Ticket}
+        title="No support tickets"
+        description="No support tickets for this product."
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
+      <ProductTabViewHero
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        trailing={
+          <Link
+            href="/support"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+          >
+            Open Support
+            <ExternalLink size={12} className="opacity-70" aria-hidden />
+          </Link>
+        }
+      />
       <ProductTicketsSummary tickets={tickets} />
-      <p className="text-muted-foreground text-xs">
-        Support tickets keep customer context, SLA and triage separate from internal tasks.
-      </p>
-      <div className="border-border overflow-hidden rounded-xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-2.5 text-left font-medium">Ticket</th>
-              <th className="px-4 py-2.5 text-left font-medium">Category</th>
-              <th className="px-4 py-2.5 text-left font-medium">Priority</th>
-              <th className="px-4 py-2.5 text-left font-medium">Status</th>
-              <th className="px-4 py-2.5 text-left font-medium">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket) => (
-              <tr key={ticket.id} className="border-border border-t">
-                <td className="px-4 py-2.5">
-                  <p className="font-medium">{ticket.title}</p>
-                  <p className="text-muted-foreground text-xs">{ticket.code}</p>
-                </td>
-                <td className="text-muted-foreground px-4 py-2.5 text-xs">{ticket.category}</td>
-                <td className="px-4 py-2.5">
-                  <StatusBadge
-                    label={ticket.priority}
-                    variant={PRIORITY_VARIANTS[ticket.priority] ?? 'gray'}
-                  />
-                </td>
-                <td className="px-4 py-2.5">
-                  <StatusBadge
-                    label={ticket.status.replace('_', ' ')}
-                    variant={STATUS_VARIANTS[ticket.status] ?? 'gray'}
-                  />
-                </td>
-                <td className="text-muted-foreground px-4 py-2.5 text-xs">
-                  {new Date(ticket.createdAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {viewMode === 'list' ? (
+        <SupportTicketsListView
+          tickets={supportTickets}
+          actionId={null}
+          onOpenDetail={handleOpenDetail}
+          onStatusSelect={() => undefined}
+          onReopen={() => undefined}
+        />
+      ) : (
+        <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
+          {supportTickets.map((ticket) => (
+            <SupportTicketCard
+              key={ticket.id}
+              ticket={ticket}
+              onOpenDetail={handleOpenDetail}
+              showProject={false}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
