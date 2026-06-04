@@ -12,6 +12,7 @@ import {
   type ProjectProductsViewMode,
 } from '@/features/projects/components/project-detail-layout.constants';
 import { cn } from '@/lib/utils';
+import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
 
 export default function ProjectDetailPage() {
@@ -65,6 +66,12 @@ export default function ProjectDetailPage() {
             onCreateProduct={() => setShowCreateProduct(true)}
             onOpenProduct={(productId) =>
               router.push(`/projects/${params.id}/products/${productId}`)
+            }
+          />
+          <ProjectExtensionsSection
+            extensions={project.extensions}
+            onOpenExtension={(extension) =>
+              router.push(`/projects/${params.id}/products/${extension.productId}?tab=extensions`)
             }
           />
         </div>
