@@ -98,11 +98,6 @@ function ExtensionListRow({
       {statusLabel && (
         <StatusBadge label={statusLabel} variant={status?.variant ?? 'gray'} className="shrink-0" />
       )}
-      <ArrowRight
-        size={14}
-        className="text-muted-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-        aria-hidden
-      />
     </button>
   );
 }
