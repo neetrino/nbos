@@ -34,7 +34,7 @@ export interface CredentialFormDynamicFieldsProps {
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
   onCopy?: (field: CredentialSecretField) => void | Promise<boolean>;
-  detailHydrated?: boolean;
+  onDownloadEnvBundle?: () => Promise<string | null>;
 }
 
 export function CredentialFormDynamicFields({
@@ -56,7 +56,7 @@ export function CredentialFormDynamicFields({
   revealed,
   onReveal,
   onCopy,
-  detailHydrated = false,
+  onDownloadEnvBundle,
 }: CredentialFormDynamicFieldsProps) {
   const specs = dynamicFieldSpecsForType(credentialType);
   const isExisting = Boolean(credentialId);
@@ -79,7 +79,7 @@ export function CredentialFormDynamicFields({
                 revealedValue={revealed?.envData ?? null}
                 onReveal={() => onReveal?.('envData')}
                 onCopy={onCopy ? () => onCopy('envData') : undefined}
-                detailHydrated={detailHydrated}
+                onDownload={onDownloadEnvBundle}
               />
             </div>
           );

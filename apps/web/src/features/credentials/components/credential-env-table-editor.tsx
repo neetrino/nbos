@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
+import { useEffect, useMemo, useState, type ClipboardEvent } from 'react';
 import { ChevronDown, Copy, Download, Eye, Plus } from 'lucide-react';
 import {
   entriesFromEnvBundleSerialized,
@@ -31,9 +31,8 @@ export interface CredentialEnvTableEditorProps {
   revealedValue?: string | null;
   onReveal?: () => void;
   onCopy?: () => void | Promise<boolean>;
+  onDownload?: () => Promise<string | null>;
   isExisting?: boolean;
-  /** When false, skip auto-reveal (detail still loading from list placeholder). */
-  detailHydrated?: boolean;
 }
 
 export function CredentialEnvTableEditor({
@@ -45,26 +44,18 @@ export function CredentialEnvTableEditor({
   revealedValue,
   onReveal,
   onCopy,
+  onDownload,
   isExisting,
-  detailHydrated = false,
 }: CredentialEnvTableEditorProps) {
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
-  const revealRequestedRef = useRef<string | null>(null);
 
   useEffect(() => {
     setLocalEntries([]);
     setExpanded(false);
-    revealRequestedRef.current = null;
   }, [instanceKey]);
-
-  useEffect(() => {
-    if (!detailHydrated) {
-      revealRequestedRef.current = null;
-    }
-  }, [detailHydrated]);
 
   const parsedFromValue = useMemo(() => entriesFromEnvBundleSerialized(value), [value]);
   const parsedFromRevealed = useMemo(
@@ -94,11 +85,7 @@ export function CredentialEnvTableEditor({
   const hasStoredKeys =
     rowsForTable.some((row) => row.key.trim().length > 0) || (isExisting && hasStoredBundle);
 
-  const canDownload =
-    rowsForTable.some((row) => row.key.trim().length > 0) &&
-    (!isExisting || Boolean(revealedValue?.trim()));
-
-  const canCopyBundle =
+  const canExportBundle =
     (isExisting && hasStoredBundle && Boolean(onCopy)) ||
     rowsForTable.some((row) => row.key.trim().length > 0);
 
@@ -111,13 +98,6 @@ export function CredentialEnvTableEditor({
         .filter(({ index }) => expanded || index < CREDENTIAL_ENV_TABLE_PREVIEW_ROWS),
     [expanded, rowsForTable],
   );
-
-  useEffect(() => {
-    if (!detailHydrated || !isExisting || !hasStoredBundle || revealedValue) return;
-    if (revealRequestedRef.current === instanceKey) return;
-    revealRequestedRef.current = instanceKey;
-    onReveal?.();
-  }, [detailHydrated, hasStoredBundle, instanceKey, isExisting, onReveal, revealedValue]);
 
   const commitEntries = (next: EnvBundleEntry[]) => {
     setLocalEntries(next);
@@ -206,6 +186,17 @@ export function CredentialEnvTableEditor({
     toast.success('Copied');
   };
 
+  const handleDownloadBundle = async () => {
+    if (isExisting && hasStoredBundle && onDownload) {
+      await onDownload();
+      return;
+    }
+    const entries = displayEntries.filter((row) => row.key.trim().length > 0);
+    if (entries.length === 0) return;
+    downloadEnvBundleFile(entries);
+    toast.success('Downloaded .env');
+  };
+
   return (
     <div className="grid gap-4">
       {isExisting ? (
@@ -224,7 +215,7 @@ export function CredentialEnvTableEditor({
             type="button"
             variant="outline"
             size="sm"
-            disabled={!canCopyBundle}
+            disabled={!canExportBundle}
             onClick={() => void handleCopyBundle()}
           >
             <Copy className="mr-1 size-3.5" />
@@ -277,8 +268,8 @@ export function CredentialEnvTableEditor({
           type="button"
           variant="outline"
           size="sm"
-          disabled={!canDownload}
-          onClick={() => downloadEnvBundleFile(displayEntries.filter((r) => r.key.trim()))}
+          disabled={!canExportBundle}
+          onClick={() => void handleDownloadBundle()}
         >
           <Download className="mr-1 size-3.5" />
           Download .env
