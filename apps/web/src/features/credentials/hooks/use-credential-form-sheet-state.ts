@@ -74,6 +74,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [appStorePlatform, setAppStorePlatform] = useState<AppStorePlatform>('APPLE');
   const [pendingTypeChange, setPendingTypeChange] = useState<string | null>(null);
   const [orphanedSecretsAcknowledged, setOrphanedSecretsAcknowledged] = useState(false);
+  /** True after full `getById` apply — avoids ENV auto-reveal racing placeholder/background load. */
+  const [detailHydrated, setDetailHydrated] = useState(false);
 
   const categoryOptions = useMemo(() => {
     const scopePool = categoriesForVaultScope(
@@ -111,6 +113,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setAppStorePlatform('APPLE');
     setPendingTypeChange(null);
     setOrphanedSecretsAcknowledged(false);
+    setDetailHydrated(false);
     setSnap('');
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
 
@@ -357,14 +360,17 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       if (!credentialId) return;
       if (!opts?.background) setLoading(true);
       setAccessDenied(false);
+      setDetailHydrated(false);
       try {
         const detailRow = await credentialsApi.getById(credentialId);
         const preserveInProgressEdits =
           opts?.background && dirtyRef.current && snap !== '' && detail?.id === credentialId;
         if (preserveInProgressEdits) {
           mergeServerDetail(detailRow);
+          setDetailHydrated(true);
         } else {
           applyDetail(detailRow, detailRow.manualGrants ?? []);
+          setDetailHydrated(true);
         }
       } catch {
         setAccessDenied(true);
@@ -379,6 +385,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const promoteAfterCreate = useCallback(
     (created: CredentialDetail) => {
       applyDetail(created, created.manualGrants ?? []);
+      setDetailHydrated(true);
       setShowSettings(false);
     },
     [applyDetail],
@@ -406,6 +413,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     const openExisting = () => {
       if (initialItem && initialItem.id === credentialId) {
         if (detail?.id !== credentialId) {
+          setDetailHydrated(false);
           applyDetail(credentialDetailPlaceholderFromListItem(initialItem), []);
         }
         void loadDetail({ background: true });
@@ -530,5 +538,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     detailCredentialType: detail?.credentialType ?? null,
     accessDenied,
     setAccessDenied,
+    detailHydrated,
   };
 }

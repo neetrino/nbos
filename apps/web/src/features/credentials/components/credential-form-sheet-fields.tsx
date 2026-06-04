@@ -96,6 +96,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setNextRotationAt,
     appStorePlatform,
     setAppStorePlatform,
+    detailHydrated,
   } = form;
 
   const providerBlock = showsProviderPicker(credentialType) ? (
@@ -153,6 +154,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         revealed={revealed}
         onReveal={(field) => requestSecretAction(field, 'reveal')}
         onCopy={(field) => copySecretField(field)}
+        detailHydrated={detailHydrated}
       />
 
       {credentialType === 'RECOVERY_CODES' ? (

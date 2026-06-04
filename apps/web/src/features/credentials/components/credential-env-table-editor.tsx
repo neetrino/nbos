@@ -32,6 +32,8 @@ export interface CredentialEnvTableEditorProps {
   onReveal?: () => void;
   onCopy?: () => void | Promise<boolean>;
   isExisting?: boolean;
+  /** When false, skip auto-reveal (detail still loading from list placeholder). */
+  detailHydrated?: boolean;
 }
 
 export function CredentialEnvTableEditor({
@@ -44,6 +46,7 @@ export function CredentialEnvTableEditor({
   onReveal,
   onCopy,
   isExisting,
+  detailHydrated = false,
 }: CredentialEnvTableEditorProps) {
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
@@ -56,6 +59,12 @@ export function CredentialEnvTableEditor({
     setExpanded(false);
     revealRequestedRef.current = null;
   }, [instanceKey]);
+
+  useEffect(() => {
+    if (!detailHydrated) {
+      revealRequestedRef.current = null;
+    }
+  }, [detailHydrated]);
 
   const parsedFromValue = useMemo(() => entriesFromEnvBundleSerialized(value), [value]);
   const parsedFromRevealed = useMemo(
@@ -104,11 +113,11 @@ export function CredentialEnvTableEditor({
   );
 
   useEffect(() => {
-    if (!isExisting || !hasStoredBundle || revealedValue) return;
+    if (!detailHydrated || !isExisting || !hasStoredBundle || revealedValue) return;
     if (revealRequestedRef.current === instanceKey) return;
     revealRequestedRef.current = instanceKey;
     onReveal?.();
-  }, [hasStoredBundle, instanceKey, isExisting, onReveal, revealedValue]);
+  }, [detailHydrated, hasStoredBundle, instanceKey, isExisting, onReveal, revealedValue]);
 
   const commitEntries = (next: EnvBundleEntry[]) => {
     setLocalEntries(next);
