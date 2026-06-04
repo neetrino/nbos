@@ -1,5 +1,14 @@
 import { entriesFromEnvBundleSerialized, type EnvBundleEntry } from '@nbos/shared';
 
+/** Keys persisted on the server (baseline snapshot), not live in-progress edits. */
+export function envBundleStoredKeySet(serializedBaseline: string): ReadonlySet<string> {
+  return new Set(
+    entriesFromEnvBundleSerialized(serializedBaseline)
+      .map((entry) => entry.key)
+      .filter((key) => key.trim().length > 0),
+  );
+}
+
 /** Map of revealed ENV values keyed by variable name. */
 export function revealedEnvValueByKey(
   revealedSerialized: string | null | undefined,

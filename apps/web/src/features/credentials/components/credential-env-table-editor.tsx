@@ -18,6 +18,7 @@ import {
 } from '@/features/credentials/constants/credential-env-table';
 import {
   buildEnvTableRows,
+  envBundleStoredKeySet,
   envRowValueIsMasked,
   revealedEnvValueByKey,
 } from '@/features/credentials/utils/build-env-table-rows';
@@ -42,6 +43,8 @@ export interface CredentialEnvTableEditorProps {
   onCopy?: () => void | Promise<boolean>;
   onDownload?: () => Promise<string | null>;
   isExisting?: boolean;
+  /** Last-saved ENV bundle snapshot; keys here are masked until reveal (not live `value`). */
+  storedKeysBaseline?: string;
 }
 
 export function CredentialEnvTableEditor({
@@ -55,6 +58,7 @@ export function CredentialEnvTableEditor({
   onCopy,
   onDownload,
   isExisting,
+  storedKeysBaseline = '',
 }: CredentialEnvTableEditorProps) {
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
@@ -73,8 +77,8 @@ export function CredentialEnvTableEditor({
   );
   const revealedByKey = useMemo(() => revealedEnvValueByKey(revealedValue), [revealedValue]);
   const serverKeySet = useMemo(
-    () => new Set(parsedFromValue.map((entry) => entry.key).filter((key) => key.trim().length > 0)),
-    [parsedFromValue],
+    () => envBundleStoredKeySet(storedKeysBaseline),
+    [storedKeysBaseline],
   );
 
   const tableRows = useMemo(

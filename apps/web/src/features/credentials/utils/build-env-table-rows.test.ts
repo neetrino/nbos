@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildEnvTableRows } from './build-env-table-rows';
+import {
+  buildEnvTableRows,
+  envBundleStoredKeySet,
+  envRowValueIsMasked,
+} from './build-env-table-rows';
 
 describe('buildEnvTableRows', () => {
   it('merges revealed values into local rows after Add then Reveal', () => {
@@ -13,5 +17,16 @@ describe('buildEnvTableRows', () => {
 
     expect(rows[0]).toEqual({ key: '', value: '' });
     expect(rows[1]).toEqual({ key: 'NODE_ENV', value: 'production' });
+  });
+});
+
+describe('envRowValueIsMasked', () => {
+  it('does not mask a new key that only exists in live form state', () => {
+    const row = { key: 'NEW_VAR', value: '' };
+    const liveKeys = envBundleStoredKeySet('NEW_VAR=\nNODE_ENV=');
+    const baseline = envBundleStoredKeySet('NODE_ENV=');
+
+    expect(envRowValueIsMasked(row, true, liveKeys, new Map())).toBe(true);
+    expect(envRowValueIsMasked(row, true, baseline, new Map())).toBe(false);
   });
 });

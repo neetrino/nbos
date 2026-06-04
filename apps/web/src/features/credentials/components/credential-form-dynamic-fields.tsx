@@ -30,6 +30,7 @@ export interface CredentialFormDynamicFieldsProps {
   onUrlChange: (v: string) => void;
   envData: string;
   onEnvDataChange: (v: string) => void;
+  envSnap?: string;
   secretsPresent?: CredentialSecretsPresent | null;
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
@@ -52,6 +53,7 @@ export function CredentialFormDynamicFields({
   onUrlChange,
   envData,
   onEnvDataChange,
+  envSnap = '',
   secretsPresent,
   revealed,
   onReveal,
@@ -79,6 +81,7 @@ export function CredentialFormDynamicFields({
                 onReveal={() => onReveal?.('envData')}
                 onCopy={onCopy ? () => onCopy('envData') : undefined}
                 onDownload={onDownloadEnvBundle}
+                storedKeysBaseline={envSnap}
               />
             </div>
           );

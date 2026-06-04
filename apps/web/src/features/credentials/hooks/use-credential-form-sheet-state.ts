@@ -521,6 +521,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setApiKey,
     envData,
     setEnvData,
+    envSnap,
     setEnvSnap,
     comment,
     setComment,
