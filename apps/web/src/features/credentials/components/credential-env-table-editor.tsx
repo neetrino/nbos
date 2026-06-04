@@ -269,7 +269,7 @@ export function CredentialEnvTableEditor({
           <CredentialEnvTableRow
             key={`${instanceKey}-row-${index}`}
             row={row}
-            maskValue={envRowValueIsMasked(row, showMasked, serverKeySet, revealedByKey)}
+            maskValue={envRowValueIsMasked(row, showMasked, serverKeySet)}
             valueMaskDisplay={ENV_TABLE_VALUE_MASK_DISPLAY}
             valueEmptyPlaceholder={ENV_TABLE_VALUE_EMPTY_PLACEHOLDER}
             onKeyChange={(key) => updateRow(index, { key })}

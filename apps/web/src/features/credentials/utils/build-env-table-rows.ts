@@ -19,6 +19,7 @@ export function revealedEnvValueByKey(
   );
 }
 
+/** Fills empty row values from a revealed bundle map (same keys only). */
 function mergeRevealedIntoRows(
   rows: EnvBundleEntry[],
   revealedByKey: ReadonlyMap<string, string>,
@@ -63,15 +64,13 @@ export function buildEnvTableRows(
   return [];
 }
 
-/** True when Value should show mask dots (stored secret, not revealed in form state). */
+/** True when Value should show mask dots (stored secret, not yet in row state). */
 export function envRowValueIsMasked(
   row: EnvBundleEntry,
   showMasked: boolean,
   serverKeys: ReadonlySet<string>,
-  revealedByKey: ReadonlyMap<string, string>,
 ): boolean {
   if (!showMasked || !row.key.trim()) return false;
   if (row.value.trim().length > 0) return false;
-  if (revealedByKey.has(row.key)) return true;
   return serverKeys.has(row.key);
 }
