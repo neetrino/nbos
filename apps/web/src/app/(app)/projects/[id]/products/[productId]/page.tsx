@@ -11,16 +11,9 @@ import {
   DollarSign,
   ServerCog,
 } from 'lucide-react';
-import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  tabsTriggerVariants,
-} from '@/components/ui/tabs';
-import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
@@ -32,9 +25,6 @@ import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsT
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
-import { cn } from '@/lib/utils';
-
-const DriveNavIcon = SIDEBAR_MODULE_VISUALS.drive.Icon;
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -151,13 +141,7 @@ function ProductDetailPageContent() {
               <span className="hidden sm:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
-          <Link
-            href={driveHref}
-            className={cn(tabsTriggerVariants({ listVariant: 'default' }), 'gap-1.5')}
-          >
-            <DriveNavIcon size={14} aria-hidden />
-            <span className="hidden sm:inline">Drive</span>
-          </Link>
+          <EntityDriveNavAction href={driveHref} variant="tab" hideLabelOnMobile />
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">

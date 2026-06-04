@@ -1,16 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  CreditCard,
-  ExternalLink,
-  HardDrive,
-} from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, ExternalLink } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { buttonVariants } from '@/components/ui/button';
+import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { useState } from 'react';
 import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
 import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
@@ -106,13 +99,10 @@ export function FinanceTab({
                 onAfterDriveUpload?.();
               }}
             />
-            <Link
+            <EntityDriveNavAction
               href={buildDriveHrefWithFinanceProject(projectId)}
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-            >
-              <HardDrive className="size-4" aria-hidden />
-              Drive files
-            </Link>
+              label="Drive files"
+            />
           </div>
           <EntityDriveFilesPanel
             entityType="PROJECT"

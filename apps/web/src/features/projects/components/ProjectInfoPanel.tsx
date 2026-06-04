@@ -1,13 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import {
   DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
 } from '@/components/shared';
-import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
-import { buttonVariants } from '@/components/ui/button';
+import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
 import type { FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
@@ -20,8 +18,6 @@ interface ProjectInfoPanelProps {
   onProjectUpdated: (project: FullProject) => void;
   className?: string;
 }
-
-const DriveNavIcon = SIDEBAR_MODULE_VISUALS.drive.Icon;
 
 export function ProjectInfoPanel({ project, onProjectUpdated, className }: ProjectInfoPanelProps) {
   const hasDescription = Boolean(project.description?.trim());
@@ -38,17 +34,7 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
             {project.code}
           </p>
         </div>
-        <Link
-          href={buildDriveHrefWithProject(project.id)}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0 gap-1.5')}
-        >
-          <DriveNavIcon
-            className={cn(SIDEBAR_MODULE_VISUALS.drive.iconClass, 'size-4')}
-            strokeWidth={1.85}
-            aria-hidden
-          />
-          Drive
-        </Link>
+        <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} className="shrink-0" />
       </div>
 
       <div className="mt-4">

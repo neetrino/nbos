@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowUpRight, HardDrive, Plus } from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import {
   ErrorState,
   IntegratedSearchFilters,
@@ -141,16 +142,7 @@ export function WorkSpaceDetailPage() {
                 onUpdated={handleWorkspaceUpdate}
               />
             ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => setDriveOpen(true)}
-            >
-              <HardDrive className="size-4" aria-hidden />
-              Drive
-            </Button>
+            <EntityDriveNavAction onClick={() => setDriveOpen(true)} />
             <WorkSpaceDetailSettingsSheet
               workspaceName={workspace.name}
               tasks={tasks}
