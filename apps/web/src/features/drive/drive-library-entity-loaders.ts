@@ -1,4 +1,5 @@
 import { driveApi } from '@/lib/api/drive';
+import { ApiError } from '@/lib/api-errors';
 import type { DriveLibraryKey } from './drive-options';
 
 export type DriveLibraryEntityRow = {
@@ -63,11 +64,18 @@ export async function loadDriveLibraryEntityRows(
 ): Promise<DriveLibraryEntityRow[]> {
   if (!isSystemEntityLibrary(libraryKey)) return [];
 
-  const { items } = await driveApi.listLibraryEntities(libraryKey);
-  return items.map((item) => ({
-    id: item.id,
-    entityType: item.entityType,
-    label: item.label,
-    ...(item.code ? { code: item.code } : {}),
-  }));
+  try {
+    const { items } = await driveApi.listLibraryEntities(libraryKey);
+    return items.map((item) => ({
+      id: item.id,
+      entityType: item.entityType,
+      label: item.label,
+      ...(item.code ? { code: item.code } : {}),
+    }));
+  } catch (err: unknown) {
+    if (err instanceof ApiError && err.statusCode === 404) {
+      return [];
+    }
+    throw err;
+  }
 }

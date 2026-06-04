@@ -1,6 +1,10 @@
 import { createPrismaClient } from '../src/client';
+import { PLATFORM_RESOURCE_FAMILIES } from '@nbos/shared';
+import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
+
+const GLOBAL_OWNER_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -486,6 +490,29 @@ async function main() {
     skipDuplicates: true,
   });
   console.log(`  ✓ RolePermissions (${rolePermissionData.length})`);
+
+  for (const roleId of GLOBAL_OWNER_ROLE_IDS) {
+    for (const family of PLATFORM_RESOURCE_FAMILIES) {
+      await prisma.roleAccessPolicy.upsert({
+        where: {
+          roleId_resourceFamily: {
+            roleId,
+            resourceFamily: family as PlatformResourceFamilyEnum,
+          },
+        },
+        create: {
+          roleId,
+          resourceFamily: family as PlatformResourceFamilyEnum,
+          defaultLevel: 'VIEW',
+          scopeMode: 'ALL',
+        },
+        update: {
+          scopeMode: 'ALL',
+        },
+      });
+    }
+  }
+  console.log(`  ✓ RoleAccessPolicy (owner/ceo × ${PLATFORM_RESOURCE_FAMILIES.length} families)`);
 
   console.log('\n✅ RBAC seed completed!');
   await prisma.$disconnect();

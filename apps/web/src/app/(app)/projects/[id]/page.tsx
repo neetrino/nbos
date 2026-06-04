@@ -51,11 +51,14 @@ export default function ProjectDetailPage() {
     <div className="flex h-full flex-col gap-6">
       <ProjectHeader project={project} onBack={() => router.push('/projects')} />
 
-      <ProjectContactsSection project={project} onProjectUpdated={setProject} />
-
-      <ProjectInfoCard project={project} />
-
-      <ProjectParticipantsSection projectId={project.id} />
+      <section
+        className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch lg:gap-5"
+        aria-label="Project overview"
+      >
+        <ProjectContactsSection project={project} onProjectUpdated={setProject} />
+        <ProjectInfoCard project={project} />
+        <ProjectParticipantsSection projectId={project.id} compact />
+      </section>
 
       <ProjectExtensionsSnapshot project={project} />
 
@@ -82,11 +85,10 @@ function ProjectDetailLoading() {
   return (
     <div className="flex h-full flex-col gap-5">
       <Skeleton className="h-12 w-72" />
-      <Skeleton className="h-40 w-full" />
-      <div className="grid grid-cols-3 gap-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-32" />
-        ))}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full" />
       </div>
     </div>
   );

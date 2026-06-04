@@ -59,6 +59,7 @@ export class DriveController {
     private readonly driveLibraryEntities: DriveLibraryEntitiesService,
   ) {}
 
+  /** System Library entity grid (participation-filtered). */
   @Get('library-entities')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({
