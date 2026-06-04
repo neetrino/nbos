@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
-  ArrowLeft,
   LayoutDashboard,
   ListChecks,
   Puzzle,
@@ -13,7 +12,6 @@ import {
   ServerCog,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tabs,
@@ -146,36 +144,25 @@ function ProductDetailPageContent() {
         onValueChange={(value) => setActiveTab(getInitialTab(value))}
         className="flex-1"
       >
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-            onClick={() => router.push(`/projects/${params.id}`)}
-            aria-label="Back to project"
+        <TabsList>
+          {TAB_ITEMS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
+              <tab.icon size={14} />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </TabsTrigger>
+          ))}
+          <Link
+            href={driveHref}
+            className={cn(
+              tabsTriggerVariants({ listVariant: 'default' }),
+              'gap-1.5',
+              SIDEBAR_MODULE_VISUALS.drive.iconClass,
+            )}
           >
-            <ArrowLeft size={18} />
-          </Button>
-          <TabsList className="min-w-0 flex-1">
-            {TAB_ITEMS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-                <tab.icon size={14} />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </TabsTrigger>
-            ))}
-            <Link
-              href={driveHref}
-              className={cn(
-                tabsTriggerVariants({ listVariant: 'default' }),
-                'gap-1.5',
-                SIDEBAR_MODULE_VISUALS.drive.iconClass,
-              )}
-            >
-              <DriveNavIcon size={14} aria-hidden />
-              <span className="hidden sm:inline">Drive</span>
-            </Link>
-          </TabsList>
-        </div>
+            <DriveNavIcon size={14} aria-hidden />
+            <span className="hidden sm:inline">Drive</span>
+          </Link>
+        </TabsList>
 
         <TabsContent value="overview" className="mt-5">
           <ProductOverviewTab
