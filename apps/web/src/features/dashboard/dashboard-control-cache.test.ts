@@ -12,7 +12,7 @@ const USER_ID = 'user-1';
 
 const snapshot: DashboardControlCacheSnapshot = {
   metrics: {
-    newLeads: 4,
+    leads: 4,
     dueTodayTasks: 1,
     openTasks: 2,
     openDeals: 3,

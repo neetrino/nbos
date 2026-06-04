@@ -19,7 +19,7 @@ export const DASHBOARD_PINNED_ACTION_KEYS = [
 ] as const;
 
 export const DASHBOARD_WIDGET_KEYS = [
-  'new-leads',
+  'leads',
   'open-deals',
   'open-support-tickets',
   'open-tasks',

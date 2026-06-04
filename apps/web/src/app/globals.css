@@ -236,17 +236,6 @@ body {
     @apply bg-primary;
     box-shadow: 0 0 12px var(--primary-glow);
   }
-
-  .nbos-analytics-bar-track {
-    background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 4px,
-      color-mix(in oklch, var(--muted) 88%, transparent) 4px,
-      color-mix(in oklch, var(--muted) 88%, transparent) 8px
-    );
-    background-size: 16px 16px;
-  }
 }
 
 @keyframes nbos-pulse-soft {

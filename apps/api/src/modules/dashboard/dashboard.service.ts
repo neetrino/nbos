@@ -245,7 +245,7 @@ export class DashboardService {
   private async getMetrics(): Promise<DashboardMetricProjection> {
     const { start, end } = getTodayRange();
     const [
-      newLeads,
+      leads,
       openTasks,
       dueTodayTasks,
       openDeals,
@@ -253,7 +253,7 @@ export class DashboardService {
       openTickets,
       criticalTickets,
     ] = await Promise.all([
-      this.prisma.lead.count({ where: { status: 'NEW' } }),
+      this.prisma.lead.count(),
       this.prisma.task.count({ where: { status: { notIn: ['COMPLETED', 'ON_HOLD'] } } }),
       this.prisma.task.count({
         where: { dueDate: { gte: start, lt: end }, status: { not: 'COMPLETED' } },
@@ -268,7 +268,7 @@ export class DashboardService {
       }),
     ]);
     return {
-      newLeads,
+      leads,
       dueTodayTasks,
       openTasks,
       openDeals,
@@ -457,8 +457,13 @@ function sanitizePinnedActions(values: string[]): DashboardPinnedActionKey[] {
   return sanitizeKeys(values, DASHBOARD_PINNED_ACTION_KEYS);
 }
 
+const LEGACY_WIDGET_KEY_ALIASES: Record<string, DashboardWidgetKey> = {
+  'new-leads': 'leads',
+};
+
 function sanitizeWidgets(values: string[]): DashboardWidgetKey[] {
-  return sanitizeKeys(values, DASHBOARD_WIDGET_KEYS);
+  const normalized = values.map((id) => LEGACY_WIDGET_KEY_ALIASES[id] ?? id);
+  return sanitizeKeys(normalized, DASHBOARD_WIDGET_KEYS);
 }
 
 function sanitizeKeys<const T extends readonly string[]>(

@@ -48,7 +48,7 @@ export type DashboardPinnedActionKey =
   | 'open-messenger'
   | 'open-credentials'
   | 'mail-inbox';
-export type DashboardWidgetKey = 'new-leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
+export type DashboardWidgetKey = 'leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
 export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
@@ -181,7 +181,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
 ];
 
 export const MINI_METRICS = [
-  { id: 'new-leads', icon: Plus, label: 'New leads', key: 'newLeads', href: '/crm/leads' },
+  { id: 'leads', icon: Plus, label: 'Leads', key: 'leads', href: '/crm/leads' },
   { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals', href: '/crm/deals' },
   {
     id: 'open-support-tickets',

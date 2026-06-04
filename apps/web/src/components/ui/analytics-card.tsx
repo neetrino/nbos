@@ -95,7 +95,7 @@ export function AnalyticsCard({
               className="flex min-w-0 flex-col items-center gap-2"
             >
               <div
-                className="nbos-analytics-bar-track bg-muted/60 relative flex h-32 w-full items-end overflow-hidden rounded-lg"
+                className="bg-muted/40 relative flex h-32 w-full items-end overflow-hidden rounded-lg"
                 role="presentation"
               >
                 <motion.div
