@@ -5,6 +5,7 @@ import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import {
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
+  MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD,
   MAIL_AUDIT_ACTION_THREAD_NEEDS_LINK_UPDATED,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
@@ -57,6 +58,45 @@ export class MailThreadCommandService {
       entityType: MAIL_AUDIT_ENTITY_THREAD,
       entityId: threadId,
       action: MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
+  }
+
+  /**
+   * Marks the thread unread (NBOS user state). Marks the latest inbound message unread
+   * so the unread affordance is consistent with the thread flag.
+   */
+  async markThreadUnread(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    await this.prisma.emailThread.update({
+      where: { id: threadId },
+      data: { hasUnread: true },
+    });
+    const auditChanges: InputJsonValue = {
+      mailAccountId: thread.mailAccountId,
+      subjectNormalized: thread.subjectNormalized,
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_THREAD,
+      entityId: threadId,
+      action: MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD,
       userId: employeeId,
       changes: auditChanges,
     });

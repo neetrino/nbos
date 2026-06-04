@@ -1,17 +1,15 @@
 import type { Prisma } from '@nbos/database';
-
-const MAIL_VIEW_WIDE_SCOPES = new Set<string>(['ALL', 'DEPARTMENT']);
+import { mailAccountAccessibleWhere } from './mail-access.policy';
 
 /**
- * RBAC scope for mailbox rows (VIEW and EDIT use the same rule in MVP):
- * ALL/DEPARTMENT → any account; otherwise owned mailboxes only.
+ * RBAC + sharing scope for mailbox rows: ALL/DEPARTMENT → any account;
+ * otherwise owned mailboxes plus mailboxes shared with the viewer
+ * (delegated MailAccountAccess). VIEW and EDIT use the same visibility rule;
+ * finer send/manage checks live in {@link mail-access.policy}.
  */
 export function mailAccountWhereForViewer(
   employeeId: string,
   viewScope: string,
 ): Prisma.MailAccountWhereInput {
-  if (MAIL_VIEW_WIDE_SCOPES.has(viewScope)) {
-    return {};
-  }
-  return { ownerEmployeeId: employeeId };
+  return mailAccountAccessibleWhere(employeeId, viewScope);
 }

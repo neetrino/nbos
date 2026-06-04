@@ -101,6 +101,8 @@ export function toThreadListRow(row: {
   hasUnread: boolean;
   needsBusinessLink: boolean;
   status: string;
+  assignedToEmployeeId?: string | null;
+  assignedTo?: { firstName: string; lastName: string } | null;
 }): MailThreadListRow {
   return {
     id: row.id,
@@ -112,6 +114,10 @@ export function toThreadListRow(row: {
     hasUnread: row.hasUnread,
     needsBusinessLink: row.needsBusinessLink,
     status: row.status,
+    assignedToEmployeeId: row.assignedToEmployeeId ?? null,
+    assignedToName: row.assignedTo
+      ? `${row.assignedTo.firstName} ${row.assignedTo.lastName}`.trim()
+      : null,
   };
 }
 

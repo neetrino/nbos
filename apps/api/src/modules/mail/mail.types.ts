@@ -43,6 +43,8 @@ export interface MailThreadListRow {
   hasUnread: boolean;
   needsBusinessLink: boolean;
   status: string;
+  assignedToEmployeeId: string | null;
+  assignedToName: string | null;
 }
 
 export interface MailThreadListPageMeta {
@@ -103,4 +105,29 @@ export interface MailThreadDetailDto {
   mailAccount: MailAccountRow;
   thread: MailThreadListRow;
   messages: MailMessageRow[];
+}
+
+export interface MailAccountAccessEntryRow {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  role: string;
+  grantedByEmployeeId: string | null;
+  createdAt: string;
+}
+
+export interface MailAccountAccessListDto {
+  mailAccountId: string;
+  /** Effective role of the requesting viewer (owner/admin/sender/reader). */
+  viewerRole: string;
+  owner: { employeeId: string; employeeName: string; employeeEmail: string } | null;
+  entries: MailAccountAccessEntryRow[];
+}
+
+export interface MailSyncLogRow {
+  id: string;
+  kind: string;
+  detail: string | null;
+  createdAt: string;
 }

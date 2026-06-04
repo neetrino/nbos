@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, MailOpen } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PageHero, ErrorState, LoadingState } from '@/components/shared';
 import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
-import { MailThreadReplyDraftCard } from '@/features/mail/MailThreadReplyDraftCard';
+import { MailThreadReplyComposer } from '@/features/mail/MailThreadReplyComposer';
+import { AssignThreadControl } from '@/features/mail/AssignThreadControl';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
@@ -28,6 +30,7 @@ export default function MailThreadDetailPage() {
   const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
   const [retryingFailedMessageId, setRetryingFailedMessageId] = useState<string | null>(null);
   const [patchingNeedsLink, setPatchingNeedsLink] = useState(false);
+  const [markingUnread, setMarkingUnread] = useState(false);
 
   const load = useCallback(async () => {
     if (!threadId) return;
@@ -55,6 +58,21 @@ export default function MailThreadDetailPage() {
       setError(getApiErrorMessage(e, 'Could not mark thread as read.'));
     } finally {
       setMarkingRead(false);
+    }
+  }, [threadId, detail?.thread.hasUnread]);
+
+  const markUnread = useCallback(async () => {
+    if (!threadId || detail?.thread.hasUnread) return;
+    setMarkingUnread(true);
+    setError(null);
+    try {
+      const d = await mailApi.markThreadUnread(threadId);
+      setDetail(d);
+      toast.success('Marked as unread.');
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Could not mark thread as unread.'));
+    } finally {
+      setMarkingUnread(false);
     }
   }, [threadId, detail?.thread.hasUnread]);
 
@@ -180,6 +198,15 @@ export default function MailThreadDetailPage() {
             title={detail.messages[0]?.subject ?? detail.thread.subjectNormalized}
             trailing={
               <div className="flex flex-wrap items-center gap-2">
+                {canEdit ? (
+                  <AssignThreadControl
+                    threadId={threadId}
+                    mailAccountId={detail.mailAccount.id}
+                    assignedToEmployeeId={detail.thread.assignedToEmployeeId}
+                    assignedToName={detail.thread.assignedToName}
+                    onUpdated={setDetail}
+                  />
+                ) : null}
                 {canEdit && detail.thread.hasUnread ? (
                   <Button
                     type="button"
@@ -191,6 +218,19 @@ export default function MailThreadDetailPage() {
                   >
                     <Check size={14} aria-hidden />
                     Mark read
+                  </Button>
+                ) : null}
+                {canEdit && !detail.thread.hasUnread ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={markingUnread || markingRead || retryingFailedMessageId !== null}
+                    onClick={() => void markUnread()}
+                  >
+                    <MailOpen size={14} aria-hidden />
+                    Mark unread
                   </Button>
                 ) : null}
                 {canEdit && detail.thread.needsBusinessLink ? (
@@ -237,7 +277,7 @@ export default function MailThreadDetailPage() {
             onResetFailedToDraft={resetFailedToDraft}
           />
           {canEdit ? (
-            <MailThreadReplyDraftCard
+            <MailThreadReplyComposer
               threadId={threadId}
               messages={detail.messages}
               onThreadUpdated={setDetail}

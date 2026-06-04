@@ -3,6 +3,8 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { listMailDeliveryLogsForMessage } from './mail-delivery-log-query.ops';
 import { listMailAccountHealthSummariesForViewer } from './mail-health-summary.ops';
+import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
+import { listMailSyncLogs } from './mail-sync-log-query.ops';
 import {
   getMailThreadDetailDtoOrNull,
   listMailAccountsForViewer,
@@ -13,6 +15,7 @@ import type {
   MailAccountHealthSummaryRow,
   MailAccountRow,
   MailDeliveryLogRow,
+  MailSyncLogRow,
   MailThreadDetailDto,
   MailThreadListPageDto,
 } from './mail.types';
@@ -78,5 +81,21 @@ export class MailService {
       throw new NotFoundException('Message not found');
     }
     return rows;
+  }
+
+  async listSyncLogs(
+    employeeId: string,
+    viewScope: string,
+    mailAccountId: string,
+  ): Promise<MailSyncLogRow[]> {
+    const loaded = await loadMailAccountWithViewerRole(this.prisma, {
+      mailAccountId,
+      employeeId,
+      viewScope,
+    });
+    if (!loaded) {
+      throw new NotFoundException('Mail account not found');
+    }
+    return listMailSyncLogs(this.prisma, mailAccountId);
   }
 }

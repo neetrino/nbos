@@ -44,6 +44,8 @@ export interface MailThreadListRow {
   hasUnread: boolean;
   needsBusinessLink: boolean;
   status: string;
+  assignedToEmployeeId: string | null;
+  assignedToName: string | null;
 }
 
 export interface MailThreadListPageMeta {
@@ -117,6 +119,75 @@ export interface MailDeliveryLogRow {
   createdAt: string;
 }
 
+export interface MailSyncLogRow {
+  id: string;
+  kind: string;
+  detail: string | null;
+  createdAt: string;
+}
+
+export type MailSecureMode = 'SSL' | 'STARTTLS' | 'NONE';
+
+export interface ConnectCorporateMailboxPayload {
+  email: string;
+  displayName?: string;
+  imapHost: string;
+  imapPort: number;
+  imapSecure: MailSecureMode;
+  smtpHost: string;
+  smtpPort: number;
+  smtpSecure: MailSecureMode;
+  login: string;
+  password: string;
+}
+
+export type MailAccountAccessRole = 'ADMIN' | 'READER' | 'SENDER';
+
+export interface MailAccountAccessEntryRow {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  role: string;
+  grantedByEmployeeId: string | null;
+  createdAt: string;
+}
+
+export interface MailAccountAccessListDto {
+  mailAccountId: string;
+  viewerRole: string;
+  owner: { employeeId: string; employeeName: string; employeeEmail: string } | null;
+  entries: MailAccountAccessEntryRow[];
+}
+
+export interface ComposeMailPayload {
+  mailAccountId: string;
+  to: string[];
+  cc?: string[];
+  subject: string;
+  bodyText: string;
+  fileAssetIds?: string[];
+}
+
+export interface ReplyMailPayload {
+  to: string[];
+  cc?: string[];
+  subject?: string;
+  bodyText: string;
+  fileAssetIds?: string[];
+}
+
+export interface ListMailThreadsOptions {
+  mailAccountId?: string;
+  unreadOnly?: boolean;
+  needsLinkOnly?: boolean;
+  assignedToMe?: boolean;
+  sentOnly?: boolean;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export const mailApi = {
   async listAccounts(): Promise<MailAccountRow[]> {
     const resp = await api.get<MailAccountRow[]>('/api/mail/accounts');
@@ -133,31 +204,31 @@ export const mailApi = {
     return resp.data;
   },
 
-  async listThreads(
-    mailAccountId?: string,
-    unreadOnly?: boolean,
-    needsLinkOnly?: boolean,
-    searchQuery?: string,
-    pagination?: { page?: number; pageSize?: number },
-  ): Promise<MailThreadListPageDto> {
+  async listThreads(options: ListMailThreadsOptions = {}): Promise<MailThreadListPageDto> {
     const params: Record<string, string> = {};
-    if (mailAccountId) {
-      params.mailAccountId = mailAccountId;
+    if (options.mailAccountId) {
+      params.mailAccountId = options.mailAccountId;
     }
-    if (unreadOnly) {
+    if (options.unreadOnly) {
       params.unreadOnly = 'true';
     }
-    if (needsLinkOnly) {
+    if (options.needsLinkOnly) {
       params.needsLinkOnly = 'true';
     }
-    if (searchQuery !== undefined && searchQuery.trim() !== '') {
-      params.q = searchQuery.trim();
+    if (options.assignedToMe) {
+      params.assignedToMe = 'true';
     }
-    if (pagination?.page !== undefined) {
-      params.page = String(pagination.page);
+    if (options.sentOnly) {
+      params.sentOnly = 'true';
     }
-    if (pagination?.pageSize !== undefined) {
-      params.pageSize = String(pagination.pageSize);
+    if (options.search !== undefined && options.search.trim() !== '') {
+      params.q = options.search.trim();
+    }
+    if (options.page !== undefined) {
+      params.page = String(options.page);
+    }
+    if (options.pageSize !== undefined) {
+      params.pageSize = String(options.pageSize);
     }
     const resp = await api.get<MailThreadListPageDto>('/api/mail/threads', {
       params: Object.keys(params).length > 0 ? params : undefined,
@@ -231,6 +302,97 @@ export const mailApi = {
   ): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(
       `/api/mail/threads/${threadId}/messages/${messageId}/reset-failed-to-draft`,
+    );
+    return resp.data;
+  },
+
+  async connectCorporate(payload: ConnectCorporateMailboxPayload): Promise<MailAccountRow> {
+    const resp = await api.post<MailAccountRow>('/api/mail/accounts/corporate/connect', payload);
+    return resp.data;
+  },
+
+  async startGmailOAuth(): Promise<{ url: string }> {
+    const resp = await api.get<{ url: string }>('/api/mail/oauth/google/start');
+    return resp.data;
+  },
+
+  async disconnectAccount(accountId: string): Promise<MailAccountRow> {
+    const resp = await api.post<MailAccountRow>(`/api/mail/accounts/${accountId}/disconnect`);
+    return resp.data;
+  },
+
+  async syncAccount(accountId: string): Promise<{ queued: boolean }> {
+    const resp = await api.post<{ queued: boolean }>(`/api/mail/accounts/${accountId}/sync`);
+    return resp.data;
+  },
+
+  async listSyncLogs(accountId: string): Promise<MailSyncLogRow[]> {
+    const resp = await api.get<MailSyncLogRow[]>(`/api/mail/accounts/${accountId}/sync-logs`);
+    return resp.data;
+  },
+
+  async listAccess(accountId: string): Promise<MailAccountAccessListDto> {
+    const resp = await api.get<MailAccountAccessListDto>(`/api/mail/accounts/${accountId}/access`);
+    return resp.data;
+  },
+
+  async grantAccess(
+    accountId: string,
+    employeeId: string,
+    role: MailAccountAccessRole,
+  ): Promise<MailAccountAccessListDto> {
+    const resp = await api.post<MailAccountAccessListDto>(
+      `/api/mail/accounts/${accountId}/access`,
+      { employeeId, role },
+    );
+    return resp.data;
+  },
+
+  async updateAccessRole(
+    accountId: string,
+    employeeId: string,
+    role: MailAccountAccessRole,
+  ): Promise<MailAccountAccessListDto> {
+    const resp = await api.patch<MailAccountAccessListDto>(
+      `/api/mail/accounts/${accountId}/access/${employeeId}`,
+      { role },
+    );
+    return resp.data;
+  },
+
+  async removeAccess(accountId: string, employeeId: string): Promise<MailAccountAccessListDto> {
+    const resp = await api.delete<MailAccountAccessListDto>(
+      `/api/mail/accounts/${accountId}/access/${employeeId}`,
+    );
+    return resp.data;
+  },
+
+  async assignThread(threadId: string, employeeId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/assign`, {
+      employeeId,
+    });
+    return resp.data;
+  },
+
+  async unassignThread(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/unassign`);
+    return resp.data;
+  },
+
+  async markThreadUnread(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-unread`);
+    return resp.data;
+  },
+
+  async compose(payload: ComposeMailPayload): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>('/api/mail/compose', payload);
+    return resp.data;
+  },
+
+  async reply(threadId: string, payload: ReplyMailPayload): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/reply`,
+      payload,
     );
     return resp.data;
   },
