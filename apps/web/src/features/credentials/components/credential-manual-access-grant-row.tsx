@@ -1,5 +1,6 @@
 'use client';
 
+import { RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS } from '@/components/shared/detail-sheet-classes';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { NbosDatePicker } from '@/components/shared/date-picker';
@@ -13,9 +14,6 @@ import {
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
-
-const MANUAL_ACCESS_LEVEL_SELECT_CLASS =
-  'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
 
 export interface CredentialManualAccessGrantRowProps {
   grant: CredentialManualGrant;
@@ -65,7 +63,7 @@ export function CredentialManualAccessGrantRow({
           >
             <SelectTrigger
               size="sm"
-              className={MANUAL_ACCESS_LEVEL_SELECT_CLASS}
+              className={RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS}
               aria-label={`Access for ${label}`}
             >
               <SelectValue />

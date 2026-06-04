@@ -223,6 +223,10 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 
+/** Compact select on {@link RelationPickerChip} trailing slot (no chevron, thin trigger). */
+export const RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS =
+  'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
+
 /** Default relation picker dropdown list (~4 rows). */
 export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
 

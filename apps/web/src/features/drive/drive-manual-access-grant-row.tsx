@@ -1,5 +1,6 @@
 'use client';
 
+import { RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS } from '@/components/shared/detail-sheet-classes';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import {
@@ -15,9 +16,6 @@ import { driveGrantPermissionShortLabel } from './drive-grant-permission-label';
 import { FILE_GRANT_PERMISSIONS } from './drive-grant-permissions';
 
 const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
-
-const MANUAL_ACCESS_LEVEL_SELECT_CLASS =
-  'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
 
 export function DriveManualAccessGrantRow({
   grant,
@@ -52,7 +50,7 @@ export function DriveManualAccessGrantRow({
           >
             <SelectTrigger
               size="sm"
-              className={MANUAL_ACCESS_LEVEL_SELECT_CLASS}
+              className={RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS}
               aria-label={`Access for ${label}`}
             >
               <SelectValue>{driveGrantPermissionShortLabel(grant.permission)}</SelectValue>

@@ -117,6 +117,8 @@ export {
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
 } from './detail-sheet-classes';
 export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { toSheetPipelineStages, type SheetPipelineStageSource } from './pipeline-stage-config';

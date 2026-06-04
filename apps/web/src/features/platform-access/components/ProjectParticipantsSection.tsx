@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Trash2, User, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,12 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
+  RelationPickerField,
 } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -30,8 +35,10 @@ import {
 import { PermissionGate } from '@/lib/permissions';
 import { platformAccessApi, type ProjectTeamMemberRow } from '@/lib/api/platform-access';
 import { toast } from 'sonner';
-import { formatTeamSource } from '../team-member-labels';
-import { AddProjectTeamMemberDialog } from './AddProjectTeamMemberDialog';
+import { formatTeamSource, projectTeamRoleShortLabel } from '../team-member-labels';
+import { ProjectTeamMemberChipRow } from './ProjectTeamMemberChipRow';
+
+const DEFAULT_PROJECT_TEAM_ROLE = 'MEMBER' as const;
 
 interface ProjectParticipantsSectionProps {
   projectId: string;
@@ -52,8 +59,15 @@ export function ProjectParticipantsSection({
   const [members, setMembers] = useState<ProjectTeamMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
+  const [addingMember, setAddingMember] = useState(false);
   const [busyEmployeeId, setBusyEmployeeId] = useState<string | null>(null);
+
+  const existingEmployeeIds = useMemo(
+    () => new Set(members.map((member) => member.employeeId)),
+    [members],
+  );
+  const searchEmployees = useEmployeeRelationSearch(existingEmployeeIds);
+  const employeePicker = useRelationPickerActions('employee', 'project-team');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -86,6 +100,22 @@ export function ProjectParticipantsSection({
     }
   };
 
+  const handleAddMember = async (employeeId: string, label: string) => {
+    setAddingMember(true);
+    try {
+      await platformAccessApi.addProjectTeamMember(projectId, {
+        employeeId,
+        role: DEFAULT_PROJECT_TEAM_ROLE,
+      });
+      toast.success('Participant added', { description: `${label} · Member` });
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add participant');
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
   const handleRemove = async (employeeId: string) => {
     setBusyEmployeeId(employeeId);
     try {
@@ -99,18 +129,20 @@ export function ProjectParticipantsSection({
     }
   };
 
-  const addButton = (
+  const addMemberPicker = (
     <PermissionGate module="PROJECTS" action="EDIT">
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        className={cn('gap-1', embedded ? 'h-7 px-2 text-xs' : 'h-8')}
-        onClick={() => setAddOpen(true)}
-      >
-        <Plus size={embedded ? 12 : 14} aria-hidden />
-        Add
-      </Button>
+      <RelationPickerField
+        label="Add member"
+        entityKind="employee"
+        value={null}
+        selectionLabel={null}
+        placeholder="Search employee…"
+        icon={<User size={12} />}
+        disabled={addingMember || busyEmployeeId !== null}
+        onSearch={searchEmployees}
+        onSelect={(id, label) => void handleAddMember(id, label)}
+        {...employeePicker}
+      />
     </PermissionGate>
   );
 
@@ -124,23 +156,21 @@ export function ProjectParticipantsSection({
         className,
       )}
     >
-      {!embedded && (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Project participants</h3>
-          {addButton}
-        </div>
-      )}
-
-      {embedded && <div className="mb-2 flex items-center justify-end">{addButton}</div>}
+      {!embedded && <h3 className="text-sm font-semibold">Project participants</h3>}
 
       {!isDense && (
         <p className="text-muted-foreground mt-3 text-sm">
-          Project-level access team. Product delivery slots sync members here automatically; manual
-          admins can manage project settings and broader project context.
+          New participants are added as Member; change role to Admin after adding if needed.
         </p>
       )}
 
-      <div className={cn(DETAIL_SHEET_SECTION_BODY_CLASS, isDense ? 'mt-0' : 'mt-4')}>
+      <div
+        className={cn(
+          DETAIL_SHEET_SECTION_BODY_CLASS,
+          isDense ? 'mt-0 space-y-3' : 'mt-4 space-y-4',
+        )}
+      >
+        {addMemberPicker}
         {error ? (
           <ErrorState description={error} onRetry={() => void load()} />
         ) : loading ? (
@@ -156,17 +186,22 @@ export function ProjectParticipantsSection({
             }
           />
         ) : isDense ? (
-          <ul className={cn('space-y-0.5', embedded && 'max-h-48 overflow-y-auto pr-0.5')}>
+          <div
+            className={cn(
+              RELATION_PICKER_CHIP_STACK_CLASS,
+              embedded && 'max-h-52 overflow-y-auto pr-0.5',
+            )}
+          >
             {members.map((row) => (
-              <ParticipantDenseRow
+              <ProjectTeamMemberChipRow
                 key={row.id}
                 row={row}
-                busyEmployeeId={busyEmployeeId}
+                disabled={busyEmployeeId === row.employeeId || addingMember}
                 onRoleChange={handleRoleChange}
                 onRemove={handleRemove}
               />
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
@@ -206,8 +241,14 @@ export function ProjectParticipantsSection({
                             )
                           }
                         >
-                          <SelectTrigger className="h-8">
-                            <SelectValue />
+                          <SelectTrigger
+                            size="sm"
+                            className={cn(
+                              RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
+                              'tracking-normal normal-case',
+                            )}
+                          >
+                            <SelectValue>{projectTeamRoleShortLabel(row.role)}</SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="MEMBER">Member</SelectItem>
@@ -241,77 +282,6 @@ export function ProjectParticipantsSection({
           </div>
         )}
       </div>
-
-      <AddProjectTeamMemberDialog
-        projectId={projectId}
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        onAdded={() => void load()}
-        existingEmployeeIds={members.map((m) => m.employeeId)}
-      />
     </section>
-  );
-}
-
-function ParticipantDenseRow({
-  row,
-  busyEmployeeId,
-  onRoleChange,
-  onRemove,
-}: {
-  row: ProjectTeamMemberRow;
-  busyEmployeeId: string | null;
-  onRoleChange: (employeeId: string, role: 'ADMIN' | 'MEMBER') => void;
-  onRemove: (employeeId: string) => void;
-}) {
-  const name = `${row.employee.firstName} ${row.employee.lastName}`;
-
-  return (
-    <li className="hover:bg-secondary/60 flex items-center gap-1.5 rounded-md px-1 py-1 transition-colors">
-      <div className="min-w-0 flex-1" title={row.employee.email}>
-        <p className="truncate text-xs font-medium">{name}</p>
-        <p className="text-muted-foreground truncate text-[10px] leading-tight">
-          {row.accessLevel} · {formatTeamSource(row.source)}
-        </p>
-      </div>
-      <PermissionGate
-        module="PROJECTS"
-        action="EDIT"
-        fallback={
-          <Badge variant="secondary" className="text-[10px]">
-            {row.role}
-          </Badge>
-        }
-      >
-        <Select
-          value={row.role}
-          disabled={busyEmployeeId === row.employeeId}
-          onValueChange={(v) =>
-            void onRoleChange(row.employeeId, (v as 'ADMIN' | 'MEMBER') ?? 'MEMBER')
-          }
-        >
-          <SelectTrigger className="h-7 w-20 px-2 text-[11px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="MEMBER">Member</SelectItem>
-            <SelectItem value="ADMIN">Admin</SelectItem>
-          </SelectContent>
-        </Select>
-      </PermissionGate>
-      <PermissionGate module="PROJECTS" action="EDIT">
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="size-7 shrink-0"
-          aria-label={`Remove ${name}`}
-          disabled={busyEmployeeId === row.employeeId}
-          onClick={() => void onRemove(row.employeeId)}
-        >
-          <Trash2 size={12} />
-        </Button>
-      </PermissionGate>
-    </li>
   );
 }
