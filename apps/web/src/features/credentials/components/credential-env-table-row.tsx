@@ -39,6 +39,8 @@ export function CredentialEnvTableRow({
     markCopied();
   };
 
+  const copiedFieldClass = copied ? CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS : undefined;
+
   return (
     <div className="border-border grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-t px-3 py-2">
       <Input
@@ -46,17 +48,14 @@ export function CredentialEnvTableRow({
         onChange={(e) => onKeyChange(e.target.value)}
         onPaste={onPaste}
         placeholder="KEY or paste .env"
-        className="font-mono text-xs"
+        className={cn('font-mono text-xs', copiedFieldClass)}
       />
       <Input
         value={showMasked ? '••••••••' : maskedValue}
         onChange={(e) => onValueChange(e.target.value)}
         onPaste={onPaste}
         placeholder="value"
-        className={cn(
-          'font-mono text-xs',
-          copied ? CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS : undefined,
-        )}
+        className={cn('font-mono text-xs', copiedFieldClass)}
         disabled={showMasked}
         readOnly={showMasked}
       />
