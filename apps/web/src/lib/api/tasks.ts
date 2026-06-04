@@ -276,6 +276,10 @@ export const tasksApi = {
     const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/${id}`);
     return resp.data;
   },
+  async getWorkSpaceByProductId(productId: string): Promise<WorkSpace> {
+    const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/by-product/${productId}`);
+    return resp.data;
+  },
   async createWorkSpace(data: {
     name: string;
     type: Exclude<WorkSpace['type'], 'EXTENSION_DELIVERY'>;

@@ -1,50 +1,20 @@
-# NBOS Work Plans — index
+# Work Space — Product tab: TanStack Query + backend endpoint
 
-> Обновлено: 2026-06-04
+## Goal
 
-## Архив
+Replace interim `resolveProductWorkSpace` (GET list → POST ensure) and manual tab cache with TECH_CARD-standard server state.
 
-| План                                                                                  | Статус                                                                       |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| [1.todo-Access.archived.md](./docs/archive/todos/1.todo-Access.archived.md)           | **Complete** — Platform Access Phase 1 + Phase 2 (Drive/Finance/Tasks reuse) |
-| [2.todo-Credentials.archived.md](./docs/archive/todos/2.todo-Credentials.archived.md) | **MVP complete** — vault, Sheet, manual access, security canon, bulk         |
+## Plan
 
-## Активно
+- [x] **1. Backend** — `GET /api/tasks/work-spaces/by-product/:productId` (VIEW, 404 if missing)
+- [x] **2. Web API** — `tasksApi.getWorkSpaceByProductId`
+- [x] **3. TanStack Query** — provider in app shell + `@tanstack/react-query` dependency
+- [x] **4. Query layer** — `product-work-space-queries.ts` (keys, fetch bundle, 404 → ensure)
+- [x] **5. Hook** — rewrite `useProductWorkSpaceTab` on `useQuery` + cache updates for tasks/sprints
+- [x] **6. Cleanup** — remove `resolveProductWorkSpace` workaround from `work-space-utils.ts`
+- [ ] **7. Follow-up (later)** — `workSpaceId` on `GET /products/:id`; standalone `/work-spaces/[id]` on Query; invalidate on task mutations
 
-### Project detail view — vault-паттерн (SSR-safe persistence)
+## Out of scope (this slice)
 
-Эталон: `apps/web/src/features/credentials/constants/credential-vault-page-state-storage.ts`.
-
-| Шаг | Действие                                                                                                                   |
-| --- | -------------------------------------------------------------------------------------------------------------------------- |
-| 1   | В `project-detail-view-storage.ts`: snapshot + cache, `parseStoredViewMode`, `CHANGE_EVENT`, `subscribe*`, server snapshot |
-| 2   | `writeProjectDetailViewToStorage` → dispatch event после `localStorage.setItem`                                            |
-| 3   | `use-project-detail-view-mode.ts` → `useSyncExternalStore` + `setViewMode(partial)` вместо `useState`                      |
-| 4   | Unit-тест: parse invalid / default, write + read round-trip (по образцу `credential-vault-page-state-storage.test.ts`)     |
-| 5   | Smoke: project detail — переключить List, reload, Products + Extensions в list; без flash `card` на SSR                    |
-
-Опционально позже: общий `lib/persisted-page-state` только если ≥3 фичи дублируют одинаковый boilerplate.
-
----
-
-_Остальное — по модульным cleanup registers и roadmap._
-
-## Что дальше (по приоритету)
-
-1. **Drive:** per-file list menu `allowed-actions` + trash lifecycle — `docs/NBOS/02-Modules/11-Drive/07-Drive-Cleanup-Register.md` §9.
-2. **Tasks (optional):** `findByEntity` / checklist access hardening — `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md` (Platform access).
-3. **Drive UX (backlog):** «Copy link» / restricted link — по канону Drive.
-
-## Сделано недавно (Platform Access + Drive)
-
-- Platform Access Foundation Phase 2: Finance seller/payroll, Tasks gates, Drive multi-link + Share/Move/Copy API + detail UI `allowed-actions`.
-- Folder grants API + Share dialog; folder→file inherit; grant count на listing.
-
-## Канон и прогресс
-
-- Roadmap: `docs/NBOS/00-Implementation-Roadmap.md`
-- Статус по модулям: `docs/IMPLEMENTATION_PROGRESS.md`, `docs/IMPLEMENTATION_DONE.md`
-
-## Почему split
-
-Access и Credentials вынесены в archive после закрытия MVP/Phase 2. Новые scoped-модули опираются на `ProjectTeamMember`, `ProductTeamMember`, `ResourceAccessGrant`, role/personal policies — канон `09-Platform-Access-Foundation.md`.
+- Full tasks module migration to TanStack Query
+- Changing `POST ensure` semantics on backend (legacy attach stays on ensure only)

@@ -165,6 +165,29 @@ describe('WorkSpacesService', () => {
     await expect(service.ensureForProduct('missing')).rejects.toThrow(NotFoundException);
   });
 
+  it('finds Product Work Space by product id without creating', async () => {
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-1' });
+    prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-existing', productId: 'prod-1' });
+
+    const result = await service.findByProductId('prod-1');
+
+    expect(result.id).toBe('ws-existing');
+    expect(prisma.workSpace.create).not.toHaveBeenCalled();
+  });
+
+  it('throws when Product Work Space is missing for product', async () => {
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-1' });
+    prisma.workSpace.findUnique.mockResolvedValue(null);
+
+    await expect(service.findByProductId('prod-1')).rejects.toThrow(NotFoundException);
+  });
+
+  it('throws when product is missing for by-product lookup', async () => {
+    prisma.product.findUnique.mockResolvedValue(null);
+
+    await expect(service.findByProductId('missing')).rejects.toThrow(NotFoundException);
+  });
+
   it('ensures an Extension uses its Product Work Space', async () => {
     prisma.extension.findUnique.mockResolvedValue({
       id: 'ext-1',

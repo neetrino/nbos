@@ -127,6 +127,24 @@ export class WorkSpacesService {
     return workspace;
   }
 
+  /** Read-only lookup for product delivery workspace (does not create or run legacy attach). */
+  async findByProductId(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
+
+    const workspace = await this.prisma.workSpace.findUnique({
+      where: { productId },
+      include: WORK_SPACE_INCLUDE,
+    });
+    if (!workspace) {
+      throw new NotFoundException(`Work Space for product ${productId} not found`);
+    }
+    return workspace;
+  }
+
   async create(data: CreateWorkSpaceDto) {
     const type = parseWorkSpaceType(data.type);
     validateContext(type, data);
