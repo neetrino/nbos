@@ -1,4 +1,4 @@
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
 import {
   BONUS_ENTRY_STATUS_LABEL,
@@ -78,9 +78,11 @@ export function BonusCard({
   const canOpen = Boolean(onOpenReleases);
 
   return (
-    <div
+    <KanbanCardShell
+      padding="compact"
+      hoverShadow="md"
+      transition="all"
       className={cn(
-        'border-border bg-card rounded-xl border px-3 py-2.5 transition-all hover:shadow-md',
         canOpen &&
           'focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none',
       )}
@@ -120,6 +122,6 @@ export function BonusCard({
           <span className="text-muted-foreground text-[10px] font-medium">{projectCode}</span>
         ) : null}
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

@@ -1,6 +1,11 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { FolderKanban, ListChecks } from 'lucide-react';
-import { ActionTileButton, ActionTileHoverBar, StatusBadge } from '@/components/shared';
+import {
+  ActionTileButton,
+  ActionTileHoverBar,
+  KanbanCardShell,
+  StatusBadge,
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type {
   DeliveryLifecycleProjection,
@@ -97,7 +102,17 @@ export function ProjectDeliveryBoardCard({
   const projectId = getProjectId(item);
 
   return (
-    <div className={getCardClassName(dealTypeVisual.cardShellClassName, kanbanMinimal)}>
+    <KanbanCardShell
+      preset="crm"
+      padding="lg"
+      baseShadow="sm"
+      hoverShadow="md"
+      transition="all"
+      shellClassName={cn(
+        kanbanMinimal ? 'group/kanban-card w-full text-left' : 'group w-full text-left',
+        dealTypeVisual.cardShellClassName,
+      )}
+    >
       <button
         type="button"
         disabled={!productId && !onOpenDetails}
@@ -173,7 +188,7 @@ export function ProjectDeliveryBoardCard({
           />
         </div>
       ) : null}
-    </div>
+    </KanbanCardShell>
   );
 }
 
@@ -201,12 +216,6 @@ function getProductMeta(product: ProjectProductSummary) {
 
 function getExtensionMeta(extension: ProjectExtensionSummary) {
   return getExtensionSize(extension.size)?.label ?? extension.size;
-}
-
-function getCardClassName(cardShellClassName: string, kanbanMinimal: boolean) {
-  const groupKanban = kanbanMinimal ? 'group/kanban-card ' : 'group ';
-  const base = `${groupKanban}w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md`;
-  return `${base} ${cardShellClassName}`;
 }
 
 const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';

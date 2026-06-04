@@ -2,7 +2,7 @@
 
 import { FolderKanban, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import {
   getTicketCategory,
   getTicketPriority,
@@ -32,8 +32,8 @@ export function SupportTicketCard({
   const terminal = ['RESOLVED', 'CLOSED'].includes(ticket.status);
 
   return (
-    <div
-      className="border-border bg-card flex h-full flex-col gap-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+    <KanbanCardShell
+      className="flex h-full flex-col gap-2"
       onClick={(event) => {
         if (isSupportInteractiveTarget(event.target)) {
           return;
@@ -74,6 +74,6 @@ export function SupportTicketCard({
           Reopen
         </Button>
       ) : null}
-    </div>
+    </KanbanCardShell>
   );
 }

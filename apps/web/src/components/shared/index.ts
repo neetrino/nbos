@@ -40,6 +40,11 @@ export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
+export {
+  KanbanCardShell,
+  type KanbanCardShellPreset,
+  type KanbanCardShellProps,
+} from './kanban/KanbanCardShell';
 export type {
   KanbanColumnQuickCreateConfig,
   KanbanColumnQuickCreateInput,

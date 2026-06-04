@@ -7,6 +7,7 @@ import {
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
+import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 
@@ -29,11 +30,9 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
   );
 
   return (
-    <div
-      className={cn(
-        'border-border bg-card relative rounded-xl border',
-        service.overdue && 'border-red-300 dark:border-red-900/50',
-      )}
+    <KanbanCardShell
+      padding="none"
+      className={cn('relative', service.overdue && 'border-red-300 dark:border-red-900/50')}
     >
       <div
         role="button"
@@ -71,6 +70,6 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
           {formatShortDate(service.renewalDate)}
         </div>
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

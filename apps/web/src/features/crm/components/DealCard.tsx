@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
@@ -33,8 +34,13 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
   const TypeIcon = typeVisual.Icon;
 
   return (
-    <div
-      className={`group cursor-pointer rounded-xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${typeVisual.cardShellClassName}`}
+    <KanbanCardShell
+      preset="crm"
+      padding="lg"
+      baseShadow="sm"
+      hoverShadow="md"
+      transition="all"
+      shellClassName={cn('group cursor-pointer', typeVisual.cardShellClassName)}
       onClick={() => onClick(deal)}
     >
       <div className="flex items-start gap-2">
@@ -131,7 +137,7 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
           ) : null}
         </div>
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }
 

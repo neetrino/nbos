@@ -1,9 +1,9 @@
 'use client';
 
 import { CheckSquare, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
+import { KanbanCardShell } from '@/components/shared';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import type { Task } from '@/lib/api/tasks';
-import { cn } from '@/lib/utils';
 import { getDeadlineColumn } from './task-board-constants';
 
 export type TaskBoardAction = 'start' | 'complete' | 'reopen';
@@ -26,8 +26,9 @@ export function TaskMiniCard({
   const canStart = task.status === 'OPEN' || task.status === 'NEW';
 
   return (
-    <div
-      className="border-border bg-card w-full min-w-0 space-y-2 overflow-hidden rounded-xl border p-3 transition-shadow hover:shadow-md"
+    <KanbanCardShell
+      hoverShadow="md"
+      className="w-full min-w-0 space-y-2 overflow-hidden"
       onClick={() => onClick(task)}
     >
       <div className="flex min-w-0 items-start gap-2">
@@ -124,6 +125,6 @@ export function TaskMiniCard({
           {task._count.subtasks}
         </div>
       )}
-    </div>
+    </KanbanCardShell>
   );
 }

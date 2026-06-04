@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import { AlertTriangle, Building2, Calendar, FolderKanban, Handshake } from 'lucide-react';
-import { KanbanBoard, KanbanColumnMoneyTotal, StatusBadge } from '@/components/shared';
+import {
+  KanbanBoard,
+  KanbanCardShell,
+  KanbanColumnMoneyTotal,
+  StatusBadge,
+} from '@/components/shared';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -110,8 +115,9 @@ function InvoiceKanbanCard({
   const dealTitle = getInvoiceDealTitle(invoice.order);
 
   return (
-    <div
-      className="border-border bg-card hover:bg-muted/30 cursor-pointer space-y-1.5 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+    <KanbanCardShell
+      hoverSurface="muted30"
+      className="cursor-pointer space-y-1.5"
       onClick={() => onInvoiceClick(invoice)}
     >
       <div className="flex items-center justify-between">
@@ -127,7 +133,7 @@ function InvoiceKanbanCard({
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}
       {overdueDays > 0 && <InvoiceOverdueDays days={overdueDays} />}
-    </div>
+    </KanbanCardShell>
   );
 }
 
