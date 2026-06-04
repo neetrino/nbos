@@ -87,14 +87,17 @@ function useHeaderContextStore(): HeaderContextStore {
 /**
  * Show the module / page name in the app header (left of zone nav).
  * Used by PageHero and ModuleHeroSlotProvider.
+ *
+ * @param enabled When false, does not read or clear the module title (nested PageHero on entity pages).
  */
-export function useHeaderModuleTitle(title: string | null): void {
+export function useHeaderModuleTitle(title: string | null, enabled = true): void {
   const { setModuleTitle } = useHeaderContextStore();
 
   useLayoutEffect(() => {
+    if (!enabled) return;
     setModuleTitle(title);
     return () => setModuleTitle(null);
-  }, [setModuleTitle, title]);
+  }, [setModuleTitle, title, enabled]);
 }
 
 /**

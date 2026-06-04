@@ -1,9 +1,15 @@
 'use client';
 
+import { useMemo } from 'react';
 import { ArrowRight, Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StatusBadge, ViewModeSwitch, type ViewModeOption } from '@/components/shared';
+import {
+  PageHero,
+  PageHeroTabs,
+  StatusBadge,
+  ViewModeSwitch,
+  type ViewModeOption,
+} from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
@@ -13,13 +19,10 @@ import {
 } from '@/features/projects/constants/projects';
 import {
   PROJECT_PRODUCTS_CARD_GRID_CLASS,
-  PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS,
-  PROJECT_SECTION_TOOLBAR_CLASS,
-  PROJECT_SECTION_TOOLBAR_TABS_CLASS,
   type ProjectProductsViewMode,
 } from './project-detail-layout.constants';
 
-const PRODUCT_STATUS_FILTER_ALL = 'all';
+const PRODUCT_TAB_ALL = 'all';
 
 const PRODUCT_VIEW_OPTIONS: ViewModeOption<ProjectProductsViewMode>[] = [
   {
@@ -57,38 +60,53 @@ export function ProjectProductsSection({
   onCreateProduct,
   onOpenProduct,
 }: ProjectProductsSectionProps) {
-  const byStatus = (status: string) =>
-    project.products.filter((product) => product.status === status).length;
+  const statusTabOptions = useMemo(() => {
+    const byStatus = (status: string) =>
+      project.products.filter((product) => product.status === status).length;
+    const statusesWithProducts = PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0);
 
+    return [
+      { value: PRODUCT_TAB_ALL, label: `All Products (${project.products.length})` },
+      ...statusesWithProducts.map((status) => ({
+        value: status.value,
+        label: `${status.label} (${byStatus(status.value)})`,
+      })),
+    ];
+  }, [project.products]);
+
+  const statusTab = statusFilter ?? PRODUCT_TAB_ALL;
   const hasProducts = project.products.length > 0;
 
   return (
     <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
-      <div className={PROJECT_SECTION_TOOLBAR_CLASS}>
-        <div className={PROJECT_SECTION_TOOLBAR_TABS_CLASS}>
-          <ProductStatusFilters
-            totalCount={project.products.length}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            byStatus={byStatus}
+      <PageHero
+        syncModuleTitle={false}
+        className="mt-0"
+        tabs={
+          <PageHeroTabs
+            value={statusTab}
+            onChange={(value) => setStatusFilter(value === PRODUCT_TAB_ALL ? null : value)}
+            options={statusTabOptions}
+            ariaLabel="Product status"
           />
-        </div>
-
-        <div className={PROJECT_SECTION_TOOLBAR_ACTIONS_CLASS}>
-          {hasProducts ? (
+        }
+        viewMode={
+          hasProducts ? (
             <ViewModeSwitch
               value={viewMode}
               onChange={onViewModeChange}
               options={PRODUCT_VIEW_OPTIONS}
               ariaLabel="Products view mode"
             />
-          ) : null}
+          ) : undefined
+        }
+        trailing={
           <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
             <Plus size={14} aria-hidden />
             Product
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {products.length === 0 ? (
         <EmptyProductsState
@@ -110,44 +128,6 @@ export function ProjectProductsSection({
         </div>
       )}
     </div>
-  );
-}
-
-function ProductStatusFilters({
-  totalCount,
-  statusFilter,
-  setStatusFilter,
-  byStatus,
-}: {
-  totalCount: number;
-  statusFilter: string | null;
-  setStatusFilter: (status: string | null) => void;
-  byStatus: (status: string) => number;
-}) {
-  const tabValue = statusFilter ?? PRODUCT_STATUS_FILTER_ALL;
-  const statusesWithProducts = PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0);
-
-  return (
-    <Tabs
-      value={tabValue}
-      onValueChange={(value) => setStatusFilter(value === PRODUCT_STATUS_FILTER_ALL ? null : value)}
-      className="w-max min-w-full"
-    >
-      <TabsList variant="line" className="inline-flex h-auto w-max flex-nowrap justify-start">
-        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL} className="shrink-0 whitespace-nowrap">
-          All Products ({totalCount})
-        </TabsTrigger>
-        {statusesWithProducts.map((status) => (
-          <TabsTrigger
-            key={status.value}
-            value={status.value}
-            className="shrink-0 whitespace-nowrap"
-          >
-            {status.label} ({byStatus(status.value)})
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
   );
 }
 

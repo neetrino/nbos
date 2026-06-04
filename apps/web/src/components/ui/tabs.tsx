@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-type TabsListVariant = 'default' | 'line' | 'segmented';
+type TabsListVariant = 'default' | 'segmented';
 
 const TabsListVariantContext = React.createContext<TabsListVariant>('default');
 
@@ -22,7 +22,6 @@ export const tabsListVariants = cva('text-muted-foreground', {
   variants: {
     variant: {
       default: 'inline-flex h-auto min-w-0 items-center gap-1 rounded-xl bg-muted p-1',
-      line: 'inline-flex h-auto w-full min-w-0 items-center justify-start gap-0 rounded-none border-b border-border bg-transparent p-0',
       segmented:
         'inline-flex h-auto min-w-0 items-center gap-0.5 rounded-lg border border-border bg-background p-0.5',
     },
@@ -55,7 +54,6 @@ const tabsTriggerVariants = cva(
       listVariant: {
         default:
           'gap-2 rounded-lg px-4 py-2 text-sm hover:bg-background/60 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md',
-        line: 'relative gap-2 rounded-none border-0 bg-transparent px-3 py-2.5 text-sm shadow-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent after:transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:px-4',
         segmented:
           'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
       },
