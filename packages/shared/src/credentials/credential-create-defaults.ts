@@ -16,7 +16,6 @@ const TYPE_BASE_CRITICALITY: Record<string, string> = {
   HOSTING_SERVER: 'HIGH',
   APP_STORE_ACCOUNT: 'HIGH',
   MAIL_SMTP: 'MEDIUM',
-  OTHER_SECRET: 'MEDIUM',
 };
 
 const CRITICALITY_RANK: Record<string, number> = {
@@ -56,7 +55,7 @@ export function resolveCredentialCreateDefaults(
     criticality = maxCriticality(criticality, 'HIGH');
   }
 
-  const intervalDays = ROTATION_INTERVAL_DAYS[criticality] ?? ROTATION_INTERVAL_DAYS.MEDIUM;
+  const intervalDays = ROTATION_INTERVAL_DAYS[criticality] ?? ROTATION_INTERVAL_DAYS.MEDIUM ?? 180;
   const nextRotationAt = addUtcDays(new Date(), intervalDays).toISOString();
 
   return { criticality, nextRotationAt };

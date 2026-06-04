@@ -137,6 +137,7 @@ export async function exportCredentialsBundle(
       ownerId: true,
       projectId: true,
       password: true,
+      passphrase: true,
       apiKey: true,
       envData: true,
       secureNotes: true,
@@ -147,8 +148,9 @@ export async function exportCredentialsBundle(
 
   const exported = rows.map((row) => {
     const secrets: Partial<Record<SensitiveField, string>> = {};
+    const sensitive = row as Record<SensitiveField, string | null>;
     for (const field of fields) {
-      const raw = row[field];
+      const raw = sensitive[field];
       if (typeof raw === 'string' && raw.length > 0) {
         secrets[field] = decryptFieldIfEncrypted(raw, runtime.encryptionKey);
       }

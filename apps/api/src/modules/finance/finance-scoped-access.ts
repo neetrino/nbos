@@ -1,11 +1,14 @@
 import type { PrismaClient } from '@nbos/database';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { financeUsesDealScopedParticipation } from './finance-seller-role';
 
 /** Caller identity + RBAC VIEW scope for finance list/stats row filters. */
 export interface FinanceScopedAccessContext {
   employeeId: string;
   departmentIds: string[];
   viewScope?: string;
+  /** When true, row filter uses deal seller graph instead of full project team graph. */
+  dealScopedParticipation?: boolean;
 }
 
 const SCOPE_DEPARTMENT = 'DEPARTMENT';
@@ -22,6 +25,7 @@ export function financeScopedAccessFromUser(
     employeeId: user.id,
     departmentIds: user.departmentIds ?? [],
     viewScope: user.permissions[viewPermissionKey],
+    dealScopedParticipation: financeUsesDealScopedParticipation(user.role),
   };
 }
 

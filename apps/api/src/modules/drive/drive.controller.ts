@@ -548,6 +548,23 @@ export class DriveController {
     );
   }
 
+  @Get('files/:id/allowed-actions')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List allowed Share/Move/Copy/Delete actions for the current viewer' })
+  @ApiQuery({ name: 'targetFolderSpace', required: false, enum: ['COMPANY', 'PERSONAL'] })
+  async listFileAllowedActions(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Query('targetFolderSpace') targetFolderSpace?: 'COMPANY' | 'PERSONAL',
+  ) {
+    return this.driveService.listDriveFileAllowedActions(
+      id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+      targetFolderSpace,
+    );
+  }
+
   @Get('files/:id')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get DB-backed Drive file asset detail' })

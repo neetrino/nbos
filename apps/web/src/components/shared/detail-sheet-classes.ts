@@ -3,6 +3,46 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
+/** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
+export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
+
+/** @deprecated Use {@link SHEET_VIEWPORT_TOP_INSET_CLASS} — right sheet no longer insets bottom. */
+export const SHEET_VIEWPORT_INSET_CLASS = 'top-[2.5vh] bottom-[2.5vh]';
+
+/** Max height when top inset is {@link SHEET_VIEWPORT_TOP_INSET_CLASS} and bottom is flush. */
+export const SHEET_VIEWPORT_MAX_HEIGHT_CLASS = 'h-auto max-h-[calc(100vh-2.5vh)]';
+
+/** Offset from panel top to floating rail — clears rounded corners (right + center sheets). */
+export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
+
+/** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
+export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]';
+
+/** Bottom-center sheet height — flush with viewport bottom (mirrors right sheet edge attach). */
+export const SHEET_CENTER_VIEWPORT_HEIGHT_CLASS = 'h-[90vh] max-h-[90vh]';
+
+/**
+ * Fixed shell for bottom-center sheets — rail + panel are flex siblings (width-independent).
+ * Rail is always immediately left of the panel; no viewport `calc` anchors per width preset.
+ */
+export const SHEET_CENTER_SHELL_CLASS =
+  'pointer-events-none fixed bottom-0 left-1/2 flex max-h-[90vh] h-[90vh] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 items-stretch';
+
+/** Rail column inside {@link SHEET_CENTER_SHELL_CLASS} — clears panel top rounded corner. */
+export const SHEET_CENTER_RAIL_COLUMN_CLASS =
+  'pointer-events-auto flex w-11 shrink-0 flex-col items-end gap-1.5 self-start pt-[1.5rem]';
+
+/** Center sheet panel surface (inside shell — not viewport-fixed). */
+export const SHEET_CENTER_PANEL_SURFACE_CLASS =
+  'relative flex h-full min-w-0 shrink-0 flex-col gap-0 overflow-hidden rounded-t-2xl border border-b-0 shadow-lg';
+
+/** Center sheet width presets (compact entity forms, credentials). */
+export const CENTER_SHEET_WIDTH_MEDIUM_CLASS = 'flex w-[min(48rem,calc(100vw-2rem-2.75rem))]';
+
+export const CENTER_SHEET_WIDTH_COMPACT_CLASS = 'flex w-[min(42rem,calc(100vw-2rem-2.75rem))]';
+
+export const CENTER_SHEET_WIDTH_AUXILIARY_CLASS = 'flex w-[min(36rem,calc(100vw-2rem-2.75rem))]';
+
 /** Matches Lead/Deal detail width: 75vw on `sm+`. */
 export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]';

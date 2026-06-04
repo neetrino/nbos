@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { CREDENTIAL_VAULT_BULK_MAX } from '@/features/credentials/constants/credential-vault-bulk';
 
@@ -10,10 +10,12 @@ export function useCredentialVaultSelection(
   resetKey: string,
 ) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [trackedResetKey, setTrackedResetKey] = useState(resetKey);
 
-  useEffect(() => {
+  if (trackedResetKey !== resetKey) {
+    setTrackedResetKey(resetKey);
     setSelectedIds(new Set());
-  }, [resetKey]);
+  }
 
   const selectedCount = selectedIds.size;
   const selectedIdList = useMemo(() => [...selectedIds], [selectedIds]);

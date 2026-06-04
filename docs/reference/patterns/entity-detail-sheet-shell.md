@@ -9,6 +9,18 @@
 | `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace) |
 | `auxiliary` | 36rem fixed                                                 | **Close only**                    |
 
+### Center-rise shell (`EntityCenterSheetContent`)
+
+Compact forms that should not use the full right panel (e.g. Credentials vault entry):
+
+```tsx
+<EntityCenterSheetContent open={open} width="medium" sourcePageHref={href}>
+  {children}
+</EntityCenterSheetContent>
+```
+
+Max height **90vh**, flush with the bottom edge. Rail + panel share one fixed flex shell — rail is always immediately left of the panel (width-independent).
+
 ```tsx
 // Deal-scale entity
 <EntityDetailSheetContent open={open} layout="full" sourcePageHref={href} />

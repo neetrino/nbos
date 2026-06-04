@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import type {
   CredentialQuickFilterKey,
@@ -25,8 +25,10 @@ import {
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
+import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
+import type { CredentialDetail, CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -37,6 +39,7 @@ export interface CredentialDeleteTarget {
 export interface CredentialTileCopyTarget {
   id: string;
   criticality: string;
+  field?: CredentialSecretField;
 }
 
 export function useCredentialsVaultPage() {
@@ -50,7 +53,6 @@ export function useCredentialsVaultPage() {
   }));
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
-  const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
@@ -89,6 +91,18 @@ export function useCredentialsVaultPage() {
   const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
     listQuery;
 
+  const { pushOpenCredentialToUrl, stripOpenCredentialFromUrl } = useCredentialVaultSheetUrlSync({
+    credentials,
+    loading,
+    setSheetCredentialId,
+    setSheetOpen,
+  });
+
+  const sheetInitialItem = useMemo(
+    () => credentials.find((c) => c.id === sheetCredentialId) ?? null,
+    [credentials, sheetCredentialId],
+  );
+
   const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
   const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${pageSize}|${search}|${viewMode}`;
@@ -98,29 +112,32 @@ export function useCredentialsVaultPage() {
     selectionResetKey,
   );
 
-  useEffect(() => {
+  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
+  const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
+
+  if (trackedPageResetKey !== pageResetKey) {
+    setTrackedPageResetKey(pageResetKey);
     setPage(1);
-  }, [search, filters, quickCategory, quickFilters, activeTab, vaultListScope, viewMode, pageSize]);
+  }
 
-  const openCreate = useCallback((category?: string) => {
-    setCreatePresetCategory(category);
-    setSheetCredentialId(null);
-    setSheetOpen(true);
-  }, []);
+  const openCreate = useCallback(
+    (category?: string) => {
+      setCreatePresetCategory(category);
+      setSheetCredentialId(null);
+      stripOpenCredentialFromUrl();
+      setSheetOpen(true);
+    },
+    [stripOpenCredentialFromUrl],
+  );
 
-  const openCredential = useCallback((id: string) => {
-    setSheetCredentialId(id);
-    setSheetOpen(true);
-  }, []);
-
-  const toggleLogin = useCallback((id: string) => {
-    setVisibleLogins((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  const openCredential = useCallback(
+    (id: string) => {
+      setSheetCredentialId(id);
+      setSheetOpen(true);
+      pushOpenCredentialToUrl(id);
+    },
+    [pushOpenCredentialToUrl],
+  );
 
   const copyToClipboard = useCallback((text: string) => {
     void navigator.clipboard.writeText(text);
@@ -165,13 +182,27 @@ export function useCredentialsVaultPage() {
     setQuickFilters(new Set());
   }, [vaultListScope]);
 
-  const closeSheet = useCallback((open: boolean) => {
-    setSheetOpen(open);
-    if (!open) {
-      setSheetCredentialId(null);
+  const handleCredentialCreated = useCallback(
+    (created: CredentialDetail) => {
+      setSheetCredentialId(created.id);
       setCreatePresetCategory(undefined);
-    }
-  }, []);
+      pushOpenCredentialToUrl(created.id);
+      void refetch();
+    },
+    [pushOpenCredentialToUrl, refetch],
+  );
+
+  const closeSheet = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        setSheetCredentialId(null);
+        setCreatePresetCategory(undefined);
+        stripOpenCredentialFromUrl();
+      }
+    },
+    [stripOpenCredentialFromUrl],
+  );
 
   const setPageSize = useCallback(
     (size: CredentialVaultPageSizeOption) => {
@@ -230,12 +261,12 @@ export function useCredentialsVaultPage() {
     quickFilters,
     viewMode,
     setViewMode,
-    visibleLogins,
     activeTab,
     vaultListScope,
     setVaultListScope,
     sheetOpen,
     sheetCredentialId,
+    sheetInitialItem,
     createPresetCategory,
     deleteTarget,
     setDeleteTarget,
@@ -248,12 +279,12 @@ export function useCredentialsVaultPage() {
     fetchCredentials: refetch,
     openCreate,
     openCredential,
-    toggleLogin,
     copyToClipboard,
     toggleQuickFilter,
     handleTabChange,
     clearFilters,
     closeSheet,
+    handleCredentialCreated,
     quickCategoryChips,
     filterConfigs,
     showCreate,

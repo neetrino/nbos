@@ -246,12 +246,29 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 
 **Следующий шаг:** можно начинать `CredentialFormSheet` / dynamic fields, используя C-hybrid rules выше.
 
+### Type change safety (lanes, 2026-06-03)
+
+- **L1** (login/password family), **L2** (API key / other secret), **L3** (ENV bundle) — same-lane changes are allowed without confirmation.
+- **Cross-lane** change with stored secrets that would not appear in the new type form → **red** path: Sheet dialog + checkbox (R1); client sends `acknowledgeOrphanedSecrets: true` on `PATCH`.
+- **API** enforces the same rule via `assertCredentialTypeChangeAllowed` (`packages/shared` `classifyCredentialTypeChange` + `UpdateCredentialDto.acknowledgeOrphanedSecrets`).
+- Orphaned secrets remain encrypted in DB; they are hidden in the form until the user switches back to a compatible type.
+
+### Provider catalog (2026-06-03)
+
+- MVP seed list (~38 rows): `08-Credential-Provider-Catalog.md` + `seed-credential-providers.ts`.
+- Picker: search + inline create; one DB table (R5, R9).
+
+### OTHER_SECRET (removed 2026-06-03)
+
+- Enum value removed; former rows migrated to `API_KEY`.
+- History: `07-OTHER-SECRET-Legacy-Migration.md`.
+
 ---
 
 ## Ссылки
 
 - План Credentials (архив MVP): `docs/archive/todos/2.todo-Credentials.archived.md`
-- План Platform Access Foundation: `/1.todo-Access.md` (repo root)
+- План Platform Access Foundation (архив): `docs/archive/todos/1.todo-Access.archived.md`
 - Индекс планов: `/todo.md`
 - UX канон: `04-Credentials-UX-Workflows.md`
 - Cleanup register: `99-Credentials-Cleanup-Register.md`

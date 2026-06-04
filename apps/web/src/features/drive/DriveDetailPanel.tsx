@@ -29,6 +29,7 @@ import { badgeVariant } from './drive-utils';
 import { getDriveFileLinkEntityHref } from './drive-file-link-entity-href';
 import { buildDriveFileHref } from './drive-file-links';
 import { FileDriveGrantsSection } from './file-drive-grants-section';
+import type { DriveFileActionGates } from './drive-file-allowed-actions';
 
 export function DriveDetailPanel({
   file,
@@ -45,6 +46,7 @@ export function DriveDetailPanel({
   onVersionUpload,
   onFileDetailRefresh,
   onPermanentDeleteSuccess,
+  fileActionGates,
 }: {
   file: FileAsset | null;
   open: boolean;
@@ -62,6 +64,7 @@ export function DriveDetailPanel({
   onFileDetailRefresh?: () => void;
   /** After permanent delete: refresh list and close sheet. */
   onPermanentDeleteSuccess?: () => void;
+  fileActionGates: DriveFileActionGates;
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
@@ -84,6 +87,7 @@ export function DriveDetailPanel({
               onUnlinkFromRecord={onUnlinkFromRecord}
               onVersionUpload={onVersionUpload}
               onPermanentDeleteSuccess={onPermanentDeleteSuccess}
+              fileActionGates={fileActionGates}
             />
           ) : undefined
         }
@@ -96,6 +100,7 @@ export function DriveDetailPanel({
                 file={file}
                 onPreview={onPreview}
                 onFileDetailRefresh={onFileDetailRefresh}
+                fileActionGates={fileActionGates}
               />
             </aside>
           </div>
@@ -116,6 +121,7 @@ function DriveFileRailTrailing({
   onUnlinkFromRecord,
   onVersionUpload,
   onPermanentDeleteSuccess,
+  fileActionGates,
 }: {
   file: FileAsset;
   busy: boolean;
@@ -127,11 +133,13 @@ function DriveFileRailTrailing({
   onUnlinkFromRecord?: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
   onPermanentDeleteSuccess?: () => void;
+  fileActionGates: DriveFileActionGates;
 }) {
   const isArchived = file.status === 'ARCHIVED';
   const isTrash = file.status === 'DELETED';
   const archiveLabel = isTrash || isArchived ? 'Restore file' : 'Archive file';
   const archiveHint = isTrash || isArchived ? 'Restore' : 'Archive';
+  const showArchiveControl = fileActionGates.canArchive || fileActionGates.canRestore;
 
   async function handleMoveToTrash() {
     const linkCount = file.links.filter((link) => link.unlinkedAt == null).length;
@@ -151,18 +159,20 @@ function DriveFileRailTrailing({
 
   return (
     <>
-      {!isTrash ? (
+      {fileActionGates.canUploadVersion ? (
         <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
       ) : null}
-      <RailTrailButton
-        ariaLabel={archiveLabel}
-        hint={archiveHint}
-        disabled={busy}
-        onClick={() => (isTrash || isArchived ? onRestore(file) : onArchive(file))}
-      >
-        <Archive className="size-4" aria-hidden />
-      </RailTrailButton>
-      {isArchived ? (
+      {showArchiveControl ? (
+        <RailTrailButton
+          ariaLabel={archiveLabel}
+          hint={archiveHint}
+          disabled={busy}
+          onClick={() => (isTrash || isArchived ? onRestore(file) : onArchive(file))}
+        >
+          <Archive className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
+      {isArchived && fileActionGates.canMoveToTrash ? (
         <RailTrailButton
           ariaLabel="Move to Trash"
           hint="Move to Trash"
@@ -172,7 +182,7 @@ function DriveFileRailTrailing({
           <Trash2 className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {onCopyFile ? (
+      {onCopyFile && fileActionGates.canCopy ? (
         <RailTrailButton
           ariaLabel="Copy file"
           hint="Copy"
@@ -182,7 +192,7 @@ function DriveFileRailTrailing({
           <Copy className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {onMoveFile ? (
+      {onMoveFile && fileActionGates.canMove ? (
         <RailTrailButton
           ariaLabel="Move file in folder tree"
           hint="Move"
@@ -192,7 +202,7 @@ function DriveFileRailTrailing({
           <FolderInput className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {onRemoveFromFolder ? (
+      {onRemoveFromFolder && fileActionGates.canRemovePlacement ? (
         <RailTrailButton
           ariaLabel="Remove from folder"
           hint="Remove"
@@ -202,7 +212,7 @@ function DriveFileRailTrailing({
           <File className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {onUnlinkFromRecord ? (
+      {onUnlinkFromRecord && fileActionGates.canUnlink ? (
         <RailTrailButton
           ariaLabel="Unlink"
           hint="Unlink"
@@ -445,10 +455,12 @@ function FileInfoPanel({
   file,
   onPreview,
   onFileDetailRefresh,
+  fileActionGates,
 }: {
   file: FileAsset;
   onPreview: (file: FileAsset) => void;
   onFileDetailRefresh?: () => void;
+  fileActionGates: DriveFileActionGates;
 }) {
   return (
     <div className="space-y-5 p-5">
@@ -456,7 +468,15 @@ function FileInfoPanel({
       <FileMetadataBadges file={file} />
       <FileFacts file={file} />
       <BusinessLinks file={file} />
-      <FileDriveGrantsSection file={file} onChanged={onFileDetailRefresh} />
+      {fileActionGates.canShare ? (
+        <FileDriveGrantsSection file={file} onChanged={onFileDetailRefresh} />
+      ) : (
+        <DetailSection title="Access">
+          <p className="text-muted-foreground text-xs">
+            You do not have permission to manage sharing on this file.
+          </p>
+        </DetailSection>
+      )}
       <VersionList file={file} />
       <AuditList file={file} />
       {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (

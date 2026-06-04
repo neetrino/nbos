@@ -1,11 +1,18 @@
 'use client';
 
-import { Eye, Copy } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { CredentialEnvEditor } from './credential-env-editor';
-import { fieldsForCredentialType } from '@/features/credentials/credential-field-config';
+import { cn } from '@/lib/utils';
+import { CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS } from '@/features/credentials/constants/credential-vault-copy';
+import { useCredentialVaultCopyFeedback } from '@/features/credentials/hooks/use-credential-vault-copy-feedback';
+import { CredentialEnvTableEditor } from './credential-env-table-editor';
+import { CredentialVaultSecretField } from './credential-vault-secret-field';
+import { dynamicFieldSpecsForType } from '@/features/credentials/credential-field-config';
+import { CREDENTIAL_VAULT_INPUT_IGNORE_PROPS } from '@/features/credentials/constants/credential-vault-input-props';
+import { useAutofillGuard } from '@/features/credentials/hooks/use-credential-field-autofill-guard';
 import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialFormDynamicFieldsProps {
@@ -15,10 +22,10 @@ export interface CredentialFormDynamicFieldsProps {
   onLoginChange: (v: string) => void;
   password: string;
   onPasswordChange: (v: string) => void;
+  passphrase: string;
+  onPassphraseChange: (v: string) => void;
   apiKey: string;
   onApiKeyChange: (v: string) => void;
-  phone: string;
-  onPhoneChange: (v: string) => void;
   url: string;
   onUrlChange: (v: string) => void;
   envData: string;
@@ -26,7 +33,7 @@ export interface CredentialFormDynamicFieldsProps {
   secretsPresent?: CredentialSecretsPresent | null;
   revealed?: Partial<Record<CredentialSecretField, string>>;
   onReveal?: (field: CredentialSecretField) => void;
-  onCopy?: (field: CredentialSecretField) => void;
+  onCopy?: (field: CredentialSecretField) => void | Promise<boolean>;
 }
 
 export function CredentialFormDynamicFields({
@@ -36,10 +43,10 @@ export function CredentialFormDynamicFields({
   onLoginChange,
   password,
   onPasswordChange,
+  passphrase,
+  onPassphraseChange,
   apiKey,
   onApiKeyChange,
-  phone,
-  onPhoneChange,
   url,
   onUrlChange,
   envData,
@@ -49,109 +56,215 @@ export function CredentialFormDynamicFields({
   onReveal,
   onCopy,
 }: CredentialFormDynamicFieldsProps) {
-  const fields = fieldsForCredentialType(credentialType);
+  const specs = dynamicFieldSpecsForType(credentialType);
   const isExisting = Boolean(credentialId);
-
-  const secretActions = (field: CredentialSecretField, label: string) => {
-    if (!isExisting || !secretsPresent?.[field]) return null;
-    const value = revealed?.[field];
-    return (
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-muted-foreground font-mono text-xs">
-          {value ? value : '••••••••'}
-        </span>
-        <Button type="button" variant="ghost" size="icon-sm" onClick={() => onReveal?.(field)}>
-          <Eye size={14} aria-label={`Reveal ${label}`} />
-        </Button>
-        <Button type="button" variant="ghost" size="icon-sm" onClick={() => onCopy?.(field)}>
-          <Copy size={14} aria-label={`Copy ${label}`} />
-        </Button>
-      </div>
-    );
-  };
+  const guardScope = credentialId ?? 'create';
 
   return (
     <div className="grid gap-4">
-      {fields.includes('url') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-url">URL</Label>
-          <Input id="cred-url" value={url} onChange={(e) => onUrlChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('login') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-login">Login</Label>
-          <Input id="cred-login" value={login} onChange={(e) => onLoginChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('phone') && (
-        <div className="grid gap-2">
-          <Label htmlFor="cred-phone">Phone</Label>
-          <Input id="cred-phone" value={phone} onChange={(e) => onPhoneChange(e.target.value)} />
-        </div>
-      )}
-      {fields.includes('password') &&
-        (isExisting && secretsPresent?.password ? (
-          <div className="grid gap-2">
-            <Label>Password</Label>
-            {secretActions('password', 'password')}
-            <Input
-              type="password"
-              placeholder="Leave empty to keep current"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              autoComplete="off"
+      {specs.map((spec) => {
+        if (spec.kind === 'env') {
+          return (
+            <div key={spec.field} className="grid gap-2">
+              <Label>{spec.label}</Label>
+              <CredentialEnvTableEditor
+                value={envData}
+                onChange={onEnvDataChange}
+                isExisting={isExisting}
+                revealedValue={revealed?.envData ?? null}
+                onReveal={() => onReveal?.('envData')}
+                onCopy={() => onCopy?.('envData')}
+                disabled={isExisting && !revealed?.envData && Boolean(secretsPresent?.envData)}
+              />
+            </div>
+          );
+        }
+
+        if (spec.field === 'login') {
+          return (
+            <GuardedTextField
+              key={spec.field}
+              guardKey={`${guardScope}-login`}
+              id="nbos-cred-login"
+              label={spec.label}
+              value={login}
+              onChange={onLoginChange}
+              showCopy={login.trim().length > 0}
             />
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            <Label htmlFor="cred-password">Password</Label>
-            <Input
-              id="cred-password"
-              type="password"
-              value={password}
-              onChange={(e) => onPasswordChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'url') {
+          return (
+            <PlainTextField
+              key={spec.field}
+              id="cred-url"
+              label={spec.label}
+              value={url}
+              onChange={onUrlChange}
             />
-          </div>
-        ))}
-      {fields.includes('apiKey') &&
-        (isExisting && secretsPresent?.apiKey ? (
-          <div className="grid gap-2">
-            <Label>API key</Label>
-            {secretActions('apiKey', 'API key')}
-            <Input
-              type="password"
-              placeholder="Leave empty to keep current"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'password') {
+          return (
+            <CredentialVaultSecretField
+              key={spec.field}
+              guardKey={`${guardScope}-password`}
+              fieldId="nbos-cred-password"
+              label={spec.label}
+              kind={spec.kind === 'textarea' ? 'textarea' : 'password'}
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.password)}
+              draft={password}
+              onDraftChange={onPasswordChange}
+              revealedValue={revealed?.password}
+              onReveal={() => onReveal?.('password')}
+              onCopy={onCopy ? () => onCopy('password') : undefined}
             />
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            <Label htmlFor="cred-apikey">API key</Label>
-            <Input
-              id="cred-apikey"
-              type="password"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              autoComplete="off"
+          );
+        }
+
+        if (spec.field === 'passphrase') {
+          return (
+            <CredentialVaultSecretField
+              key={spec.field}
+              guardKey={`${guardScope}-passphrase`}
+              fieldId="nbos-cred-passphrase"
+              label={spec.label}
+              kind="password"
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.passphrase)}
+              draft={passphrase}
+              onDraftChange={onPassphraseChange}
+              revealedValue={revealed?.passphrase}
+              onReveal={() => onReveal?.('passphrase')}
+              onCopy={onCopy ? () => onCopy('passphrase') : undefined}
             />
-          </div>
-        ))}
-      {fields.includes('envData') &&
-        (isExisting && secretsPresent?.envData ? (
-          <div className="grid gap-2">
-            <Label>ENV bundle</Label>
-            {secretActions('envData', 'ENV')}
-            <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
-          </div>
-        ) : (
-          <CredentialEnvEditor value={envData} onChange={onEnvDataChange} />
-        ))}
+          );
+        }
+
+        if (spec.field === 'apiKey') {
+          return (
+            <CredentialVaultSecretField
+              key={spec.field}
+              guardKey={`${guardScope}-api-key`}
+              fieldId="nbos-cred-api-key"
+              label={spec.label}
+              kind="password"
+              isExisting={isExisting}
+              hasStored={Boolean(secretsPresent?.apiKey)}
+              draft={apiKey}
+              onDraftChange={onApiKeyChange}
+              revealedValue={revealed?.apiKey}
+              onReveal={() => onReveal?.('apiKey')}
+              onCopy={onCopy ? () => onCopy('apiKey') : undefined}
+            />
+          );
+        }
+
+        return null;
+      })}
     </div>
   );
 }
 
-// silence unused FIELD_LABELS if needed - actually remove FIELD_LABELS if unused
+function PlainTextField({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        name={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
+      />
+    </div>
+  );
+}
+
+async function copyPlainFieldValue(value: string): Promise<boolean> {
+  const text = value.trim();
+  if (!text) return false;
+  await navigator.clipboard.writeText(text);
+  toast.success('Copied');
+  return true;
+}
+
+function preventCopyButtonBlur(event: React.MouseEvent<HTMLButtonElement>) {
+  event.preventDefault();
+}
+
+function GuardedTextField({
+  guardKey,
+  id,
+  label,
+  value,
+  onChange,
+  showCopy = false,
+}: {
+  guardKey: string;
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  showCopy?: boolean;
+}) {
+  const guard = useAutofillGuard(guardKey);
+  const { copied, markCopied } = useCredentialVaultCopyFeedback();
+
+  const handleCopy = () => {
+    void copyPlainFieldValue(value).then((ok) => {
+      if (ok) markCopied();
+    });
+  };
+
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        {showCopy ? (
+          <div className="absolute top-1/2 right-1 z-10 flex -translate-y-1/2 items-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onMouseDown={preventCopyButtonBlur}
+              onClick={handleCopy}
+              aria-label={`Copy ${label}`}
+            >
+              {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+            </Button>
+          </div>
+        ) : null}
+        <Input
+          id={id}
+          name={id}
+          value={value}
+          readOnly={guard.readOnly}
+          onFocus={guard.onFocus}
+          onChange={(e) => {
+            if (!guard.acceptChange) return;
+            onChange(e.target.value);
+          }}
+          className={cn(
+            showCopy ? 'pr-10' : undefined,
+            copied ? CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS : undefined,
+          )}
+          {...CREDENTIAL_VAULT_INPUT_IGNORE_PROPS}
+        />
+      </div>
+    </div>
+  );
+}

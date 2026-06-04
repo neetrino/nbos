@@ -359,6 +359,17 @@ Remaining depth:
 
 ---
 
+## Platform access (optional, post-foundation)
+
+> **2026-06-02:** основные list/detail/workspace gates shipped (`assertTaskAccessible`, `assertProjectTasksAccessible`). Не блокирует закрытие Platform Access Foundation.
+
+| Item                                                             | Статус    | Примечание                                                                                   |
+| ---------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------- |
+| `TasksService.findByEntity` (PRODUCT/EXTENSION/… embedded lists) | `BACKLOG` | Добавить participation/RBAC gate по типу anchor entity, если endpoint открыт шире team graph |
+| Checklist item CRUD paths                                        | `BACKLOG` | Убедиться, что мутации checklist/subtask наследуют `assertTaskAccessible` на parent task     |
+
+---
+
 ## Вывод
 
 Текущий runtime по задачам не пустой и не хаотичный. Он уже содержит:

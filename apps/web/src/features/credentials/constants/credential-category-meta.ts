@@ -25,7 +25,7 @@ const CATEGORY_ACCENT_BAR: Record<string, string> = {
   OTHER: 'bg-gray-400',
 };
 
-const DEFAULT_CATEGORY_ACCENT = CATEGORY_ACCENT_BAR.OTHER;
+const DEFAULT_CATEGORY_ACCENT = CATEGORY_ACCENT_BAR.OTHER ?? 'bg-gray-400';
 
 function categoryValueOrOther(category: string): string {
   const known = CREDENTIAL_CATEGORIES.some((item) => item.value === category);

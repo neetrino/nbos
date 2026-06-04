@@ -3,17 +3,28 @@ import { buildDriveInheritedLinkFileAccessWhere } from './drive-inherited-link-a
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
+function mockInheritedTargetQueries(prisma: MockPrisma) {
+  prisma.project.findMany.mockResolvedValue([{ id: 'proj-1' }]);
+  prisma.deal.findMany.mockResolvedValue([{ id: 'deal-1' }]);
+  prisma.product.findMany.mockResolvedValue([]);
+  prisma.task.findMany.mockResolvedValue([]);
+  prisma.workSpace.findMany.mockResolvedValue([]);
+  prisma.invoice.findMany.mockResolvedValue([{ id: 'inv-1' }]);
+  prisma.payment.findMany.mockResolvedValue([]);
+  prisma.expense.findMany.mockResolvedValue([]);
+  prisma.partner.findMany.mockResolvedValue([]);
+  prisma.company.findMany.mockResolvedValue([]);
+  prisma.contact.findMany.mockResolvedValue([]);
+  prisma.clientServiceRecord.findMany.mockResolvedValue([]);
+}
+
 describe('buildDriveInheritedLinkFileAccessWhere', () => {
   let prisma: MockPrisma;
 
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
-    prisma.project.findMany.mockResolvedValue([{ id: 'proj-1' }]);
-    prisma.deal.findMany.mockResolvedValue([]);
-    prisma.product.findMany.mockResolvedValue([]);
-    prisma.task.findMany.mockResolvedValue([]);
-    prisma.workSpace.findMany.mockResolvedValue([]);
+    mockInheritedTargetQueries(prisma);
     prisma.employeeDepartment.findMany.mockResolvedValue([]);
   });
 
@@ -26,25 +37,18 @@ describe('buildDriveInheritedLinkFileAccessWhere', () => {
     expect(where).toEqual({ id: { in: [] } });
   });
 
-  it('includes file links to accessible projects for OWN scope', async () => {
+  it('layers confidentiality: finance tier needs finance link, not deal alone', async () => {
     const where = await buildDriveInheritedLinkFileAccessWhere(prisma as never, {
       employeeId: 'emp-1',
       departmentIds: [],
       driveScope: 'OWN',
     });
-    expect(where).toEqual(
-      expect.objectContaining({
-        AND: expect.arrayContaining([
-          expect.objectContaining({
-            links: expect.objectContaining({
-              some: expect.objectContaining({
-                OR: expect.arrayContaining([{ entityType: 'PROJECT', entityId: 'proj-1' }]),
-              }),
-            }),
-          }),
-        ]),
-      }),
-    );
+
+    expect(prisma.invoice.findMany).toHaveBeenCalled();
+    const serialized = JSON.stringify(where);
+    expect(serialized).toContain('FINANCE_SENSITIVE');
+    expect(serialized).toContain('INVOICE');
+    expect(serialized).toContain('inv-1');
   });
 });
 
@@ -54,11 +58,7 @@ describe('buildDriveAssetAccessWhere', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
-    prisma.project.findMany.mockResolvedValue([]);
-    prisma.deal.findMany.mockResolvedValue([]);
-    prisma.product.findMany.mockResolvedValue([]);
-    prisma.task.findMany.mockResolvedValue([]);
-    prisma.workSpace.findMany.mockResolvedValue([]);
+    mockInheritedTargetQueries(prisma);
     prisma.employeeDepartment.findMany.mockResolvedValue([]);
   });
 

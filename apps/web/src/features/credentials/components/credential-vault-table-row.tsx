@@ -3,46 +3,39 @@
 import { TableRow, TableCell } from '@/components/ui/table';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { CredentialVaultTableRowCells } from '@/features/credentials/components/credential-vault-table-row-cells';
-import {
-  CredentialVaultTableActionsCell,
-  CredentialVaultTableUrlCell,
-} from '@/features/credentials/components/credential-vault-table-row-actions';
+import { CredentialVaultTableUrlCell } from '@/features/credentials/components/credential-vault-table-row-actions';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
 
+import type { CredentialSecretField } from '@/lib/api/credentials';
+
 export interface CredentialVaultTableRowProps {
   cred: CredentialListItem;
   isArchivedList: boolean;
-  isLoginVisible: boolean;
+  secretFlashCredentialId: string | null;
   selectionEnabled: boolean;
   selectionActive: boolean;
   selected: boolean;
   onToggleSelected: () => void;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onOpenCredential: (id: string) => void;
-  onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string, criticality: string) => void;
-  onRestored: () => void;
 }
 
 export function CredentialVaultTableRow({
   cred,
   isArchivedList,
-  isLoginVisible,
+  secretFlashCredentialId,
   selectionEnabled,
   selectionActive,
   selected,
   onToggleSelected,
-  onToggleLogin,
-  onCopy,
+  onCopyText,
+  onCopySecret,
   onOpenCredential,
-  onRequestDelete,
-  onRequestPurge,
-  onRestored,
 }: CredentialVaultTableRowProps) {
   return (
     <TableRow
@@ -75,22 +68,12 @@ export function CredentialVaultTableRow({
       ) : null}
       <CredentialVaultTableRowCells
         cred={cred}
-        isLoginVisible={isLoginVisible}
-        onToggleLogin={onToggleLogin}
-        onCopy={onCopy}
+        secretFlashCredentialId={secretFlashCredentialId}
+        onCopyText={onCopyText}
+        onCopySecret={onCopySecret}
       />
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CredentialVaultTableUrlCell cred={cred} isArchivedList={isArchivedList} />
-      </TableCell>
-      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-        <CredentialVaultTableActionsCell
-          cred={cred}
-          isArchivedList={isArchivedList}
-          onOpenCredential={onOpenCredential}
-          onRequestDelete={onRequestDelete}
-          onRequestPurge={onRequestPurge}
-          onRestored={onRestored}
-        />
       </TableCell>
     </TableRow>
   );

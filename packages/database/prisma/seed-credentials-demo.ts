@@ -1,5 +1,6 @@
 import { createCipheriv, createHash, randomBytes } from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
+import { resolveCredentialProviderId, seedCredentialProviders } from './seed-credential-providers';
 import type {
   CredentialAccessLevelEnum,
   CredentialCategoryEnum,
@@ -39,7 +40,6 @@ interface CredentialSeedRow {
   ownerId?: string;
   rotationOwnerId?: string;
   provider?: string;
-  environment?: string;
   url?: string;
   login?: string;
   phone?: string;
@@ -189,7 +189,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       ownerId: pm.id,
       rotationOwnerId: pm.id,
       provider: 'Vercel',
-      environment: 'Production',
       url: 'https://vercel.com/acme',
       login: 'admin@acme.am',
       password: 'Acme-Vercel-2026!',
@@ -206,7 +205,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       projectId: ctx.products.acmeSite.projectId,
       ownerId: pm.id,
       provider: 'Namecheap',
-      environment: 'Production',
       url: 'https://ap.manage.namecheap.com',
       login: 'acme_dns',
       password: 'Nc-Dns-Root-8842',
@@ -223,7 +221,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       productId: ctx.products.acmeSite.id,
       ownerId: pm.id,
       provider: 'Neon',
-      environment: 'Production',
       login: 'neondb_owner',
       password: 'neon-super-secret-pw',
       envData: 'DATABASE_URL=postgresql://neondb_owner:***@neon.tech/acme_prod',
@@ -239,7 +236,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       projectId: ctx.products.acmeSite.projectId,
       ownerId: dev.id,
       provider: 'GitHub',
-      environment: 'Production',
       secureNotes:
         '-----BEGIN OPENSSH PRIVATE KEY-----\nDEMO-KEY-ONLY\n-----END OPENSSH PRIVATE KEY-----',
       allowedEmployees: team,
@@ -254,7 +250,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       projectId: ctx.products.acmeSite.projectId,
       ownerId: dev.id,
       provider: 'NBOS',
-      environment: 'Production',
       envData: 'NEXT_PUBLIC_API_URL=https://api.acme.am\nAUTH_SECRET=***',
       allowedEmployees: team,
     },
@@ -268,7 +263,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       productId: ctx.products.techstartApp.id,
       ownerId: pm.id,
       provider: 'Firebase',
-      environment: 'Production',
       login: 'firebase@techstart.am',
       password: 'Firebase-Console-Demo-99',
       apiKey: 'AIzaSy-DEMO-TECHSTART-FIREBASE-KEY',
@@ -285,7 +279,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       productId: ctx.products.techstartApp.id,
       ownerId: pm.id,
       provider: 'Apple',
-      environment: 'Production',
       login: 'dev@techstart.am',
       password: 'AppleDev-Portal-99',
       allowedEmployees: [pm.id],
@@ -314,7 +307,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       productId: ctx.products.medtechBlog.id,
       ownerId: pm.id,
       provider: 'WordPress',
-      environment: 'Production',
       url: 'https://blog.medtech.am/wp-admin',
       login: 'medtech_admin',
       password: 'Wp-Admin-MedTech-42',
@@ -340,7 +332,6 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       accessLevel: 'SECRET',
       ownerId: ceo.id,
       provider: 'OpenAI',
-      environment: 'Production',
       login: 'platform@neetrino.com',
       password: 'OpenAI-Portal-Demo-Pw',
       apiKey: 'sk-demo-openai-nbos-production-key',
@@ -485,7 +476,7 @@ function buildGeneratedRows(
     'HOSTING_SERVER',
     'DOMAIN_REGISTRAR',
     'MAIL_SMTP',
-    'OTHER_SECRET',
+    'RECOVERY_CODES',
   ];
   const accessLevels: CredentialAccessLevelEnum[] = [
     'PROJECT_TEAM',
@@ -533,7 +524,6 @@ function buildGeneratedRows(
           projectId: project.id,
           ownerId: criticality === 'CRITICAL' && idx % 7 === 0 ? undefined : ownerId,
           provider,
-          environment: idx % 2 === 0 ? 'Production' : 'Staging',
           url: `https://${provider.toLowerCase()}.example.com/${project.code}`,
           login:
             accessLevel === 'PERSONAL'
@@ -563,10 +553,16 @@ async function createCredentialRows(
   prisma: PrismaClient,
   rows: CredentialSeedRow[],
   encKey: string,
+  slugToProviderId: Map<string, string>,
 ): Promise<Map<string, string>> {
   const nameToId = new Map<string, string>();
   for (const row of rows) {
     const encrypted = encryptSecrets(ensureDemoSecrets(row), encKey);
+    const providerId = await resolveCredentialProviderId(
+      prisma,
+      encrypted.provider,
+      slugToProviderId,
+    );
     const created = await prisma.credential.create({
       data: {
         name: encrypted.name,
@@ -580,8 +576,7 @@ async function createCredentialRows(
         clientServiceRecordId: encrypted.clientServiceRecordId,
         ownerId: encrypted.ownerId,
         rotationOwnerId: encrypted.rotationOwnerId,
-        provider: encrypted.provider,
-        environment: encrypted.environment,
+        providerId,
         url: encrypted.url,
         login: encrypted.login,
         phone: encrypted.phone,
@@ -714,11 +709,13 @@ export async function seedCredentialsDemo(
     orderBy: { code: 'asc' },
   });
 
+  const slugToProviderId = await seedCredentialProviders(prisma);
+
   const showcase = buildShowcaseRows(ctx, now).map(ensureDemoSecrets);
   const generated = buildGeneratedRows(projects, ctx, now);
   const allRows = [...showcase, ...generated];
 
-  const nameToId = await createCredentialRows(prisma, allRows, encKey);
+  const nameToId = await createCredentialRows(prisma, allRows, encKey, slugToProviderId);
   await linkDomainsAndClientServices(prisma, nameToId);
   const bindingCount = await seedProductAccessSlotBindings(prisma, ctx, nameToId);
 

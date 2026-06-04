@@ -229,6 +229,30 @@ export class CredentialsController {
     );
   }
 
+  @Get('providers')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Search credential provider catalog' })
+  @ApiQuery({ name: 'q', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async searchProviders(
+    @Query('q') q?: string,
+    @Query('limit') limit?: string,
+    @CurrentUser() _user?: CurrentUserPayload,
+  ) {
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    return this.credentialsService.searchProviders(q, parsedLimit);
+  }
+
+  @Post('providers')
+  @RequirePermission('CREDENTIALS', 'ADD')
+  @ApiOperation({ summary: 'Create credential provider (inline from sheet)' })
+  async createProvider(
+    @Body() body: { name: string; website?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.createProvider(body, user.id);
+  }
+
   @Get(':id/audit-log')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Audit trail for a credential (sheet)' })
@@ -335,8 +359,7 @@ export class CredentialsController {
       category: string;
       credentialType?: string;
       criticality?: string;
-      environment?: string;
-      provider?: string;
+      providerId?: string | null;
       name: string;
       url?: string;
       login?: string;
@@ -373,8 +396,7 @@ export class CredentialsController {
       category?: string;
       credentialType?: string;
       criticality?: string;
-      environment?: string;
-      provider?: string;
+      providerId?: string | null;
       name?: string;
       url?: string;
       login?: string;

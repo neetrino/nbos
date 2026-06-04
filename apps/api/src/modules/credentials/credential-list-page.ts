@@ -1,26 +1,44 @@
 import type { Prisma } from '@nbos/database';
 import { CREDENTIAL_LIST_SELECT } from './credential-list-select';
-import { toCredentialWithoutSecrets } from './credential-health.utils';
+import { loadCredentialSecretsPresence } from './credential-list-secrets-presence';
+import { mapCredentialForApi } from './credential-api.mapper';
 import type { CredentialQueryParams } from './credential-domain.types';
 import type { CredentialListSort } from './credential-list-sort';
 import { loadRecentOrderedCredentialIds } from './credential-list-recent-ids';
 import type { CredentialsAccessContext } from './credentials-access';
 import type { CredentialsRuntime } from './credentials-runtime';
 
+/** Overrides list `secretsPresent` with booleans computed in SQL (blobs not fetched). */
+async function withSecretsPresence(
+  runtime: CredentialsRuntime,
+  items: ReturnType<typeof mapCredentialForApi>[],
+): Promise<ReturnType<typeof mapCredentialForApi>[]> {
+  if (items.length === 0) return items;
+  const presence = await loadCredentialSecretsPresence(
+    runtime.prisma,
+    items.map((item) => item.id),
+  );
+  return items.map((item) => ({
+    ...item,
+    secretsPresent: presence.get(item.id) ?? item.secretsPresent,
+  }));
+}
+
 async function fetchCredentialsByOrderedIds(
   runtime: CredentialsRuntime,
   ids: string[],
-): Promise<ReturnType<typeof toCredentialWithoutSecrets>[]> {
+): Promise<ReturnType<typeof mapCredentialForApi>[]> {
   if (ids.length === 0) return [];
   const rows = await runtime.prisma.credential.findMany({
     where: { id: { in: ids } },
     select: CREDENTIAL_LIST_SELECT,
   });
   const byId = new Map(rows.map((row) => [row.id, row]));
-  return ids
+  const ordered = ids
     .map((id) => byId.get(id))
     .filter((row): row is NonNullable<typeof row> => row !== undefined)
-    .map((row) => toCredentialWithoutSecrets(row));
+    .map((row) => mapCredentialForApi(row));
+  return withSecretsPresence(runtime, ordered);
 }
 
 export async function findCredentialListPageStandard(
@@ -45,7 +63,10 @@ export async function findCredentialListPageStandard(
   ]);
 
   return {
-    items: rows.map((row) => toCredentialWithoutSecrets(row)),
+    items: await withSecretsPresence(
+      runtime,
+      rows.map((row) => mapCredentialForApi(row)),
+    ),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
   };
 }

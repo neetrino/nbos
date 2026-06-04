@@ -1,32 +1,72 @@
 'use client';
 
-import { Eye, EyeOff, Copy, KeyRound, FolderKanban, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FolderKanban, KeyRound, Shield } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import {
   getAccessLevel,
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
+import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
+import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
+import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialVaultTableRowCellsProps {
   cred: CredentialListItem;
-  isLoginVisible: boolean;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
+  secretFlashCredentialId: string | null;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
+}
+
+function previewCellFallback(cred: CredentialListItem, itemIndex: number) {
+  const model = buildCredentialVaultPreview(cred);
+  if (model.infoOnly && itemIndex === 0) {
+    return <CredentialVaultPreviewStrip credential={cred} itemIndex={0} />;
+  }
+  return <span className="text-muted-foreground text-sm">—</span>;
 }
 
 export function CredentialVaultTableRowCells({
   cred,
-  isLoginVisible,
-  onToggleLogin,
-  onCopy,
+  secretFlashCredentialId,
+  onCopyText,
+  onCopySecret,
 }: CredentialVaultTableRowCellsProps) {
   const access = getAccessLevel(cred.accessLevel);
   const criticality = getCredentialCriticality(cred.criticality);
   const healthBadge = credentialHealthBadge(cred.health);
+  const preview = buildCredentialVaultPreview(cred);
+
+  const renderPreviewCell = (itemIndex: number) => {
+    const item = preview.items[itemIndex];
+    if (!item) {
+      return previewCellFallback(cred, itemIndex);
+    }
+    if (item.type === 'info') {
+      return itemIndex === 0 ? (
+        <CredentialVaultPreviewStrip
+          credential={cred}
+          onCopyText={onCopyText}
+          onCopySecret={onCopySecret}
+          itemIndex={0}
+        />
+      ) : (
+        <span className="text-muted-foreground text-sm">—</span>
+      );
+    }
+    return (
+      <CredentialVaultPreviewStrip
+        credential={cred}
+        secretFlashCredentialId={secretFlashCredentialId}
+        onCopyText={onCopyText}
+        onCopySecret={onCopySecret}
+        itemIndex={itemIndex}
+      />
+    );
+  };
 
   return (
     <>
@@ -36,30 +76,18 @@ export function CredentialVaultTableRowCells({
           <span className="font-medium">{cred.name}</span>
         </div>
       </TableCell>
+      <TableCell className="max-w-[180px]" onClick={(e) => e.stopPropagation()}>
+        {renderPreviewCell(0)}
+      </TableCell>
+      <TableCell className="max-w-[140px]" onClick={(e) => e.stopPropagation()}>
+        {renderPreviewCell(1)}
+      </TableCell>
       <TableCell className="text-xs">{cred.category}</TableCell>
       <TableCell className="text-muted-foreground text-xs">
-        {cred.credentialType.replaceAll('_', ' ')}
+        {formatCredentialTypeLabel(cred.credentialType)}
       </TableCell>
       <TableCell>
         {criticality && <StatusBadge label={criticality.label} variant={criticality.variant} />}
-      </TableCell>
-      <TableCell className="text-muted-foreground text-sm">{cred.provider ?? '—'}</TableCell>
-      <TableCell className="text-muted-foreground text-sm">
-        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-          <span className="font-mono text-xs">
-            {cred.login ? (isLoginVisible ? cred.login : '••••••••') : '—'}
-          </span>
-          {cred.login && (
-            <div className="flex gap-0.5">
-              <Button variant="ghost" size="icon-sm" onClick={() => onToggleLogin(cred.id)}>
-                {isLoginVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-              </Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => onCopy(cred.login!)}>
-                <Copy size={12} />
-              </Button>
-            </div>
-          )}
-        </div>
       </TableCell>
       <TableCell>
         {access && (
@@ -68,9 +96,6 @@ export function CredentialVaultTableRowCells({
             <StatusBadge label={access.label} variant={access.variant} />
           </div>
         )}
-      </TableCell>
-      <TableCell className="text-muted-foreground text-sm">
-        {cred.owner ? `${cred.owner.firstName} ${cred.owner.lastName}` : '—'}
       </TableCell>
       <TableCell>
         {cred.project ? (

@@ -108,6 +108,11 @@ import {
   findLibraryRecordFileLink,
   resolveDriveActionCapabilities,
 } from './drive-action-capabilities';
+import {
+  applyServerFileActionGates,
+  buildDriveFileActionGates,
+} from './drive-file-allowed-actions';
+import { useDriveFileAllowedActions } from './use-drive-file-allowed-actions';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
 import { runDriveZipExportJob } from './drive-zip-export-run';
 import { buildDriveTypedExportActions, type DriveTypedExportAction } from './drive-export-ui';
@@ -702,6 +707,26 @@ export function DriveWorkspace() {
       selectedSpace.key,
       systemLibraryLink,
     ],
+  );
+
+  const selectedFileAllowedActions = useDriveFileAllowedActions(
+    selected?.id ?? null,
+    driveStorageSpace ?? undefined,
+  );
+
+  const effectiveDriveActionCapabilities = useMemo(
+    () => applyServerFileActionGates(driveActionCapabilities, selectedFileAllowedActions),
+    [driveActionCapabilities, selectedFileAllowedActions],
+  );
+
+  const selectedFileActionGates = useMemo(
+    () =>
+      buildDriveFileActionGates(
+        effectiveDriveActionCapabilities,
+        selected,
+        selectedFileAllowedActions,
+      ),
+    [effectiveDriveActionCapabilities, selected, selectedFileAllowedActions],
   );
 
   const sidebarCreateMenuConfig = useMemo(() => {
@@ -1555,7 +1580,7 @@ export function DriveWorkspace() {
   }
 
   function onMoveFile(file: FileAsset) {
-    if (!driveActionCapabilities.canMovePlacementInTree || !placementFolderId) {
+    if (!effectiveDriveActionCapabilities.canMovePlacementInTree || !placementFolderId) {
       toast.error('Open a folder in this record to move file placements.');
       return;
     }
@@ -1563,7 +1588,7 @@ export function DriveWorkspace() {
   }
 
   function onCopyFile(file: FileAsset) {
-    if (!driveActionCapabilities.canCopyIntoFolderTree) {
+    if (!effectiveDriveActionCapabilities.canCopyIntoFolderTree) {
       toast.error('Folder copy is not available in this view.');
       return;
     }
@@ -1571,7 +1596,7 @@ export function DriveWorkspace() {
   }
 
   function onShareFile(file: FileAsset) {
-    if (!driveActionCapabilities.canShareFile) {
+    if (!effectiveDriveActionCapabilities.canShareFile) {
       toast.error('Sharing is not available in this view.');
       return;
     }
@@ -2389,23 +2414,24 @@ export function DriveWorkspace() {
           onArchive={(file) => void onArchive(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
+          fileActionGates={selectedFileActionGates}
           onCopyFile={
-            !inLifecycleView && driveActionCapabilities.canCopyIntoFolderTree
+            !inLifecycleView && effectiveDriveActionCapabilities.canCopyIntoFolderTree
               ? (file) => void onCopyFile(file)
               : undefined
           }
           onMoveFile={
-            !inLifecycleView && driveActionCapabilities.canMovePlacementInTree
+            !inLifecycleView && effectiveDriveActionCapabilities.canMovePlacementInTree
               ? (file) => void onMoveFile(file)
               : undefined
           }
           onRemoveFromFolder={
-            !inLifecycleView && driveActionCapabilities.canRemoveFromFolder
+            !inLifecycleView && effectiveDriveActionCapabilities.canRemoveFromFolder
               ? (file) => void onRemoveFromFolder(file)
               : undefined
           }
           onUnlinkFromRecord={
-            !inLifecycleView && driveActionCapabilities.canUnlinkFromRecord
+            !inLifecycleView && effectiveDriveActionCapabilities.canUnlinkFromRecord
               ? (file) => void onUnlinkFromRecord(file)
               : undefined
           }

@@ -43,6 +43,10 @@ import {
 } from './credentials-mutation.operations';
 import type { CredentialManualGrantInput } from './credential-manual-grant.types';
 import type { CredentialsRuntime } from './credentials-runtime';
+import {
+  createCredentialProvider,
+  searchCredentialProviders,
+} from './credential-providers.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -104,6 +108,14 @@ export class CredentialsService {
 
   findAll(params: CredentialQueryParams, access: CredentialsAccessContext) {
     return findAllCredentials(this.runtime, params, access);
+  }
+
+  searchProviders(query?: string, limit?: number) {
+    return searchCredentialProviders(this.runtime, query, limit);
+  }
+
+  createProvider(body: { name: string; website?: string }, userId: string) {
+    return createCredentialProvider(this.runtime, body, userId);
   }
 
   findById(id: string, access: CredentialsAccessContext) {

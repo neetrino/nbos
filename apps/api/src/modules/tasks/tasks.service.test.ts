@@ -49,17 +49,16 @@ describe('TasksService', () => {
 
     it('applies involvesEmployeeId filter', async () => {
       await service.findAll({ involvesEmployeeId: 'emp-1' });
-      expect(prisma.task.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            OR: expect.arrayContaining([
-              { assigneeId: 'emp-1' },
-              { creatorId: 'emp-1' },
-              { coAssignees: { has: 'emp-1' } },
-              { observers: { has: 'emp-1' } },
-            ]),
-          }),
-        }),
+      const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
+        where?: { OR?: unknown[] };
+      };
+      expect(listCall?.where?.OR).toEqual(
+        expect.arrayContaining([
+          { assigneeId: { in: ['emp-1'] } },
+          { creatorId: { in: ['emp-1'] } },
+          { coAssignees: { hasSome: ['emp-1'] } },
+          { observers: { hasSome: ['emp-1'] } },
+        ]),
       );
     });
 
@@ -71,9 +70,30 @@ describe('TasksService', () => {
       prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
       await service.findAll({
         projectId: 'p1',
-        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'ASSIGNED' },
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
       });
       expect(prisma.project.findFirst).toHaveBeenCalled();
+    });
+
+    it('gates workspaceId list to work space participation', async () => {
+      prisma.workSpace.findFirst.mockResolvedValue({ id: 'ws-1' });
+      await service.findAll({
+        workspaceId: 'ws-1',
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
+      });
+      expect(prisma.workSpace.findFirst).toHaveBeenCalled();
+    });
+
+    it('applies participation filter when list has no projectId', async () => {
+      await service.findAll({
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
+      });
+      const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
+        where?: { OR?: unknown[] };
+      };
+      expect(listCall?.where?.OR).toEqual(
+        expect.arrayContaining([{ assigneeId: { in: ['emp-1'] } }]),
+      );
     });
 
     it('validates order belongs to project when both ids are set', async () => {
@@ -100,6 +120,18 @@ describe('TasksService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+    });
+
+    it('checks participation before load when access is scoped', async () => {
+      prisma.task.findFirst.mockResolvedValue({ id: 't1' });
+      prisma.task.findUnique.mockResolvedValue({ id: 't1', title: 'Task' });
+      await service.findById('t1', {
+        employeeId: 'emp-1',
+        departmentIds: [],
+        viewScope: 'OWN',
+      });
+      expect(prisma.task.findFirst).toHaveBeenCalled();
+      expect(prisma.task.findUnique).toHaveBeenCalled();
     });
   });
 
@@ -291,10 +323,10 @@ describe('TasksService', () => {
       await service.getStats('emp-1');
       const expectedWhere = expect.objectContaining({
         OR: expect.arrayContaining([
-          { assigneeId: 'emp-1' },
-          { creatorId: 'emp-1' },
-          { coAssignees: { has: 'emp-1' } },
-          { observers: { has: 'emp-1' } },
+          { assigneeId: { in: ['emp-1'] } },
+          { creatorId: { in: ['emp-1'] } },
+          { coAssignees: { hasSome: ['emp-1'] } },
+          { observers: { hasSome: ['emp-1'] } },
         ]),
       });
       expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);

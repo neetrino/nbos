@@ -3,7 +3,7 @@
 > Платформенная модель access levels для Project/Product-scoped данных. Credentials использует ее первым, но модель не является credentials-only.
 
 **Дата:** 2026-06-02  
-**Статус:** Phase 1 implemented (schema, team APIs, access policies settings, project/product participants UI). Credentials enforcement — Phase 2 after Category vs Type decision.
+**Статус:** Phase 1 + Phase 2 **shipped** (Credentials, Drive, Finance, Tasks reuse). Work plan archived: `docs/archive/todos/1.todo-Access.archived.md`. Optional backlog — module cleanup registers (Drive §9, Tasks «Platform access»).
 
 ---
 
@@ -45,6 +45,26 @@ Explicit access to one concrete resource.
 - `Edit`.
 
 Manual override не выдает delete/admin. Delete/Admin остается high-level RBAC/platform permission.
+
+### ResourceAccessGrant reuse contract (Slice D)
+
+Единая таблица `ResourceAccessGrant` (`resource_type`, `resource_id`, `employee_id`, `level`, `expires_at`, `revoked_at`, `reason`).
+
+Константы: `@nbos/shared` → `RESOURCE_GRANT_RESOURCE_TYPE`, `RESOURCE_GRANT_RESOURCE_TYPES`.
+
+| `resource_type`    | Module      | Manual UI           | Levels (platform) | Enforcement notes                                                               |
+| ------------------ | ----------- | ------------------- | ----------------- | ------------------------------------------------------------------------------- |
+| `credential`       | Credentials | Sheet Manual Access | `VIEW`, `EDIT`    | Row filter + sheet; legacy `allowedEmployees` backfilled                        |
+| `drive_file_asset` | Drive       | File Share dialog   | `VIEW`, `EDIT`    | Dual-write from `FileAssetGrant`; permission in `reason` (`drive_permission:*`) |
+| `drive_folder`     | Drive       | Folder Share dialog | `VIEW`, `EDIT`    | Folder grant opens folder; files in subtree via `drive-folder-grant-inherit.ts` |
+| `finance_*`        | Finance     | — (planned)         | `VIEW`, `EDIT`    | Not shipped; row access = RBAC + participation graph today                      |
+
+Rules:
+
+- Manual grant **never** replaces module RBAC gate (user still needs `*_VIEW` / action permission).
+- `level` = `VIEW` | `EDIT` only at platform layer; module-specific actions (EXPORT, SHARE, …) stored in Drive `reason` or legacy grant tables until unified.
+- Revoke sets `revoked_at`; expired grants ignored in `activeResourceAccessGrantWhere`.
+- Audit: grant create/update/revoke per module (Credentials shipped; Drive via grant APIs).
 
 ---
 
@@ -159,17 +179,18 @@ Shared Prisma participation filters live in `apps/api/src/modules/platform-acces
 
 **Still backlog:**
 
-- inherited multi-link confidentiality edge cases (see Drive permissions canon).
+- inherited multi-link confidentiality resolver (see Drive permissions canon §1 runtime `2026-06-02`).
 
 ### Finance
 
 Finance row access = **RBAC module scopes** (`FINANCE_*` permissions) **plus** project/product participation when data is project-scoped.
 
-| Context               | Rule                                                                    |
-| --------------------- | ----------------------------------------------------------------------- |
-| Global finance ops    | Role with `FINANCE_*` `ALL` / department scope                          |
-| Seller / PM on a deal | `buildProjectParticipationWhere` on invoice/payment/expense `projectId` |
-| Manual override       | Future `ResourceAccessGrant` on finance document (not shipped)          |
+| Context                  | Rule                                                                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Global finance ops       | Role with `FINANCE_*` `ALL` / department scope                                                                        |
+| Seller on a deal         | `buildDealParticipationWhere` on invoice order/deal graph (`finance-deal-participation.where.ts`; role slug `seller`) |
+| PM / delivery on project | `buildProjectParticipationWhere` on invoice/payment/expense `projectId`                                               |
+| Manual override          | Future `ResourceAccessGrant` on finance document (not shipped)                                                        |
 
 Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 
@@ -183,7 +204,9 @@ Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 
 **Runtime (partial):** `GET /tasks?projectId=` asserts viewer project participation via `assertProjectTasksAccessible` when `TASKS_VIEW` ≠ `ALL`.
 
-**Still backlog:** workspace-only lists without `projectId`; task detail authorization beyond list gate.
+**Runtime (partial):** `GET /tasks?workspaceId=` gates via `assertWorkSpaceTasksAccessible`; workspace-only lists without `projectId` apply `buildTasksParticipationWhere` when `TASKS_VIEW` ≠ `ALL`.
+
+**Runtime (partial):** `GET /tasks/:id` and task mutations call `assertTaskAccessible` with the same participation graph.
 
 ---
 

@@ -4,11 +4,11 @@ export interface CredentialListItem {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string | null;
   provider: string | null;
   url: string | null;
   login: string | null;
   phone: string | null;
+  appStorePlatform?: 'APPLE' | 'GOOGLE' | null;
   accessLevel: string;
   allowedEmployees: string[];
   ownerId?: string | null;
@@ -24,6 +24,7 @@ export interface CredentialListItem {
   };
   secretsPresent?: {
     password: boolean;
+    passphrase?: boolean;
     apiKey: boolean;
     envData: boolean;
     secureNotes: boolean;

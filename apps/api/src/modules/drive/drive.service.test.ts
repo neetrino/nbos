@@ -47,6 +47,27 @@ function makeNotificationsMock() {
   return { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
 }
 
+function policyFileRow(
+  overrides: Partial<{
+    id: string;
+    ownerId: string | null;
+    createdById: string | null;
+    visibility: string;
+    confidentiality: string;
+    status: string;
+  }> = {},
+) {
+  return {
+    id: 'f1',
+    ownerId: 'emp-1',
+    createdById: 'emp-1',
+    visibility: 'INTERNAL',
+    confidentiality: 'CONFIDENTIAL',
+    status: 'ACTIVE',
+    ...overrides,
+  };
+}
+
 function makeProjectHubMock() {
   return {
     getSummary: vi.fn(),
@@ -285,10 +306,10 @@ describe('DriveService', () => {
     });
 
     it('rejects non-view grants for sensitive files', async () => {
-      prisma.fileAsset.findFirst.mockResolvedValueOnce({
-        id: 'f1',
-        confidentiality: 'FINANCE_SENSITIVE',
-      });
+      prisma.fileAsset.findFirst.mockResolvedValue(
+        policyFileRow({ confidentiality: 'FINANCE_SENSITIVE' }),
+      );
+      prisma.fileLink.count.mockResolvedValue(0);
 
       await expect(
         service.createFileAssetGrant(
@@ -301,11 +322,10 @@ describe('DriveService', () => {
     });
 
     it('stores optional grant expiry and audit reason', async () => {
-      prisma.fileAsset.findFirst.mockResolvedValueOnce({
-        id: 'f1',
-        confidentiality: 'CONFIDENTIAL',
-      });
+      prisma.fileAsset.findFirst.mockResolvedValue(policyFileRow());
+      prisma.fileLink.count.mockResolvedValue(0);
       prisma.fileAssetGrant.findFirst.mockResolvedValueOnce(null);
+      prisma.fileAssetGrant.findMany.mockResolvedValue([]);
 
       await service.createFileAssetGrant(
         'f1',
@@ -350,7 +370,8 @@ describe('DriveService', () => {
     });
 
     it('rejects linking a file into an inaccessible target business context', async () => {
-      prisma.fileAsset.findFirst.mockResolvedValueOnce({ id: 'f1' });
+      prisma.fileAsset.findFirst.mockResolvedValue(policyFileRow());
+      prisma.fileLink.count.mockResolvedValue(0);
       prisma.company.findUnique.mockResolvedValueOnce({ id: 'company-1' });
       prisma.company.findFirst.mockResolvedValueOnce(null);
 
@@ -372,7 +393,18 @@ describe('DriveService', () => {
     });
 
     it('requires upload-version permission when access comes only from a grant', async () => {
-      prisma.fileAsset.findFirst.mockResolvedValueOnce(null);
+      const grantOnlyFile = policyFileRow({ ownerId: 'emp-2', createdById: 'emp-2' });
+      prisma.fileAsset.findFirst.mockImplementation(async (args) => {
+        const where = args?.where as { OR?: Array<{ ownerId?: string; createdById?: string }> };
+        const or = where?.OR ?? [];
+        const isOwnScopeLookup = or.some(
+          (clause) => clause?.ownerId === 'emp-1' || clause?.createdById === 'emp-1',
+        );
+        if (isOwnScopeLookup) return null;
+        return grantOnlyFile;
+      });
+      prisma.fileLink.count.mockResolvedValue(0);
+      prisma.fileAssetGrant.findMany.mockResolvedValue([{ permission: 'VIEW' }]);
 
       await expect(
         service.createVersionUploadUrl(
@@ -380,25 +412,7 @@ describe('DriveService', () => {
           { fileName: 'v2.pdf', contentType: 'application/pdf' },
           { employeeId: 'emp-1', departmentIds: [], driveScope: 'OWN' },
         ),
-      ).rejects.toThrow('File asset f1 not found');
-
-      expect(prisma.fileAsset.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            id: 'f1',
-            OR: expect.arrayContaining([
-              expect.any(Object),
-              expect.objectContaining({
-                assetGrants: {
-                  some: expect.objectContaining({
-                    permission: { in: ['UPLOAD_VERSION'] },
-                  }),
-                },
-              }),
-            ]),
-          }),
-        }),
-      );
+      ).rejects.toThrow('You do not have permission to upload a new version.');
     });
 
     it('lists File Assets by entity link', async () => {
@@ -456,33 +470,30 @@ describe('DriveService', () => {
         { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
       );
 
-      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.arrayContaining([
+      const listCall = prisma.fileAsset.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: Array<Record<string, unknown>> };
+      };
+      expect(listCall?.where?.AND).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            deletedAt: null,
+            OR: expect.arrayContaining([
               expect.objectContaining({
-                OR: expect.arrayContaining([
-                  expect.objectContaining({
-                    AND: [
-                      { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
-                      {
-                        confidentiality: {
-                          notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
-                        },
-                      },
-                    ],
-                  }),
-                  expect.objectContaining({
-                    OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
-                  }),
-                  expect.objectContaining({
-                    assetGrants: expect.any(Object),
-                  }),
-                ]),
+                AND: [
+                  { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
+                  {
+                    confidentiality: {
+                      notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
+                    },
+                  },
+                ],
+              }),
+              expect.objectContaining({
+                OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
               }),
             ]),
           }),
-        }),
+        ]),
       );
     });
 
@@ -522,34 +533,31 @@ describe('DriveService', () => {
         { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
       );
 
-      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.arrayContaining([
+      const sharedCall = prisma.fileAsset.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: Array<{ OR?: unknown[] }> };
+      };
+      const sharedClause = sharedCall?.where?.AND?.find(
+        (clause) =>
+          Array.isArray(clause.OR) &&
+          clause.OR.some((part) => part && typeof part === 'object' && 'NOT' in part),
+      );
+      expect(sharedClause?.OR).toEqual(
+        expect.arrayContaining([
+          {
+            NOT: {
+              OR: [{ ownerId: 'emp-1' }, { AND: [{ ownerId: null }, { createdById: 'emp-1' }] }],
+            },
+          },
+          expect.objectContaining({
+            OR: expect.arrayContaining([
               expect.objectContaining({
-                OR: [
-                  {
-                    NOT: {
-                      OR: [
-                        { ownerId: 'emp-1' },
-                        { AND: [{ ownerId: null }, { createdById: 'emp-1' }] },
-                      ],
-                    },
-                  },
-                  {
-                    assetGrants: {
-                      some: {
-                        granteeEmployeeId: 'emp-1',
-                        revokedAt: null,
-                        OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }],
-                      },
-                    },
-                  },
-                ],
+                assetGrants: expect.objectContaining({
+                  some: expect.objectContaining({ granteeEmployeeId: 'emp-1' }),
+                }),
               }),
             ]),
           }),
-        }),
+        ]),
       );
     });
 

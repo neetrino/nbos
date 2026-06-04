@@ -45,7 +45,7 @@ export async function buildCredentialListWhere(
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
-      { provider: { contains: search, mode: 'insensitive' } },
+      { provider: { is: { name: { contains: search, mode: 'insensitive' } } } },
       { login: { contains: search, mode: 'insensitive' } },
     ];
   }

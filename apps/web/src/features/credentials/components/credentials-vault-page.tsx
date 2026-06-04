@@ -20,7 +20,6 @@ import { CredentialsVaultMainView } from '@/features/credentials/components/cred
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
-import { useCredentialVaultOpenQuery } from '@/features/credentials/hooks/use-credential-vault-open-query';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { PermissionGate } from '@/lib/permissions';
@@ -40,16 +39,14 @@ function CredentialsVaultPageContent() {
     setBoardScrollRoot(node);
   }, []);
 
-  useCredentialVaultOpenQuery(vault.openCredential);
-
-  const handlePasswordCopied = (flashId: string) => {
+  const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
     window.setTimeout(() => {
       vault.setPasswordFlashCredentialId((current) => (current === flashId ? null : current));
     }, CREDENTIAL_VAULT_COPY_FEEDBACK_MS);
   };
 
-  const copyVaultPassword = useVaultPasswordCopy(vault.setTileCopyTarget, handlePasswordCopied);
+  const copyVaultSecret = useVaultPasswordCopy(vault.setTileCopyTarget, handleSecretCopied);
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
@@ -152,10 +149,9 @@ function CredentialsVaultPageContent() {
           showCreate={vault.showCreate}
           activeTab={vault.activeTab}
           vaultListScope={vault.vaultListScope}
-          visibleLogins={vault.visibleLogins}
           quickCategoryChips={vault.quickCategoryChips}
           activeCategory={vault.quickCategory}
-          passwordFlashCredentialId={vault.passwordFlashCredentialId}
+          secretFlashCredentialId={vault.passwordFlashCredentialId}
           tableSelection={
             vault.selectionEnabled
               ? {
@@ -181,10 +177,10 @@ function CredentialsVaultPageContent() {
           onCreateOpen={() => vault.openCreate()}
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}
-          onCopyLogin={vault.copyToClipboard}
-          onCopyPassword={(id, criticality) => void copyVaultPassword({ id, criticality })}
-          onToggleLogin={vault.toggleLogin}
-          onCopy={vault.copyToClipboard}
+          onCopyText={vault.copyToClipboard}
+          onCopySecret={(id, criticality, field) =>
+            void copyVaultSecret({ id, criticality, field })
+          }
           onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
           onRequestPurge={(id, name, criticality) =>
             vault.setPurgeTarget({ id, name, criticality })
@@ -208,11 +204,13 @@ function CredentialsVaultPageContent() {
         activeTab={vault.activeTab}
         sheetOpen={vault.sheetOpen}
         sheetCredentialId={vault.sheetCredentialId}
+        sheetInitialItem={vault.sheetInitialItem}
         createPresetCategory={vault.createPresetCategory}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
         tileCopyTarget={vault.tileCopyTarget}
         onCloseSheet={vault.closeSheet}
+        onCredentialCreated={vault.handleCredentialCreated}
         onSaved={handleSaved}
         onRequestArchive={(id, name) => {
           vault.closeSheet(false);
@@ -229,10 +227,9 @@ function CredentialsVaultPageContent() {
         }}
         onTileCopyConfirm={async (pwd) => {
           if (!vault.tileCopyTarget) return;
-          await copyVaultPassword(vault.tileCopyTarget, pwd);
+          await copyVaultSecret(vault.tileCopyTarget, pwd);
           vault.setTileCopyTarget(null);
         }}
-        onPasswordCopied={handlePasswordCopied}
       />
     </div>
   );

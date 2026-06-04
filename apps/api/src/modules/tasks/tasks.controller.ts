@@ -84,10 +84,14 @@ export class TasksController {
   }
 
   @Get('stats')
+  @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get task statistics' })
   @ApiQuery({ name: 'involvesEmployeeId', required: false })
-  async getStats(@Query('involvesEmployeeId') involvesEmployeeId?: string) {
-    return this.tasksService.getStats(involvesEmployeeId);
+  async getStats(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('involvesEmployeeId') involvesEmployeeId?: string,
+  ) {
+    return this.tasksService.getStats(involvesEmployeeId, tasksAccessFromUser(user));
   }
 
   @Get('by-entity/:entityType/:entityId')
@@ -97,9 +101,10 @@ export class TasksController {
   }
 
   @Get(':id')
+  @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get task by ID' })
-  async findOne(@Param('id') id: string) {
-    return this.tasksService.findById(id);
+  async findOne(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.findById(id, tasksAccessFromUser(user));
   }
 
   @Post()
@@ -126,8 +131,10 @@ export class TasksController {
   }
 
   @Put(':id')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Update task' })
   async update(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: {
@@ -148,79 +155,110 @@ export class TasksController {
       completionRules?: unknown;
     },
   ) {
-    return this.tasksService.update(id, body);
+    return this.tasksService.update(id, body, tasksAccessFromUser(user));
   }
 
   @Patch(':id/start')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Start task' })
-  async start(@Param('id') id: string) {
-    return this.tasksService.start(id);
+  async start(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.start(id, tasksAccessFromUser(user));
   }
 
   @Patch(':id/complete')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Complete task' })
-  async complete(@Param('id') id: string) {
-    return this.tasksService.complete(id);
+  async complete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.complete(id, tasksAccessFromUser(user));
   }
 
   @Patch(':id/reopen')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Reopen task' })
-  async reopen(@Param('id') id: string) {
-    return this.tasksService.reopen(id);
+  async reopen(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.reopen(id, tasksAccessFromUser(user));
   }
 
   @Patch(':id/on-hold')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Set task status to On hold' })
-  async setOnHold(@Param('id') id: string) {
-    return this.tasksService.setOnHold(id);
+  async setOnHold(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.setOnHold(id, tasksAccessFromUser(user));
   }
 
   @Patch(':id/submit-review')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Submit task for review' })
-  async submitForReview(@Param('id') id: string, @Body() body: { reviewerId?: string }) {
-    return this.tasksService.submitForReview(id, body.reviewerId);
+  async submitForReview(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reviewerId?: string },
+  ) {
+    return this.tasksService.submitForReview(id, body.reviewerId, tasksAccessFromUser(user));
   }
 
   @Patch(':id/approve-review')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Approve task review' })
-  async approveReview(@Param('id') id: string) {
-    return this.tasksService.approveReview(id);
+  async approveReview(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.approveReview(id, tasksAccessFromUser(user));
   }
 
   @Patch(':id/request-review-changes')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Return task from review to in progress' })
-  async requestReviewChanges(@Param('id') id: string) {
-    return this.tasksService.requestReviewChanges(id);
+  async requestReviewChanges(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.requestReviewChanges(id, tasksAccessFromUser(user));
   }
 
   @Delete(':id')
+  @RequirePermission('TASKS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete task' })
-  async remove(@Param('id') id: string) {
-    await this.tasksService.delete(id);
+  async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    await this.tasksService.delete(id, tasksAccessFromUser(user));
   }
 
   // ─── LINKS ───────────────────────────────────────────────
 
   @Post(':id/links')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Add link to entity' })
-  async addLink(@Param('id') id: string, @Body() body: { entityType: string; entityId: string }) {
-    return this.tasksService.addLink(id, body.entityType, body.entityId);
+  async addLink(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { entityType: string; entityId: string },
+  ) {
+    return this.tasksService.addLink(id, body.entityType, body.entityId, tasksAccessFromUser(user));
   }
 
   @Delete(':taskId/links/:linkId')
+  @RequirePermission('TASKS', 'EDIT')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove link' })
-  async removeLink(@Param('taskId') taskId: string, @Param('linkId') linkId: string) {
-    await this.tasksService.removeLink(taskId, linkId);
+  async removeLink(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('taskId') taskId: string,
+    @Param('linkId') linkId: string,
+  ) {
+    await this.tasksService.removeLink(taskId, linkId, tasksAccessFromUser(user));
   }
 
   // ─── CHECKLISTS ──────────────────────────────────────────
 
   @Post(':id/checklists')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Create checklist' })
-  async createChecklist(@Param('id') id: string, @Body() body: { title?: string }) {
-    return this.tasksService.createChecklist(id, body.title ?? 'Checklist');
+  async createChecklist(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { title?: string },
+  ) {
+    return this.tasksService.createChecklist(
+      id,
+      body.title ?? 'Checklist',
+      tasksAccessFromUser(user),
+    );
   }
 
   @Post('checklists/:checklistId/items')

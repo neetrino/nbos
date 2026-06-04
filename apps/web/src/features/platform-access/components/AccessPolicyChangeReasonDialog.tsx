@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,15 +32,16 @@ export function AccessPolicyChangeReasonDialog({
 }: AccessPolicyChangeReasonDialogProps) {
   const [reason, setReason] = useState('');
 
-  useEffect(() => {
-    if (!open) setReason('');
-  }, [open]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) setReason('');
+    onOpenChange(nextOpen);
+  };
 
   const trimmed = reason.trim();
   const valid = trimmed.length >= ACCESS_POLICY_CHANGE_REASON_MIN_LENGTH;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -60,7 +61,7 @@ export function AccessPolicyChangeReasonDialog({
           </p>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button
@@ -68,7 +69,7 @@ export function AccessPolicyChangeReasonDialog({
             disabled={!valid}
             onClick={() => {
               onConfirm(trimmed);
-              onOpenChange(false);
+              handleOpenChange(false);
             }}
           >
             {confirmLabel}

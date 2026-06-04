@@ -22,19 +22,18 @@ export interface CredentialVaultTableSelectionProps {
   pageIds: string[];
 }
 
+import type { CredentialSecretField } from '@/lib/api/credentials';
+
 export interface CredentialVaultTableProps {
   credentials: CredentialListItem[];
   loading: boolean;
   listScope: VaultListScope;
-  visibleLogins: Set<string>;
+  secretFlashCredentialId: string | null;
   selection?: CredentialVaultTableSelectionProps;
-  onToggleLogin: (id: string) => void;
-  onCopy: (text: string) => void;
+  onCopyText: (text: string) => void;
+  onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
-  onRequestDelete: (id: string, name: string) => void;
-  onRequestPurge: (id: string, name: string, criticality: string) => void;
-  onRestored: () => void;
   showCreate: boolean;
 }
 
@@ -42,21 +41,19 @@ export function CredentialVaultTable({
   credentials,
   loading,
   listScope,
-  visibleLogins,
-  onToggleLogin,
-  onCopy,
+  secretFlashCredentialId,
+  onCopyText,
+  onCopySecret,
   onCreateOpen,
   onOpenCredential,
-  onRequestDelete,
-  onRequestPurge,
-  onRestored,
   showCreate,
   selection,
 }: CredentialVaultTableProps) {
   const isArchivedList = listScope === 'archived';
   const pageIds = selection?.pageIds ?? [];
-  const allPageSelected =
-    selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+  const allPageSelected = Boolean(
+    selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id)),
+  );
   const somePageSelected =
     selection?.enabled && pageIds.some((id) => selection.isSelected(id)) && !allPageSelected;
   if (loading) {
@@ -114,17 +111,15 @@ export function CredentialVaultTable({
               </TableHead>
             ) : null}
             <TableHead>Name</TableHead>
+            <TableHead>Login</TableHead>
+            <TableHead>Password</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Risk</TableHead>
-            <TableHead>Provider</TableHead>
-            <TableHead>Login</TableHead>
             <TableHead>Access</TableHead>
-            <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>Rotation</TableHead>
             <TableHead>URL</TableHead>
-            <TableHead className="w-28 text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -133,17 +128,14 @@ export function CredentialVaultTable({
               key={cred.id}
               cred={cred}
               isArchivedList={isArchivedList}
-              isLoginVisible={visibleLogins.has(cred.id)}
+              secretFlashCredentialId={secretFlashCredentialId}
               selectionEnabled={selection?.enabled ?? false}
               selectionActive={bulkSelectionStarted}
               selected={selection?.isSelected(cred.id) ?? false}
               onToggleSelected={() => selection?.onToggle(cred.id)}
-              onToggleLogin={onToggleLogin}
-              onCopy={onCopy}
+              onCopyText={onCopyText}
+              onCopySecret={onCopySecret}
               onOpenCredential={onOpenCredential}
-              onRequestDelete={onRequestDelete}
-              onRequestPurge={onRequestPurge}
-              onRestored={onRestored}
             />
           ))}
         </TableBody>

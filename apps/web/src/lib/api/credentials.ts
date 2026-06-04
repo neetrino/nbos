@@ -35,6 +35,7 @@ export interface CredentialsExportFileResult {
 
 export interface CredentialSecretsPresent {
   password: boolean;
+  passphrase: boolean;
   apiKey: boolean;
   envData: boolean;
   secureNotes: boolean;
@@ -54,12 +55,14 @@ export interface CredentialDetail {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string | null;
+  providerId: string | null;
   provider: string | null;
   name: string;
   url: string | null;
   login: string | null;
   phone?: string | null;
+  phones?: string[];
+  appStorePlatform?: 'APPLE' | 'GOOGLE' | null;
   notes?: string | null;
   publicNotes?: string | null;
   /** Decrypted private comment (`secureNotes`); visible without step-up when user can view credential. */
@@ -72,6 +75,8 @@ export interface CredentialDetail {
   createdAt: string;
   updatedAt?: string;
   secretsPresent: CredentialSecretsPresent;
+  /** Manual access grants, returned inline with detail to avoid a second round-trip. */
+  manualGrants?: CredentialManualGrant[];
   health?: {
     status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
     dueInDays: number | null;
@@ -87,7 +92,27 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface CredentialProviderOption {
+  id: string;
+  name: string;
+  slug: string;
+  website: string | null;
+}
+
 export const credentialsApi = {
+  async searchProviders(query = '', limit = 20): Promise<CredentialProviderOption[]> {
+    const resp = await api.get<CredentialProviderOption[]>('/api/credentials/providers', {
+      params: { q: query.trim() || undefined, limit },
+    });
+    return resp.data;
+  },
+  async createProvider(body: {
+    name: string;
+    website?: string;
+  }): Promise<CredentialProviderOption> {
+    const resp = await api.post<CredentialProviderOption>('/api/credentials/providers', body);
+    return resp.data;
+  },
   async getAll(params?: Record<string, unknown>): Promise<ListData<CredentialDetail>> {
     const resp = await api.get<ListData<CredentialDetail>>('/api/credentials', { params });
     return resp.data;

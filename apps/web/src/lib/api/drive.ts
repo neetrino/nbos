@@ -444,6 +444,19 @@ export const driveApi = {
     return resp.data;
   },
 
+  async getFileAllowedActions(
+    id: string,
+    targetFolderSpace?: 'COMPANY' | 'PERSONAL',
+  ): Promise<{ actions: string[] }> {
+    const resp = await api.get<{ actions: string[] }>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/allowed-actions',
+      {
+        params: targetFolderSpace ? { targetFolderSpace } : undefined,
+      },
+    );
+    return resp.data;
+  },
+
   async getFileAssetPreviewUrl(
     id: string,
     params?: { forDocumentId?: string },

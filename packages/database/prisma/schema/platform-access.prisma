@@ -104,7 +104,7 @@ model EmployeeAccessOverride {
   employeeId     String                     @map("employee_id")
   resourceFamily PlatformResourceFamilyEnum @map("resource_family")
   level          PlatformAccessActionEnum   @default(VIEW)
-  scopeMode      AccessScopeModeEnum?
+  scopeMode      AccessScopeModeEnum?       @map("scope_mode")
   reason         String?
   effectiveFrom  DateTime?                  @map("effective_from")
   effectiveTo    DateTime?                  @map("effective_to")

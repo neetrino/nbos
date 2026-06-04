@@ -19,7 +19,14 @@ describe('CredentialsService findAll', () => {
   });
 
   it('should list credentials without sensitive fields', async () => {
-    const mockItems = [{ id: '1', name: 'Admin Panel', category: 'ADMIN', provider: 'AWS' }];
+    const mockItems = [
+      {
+        id: '1',
+        name: 'Admin Panel',
+        category: 'ADMIN',
+        provider: { id: 'p1', name: 'AWS' },
+      },
+    ];
     prisma.credential.findMany.mockResolvedValue(mockItems);
     prisma.credential.count.mockResolvedValue(1);
 
@@ -32,7 +39,14 @@ describe('CredentialsService findAll', () => {
       expect.objectContaining({
         id: '1',
         name: 'Admin Panel',
-        secretsPresent: { password: false, apiKey: false, envData: false, secureNotes: false },
+        provider: 'AWS',
+        secretsPresent: {
+          password: false,
+          passphrase: false,
+          apiKey: false,
+          envData: false,
+          secureNotes: false,
+        },
       }),
     ]);
     expect(result.meta.total).toBe(1);
@@ -77,7 +91,10 @@ describe('CredentialsService findAll', () => {
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          OR: expect.arrayContaining([{ name: { contains: 'aws', mode: 'insensitive' } }]),
+          OR: expect.arrayContaining([
+            { name: { contains: 'aws', mode: 'insensitive' } },
+            { provider: { is: { name: { contains: 'aws', mode: 'insensitive' } } } },
+          ]),
         }),
       }),
     );
@@ -203,6 +220,7 @@ describe('CredentialsService findById', () => {
     expect(result).not.toHaveProperty('password');
     expect(result.secretsPresent).toEqual({
       password: true,
+      passphrase: false,
       apiKey: false,
       envData: false,
       secureNotes: false,

@@ -5,8 +5,12 @@ import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail
 import { cn } from '@/lib/utils';
 
 export interface DetailSheetFormFooterProps {
-  /** When false, nothing is rendered (e.g. wrong tab or no form). */
+  /**
+   * Context gate (correct tab, form loaded, permissions).
+   * Footer is also hidden when there is nothing to save (`!dirty && !saving`).
+   */
   visible: boolean;
+  /** Unsaved changes — footer appears only when true (or while `saving`). */
   dirty: boolean;
   saving: boolean;
   errorMessage?: string | null;
@@ -49,7 +53,7 @@ export function DetailSheetFormFooter({
           <Button
             type="button"
             size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            disabled={!dirty}
+            disabled={saving}
             onClick={onSave}
           >
             {saving ? 'Saving…' : saveLabel}
@@ -58,7 +62,7 @@ export function DetailSheetFormFooter({
             type="button"
             variant="outline"
             size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            disabled={!dirty}
+            disabled={saving}
             onClick={onCancel}
           >
             {cancelLabel}

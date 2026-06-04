@@ -16,7 +16,9 @@ export interface CredentialCategoryOption {
 }
 
 function labelsForValues(values: readonly string[]): CredentialCategoryOption[] {
-  const labelByValue = new Map(CREDENTIAL_CATEGORIES.map((c) => [c.value, c.label]));
+  const labelByValue = new Map<string, string>(
+    CREDENTIAL_CATEGORIES.map((c) => [c.value, c.label]),
+  );
   return values.map((value) => ({
     value,
     label: labelByValue.get(value) ?? value.replaceAll('_', ' '),
@@ -33,7 +35,7 @@ export function categoriesForVaultScope(
       ? CREDENTIAL_CATEGORIES.map((c) => c.value)
       : [...VAULT_CATEGORY_VALUES_BY_SCOPE[scope]];
 
-  const unique = new Set(values);
+  const unique = new Set<string>(values);
   if (extraValue && !unique.has(extraValue)) {
     unique.add(extraValue);
   }
@@ -88,7 +90,7 @@ export function defaultCategoryForVaultScope(
   const options = allowedOverride?.length
     ? labelsForValues(allowedOverride)
     : categoriesForVaultScope(scope);
-  if (options.length === 1) return options[0].value;
+  if (options.length === 1) return options[0]?.value ?? 'OTHER';
   if (preset && options.some((o) => o.value === preset)) return preset;
   return options[0]?.value ?? 'OTHER';
 }

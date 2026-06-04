@@ -12,6 +12,11 @@ describe('parseEnvBundleText', () => {
     expect(result.serialized).toBe('FOO=bar\nBAZ=quoted');
   });
 
+  it('parses export-prefixed lines', () => {
+    const result = parseEnvBundleText('export FOO=bar');
+    expect(result.entries).toEqual([{ key: 'FOO', value: 'bar' }]);
+  });
+
   it('skips comments and warns on invalid lines', () => {
     const result = parseEnvBundleText('# comment\nBAD LINE\nOK=1');
     expect(result.entries).toEqual([{ key: 'OK', value: '1' }]);

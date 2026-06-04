@@ -1,12 +1,19 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import { credentialsApi, type CredentialSecretField } from '@/lib/api/credentials';
+import {
+  credentialsApi,
+  type CredentialDetail,
+  type CredentialSecretField,
+} from '@/lib/api/credentials';
 import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
 import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { toast } from 'sonner';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
+import { showsProviderPicker } from '@/features/credentials/credential-field-config';
+import { normalizeCredentialPhones } from '@/features/credentials/utils/credential-phones-normalize';
+import type { AppStorePlatform } from '@/features/credentials/constants/credential-app-store-platform';
 
 const CREATE_DEFAULT_SUCCESS_TOAST = 'Credential created';
 
@@ -17,12 +24,13 @@ export interface CredentialFormSheetStateSlice {
   category: string;
   credentialType: string;
   criticality: string;
-  environment: string;
-  provider: string;
+  providerId: string | null;
   url: string;
   login: string;
-  phone: string;
+  phones: string[];
+  appStorePlatform: AppStorePlatform;
   password: string;
+  passphrase: string;
   apiKey: string;
   envData: string;
   comment: string;
@@ -35,8 +43,12 @@ export interface CredentialFormSheetStateSlice {
   setStepUpMode: Dispatch<SetStateAction<'reveal' | 'copy'>>;
   setRevealed: Dispatch<SetStateAction<Partial<Record<CredentialSecretField, string>>>>;
   loadDetail: () => Promise<void>;
+  promoteAfterCreate: (created: CredentialDetail) => void;
   commitFormSnapshot: () => void;
   captureFormRollback: () => () => void;
+  orphanedSecretsAcknowledged: boolean;
+  detailCredentialType: string | null;
+  clearOrphanedSecretsAcknowledged: () => void;
 }
 
 import type { CredentialVaultSessionValue } from '@/features/credentials/hooks/use-credential-vault-session';
@@ -47,17 +59,29 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     category: state.category,
     credentialType: state.credentialType,
     criticality: state.criticality,
-    environment: state.environment.trim() || undefined,
-    provider: state.provider.trim() || undefined,
+    providerId: showsProviderPicker(state.credentialType) ? state.providerId : null,
     url: state.url.trim() || undefined,
     login: state.login.trim() || undefined,
-    phone: state.phone.trim() || undefined,
+    phones: (() => {
+      const list = normalizeCredentialPhones(state.phones);
+      return list.length > 0 ? list : undefined;
+    })(),
+    phone: normalizeCredentialPhones(state.phones)[0] || undefined,
     password: state.password.trim() || undefined,
+    passphrase: state.passphrase.trim() || undefined,
+    appStorePlatform:
+      state.credentialType === 'APP_STORE_ACCOUNT' ? state.appStorePlatform : undefined,
     apiKey: state.apiKey.trim() || undefined,
     envData: state.envData.trim() || undefined,
     secureNotes: state.comment.trim() || undefined,
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
+    acknowledgeOrphanedSecrets:
+      state.orphanedSecretsAcknowledged &&
+      state.detailCredentialType !== null &&
+      state.credentialType !== state.detailCredentialType
+        ? true
+        : undefined,
   };
 }
 
@@ -66,7 +90,15 @@ export function useCredentialFormSheetActions(
   state: CredentialFormSheetStateSlice,
   vault: CredentialVaultSessionValue,
 ) {
-  const { onOpenChange, projectId, productId, successToast, onCreated, onSaved } = props;
+  const {
+    onOpenChange,
+    projectId,
+    productId,
+    successToast,
+    continueAfterCreate = false,
+    onCreated,
+    onSaved,
+  } = props;
   const { creatorId } = useTaskCreatorId();
   const [saving, setSaving] = useState(false);
 
@@ -90,6 +122,7 @@ export function useCredentialFormSheetActions(
           credentialsApi.replaceManualAccess(credentialId, grants),
         ]);
         toast.success('Credential saved');
+        state.clearOrphanedSecretsAcknowledged();
         onSaved?.();
       } catch (err) {
         rollback();
@@ -123,8 +156,12 @@ export function useCredentialFormSheetActions(
         if (state.accessLevel === 'PERSONAL' && creatorId) body.ownerId = creatorId;
         const created = await credentialsApi.create(body);
         if (successToast !== false) toast.success(successToast ?? CREATE_DEFAULT_SUCCESS_TOAST);
-        onOpenChange(false);
         onCreated?.(created);
+        if (continueAfterCreate) {
+          state.promoteAfterCreate(created);
+        } else {
+          onOpenChange(false);
+        }
         onSaved?.();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Could not save');
@@ -138,6 +175,7 @@ export function useCredentialFormSheetActions(
       saveEditInBackground();
     }
   }, [
+    continueAfterCreate,
     creatorId,
     onCreated,
     onOpenChange,
@@ -150,8 +188,12 @@ export function useCredentialFormSheetActions(
   ]);
 
   const executeSecretAction = useCallback(
-    async (field: CredentialSecretField, mode: 'reveal' | 'copy', pwd?: string) => {
-      if (!state.credentialId) return;
+    async (
+      field: CredentialSecretField,
+      mode: 'reveal' | 'copy',
+      pwd?: string,
+    ): Promise<boolean> => {
+      if (!state.credentialId) return false;
       const needsUnlock = credentialNeedsVaultUnlock(state.criticality);
 
       const run = async (stepUpPassword?: string) => {
@@ -177,30 +219,34 @@ export function useCredentialFormSheetActions(
       if (!needsUnlock) {
         try {
           await run();
+          return true;
         } catch {
           toast.error('Could not access secret');
+          return false;
         }
-        return;
       }
 
       if (pwd) {
         try {
           await run(pwd);
+          return true;
         } catch {
           toast.error('Could not access secret');
+          return false;
         }
-        return;
       }
 
       try {
         await run();
+        return true;
       } catch (error) {
         if (isCredentialVaultStepUpRequired(error)) {
           state.setStepUpField(field);
           state.setStepUpMode(mode);
-          return;
+          return false;
         }
         toast.error('Could not access secret');
+        return false;
       }
     },
     [state, vault],
@@ -222,5 +268,10 @@ export function useCredentialFormSheetActions(
     [executeSecretAction, state],
   );
 
-  return { saving, handleSave, runStepUp, requestSecretAction };
+  const copySecretField = useCallback(
+    (field: CredentialSecretField) => executeSecretAction(field, 'copy'),
+    [executeSecretAction],
+  );
+
+  return { saving, handleSave, runStepUp, requestSecretAction, copySecretField };
 }

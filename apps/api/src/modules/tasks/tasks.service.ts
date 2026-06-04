@@ -11,8 +11,16 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
 import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
-import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
-import type { TasksAccessContext } from './tasks-scoped-access';
+import { assertTaskAccessible } from './task-access.op';
+import {
+  buildTasksParticipationWhere,
+  taskWhereInvolvesEmployee,
+} from './task-involves-employee-where.op';
+import {
+  loadTasksScopedEmployeeIds,
+  tasksViewBypassesRowFilter,
+  type TasksAccessContext,
+} from './tasks-scoped-access';
 import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
@@ -97,7 +105,8 @@ export class TasksService {
     return result;
   }
 
-  async findById(id: string) {
+  async findById(id: string, access?: TasksAccessContext) {
+    await assertTaskAccessible(this.prisma, id, access);
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
@@ -174,8 +183,8 @@ export class TasksService {
     return task;
   }
 
-  async update(id: string, data: UpdateTaskDto) {
-    const existing = await this.findById(id);
+  async update(id: string, data: UpdateTaskDto, access?: TasksAccessContext) {
+    const existing = await this.findById(id, access);
     if (data.creatorId !== undefined) {
       const creatorId = data.creatorId.trim();
       if (!creatorId) throw new BadRequestException('creatorId is required');
@@ -236,8 +245,8 @@ export class TasksService {
   }
 
   /** Move task to Review (work done, awaiting approval). */
-  async submitForReview(id: string, reviewerId?: string) {
-    const task = await this.findById(id);
+  async submitForReview(id: string, reviewerId?: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
     if (task.status === 'COMPLETED') {
       throw new BadRequestException('Completed tasks cannot be submitted for review.');
     }
@@ -263,8 +272,8 @@ export class TasksService {
   }
 
   /** Approve review so completion rules can pass. */
-  async approveReview(id: string) {
-    const task = await this.findById(id);
+  async approveReview(id: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
     if (task.status !== 'REVIEW') {
       throw new BadRequestException('Task is not in Review status.');
     }
@@ -278,8 +287,8 @@ export class TasksService {
   }
 
   /** Send back to In Progress after review. */
-  async requestReviewChanges(id: string) {
-    const task = await this.findById(id);
+  async requestReviewChanges(id: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
     if (task.status !== 'REVIEW') {
       throw new BadRequestException('Task is not in Review status.');
     }
@@ -297,8 +306,8 @@ export class TasksService {
   }
 
   /** Начать задачу */
-  async start(id: string) {
-    const task = await this.findById(id);
+  async start(id: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
     if (task.status === 'COMPLETED') {
       throw new NotFoundException('Cannot start a completed task');
     }
@@ -312,8 +321,8 @@ export class TasksService {
   }
 
   /** Завершить задачу */
-  async complete(id: string) {
-    const task = await this.findById(id);
+  async complete(id: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
     const blockers = buildTaskCompletionBlockers(task);
     if (blockers.length > 0) {
       throw new BadRequestException({
@@ -334,8 +343,8 @@ export class TasksService {
   }
 
   /** Возобновить задачу */
-  async reopen(id: string) {
-    await this.findById(id);
+  async reopen(id: string, access?: TasksAccessContext) {
+    await this.findById(id, access);
     const reopened = await this.prisma.task.update({
       where: { id },
       data: {
@@ -349,8 +358,8 @@ export class TasksService {
   }
 
   /** Pause task (On hold) */
-  async setOnHold(id: string) {
-    await this.findById(id);
+  async setOnHold(id: string, access?: TasksAccessContext) {
+    await this.findById(id, access);
     const onHold = await this.prisma.task.update({
       where: { id },
       data: { status: 'ON_HOLD' as TaskStatusEnum },
@@ -360,21 +369,22 @@ export class TasksService {
     return onHold;
   }
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, access?: TasksAccessContext) {
+    await this.findById(id, access);
     return this.prisma.task.delete({ where: { id } });
   }
 
   // ─── LINKS ───────────────────────────────────────────────
 
-  async addLink(taskId: string, entityType: string, entityId: string) {
-    await this.findById(taskId);
+  async addLink(taskId: string, entityType: string, entityId: string, access?: TasksAccessContext) {
+    await this.findById(taskId, access);
     return this.prisma.taskLink.create({
       data: { taskId, entityType, entityId },
     });
   }
 
-  async removeLink(taskId: string, linkId: string) {
+  async removeLink(taskId: string, linkId: string, access?: TasksAccessContext) {
+    await this.findById(taskId, access);
     return this.prisma.taskLink.delete({
       where: { id: linkId, taskId },
     });
@@ -382,8 +392,8 @@ export class TasksService {
 
   // ─── CHECKLISTS ──────────────────────────────────────────
 
-  async createChecklist(taskId: string, title: string) {
-    await this.findById(taskId);
+  async createChecklist(taskId: string, title: string, access?: TasksAccessContext) {
+    await this.findById(taskId, access);
     return this.prisma.taskChecklist.create({
       data: { taskId, title },
       include: { items: true },
@@ -482,10 +492,14 @@ export class TasksService {
 
   // ─── STATS ───────────────────────────────────────────────
 
-  async getStats(involvesEmployeeId?: string) {
-    const participantWhere = involvesEmployeeId
-      ? taskWhereInvolvesEmployee(involvesEmployeeId)
-      : undefined;
+  async getStats(involvesEmployeeId?: string, access?: TasksAccessContext) {
+    let participantWhere: Prisma.TaskWhereInput | undefined;
+    if (involvesEmployeeId) {
+      participantWhere = taskWhereInvolvesEmployee(involvesEmployeeId);
+    } else if (access && !tasksViewBypassesRowFilter(access.viewScope)) {
+      const scopedIds = await loadTasksScopedEmployeeIds(this.prisma, access);
+      participantWhere = buildTasksParticipationWhere(scopedIds);
+    }
     const groupArgs = {
       _count: true as const,
       ...(participantWhere ? { where: participantWhere } : {}),

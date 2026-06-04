@@ -30,7 +30,8 @@ export function CredentialVaultSelectCheckbox({
       onClick={stopRowNavigation}
     >
       <Checkbox
-        checked={indeterminate ? ('indeterminate' as const) : checked}
+        checked={indeterminate ? true : checked}
+        data-indeterminate={indeterminate ? '' : undefined}
         aria-label={ariaLabel}
         className={cn(className)}
         onPointerDown={stopRowNavigation}

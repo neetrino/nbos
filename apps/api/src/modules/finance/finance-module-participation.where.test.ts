@@ -19,4 +19,15 @@ describe('finance-module-participation.where', () => {
       expect.objectContaining({ OR: expect.any(Array) }),
     );
   });
+
+  it('scopes seller payments via deal-linked invoices', () => {
+    const where = buildPaymentParticipationWhere(['emp-1'], true);
+    expect(where.invoice).toEqual(
+      expect.objectContaining({
+        OR: expect.arrayContaining([
+          { order: { deal: expect.objectContaining({ OR: expect.any(Array) }) } },
+        ]),
+      }),
+    );
+  });
 });

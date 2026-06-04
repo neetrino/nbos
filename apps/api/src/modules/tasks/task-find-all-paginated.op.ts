@@ -11,7 +11,12 @@ import {
   buildProjectTaskScopeWhere,
 } from './task-project-list-filter.ops';
 import { assertProjectTasksAccessible } from './task-project-access.op';
-import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
+import { assertWorkSpaceTasksAccessible } from './task-workspace-access.op';
+import {
+  buildTasksParticipationWhere,
+  taskWhereInvolvesEmployee,
+} from './task-involves-employee-where.op';
+import { loadTasksScopedEmployeeIds, tasksViewBypassesRowFilter } from './tasks-scoped-access';
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
 import type { TasksAccessContext } from './tasks-scoped-access';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
@@ -100,9 +105,15 @@ export async function taskFindAllPaginated(
   if (params.orderId && !params.projectId) {
     throw new BadRequestException('orderId requires projectId');
   }
+  if (params.workspaceId) {
+    await assertWorkSpaceTasksAccessible(prisma, params.workspaceId, params.access);
+  }
   if (params.projectId) {
     await assertProjectTasksAccessible(prisma, params.projectId, params.access);
     parts.push(buildProjectTaskScopeWhere(params.projectId));
+  } else if (params.access && !tasksViewBypassesRowFilter(params.access.viewScope)) {
+    const scopedIds = await loadTasksScopedEmployeeIds(prisma, params.access);
+    parts.push(buildTasksParticipationWhere(scopedIds));
   }
   if (params.orderId) {
     await assertOrderBelongsToProject(prisma, params.orderId, params.projectId!);

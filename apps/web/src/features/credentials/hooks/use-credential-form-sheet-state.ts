@@ -3,10 +3,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
 import {
+  inferAppStorePlatformFromUrl,
+  urlForAppStorePlatform,
+  type AppStorePlatform,
+} from '@/features/credentials/constants/credential-app-store-platform';
+import {
+  classifyCredentialTypeChange,
+  clearCredentialDraftForTypeChange,
+} from '@/features/credentials/utils/credential-type-change-policy';
+import { showsProviderPicker } from '@/features/credentials/credential-field-config';
+import { phonesFromCredentialDetail } from '@/features/credentials/utils/credential-phones-normalize';
+import {
   categoriesForVaultScope,
   defaultCategoryForVaultScope,
 } from '@/features/credentials/constants/credential-vault-categories';
 import { accessLevelForVaultScope } from '@/features/credentials/vault-scope';
+import { credentialDetailPlaceholderFromListItem } from '@/features/credentials/utils/credential-detail-placeholder';
 import {
   credentialsApi,
   type CredentialDetail,
@@ -23,8 +35,8 @@ import type { CredentialFormSheetProps } from '@/features/credentials/components
 export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const {
     open,
-    onOpenChange,
     credentialId = null,
+    initialItem = null,
     vaultScope = 'project',
     initialName,
     initialCategory,
@@ -40,12 +52,13 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [category, setCategory] = useState('SERVICE');
   const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
   const [criticality, setCriticality] = useState('MEDIUM');
-  const [environment, setEnvironment] = useState('');
-  const [provider, setProvider] = useState('');
+  const [providerId, setProviderId] = useState<string | null>(null);
+  const [providerName, setProviderName] = useState('');
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phones, setPhones] = useState<string[]>(['']);
   const [password, setPassword] = useState('');
+  const [passphrase, setPassphrase] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [envData, setEnvData] = useState('');
   const [comment, setComment] = useState('');
@@ -58,6 +71,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [stepUpMode, setStepUpMode] = useState<'reveal' | 'copy'>('reveal');
   const [accessDenied, setAccessDenied] = useState(false);
   const [snap, setSnap] = useState('');
+  const [appStorePlatform, setAppStorePlatform] = useState<AppStorePlatform>('APPLE');
+  const [pendingTypeChange, setPendingTypeChange] = useState<string | null>(null);
+  const [orphanedSecretsAcknowledged, setOrphanedSecretsAcknowledged] = useState(false);
 
   const categoryOptions = useMemo(() => {
     const scopePool = categoriesForVaultScope(
@@ -77,12 +93,13 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setCategory(defaultCategoryForVaultScope(vaultScope, initialCategory, allowedCategories));
     setCredentialType(initialCredentialType ?? 'LOGIN_PASSWORD');
     setCriticality('MEDIUM');
-    setEnvironment('');
-    setProvider('');
+    setProviderId(null);
+    setProviderName('');
     setUrl('');
     setLogin('');
-    setPhone('');
+    setPhones(['']);
     setPassword('');
+    setPassphrase('');
     setApiKey('');
     setEnvData('');
     setComment('');
@@ -91,7 +108,72 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
+    setAppStorePlatform('APPLE');
+    setPendingTypeChange(null);
+    setOrphanedSecretsAcknowledged(false);
+    setSnap('');
   }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
+
+  const draftClearHandlers = useMemo(
+    () => ({
+      setLogin,
+      setPassword,
+      setPassphrase,
+      setApiKey,
+      setEnvData,
+      setUrl,
+      setPhones: (v: string[]) => setPhones(v.length > 0 ? v : ['']),
+      clearProvider: () => {
+        setProviderId(null);
+        setProviderName('');
+      },
+    }),
+    [],
+  );
+
+  const applyCredentialType = useCallback((nextType: string) => {
+    setCredentialType(nextType);
+    if (!showsProviderPicker(nextType)) {
+      setProviderId(null);
+      setProviderName('');
+    }
+    if (nextType === 'APP_STORE_ACCOUNT') {
+      const platform: AppStorePlatform = 'APPLE';
+      setAppStorePlatform(platform);
+      setUrl(urlForAppStorePlatform(platform));
+    }
+  }, []);
+
+  const requestCredentialTypeChange = useCallback(
+    (nextType: string) => {
+      if (nextType === credentialType) return;
+      if (isCreate) {
+        clearCredentialDraftForTypeChange(credentialType, nextType, draftClearHandlers);
+        applyCredentialType(nextType);
+        return;
+      }
+      const level = classifyCredentialTypeChange(credentialType, nextType, detail?.secretsPresent);
+      if (level === 'green') {
+        setOrphanedSecretsAcknowledged(false);
+        applyCredentialType(nextType);
+        return;
+      }
+      setOrphanedSecretsAcknowledged(false);
+      setPendingTypeChange(nextType);
+    },
+    [applyCredentialType, credentialType, detail?.secretsPresent, draftClearHandlers, isCreate],
+  );
+
+  const confirmPendingTypeChange = useCallback(() => {
+    if (!pendingTypeChange) return;
+    setOrphanedSecretsAcknowledged(true);
+    applyCredentialType(pendingTypeChange);
+    setPendingTypeChange(null);
+  }, [applyCredentialType, pendingTypeChange]);
+
+  const clearOrphanedSecretsAcknowledged = useCallback(() => {
+    setOrphanedSecretsAcknowledged(false);
+  }, []);
 
   const applyFormSnapshot = useCallback(
     (fields: {
@@ -99,11 +181,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category: string;
       credentialType: string;
       criticality: string;
-      environment: string;
-      provider: string;
+      providerId: string | null;
       url: string;
       login: string;
-      phone: string;
+      phones: string[];
+      appStorePlatform: string;
       comment: string;
       nextRotationAt: string;
       manualGrants: CredentialManualGrant[];
@@ -119,11 +201,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category,
       credentialType,
       criticality,
-      environment,
-      provider,
+      providerId,
       url,
       login,
-      phone,
+      phones,
+      appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
       comment,
       nextRotationAt,
       manualGrants,
@@ -134,11 +216,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     category,
     credentialType,
     criticality,
-    environment,
-    provider,
+    providerId,
     url,
     login,
-    phone,
+    phones,
+    appStorePlatform,
     comment,
     nextRotationAt,
     manualGrants,
@@ -150,15 +232,17 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       category,
       credentialType,
       criticality,
-      environment,
-      provider,
+      providerId,
+      providerName,
       url,
       login,
-      phone,
+      phones,
+      appStorePlatform,
       comment,
       nextRotationAt,
       accessLevel,
       password,
+      passphrase,
       apiKey,
       envData,
       snap,
@@ -172,15 +256,17 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCategory(saved.category);
       setCredentialType(saved.credentialType);
       setCriticality(saved.criticality);
-      setEnvironment(saved.environment);
-      setProvider(saved.provider);
+      setProviderId(saved.providerId);
+      setProviderName(saved.providerName);
       setUrl(saved.url);
       setLogin(saved.login);
-      setPhone(saved.phone);
+      setPhones(saved.phones);
+      setAppStorePlatform(saved.appStorePlatform as AppStorePlatform);
       setComment(saved.comment);
       setNextRotationAt(saved.nextRotationAt);
       setAccessLevel(saved.accessLevel);
       setPassword(saved.password);
+      setPassphrase(saved.passphrase);
       setApiKey(saved.apiKey);
       setEnvData(saved.envData);
       setManualGrants(saved.manualGrants);
@@ -194,14 +280,16 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     credentialType,
     criticality,
     envData,
-    environment,
     login,
     manualGrants,
     name,
     nextRotationAt,
     password,
-    phone,
-    provider,
+    phones,
+    appStorePlatform,
+    passphrase,
+    providerId,
+    providerName,
     snap,
     url,
   ]);
@@ -213,12 +301,21 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setCategory(d.category);
       setCredentialType(d.credentialType);
       setCriticality(d.criticality);
-      setEnvironment(d.environment ?? '');
-      setProvider(d.provider ?? '');
-      setUrl(d.url ?? '');
+      setProviderId(d.providerId ?? null);
+      setProviderName(d.provider ?? '');
+      const loadedUrl = d.url ?? '';
+      setUrl(loadedUrl);
+      const platform: AppStorePlatform =
+        d.appStorePlatform === 'GOOGLE' || d.appStorePlatform === 'APPLE'
+          ? d.appStorePlatform
+          : inferAppStorePlatformFromUrl(loadedUrl);
+      if (d.credentialType === 'APP_STORE_ACCOUNT') {
+        setAppStorePlatform(platform);
+      }
       setLogin(d.login ?? '');
-      setPhone(d.phone ?? '');
+      setPhones(phonesFromCredentialDetail(d));
       setPassword('');
+      setPassphrase('');
       setApiKey('');
       setEnvData('');
       setComment(d.comment ?? '');
@@ -227,16 +324,17 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setNextRotationAt(rotationDate);
       setManualGrants(grants);
       setRevealed({});
+      setOrphanedSecretsAcknowledged(false);
       applyFormSnapshot({
         name: d.name,
         category: d.category,
         credentialType: d.credentialType,
         criticality: d.criticality,
-        environment: d.environment ?? '',
-        provider: d.provider ?? '',
+        providerId: d.providerId ?? null,
         url: d.url ?? '',
         login: d.login ?? '',
-        phone: d.phone ?? '',
+        phones: phonesFromCredentialDetail(d),
+        appStorePlatform: d.credentialType === 'APP_STORE_ACCOUNT' ? platform : '',
         comment: d.comment ?? '',
         nextRotationAt: rotationDate,
         manualGrants: grants,
@@ -245,59 +343,125 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     [applyFormSnapshot],
   );
 
-  const loadDetail = useCallback(async () => {
-    if (!credentialId) return;
-    setLoading(true);
-    setAccessDenied(false);
-    try {
-      const [detailRow, manual] = await Promise.all([
-        credentialsApi.getById(credentialId),
-        credentialsApi.getManualAccess(credentialId),
-      ]);
-      applyDetail(detailRow, manual.grants);
-    } catch {
-      setAccessDenied(true);
-      toast.error('No access to this credential');
-    } finally {
-      setLoading(false);
-    }
-  }, [applyDetail, credentialId]);
+  const dirtyRef = useRef(false);
+
+  /** Fills server-only fields without clobbering edits made during a background fetch. */
+  const mergeServerDetail = useCallback((d: CredentialDetail) => {
+    setDetail(d);
+    setManualGrants(d.manualGrants ?? []);
+    setComment((prev) => (prev.trim().length === 0 ? (d.comment ?? '') : prev));
+  }, []);
+
+  const loadDetail = useCallback(
+    async (opts?: { background?: boolean }) => {
+      if (!credentialId) return;
+      if (!opts?.background) setLoading(true);
+      setAccessDenied(false);
+      try {
+        const detailRow = await credentialsApi.getById(credentialId);
+        const preserveInProgressEdits =
+          opts?.background && dirtyRef.current && snap !== '' && detail?.id === credentialId;
+        if (preserveInProgressEdits) {
+          mergeServerDetail(detailRow);
+        } else {
+          applyDetail(detailRow, detailRow.manualGrants ?? []);
+        }
+      } catch {
+        setAccessDenied(true);
+        toast.error('No access to this credential');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [applyDetail, credentialId, detail?.id, mergeServerDetail, snap],
+  );
+
+  const promoteAfterCreate = useCallback(
+    (created: CredentialDetail) => {
+      applyDetail(created, created.manualGrants ?? []);
+      setShowSettings(false);
+    },
+    [applyDetail],
+  );
 
   const prevOpenRef = useRef(false);
   const prevPresetRef = useRef(presetKey);
+  const prevCredentialIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!open) {
       prevOpenRef.current = false;
+      prevPresetRef.current = presetKey;
+      prevCredentialIdRef.current = null;
       setShowSettings(false);
       setAccessDenied(false);
+      resetCreate();
       return;
     }
+
     const opening = !prevOpenRef.current;
     const presetChanged = prevPresetRef.current !== presetKey;
+    const credentialChanged = prevCredentialIdRef.current !== credentialId;
+
+    const openExisting = () => {
+      if (initialItem && initialItem.id === credentialId) {
+        if (detail?.id !== credentialId) {
+          applyDetail(credentialDetailPlaceholderFromListItem(initialItem), []);
+        }
+        void loadDetail({ background: true });
+        return;
+      }
+      if (detail?.id === credentialId) {
+        void loadDetail({ background: true });
+        return;
+      }
+      void loadDetail();
+    };
+
     if (opening || presetChanged) {
-      if (isCreate) resetCreate();
-      else void loadDetail();
+      if (!credentialId) {
+        resetCreate();
+      } else {
+        openExisting();
+      }
+    } else if (credentialChanged && credentialId) {
+      openExisting();
     }
+
     prevOpenRef.current = true;
     prevPresetRef.current = presetKey;
-  }, [open, presetKey, isCreate, resetCreate, loadDetail]);
+    prevCredentialIdRef.current = credentialId;
+  }, [
+    open,
+    presetKey,
+    credentialId,
+    initialItem,
+    detail?.id,
+    resetCreate,
+    applyDetail,
+    loadDetail,
+  ]);
 
   const dirty = isCreate
     ? name.trim().length > 0 || manualGrants.length > 0
-    : buildCredentialFormSnap({
-        name,
-        category,
-        credentialType,
-        comment,
-        environment,
-        provider,
-        url,
-        login,
-        phone,
-        criticality,
-        nextRotationAt,
-        manualGrants,
-      }) !== snap || Boolean(password || apiKey || envData);
+    : snap === ''
+      ? false
+      : buildCredentialFormSnap({
+          name,
+          category,
+          credentialType,
+          comment,
+          providerId,
+          url,
+          login,
+          phones,
+          appStorePlatform: credentialType === 'APP_STORE_ACCOUNT' ? appStorePlatform : '',
+          criticality,
+          nextRotationAt,
+          manualGrants,
+        }) !== snap || Boolean(password || passphrase || apiKey || envData);
+
+  dirtyRef.current = dirty;
 
   return {
     isCreate,
@@ -310,19 +474,28 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     category,
     setCategory,
     credentialType,
-    setCredentialType,
+    requestCredentialTypeChange,
+    pendingTypeChange,
+    setPendingTypeChange,
+    confirmPendingTypeChange,
+    appStorePlatform,
+    setAppStorePlatform,
     criticality,
     setCriticality,
-    environment,
-    setEnvironment,
-    provider,
-    setProvider,
+    providerId,
+    providerName,
+    setProviderSelection: (id: string | null, name: string) => {
+      setProviderId(id);
+      setProviderName(name);
+    },
     url,
     setUrl,
     login,
     setLogin,
-    phone,
-    setPhone,
+    phones,
+    setPhones,
+    passphrase,
+    setPassphrase,
     password,
     setPassword,
     apiKey,
@@ -349,8 +522,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     categoryLabel,
     dirty,
     loadDetail,
+    promoteAfterCreate,
     commitFormSnapshot,
     captureFormRollback,
+    orphanedSecretsAcknowledged,
+    clearOrphanedSecretsAcknowledged,
+    detailCredentialType: detail?.credentialType ?? null,
     accessDenied,
     setAccessDenied,
   };

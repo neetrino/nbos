@@ -1,13 +1,20 @@
 import type { CredentialTab } from './credential-tab';
 import type { CredentialListSort } from './credential-list-sort';
 
-export const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
+export const SENSITIVE_FIELDS = [
+  'password',
+  'passphrase',
+  'apiKey',
+  'envData',
+  'secureNotes',
+] as const;
 export type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
 
 export const CREDENTIAL_SECRET_FIELD_NAMES = SENSITIVE_FIELDS;
 
 export interface CredentialSecretsPresent {
   password: boolean;
+  passphrase: boolean;
   apiKey: boolean;
   envData: boolean;
   secureNotes: boolean;
@@ -61,8 +68,7 @@ export interface CreateCredentialDto {
   category: string;
   credentialType?: string;
   criticality?: string;
-  environment?: string;
-  provider?: string;
+  providerId?: string | null;
   name: string;
   url?: string;
   login?: string;
@@ -70,6 +76,9 @@ export interface CreateCredentialDto {
   apiKey?: string;
   envData?: string;
   phone?: string;
+  phones?: string[];
+  passphrase?: string;
+  appStorePlatform?: string;
   notes?: string;
   publicNotes?: string;
   secureNotes?: string;
@@ -90,8 +99,7 @@ export interface UpdateCredentialDto {
   category?: string;
   credentialType?: string;
   criticality?: string;
-  environment?: string;
-  provider?: string;
+  providerId?: string | null;
   name?: string;
   url?: string;
   login?: string;
@@ -99,6 +107,9 @@ export interface UpdateCredentialDto {
   apiKey?: string;
   envData?: string;
   phone?: string;
+  phones?: string[];
+  passphrase?: string;
+  appStorePlatform?: string;
   notes?: string;
   publicNotes?: string;
   secureNotes?: string;
@@ -109,4 +120,6 @@ export interface UpdateCredentialDto {
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
   rotationReason?: string;
+  /** Required when a type change would orphan stored secrets (sheet R1 checkbox). */
+  acknowledgeOrphanedSecrets?: boolean;
 }

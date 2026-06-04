@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Decimal } from '@nbos/database';
+import { Decimal, type Prisma } from '@nbos/database';
 import { ExpensesService } from './expenses.service';
 import { EXPENSE_LIST_MAX_PAGE_SIZE } from './expenses-list-pagination';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -171,6 +171,28 @@ describe('ExpensesService', () => {
       );
     });
 
+    it('skips project participation when payroll list scope is active', async () => {
+      prisma.employeeDepartment.findMany.mockResolvedValue([]);
+      await service.findAll({
+        payrollLinked: true,
+        access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
+      });
+
+      const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
+        where?: Prisma.ExpenseWhereInput;
+      };
+      expect(call?.where?.salaryLine).toEqual({ isNot: null });
+      const andClause = call?.where?.AND;
+      const clauses = Array.isArray(andClause) ? andClause : [];
+      const hasProjectParticipation = clauses.some(
+        (clause) =>
+          clause !== null &&
+          typeof clause === 'object' &&
+          'project' in (clause as Record<string, unknown>),
+      );
+      expect(hasProjectParticipation).toBe(false);
+    });
+
     it('attaches payment ledger fields using grouped payment totals', async () => {
       prisma.expense.findMany.mockResolvedValue([
         {
@@ -265,6 +287,57 @@ describe('ExpensesService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+    });
+
+    it('denies scoped access when expense is outside participation', async () => {
+      prisma.expense.findFirst.mockResolvedValue(null);
+      await expect(
+        service.findById('hidden', {
+          employeeId: 'emp-1',
+          departmentIds: [],
+          viewScope: 'OWN',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.expense.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('allows payroll-linked expense for scoped finance viewers', async () => {
+      prisma.expense.findFirst.mockResolvedValue({ id: 'pay-1' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'pay-1',
+        name: 'Payroll',
+        type: 'PLANNED',
+        category: 'OTHER',
+        frequency: 'ONE_TIME',
+        dueDate: null,
+        status: 'PLANNED',
+        projectId: null,
+        expensePlanId: null,
+        isPassThrough: false,
+        taxStatus: 'TAX',
+        backlogReason: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        amount: new Decimal(100),
+        project: null,
+        expensePayments: [],
+        expensePlan: null,
+        salaryLine: {
+          id: 'sl-1',
+          payrollRunId: 'run-1',
+          payrollRun: { payrollMonth: '2026-03' },
+        },
+      });
+
+      const result = await service.findById('pay-1', {
+        employeeId: 'emp-1',
+        departmentIds: [],
+        viewScope: 'OWN',
+      });
+
+      expect(result.id).toBe('pay-1');
+      expect(prisma.expense.findFirst).toHaveBeenCalled();
     });
 
     it('returns linkedPayrollRun when a salary line links the expense to a payroll run', async () => {
