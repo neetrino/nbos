@@ -15,6 +15,7 @@ import {
   resolveFilterSelectValue,
   type FilterConfig,
 } from '../FilterBar';
+import { INTEGRATED_SEARCH_FILTER_PANEL_GRID } from './integrated-search-filter-constants';
 
 interface IntegratedSearchFilterPanelProps {
   filters: FilterConfig[];
@@ -32,8 +33,8 @@ export function IntegratedSearchFilterPanel({
   onReset,
 }: IntegratedSearchFilterPanelProps) {
   return (
-    <div className="flex flex-col gap-4 p-1">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div className="flex flex-col gap-4">
+      <div className={INTEGRATED_SEARCH_FILTER_PANEL_GRID}>
         {filters.map((filter) => (
           <FilterField
             key={filter.key}
@@ -68,7 +69,7 @@ function FilterField({
     const raw = filterValues[filter.key]?.trim() ?? '';
     const monthValue = raw && raw !== 'all' ? raw : '';
     return (
-      <label className="flex flex-col gap-1.5">
+      <label className="flex min-w-0 flex-col gap-1.5">
         <span className="text-muted-foreground text-xs font-medium">{filter.label}</span>
         <NbosMonthPicker
           value={monthValue}
@@ -88,7 +89,7 @@ function FilterField({
   const triggerLabel = resolveFilterSelectLabel(filter, value);
 
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className="flex min-w-0 flex-col gap-1.5">
       <span className="text-muted-foreground text-xs font-medium">{filter.label}</span>
       <Select value={value} onValueChange={(v) => onFilterChange(filter.key, v as string)}>
         <SelectTrigger className="w-full">
