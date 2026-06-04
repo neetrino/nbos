@@ -16,8 +16,8 @@ import { PinnedActions } from './DashboardPinnedActions';
 
 const PINNED_SKELETON_COUNT = 6;
 
-/** Topbar (4rem) + main inset pt-4/pb-6 (2.5rem) — keeps notes column inside `main` without page scroll. */
-const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[calc(100dvh-6.5rem)]';
+/** Topbar (4rem) + main inset pt-4 (1rem) — keeps notes column inside `main` without page scroll. */
+const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[calc(100dvh-5rem)]';
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
