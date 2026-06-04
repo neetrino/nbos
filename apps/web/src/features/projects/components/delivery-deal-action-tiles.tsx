@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils';
 
 const NO_LINKED_DEAL_TITLE = 'No linked deal on this product order';
 
+const DELIVERY_ACTION_LABEL_PANEL = 'Delivery Card';
+const DELIVERY_ACTION_LABEL_COMPACT = 'Delivery';
+
 interface DeliveryDealTilesProps {
   size: ActionTileSize;
   onOpenDeliveryCard: () => void;
@@ -20,11 +23,12 @@ function DeliveryDealTiles({
   fullWidth = false,
 }: DeliveryDealTilesProps) {
   const hasDeal = Boolean(onOpenDeal);
+  const deliveryLabel = size === 'sm' ? DELIVERY_ACTION_LABEL_COMPACT : DELIVERY_ACTION_LABEL_PANEL;
 
   return (
     <>
       <ActionTileButton
-        label="Delivery Card"
+        label={deliveryLabel}
         icon={<LayoutGrid aria-hidden />}
         tone="sky"
         size={size}
