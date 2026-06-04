@@ -12,6 +12,15 @@ import { Button } from '@/components/ui/button';
 import { CredentialEnvPasteDialog } from '@/features/credentials/components/credential-env-paste-dialog';
 import { CredentialEnvTableRow } from '@/features/credentials/components/credential-env-table-row';
 import { CREDENTIAL_ENV_TABLE_PREVIEW_ROWS } from '@/features/credentials/constants/credential-env-table';
+import {
+  ENV_TABLE_VALUE_EMPTY_PLACEHOLDER,
+  ENV_TABLE_VALUE_MASK_DISPLAY,
+} from '@/features/credentials/constants/credential-env-table';
+import {
+  buildEnvTableRows,
+  envRowValueIsMasked,
+  revealedEnvValueByKey,
+} from '@/features/credentials/utils/build-env-table-rows';
 import { downloadEnvBundleFile } from '@/features/credentials/utils/download-env-bundle-file';
 import {
   clipLooksLikeEnvBundle,
@@ -62,25 +71,32 @@ export function CredentialEnvTableEditor({
     () => (revealedValue ? entriesFromEnvBundleSerialized(revealedValue) : []),
     [revealedValue],
   );
-
-  const effectiveEntries = useMemo(() => {
-    if (localEntries.length > 0) return localEntries;
-    if (parsedFromValue.length > 0) return parsedFromValue;
-    if (parsedFromRevealed.length > 0) {
-      return parsedFromRevealed.map(({ key }) => ({ key, value: '' }));
-    }
-    return [];
-  }, [localEntries, parsedFromValue, parsedFromRevealed]);
-
-  const rowsForTable = useMemo(
-    () => (effectiveEntries.length > 0 ? effectiveEntries : [EMPTY_ENV_ROW]),
-    [effectiveEntries],
+  const revealedByKey = useMemo(() => revealedEnvValueByKey(revealedValue), [revealedValue]);
+  const serverKeySet = useMemo(
+    () => new Set(parsedFromValue.map((entry) => entry.key).filter((key) => key.trim().length > 0)),
+    [parsedFromValue],
   );
 
-  const displayEntries = useMemo(() => {
-    if (parsedFromRevealed.length > 0) return parsedFromRevealed;
-    return rowsForTable;
-  }, [parsedFromRevealed, rowsForTable]);
+  const tableRows = useMemo(
+    () => buildEnvTableRows(localEntries, parsedFromValue, parsedFromRevealed, valuesLocked),
+    [localEntries, parsedFromValue, parsedFromRevealed, valuesLocked],
+  );
+
+  const rowsForTable = useMemo(
+    () => (tableRows.length > 0 ? tableRows : [EMPTY_ENV_ROW]),
+    [tableRows],
+  );
+
+  const showMasked = Boolean(isExisting && valuesLocked);
+
+  const exportEntries = useMemo(() => {
+    return rowsForTable
+      .filter((row) => row.key.trim().length > 0)
+      .map((row) => ({
+        key: row.key,
+        value: row.value.trim() ? row.value : (revealedByKey.get(row.key) ?? ''),
+      }));
+  }, [revealedByKey, rowsForTable]);
 
   const hasStoredKeys =
     rowsForTable.some((row) => row.key.trim().length > 0) || (isExisting && hasStoredBundle);
@@ -89,7 +105,6 @@ export function CredentialEnvTableEditor({
     (isExisting && hasStoredBundle && Boolean(onCopy)) ||
     rowsForTable.some((row) => row.key.trim().length > 0);
 
-  const showMasked = Boolean(isExisting && valuesLocked);
   const hiddenRowCount = Math.max(0, rowsForTable.length - CREDENTIAL_ENV_TABLE_PREVIEW_ROWS);
   const visibleRowRefs = useMemo(
     () =>
@@ -138,35 +153,35 @@ export function CredentialEnvTableEditor({
     const single = clipSingleEnvPair(clip);
     if (single) {
       event.preventDefault();
-      const base = effectiveEntries.length > 0 ? [...effectiveEntries] : [EMPTY_ENV_ROW];
+      const base = tableRows.length > 0 ? [...tableRows] : [EMPTY_ENV_ROW];
       base[index] = single;
       commitEntries(base);
     }
   };
 
   const updateRow = (index: number, patch: Partial<EnvBundleEntry>) => {
-    const base = effectiveEntries.length > 0 ? [...effectiveEntries] : [EMPTY_ENV_ROW];
+    const base = tableRows.length > 0 ? [...tableRows] : [EMPTY_ENV_ROW];
     const current = base[index] ?? EMPTY_ENV_ROW;
     base[index] = { ...current, ...patch };
     commitEntries(base);
   };
 
   const removeRow = (index: number) => {
-    const next = effectiveEntries.filter((_, i) => i !== index);
+    const next = tableRows.filter((_, i) => i !== index);
     commitEntries(next.length > 0 ? next : []);
   };
 
   const addRow = () => {
-    commitEntries([EMPTY_ENV_ROW, ...effectiveEntries]);
+    commitEntries([EMPTY_ENV_ROW, ...tableRows]);
     if (rowsForTable.length >= CREDENTIAL_ENV_TABLE_PREVIEW_ROWS) {
       setExpanded(true);
     }
   };
 
-  const copyRow = async (entry: EnvBundleEntry) => {
-    const line = displayEntries.find((row) => row.key === entry.key) ?? entry;
-    if (!line.key.trim()) return;
-    await navigator.clipboard.writeText(`${line.key}=${line.value}`);
+  const copyRow = async (row: EnvBundleEntry) => {
+    if (!row.key.trim()) return;
+    const secret = row.value.trim() || revealedByKey.get(row.key) || '';
+    await navigator.clipboard.writeText(`${row.key}=${secret}`);
     toast.success('Copied line');
   };
 
@@ -180,9 +195,8 @@ export function CredentialEnvTableEditor({
       await onCopy();
       return;
     }
-    const entries = displayEntries.filter((row) => row.key.trim().length > 0);
-    if (entries.length === 0) return;
-    await navigator.clipboard.writeText(serializeEnvBundle(entries));
+    if (exportEntries.length === 0) return;
+    await navigator.clipboard.writeText(serializeEnvBundle(exportEntries));
     toast.success('Copied');
   };
 
@@ -191,9 +205,8 @@ export function CredentialEnvTableEditor({
       await onDownload();
       return;
     }
-    const entries = displayEntries.filter((row) => row.key.trim().length > 0);
-    if (entries.length === 0) return;
-    downloadEnvBundleFile(entries);
+    if (exportEntries.length === 0) return;
+    downloadEnvBundleFile(exportEntries);
     toast.success('Downloaded .env');
   };
 
@@ -250,10 +263,11 @@ export function CredentialEnvTableEditor({
         </div>
         {visibleRowRefs.map(({ row, index }) => (
           <CredentialEnvTableRow
-            key={`${instanceKey}-${row.key}-${index}`}
+            key={`${instanceKey}-row-${index}`}
             row={row}
-            maskedValue={displayEntries[index]?.value ?? ''}
-            showMasked={showMasked}
+            maskValue={envRowValueIsMasked(row, showMasked, serverKeySet, revealedByKey)}
+            valueMaskDisplay={ENV_TABLE_VALUE_MASK_DISPLAY}
+            valueEmptyPlaceholder={ENV_TABLE_VALUE_EMPTY_PLACEHOLDER}
             onKeyChange={(key) => updateRow(index, { key })}
             onValueChange={(val) => updateRow(index, { value: val })}
             onPaste={(event) => handleCellPaste(index, event)}
@@ -281,12 +295,12 @@ export function CredentialEnvTableEditor({
         open={pasteDialogOpen}
         onOpenChange={setPasteDialogOpen}
         incomingCount={pendingPasteEntries.length}
-        existingCount={effectiveEntries.filter((row) => row.key.trim()).length}
+        existingCount={tableRows.filter((row) => row.key.trim()).length}
         onReplace={() =>
           finishPaste(pendingPasteEntries, `Replaced with ${pendingPasteEntries.length} variables`)
         }
         onMerge={() => {
-          const merged = mergeEnvBundleEntries(effectiveEntries, pendingPasteEntries);
+          const merged = mergeEnvBundleEntries(tableRows, pendingPasteEntries);
           finishPaste(merged, `Merged to ${merged.length} variables`);
         }}
       />

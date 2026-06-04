@@ -15,8 +15,9 @@ function preventCopyButtonBlur(event: MouseEvent<HTMLButtonElement>) {
 
 export function CredentialEnvTableRow({
   row,
-  maskedValue,
-  showMasked,
+  maskValue,
+  valueMaskDisplay,
+  valueEmptyPlaceholder,
   onKeyChange,
   onValueChange,
   onPaste,
@@ -24,8 +25,10 @@ export function CredentialEnvTableRow({
   onCopy,
 }: {
   row: EnvBundleEntry;
-  maskedValue: string;
-  showMasked: boolean;
+  /** When true, value cell shows mask dots (stored secret, not revealed in form). */
+  maskValue: boolean;
+  valueMaskDisplay: string;
+  valueEmptyPlaceholder: string;
   onKeyChange: (key: string) => void;
   onValueChange: (value: string) => void;
   onPaste: (event: ClipboardEvent<HTMLInputElement>) => void;
@@ -51,13 +54,17 @@ export function CredentialEnvTableRow({
         className={cn('font-mono text-xs', copiedFieldClass)}
       />
       <Input
-        value={showMasked ? '••••••••' : maskedValue}
+        value={maskValue ? valueMaskDisplay : row.value}
         onChange={(e) => onValueChange(e.target.value)}
         onPaste={onPaste}
-        placeholder="value"
-        className={cn('font-mono text-xs', copiedFieldClass)}
-        disabled={showMasked}
-        readOnly={showMasked}
+        placeholder={maskValue ? undefined : valueEmptyPlaceholder}
+        className={cn(
+          'font-mono text-xs',
+          maskValue ? 'text-muted-foreground' : undefined,
+          copiedFieldClass,
+        )}
+        disabled={maskValue}
+        readOnly={maskValue}
       />
       <div className="flex justify-end gap-1">
         <Button
@@ -66,7 +73,7 @@ export function CredentialEnvTableRow({
           size="icon-sm"
           onMouseDown={preventCopyButtonBlur}
           onClick={handleCopy}
-          disabled={showMasked && !row.key.trim()}
+          disabled={maskValue && !row.key.trim()}
           aria-label="Copy line"
         >
           {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
