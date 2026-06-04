@@ -1,15 +1,7 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import type { FullProduct } from '@/lib/api/products';
-import {
-  buildProductGateRequiredFields,
-  resolveProductTabFromGateErrors,
-  type ProductTabForGate,
-} from '@/features/projects/product-stage-gate-highlight';
-import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
-import type { ApiFieldError } from '@/lib/api-errors';
 import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
 import { ProductStageGateCard } from './ProductStageGateCard';
 import { cn } from '@/lib/utils';
@@ -17,39 +9,14 @@ import { cn } from '@/lib/utils';
 interface ProductOverviewTabProps {
   product: FullProduct;
   onStatusChange: () => void;
-  onNavigateTab: (tab: ProductTabForGate) => void;
 }
 
-export function ProductOverviewTab({
-  product,
-  onStatusChange,
-  onNavigateTab,
-}: ProductOverviewTabProps) {
-  const [stageGateHighlight, setStageGateHighlight] = useState<SheetStageGateHighlight | null>(
-    null,
-  );
-
-  const gateRequiredFields = useMemo(
-    () =>
-      stageGateHighlight
-        ? buildProductGateRequiredFields(stageGateHighlight.errors)
-        : new Set<string>(),
-    [stageGateHighlight],
-  );
-
-  const showStageGateRequirements = useCallback(
-    (errors: ApiFieldError[]) => {
-      setStageGateHighlight({ errors });
-      const tab = resolveProductTabFromGateErrors(errors);
-      if (tab !== 'overview') onNavigateTab(tab);
-    },
-    [onNavigateTab],
-  );
-
+export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewTabProps) {
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
   ).length;
+  const gateRequiredFields = new Set<string>();
 
   return (
     <div className="space-y-4">
@@ -64,11 +31,7 @@ export function ProductOverviewTab({
           <ProductStageGateCard
             product={product}
             gateRequiredFields={gateRequiredFields}
-            stageGateHighlight={stageGateHighlight}
             onStatusChange={onStatusChange}
-            onStageGateBlocked={showStageGateRequirements}
-            onStageGateClear={() => setStageGateHighlight(null)}
-            onNavigateTab={onNavigateTab}
           />
         </div>
       </div>

@@ -145,11 +145,7 @@ function ProductDetailPageContent() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">
-          <ProductOverviewTab
-            product={product}
-            onStatusChange={fetchProduct}
-            onNavigateTab={(tab) => setActiveTab(tab as ProductTab)}
-          />
+          <ProductOverviewTab product={product} onStatusChange={fetchProduct} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">
