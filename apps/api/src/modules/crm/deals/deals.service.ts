@@ -11,6 +11,7 @@ import {
 } from './deal.includes';
 import type { CreateDealDto, DealForHandoff, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
+import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
@@ -36,6 +37,7 @@ export class DealsService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly dealWonHandler: DealWonHandler,
     private readonly auditService: AuditService,
+    private readonly productTeamSync: ProductTeamSyncService,
   ) {}
 
   async findAll(params: DealQueryParams) {
@@ -326,6 +328,14 @@ export class DealsService {
     if (!refreshed) {
       throw new NotFoundException(`Deal ${id} not found after update`);
     }
+
+    if (data.sellerId !== undefined && data.sellerId !== existing.sellerId && refreshed.projectId) {
+      await this.productTeamSync.syncProductSeller({
+        projectId: refreshed.projectId,
+        sellerId: refreshed.sellerId,
+      });
+    }
+
     return this.enrichDealForClient(await this.attachHandoffReferences(refreshed));
   }
 

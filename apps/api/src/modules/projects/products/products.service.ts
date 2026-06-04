@@ -658,6 +658,20 @@ export class ProductsService {
         qaLeadId: product.qaLeadId,
       },
     });
+    const sellerId = await this.loadLinkedProductSellerId(product.id);
+    await this.productTeamSync.syncProductSeller({
+      projectId: product.projectId,
+      sellerId,
+    });
+  }
+
+  private async loadLinkedProductSellerId(productId: string): Promise<string | null> {
+    const order = await this.prisma.order.findFirst({
+      where: { productId },
+      select: { deal: { select: { sellerId: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return order?.deal?.sellerId ?? null;
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

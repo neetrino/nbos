@@ -23,6 +23,12 @@ interface SyncExtensionAssigneeParams {
   actorId?: string;
 }
 
+interface SyncProductSellerParams {
+  projectId: string;
+  sellerId?: string | null;
+  actorId?: string;
+}
+
 const SLOT_SOURCE: TeamMemberSourceEnum = 'PRODUCT_SLOT';
 const EXTENSION_SOURCE: TeamMemberSourceEnum = 'EXTENSION_ASSIGNEE';
 
@@ -77,6 +83,16 @@ export class ProductTeamSyncService {
         });
         await this.ensureProjectMember(tx, params.projectId, binding.employeeId, params.actorId);
       }
+    });
+  }
+
+  /** Adds deal seller to project team when linked to a product order. */
+  async syncProductSeller(params: SyncProductSellerParams): Promise<void> {
+    const sellerId = params.sellerId?.trim();
+    if (!sellerId) return;
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.ensureProjectMember(tx, params.projectId, sellerId, params.actorId);
     });
   }
 

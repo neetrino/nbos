@@ -28,7 +28,6 @@ import { platformAccessApi } from '@/lib/api/platform-access';
 import { toast } from 'sonner';
 import { useProjectTeamManagementAccess } from '../hooks/use-project-team-management-access';
 import { useProjectTeam } from '../hooks/use-project-team';
-import { invalidateProjectTeamCache } from '../project-team-cache';
 import { formatTeamSource } from '../team-member-labels';
 import { ProjectTeamMemberChipRow } from './ProjectTeamMemberChipRow';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
@@ -67,9 +66,8 @@ export function ProjectParticipantsSection({
   const employeePicker = useRelationPickerActions('employee', 'project-team');
 
   const reloadTeam = useCallback(async () => {
-    invalidateProjectTeamCache(projectId);
     await refetch();
-  }, [projectId, refetch]);
+  }, [refetch]);
 
   const handleRoleChange = async (employeeId: string, role: 'ADMIN' | 'MEMBER') => {
     if (role === 'ADMIN' && !canAssignAdmin) {

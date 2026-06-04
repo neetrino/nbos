@@ -4,10 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
-import {
-  prefetchProjectTeam,
-  invalidateProjectTeamCache,
-} from '@/features/platform-access/project-team-cache';
+import { prefetchProjectTeam } from '@/features/platform-access/project-team-request';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
@@ -100,7 +97,6 @@ function ProjectDetailPageContent() {
       <EntityDetailSheetsHost
         project={project}
         onEntityUpdated={() => {
-          invalidateProjectTeamCache(project.id);
           setTeamRefreshKey((key) => key + 1);
           void fetchProject();
         }}

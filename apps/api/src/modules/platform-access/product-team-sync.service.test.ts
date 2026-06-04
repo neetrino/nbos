@@ -46,3 +46,33 @@ describe('ProductTeamSyncService.reconcileProjectTeamFromProducts', () => {
     });
   });
 });
+
+describe('ProductTeamSyncService.syncProductSeller', () => {
+  const upsert = vi.fn().mockResolvedValue({});
+  const prisma = {
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<void>) => {
+      await fn({ projectTeamMember: { upsert } });
+    }),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('adds seller to project team', async () => {
+    const service = new ProductTeamSyncService(prisma as never);
+    await service.syncProductSeller({ projectId: 'project-1', sellerId: 'seller-1' });
+
+    expect(upsert).toHaveBeenCalledTimes(1);
+    expect(upsert.mock.calls[0]?.[0]).toMatchObject({
+      create: { projectId: 'project-1', employeeId: 'seller-1', role: 'MEMBER' },
+      update: {},
+    });
+  });
+
+  it('skips empty seller id', async () => {
+    const service = new ProductTeamSyncService(prisma as never);
+    await service.syncProductSeller({ projectId: 'project-1', sellerId: '  ' });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+});
