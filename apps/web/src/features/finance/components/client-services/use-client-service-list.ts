@@ -10,6 +10,11 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 
 const DEFAULT_PAGE_SIZE = 20;
 
+export interface ClientServiceListSeed {
+  items: ClientServiceRecord[];
+  total: number;
+}
+
 interface UseClientServiceListResult {
   items: ClientServiceRecord[];
   loading: boolean;
@@ -28,6 +33,7 @@ export function useClientServiceList(
   params: ClientServiceRecordListParams,
   pageSize: number = DEFAULT_PAGE_SIZE,
   reloadToken: number = 0,
+  seed?: ClientServiceListSeed | null,
 ): UseClientServiceListResult {
   const [items, setItems] = useState<ClientServiceRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -66,8 +72,17 @@ export function useClientServiceList(
   );
 
   useEffect(() => {
+    if (seed) {
+      setItems(seed.items);
+      setTotal(seed.total);
+      setPage(1);
+      setLoading(false);
+      setLoadingMore(false);
+      setError(null);
+      return;
+    }
     void fetchPage(1);
-  }, [fetchPage, reloadToken]);
+  }, [fetchPage, reloadToken, seed]);
 
   const hasMore = items.length < total;
 

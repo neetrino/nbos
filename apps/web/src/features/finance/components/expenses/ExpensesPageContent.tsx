@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
+import {
+  IntegratedSearchFilters,
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
@@ -100,6 +106,7 @@ export function ExpensesPageContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     initialExpenseFilterRecord(pageVariant),
   );
@@ -179,7 +186,7 @@ export function ExpensesPageContent({
   const listApiParams = useMemo(
     () =>
       buildExpenseListApiParams({
-        search,
+        search: debouncedSearch,
         filters,
         period,
         effectiveProjectId,
@@ -189,7 +196,7 @@ export function ExpensesPageContent({
         expensePlanIdFromUrl,
       }),
     [
-      search,
+      debouncedSearch,
       filters,
       period,
       effectiveProjectId,

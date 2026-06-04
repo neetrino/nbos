@@ -1,181 +1,173 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/technical';
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { ExternalLink, Headphones } from 'lucide-react';
 import {
-  backupPolicyDraftFromData,
-  emptyAssetDraft,
-  emptyBackupPolicyDraft,
-  emptyDeployDraft,
-  emptyEnvironmentDraft,
-  emptyProfileDraft,
-  profileDraftFromData,
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  PageHero,
+  PageHeroTabs,
+} from '@/components/shared';
+import { buttonVariants } from '@/components/ui/button';
+import { ProductTechnicalAssetsPanel } from '@/features/projects/components/product-tabs/product-technical-assets-panel';
+import { ProductTechnicalEnvironmentsPanel } from '@/features/projects/components/product-tabs/product-technical-environments-panel';
+import { ProductTechnicalHealthStrip } from '@/features/projects/components/product-tabs/product-technical-health-strip';
+import { ProductTechnicalOpsPanel } from '@/features/projects/components/product-tabs/product-technical-ops-panel';
+import { ProductTechnicalProfilePanel } from '@/features/projects/components/product-tabs/product-technical-profile-panel';
+import {
+  filterTechnicalListItems,
   technicalAssetItems,
   technicalEnvironmentItems,
-} from './product-technical-state';
-import {
-  DeployAndBackupCard,
-  ListCard,
-  ProfileCard,
-  QuickAddCard,
-  ReadinessCard,
-} from './product-technical-ui';
+} from '@/features/projects/components/product-tabs/product-technical-state';
+import { PRODUCT_TECHNICAL_SECTION_OPTIONS } from '@/features/projects/constants/product-technical-section';
+import type { UseProductTechnicalTabResult } from '@/features/projects/hooks/use-product-technical-tab';
+import { cn } from '@/lib/utils';
 
-export function ProductTechnicalTab({ productId }: { productId: string }) {
-  const [data, setData] = useState<TechnicalProductProfileResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [profileDraft, setProfileDraft] = useState(emptyProfileDraft);
-  const [assetDraft, setAssetDraft] = useState(emptyAssetDraft);
-  const [envDraft, setEnvDraft] = useState(emptyEnvironmentDraft);
-  const [deployDraft, setDeployDraft] = useState(emptyDeployDraft);
-  const [backupDraft, setBackupDraft] = useState(() => emptyBackupPolicyDraft());
+type ProductTechnicalTabProps = UseProductTechnicalTabResult;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const next = await technicalApi.getProductProfile(productId);
-      setData(next);
-      setProfileDraft(profileDraftFromData(next));
-      setBackupDraft(backupPolicyDraftFromData(next));
-    } finally {
-      setLoading(false);
-    }
-  }, [productId]);
+export function ProductTechnicalTab(props: ProductTechnicalTabProps) {
+  const {
+    data,
+    loading,
+    error,
+    refetch,
+    activeSection,
+    setActiveSection,
+    search,
+    setSearch,
+    profileDraft,
+    setProfileDraft,
+    assetDraft,
+    setAssetDraft,
+    envDraft,
+    setEnvDraft,
+    deployDraft,
+    setDeployDraft,
+    backupDraft,
+    setBackupDraft,
+    saveProfile,
+    createAsset,
+    createEnvironment,
+    recordDeploy,
+    saveBackupPolicy,
+    saving,
+  } = props;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const assetItems = useMemo(
+    () => (data ? filterTechnicalListItems(technicalAssetItems(data), search) : []),
+    [data, search],
+  );
 
-  async function saveProfile() {
-    setSaving(true);
-    try {
-      const next = await technicalApi.updateProfile(productId, profileDraft);
-      setData(next);
-    } finally {
-      setSaving(false);
-    }
+  const environmentItems = useMemo(
+    () => (data ? filterTechnicalListItems(technicalEnvironmentItems(data), search) : []),
+    [data, search],
+  );
+
+  const showSearch = activeSection === 'assets' || activeSection === 'environments';
+
+  if (loading && !data) {
+    return <LoadingState count={3} />;
   }
 
-  async function createAsset() {
-    if (!assetDraft.name.trim()) return;
-    setSaving(true);
-    try {
-      setData(await technicalApi.createAsset(productId, assetDraft));
-      setAssetDraft(emptyAssetDraft());
-    } finally {
-      setSaving(false);
-    }
+  if (error) {
+    return <ErrorState description={error} onRetry={() => void refetch()} />;
   }
 
-  async function createEnvironment() {
-    if (!envDraft.name.trim()) return;
-    setSaving(true);
-    try {
-      setData(await technicalApi.createEnvironment(productId, envDraft));
-      setEnvDraft(emptyEnvironmentDraft());
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function recordDeploy() {
-    setSaving(true);
-    try {
-      setData(
-        await technicalApi.recordDeploy(productId, {
-          status: deployDraft.status,
-          environment: deployDraft.environment,
-          version: deployDraft.version.trim() || null,
-          notes: deployDraft.notes.trim() || null,
-        }),
-      );
-      setDeployDraft(emptyDeployDraft());
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function saveBackupPolicy() {
-    setSaving(true);
-    try {
-      const next = await technicalApi.updateBackupPolicy(productId, {
-        backupStatus: backupDraft.backupStatus,
-        policyName: backupDraft.policyName.trim() || null,
-        rpoHours: parseNumberOrNull(backupDraft.rpoHours),
-        rtoHours: parseNumberOrNull(backupDraft.rtoHours),
-        restoreTestCadenceDays: parseNumberOrNull(backupDraft.restoreTestCadenceDays),
-        notes: backupDraft.notes.trim() || null,
-      });
-      setData(next);
-      setBackupDraft(backupPolicyDraftFromData(next));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (loading)
+  if (!data) {
     return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Loading technical profile...
-      </div>
+      <EmptyState
+        title="Technical profile unavailable"
+        description="Could not load the technical map for this product."
+      />
     );
-  if (!data)
-    return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
-        Technical profile unavailable.
-      </div>
-    );
+  }
 
   return (
-    <div className="space-y-6">
-      <ReadinessCard data={data} />
-      <section className="grid gap-6 lg:grid-cols-2">
-        <ProfileCard
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
+      <ProductTechnicalHealthStrip data={data} />
+
+      <PageHero
+        title="Product technical"
+        syncModuleTitle={false}
+        className="mt-0"
+        tabs={
+          <PageHeroTabs
+            value={activeSection}
+            onChange={setActiveSection}
+            options={PRODUCT_TECHNICAL_SECTION_OPTIONS}
+            ariaLabel="Product technical section"
+          />
+        }
+        search={
+          showSearch ? (
+            <IntegratedSearchFilters
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder={
+                activeSection === 'assets'
+                  ? 'Search assets by name, type, provider…'
+                  : 'Search environments by name, kind, URL…'
+              }
+              filters={[]}
+              filterValues={{}}
+              onFilterChange={() => undefined}
+              onClearAll={() => setSearch('')}
+            />
+          ) : undefined
+        }
+        trailing={
+          <Link
+            href="/support"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+          >
+            <Headphones size={14} aria-hidden />
+            Support
+            <ExternalLink size={12} className="opacity-70" aria-hidden />
+          </Link>
+        }
+      />
+
+      {activeSection === 'profile' ? (
+        <ProductTechnicalProfilePanel
+          data={data}
           draft={profileDraft}
+          saving={saving}
           onDraftChange={setProfileDraft}
           onSave={saveProfile}
-          saving={saving}
         />
-        <QuickAddCard
+      ) : activeSection === 'assets' ? (
+        <ProductTechnicalAssetsPanel
+          items={assetItems}
+          search={search}
           assetDraft={assetDraft}
+          saving={saving}
+          onAssetDraftChange={setAssetDraft}
+          onCreateAsset={createAsset}
+        />
+      ) : activeSection === 'environments' ? (
+        <ProductTechnicalEnvironmentsPanel
+          items={environmentItems}
+          search={search}
           envDraft={envDraft}
           saving={saving}
-          onAssetChange={setAssetDraft}
-          onEnvironmentChange={setEnvDraft}
-          onCreateAsset={createAsset}
+          onEnvDraftChange={setEnvDraft}
           onCreateEnvironment={createEnvironment}
         />
-      </section>
-      <section className="grid gap-6 lg:grid-cols-2">
-        <ListCard
-          title="Technical Assets"
-          empty="No assets yet. Add hosting, repository, database, monitoring or domain dependencies."
-          items={technicalAssetItems(data)}
+      ) : (
+        <ProductTechnicalOpsPanel
+          deployDraft={deployDraft}
+          backupDraft={backupDraft}
+          lastDeployAt={data.profile.lastDeployAt}
+          saving={saving}
+          onDeployChange={setDeployDraft}
+          onBackupChange={setBackupDraft}
+          onRecordDeploy={recordDeploy}
+          onSaveBackupPolicy={saveBackupPolicy}
         />
-        <ListCard
-          title="Environments"
-          empty="No environments yet. Add Production/Staging/Development environments."
-          items={technicalEnvironmentItems(data)}
-        />
-      </section>
-      <DeployAndBackupCard
-        deployDraft={deployDraft}
-        backupDraft={backupDraft}
-        recentDeployLabel={data.profile.lastDeployAt ? data.profile.lastDeployAt : 'not recorded'}
-        saving={saving}
-        onDeployChange={setDeployDraft}
-        onBackupChange={setBackupDraft}
-        onRecordDeploy={recordDeploy}
-        onSaveBackupPolicy={saveBackupPolicy}
-      />
+      )}
     </div>
   );
-}
-
-function parseNumberOrNull(value: string): number | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
 }

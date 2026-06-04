@@ -27,6 +27,7 @@ import { useProductDetailHeader } from '@/features/projects/hooks/use-product-de
 import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-credentials-tab';
 import { useProductSupportTab } from '@/features/projects/hooks/use-product-support-tab';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
+import { useProductTechnicalTab } from '@/features/projects/hooks/use-product-technical-tab';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import {
   parseProductDetailTab,
@@ -80,6 +81,8 @@ function ProductDetailPageContent() {
   );
 
   const supportTab = useProductSupportTab(params.productId, activeTab === 'support');
+
+  const technicalTab = useProductTechnicalTab(params.productId, activeTab === 'technical');
 
   const fetchProduct = useCallback(async () => {
     if (!params.productId) return;
@@ -218,8 +221,8 @@ function ProductDetailPageContent() {
           )}
         </TabsContent>
 
-        <TabsContent value="technical" className="mt-5">
-          <ProductTechnicalTab productId={product.id} />
+        <TabsContent value="technical" className="mt-5 flex min-h-0 flex-1 flex-col">
+          <ProductTechnicalTab {...technicalTab} />
         </TabsContent>
       </Tabs>
     </div>

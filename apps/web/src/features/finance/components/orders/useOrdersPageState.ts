@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import {
   ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
   parseOrderReconciliationGap,
@@ -39,6 +40,7 @@ export function useOrdersPageState({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -51,13 +53,13 @@ export function useOrdersPageState({
   const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
     () =>
       buildOrderListApiParams({
-        search,
+        search: debouncedSearch,
         filters,
         partnerIdFromUrl,
         period,
         gap,
       }),
-    [search, filters, partnerIdFromUrl, period, gap],
+    [debouncedSearch, filters, partnerIdFromUrl, period, gap],
   );
 
   const orderStatsQueryParams = useMemo((): OrderStatsQueryParams => {
@@ -70,11 +72,11 @@ export function useOrdersPageState({
         ? {
             gap,
             status: statusFilter,
-            search: search.trim() || undefined,
+            search: debouncedSearch || undefined,
           }
         : {}),
     };
-  }, [period, partnerIdFromUrl, gap, filters.status, search]);
+  }, [period, partnerIdFromUrl, gap, filters.status, debouncedSearch]);
 
   const clearMutationError = useCallback(() => {
     setMutationError(null);
@@ -103,7 +105,7 @@ export function useOrdersPageState({
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
       const listParams: OrderListParams = {
         ...buildOrderListApiParams({
-          search,
+          search: debouncedSearch,
           filters,
           partnerIdFromUrl,
           period,
@@ -129,7 +131,7 @@ export function useOrdersPageState({
     } finally {
       setLoading(false);
     }
-  }, [search, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
+  }, [debouncedSearch, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
 
   useEffect(() => {
     void fetchOrders();

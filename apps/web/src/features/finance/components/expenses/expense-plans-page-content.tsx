@@ -9,6 +9,7 @@ import {
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
+  useDebouncedValue,
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
@@ -53,7 +54,7 @@ import { projectsApi, type Project } from '@/lib/api/projects';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
-const SEARCH_DEBOUNCE_MS = 450;
+const EXPENSE_PLANS_SEARCH_DEBOUNCE_MS = 450;
 const DEFAULT_GRID_YEAR = new Date().getFullYear();
 
 function parseGridYearParam(raw: string | null): number {
@@ -81,6 +82,7 @@ export function ExpensePlansPageContent() {
 
   const [view, setView] = useExpensePlansViewMode();
   const [searchDraft, setSearchDraft] = useState(urlSearch);
+  const debouncedSearchDraft = useDebouncedValue(searchDraft, EXPENSE_PLANS_SEARCH_DEBOUNCE_MS);
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
   const [gridPayload, setGridPayload] = useState<ExpensePlanGridPayload | null>(null);
   const [totalInScope, setTotalInScope] = useState(0);
@@ -126,18 +128,16 @@ export function ExpensePlansPageContent() {
   }, [urlSearch]);
 
   useEffect(() => {
-    if (searchDraft === urlSearch) return;
-    const tid = window.setTimeout(() => {
-      replaceListUrl((next) => {
-        if (!searchDraft.trim()) {
-          next.delete(EXPENSE_PLANS_LIST_SEARCH_QUERY);
-        } else {
-          next.set(EXPENSE_PLANS_LIST_SEARCH_QUERY, searchDraft.trim());
-        }
-      });
-    }, SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(tid);
-  }, [searchDraft, urlSearch, replaceListUrl]);
+    const trimmedDraft = debouncedSearchDraft.trim();
+    if (trimmedDraft === urlSearch) return;
+    replaceListUrl((next) => {
+      if (!trimmedDraft) {
+        next.delete(EXPENSE_PLANS_LIST_SEARCH_QUERY);
+      } else {
+        next.set(EXPENSE_PLANS_LIST_SEARCH_QUERY, trimmedDraft);
+      }
+    });
+  }, [debouncedSearchDraft, urlSearch, replaceListUrl]);
 
   const listParams = useMemo(
     () =>

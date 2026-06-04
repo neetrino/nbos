@@ -3,14 +3,15 @@
 import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ErrorState, LoadingState } from '@/components/shared';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import { clientServiceStageHex } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams, ClientServiceStats } from '@/lib/api/client-services';
+import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
+import { useClientServiceBoard } from './use-client-service-board';
 
 interface ClientServiceMonthsBoardViewProps {
   baseParams: ClientServiceRecordListParams;
-  stats: ClientServiceStats | null;
   year: number;
   onYearChange: (year: number) => void;
   reloadToken: number;
@@ -48,28 +49,35 @@ function monthRange(year: number, month: number): { from: string; to: string } {
 
 export function ClientServiceMonthsBoardView({
   baseParams,
-  stats,
   year,
   onYearChange,
   reloadToken,
   onOpen,
 }: ClientServiceMonthsBoardViewProps) {
-  const columns = useMemo(
-    () =>
-      MONTH_LABELS.map((label, month) => {
-        const stat = stats?.byMonth.find((entry) => entry.month === month);
-        const { from, to } = monthRange(year, month);
-        return {
-          key: `${year}-${month}`,
-          label,
-          hex: isCurrentMonthColumn(year, month) ? CURRENT_MONTH_HEX : MONTH_HEX,
-          count: stat?.count ?? 0,
-          sum: stat?.sum ?? '0',
-          params: { ...baseParams, renewalFrom: from, renewalTo: to },
-        };
-      }),
-    [baseParams, stats, year],
-  );
+  const { board, loading, error } = useClientServiceBoard({
+    view: 'months',
+    baseParams,
+    year,
+    reloadToken,
+  });
+
+  const columns = useMemo(() => {
+    const byKey = new Map(board?.columns.map((column) => [column.key, column]));
+    return MONTH_LABELS.map((label, month) => {
+      const key = `${year}-${month}`;
+      const column = byKey.get(key);
+      const { from, to } = monthRange(year, month);
+      return {
+        key,
+        label,
+        hex: isCurrentMonthColumn(year, month) ? CURRENT_MONTH_HEX : MONTH_HEX,
+        count: column?.count ?? 0,
+        sum: column?.sum ?? '0',
+        params: { ...baseParams, renewalFrom: from, renewalTo: to },
+        seed: column ? { items: column.items, total: column.meta.total } : { items: [], total: 0 },
+      };
+    });
+  }, [baseParams, board, year]);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -95,7 +103,13 @@ export function ClientServiceMonthsBoardView({
         </Button>
       </div>
 
-      <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} />
+      ) : (
+        <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+      )}
     </div>
   );
 }

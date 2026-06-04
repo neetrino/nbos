@@ -8,7 +8,7 @@ import { CLIENT_SERVICE_BOARD_COLUMN_WIDTH } from '@/features/finance/constants/
 import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceCard } from './ClientServiceCard';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
-import { useClientServiceList } from './use-client-service-list';
+import { useClientServiceList, type ClientServiceListSeed } from './use-client-service-list';
 
 interface ClientServiceBoardColumnProps {
   label: string;
@@ -19,6 +19,7 @@ interface ClientServiceBoardColumnProps {
   reloadToken: number;
   onOpen: (id: string) => void;
   showLeftRule?: boolean;
+  seed?: ClientServiceListSeed | null;
 }
 
 function ClientServiceKanbanColumnHeader({
@@ -60,11 +61,13 @@ export function ClientServiceBoardColumn({
   reloadToken,
   onOpen,
   showLeftRule = false,
+  seed,
 }: ClientServiceBoardColumnProps) {
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
     params,
     20,
     reloadToken,
+    seed,
   );
 
   return (

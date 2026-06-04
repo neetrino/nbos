@@ -133,6 +133,27 @@ export interface ClientServiceStats {
   byMonth: ClientServiceMonthStat[];
 }
 
+export type ClientServiceBoardView = 'status' | 'months';
+
+export interface ClientServiceBoardQueryParams extends ClientServiceRecordListParams {
+  view: ClientServiceBoardView;
+  year?: number;
+}
+
+export interface ClientServiceBoardColumnPayload {
+  key: string;
+  count: number;
+  sum: string;
+  items: ClientServiceRecord[];
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+}
+
+export interface ClientServiceBoardPayload {
+  view: ClientServiceBoardView;
+  year: number;
+  columns: ClientServiceBoardColumnPayload[];
+}
+
 export const clientServicesApi = {
   async getAll(params?: ClientServiceRecordListParams): Promise<ListData<ClientServiceRecord>> {
     const resp = await api.get<ListData<ClientServiceRecord>>('/api/client-services', { params });
@@ -141,6 +162,13 @@ export const clientServicesApi = {
 
   async getStats(params?: ClientServiceStatsParams): Promise<ClientServiceStats> {
     const resp = await api.get<ClientServiceStats>('/api/client-services/stats', { params });
+    return resp.data;
+  },
+
+  async getBoard(params: ClientServiceBoardQueryParams): Promise<ClientServiceBoardPayload> {
+    const resp = await api.get<ClientServiceBoardPayload>('/api/client-services/board', {
+      params,
+    });
     return resp.data;
   },
 

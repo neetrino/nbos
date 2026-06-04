@@ -180,3 +180,5 @@ export {
   type DeleteConfirmLevel,
   type DeleteConfirmTarget,
 } from './delete-confirm';
+export { SEARCH_DEBOUNCE_MS } from './constants/search-debounce';
+export { useDebouncedValue } from './hooks/use-debounced-value';
