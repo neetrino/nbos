@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ChevronsUpDown, Package } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { getProductStageStatusDisplay } from '@/features/projects/constants/projects';
+import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
 import type { FullProduct, Product } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 
@@ -16,13 +16,15 @@ export interface ProductDetailHeaderProps {
 const PRODUCT_TITLE_CLASS =
   'text-foreground truncate text-base font-semibold tracking-tight xl:text-lg';
 
+type StageBadge = ReturnType<typeof getProductDeliveryStageBadgeDisplay>;
+
 export function ProductDetailHeader({
   product,
   siblingProducts,
   onSelectProduct,
 }: ProductDetailHeaderProps) {
   const [showSwitcher, setShowSwitcher] = useState(false);
-  const stageStatus = getProductStageStatusDisplay(product);
+  const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const hasProductSwitcher = siblingProducts.length > 1;
 
   return (
@@ -52,7 +54,7 @@ function ProductTitleRow({
   stageStatus,
 }: {
   productName: string;
-  stageStatus: ReturnType<typeof getProductStageStatusDisplay>;
+  stageStatus: StageBadge;
 }) {
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
@@ -72,7 +74,7 @@ function ProductNameSwitcher({
   onSelectProduct,
 }: {
   productName: string;
-  stageStatus: ReturnType<typeof getProductStageStatusDisplay>;
+  stageStatus: StageBadge;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   siblingProducts: Product[];
@@ -106,7 +108,7 @@ function ProductNameSwitcher({
             role="listbox"
           >
             {siblingProducts.map((item) => {
-              const itemStageStatus = getProductStageStatusDisplay(item);
+              const itemStageStatus = getProductDeliveryStageBadgeDisplay(item);
               const isCurrent = item.id === currentProductId;
               return (
                 <li key={item.id} role="option" aria-selected={isCurrent}>

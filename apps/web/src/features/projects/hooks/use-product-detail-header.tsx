@@ -35,7 +35,7 @@ export function useProductDetailHeader(
         />
       ),
     };
-  }, [onSelectProduct, product, siblingProducts]);
+  }, [onSelectProduct, product, projectId, siblingProducts]);
 
   useHeaderContext(headerContext);
 }
