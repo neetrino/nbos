@@ -10,6 +10,19 @@ export function revealedEnvValueByKey(
   );
 }
 
+function mergeRevealedIntoRows(
+  rows: EnvBundleEntry[],
+  revealedByKey: ReadonlyMap<string, string>,
+): EnvBundleEntry[] {
+  return rows.map((row) => {
+    if (row.value.trim().length > 0) return row;
+    if (!row.key.trim()) return row;
+    const revealed = revealedByKey.get(row.key);
+    if (revealed === undefined) return row;
+    return { key: row.key, value: revealed };
+  });
+}
+
 /**
  * Builds table rows so each index is one `{ key, value }` pair — never split across sources.
  */
@@ -19,11 +32,16 @@ export function buildEnvTableRows(
   parsedFromRevealed: EnvBundleEntry[],
   valuesLocked: boolean,
 ): EnvBundleEntry[] {
-  if (localEntries.length > 0) return localEntries;
+  const revealedByKey = new Map(parsedFromRevealed.map((entry) => [entry.key, entry.value]));
 
   if (!valuesLocked && parsedFromRevealed.length > 0) {
+    if (localEntries.length > 0) {
+      return mergeRevealedIntoRows(localEntries, revealedByKey);
+    }
     return parsedFromRevealed;
   }
+
+  if (localEntries.length > 0) return localEntries;
 
   if (parsedFromValue.length > 0) {
     return parsedFromValue;
