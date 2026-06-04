@@ -40,9 +40,9 @@ const TAB_ITEMS = [
   { value: 'tasks', label: 'Work Space', icon: ListChecks },
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'support', label: 'Support', icon: Headphones },
-  { value: 'technical', label: 'Technical', icon: ServerCog },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
   { value: 'finance', label: 'Finance', icon: DollarSign },
+  { value: 'technical', label: 'Technical', icon: ServerCog },
 ] as const satisfies ReadonlyArray<{
   value: ProductDetailTab;
   label: string;
@@ -195,10 +195,6 @@ function ProductDetailPageContent() {
           <ProductSupportTab {...supportTab} projectId={params.id} />
         </TabsContent>
 
-        <TabsContent value="technical" className="mt-5">
-          <ProductTechnicalTab productId={product.id} />
-        </TabsContent>
-
         <TabsContent value="credentials" className="mt-5 flex min-h-0 flex-1 flex-col">
           <ProductCredentialsTab {...credentialsTab} />
         </TabsContent>
@@ -222,6 +218,10 @@ function ProductDetailPageContent() {
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>
           )}
+        </TabsContent>
+
+        <TabsContent value="technical" className="mt-5">
+          <ProductTechnicalTab productId={product.id} />
         </TabsContent>
       </Tabs>
     </div>
