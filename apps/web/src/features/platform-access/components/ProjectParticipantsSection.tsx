@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Trash2, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,9 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { platformAccessApi, type ProjectTeamMemberRow } from '@/lib/api/platform-access';
+import { platformAccessApi } from '@/lib/api/platform-access';
 import { toast } from 'sonner';
 import { useProjectTeamManagementAccess } from '../hooks/use-project-team-management-access';
+import { useProjectTeam } from '../hooks/use-project-team';
+import { invalidateProjectTeamCache } from '../project-team-cache';
 import { formatTeamSource } from '../team-member-labels';
 import { ProjectTeamMemberChipRow } from './ProjectTeamMemberChipRow';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
@@ -35,6 +37,8 @@ const DEFAULT_PROJECT_TEAM_ROLE = 'MEMBER' as const;
 
 interface ProjectParticipantsSectionProps {
   projectId: string;
+  /** Bump after project entity writes that may change synced team members. */
+  refreshKey?: number;
   /** Inside {@link ProjectInfoPanel} — minimal rows, no card chrome. */
   embedded?: boolean;
   /** Narrow column — list layout, shorter copy. */
@@ -44,14 +48,13 @@ interface ProjectParticipantsSectionProps {
 
 export function ProjectParticipantsSection({
   projectId,
+  refreshKey = 0,
   embedded = false,
   compact = false,
   className,
 }: ProjectParticipantsSectionProps) {
   const isDense = embedded || compact;
-  const [members, setMembers] = useState<ProjectTeamMemberRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { members, loading, error, refetch } = useProjectTeam(projectId, refreshKey);
   const [addingMember, setAddingMember] = useState(false);
   const [busyEmployeeId, setBusyEmployeeId] = useState<string | null>(null);
 
@@ -63,23 +66,10 @@ export function ProjectParticipantsSection({
   const searchEmployees = useEmployeeRelationSearch(existingEmployeeIds);
   const employeePicker = useRelationPickerActions('employee', 'project-team');
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await platformAccessApi.listProjectTeam(projectId);
-      setMembers(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load participants');
-      setMembers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const reloadTeam = useCallback(async () => {
+    invalidateProjectTeamCache(projectId);
+    await refetch();
+  }, [projectId, refetch]);
 
   const handleRoleChange = async (employeeId: string, role: 'ADMIN' | 'MEMBER') => {
     if (role === 'ADMIN' && !canAssignAdmin) {
@@ -90,7 +80,7 @@ export function ProjectParticipantsSection({
     try {
       await platformAccessApi.updateProjectTeamMember(projectId, employeeId, { role });
       toast.success('Role updated');
-      await load();
+      await reloadTeam();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to update role');
     } finally {
@@ -106,7 +96,7 @@ export function ProjectParticipantsSection({
         role: DEFAULT_PROJECT_TEAM_ROLE,
       });
       toast.success('Participant added', { description: `${label} · Member` });
-      await load();
+      await reloadTeam();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to add participant');
     } finally {
@@ -119,7 +109,7 @@ export function ProjectParticipantsSection({
     try {
       await platformAccessApi.removeProjectTeamMember(projectId, employeeId);
       toast.success('Participant removed');
-      await load();
+      await reloadTeam();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to remove');
     } finally {
@@ -170,7 +160,7 @@ export function ProjectParticipantsSection({
       >
         {addMemberPicker}
         {error ? (
-          <ErrorState description={error} onRetry={() => void load()} />
+          <ErrorState description={error} onRetry={() => void reloadTeam()} />
         ) : loading ? (
           <LoadingState count={isDense ? 2 : 3} />
         ) : members.length === 0 ? (

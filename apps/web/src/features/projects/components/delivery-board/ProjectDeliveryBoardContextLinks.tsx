@@ -1,5 +1,5 @@
 import { ListChecks, Puzzle, Ticket } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ActionTileButton } from '@/components/shared';
 import { tasksApi } from '@/lib/api/tasks';
 import { getNavigableProductId, type DeliveryBoardItem } from './project-delivery-board-model';
 
@@ -110,9 +110,12 @@ function ContextLink({
   onClick: () => void;
 }) {
   return (
-    <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={onClick}>
-      <Icon size={12} />
-      {label}
-    </Button>
+    <ActionTileButton
+      label={label}
+      icon={<Icon size={12} aria-hidden />}
+      tone="neutral"
+      size="sm"
+      onClick={onClick}
+    />
   );
 }

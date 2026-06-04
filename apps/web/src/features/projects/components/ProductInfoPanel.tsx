@@ -16,6 +16,9 @@ import { productStageGateFieldClass } from '@/features/projects/product-stage-ga
 import type { FullProduct } from '@/lib/api/products';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
+import { EntityDetailSheetPanelActions } from './EntityDetailSheetPanelActions';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
+import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import { DetailInfoSubsection } from './detail-info-subsection';
 import { ProjectContactsSection } from './ProjectContactsSection';
 
@@ -54,6 +57,8 @@ export function ProductInfoPanel({
   const forceDescription = gateRequiredFields.has('description');
   const productType = getProductType(product.productType);
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
+  const dealId = getEntityOrderDealId(product.order);
 
   return (
     <aside
@@ -71,6 +76,12 @@ export function ProductInfoPanel({
         </div>
         <EntityDriveNavAction href={buildDriveHrefWithProduct(product.id)} className="shrink-0" />
       </div>
+
+      <EntityDetailSheetPanelActions
+        className="mt-4"
+        onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
+        onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
+      />
 
       <div className="mt-4">
         {(hasDescription || forceDescription) && (

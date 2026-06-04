@@ -26,6 +26,13 @@ export {
   type IntegratedSearchFiltersProps,
 } from './IntegratedSearchFilters';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
+export { ActionTileButton, type ActionTileButtonProps } from './ActionTileButton';
+export {
+  actionTileIconVariants,
+  actionTileShellVariants,
+  type ActionTileSize,
+  type ActionTileTone,
+} from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';

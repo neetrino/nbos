@@ -1,5 +1,5 @@
 import { Building2, Calendar, CheckCircle2, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ActionTileButton } from '@/components/shared';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
 import { getItemLifecycle } from './project-delivery-board-model';
 
@@ -76,31 +76,21 @@ export function ClosedCompactCardActions({
   return (
     <div className="border-border mt-3 flex flex-wrap justify-end gap-1.5 border-t pt-2">
       {onOpenDetails ? (
-        <Button
-          type="button"
-          variant="outline"
+        <ActionTileButton
+          label="Details"
+          icon={<CheckCircle2 size={12} aria-hidden />}
+          tone="sky"
           size="sm"
-          className="h-7 text-xs"
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenDetails();
-          }}
-        >
-          Details
-        </Button>
+          onClick={onOpenDetails}
+        />
       ) : null}
-      <Button
-        type="button"
-        variant="ghost"
+      <ActionTileButton
+        label="Open"
+        icon={<Building2 size={12} aria-hidden />}
+        tone="neutral"
         size="sm"
-        className="h-7 text-xs"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenProduct();
-        }}
-      >
-        Open
-      </Button>
+        onClick={onOpenProduct}
+      />
     </div>
   );
 }

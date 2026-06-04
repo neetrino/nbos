@@ -1,7 +1,8 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Handshake, LayoutGrid } from 'lucide-react';
+import { ActionTileButton } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 interface EntityDeliveryDealHoverActionsProps {
@@ -15,6 +16,18 @@ function stopCardClick(event: MouseEvent) {
   event.stopPropagation();
 }
 
+const CARD_HOVER_REVEAL_CLASS = [
+  'pointer-events-none opacity-0 transition-opacity duration-150',
+  'group-hover/entity-card:pointer-events-auto group-hover/entity-card:opacity-100',
+  'group-focus-within/entity-card:pointer-events-auto group-focus-within/entity-card:opacity-100',
+].join(' ');
+
+const ROW_HOVER_REVEAL_CLASS = [
+  'pointer-events-none opacity-0 transition-opacity duration-150',
+  'group-hover/entity-row:pointer-events-auto group-hover/entity-row:opacity-100',
+  'group-focus-within/entity-row:pointer-events-auto group-focus-within/entity-row:opacity-100',
+].join(' ');
+
 export function EntityDeliveryDealHoverActions({
   onOpenDeliveryCard,
   onOpenDeal,
@@ -25,37 +38,31 @@ export function EntityDeliveryDealHoverActions({
       onPointerDown={stopCardClick}
       onClick={stopCardClick}
       className={cn(
-        'border-border pointer-events-none flex flex-wrap justify-end gap-1.5 border-t pt-2 opacity-0 transition-opacity duration-150',
-        'group-hover/entity-card:pointer-events-auto group-hover/entity-card:opacity-100',
-        'group-focus-within/entity-card:pointer-events-auto group-focus-within/entity-card:opacity-100',
+        'border-border flex flex-wrap justify-end gap-1.5 border-t pt-2',
+        CARD_HOVER_REVEAL_CLASS,
         className,
       )}
     >
-      <Button
-        type="button"
-        variant="outline"
+      <ActionTileButton
+        label="Delivery Card"
+        icon={<LayoutGrid aria-hidden />}
+        tone="sky"
         size="sm"
-        className="h-7 text-xs"
         onClick={onOpenDeliveryCard}
-      >
-        Delivery Card
-      </Button>
+      />
       {onOpenDeal ? (
-        <Button
-          type="button"
-          variant="secondary"
+        <ActionTileButton
+          label="Deal"
+          icon={<Handshake aria-hidden />}
+          tone="violet"
           size="sm"
-          className="h-7 text-xs"
           onClick={onOpenDeal}
-        >
-          Deal
-        </Button>
+        />
       ) : null}
     </div>
   );
 }
 
-/** Compact actions for list rows (always visible on hover via parent group). */
 export function EntityDeliveryDealHoverActionsInline({
   onOpenDeliveryCard,
   onOpenDeal,
@@ -64,29 +71,28 @@ export function EntityDeliveryDealHoverActionsInline({
   return (
     <div
       className={cn(
-        'pointer-events-none flex shrink-0 flex-wrap items-center gap-1 opacity-0 transition-opacity duration-150',
-        'group-hover/entity-row:pointer-events-auto group-hover/entity-row:opacity-100',
-        'group-focus-within/entity-row:pointer-events-auto group-focus-within/entity-row:opacity-100',
+        'flex shrink-0 flex-wrap items-center gap-1',
+        ROW_HOVER_REVEAL_CLASS,
         className,
       )}
       onPointerDown={stopCardClick}
       onClick={stopCardClick}
     >
-      <button
-        type="button"
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 text-xs')}
+      <ActionTileButton
+        label="Delivery Card"
+        icon={<LayoutGrid aria-hidden />}
+        tone="sky"
+        size="sm"
         onClick={onOpenDeliveryCard}
-      >
-        Delivery Card
-      </button>
+      />
       {onOpenDeal ? (
-        <button
-          type="button"
-          className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'h-7 text-xs')}
+        <ActionTileButton
+          label="Deal"
+          icon={<Handshake aria-hidden />}
+          tone="violet"
+          size="sm"
           onClick={onOpenDeal}
-        >
-          Deal
-        </button>
+        />
       ) : null}
     </div>
   );

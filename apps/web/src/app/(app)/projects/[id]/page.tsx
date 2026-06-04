@@ -4,6 +4,10 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+import {
+  prefetchProjectTeam,
+  invalidateProjectTeamCache,
+} from '@/features/platform-access/project-team-cache';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
 import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
@@ -27,6 +31,7 @@ function ProjectDetailPageContent() {
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [detailViewMode, setDetailViewMode] = useProjectDetailViewMode();
+  const [teamRefreshKey, setTeamRefreshKey] = useState(0);
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -42,8 +47,10 @@ function ProjectDetailPageContent() {
   }, [params.id, router]);
 
   useEffect(() => {
+    if (!params.id) return;
+    prefetchProjectTeam(params.id);
     fetchProject();
-  }, [fetchProject]);
+  }, [fetchProject, params.id]);
 
   useProjectDetailHeader(project);
 
@@ -85,11 +92,19 @@ function ProjectDetailPageContent() {
         <ProjectInfoPanel
           className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_EDGE_CLASS)}
           project={project}
+          teamRefreshKey={teamRefreshKey}
           onProjectUpdated={setProject}
         />
       </div>
 
-      <EntityDetailSheetsHost project={project} onEntityUpdated={() => void fetchProject()} />
+      <EntityDetailSheetsHost
+        project={project}
+        onEntityUpdated={() => {
+          invalidateProjectTeamCache(project.id);
+          setTeamRefreshKey((key) => key + 1);
+          void fetchProject();
+        }}
+      />
 
       <CreateProductDialog
         open={showCreateProduct}

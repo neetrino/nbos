@@ -12,10 +12,16 @@ import { ProjectParticipantsSection } from '@/features/platform-access/component
 interface ProjectInfoPanelProps {
   project: FullProject;
   onProjectUpdated: (project: FullProject) => void;
+  teamRefreshKey?: number;
   className?: string;
 }
 
-export function ProjectInfoPanel({ project, onProjectUpdated, className }: ProjectInfoPanelProps) {
+export function ProjectInfoPanel({
+  project,
+  onProjectUpdated,
+  teamRefreshKey = 0,
+  className,
+}: ProjectInfoPanelProps) {
   const hasDescription = Boolean(project.description?.trim());
 
   return (
@@ -47,6 +53,7 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
         <DetailInfoSubsection title="Team" className="mt-4 flex min-h-0 flex-1 flex-col pt-6">
           <ProjectParticipantsSection
             projectId={project.id}
+            refreshKey={teamRefreshKey}
             embedded
             className="flex min-h-0 flex-1 flex-col"
           />

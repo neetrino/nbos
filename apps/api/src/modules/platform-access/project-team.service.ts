@@ -6,7 +6,6 @@ import {
   assertCanAssignProjectTeamAdmin,
   assertCanManageProjectTeam,
 } from './project-team-authorization';
-import { ProductTeamSyncService } from './product-team-sync.service';
 import { teamMemberEmployeeSelect } from './team-member.select';
 
 interface AddProjectTeamMemberDto {
@@ -23,12 +22,10 @@ export class ProjectTeamService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly audit: AuditService,
-    private readonly productTeamSync: ProductTeamSyncService,
   ) {}
 
   async listByProject(projectId: string) {
     await this.assertProjectExists(projectId);
-    await this.productTeamSync.reconcileProjectTeamFromProducts(projectId);
     return this.prisma.projectTeamMember.findMany({
       where: { projectId },
       include: { employee: { select: teamMemberEmployeeSelect } },

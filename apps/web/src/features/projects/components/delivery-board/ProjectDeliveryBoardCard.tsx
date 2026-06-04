@@ -1,7 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import Link from 'next/link';
-import { StatusBadge } from '@/components/shared';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { FolderKanban, ListChecks } from 'lucide-react';
+import { ActionTileButton, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type {
   DeliveryLifecycleProjection,
@@ -228,24 +227,23 @@ function DeliveryKanbanCardHoverActions({
       onPointerDown={onPointerDown}
       className="border-border pointer-events-none flex flex-wrap justify-end gap-1.5 border-t pt-2 opacity-0 transition-opacity duration-150 group-focus-within/kanban-card:pointer-events-auto group-focus-within/kanban-card:opacity-100 group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100"
     >
-      <Link
+      <ActionTileButton
+        label="Project"
+        icon={<FolderKanban size={12} aria-hidden />}
+        tone="neutral"
+        size="sm"
         href={`/projects/${projectId}`}
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 text-xs')}
-      >
-        Project
-      </Link>
+      />
       {onOpenQuickTaskForProject ? (
-        <Button
-          type="button"
-          variant="secondary"
+        <ActionTileButton
+          label="Task"
+          icon={<ListChecks size={12} aria-hidden />}
+          tone="primary"
           size="sm"
-          className="h-7 text-xs"
           disabled={quickTaskDisabled}
           title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
           onClick={() => onOpenQuickTaskForProject(projectId)}
-        >
-          Task
-        </Button>
+        />
       ) : null}
     </div>
   );
