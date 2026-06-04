@@ -3,7 +3,10 @@
 import { useCallback, useMemo } from 'react';
 import { User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
-import { RELATION_PICKER_CHIP_STACK_CLASS } from '@/components/shared/detail-sheet-classes';
+import {
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { CredentialManualAccessGrantRow } from './credential-manual-access-grant-row';
@@ -69,6 +72,8 @@ export function CredentialManualAccessPanel({
         icon={<User size={12} />}
         onSearch={searchEmployees}
         onSelect={(id, label) => addEmployee(id, label)}
+        listMaxHeightClass={RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS}
+        maxResults={12}
         {...employeePicker}
       />
 

@@ -30,6 +30,7 @@ type RelationPickerDropdownProps = {
   onSelect: (value: string, label: string) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  listMaxHeightClass: string;
 };
 
 export function RelationPickerDropdown({
@@ -50,6 +51,7 @@ export function RelationPickerDropdown({
   onSelect,
   onKeyDown,
   inputRef,
+  listMaxHeightClass,
 }: RelationPickerDropdownProps) {
   return (
     <div className="relative">
@@ -83,7 +85,7 @@ export function RelationPickerDropdown({
       </div>
 
       <div className={DROPDOWN_PANEL_CLASS}>
-        <div className="max-h-56 overflow-y-auto">
+        <div className={listMaxHeightClass}>
           {loading ? (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
               <Loader2 size={13} className="animate-spin" />

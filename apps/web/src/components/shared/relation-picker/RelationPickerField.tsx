@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_DROPDOWN_LIST_CLASS,
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
   RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
 } from '../detail-sheet-classes';
@@ -54,6 +55,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     className,
     onSearch,
     maxResults = DEFAULT_MAX_RESULTS,
+    listMaxHeightClass = RELATION_PICKER_DROPDOWN_LIST_CLASS,
     onOpenSelected,
     onCreate,
   } = props;
@@ -221,6 +223,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           onSelect={handleSelect}
           onKeyDown={handleKeyDown}
           inputRef={inputRef}
+          listMaxHeightClass={listMaxHeightClass}
         />
       ) : (
         <ClosedRelationPicker

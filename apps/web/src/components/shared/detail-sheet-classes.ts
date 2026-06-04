@@ -223,6 +223,12 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 
+/** Default relation picker dropdown list (~4 rows). */
+export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
+
+/** Taller list for employee pickers in sheets (~6 rows with subtitle). */
+export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y-auto';
+
 /** Empty / add trigger aligned with relation chip width. */
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
