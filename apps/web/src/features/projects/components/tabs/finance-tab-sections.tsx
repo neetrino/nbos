@@ -1,12 +1,7 @@
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
-import {
-  projectExpensesBacklogDrilldownHref,
-  projectExpensesDrilldownHref,
-} from '@/features/finance/constants/project-expenses-drilldown';
-import type { ProjectDomain, ProjectExpense, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 
 function formatAmount(amount: number | string): string {
@@ -51,67 +46,6 @@ export function FinanceSubscriptionsSection({
             </div>
           );
         })}
-      </div>
-    </section>
-  );
-}
-
-export function FinanceExpensesSection({
-  expenses,
-  projectId,
-}: {
-  expenses: ProjectExpense[];
-  projectId: string;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">Expenses ({expenses.length})</h3>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Link
-            href={projectExpensesDrilldownHref(projectId)}
-            className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
-          >
-            Open in Finance
-            <ExternalLink size={12} className="opacity-70" aria-hidden />
-          </Link>
-          <Link
-            href={projectExpensesBacklogDrilldownHref(projectId)}
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium hover:underline"
-          >
-            Deferred backlog
-            <ExternalLink size={12} className="opacity-70" aria-hidden />
-          </Link>
-        </div>
-      </div>
-      <div className="border-border overflow-hidden rounded-xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-4 py-2 text-left font-medium">Expense</th>
-              <th className="px-4 py-2 text-left font-medium">Category</th>
-              <th className="px-4 py-2 text-left font-medium">Frequency</th>
-              <th className="px-4 py-2 text-right font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((exp) => (
-              <tr key={exp.id} className="border-border border-t">
-                <td className="px-4 py-2 font-medium">
-                  {exp.name}
-                  {exp.isPassThrough ? (
-                    <StatusBadge label="Pass-through" variant="gray" className="ml-2" />
-                  ) : null}
-                </td>
-                <td className="text-muted-foreground px-4 py-2">{exp.category}</td>
-                <td className="text-muted-foreground px-4 py-2">
-                  {exp.frequency.replace(/_/g, ' ')}
-                </td>
-                <td className="px-4 py-2 text-right font-medium">{formatAmount(exp.amount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
+import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   matchesBoardLifecycleScope,
@@ -6,7 +7,7 @@ import {
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
-import type { ProjectDomain, ProjectExpense, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
 
 function matchesNeedle(value: string | null | undefined, needle: string): boolean {
   return (value ?? '').toLowerCase().includes(needle);
@@ -59,23 +60,6 @@ export function filterProductFinanceSubscriptions(
   });
 }
 
-export function filterProductFinanceExpenses(
-  expenses: ProjectExpense[],
-  search: string,
-  filters: Record<string, string>,
-): ProjectExpense[] {
-  const needle = search.trim().toLowerCase();
-  return expenses.filter((expense) => {
-    if (needle) {
-      const haystack = `${expense.name} ${expense.category} ${expense.type}`.toLowerCase();
-      if (!haystack.includes(needle)) return false;
-    }
-    if (matchesFilterValue(filters.category, expense.category)) return false;
-    if (matchesFilterValue(filters.status, expense.status)) return false;
-    return true;
-  });
-}
-
 export function filterProductFinanceDomains(
   domains: ProjectDomain[],
   search: string,
@@ -104,6 +88,12 @@ export function productFinanceFilterValuesForUi(
   if (section === 'orders') {
     return {
       boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      ...filters,
+    };
+  }
+  if (section === 'expenses') {
+    return {
+      [EXPENSE_BOARD_SCOPE_FILTER_KEY]: filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] ?? 'active',
       ...filters,
     };
   }

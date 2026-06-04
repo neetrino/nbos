@@ -16,10 +16,13 @@ import {
   PageHeroTabs,
   ViewModeSwitch,
 } from '@/components/shared';
+import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
 import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
+import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/expenses-view-options';
 import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
+import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
@@ -58,6 +61,7 @@ export function FinanceTab({
 }: FinanceTabProps) {
   const financeSection = useProductFinanceSection();
   const [ordersView, setOrdersView] = useOrdersBoardViewMode();
+  const [expensesView, setExpensesView] = useExpensesBoardViewMode();
 
   const scopedOrders = useMemo(() => {
     if (!productOrderId) return orders;
@@ -147,6 +151,13 @@ export function FinanceTab({
               onChange={setOrdersView}
               options={ORDER_VIEW_OPTIONS}
             />
+          ) : financeSection.activeSection === 'expenses' &&
+            financeSection.filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] !== 'backlog' ? (
+            <ViewModeSwitch
+              value={expensesView}
+              onChange={setExpensesView}
+              options={EXPENSES_VIEW_OPTIONS}
+            />
           ) : undefined
         }
         trailing={
@@ -171,7 +182,8 @@ export function FinanceTab({
 
       <div
         className={
-          financeSection.activeSection === 'orders' && ordersView === 'board'
+          (financeSection.activeSection === 'orders' && ordersView === 'board') ||
+          (financeSection.activeSection === 'expenses' && expensesView === 'kanban')
             ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
             : undefined
         }
@@ -181,9 +193,9 @@ export function FinanceTab({
           search={financeSection.search}
           filters={financeSection.filters}
           ordersView={ordersView}
+          expensesView={expensesView}
           financeOrders={financeOrders}
           subscriptions={subscriptions}
-          expenses={expenses}
           domains={domains}
           projectId={projectId}
         />

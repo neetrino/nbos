@@ -9,6 +9,7 @@ import {
   PRODUCT_FINANCE_SECTION_QUERY,
   type ProductFinanceSection,
 } from '@/features/projects/constants/product-finance-section';
+import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import {
   productFinanceFilterConfigs,
   productFinanceSearchPlaceholder,
@@ -26,7 +27,10 @@ function createInitialSectionState(): Record<ProductFinanceSection, SectionUiSta
   return {
     orders: { ...EMPTY_SECTION_STATE },
     subscriptions: { ...EMPTY_SECTION_STATE },
-    expenses: { ...EMPTY_SECTION_STATE },
+    expenses: {
+      search: '',
+      filters: { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' },
+    },
     domains: { ...EMPTY_SECTION_STATE },
   };
 }
@@ -75,7 +79,12 @@ export function useProductFinanceSection() {
                 const { boardScope: _, ...rest } = current.filters;
                 return rest;
               })()
-            : { ...current.filters, [key]: value };
+            : key === EXPENSE_BOARD_SCOPE_FILTER_KEY && value === 'active'
+              ? (() => {
+                  const { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: _, ...rest } = current.filters;
+                  return rest;
+                })()
+              : { ...current.filters, [key]: value };
         return {
           ...prev,
           [activeSection]: { ...current, filters: nextFilters },
@@ -88,7 +97,10 @@ export function useProductFinanceSection() {
   const clearFilters = useCallback(() => {
     setSectionState((prev) => ({
       ...prev,
-      [activeSection]: { ...EMPTY_SECTION_STATE },
+      [activeSection]:
+        activeSection === 'expenses'
+          ? { search: '', filters: { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' } }
+          : { ...EMPTY_SECTION_STATE },
     }));
   }, [activeSection]);
 

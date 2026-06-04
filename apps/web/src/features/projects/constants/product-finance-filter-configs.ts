@@ -5,6 +5,7 @@ import {
   SUBSCRIPTION_STATUSES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
+import { buildExpenseBoardScopeFilterConfig } from '@/features/finance/components/expenses/expense-board-scope';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
@@ -54,6 +55,7 @@ export const PRODUCT_SUBSCRIPTION_FILTER_CONFIGS: FilterConfig[] = [
 ];
 
 export const PRODUCT_EXPENSE_FILTER_CONFIGS: FilterConfig[] = [
+  buildExpenseBoardScopeFilterConfig(),
   {
     key: 'category',
     label: 'Category',

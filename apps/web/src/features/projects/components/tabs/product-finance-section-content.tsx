@@ -2,37 +2,31 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, Globe, Receipt, RefreshCw, ShoppingCart } from 'lucide-react';
+import { ExternalLink, Globe, RefreshCw, ShoppingCart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { OrdersBoardView } from '@/features/finance/components/orders/OrdersBoardView';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
-import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import {
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import {
   FinanceDomainsSection,
-  FinanceExpensesSection,
   FinanceSubscriptionsSection,
 } from '@/features/projects/components/tabs/finance-tab-sections';
+import { ProductFinanceExpensesPanel } from '@/features/projects/components/tabs/product-finance-expenses-panel';
+import type { ExpensesViewMode } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 import {
   filterProductFinanceDomains,
-  filterProductFinanceExpenses,
   filterProductFinanceOrders,
   filterProductFinanceSubscriptions,
 } from '@/features/projects/utils/filter-product-finance-data';
 import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
 import type { Order } from '@/lib/api/finance';
-import type {
-  ProjectDomain,
-  ProjectExpense,
-  ProjectOrder,
-  ProjectSubscription,
-} from '@/lib/api/projects';
+import type { ProjectDomain, ProjectSubscription } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 
 interface ProductFinanceSectionContentProps {
@@ -40,9 +34,9 @@ interface ProductFinanceSectionContentProps {
   search: string;
   filters: Record<string, string>;
   ordersView: OrderViewMode;
+  expensesView: ExpensesViewMode;
   financeOrders: Order[];
   subscriptions: ProjectSubscription[];
-  expenses: ProjectExpense[];
   domains: ProjectDomain[];
   projectId: string;
 }
@@ -52,9 +46,9 @@ export function ProductFinanceSectionContent({
   search,
   filters,
   ordersView,
+  expensesView,
   financeOrders,
   subscriptions,
-  expenses,
   domains,
   projectId,
 }: ProductFinanceSectionContentProps) {
@@ -110,19 +104,14 @@ export function ProductFinanceSectionContent({
   }
 
   if (section === 'expenses') {
-    const rows = filterProductFinanceExpenses(expenses, search, filters);
-    if (rows.length === 0) {
-      return (
-        <FinanceSectionEmpty
-          icon={Receipt}
-          title="No expenses"
-          description="No expenses match your filters for this project."
-          href={projectExpensesDrilldownHref(projectId)}
-          linkLabel="Open Expenses in Finance"
-        />
-      );
-    }
-    return <FinanceExpensesSection expenses={rows} projectId={projectId} />;
+    return (
+      <ProductFinanceExpensesPanel
+        projectId={projectId}
+        search={search}
+        filters={filters}
+        view={expensesView}
+      />
+    );
   }
 
   const rows = filterProductFinanceDomains(domains, search, filters);
