@@ -67,8 +67,7 @@ export function CredentialFormDynamicFields({
       {specs.map((spec) => {
         if (spec.kind === 'env') {
           return (
-            <div key={spec.field} className="grid gap-2">
-              <Label>{spec.label}</Label>
+            <div key={spec.field}>
               <CredentialEnvTableEditor
                 instanceKey={guardScope}
                 value={envData}

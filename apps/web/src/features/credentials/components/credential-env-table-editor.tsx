@@ -199,18 +199,26 @@ export function CredentialEnvTableEditor({
 
   return (
     <div className="grid gap-4">
-      {isExisting ? (
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={!hasStoredBundle || Boolean(revealedValue)}
-            onClick={handleRevealAll}
-          >
-            <Eye className="mr-1 size-3.5" />
-            Reveal all
+          <Button type="button" variant="outline" size="sm" onClick={addRow}>
+            <Plus className="mr-1 size-3.5" />
+            Add Variable
           </Button>
+          {isExisting ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              disabled={!hasStoredBundle || Boolean(revealedValue)}
+              onClick={handleRevealAll}
+              aria-label="Reveal all values"
+            >
+              <Eye className="size-3.5" />
+            </Button>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="outline"
@@ -219,10 +227,20 @@ export function CredentialEnvTableEditor({
             onClick={() => void handleCopyBundle()}
           >
             <Copy className="mr-1 size-3.5" />
-            Copy bundle
+            Copy
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!canExportBundle}
+            onClick={() => void handleDownloadBundle()}
+          >
+            <Download className="mr-1 size-3.5" />
+            Download
           </Button>
         </div>
-      ) : null}
+      </div>
 
       <div className="border-border overflow-hidden rounded-lg border">
         <div className="bg-muted/40 text-muted-foreground grid grid-cols-[1fr_1fr_auto] gap-2 px-3 py-2 text-xs font-medium">
@@ -257,23 +275,6 @@ export function CredentialEnvTableEditor({
             </Button>
           </div>
         ) : null}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={addRow}>
-          <Plus className="mr-1 size-3.5" />
-          Add variable
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!canExportBundle}
-          onClick={() => void handleDownloadBundle()}
-        >
-          <Download className="mr-1 size-3.5" />
-          Download .env
-        </Button>
       </div>
 
       <CredentialEnvPasteDialog
