@@ -1,6 +1,5 @@
 'use client';
 
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import {
@@ -38,7 +37,6 @@ export function DriveManualAccessGrantRow({
     <RelationPickerChip
       label={label}
       subtitle={grant.granteeEmail ?? null}
-      icon={<EmployeePersonAvatar label={label} />}
       entityKind="employee"
       disabled={disabled}
       onOpen={() => void relations.openEntity('employee', grant.granteeEmployeeId)}

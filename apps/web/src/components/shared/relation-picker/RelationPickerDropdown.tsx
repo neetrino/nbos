@@ -4,7 +4,7 @@ import { Check, Loader2, Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { RelationEntityKind, RelationPickerOption } from './relation-picker.types';
-import { relationPickerOptionLeading } from './relation-picker-option-leading';
+import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
 const DROPDOWN_PANEL_CLASS =
   'absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900';

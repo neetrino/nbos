@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Search } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -22,15 +22,8 @@ interface QuickCreateTaskAssigneePickerProps {
   onSelect: (id: string, label: string, avatar?: string) => void;
 }
 
-function initialsFromLabel(label: string): string {
-  const parts = label.trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) {
-    const first = parts[0]?.charAt(0) ?? '';
-    const second = parts[1]?.charAt(0) ?? '';
-    return `${first}${second}`.toUpperCase();
-  }
-  return (label.charAt(0) || 'U').toUpperCase();
-}
+const ASSIGNEE_AVATAR_TRIGGER_CLASS = 'size-6 rounded-full text-[10px]';
+const ASSIGNEE_AVATAR_OPTION_CLASS = 'size-7 rounded-full text-[10px]';
 
 export function QuickCreateTaskAssigneePicker({
   assigneeId,
@@ -100,12 +93,11 @@ export function QuickCreateTaskAssigneePicker({
       >
         {hasAssignee ? (
           <>
-            <Avatar size="sm" className="size-6">
-              {assigneeAvatar ? <AvatarImage src={assigneeAvatar} alt={assigneeLabel} /> : null}
-              <AvatarFallback className="text-[10px] font-semibold">
-                {initialsFromLabel(assigneeLabel)}
-              </AvatarFallback>
-            </Avatar>
+            <EmployeePersonAvatar
+              label={assigneeLabel}
+              imageUrl={assigneeAvatar}
+              className={ASSIGNEE_AVATAR_TRIGGER_CLASS}
+            />
             <span className="truncate font-medium">{assigneeLabel}</span>
           </>
         ) : (
@@ -159,14 +151,11 @@ export function QuickCreateTaskAssigneePicker({
                       option.value === assigneeId && 'bg-muted/50',
                     )}
                   >
-                    <Avatar size="sm" className="size-7">
-                      {option.avatar ? (
-                        <AvatarImage src={option.avatar} alt={option.label} />
-                      ) : null}
-                      <AvatarFallback className="text-[10px] font-semibold">
-                        {initialsFromLabel(option.label)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <EmployeePersonAvatar
+                      label={option.label}
+                      imageUrl={option.avatar}
+                      className={ASSIGNEE_AVATAR_OPTION_CLASS}
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="text-foreground block truncate font-medium">
                         {option.label}

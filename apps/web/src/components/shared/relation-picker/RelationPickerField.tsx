@@ -9,7 +9,6 @@ import {
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
-import { relationPickerOptionLeading } from './relation-picker-option-leading';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
 import {
   RELATION_CREATE_LABELS,
@@ -254,7 +253,6 @@ function ClosedRelationPicker({
           <RelationPickerChip
             key={chip.id}
             label={chip.label}
-            icon={relationPickerOptionLeading(entityKind, chip.label, 'inline')}
             entityKind={entityKind}
             disabled={disabled}
             onOpen={onOpenSelected ? () => onOpenSelected(chip.id) : undefined}
@@ -291,7 +289,6 @@ function ClosedRelationPicker({
           <RelationPickerChip
             label={chipLabel}
             subtitle={props.selectionSubtitle}
-            icon={relationPickerOptionLeading(entityKind, chipLabel, 'inline')}
             entityKind={entityKind}
             disabled={disabled}
             onOpen={
