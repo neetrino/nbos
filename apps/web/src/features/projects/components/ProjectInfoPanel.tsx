@@ -47,11 +47,11 @@ export function ProjectInfoPanel({ project, onProjectUpdated, className }: Proje
           </ProjectInfoSubsection>
         ) : null}
 
-        <ProjectInfoSubsection first={!hasDescription}>
+        <ProjectInfoSubsection first={!hasDescription} className="pb-3">
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
         </ProjectInfoSubsection>
 
-        <ProjectInfoSubsection title="Team">
+        <ProjectInfoSubsection title="Team" className="mt-4 pt-6">
           <ProjectParticipantsSection projectId={project.id} embedded />
         </ProjectInfoSubsection>
       </div>
@@ -63,13 +63,15 @@ function ProjectInfoSubsection({
   title,
   children,
   first = false,
+  className,
 }: {
   title?: string;
   children: ReactNode;
   first?: boolean;
+  className?: string;
 }) {
   return (
-    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, 'space-y-3')}>
+    <section className={cn(!first && DETAIL_SHEET_PANEL_DIVIDER_CLASS, 'space-y-3', className)}>
       {title ? <h3 className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{title}</h3> : null}
       {children}
     </section>
