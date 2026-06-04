@@ -23,7 +23,7 @@ function DeliveryDealTiles({
   fullWidth = false,
 }: DeliveryDealTilesProps) {
   const hasDeal = Boolean(onOpenDeal);
-  const deliveryLabel = size === 'sm' ? DELIVERY_ACTION_LABEL_COMPACT : DELIVERY_ACTION_LABEL_PANEL;
+  const deliveryLabel = size === 'md' ? DELIVERY_ACTION_LABEL_PANEL : DELIVERY_ACTION_LABEL_COMPACT;
 
   return (
     <>
@@ -82,7 +82,7 @@ export function DeliveryDealCardHoverActions({
   return (
     <ActionTileHoverBar variant="card" className={className}>
       <DeliveryDealTiles
-        size="sm"
+        size="card"
         onOpenDeliveryCard={onOpenDeliveryCard}
         onOpenDeal={onOpenDeal}
       />
@@ -100,9 +100,9 @@ export function DeliveryDealRowHoverActions({
   className?: string;
 }) {
   return (
-    <ActionTileHoverBar variant="row" bordered={false} className={className}>
+    <ActionTileHoverBar variant="row" className={className}>
       <DeliveryDealTiles
-        size="sm"
+        size="card"
         onOpenDeliveryCard={onOpenDeliveryCard}
         onOpenDeal={onOpenDeal}
       />

@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { FolderKanban, ListChecks } from 'lucide-react';
-import { ActionTileButton, StatusBadge } from '@/components/shared';
+import { ActionTileButton, ActionTileHoverBar, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type {
   DeliveryLifecycleProjection,
@@ -223,28 +223,27 @@ function DeliveryKanbanCardHoverActions({
   quickTaskDisabled: boolean;
 }) {
   return (
-    <div
-      onPointerDown={onPointerDown}
-      className="border-border pointer-events-none flex flex-wrap justify-end gap-1.5 border-t pt-2 opacity-0 transition-opacity duration-150 group-focus-within/kanban-card:pointer-events-auto group-focus-within/kanban-card:opacity-100 group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100"
-    >
-      <ActionTileButton
-        label="Project"
-        icon={<FolderKanban size={12} aria-hidden />}
-        tone="neutral"
-        size="sm"
-        href={`/projects/${projectId}`}
-      />
-      {onOpenQuickTaskForProject ? (
+    <div onPointerDown={onPointerDown}>
+      <ActionTileHoverBar variant="kanban-card">
         <ActionTileButton
-          label="Task"
-          icon={<ListChecks size={12} aria-hidden />}
-          tone="primary"
-          size="sm"
-          disabled={quickTaskDisabled}
-          title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
-          onClick={() => onOpenQuickTaskForProject(projectId)}
+          label="Project"
+          icon={<FolderKanban aria-hidden />}
+          tone="neutral"
+          size="card"
+          href={`/projects/${projectId}`}
         />
-      ) : null}
+        {onOpenQuickTaskForProject ? (
+          <ActionTileButton
+            label="Task"
+            icon={<ListChecks aria-hidden />}
+            tone="primary"
+            size="card"
+            disabled={quickTaskDisabled}
+            title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
+            onClick={() => onOpenQuickTaskForProject(projectId)}
+          />
+        ) : null}
+      </ActionTileHoverBar>
     </div>
   );
 }

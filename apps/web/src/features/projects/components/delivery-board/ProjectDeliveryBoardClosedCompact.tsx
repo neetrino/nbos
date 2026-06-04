@@ -80,7 +80,7 @@ export function ClosedCompactCardActions({
           label="Details"
           icon={<CheckCircle2 size={12} aria-hidden />}
           tone="sky"
-          size="sm"
+          size="card"
           onClick={onOpenDetails}
         />
       ) : null}
@@ -88,7 +88,7 @@ export function ClosedCompactCardActions({
         label="Open"
         icon={<Building2 size={12} aria-hidden />}
         tone="neutral"
-        size="sm"
+        size="card"
         onClick={onOpenProduct}
       />
     </div>

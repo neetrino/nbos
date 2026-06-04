@@ -112,9 +112,9 @@ function ContextLink({
   return (
     <ActionTileButton
       label={label}
-      icon={<Icon size={12} aria-hidden />}
+      icon={<Icon aria-hidden />}
       tone="neutral"
-      size="sm"
+      size="card"
       onClick={onClick}
     />
   );
