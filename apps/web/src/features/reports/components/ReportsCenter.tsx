@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
-import { PAGE_HERO_TAB_SCROLL, useModuleHeroSlots } from '@/components/shared/page-hero';
+import { useModuleHeroSlots } from '@/components/shared/page-hero';
 import { Button } from '@/components/ui/button';
 import {
   reportsApi,
@@ -15,7 +16,7 @@ import {
   type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ReportsViewTabs, type ReportsView } from './ReportsCenterChrome';
+import { REPORTS_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/reports-visit-config';
 import { buildReportsHeroSearch } from './build-reports-hero-search';
 import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
@@ -25,6 +26,7 @@ import {
   buildReportFilters,
   type ReportFilterState,
 } from '../report-filters';
+import { buildReportsViewPath, parseReportsPathname, type ReportsViewId } from '../reports-routing';
 import {
   useFinanceReportsTabData,
   useMarketingReportsTabData,
@@ -39,12 +41,22 @@ import { SalesReportsTab } from './tabs/SalesReportsTab';
 import { SpecialistsReportsTab } from './tabs/SpecialistsReportsTab';
 
 export function ReportsCenter() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const parsedPath = parseReportsPathname(pathname);
+  const view = parsedPath?.viewId ?? 'FINANCE';
+
+  useEffect(() => {
+    if (!parsedPath) {
+      router.replace(REPORTS_SECTION_DEFAULTS.finance);
+    }
+  }, [parsedPath, router]);
+
   const [definitions, setDefinitions] = useState<ReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
-  const [view, setView] = useState<ReportsView>('FINANCE');
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<ReportFilterState>(buildInitialReportFilters());
   const [loading, setLoading] = useState(true);
@@ -95,7 +107,7 @@ export function ReportsCenter() {
         filters: exportFilters,
       });
       setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
-      setView('EXPORTS');
+      router.push(buildReportsViewPath('EXPORTS'));
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
     } finally {
@@ -104,7 +116,7 @@ export function ReportsCenter() {
   }
 
   const getTabRefresh = useCallback(
-    (viewId: ReportsView) => {
+    (viewId: ReportsViewId) => {
       if (viewId === 'FINANCE') return finance.refresh;
       if (viewId === 'SALES') return sales.refresh;
       if (viewId === 'MARKETING') return marketing.refresh;
@@ -124,7 +136,7 @@ export function ReportsCenter() {
     try {
       const retried = await reportsApi.retryExportJob(jobId);
       setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
-      setView('EXPORTS');
+      router.push(buildReportsViewPath('EXPORTS'));
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
     }
@@ -137,7 +149,7 @@ export function ReportsCenter() {
       setExportJobs((current) =>
         current.map((item) => (item.id === cancelled.id ? cancelled : item)),
       );
-      setView('EXPORTS');
+      router.push(buildReportsViewPath('EXPORTS'));
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
     }
@@ -150,11 +162,6 @@ export function ReportsCenter() {
 
   const moduleHeroSlots = useMemo(
     () => ({
-      tabs: (
-        <div className={PAGE_HERO_TAB_SCROLL}>
-          <ReportsViewTabs view={view} onViewChange={setView} />
-        </div>
-      ),
       search: buildReportsHeroSearch({
         search,
         onSearchChange: setSearch,
@@ -177,10 +184,12 @@ export function ReportsCenter() {
         </Button>
       ),
     }),
-    [filters, handleClearFilters, handleRefresh, loading, savedViews, search, view],
+    [filters, handleClearFilters, handleRefresh, loading, savedViews, search],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
+
+  if (!parsedPath) return <LoadingState variant="cards" count={6} />;
 
   if (loading) return <LoadingState variant="cards" count={6} />;
   if (error) return <ErrorState title="Reports unavailable" description={error} onRetry={load} />;
@@ -246,7 +255,7 @@ export function ReportsCenter() {
 
 function filterDefinitions(
   definitions: ReportDefinition[],
-  view: ReportsView,
+  view: ReportsViewId,
   search: string,
 ): ReportDefinition[] {
   const q = search.trim().toLowerCase();
@@ -279,9 +288,9 @@ async function loadReportShellData() {
 }
 
 function refreshActiveView(
-  view: ReportsView,
+  view: ReportsViewId,
   reloadShell: () => Promise<void>,
-  getTabRefresh: (view: ReportsView) => (() => void) | null,
+  getTabRefresh: (view: ReportsViewId) => (() => void) | null,
 ) {
   const refresh = getTabRefresh(view);
   if (refresh) {

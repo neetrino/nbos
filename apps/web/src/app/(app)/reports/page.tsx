@@ -1,5 +1,6 @@
-import { ReportsCenter } from '@/features/reports/components/ReportsCenter';
+import { redirect } from 'next/navigation';
+import { REPORTS_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/reports-visit-config';
 
-export default function ReportsPage() {
-  return <ReportsCenter />;
+export default function ReportsIndexPage() {
+  redirect(REPORTS_SECTION_DEFAULTS.finance);
 }
