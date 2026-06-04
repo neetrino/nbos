@@ -125,6 +125,35 @@ export function getProductStatus(value: string) {
   return PRODUCT_STATUSES.find((s) => s.value === value);
 }
 
+const DELIVERY_STAGE_TO_PRODUCT_STATUS: Record<string, string> = {
+  STARTING: 'CREATING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+};
+
+/** Single stage badge for product header and switcher — delivery stage, not composite lifecycle. */
+export function getProductStageStatusDisplay(product: {
+  status: string;
+  deliveryLifecycle?: {
+    stage: string | null;
+    resolution: string | null;
+  };
+}): { label: string; variant: StatusVariant } | undefined {
+  const lc = product.deliveryLifecycle;
+  if (lc?.resolution === 'DONE') return getProductStatus('DONE');
+  if (lc?.resolution === 'CANCELLED') {
+    return { label: 'Cancelled', variant: 'red' };
+  }
+  if (lc?.stage) {
+    const statusKey = DELIVERY_STAGE_TO_PRODUCT_STATUS[lc.stage] ?? lc.stage;
+    const mapped = getProductStatus(statusKey);
+    if (mapped) return mapped;
+    return { label: toTitleCase(lc.stage), variant: 'purple' };
+  }
+  return getProductStatus(product.status);
+}
+
 export function formatDeliveryLifecycleLabel(lifecycle: {
   stage: string | null;
   workStatus: string;

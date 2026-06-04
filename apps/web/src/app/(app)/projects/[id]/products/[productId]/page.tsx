@@ -4,7 +4,6 @@ import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
-  Package,
   LayoutDashboard,
   ListChecks,
   Puzzle,
@@ -12,23 +11,20 @@ import {
   KeyRound,
   DollarSign,
   ServerCog,
-  ChevronRight,
-  ChevronsUpDown,
-  HardDrive,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { StatusBadge } from '@/components/shared';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  tabsTriggerVariants,
+} from '@/components/ui/tabs';
+import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
-import {
-  formatDeliveryLifecycleLabel,
-  getDeliveryLifecycleVariant,
-  getProductStatus,
-  getProductType,
-} from '@/features/projects/constants/projects';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
@@ -36,10 +32,11 @@ import { ProductTicketsTab } from '@/features/projects/components/product-tabs/P
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
-import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
-import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
+import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
+
+const DriveNavIcon = SIDEBAR_MODULE_VISUALS.drive.Icon;
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -59,9 +56,7 @@ function ProductDetailPageContent() {
   const searchParams = useSearchParams();
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [siblingProducts, setSiblingProducts] = useState<Product[]>([]);
-  const [showSwitcher, setShowSwitcher] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>(getInitialTab(searchParams.get('tab')));
   const [projectData, setProjectData] = useState<{
     credentials: unknown[];
@@ -70,6 +65,8 @@ function ProductDetailPageContent() {
     expenses: unknown[];
     domains: unknown[];
   } | null>(null);
+
+  useProductDetailHeader(product, siblingProducts, params.id);
 
   const fetchProduct = useCallback(async () => {
     if (!params.productId) return;
@@ -128,7 +125,6 @@ function ProductDetailPageContent() {
   if (loading) {
     return (
       <div className="flex h-full flex-col gap-5">
-        <Skeleton className="h-12 w-72" />
         <Skeleton className="h-10 w-full" />
         <div className="grid grid-cols-3 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -141,141 +137,45 @@ function ProductDetailPageContent() {
 
   if (!product) return null;
 
-  const st = getProductStatus(product.status);
-  const pt = getProductType(product.productType);
-  const otherProducts = siblingProducts.filter((p) => p.id !== product.id);
-  const lifecycle = product.deliveryLifecycle;
+  const driveHref = buildDriveHrefWithProduct(product.id);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push(`/projects/${params.id}`)}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-purple-500/10 p-2.5 text-purple-500">
-              <Package size={20} />
-            </div>
-            <div>
-              <div className="text-muted-foreground mb-0.5 flex items-center gap-1 text-xs">
-                <button
-                  onClick={() => router.push(`/projects/${params.id}`)}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {product.project.name}
-                </button>
-                <ChevronRight size={12} />
-                <span>Products</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold">{product.name}</h1>
-                {lifecycle ? (
-                  <StatusBadge
-                    label={formatDeliveryLifecycleLabel(lifecycle)}
-                    variant={getDeliveryLifecycleVariant(lifecycle)}
-                  />
-                ) : (
-                  st && <StatusBadge label={st.label} variant={st.variant} />
-                )}
-                {pt && (
-                  <span className="bg-secondary rounded-md px-2 py-0.5 text-[10px] font-medium">
-                    {pt.label}
-                  </span>
-                )}
-
-                {/* Product Switcher */}
-                {otherProducts.length > 0 && (
-                  <div className="relative">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 gap-1 px-2 text-xs"
-                      onClick={() => setShowSwitcher(!showSwitcher)}
-                    >
-                      <ChevronsUpDown size={12} />
-                      <span className="text-muted-foreground">
-                        {siblingProducts.length} products
-                      </span>
-                    </Button>
-                    {showSwitcher && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setShowSwitcher(false)}
-                        />
-                        <div className="bg-popover border-border absolute top-full left-0 z-50 mt-1 min-w-[220px] rounded-lg border p-1 shadow-lg">
-                          {siblingProducts.map((sp) => {
-                            const spSt = getProductStatus(sp.status);
-                            const isCurrent = sp.id === product.id;
-                            return (
-                              <button
-                                key={sp.id}
-                                onClick={() => {
-                                  setShowSwitcher(false);
-                                  if (!isCurrent) {
-                                    router.push(`/projects/${params.id}/products/${sp.id}`);
-                                  }
-                                }}
-                                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                                  isCurrent
-                                    ? 'bg-accent/10 text-accent font-medium'
-                                    : 'hover:bg-secondary'
-                                }`}
-                              >
-                                <span className="truncate">{sp.name}</span>
-                                {spSt && <StatusBadge label={spSt.label} variant={spSt.variant} />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <EntityDriveQuickAttach
-            libraryKey="products"
-            entityType="PRODUCT"
-            entityId={product.id}
-            onUploaded={() => {
-              setDriveFilesRefreshKey((key) => key + 1);
-              void fetchProduct();
-            }}
-          />
-          <Link
-            href={buildDriveHrefWithProduct(product.id)}
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-          >
-            <HardDrive className="size-4" aria-hidden />
-            Drive files
-          </Link>
-        </div>
-        <EntityDriveFilesPanel
-          entityType="PRODUCT"
-          entityId={product.id}
-          driveHref={buildDriveHrefWithProduct(product.id)}
-          refreshKey={driveFilesRefreshKey}
-        />
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={(value) => setActiveTab(getInitialTab(value))}
         className="flex-1"
       >
-        <TabsList>
-          {TAB_ITEMS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-              <tab.icon size={14} />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => router.push(`/projects/${params.id}`)}
+            aria-label="Back to project"
+          >
+            <ArrowLeft size={18} />
+          </Button>
+          <TabsList className="min-w-0 flex-1">
+            {TAB_ITEMS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
+                <tab.icon size={14} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+            <Link
+              href={driveHref}
+              className={cn(
+                tabsTriggerVariants({ listVariant: 'default' }),
+                'gap-1.5',
+                SIDEBAR_MODULE_VISUALS.drive.iconClass,
+              )}
+            >
+              <DriveNavIcon size={14} aria-hidden />
+              <span className="hidden sm:inline">Drive</span>
+            </Link>
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="mt-5">
           <ProductOverviewTab
@@ -331,7 +231,6 @@ function ProductDetailPageContent() {
 function ProductDetailPageFallback() {
   return (
     <div className="flex h-full flex-col gap-5">
-      <Skeleton className="h-12 w-72" />
       <Skeleton className="h-10 w-full" />
       <div className="grid grid-cols-3 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
