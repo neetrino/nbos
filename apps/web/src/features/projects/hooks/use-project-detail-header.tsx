@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useHeaderContext, useHeaderModuleTitle } from '@/components/layout/header-context';
+import { HEADER_CONTEXT_STATUS_BADGE_CLASS } from '@/components/layout/header-context/header-module-title-constants';
 import { StatusBadge } from '@/components/shared';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
 import type { FullProject } from '@/lib/api/projects';
@@ -15,7 +16,13 @@ export function useProjectDetailHeader(project: FullProject | null): void {
     if (!project?.isArchived) return null;
     return {
       kind: 'custom' as const,
-      node: <StatusBadge label="Archived" variant="gray" />,
+      node: (
+        <StatusBadge
+          label="Archived"
+          variant="gray"
+          className={HEADER_CONTEXT_STATUS_BADGE_CLASS}
+        />
+      ),
     };
   }, [project?.isArchived]);
 
