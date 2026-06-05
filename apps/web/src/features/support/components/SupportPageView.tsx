@@ -1,23 +1,14 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { Headphones, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { Headphones } from 'lucide-react';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
 import { SupportPageHero } from '@/features/support/components/SupportPageHero';
 import { SupportWorkflowScopeBanner } from '@/features/support/components/SupportWorkflowScopeBanner';
 import { SupportTicketActionOverlays } from '@/features/support/components/SupportTicketActionOverlays';
-import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
-import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
-import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
-import {
-  DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  type BoardLifecycleScope,
-} from '@/features/shared/board-lifecycle';
-import type { SupportPageViewMode } from '@/features/support/constants/support-page-view-options';
+import { SupportTicketsPageBody } from '@/features/support/components/SupportTicketsPageBody';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { useSupportPage } from '@/features/support/hooks/use-support-page';
-import type { SupportTicket } from '@/lib/api/support';
 
 export function SupportPageView() {
   const page = useSupportPage();
@@ -52,7 +43,7 @@ export function SupportPageView() {
 
       <SupportWorkflowScopeBanner scope={page.boardScope} />
 
-      <SupportPageBody
+      <SupportTicketsPageBody
         loading={query.loading}
         error={query.error}
         tickets={page.displayTickets}
@@ -60,8 +51,12 @@ export function SupportPageView() {
         view={query.view}
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
+        emptyIcon={Headphones}
+        emptyTitle="No tickets yet"
+        emptyDescription="Support tickets will appear here"
+        emptyActionLabel="Create First Ticket"
         onRetry={() => void query.fetchTickets()}
-        onCreateFirst={() => createForm.setCreateOpen(true)}
+        onCreateFirst={handleNewTicket}
         onKanbanMove={actions.handleKanbanMove}
         onOpenDetail={page.openSupportDetail}
         onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
@@ -101,80 +96,5 @@ export function SupportPageView() {
         submitting={createForm.createSubmitting}
       />
     </div>
-  );
-}
-
-type SupportPageBodyProps = {
-  loading: boolean;
-  error: string | null;
-  tickets: SupportTicket[];
-  boardScope: BoardLifecycleScope;
-  view: SupportPageViewMode;
-  kanbanColumns: SupportKanbanColumn[];
-  actionId: string | null;
-  onRetry: () => void;
-  onCreateFirst: () => void;
-  onKanbanMove: (itemId: string, from: string, toColumn: string) => void;
-  onOpenDetail: (id: string) => void;
-  onReopen: (ticket: SupportTicket) => void;
-  onStatusSelect: (ticket: SupportTicket, status: string) => void;
-};
-
-function SupportPageBody({
-  loading,
-  error,
-  tickets,
-  boardScope,
-  view,
-  kanbanColumns,
-  actionId,
-  onRetry,
-  onCreateFirst,
-  onKanbanMove,
-  onOpenDetail,
-  onReopen,
-  onStatusSelect,
-}: SupportPageBodyProps) {
-  if (loading) {
-    return <LoadingState />;
-  }
-  if (error) {
-    return <ErrorState description={error} onRetry={onRetry} />;
-  }
-  if (tickets.length === 0) {
-    return (
-      <EmptyState
-        icon={Headphones}
-        title="No tickets yet"
-        description="Support tickets will appear here"
-        action={
-          <Button type="button" onClick={onCreateFirst}>
-            <Plus size={16} aria-hidden />
-            Create First Ticket
-          </Button>
-        }
-      />
-    );
-  }
-  if (view === 'kanban') {
-    return (
-      <SupportTicketsKanbanView
-        columns={kanbanColumns}
-        boardScope={boardScope}
-        actionId={actionId}
-        onMove={onKanbanMove}
-        onOpenDetail={onOpenDetail}
-        onReopen={onReopen}
-      />
-    );
-  }
-  return (
-    <SupportTicketsListView
-      tickets={tickets}
-      actionId={actionId}
-      onOpenDetail={onOpenDetail}
-      onStatusSelect={onStatusSelect}
-      onReopen={onReopen}
-    />
   );
 }

@@ -14,6 +14,7 @@ type UseSupportCreateTicketFormParams = {
   portfolioCreateTicketFromUrl: boolean;
   refreshSupportViews: () => Promise<void>;
   setError: (message: string | null) => void;
+  defaultCategory?: string;
 };
 
 export function useSupportCreateTicketForm({
@@ -23,6 +24,7 @@ export function useSupportCreateTicketForm({
   portfolioCreateTicketFromUrl,
   refreshSupportViews,
   setError,
+  defaultCategory = 'UNCLASSIFIED',
 }: UseSupportCreateTicketFormParams) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createTitle, setCreateTitle] = useState('');
@@ -83,13 +85,19 @@ export function useSupportCreateTicketForm({
     setCreateTitle('');
     setCreateProjectId(projectOk);
     setCreateProductId('');
-    setCreateCategory('UNCLASSIFIED');
+    setCreateCategory(defaultCategory);
     setCreatePriority('P3');
     setCreateDescription('');
     setCreateCoverageDecision('');
     setCreateContactId('');
     setCreateProductOptions([]);
-  }, [createOpen, portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, projectsForFilters]);
+  }, [
+    createOpen,
+    portfolioCreateTicketFromUrl,
+    portfolioProjectIdFromUrl,
+    projectsForFilters,
+    defaultCategory,
+  ]);
 
   useEffect(() => {
     if (!portfolioCreateTicketFromUrl || !portfolioProjectIdFromUrl || loading) {
