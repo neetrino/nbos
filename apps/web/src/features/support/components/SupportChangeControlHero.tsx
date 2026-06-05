@@ -68,9 +68,5 @@ export function SupportChangeControlHero({
 
   useModuleHeroSlots(moduleHeroSlots);
 
-  return (
-    <p className="text-muted-foreground text-sm">
-      Change requests from maintenance clients: coverage, Extension Deals, and delivery tracking.
-    </p>
-  );
+  return null;
 }

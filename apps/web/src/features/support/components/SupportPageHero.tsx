@@ -81,10 +81,5 @@ export function SupportPageHero({
 
   useModuleHeroSlots(moduleHeroSlots);
 
-  return (
-    <p className="text-muted-foreground text-sm">
-      Incidents, service requests, and SLA-tracked support work. Change requests live in Change
-      Control.
-    </p>
-  );
+  return null;
 }

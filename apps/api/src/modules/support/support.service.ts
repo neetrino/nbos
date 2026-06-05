@@ -734,7 +734,7 @@ export class SupportService {
       code: string;
       title: string;
       assignedTo: string | null;
-      project: { name: string };
+      project: { name: string } | null;
     },
     mergedReason: string | null,
   ): Promise<void> {
@@ -761,7 +761,7 @@ export class SupportService {
         payload: {
           ticketCode: ticket.code,
           ticketTitle: ticket.title,
-          projectName: ticket.project.name,
+          projectName: ticket.project?.name ?? 'Unassigned',
           reason: mergedReason,
         },
       });
@@ -886,6 +886,9 @@ export class SupportService {
     if (!ticket.productId) {
       throw new BadRequestException('Product context is required to create an Extension Deal.');
     }
+    if (!ticket.projectId) {
+      throw new BadRequestException('Project context is required to create an Extension Deal.');
+    }
     if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
       throw new BadRequestException('Resolved or closed support tickets cannot create deals.');
     }
@@ -912,7 +915,9 @@ export class SupportService {
   private buildTaskLinks(ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>) {
     return [
       { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticket.id },
-      { entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId },
+      ...(ticket.projectId
+        ? [{ entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId }]
+        : []),
       ...(ticket.productId
         ? [{ entityType: PRODUCT_ENTITY_TYPE, entityId: ticket.productId }]
         : []),
@@ -972,7 +977,7 @@ export class SupportService {
       entityId: ticketId,
       action,
       userId: actorId,
-      projectId,
+      projectId: projectId ?? undefined,
       changes,
     });
   }

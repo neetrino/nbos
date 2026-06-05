@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,7 +25,6 @@ export interface SupportCreateTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dialogTitle?: string;
-  dialogDescription?: string;
   submitLabel?: string;
   title: string;
   projectId: string;
@@ -48,7 +46,6 @@ export function SupportCreateTicketDialog({
   open,
   onOpenChange,
   dialogTitle = 'New support ticket',
-  dialogDescription = 'Only title is required. Add project, product, and other details now or during triage.',
   submitLabel = 'Create',
   title,
   projectId,
@@ -89,7 +86,6 @@ export function SupportCreateTicketDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
-          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">

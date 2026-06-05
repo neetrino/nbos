@@ -75,7 +75,6 @@ export function SupportChangeControlView() {
         open={createForm.createOpen}
         onOpenChange={createForm.setCreateOpen}
         dialogTitle="New change request"
-        dialogDescription="Only title is required. Add project, product, and coverage details during triage."
         submitLabel="Create request"
         title={createForm.createTitle}
         projectId={createForm.createProjectId}
