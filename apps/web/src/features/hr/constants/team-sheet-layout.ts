@@ -5,8 +5,6 @@ export const TEAM_SHEET_WIDTH: EntityDetailSheetWidth = 'compact';
 
 export const TEAM_SHEET_HEADER_CLASS = 'border-border shrink-0 border-b px-5 py-3';
 
-export const TEAM_SHEET_TABS_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
-
 export const TEAM_SHEET_BODY_CLASS = 'space-y-4 px-5 py-4';
 
 export const TEAM_SHEET_FIELD_GRID_CLASS = 'grid grid-cols-2 gap-x-4 gap-y-3';

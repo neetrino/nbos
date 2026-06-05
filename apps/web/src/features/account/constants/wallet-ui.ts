@@ -2,11 +2,11 @@ import type { WalletBonusPipelineGroup } from '@/lib/api/me';
 
 export type WalletSheetTab = 'overview' | 'bonuses' | 'payroll' | 'activity';
 
-export const WALLET_SHEET_TABS: ReadonlyArray<{ id: WalletSheetTab; label: string }> = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'bonuses', label: 'Bonuses' },
-  { id: 'payroll', label: 'Payroll' },
-  { id: 'activity', label: 'Activity' },
+export const WALLET_SHEET_TABS: ReadonlyArray<{ value: WalletSheetTab; label: string }> = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'bonuses', label: 'Bonuses' },
+  { value: 'payroll', label: 'Payroll' },
+  { value: 'activity', label: 'Activity' },
 ] as const;
 
 /** Pipeline bar segment colors (Tailwind utilities only). */

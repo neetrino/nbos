@@ -5,10 +5,11 @@ import { UserCheck, UserX } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
+  DetailSheetTabBar,
+  type DetailSheetTabItem,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -16,7 +17,6 @@ import { TEAM_OPEN_EMPLOYEE_QUERY, TEAM_PAGE_HREF } from '@/features/hr/constant
 import {
   TEAM_SHEET_FOOTER_CLASS,
   TEAM_SHEET_HEADER_CLASS,
-  TEAM_SHEET_TABS_WRAPPER_CLASS,
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
@@ -212,6 +212,16 @@ export function EmployeeSheet({
   const statusInfo = getEmployeeStatus(current.status);
   const dept = employeePrimaryDepartment(current);
 
+  const employeeTabs: DetailSheetTabItem[] = [
+    { value: 'general', label: 'General' },
+    { value: 'departments', label: 'Departments' },
+  ];
+  if (current.status === 'TERMINATED') {
+    employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
+  } else if (hasOnboardingChecklist) {
+    employeeTabs.push({ value: 'onboarding', label: 'Onboarding' });
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent
@@ -267,62 +277,43 @@ export function EmployeeSheet({
             </div>
           </div>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            <div className={TEAM_SHEET_TABS_WRAPPER_CLASS}>
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="departments">Departments</TabsTrigger>
-                {current.status === 'TERMINATED' ? (
-                  <TabsTrigger value="offboarding">Offboarding</TabsTrigger>
-                ) : null}
-                {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
-                  <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-                ) : null}
-              </TabsList>
-            </div>
+          <DetailSheetTabBar tabs={employeeTabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <ScrollArea className="min-h-0 flex-1">
-              <TabsContent value="general" className="mt-0">
-                <EmployeeSheetScrollBody
-                  employeeId={current.id}
-                  draft={draft}
-                  patchDraft={patchDraft}
-                  roles={roles}
-                  saving={saving}
-                  canEdit={canEdit && current.status !== 'TERMINATED'}
-                  generalError={generalError}
-                />
-              </TabsContent>
-              <TabsContent value="departments" className="mt-0">
-                <EmployeeDepartmentsPanel
-                  employee={current}
-                  departments={departments}
-                  canEdit={canEdit && current.status !== 'TERMINATED'}
-                  onUpdated={(emp) => {
-                    setCurrent(emp);
-                    const next = createEmployeeGeneralDraft(emp);
-                    setDraft(next);
-                    setSnap(next);
-                    void onSaved?.();
-                  }}
-                />
-              </TabsContent>
-              {current.status === 'TERMINATED' ? (
-                <TabsContent value="offboarding" className="mt-0">
-                  <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
-                </TabsContent>
-              ) : null}
-              {current.status !== 'TERMINATED' && hasOnboardingChecklist ? (
-                <TabsContent value="onboarding" className="mt-0">
-                  <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
-                </TabsContent>
-              ) : null}
-            </ScrollArea>
-          </Tabs>
+          <ScrollArea className="min-h-0 flex-1">
+            {activeTab === 'general' ? (
+              <EmployeeSheetScrollBody
+                employeeId={current.id}
+                draft={draft}
+                patchDraft={patchDraft}
+                roles={roles}
+                saving={saving}
+                canEdit={canEdit && current.status !== 'TERMINATED'}
+                generalError={generalError}
+              />
+            ) : null}
+            {activeTab === 'departments' ? (
+              <EmployeeDepartmentsPanel
+                employee={current}
+                departments={departments}
+                canEdit={canEdit && current.status !== 'TERMINATED'}
+                onUpdated={(emp) => {
+                  setCurrent(emp);
+                  const next = createEmployeeGeneralDraft(emp);
+                  setDraft(next);
+                  setSnap(next);
+                  void onSaved?.();
+                }}
+              />
+            ) : null}
+            {activeTab === 'offboarding' && current.status === 'TERMINATED' ? (
+              <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
+            ) : null}
+            {activeTab === 'onboarding' &&
+            current.status !== 'TERMINATED' &&
+            hasOnboardingChecklist ? (
+              <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
+            ) : null}
+          </ScrollArea>
 
           <DetailSheetFormFooter
             visible={canEdit && current.status !== 'TERMINATED'}
