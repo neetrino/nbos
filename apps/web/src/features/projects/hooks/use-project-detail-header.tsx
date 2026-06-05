@@ -19,7 +19,7 @@ export function useProjectDetailHeader(project: FullProject | null): void {
       node: (
         <StatusBadge
           label="Archived"
-          variant="gray"
+          variant="zinc"
           className={HEADER_CONTEXT_STATUS_BADGE_CLASS}
         />
       ),
