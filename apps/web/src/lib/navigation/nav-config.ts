@@ -86,7 +86,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
   },
   {
     key: 'delivery-board',
-    label: 'Delivery Board',
+    label: 'Delivery',
     href: '/delivery-board',
     permission: { module: 'PROJECTS', action: 'VIEW' },
   },
