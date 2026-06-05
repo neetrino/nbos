@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/shared';
 import { ExtensionEntityViews } from '@/features/projects/components/extension-entity-views';
 import { ProductTabViewHero } from '@/features/projects/components/product-tabs/ProductTabViewHero';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
-import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
+import { useProjectDetailViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { productExtensionToViewModel } from '@/features/projects/utils/extension-entity-view-mappers';
 import type { ProductExtensionRef } from '@/lib/api/products';
 

@@ -23,13 +23,15 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
+import {
+  useProjectsHubPagePreferences,
+  type ProjectsHubViewMode,
+} from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { projectsApi, type Project } from '@/lib/api/projects';
 
-type ViewMode = 'grid' | 'list';
-
-const PROJECT_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
   {
     value: 'grid',
     label: 'Grid',
@@ -50,8 +52,10 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [view, setView] = useState<ViewMode>('grid');
-  const [activeTab, setActiveTab] = useState('all');
+  const [hubPrefs, setHubPrefs] = useProjectsHubPagePreferences();
+  const { activeTab, viewMode: view } = hubPrefs;
+  const setActiveTab = (tab: typeof activeTab) => setHubPrefs({ activeTab: tab });
+  const setView = (viewMode: typeof view) => setHubPrefs({ viewMode });
   const [createOpen, setCreateOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {

@@ -15,7 +15,11 @@ import {
   PROJECT_DETAIL_SIDEBAR_CLASS,
   PROJECT_DETAIL_SIDEBAR_EDGE_CLASS,
 } from '@/features/projects/components/project-detail-layout.constants';
-import { useProjectDetailViewMode } from '@/features/projects/constants/project-detail-view-storage';
+import {
+  projectDetailProductStatusFilterToTab,
+  projectDetailProductStatusTabToFilter,
+  useProjectDetailPagePreferences,
+} from '@/features/projects/constants/projects-page-preferences-storage';
 import { cn } from '@/lib/utils';
 import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
@@ -26,8 +30,10 @@ function ProjectDetailPageContent() {
   const [project, setProject] = useState<FullProject | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [detailViewMode, setDetailViewMode] = useProjectDetailViewMode();
+  const [detailPrefs, setDetailPrefs] = useProjectDetailPagePreferences();
+  const statusFilter = projectDetailProductStatusTabToFilter(detailPrefs.productStatusTab);
+  const detailViewMode = detailPrefs.viewMode;
+  const setDetailViewMode = (viewMode: typeof detailViewMode) => setDetailPrefs({ viewMode });
   const [teamRefreshKey, setTeamRefreshKey] = useState(0);
 
   const fetchProject = useCallback(async () => {
@@ -69,7 +75,11 @@ function ProjectDetailPageContent() {
             project={project}
             products={products}
             statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
+            setStatusFilter={(status) =>
+              setDetailPrefs({
+                productStatusTab: projectDetailProductStatusFilterToTab(status),
+              })
+            }
             viewMode={detailViewMode}
             onViewModeChange={setDetailViewMode}
             onCreateProduct={() => setShowCreateProduct(true)}
