@@ -15,13 +15,13 @@ import {
   LoadingState,
   ListPagination,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  WorkSpaceNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import type { FullProduct } from '@/lib/api/products';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
-import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
 import {
   loadWorkSpaceProductForSheets,
@@ -194,7 +194,7 @@ export function WorkSpacesPage() {
       ) : view === 'grid' ? (
         <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
           {items.map((workspace) => (
-            <WorkSpaceCard
+            <WorkSpaceNavigableCard
               key={workspace.id}
               workspace={workspace}
               onOpenProductDelivery={handleOpenProductDelivery}

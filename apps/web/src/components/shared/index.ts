@@ -40,6 +40,11 @@ export {
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
 } from './navigable-entity-card.constants';
 export {
+  ProductNavigableCard,
+  ProjectNavigableCard,
+  WorkSpaceNavigableCard,
+} from './navigable-entity-card-presets';
+export {
   actionTileIconVariants,
   actionTileShellVariants,
   type ActionTileSize,

@@ -83,9 +83,6 @@ function ProjectDetailPageContent() {
             viewMode={detailViewMode}
             onViewModeChange={setDetailViewMode}
             onCreateProduct={() => setShowCreateProduct(true)}
-            onOpenProduct={(productId) =>
-              router.push(`/projects/${params.id}/products/${productId}`)
-            }
           />
           <ProjectExtensionsSection
             extensions={project.extensions}

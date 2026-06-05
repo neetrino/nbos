@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, LayoutGrid, List, Plus, User, Building2, Archive } from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -21,8 +21,8 @@ import {
   ErrorState,
   LoadingState,
   ListPagination,
-  NavigableEntityCard,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  ProjectNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
@@ -130,27 +130,7 @@ export default function ProjectsPage() {
       ) : view === 'grid' ? (
         <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
           {projects.map((project) => (
-            <NavigableEntityCard
-              key={project.id}
-              href={`/projects/${project.id}`}
-              icon={FolderKanban}
-              eyebrow={project.code}
-              title={project.name}
-              description={project.description}
-              headerTrailing={
-                project.isArchived ? (
-                  <Archive size={14} className="text-muted-foreground shrink-0" />
-                ) : undefined
-              }
-              metaLines={[
-                ...(project.company ? [{ icon: Building2, text: project.company.name }] : []),
-                {
-                  icon: User,
-                  text: `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim(),
-                },
-              ]}
-              footer={<span>{project._count.orders} orders</span>}
-            />
+            <ProjectNavigableCard key={project.id} project={project} />
           ))}
         </div>
       ) : (

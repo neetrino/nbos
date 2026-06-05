@@ -4,9 +4,10 @@ import { useMemo } from 'react';
 import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  KanbanCardShell,
+  EntityLinkedSheetsHoverActions,
   PageHero,
   PageHeroTabs,
+  ProductNavigableCard,
   StatusBadge,
   ViewModeSwitch,
   type ViewModeOption,
@@ -18,10 +19,6 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
-import {
-  DeliveryDealCardHoverActions,
-  DeliveryDealRowHoverActions,
-} from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import {
@@ -56,7 +53,6 @@ interface ProjectProductsSectionProps {
   viewMode: ProjectDetailViewMode;
   onViewModeChange: (mode: ProjectDetailViewMode) => void;
   onCreateProduct: () => void;
-  onOpenProduct: (productId: string) => void;
 }
 
 export function ProjectProductsSection({
@@ -67,7 +63,6 @@ export function ProjectProductsSection({
   viewMode,
   onViewModeChange,
   onCreateProduct,
-  onOpenProduct,
 }: ProjectProductsSectionProps) {
   const statusTabOptions = useMemo(() => {
     const byStatus = (status: string) =>
@@ -126,13 +121,13 @@ export function ProjectProductsSection({
       ) : viewMode === 'list' ? (
         <div className={PROJECT_ENTITY_LIST_CLASS}>
           {products.map((product) => (
-            <ProductListRow key={product.id} product={product} onOpenProduct={onOpenProduct} />
+            <ProductListRow key={product.id} projectId={project.id} product={product} />
           ))}
         </div>
       ) : (
         <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onOpenProduct={onOpenProduct} />
+            <ProductNavigableCard key={product.id} projectId={project.id} product={product} />
           ))}
         </div>
       )}
@@ -174,11 +169,11 @@ function EmptyProductsState({
 }
 
 function ProductListRow({
+  projectId,
   product,
-  onOpenProduct,
 }: {
+  projectId: string;
   product: ProjectProductSummary;
-  onOpenProduct: (productId: string) => void;
 }) {
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
@@ -190,9 +185,8 @@ function ProductListRow({
 
   return (
     <div className={`${PROJECT_ENTITY_LIST_ROW_CLASS} group/entity-row`}>
-      <button
-        type="button"
-        onClick={() => onOpenProduct(product.id)}
+      <a
+        href={`/projects/${projectId}/products/${product.id}`}
         className="min-w-0 flex-1 text-left"
       >
         <div className="flex flex-wrap items-center gap-2">
@@ -219,77 +213,16 @@ function ProductListRow({
             {product._count.tickets} tickets
           </span>
         </div>
-      </button>
+      </a>
       {status && statusLabel && (
         <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
       )}
-      <DeliveryDealRowHoverActions
-        onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
+      <EntityLinkedSheetsHoverActions
+        variant="row"
+        contextHref={`/projects/${projectId}`}
+        onOpenDelivery={() => openDeliveryItem(`product-${product.id}`)}
         onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
       />
     </div>
-  );
-}
-
-function ProductCard({
-  product,
-  onOpenProduct,
-}: {
-  product: ProjectProductSummary;
-  onOpenProduct: (productId: string) => void;
-}) {
-  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
-  const dealId = getEntityOrderDealId(product.order);
-  const status = getProductStatus(product.status);
-  const productType = getProductType(product.productType);
-  const statusLabel = product.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
-    : status?.label;
-
-  return (
-    <KanbanCardShell
-      padding="lg"
-      transition="colors"
-      hoverShadow={false}
-      className="hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden"
-      onClick={() => onOpenProduct(product.id)}
-    >
-      <div className="min-w-0 shrink-0">
-        <h4 className="truncate text-sm font-semibold">{product.name}</h4>
-        {productType && <span className="text-muted-foreground text-xs">{productType.label}</span>}
-      </div>
-
-      <div className="mt-3 min-h-0 flex-1 space-y-1.5">
-        {product.pm && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <User size={12} />
-            <span className="truncate">
-              {product.pm.firstName} {product.pm.lastName}
-            </span>
-          </div>
-        )}
-        {product.deadline && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <Calendar size={12} />
-            <span>{new Date(product.deadline).toLocaleDateString()}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 flex shrink-0 flex-col gap-2">
-        <div className="text-muted-foreground flex min-w-0 flex-wrap gap-x-2 gap-y-0.5 text-[10px]">
-          <span>{product._count.tasks} tasks</span>
-          <span>{product._count.extensions} ext.</span>
-          <span>{product._count.tickets} tickets</span>
-        </div>
-        {status && statusLabel && (
-          <StatusBadge label={statusLabel} variant={status.variant} title={statusLabel} />
-        )}
-        <DeliveryDealCardHoverActions
-          onOpenDeliveryCard={() => openDeliveryItem(`product-${product.id}`)}
-          onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
-        />
-      </div>
-    </KanbanCardShell>
   );
 }

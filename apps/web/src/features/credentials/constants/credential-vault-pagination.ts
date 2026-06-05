@@ -21,6 +21,3 @@ export function normalizeCredentialVaultPageSize(value: unknown): CredentialVaul
   }
   return CREDENTIAL_VAULT_PAGED_DEFAULT_SIZE;
 }
-
-/** Builds compact page number sequence with ellipsis gaps. */
-export { buildListPageSequence as buildCredentialVaultPageSequence } from '@/components/shared/pagination/build-list-page-sequence';

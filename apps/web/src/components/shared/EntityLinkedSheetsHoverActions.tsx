@@ -1,7 +1,8 @@
 'use client';
 
 import { Handshake, LayoutGrid, Package } from 'lucide-react';
-import { ActionTileButton, ActionTileHoverBar } from '@/components/shared';
+import { ActionTileButton } from './ActionTileButton';
+import { ActionTileHoverBar, type ActionTileHoverBarVariant } from './ActionTileHoverBar';
 
 const NO_LINKED_DEAL_TITLE = 'No linked deal on this product order';
 
@@ -10,18 +11,20 @@ interface EntityLinkedSheetsHoverActionsProps {
   contextHref?: string;
   onOpenDelivery: () => void;
   onOpenDeal?: () => void;
+  variant?: ActionTileHoverBarVariant;
 }
 
-/** Context, Delivery, and Deal tiles revealed on card hover (work-space product cards, etc.). */
+/** Context, Delivery, and Deal tiles revealed on hover. */
 export function EntityLinkedSheetsHoverActions({
   contextHref,
   onOpenDelivery,
   onOpenDeal,
+  variant = 'card',
 }: EntityLinkedSheetsHoverActionsProps) {
   const hasDeal = Boolean(onOpenDeal);
 
   return (
-    <ActionTileHoverBar variant="card">
+    <ActionTileHoverBar variant={variant}>
       {contextHref ? (
         <ActionTileButton
           label="Context"
