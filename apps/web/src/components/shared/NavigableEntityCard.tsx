@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { StatusBadge, type StatusVariant } from './StatusBadge';
+import { NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS } from './navigable-entity-card.constants';
 import { cn } from '@/lib/utils';
 
 export type NavigableEntityCardBadge = {
@@ -51,7 +52,8 @@ export function NavigableEntityCard({
   return (
     <div
       className={cn(
-        'group/entity-card border-border bg-card flex h-full flex-col rounded-2xl border transition-all hover:shadow-md',
+        'group/entity-card border-border bg-card hover:border-accent/40 flex h-full flex-col rounded-2xl border',
+        NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
         className,
       )}
     >

@@ -36,6 +36,7 @@ export {
   type NavigableEntityCardProps,
 } from './NavigableEntityCard';
 export {
+  NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
 } from './navigable-entity-card.constants';

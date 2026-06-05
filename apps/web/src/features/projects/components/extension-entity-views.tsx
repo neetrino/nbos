@@ -3,6 +3,7 @@
 import { Puzzle, User } from 'lucide-react';
 import {
   KanbanCardShell,
+  NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   StatusBadge,
 } from '@/components/shared';
@@ -20,6 +21,7 @@ import {
   PROJECT_ENTITY_LIST_ROW_CLASS,
 } from '@/features/projects/components/project-detail-layout.constants';
 import type { ExtensionEntityViewModel } from '@/features/projects/utils/extension-entity-view-model';
+import { cn } from '@/lib/utils';
 
 interface ExtensionEntityViewsProps {
   extensions: ExtensionEntityViewModel[];
@@ -137,9 +139,12 @@ export function ExtensionEntityCard({
       role="button"
       tabIndex={0}
       padding="lg"
-      transition="colors"
+      transition="all"
       hoverShadow={false}
-      className="hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden"
+      className={cn(
+        'hover:border-accent/50 group/entity-card flex h-full min-h-36 min-w-0 cursor-pointer flex-col overflow-hidden',
+        NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
+      )}
       onClick={onOpenDeliveryCard}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
