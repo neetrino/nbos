@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { ExternalLink, RefreshCw, ShoppingCart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
@@ -27,6 +27,7 @@ import type { OrderViewMode } from '@/features/finance/components/orders/order-p
 import type { Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
+import { buildProjectSubscriptionSeed } from '@/features/projects/utils/project-subscription-detail-seed';
 import { cn } from '@/lib/utils';
 
 interface ProductFinanceSectionContentProps {
@@ -59,7 +60,7 @@ export function ProductFinanceSectionContent({
 
   const handleOpenOrder = useCallback(
     (order: Order) => {
-      orderSheet.openEntity(order.id);
+      orderSheet.openEntity(order);
     },
     [orderSheet],
   );
@@ -70,6 +71,19 @@ export function ProductFinanceSectionContent({
     },
     [subscriptionSheet],
   );
+
+  const initialOrder = useMemo(
+    () => financeOrders.find((order) => order.id === orderSheet.entityId) ?? null,
+    [financeOrders, orderSheet.entityId],
+  );
+
+  const initialSubscription = useMemo(() => {
+    if (!subscriptionSheet.entityId) return null;
+    const row = subscriptions.find(
+      (subscription) => subscription.id === subscriptionSheet.entityId,
+    );
+    return row ? buildProjectSubscriptionSeed(row, projectId) : null;
+  }, [projectId, subscriptionSheet.entityId, subscriptions]);
 
   if (section === 'orders') {
     const displayOrders = filterProductFinanceOrders(financeOrders, search, filters);
@@ -106,6 +120,7 @@ export function ProductFinanceSectionContent({
         )}
         <OrderDetailSheet
           orderId={orderSheet.entityId}
+          initialOrder={initialOrder}
           open={orderSheet.isOpen}
           onOpenChange={orderSheet.handleOpenChange}
           onCreateInvoice={() => undefined}
@@ -135,6 +150,7 @@ export function ProductFinanceSectionContent({
         />
         <SubscriptionDetailSheet
           subscriptionId={subscriptionSheet.entityId}
+          initialSubscription={initialSubscription}
           open={subscriptionSheet.isOpen}
           onOpenChange={subscriptionSheet.handleOpenChange}
         />

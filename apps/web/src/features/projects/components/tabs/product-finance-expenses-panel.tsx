@@ -34,7 +34,7 @@ export function ProductFinanceExpensesPanel({
   view,
 }: ProductFinanceExpensesPanelProps) {
   const router = useRouter();
-  const expenseSheet = useProductEntityDetailSheet();
+  const expenseSheet = useProductEntityDetailSheet<Expense>();
   const { expenses, loading, error, refetch, pageVariant, kanbanScope, fromBacklog } =
     useProductFinanceExpenses(projectId, search, filters);
 
@@ -58,7 +58,7 @@ export function ProductFinanceExpensesPanel({
 
   const handleOpenExpense = useCallback(
     (expense: Expense) => {
-      expenseSheet.openEntity(expense.id);
+      expenseSheet.openEntity(expense);
     },
     [expenseSheet],
   );
@@ -96,6 +96,7 @@ export function ProductFinanceExpensesPanel({
 
       <ExpenseDetailSheet
         expenseId={expenseSheet.entityId}
+        initialExpense={expenseSheet.seedEntity}
         open={expenseSheet.isOpen}
         onOpenChange={expenseSheet.handleOpenChange}
         listProjectId={projectId}

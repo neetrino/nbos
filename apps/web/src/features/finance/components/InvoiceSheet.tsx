@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -36,6 +36,8 @@ interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** True while nested host fetches invoice by id. */
+  loading?: boolean;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
   onMoneyStatusChange?: (invoiceId: string, moneyStatus: string) => void | Promise<void>;
   onPaymentRecorded: (data: {
@@ -54,6 +56,7 @@ export function InvoiceSheet({
   invoice,
   open,
   onOpenChange,
+  loading = false,
   onInvoiceUpdated,
   onMoneyStatusChange,
   onPaymentRecorded,
@@ -139,7 +142,30 @@ export function InvoiceSheet({
     [stageGateHighlight],
   );
 
-  if (!invoice) return null;
+  if (!invoice) {
+    if (!open) return null;
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width="compact"
+          forceNestedBackdrop={forceNestedBackdrop}
+        >
+          <div className="flex flex-1 items-center gap-2 px-5 py-8 text-sm">
+            {loading ? (
+              <>
+                <Loader2 className="text-muted-foreground size-4 animate-spin" aria-hidden />
+                <span className="text-muted-foreground">Loading invoice…</span>
+              </>
+            ) : (
+              <span className="text-muted-foreground">Invoice unavailable.</span>
+            )}
+          </div>
+        </EntityDetailSheetContent>
+      </Sheet>
+    );
+  }
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
 

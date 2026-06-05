@@ -203,17 +203,25 @@ export function EmployeeMonthCompensationSheet({
   salaryLineId,
   open,
   onOpenChange,
+  initialDetail = null,
   readOnly = false,
   detailScope = 'finance',
 }: {
   salaryLineId: string | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  /** List-row seed for instant header while month detail hydrates. */
+  initialDetail?: SalaryLineMonthDetail | null;
   /** Wallet: hide Finance navigation links. */
   readOnly?: boolean;
   detailScope?: SalaryLineMonthDetailScope;
 }) {
-  const { detail, loading, loadError } = useSalaryLineMonthDetail(salaryLineId, open, detailScope);
+  const { detail, loading, loadError } = useSalaryLineMonthDetail(
+    salaryLineId,
+    open,
+    detailScope,
+    initialDetail,
+  );
 
   const emptyHint = readOnly
     ? 'Select a month on your wallet.'
@@ -252,7 +260,7 @@ export function EmployeeMonthCompensationSheet({
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
-          {loading ? (
+          {loading && !detail ? (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
               Loading compensation…
@@ -260,7 +268,7 @@ export function EmployeeMonthCompensationSheet({
           ) : null}
           {loadError ? <p className="text-destructive text-sm">{loadError}</p> : null}
 
-          {!loading && !loadError && detail ? (
+          {detail && !loadError ? (
             <>
               {readOnly ? <WalletMonthSheetHints detail={detail} /> : null}
               <div className="flex min-h-0 flex-1 flex-col">

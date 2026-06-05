@@ -1,6 +1,6 @@
 # Instant sheet open — план унификации
 
-> **Статус:** Phase 0 + P0 + P1 + P2 (основное) — **реализовано** в коде. Осталось: salary board / unit economics / nested EntityItemHost.
+> **Статус:** Phase 0 + P0 + P1 + P2 + backlog — **реализовано** (кроме delivery board body skeleton).
 
 ## Реализовано
 
@@ -32,21 +32,17 @@
 - [x] **Invoices** — deep link seed из list
 - [x] **My Account** — sheet открывается сразу, loading state в EmployeeSheet
 
+### Backlog (завершено)
+
+- [x] **Salary board / payroll run / wallet** — `salary-line-month-detail-placeholder`, `initialDetail`
+- [x] **Unit economics** — seed из table row в drilldown sheet
+- [x] **EntityItemHost** — instant open + background fetch (invoice/bonus), `initialTask` / `initialExpense`
+- [x] **product-finance-expenses-panel** — `initialExpense` из seed
+- [x] **product-finance-section** — `initialOrder` / subscription seed из list
+
 ### Эталоны (без изменений)
 
 - Invoices (click), Calendar, Credentials, Bonus pool/releases
-
----
-
-## Осталось (backlog)
-
-| Route                                 | Задача                                                  |
-| ------------------------------------- | ------------------------------------------------------- |
-| `/finance/salary-board`, payroll run  | seed salary line row в `EmployeeMonthCompensationSheet` |
-| `/finance/unit-economics`             | seed из table row в drilldown sheet                     |
-| `EntityItemHost` nested sheets        | прокинуть initial\* где есть list context               |
-| `product-finance-expenses-panel`      | `initialExpense` из expense sheet hook                  |
-| `product-finance-section` Order sheet | `initialOrder`                                          |
 
 ---
 

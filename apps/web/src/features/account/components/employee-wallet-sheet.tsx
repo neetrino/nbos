@@ -1,13 +1,31 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent, ErrorState, LoadingState } from '@/components/shared';
 import { EmployeeWalletSheetBody } from '@/features/account/components/employee-wallet-sheet-body';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { buildSalaryLineMonthDetailFromWalletRow } from '@/features/finance/utils/salary-line-month-detail-placeholder';
 import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { meApi, type EmployeeWalletSnapshot } from '@/lib/api/me';
+import { meApi, type EmployeeWalletNextPayroll, type EmployeeWalletSnapshot } from '@/lib/api/me';
+
+function walletNextPayrollAsSalaryRow(nextPayroll: EmployeeWalletNextPayroll) {
+  return {
+    id: nextPayroll.salaryLineId,
+    payrollRunId: nextPayroll.payrollRunId,
+    payrollMonth: nextPayroll.payrollMonth,
+    payoutPhase: 'active_payout' as const,
+    runStatus: nextPayroll.runStatus,
+    baseSalary: nextPayroll.baseSalary,
+    bonusesTotal: nextPayroll.bonusesTotal,
+    totalPayable: nextPayroll.totalPayable,
+    paidAmount: nextPayroll.paidAmount,
+    remainingAmount: nextPayroll.remainingAmount,
+    lineStatus: nextPayroll.lineStatus,
+    expenseId: nextPayroll.expenseId,
+  };
+}
 
 function salaryLineInWallet(data: EmployeeWalletSnapshot, salaryLineId: string): boolean {
   if (data.nextPayroll?.salaryLineId === salaryLineId) {
@@ -79,6 +97,18 @@ export function EmployeeWalletSheet({
 
   const monthSheetOpen = Boolean(openSalaryLineId);
 
+  const initialMonthDetail = useMemo(() => {
+    if (!openSalaryLineId || !data) return null;
+    if (data.nextPayroll?.salaryLineId === openSalaryLineId) {
+      return buildSalaryLineMonthDetailFromWalletRow(
+        walletNextPayrollAsSalaryRow(data.nextPayroll),
+        data.employee,
+      );
+    }
+    const row = data.salaryHistory.find((historyRow) => historyRow.id === openSalaryLineId);
+    return row ? buildSalaryLineMonthDetailFromWalletRow(row, data.employee) : null;
+  }, [data, openSalaryLineId]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent
@@ -118,6 +148,7 @@ export function EmployeeWalletSheet({
         onOpenChange={(next) => {
           if (!next) setOpenSalaryLineId(null);
         }}
+        initialDetail={initialMonthDetail}
         readOnly
         detailScope="wallet"
       />

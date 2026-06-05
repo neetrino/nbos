@@ -25,6 +25,7 @@ import { PayrollEmployeeBonusHistoryWorkspace } from '@/features/finance/compone
 import { usePayrollRunMatrixCache } from '@/features/finance/components/payroll/use-payroll-run-matrix-cache';
 import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { buildSalaryLineMonthDetailFromPayrollLine } from '@/features/finance/utils/salary-line-month-detail-placeholder';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
 import { PayrollRunDetailStatusActions } from '@/features/finance/components/payroll/PayrollRunDetailStatusActions';
@@ -157,6 +158,14 @@ export function PayrollRunDetailPageContent({
     setSheetSalaryLineId(salaryLineId);
     setSheetOpen(true);
   }, []);
+
+  const initialSalaryLineDetail = useMemo(() => {
+    if (!sheetSalaryLineId || !run) return null;
+    const line = run.salaryLines.find((row) => row.id === sheetSalaryLineId);
+    return line
+      ? buildSalaryLineMonthDetailFromPayrollLine(line, run.payrollMonth, run.status)
+      : null;
+  }, [run, sheetSalaryLineId]);
 
   const matrixViewMode: PayrollMatrixViewMode =
     detailViewMode === 'ORDER_MATRIX' ? 'ORDER_MATRIX' : 'EMPLOYEE_MATRIX';
@@ -371,6 +380,7 @@ export function PayrollRunDetailPageContent({
         salaryLineId={sheetSalaryLineId}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
+        initialDetail={initialSalaryLineDetail}
       />
     </div>
   );

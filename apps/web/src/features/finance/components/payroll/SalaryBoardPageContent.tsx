@@ -26,6 +26,10 @@ import {
   parsePayrollRunsListMonthParam,
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import {
+  buildSalaryLineMonthDetailFromBoardEntry,
+  findSalaryBoardEntryByLineId,
+} from '@/features/finance/utils/salary-line-month-detail-placeholder';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
@@ -294,6 +298,12 @@ export function SalaryBoardPageContent() {
     [filteredEntries],
   );
 
+  const initialMonthDetail = useMemo(() => {
+    if (!openSalaryLineId) return null;
+    const entry = findSalaryBoardEntryByLineId(filteredEntries, openSalaryLineId);
+    return entry ? buildSalaryLineMonthDetailFromBoardEntry(entry) : null;
+  }, [filteredEntries, openSalaryLineId]);
+
   const { exportCsvSubmitting, handleExportCsv } = useSalaryBoardCsvExport(filteredEntries, {
     monthFrom,
     monthTo,
@@ -394,6 +404,7 @@ export function SalaryBoardPageContent() {
         salaryLineId={openSalaryLineId}
         open={monthSheetOpen}
         onOpenChange={handleMonthSheetOpenChange}
+        initialDetail={initialMonthDetail}
       />
     </div>
   );
