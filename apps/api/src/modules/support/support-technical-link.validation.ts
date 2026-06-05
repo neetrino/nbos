@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 
 export interface SupportTechnicalLinkInput {
-  projectId: string;
+  projectId: string | null;
   productId: string | null;
   technicalAssetId: string | null | undefined;
   technicalEnvironmentId: string | null | undefined;
@@ -23,6 +23,12 @@ export async function assertSupportTechnicalLinksValid(
   const hasEnv = envId !== undefined && envId !== null;
 
   if (!hasAsset && !hasEnv) return;
+
+  if (!input.projectId) {
+    throw new BadRequestException(
+      'Project context is required to link a technical asset or environment.',
+    );
+  }
 
   if (!input.productId) {
     throw new BadRequestException(

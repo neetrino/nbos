@@ -82,16 +82,12 @@ export function SupportPageView() {
         category={createForm.createCategory}
         priority={createForm.createPriority}
         description={createForm.createDescription}
-        coverageDecision={createForm.createCoverageDecision}
-        contactId={createForm.createContactId}
         onTitleChange={createForm.setCreateTitle}
         onProjectIdChange={createForm.setCreateProjectId}
         onProductIdChange={createForm.setCreateProductId}
         onCategoryChange={createForm.setCreateCategory}
         onPriorityChange={createForm.setCreatePriority}
         onDescriptionChange={createForm.setCreateDescription}
-        onCoverageDecisionChange={createForm.setCreateCoverageDecision}
-        onContactIdChange={createForm.setCreateContactId}
         onSubmit={() => void createForm.submitCreateTicket()}
         submitting={createForm.createSubmitting}
       />

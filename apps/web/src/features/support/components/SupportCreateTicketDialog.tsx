@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FolderKanban, Layers, User } from 'lucide-react';
+import { FolderKanban, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,78 +16,66 @@ import {
 } from '@/components/ui/dialog';
 import { RelationPickerField } from '@/components/shared';
 import {
-  useContactRelationSearch,
   useProductRelationSearch,
   useProjectRelationSearch,
 } from '@/components/shared/relation-picker/relation-search-loaders';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import {
-  TICKET_CATEGORIES,
-  TICKET_COVERAGE_DECISIONS,
-  TICKET_PRIORITIES,
-} from '@/features/support/constants/support';
+import { TICKET_CATEGORIES, TICKET_PRIORITIES } from '@/features/support/constants/support';
 
 export interface SupportCreateTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  dialogTitle?: string;
+  dialogDescription?: string;
+  submitLabel?: string;
   title: string;
   projectId: string;
   productId: string;
   category: string;
   priority: string;
   description: string;
-  coverageDecision: string;
-  contactId: string;
   onTitleChange: (value: string) => void;
   onProjectIdChange: (value: string) => void;
   onProductIdChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onPriorityChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
-  onCoverageDecisionChange: (value: string) => void;
-  onContactIdChange: (value: string) => void;
   onSubmit: () => void;
   submitting: boolean;
 }
 
-export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps) {
-  const {
-    open,
-    onOpenChange,
-    title,
-    projectId,
-    productId,
-    category,
-    priority,
-    description,
-    coverageDecision,
-    contactId,
-    onTitleChange,
-    onProjectIdChange,
-    onProductIdChange,
-    onCategoryChange,
-    onPriorityChange,
-    onDescriptionChange,
-    onCoverageDecisionChange,
-    onContactIdChange,
-    onSubmit,
-    submitting,
-  } = props;
-
+export function SupportCreateTicketDialog({
+  open,
+  onOpenChange,
+  dialogTitle = 'New support ticket',
+  dialogDescription = 'Only title is required. Add project, product, and other details now or during triage.',
+  submitLabel = 'Create',
+  title,
+  projectId,
+  productId,
+  category,
+  priority,
+  description,
+  onTitleChange,
+  onProjectIdChange,
+  onProductIdChange,
+  onCategoryChange,
+  onPriorityChange,
+  onDescriptionChange,
+  onSubmit,
+  submitting,
+}: SupportCreateTicketDialogProps) {
   const [projectLabel, setProjectLabel] = useState('');
   const [productLabel, setProductLabel] = useState('');
-  const [contactLabel, setContactLabel] = useState('');
 
   const searchProjects = useProjectRelationSearch();
   const searchProducts = useProductRelationSearch(projectId || null);
-  const searchContacts = useContactRelationSearch();
   const projectPicker = useRelationPickerActions('project');
   const productPicker = useRelationPickerActions('product');
-  const contactPicker = useRelationPickerActions('contact');
 
   const projectSelectionLabel = projectId ? projectLabel || null : null;
   const productSelectionLabel = productId ? productLabel || null : null;
-  const contactSelectionLabel = contactId ? contactLabel || null : null;
+  const canSubmit = title.trim().length > 0 && !submitting;
 
   const clearProjectSelection = () => {
     onProjectIdChange('');
@@ -100,10 +88,8 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>New support ticket</DialogTitle>
-          <DialogDescription>
-            Pick a project and optional product. Product also drives filters and technical linking.
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
@@ -112,11 +98,12 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
               id="support-new-title"
               value={title}
               onChange={(event) => onTitleChange(event.target.value)}
-              placeholder="Short description of the issue"
+              placeholder="Short description of the issue or request"
+              autoFocus
             />
           </div>
           <RelationPickerField
-            label="Project"
+            label="Project (optional)"
             entityKind="project"
             value={projectId || null}
             selectionLabel={projectSelectionLabel}
@@ -135,7 +122,7 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
             {...projectPicker}
           />
           <RelationPickerField
-            label="Product"
+            label="Product (optional)"
             entityKind="product"
             value={productId || null}
             selectionLabel={productSelectionLabel}
@@ -155,7 +142,7 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
           />
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label htmlFor="support-new-category">Category</Label>
+              <Label htmlFor="support-new-category">Category (optional)</Label>
               <select
                 id="support-new-category"
                 className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
@@ -170,7 +157,7 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
               </select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="support-new-priority">Priority</Label>
+              <Label htmlFor="support-new-priority">Priority (optional)</Label>
               <select
                 id="support-new-priority"
                 className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
@@ -195,47 +182,13 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
               className="resize-y"
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="support-new-coverage">Coverage (optional)</Label>
-            <select
-              id="support-new-coverage"
-              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-              value={coverageDecision}
-              onChange={(event) => onCoverageDecisionChange(event.target.value)}
-            >
-              <option value="">Decide later</option>
-              {TICKET_COVERAGE_DECISIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <RelationPickerField
-            label="Contact"
-            entityKind="contact"
-            value={contactId || null}
-            selectionLabel={contactSelectionLabel}
-            placeholder="Search contacts…"
-            icon={<User size={12} />}
-            onSearch={searchContacts}
-            onSelect={(id, label) => {
-              onContactIdChange(id);
-              setContactLabel(label);
-            }}
-            onClear={() => {
-              onContactIdChange('');
-              setContactLabel('');
-            }}
-            {...contactPicker}
-          />
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" disabled={submitting} onClick={() => void onSubmit()}>
-            Create
+          <Button type="button" disabled={!canSubmit} onClick={() => void onSubmit()}>
+            {submitLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

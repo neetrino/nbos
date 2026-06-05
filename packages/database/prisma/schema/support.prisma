@@ -50,7 +50,7 @@ enum SupportTicketCloseReasonEnum {
 model SupportTicket {
   id                     String                        @id @default(uuid())
   code                   String                        @unique
-  projectId              String                        @map("project_id")
+  projectId              String?                       @map("project_id")
   productId              String?                       @map("product_id")
   contactId              String?                       @map("contact_id")
   extensionDealId        String?                       @unique @map("extension_deal_id")
@@ -75,7 +75,7 @@ model SupportTicket {
   createdAt              DateTime                      @default(now()) @map("created_at")
   updatedAt              DateTime                      @updatedAt @map("updated_at")
 
-  project              Project               @relation(fields: [projectId], references: [id])
+  project              Project?              @relation(fields: [projectId], references: [id])
   product              Product?              @relation(fields: [productId], references: [id])
   extensionDeal        Deal?                 @relation(fields: [extensionDealId], references: [id])
   contact              Contact?              @relation(fields: [contactId], references: [id])
