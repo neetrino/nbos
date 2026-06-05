@@ -24,7 +24,7 @@ export function SupportChangeControlView() {
 
   const handleNewChangeRequest = useCallback(() => {
     createForm.setCreateOpen(true);
-  }, [createForm.setCreateOpen]);
+  }, [createForm]);
 
   const initialTicket = useMemo(
     () => page.displayTickets.find((ticket) => ticket.id === page.openTicketIdFromUrl) ?? null,

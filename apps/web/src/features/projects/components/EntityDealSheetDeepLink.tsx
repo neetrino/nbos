@@ -18,14 +18,16 @@ export function EntityDealSheetDeepLink({
   onOpenChange,
 }: EntityDealSheetDeepLinkProps) {
   const [deal, setDeal] = useState<Deal | null>(null);
+  const activeDealId = open && dealId ? dealId : null;
+  const [trackedDealId, setTrackedDealId] = useState(activeDealId);
+
+  if (activeDealId !== trackedDealId) {
+    setTrackedDealId(activeDealId);
+    if (deal && deal.id !== activeDealId) setDeal(null);
+  }
 
   useEffect(() => {
-    if (!open || !dealId) {
-      setDeal(null);
-      return;
-    }
-
-    setDeal((current) => (current?.id === dealId ? current : null));
+    if (!open || !dealId) return;
 
     let cancelled = false;
     void dealsApi

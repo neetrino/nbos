@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, Loader2, PieChart } from 'lucide-react';
 import { DetailSheetTabBar, EntityDetailSheetContent } from '@/components/shared';
@@ -109,12 +109,13 @@ export function UnitEconomicsDrilldownSheet({
   const sourcePageHref =
     orderId != null ? unitEconomicsDrilldownHref(orderId, activeTab) : '/finance/unit-economics';
 
-  useEffect(() => {
-    if (!open) setTab(focus);
-  }, [focus, open]);
+  const handleOpenChange = (next: boolean) => {
+    if (!next) setTab(focus);
+    onOpenChange(next);
+  };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <EntityDetailSheetContent
         open={open}
         layout="full"

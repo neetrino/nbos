@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Banknote, Loader2, Wallet } from 'lucide-react';
 import {
   DetailSheetSection,
@@ -229,6 +229,7 @@ export function EmployeeMonthCompensationSheet({
 
   const showKpiTab = detail?.hasKpiPolicy === true;
   const [activeTab, setActiveTab] = useState('general');
+  const resolvedActiveTab = !showKpiTab && activeTab === 'kpi' ? 'general' : activeTab;
 
   const compensationTabs = useMemo(() => {
     const tabs = [
@@ -239,16 +240,13 @@ export function EmployeeMonthCompensationSheet({
     return tabs;
   }, [showKpiTab]);
 
-  useEffect(() => {
-    if (!open) setActiveTab('general');
-  }, [open]);
-
-  useEffect(() => {
-    if (!showKpiTab && activeTab === 'kpi') setActiveTab('general');
-  }, [activeTab, showKpiTab]);
+  const handleOpenChange = (next: boolean) => {
+    if (!next) setActiveTab('general');
+    onOpenChange(next);
+  };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <EntityDetailSheetContent open={open} layout="full" width="wide" className="gap-0">
         <SheetHeader>
           <SheetTitle>
@@ -274,10 +272,10 @@ export function EmployeeMonthCompensationSheet({
               <div className="flex min-h-0 flex-1 flex-col">
                 <DetailSheetTabBar
                   tabs={compensationTabs}
-                  activeTab={activeTab}
+                  activeTab={resolvedActiveTab}
                   onTabChange={setActiveTab}
                 />
-                {activeTab === 'general' ? (
+                {resolvedActiveTab === 'general' ? (
                   <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="flex flex-col gap-4 pt-2">
                       <SummaryGrid detail={detail} readOnly={readOnly} />
@@ -291,7 +289,7 @@ export function EmployeeMonthCompensationSheet({
                     </div>
                   </div>
                 ) : null}
-                {activeTab === 'bonuses' ? (
+                {resolvedActiveTab === 'bonuses' ? (
                   <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="pt-2">
                       <DetailSheetSection
@@ -303,7 +301,7 @@ export function EmployeeMonthCompensationSheet({
                     </div>
                   </div>
                 ) : null}
-                {activeTab === 'kpi' && showKpiTab ? (
+                {resolvedActiveTab === 'kpi' && showKpiTab ? (
                   <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="pt-2">
                       <EmployeeMonthCompensationKpiSection detail={detail} />

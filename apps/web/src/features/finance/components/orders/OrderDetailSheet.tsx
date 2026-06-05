@@ -41,6 +41,13 @@ export function OrderDetailSheet({
   refreshSignal = 0,
 }: OrderDetailSheetProps) {
   const [activeTab, setActiveTab] = useState<OrderDetailSheetTab>('general');
+  const tabScope = `${orderId ?? ''}:${open}`;
+  const [trackedTabScope, setTrackedTabScope] = useState(tabScope);
+
+  if (trackedTabScope !== tabScope) {
+    setTrackedTabScope(tabScope);
+    setActiveTab('general');
+  }
 
   const {
     entity: order,
@@ -59,10 +66,6 @@ export function OrderDetailSheet({
     if (!open || !orderId || refreshSignal === 0) return;
     void refresh();
   }, [open, orderId, refresh, refreshSignal]);
-
-  useEffect(() => {
-    setActiveTab('general');
-  }, [orderId, open]);
 
   const fetchOrder = useCallback(async () => {
     await refresh();

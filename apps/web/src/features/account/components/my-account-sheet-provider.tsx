@@ -69,7 +69,7 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
       toast.error(getApiErrorMessage(caught, 'Profile could not be loaded.'));
       return null;
     }
-  }, [canViewCompany, me?.id]);
+  }, [canViewCompany, me]);
 
   const openMyAccountSheet = useCallback(async () => {
     if (!me?.id || permissionsLoading) return;
@@ -85,12 +85,14 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
     if (permissionsLoading || !me?.id) return;
     if (searchParams.get(MY_ACCOUNT_OPEN_QUERY) !== '1') return;
 
-    void openMyAccountSheet();
+    queueMicrotask(() => {
+      void openMyAccountSheet();
 
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete(MY_ACCOUNT_OPEN_QUERY);
-    const q = next.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete(MY_ACCOUNT_OPEN_QUERY);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+    });
   }, [me?.id, openMyAccountSheet, pathname, permissionsLoading, router, searchParams]);
 
   const value = useMemo(

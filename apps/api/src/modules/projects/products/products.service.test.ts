@@ -27,6 +27,7 @@ describe('ProductsService', () => {
   };
   const productTeamSync = {
     syncProductSlots: vi.fn().mockResolvedValue(undefined),
+    syncProductSeller: vi.fn().mockResolvedValue(undefined),
     syncExtensionAssignee: vi.fn().mockResolvedValue(undefined),
   };
 
@@ -38,6 +39,7 @@ describe('ProductsService', () => {
     deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
     checklistTemplates.assertStageInstancesCompleted.mockClear();
     productTeamSync.syncProductSlots.mockClear();
+    productTeamSync.syncProductSeller.mockClear();
     service = new ProductsService(
       prisma as never,
       notifications,
@@ -357,10 +359,12 @@ describe('ProductsService', () => {
     it('creates product with required fields', async () => {
       prisma.product.create.mockResolvedValue({
         id: 'p1',
+        projectId: 'proj-1',
         name: 'Website',
         productCategory: 'CODE',
         productType: 'COMPANY_WEBSITE',
       });
+      prisma.order.findFirst.mockResolvedValue(null);
       const result = await service.create({
         projectId: 'proj-1',
         name: 'Website',
@@ -371,7 +375,8 @@ describe('ProductsService', () => {
     });
 
     it('creates product with optional fields', async () => {
-      prisma.product.create.mockResolvedValue({ id: 'p1', name: 'App' });
+      prisma.product.create.mockResolvedValue({ id: 'p1', projectId: 'proj-1', name: 'App' });
+      prisma.order.findFirst.mockResolvedValue(null);
       await service.create({
         projectId: 'proj-1',
         name: 'App',
