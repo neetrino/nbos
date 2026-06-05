@@ -1,29 +1,19 @@
 'use client';
 
 import { Boxes, FolderKanban, GitBranch, ShieldAlert } from 'lucide-react';
-import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import type { ProjectsReportsTabData } from '../../hooks/useReportTabData';
 import { count } from '../../report-number-format';
 import { ChartCard } from '../charts/ChartCard';
 import { KpiCard } from '../charts/KpiCard';
 import { ReportBarChart, ReportPieChart, type ChartDatum } from '../charts/ReportCharts';
-import { ReportActions } from './ReportActions';
 import { ReportTabState } from './ReportTabState';
 
 interface ProjectsReportsTabProps {
-  definitions: ReportDefinition[];
   state: LazyReportTabState<ProjectsReportsTabData>;
-  creatingExportToken: string | null;
-  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
-export function ProjectsReportsTab({
-  definitions,
-  state,
-  creatingExportToken,
-  onExport,
-}: ProjectsReportsTabProps) {
+export function ProjectsReportsTab({ state }: ProjectsReportsTabProps) {
   const data = state.data;
 
   return (
@@ -51,11 +41,6 @@ export function ProjectsReportsTab({
           </div>
         </>
       ) : null}
-      <ReportActions
-        definitions={definitions}
-        creatingExportToken={creatingExportToken}
-        onExport={onExport}
-      />
     </div>
   );
 }

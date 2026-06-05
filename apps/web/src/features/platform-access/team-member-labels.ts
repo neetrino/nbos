@@ -1,3 +1,7 @@
+export function projectTeamRoleShortLabel(role: 'ADMIN' | 'MEMBER'): string {
+  return role === 'ADMIN' ? 'Admin' : 'Member';
+}
+
 export function formatTeamSource(source: string): string {
   return source.replace(/_/g, ' ').toLowerCase();
 }

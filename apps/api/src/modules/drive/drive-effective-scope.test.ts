@@ -14,6 +14,13 @@ describe('mergeDriveEffectiveScope', () => {
     expect(mergeDriveEffectiveScope('OWN', 'ASSIGNED')).toBe('OWN');
   });
 
+  it('preserves ALL for global owner role when policy is ASSIGNED', () => {
+    expect(mergeDriveEffectiveScope('ALL', 'ASSIGNED', { globalOwnerRole: true })).toBe('ALL');
+    expect(mergeDriveEffectiveScope('DEPARTMENT', 'ASSIGNED', { globalOwnerRole: true })).toBe(
+      'OWN',
+    );
+  });
+
   it('narrows to OWN when policy is NONE', () => {
     expect(mergeDriveEffectiveScope('ALL', 'NONE')).toBe('OWN');
     expect(mergeDriveEffectiveScope('DEPARTMENT', 'NONE')).toBe('OWN');

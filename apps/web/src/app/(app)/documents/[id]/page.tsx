@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHero, ErrorState, LoadingState } from '@/components/shared';
+import { PAGE_TAB_BAR_WRAPPER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { formatDocumentActivityDetail } from '@/features/documents/document-activity-format';
 import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
 import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
@@ -240,10 +241,12 @@ export default function DocumentDetailPage() {
                   onValueChange={(v) => setContentTab(v as ContentTab)}
                   className="w-full"
                 >
-                  <TabsList className="w-full justify-start">
-                    <TabsTrigger value="view">Read</TabsTrigger>
-                    <TabsTrigger value="edit">Edit</TabsTrigger>
-                  </TabsList>
+                  <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
+                    <TabsList className="w-full justify-start">
+                      <TabsTrigger value="view">Read</TabsTrigger>
+                      <TabsTrigger value="edit">Edit</TabsTrigger>
+                    </TabsList>
+                  </div>
                   <TabsContent value="view" className="mt-4">
                     <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
                   </TabsContent>

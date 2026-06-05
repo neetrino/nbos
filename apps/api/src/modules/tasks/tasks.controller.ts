@@ -100,6 +100,16 @@ export class TasksController {
     return this.tasksService.findByEntity(entityType, entityId);
   }
 
+  @Patch('reorder')
+  @RequirePermission('TASKS', 'EDIT')
+  @ApiOperation({ summary: 'Reorder tasks within a board column' })
+  async reorder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: { taskIds: string[]; scope: 'workspace' | 'my-plan' },
+  ) {
+    return this.tasksService.reorder(body.taskIds, body.scope, tasksAccessFromUser(user));
+  }
+
   @Get(':id')
   @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get task by ID' })

@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
+import { QueryProvider } from '@/lib/query/query-provider';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -32,12 +33,14 @@ export default function RootLayout({
 }>) {
   return (
     <SessionProvider refetchOnWindowFocus={false}>
-      <html lang="en" suppressHydrationWarning className={cn('font-sans', inter.variable)}>
-        <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-          {children}
-          <Toaster richColors closeButton position="top-center" />
-        </body>
-      </html>
+      <QueryProvider>
+        <html lang="en" suppressHydrationWarning className={cn('font-sans', inter.variable)}>
+          <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+            {children}
+            <Toaster richColors closeButton position="top-center" />
+          </body>
+        </html>
+      </QueryProvider>
     </SessionProvider>
   );
 }

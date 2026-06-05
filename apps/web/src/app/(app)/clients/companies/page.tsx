@@ -2,31 +2,28 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Building2, User } from 'lucide-react';
+import { Plus, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import { DeleteConfirmDialog, useDeleteConfirm } from '@/components/shared/delete-confirm';
-import { EmptyState } from '@/components/shared/EmptyState';
-import { ErrorState } from '@/components/shared/ErrorState';
-import { IntegratedSearchFilters } from '@/components/shared/IntegratedSearchFilters';
-import { LoadingState } from '@/components/shared/LoadingState';
-import { useModuleHeroSlots } from '@/components/shared/page-hero';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
+import { CompanyCard } from '@/features/clients/components/CompanyCard';
 import { CompanySheet } from '@/features/clients/components/CompanySheet';
+import { CompaniesTable } from '@/features/clients/components/CompaniesTable';
 import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
 import {
-  COMPANY_TYPES,
-  TAX_STATUSES,
-  getCompanyType,
-  getTaxStatus,
-} from '@/features/clients/constants/clients';
+  CLIENTS_DIRECTORY_VIEW_OPTIONS,
+  type ClientsDirectoryViewMode,
+} from '@/features/clients/constants/clients-directory-view-options';
+import { COMPANY_TYPES, TAX_STATUSES } from '@/features/clients/constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
 import { toast } from 'sonner';
 
@@ -42,6 +39,7 @@ function CompaniesPageContent() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showCreate, setShowCreate] = useState(false);
+  const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
@@ -137,6 +135,8 @@ function CompaniesPageContent() {
   };
 
   const handleRowClick = (company: Company) => {
+    setSelectedCompany(company);
+    setSheetOpen(true);
     pushOpenCompanyToUrl(company.id);
   };
 
@@ -171,6 +171,9 @@ function CompaniesPageContent() {
           onClearAll={() => setFilters({})}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch value={view} onChange={setView} options={CLIENTS_DIRECTORY_VIEW_OPTIONS} />
+      ),
       trailing: (
         <Button onClick={() => setShowCreate(true)}>
           <Plus size={16} aria-hidden />
@@ -178,7 +181,7 @@ function CompaniesPageContent() {
         </Button>
       ),
     }),
-    [filterConfigs, filters, search],
+    [filterConfigs, filters, search, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -186,7 +189,10 @@ function CompaniesPageContent() {
   return (
     <div className="flex h-full flex-col gap-5">
       {loading ? (
-        <LoadingState />
+        <LoadingState
+          variant={view === 'grid' ? 'cards' : 'list'}
+          count={view === 'grid' ? 6 : 5}
+        />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchCompanies} />
       ) : companies.length === 0 ? (
@@ -201,73 +207,14 @@ function CompaniesPageContent() {
             </Button>
           }
         />
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Tax Status</TableHead>
-                <TableHead>Tax ID</TableHead>
-                <TableHead>Primary Contact</TableHead>
-                <TableHead className="text-center">Projects</TableHead>
-                <TableHead className="text-center">Invoices</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {companies.map((company) => {
-                const compType = getCompanyType(company.type);
-                const taxSt = getTaxStatus(company.taxStatus);
-                return (
-                  <TableRow
-                    key={company.id}
-                    className="cursor-pointer"
-                    onClick={() => handleRowClick(company)}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary/5 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                          <Building2 size={16} />
-                        </div>
-                        <span className="font-medium">{company.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {compType && (
-                        <StatusBadge label={compType.label} variant={compType.variant} />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {taxSt && <StatusBadge label={taxSt.label} variant={taxSt.variant} />}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
-                      {company.taxId ?? '—'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <User size={12} className="text-muted-foreground" />
-                        <span>
-                          {company.contact.firstName} {company.contact.lastName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center font-medium">
-                      {company._count.projects}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-center">
-                      {company._count.invoices}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {new Date(company.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+      ) : view === 'grid' ? (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+          {companies.map((company) => (
+            <CompanyCard key={company.id} company={company} onOpen={handleRowClick} />
+          ))}
         </div>
+      ) : (
+        <CompaniesTable companies={companies} onOpen={handleRowClick} />
       )}
 
       <CreateCompanyDialog

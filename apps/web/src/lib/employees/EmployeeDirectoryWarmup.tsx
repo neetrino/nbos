@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { prefetchEmployeePickerEmptyPage } from './employee-directory-cache';
+import { prefetchEmployeePickerEmptyPage, prefetchTeamDirectoryDefaultPage } from '@/lib/employees';
 
-/** Prefetch first employee picker page (20 rows) so empty search opens fast. */
+/** Warm employee picker + team directory after sign-in. */
 export function EmployeeDirectoryWarmup() {
   useEffect(() => {
     prefetchEmployeePickerEmptyPage();
+    prefetchTeamDirectoryDefaultPage();
   }, []);
   return null;
 }

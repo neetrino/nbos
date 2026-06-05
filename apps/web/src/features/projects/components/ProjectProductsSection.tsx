@@ -1,9 +1,18 @@
 'use client';
 
-import { ArrowRight, Calendar, Package, Plus, User } from 'lucide-react';
+import { useMemo } from 'react';
+import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StatusBadge } from '@/components/shared';
+import {
+  EntityLinkedSheetsHoverActions,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  PageHero,
+  PageHeroTabs,
+  ProductNavigableCard,
+  StatusBadge,
+  ViewModeSwitch,
+  type ViewModeOption,
+} from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
@@ -11,16 +20,39 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
+import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import {
+  PROJECT_ENTITY_LIST_CLASS,
+  PROJECT_ENTITY_LIST_ROW_CLASS,
+  type ProjectDetailViewMode,
+} from './project-detail-layout.constants';
 
-const PRODUCT_STATUS_FILTER_ALL = 'all';
+const PRODUCT_TAB_ALL = 'all';
+
+const PRODUCT_VIEW_OPTIONS: ViewModeOption<ProjectDetailViewMode>[] = [
+  {
+    value: 'card',
+    label: 'Cards',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Card view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 interface ProjectProductsSectionProps {
   project: FullProject;
   products: ProjectProductSummary[];
   statusFilter: string | null;
   setStatusFilter: (status: string | null) => void;
+  viewMode: ProjectDetailViewMode;
+  onViewModeChange: (mode: ProjectDetailViewMode) => void;
   onCreateProduct: () => void;
-  onOpenProduct: (productId: string) => void;
 }
 
 export function ProjectProductsSection({
@@ -28,35 +60,57 @@ export function ProjectProductsSection({
   products,
   statusFilter,
   setStatusFilter,
+  viewMode,
+  onViewModeChange,
   onCreateProduct,
-  onOpenProduct,
 }: ProjectProductsSectionProps) {
-  const byStatus = (status: string) =>
-    project.products.filter((product) => product.status === status).length;
+  const statusTabOptions = useMemo(() => {
+    const byStatus = (status: string) =>
+      project.products.filter((product) => product.status === status).length;
+    const statusesWithProducts = PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0);
+
+    return [
+      { value: PRODUCT_TAB_ALL, label: `All Products (${project.products.length})` },
+      ...statusesWithProducts.map((status) => ({
+        value: status.value,
+        label: `${status.label} (${byStatus(status.value)})`,
+      })),
+    ];
+  }, [project.products]);
+
+  const statusTab = statusFilter ?? PRODUCT_TAB_ALL;
+  const hasProducts = project.products.length > 0;
 
   return (
-    <div className="flex-1 space-y-4">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold">Products</h2>
-            <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-              {products.length}
-            </span>
-          </div>
-          <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
-            <Plus size={14} />
-            New Product
-          </Button>
-        </div>
-        {products.length > 0 && (
-          <ProductStatusFilters
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            byStatus={byStatus}
+    <div className="w-full min-w-0 space-y-4">
+      <PageHero
+        syncModuleTitle={false}
+        className="mt-0"
+        tabs={
+          <PageHeroTabs
+            value={statusTab}
+            onChange={(value) => setStatusFilter(value === PRODUCT_TAB_ALL ? null : value)}
+            options={statusTabOptions}
+            ariaLabel="Product status"
           />
-        )}
-      </div>
+        }
+        viewMode={
+          hasProducts ? (
+            <ViewModeSwitch
+              value={viewMode}
+              onChange={onViewModeChange}
+              options={PRODUCT_VIEW_OPTIONS}
+              ariaLabel="Products view mode"
+            />
+          ) : undefined
+        }
+        trailing={
+          <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
+            <Plus size={14} aria-hidden />
+            Product
+          </Button>
+        }
+      />
 
       {products.length === 0 ? (
         <EmptyProductsState
@@ -64,44 +118,20 @@ export function ProjectProductsSection({
           setStatusFilter={setStatusFilter}
           onCreateProduct={onCreateProduct}
         />
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      ) : viewMode === 'list' ? (
+        <div className={PROJECT_ENTITY_LIST_CLASS}>
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onOpenProduct={onOpenProduct} />
+            <ProductListRow key={product.id} projectId={project.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+          {products.map((product) => (
+            <ProductNavigableCard key={product.id} projectId={project.id} product={product} />
           ))}
         </div>
       )}
     </div>
-  );
-}
-
-function ProductStatusFilters({
-  statusFilter,
-  setStatusFilter,
-  byStatus,
-}: {
-  statusFilter: string | null;
-  setStatusFilter: (status: string | null) => void;
-  byStatus: (status: string) => number;
-}) {
-  const tabValue = statusFilter ?? PRODUCT_STATUS_FILTER_ALL;
-  const statusesWithProducts = PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0);
-
-  return (
-    <Tabs
-      value={tabValue}
-      onValueChange={(value) => setStatusFilter(value === PRODUCT_STATUS_FILTER_ALL ? null : value)}
-      className="w-full"
-    >
-      <TabsList variant="line" className="w-full justify-start">
-        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL}>All</TabsTrigger>
-        {statusesWithProducts.map((status) => (
-          <TabsTrigger key={status.value} value={status.value}>
-            {status.label} ({byStatus(status.value)})
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
   );
 }
 
@@ -138,13 +168,15 @@ function EmptyProductsState({
   );
 }
 
-function ProductCard({
+function ProductListRow({
+  projectId,
   product,
-  onOpenProduct,
 }: {
+  projectId: string;
   product: ProjectProductSummary;
-  onOpenProduct: (productId: string) => void;
 }) {
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
+  const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const statusLabel = product.deliveryLifecycle
@@ -152,48 +184,45 @@ function ProductCard({
     : status?.label;
 
   return (
-    <div
-      onClick={() => onOpenProduct(product.id)}
-      className="bg-card border-border hover:border-accent/50 group cursor-pointer rounded-xl border p-4 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-semibold">{product.name}</h4>
+    <div className={`${PROJECT_ENTITY_LIST_ROW_CLASS} group/entity-row`}>
+      <a
+        href={`/projects/${projectId}/products/${product.id}`}
+        className="min-w-0 flex-1 text-left"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate text-sm font-semibold">{product.name}</span>
           {productType && (
             <span className="text-muted-foreground text-xs">{productType.label}</span>
           )}
         </div>
-        {status && statusLabel && <StatusBadge label={statusLabel} variant={status.variant} />}
-      </div>
-
-      <div className="mt-3 space-y-1.5">
-        {product.pm && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <User size={12} />
-            <span>
+        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+          {product.pm && (
+            <span className="inline-flex items-center gap-1">
+              <User size={11} aria-hidden />
               {product.pm.firstName} {product.pm.lastName}
             </span>
-          </div>
-        )}
-        {product.deadline && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <Calendar size={12} />
-            <span>{new Date(product.deadline).toLocaleDateString()}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex gap-3 text-[10px]">
-          <span className="text-muted-foreground">{product._count.tasks} tasks</span>
-          <span className="text-muted-foreground">{product._count.extensions} ext.</span>
-          <span className="text-muted-foreground">{product._count.tickets} tickets</span>
+          )}
+          {product.deadline && (
+            <span className="inline-flex items-center gap-1">
+              <Calendar size={11} aria-hidden />
+              {new Date(product.deadline).toLocaleDateString()}
+            </span>
+          )}
+          <span>
+            {product._count.tasks} tasks · {product._count.extensions} ext. ·{' '}
+            {product._count.tickets} tickets
+          </span>
         </div>
-        <ArrowRight
-          size={14}
-          className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-        />
-      </div>
+      </a>
+      {status && statusLabel && (
+        <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
+      )}
+      <EntityLinkedSheetsHoverActions
+        variant="row"
+        contextHref={`/projects/${projectId}`}
+        onOpenDelivery={() => openDeliveryItem(`product-${product.id}`)}
+        onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
+      />
     </div>
   );
 }

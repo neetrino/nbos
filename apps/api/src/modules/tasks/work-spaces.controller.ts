@@ -42,6 +42,13 @@ export class WorkSpacesController {
     });
   }
 
+  @Get('by-product/:productId')
+  @RequirePermission('TASKS', 'VIEW')
+  @ApiOperation({ summary: 'Get Product Work Space by product ID (read-only)' })
+  async findByProduct(@Param('productId') productId: string) {
+    return this.workSpacesService.findByProductId(productId);
+  }
+
   @Get(':id')
   @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get Work Space by ID' })

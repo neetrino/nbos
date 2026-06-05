@@ -175,6 +175,48 @@ describe('ProductsService', () => {
       });
     });
 
+    it('returns workSpaceId when product has a Work Space', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'CREATING',
+        clientAcceptedAt: null,
+        project: {
+          credentials: [],
+          domains: [],
+          _count: { credentials: 0, domains: 0 },
+        },
+        order: null,
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        workSpace: { id: 'ws-1' },
+      });
+      const result = await service.findById('p1');
+      expect(result.workSpaceId).toBe('ws-1');
+    });
+
+    it('returns null workSpaceId when product has no Work Space', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'CREATING',
+        clientAcceptedAt: null,
+        project: {
+          credentials: [],
+          domains: [],
+          _count: { credentials: 0, domains: 0 },
+        },
+        order: null,
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        workSpace: null,
+      });
+      const result = await service.findById('p1');
+      expect(result.workSpaceId).toBeNull();
+    });
+
     it('surfaces Done readiness blockers and missing documentation', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',

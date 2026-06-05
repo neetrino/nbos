@@ -3,7 +3,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
+import {
+  IntegratedSearchFilters,
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
@@ -54,10 +60,7 @@ import {
   expenseBoardScopeFromVariant,
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
-import {
-  readExpensesBoardViewMode,
-  writeExpensesBoardViewMode,
-} from '@/features/finance/constants/expenses-board-view';
+import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
@@ -103,15 +106,11 @@ export function ExpensesPageContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     initialExpenseFilterRecord(pageVariant),
   );
-  const [view, setView] = useState<ExpensesViewMode>(() => readExpensesBoardViewMode());
-
-  const handleViewChange = useCallback((next: ExpensesViewMode) => {
-    setView(next);
-    writeExpensesBoardViewMode(next);
-  }, []);
+  const [view, handleViewChange] = useExpensesBoardViewMode();
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
@@ -187,7 +186,7 @@ export function ExpensesPageContent({
   const listApiParams = useMemo(
     () =>
       buildExpenseListApiParams({
-        search,
+        search: debouncedSearch,
         filters,
         period,
         effectiveProjectId,
@@ -197,7 +196,7 @@ export function ExpensesPageContent({
         expensePlanIdFromUrl,
       }),
     [
-      search,
+      debouncedSearch,
       filters,
       period,
       effectiveProjectId,
@@ -540,6 +539,7 @@ export function ExpensesPageContent({
 
       <ExpenseDetailSheet
         expenseId={sheetOpen ? (openExpenseIdFromUrl ?? selectedExpense?.id ?? null) : null}
+        initialExpense={selectedExpense}
         open={sheetOpen || Boolean(openExpenseIdFromUrl)}
         onOpenChange={handleExpenseSheetOpenChange}
         listProjectId={effectiveProjectId ?? null}

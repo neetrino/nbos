@@ -1,1 +1,1 @@
-export { default } from '../../team/page';
+export { TeamDirectoryPage as default } from '@/features/hr/components/TeamDirectoryPage';

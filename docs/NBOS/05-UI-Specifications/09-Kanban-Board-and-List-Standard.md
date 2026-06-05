@@ -134,6 +134,36 @@ Rules:
 - Density variants are allowed (`normal`, `compact`) only when they preserve the same visual language.
 - Card colors indicate entity type/risk consistently across active and closed scopes.
 
+### Card shell (`KanbanCardShell`)
+
+All kanban board cards and project entity grid cards use the shared outer surface:
+
+`apps/web/src/components/shared/kanban/KanbanCardShell.tsx`
+
+Rules:
+
+- **One shell, many domain cards** — `DealCard`, `TaskMiniCard`, `ProjectDeliveryBoardCard`, etc. own content and actions; they do not copy `rounded-xl border bg-card p-3` by hand.
+- **`preset="neutral"`** — default board cards (border, bg, hover shadow).
+- **`preset="crm"`** — deal/lead/delivery type tint via `shellClassName` (CRM visual presets).
+- **Do not** build a single universal `<EntityCard entity={…} />` with a type switch — domain cards stay separate.
+
+Reference implementations: `DealCard`, `TaskMiniCard`, `SupportTicketCard`, `ProjectDeliveryBoardCard`.
+
+### Board engine (when to use what)
+
+| Case                                                                                                                               | Use                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Standard workflow board (CRM, Tasks, Finance, Support, Credentials)                                                                | Shared `KanbanBoard` + module `*BoardCard` / `*Card`                                                                                                   |
+| Complex drag + rich in-card actions (Delivery: forward-only stages, `ON_HOLD` lock, click vs drag, terminal → `COMPLETE`/`CANCEL`) | Dedicated `@dnd-kit` host (e.g. `DeliveryKanbanBoard`) + same visual primitives (column surface, insert placeholders, terminal bar, `KanbanCardShell`) |
+| Infinite-scroll columns without drag (Client services)                                                                             | Custom column host — document as exception                                                                                                             |
+| Static lane grid without drag (Payroll runs)                                                                                       | Custom lane grid — document as exception                                                                                                               |
+
+Rules:
+
+- **New simple boards** → `KanbanBoard` unless module canon documents an exception.
+- **Do not** merge Delivery into `KanbanBoard` without a documented trigger (second complex board, or shared `dnd-kit` engine migration).
+- Visual parity matters more than a single drag implementation — users must not feel a different product per module.
+
 ---
 
 ## Stage-Gate UX Integration

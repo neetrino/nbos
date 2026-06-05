@@ -1,86 +1,40 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
-import {
-  formatDeliveryLifecycleLabel,
-  getDeliveryLifecycleVariant,
-  getProductStatus,
-  getProductType,
-} from '@/features/projects/constants/projects';
-import {
-  buildProductGateRequiredFields,
-  productStageGateFieldClass,
-  resolveProductTabFromGateErrors,
-  type ProductTabForGate,
-} from '@/features/projects/product-stage-gate-highlight';
-import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
-import type { ApiFieldError } from '@/lib/api-errors';
-import { DeliveryStageTimelineCard } from './DeliveryStageTimelineCard';
+import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
 import { ProductStageGateCard } from './ProductStageGateCard';
-import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
+import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
   product: FullProduct;
   onStatusChange: () => void;
-  onNavigateTab: (tab: ProductTabForGate) => void;
 }
 
-export function ProductOverviewTab({
-  product,
-  onStatusChange,
-  onNavigateTab,
-}: ProductOverviewTabProps) {
-  const [stageGateHighlight, setStageGateHighlight] = useState<SheetStageGateHighlight | null>(
-    null,
-  );
-
-  const gateRequiredFields = useMemo(
-    () =>
-      stageGateHighlight
-        ? buildProductGateRequiredFields(stageGateHighlight.errors)
-        : new Set<string>(),
-    [stageGateHighlight],
-  );
-
-  const showStageGateRequirements = useCallback(
-    (errors: ApiFieldError[]) => {
-      setStageGateHighlight({ errors });
-      const tab = resolveProductTabFromGateErrors(errors);
-      if (tab !== 'overview') onNavigateTab(tab);
-    },
-    [onNavigateTab],
-  );
-
+export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewTabProps) {
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
   ).length;
+  const gateRequiredFields = new Set<string>();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
-      <ProductDeliveryLifecycleCard product={product} />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ProductDetailsCard product={product} gateRequiredFields={gateRequiredFields} />
-        <ProductStageGateCard
+      <div className="grid gap-4 xl:grid-cols-12 xl:items-start">
+        <ProductInfoPanel
           product={product}
           gateRequiredFields={gateRequiredFields}
-          stageGateHighlight={stageGateHighlight}
-          onStatusChange={onStatusChange}
-          onStageGateBlocked={showStageGateRequirements}
-          onStageGateClear={() => setStageGateHighlight(null)}
-          onNavigateTab={onNavigateTab}
+          className="xl:col-span-4"
         />
+        <div className="xl:col-span-8">
+          <ProductStageGateCard
+            product={product}
+            gateRequiredFields={gateRequiredFields}
+            onStatusChange={onStatusChange}
+          />
+        </div>
       </div>
-      <ProductDescriptionCard
-        description={product.description}
-        gateRequiredFields={gateRequiredFields}
-        forceVisible={gateRequiredFields.has('description')}
-      />
-      <ProductParticipantsSection productId={product.id} />
     </div>
   );
 }
@@ -95,172 +49,59 @@ function ProductStats({
   doneExtensions: number;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <StatCard
+    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <StatChip
         icon={ListChecks}
         label="Tasks"
         value={`${doneTasks}/${product.tasks.length}`}
-        color="bg-blue-500"
+        tone="bg-blue-500/10 text-blue-700 dark:text-blue-300"
       />
-      <StatCard
+      <StatChip
         icon={Puzzle}
         label="Extensions"
         value={`${doneExtensions}/${product.extensions.length}`}
-        color="bg-purple-500"
+        tone="bg-purple-500/10 text-purple-700 dark:text-purple-300"
       />
-      <StatCard icon={Ticket} label="Tickets" value={product.tickets.length} color="bg-amber-500" />
-      <StatCard
+      <StatChip
+        icon={Ticket}
+        label="Tickets"
+        value={String(product.tickets.length)}
+        tone="bg-amber-500/10 text-amber-700 dark:text-amber-300"
+      />
+      <StatChip
         icon={DollarSign}
         label="Order"
         value={
           product.order
             ? `${Number(product.order.totalAmount).toLocaleString()} ${product.order.currency}`
-            : '-'
+            : '—'
         }
-        color="bg-emerald-500"
+        tone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
       />
     </div>
   );
 }
 
-function ProductDetailsCard({
-  product,
-  gateRequiredFields,
-}: {
-  product: FullProduct;
-  gateRequiredFields: ReadonlySet<string>;
-}) {
-  const status = getProductStatus(product.status);
-  const productType = getProductType(product.productType);
-  const lifecycle = product.deliveryLifecycle;
-
-  return (
-    <section className="bg-card border-border rounded-xl border p-5">
-      <h3 className="mb-4 text-sm font-semibold">Product Details</h3>
-      <div className="space-y-3 text-sm">
-        <DetailRow label="Type" value={productType?.label} />
-        {lifecycle ? (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Delivery</span>
-            <StatusBadge
-              label={formatDeliveryLifecycleLabel(lifecycle)}
-              variant={getDeliveryLifecycleVariant(lifecycle)}
-            />
-          </div>
-        ) : (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Status</span>
-            {status && <StatusBadge label={status.label} variant={status.variant} />}
-          </div>
-        )}
-        {product.pm && (
-          <DetailRow label="PM" value={`${product.pm.firstName} ${product.pm.lastName}`} />
-        )}
-        <div
-          className={productStageGateFieldClass(
-            gateRequiredFields,
-            'deadline',
-            'flex justify-between rounded-md px-1 py-0.5',
-          )}
-        >
-          <span className="text-muted-foreground">Deadline</span>
-          <span className="font-medium">
-            {product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
-          </span>
-        </div>
-        <div
-          className={productStageGateFieldClass(
-            gateRequiredFields,
-            'order',
-            'flex justify-between rounded-md px-1 py-0.5',
-          )}
-        >
-          <span className="text-muted-foreground">Order</span>
-          <span className="font-medium">{product.order ? 'Linked' : '—'}</span>
-        </div>
-        <DetailRow label="Project" value={product.project.name} />
-        <DetailRow label="Created" value={new Date(product.createdAt).toLocaleDateString()} />
-      </div>
-    </section>
-  );
-}
-
-function ProductDeliveryLifecycleCard({ product }: { product: FullProduct }) {
-  const lifecycle = product.deliveryLifecycle;
-  if (!lifecycle) return null;
-
-  return (
-    <DeliveryStageTimelineCard
-      lifecycle={lifecycle}
-      title="Delivery Lifecycle"
-      description="Product delivery source of truth for stage, pause state and terminal outcome."
-      showLifecycleBadge
-    />
-  );
-}
-
-function StatCard({
+function StatChip({
   icon: Icon,
   label,
   value,
-  color,
+  tone,
 }: {
   icon: React.ElementType;
   label: string;
-  value: number | string;
-  color: string;
+  value: string;
+  tone: string;
 }) {
   return (
-    <div className="bg-card border-border rounded-xl border p-4">
-      <div className="flex items-center gap-3">
-        <div className={`rounded-lg p-2 ${color}`}>
-          <Icon size={16} className="text-white" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-muted-foreground text-xs">{label}</p>
-        </div>
+    <div className="bg-card border-border flex items-center gap-2.5 rounded-xl border px-3 py-2.5">
+      <div className={cn('rounded-lg p-1.5', tone)}>
+        <Icon size={14} aria-hidden />
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-base leading-tight font-semibold">{value}</p>
+        <p className="text-muted-foreground text-[11px]">{label}</p>
       </div>
     </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value?: string }) {
-  if (!value) return null;
-
-  return (
-    <div className="flex justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
-    </div>
-  );
-}
-
-function ProductDescriptionCard({
-  description,
-  gateRequiredFields,
-  forceVisible,
-}: {
-  description: string | null;
-  gateRequiredFields: ReadonlySet<string>;
-  forceVisible: boolean;
-}) {
-  if (!description && !forceVisible) return null;
-
-  return (
-    <section
-      className={productStageGateFieldClass(
-        gateRequiredFields,
-        'description',
-        'bg-card border-border rounded-xl border p-5',
-      )}
-    >
-      <h3 className="mb-2 text-sm font-semibold">Description</h3>
-      {description ? (
-        <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
-      ) : (
-        <p className="text-muted-foreground text-sm">Description is required before Creating.</p>
-      )}
-    </section>
   );
 }

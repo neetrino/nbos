@@ -10,7 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { getLeadSource } from '../constants/leadPipeline';
 import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
 import type { Lead } from '@/lib/api/leads';
@@ -69,8 +70,13 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
   const isOverdue = lead.status === 'NEW' && daysSinceCreation >= 1;
 
   return (
-    <div
-      className={`group cursor-pointer rounded-xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${leadVisual.cardShellClassName}`}
+    <KanbanCardShell
+      preset="crm"
+      padding="lg"
+      baseShadow="sm"
+      hoverShadow="md"
+      transition="all"
+      shellClassName={cn('group cursor-pointer', leadVisual.cardShellClassName)}
       onClick={() => onClick(lead)}
     >
       <div className="flex items-start gap-2">
@@ -148,7 +154,7 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
           ) : null}
         </div>
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, LayoutGrid, List, Plus, User, Building2, Archive } from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -20,16 +20,19 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  ListPagination,
+  NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  ProjectNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
+import type { ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
-import { projectsApi, type Project } from '@/lib/api/projects';
+import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
+import type { Project } from '@/lib/api/projects';
 
-type ViewMode = 'grid' | 'list';
-
-const PROJECT_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
   {
     value: 'grid',
     label: 'Grid',
@@ -46,35 +49,22 @@ const PROJECT_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [view, setView] = useState<ViewMode>('grid');
-  const [activeTab, setActiveTab] = useState('all');
   const [createOpen, setCreateOpen] = useState(false);
-
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await projectsApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-        ...(activeTab === 'active' ? { isArchived: false } : {}),
-        ...(activeTab === 'archived' ? { isArchived: true } : {}),
-      });
-      setProjects(data.items);
-      setError(null);
-    } catch {
-      setError('Projects could not be loaded. Check your connection and try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [search, activeTab]);
-
-  useEffect(() => {
-    void fetchProjects();
-  }, [fetchProjects]);
+  const directory = useProjectsHubDirectory();
+  const {
+    activeTab,
+    setActiveTab,
+    viewMode: view,
+    setViewMode: setView,
+    searchInput,
+    setSearchInput,
+    setPage,
+    items: projects,
+    meta,
+    loading,
+    error,
+    refetch,
+  } = directory;
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -94,10 +84,10 @@ export default function ProjectsPage() {
         }
         search={
           <IntegratedSearchFilters
-            search={search}
-            onSearchChange={setSearch}
+            search={searchInput}
+            onSearchChange={setSearchInput}
             searchPlaceholder="Search by project name, code, company, contact…"
-            onClearAll={() => setSearch('')}
+            onClearAll={() => setSearchInput('')}
           />
         }
         viewMode={<ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />}
@@ -120,7 +110,7 @@ export default function ProjectsPage() {
       {loading ? (
         <LoadingState variant="cards" count={6} />
       ) : error ? (
-        <ErrorState description={error} onRetry={fetchProjects} />
+        <ErrorState description={error} onRetry={() => void refetch()} />
       ) : projects.length === 0 ? (
         <EmptyState
           icon={FolderKanban}
@@ -138,51 +128,9 @@ export default function ProjectsPage() {
           }
         />
       ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
           {projects.map((project) => (
-            <div
-              key={project.id}
-              className="group border-border bg-card cursor-pointer rounded-2xl border p-5 transition-all hover:shadow-md"
-              onClick={() => handleClick(project)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent/10 text-accent rounded-xl p-2.5">
-                    <FolderKanban size={18} />
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-[10px] font-medium">{project.code}</p>
-                    <h3 className="text-foreground text-sm font-semibold">{project.name}</h3>
-                  </div>
-                </div>
-                {project.isArchived && <Archive size={14} className="text-muted-foreground" />}
-              </div>
-
-              {project.description && (
-                <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">
-                  {project.description}
-                </p>
-              )}
-
-              <div className="mt-4 space-y-2">
-                {project.company && (
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                    <Building2 size={11} />
-                    <span>{project.company.name}</span>
-                  </div>
-                )}
-                <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                  <User size={11} />
-                  <span>
-                    {project.contact?.firstName} {project.contact?.lastName}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-muted-foreground mt-4 flex items-center justify-end text-[10px]">
-                <span>{project._count.orders} orders</span>
-              </div>
-            </div>
+            <ProjectNavigableCard key={project.id} project={project} />
           ))}
         </div>
       ) : (
@@ -228,11 +176,15 @@ export default function ProjectsPage() {
         </div>
       )}
 
+      {!loading && !error && projects.length > 0 ? (
+        <ListPagination meta={meta} onPageChange={setPage} />
+      ) : null}
+
       <CreateProjectHubDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(project) => {
-          void fetchProjects();
+          void refetch();
           router.push(`/projects/${project.id}`);
         }}
       />

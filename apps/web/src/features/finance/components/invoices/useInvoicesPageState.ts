@@ -19,11 +19,7 @@ import {
   type InvoiceListParams,
   type InvoiceStats,
 } from '@/lib/api/finance';
-import {
-  readInvoicesBoardViewMode,
-  writeInvoicesBoardViewMode,
-} from '@/features/finance/constants/invoices-board-view';
-import type { InvoiceViewMode } from './invoice-page-types';
+import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
 
 interface RecordPaymentInput {
   invoiceId: string;
@@ -55,11 +51,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setViewState] = useState<InvoiceViewMode>(() => readInvoicesBoardViewMode());
-  const setView = useCallback((next: InvoiceViewMode) => {
-    setViewState(next);
-    writeInvoicesBoardViewMode(next);
-  }, []);
+  const [view, setView] = useInvoicesBoardViewMode();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stageGateHighlight, setStageGateHighlight] =
@@ -140,6 +132,12 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
 
   useEffect(() => {
     if (!openInvoiceIdFromUrl) return;
+    const fromList = invoices.find((row) => row.id === openInvoiceIdFromUrl);
+    if (fromList) {
+      setSelectedInvoice(fromList);
+      setSheetOpen(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -156,7 +154,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     return () => {
       cancelled = true;
     };
-  }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
+  }, [openInvoiceIdFromUrl, invoices, stripOpenInvoiceFromUrl]);
 
   const portfolioCreateIntent = portfolioCreateInvoiceFromUrl;
 

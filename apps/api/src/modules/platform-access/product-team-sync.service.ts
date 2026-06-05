@@ -23,6 +23,12 @@ interface SyncExtensionAssigneeParams {
   actorId?: string;
 }
 
+interface SyncProductSellerParams {
+  projectId: string;
+  sellerId?: string | null;
+  actorId?: string;
+}
+
 const SLOT_SOURCE: TeamMemberSourceEnum = 'PRODUCT_SLOT';
 const EXTENSION_SOURCE: TeamMemberSourceEnum = 'EXTENSION_ASSIGNEE';
 
@@ -76,6 +82,29 @@ export class ProductTeamSyncService {
           },
         });
         await this.ensureProjectMember(tx, params.projectId, binding.employeeId, params.actorId);
+      }
+    });
+  }
+
+  /** Adds deal seller to project team when linked to a product order. */
+  async syncProductSeller(params: SyncProductSellerParams): Promise<void> {
+    const sellerId = params.sellerId?.trim();
+    if (!sellerId) return;
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.ensureProjectMember(tx, params.projectId, sellerId, params.actorId);
+    });
+  }
+
+  /**
+   * Ensures every employee linked to any product/extension on the project exists on
+   * {@link ProjectTeamMember} as MEMBER when not already present (preserves ADMIN/MANUAL rows).
+   */
+  async reconcileProjectTeamFromProducts(projectId: string, actorId?: string): Promise<void> {
+    const employeeIds = await this.collectProjectLinkedEmployeeIds(projectId);
+    await this.prisma.$transaction(async (tx) => {
+      for (const employeeId of employeeIds) {
+        await this.ensureProjectMember(tx, projectId, employeeId, actorId);
       }
     });
   }
@@ -138,6 +167,44 @@ export class ProductTeamSyncService {
     });
   }
 
+  private async collectProjectLinkedEmployeeIds(projectId: string): Promise<Set<string>> {
+    const ids = new Set<string>();
+
+    const products = await this.prisma.product.findMany({
+      where: { projectId },
+      select: {
+        pmId: true,
+        developerId: true,
+        designerId: true,
+        technicalSpecialistId: true,
+        qaLeadId: true,
+        teamMembers: { select: { employeeId: true } },
+        order: { select: { deal: { select: { sellerId: true } } } },
+      },
+    });
+
+    for (const product of products) {
+      for (const binding of productSlotBindingsFromRow(product)) {
+        ids.add(binding.employeeId);
+      }
+      for (const member of product.teamMembers) {
+        ids.add(member.employeeId);
+      }
+      const sellerId = product.order?.deal?.sellerId;
+      if (sellerId) ids.add(sellerId);
+    }
+
+    const extensions = await this.prisma.extension.findMany({
+      where: { projectId },
+      select: { assignedTo: true },
+    });
+    for (const extension of extensions) {
+      if (extension.assignedTo) ids.add(extension.assignedTo);
+    }
+
+    return ids;
+  }
+
   private async ensureProjectMember(
     tx: Pick<InstanceType<typeof PrismaClient>, 'projectTeamMember'>,
     projectId: string,
@@ -152,7 +219,7 @@ export class ProductTeamSyncService {
         projectId,
         employeeId,
         role: 'MEMBER',
-        source: 'PRODUCT_SLOT',
+        source: SLOT_SOURCE,
         addedById: actorId,
       },
       update: {},

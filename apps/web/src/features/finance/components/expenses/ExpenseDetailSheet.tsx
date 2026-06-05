@@ -50,6 +50,8 @@ import { expensesApi, type Expense } from '@/lib/api/finance';
 
 export interface ExpenseDetailSheetProps {
   expenseId: string | null;
+  /** List-row snapshot for instant sheet header while detail hydrates. */
+  initialExpense?: Expense | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   listProjectId?: string | null;
@@ -65,6 +67,7 @@ export interface ExpenseDetailSheetProps {
 
 export function ExpenseDetailSheet({
   expenseId,
+  initialExpense = null,
   open,
   onOpenChange,
   listProjectId = null,
@@ -76,7 +79,11 @@ export function ExpenseDetailSheet({
   forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
   const activeExpenseId = open && expenseId ? expenseId : '';
-  const { expense, setExpense, loading, error, fetchExpense } = useExpenseDetail(activeExpenseId);
+  const { expense, setExpense, loading, error, fetchExpense } = useExpenseDetail(activeExpenseId, {
+    open,
+    initialExpense,
+    isDirty: () => generalDirtyRef.current,
+  });
   const [activeTab, setActiveTab] = useState<ExpenseDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<ExpenseGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<ExpenseGeneralDraft | null>(null);
@@ -241,7 +248,7 @@ export function ExpenseDetailSheet({
           forceNestedBackdrop={forceNestedBackdrop}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-            {loading ? (
+            {loading && !expense ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : expense ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -276,9 +283,9 @@ export function ExpenseDetailSheet({
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-5 py-5">
               <ExpenseDetailStageGateBlockers highlight={stageGateHighlight} />
-              {loading ? (
+              {loading && !expense ? (
                 <LoadingState count={3} />
-              ) : error ? (
+              ) : error && !expense ? (
                 <ErrorState description={error} onRetry={() => void fetchExpense()} />
               ) : expense && generalDraft ? (
                 <>

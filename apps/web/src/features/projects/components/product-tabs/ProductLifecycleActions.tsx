@@ -20,7 +20,7 @@ export function ProductLifecycleActions({
   if (!lifecycle || lifecycle.isTerminal) return null;
 
   return (
-    <div className="border-border mt-4 flex flex-wrap gap-2 border-t pt-4">
+    <div className="border-border flex flex-wrap gap-1.5 border-t pt-3">
       {lifecycle.workStatus === 'ON_HOLD' ? (
         <Button variant="secondary" size="sm" disabled={disabled} onClick={onResume}>
           Resume delivery

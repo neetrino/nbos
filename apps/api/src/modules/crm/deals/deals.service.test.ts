@@ -10,16 +10,19 @@ describe('DealsService', () => {
   let prisma: MockPrisma;
   let wonHandler: { handle: ReturnType<typeof vi.fn> };
   let auditService: Pick<AuditService, 'log'>;
+  let productTeamSync: { syncProductSeller: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.fileLink.count.mockResolvedValue(1);
     wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
     auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+    productTeamSync = { syncProductSeller: vi.fn().mockResolvedValue(undefined) };
     service = new DealsService(
       prisma as never,
       wonHandler as unknown as DealWonHandler,
       auditService as never,
+      productTeamSync as never,
     );
   });
 

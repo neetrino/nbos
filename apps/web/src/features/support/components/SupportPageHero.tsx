@@ -1,8 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { IntegratedSearchFilters, PageHero, ViewModeSwitch } from '@/components/shared';
+import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
 import { SUPPORT_TICKET_FILTER_CONFIGS } from '@/features/support/constants/support-ticket-filter-configs';
 import {
   SUPPORT_PAGE_VIEW_OPTIONS,
@@ -35,44 +36,50 @@ export function SupportPageHero({
   onExportScopeStatsCsv,
   onNewTicket,
 }: SupportPageHeroProps) {
-  return (
-    <>
-      <PageHero
-        title="Support"
-        search={
-          <IntegratedSearchFilters
-            search={search}
-            onSearchChange={onSearchChange}
-            searchPlaceholder="Search tickets, project code, project name, product…"
-            filters={SUPPORT_TICKET_FILTER_CONFIGS}
-            filterValues={filterValues}
-            onFilterChange={onFilterChange}
-            onClearAll={onClearFilters}
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={onSearchChange}
+          searchPlaceholder="Search tickets, project code, project name, product…"
+          filters={SUPPORT_TICKET_FILTER_CONFIGS}
+          filterValues={filterValues}
+          onFilterChange={onFilterChange}
+          onClearAll={onClearFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch value={view} onChange={onViewChange} options={SUPPORT_PAGE_VIEW_OPTIONS} />
+      ),
+      trailing: (
+        <>
+          <SupportPageSettingsSheet
+            exportDisabled={exportDisabled}
+            onExportScopeStatsCsv={onExportScopeStatsCsv}
           />
-        }
-        viewMode={
-          <ViewModeSwitch
-            value={view}
-            onChange={onViewChange}
-            options={SUPPORT_PAGE_VIEW_OPTIONS}
-          />
-        }
-        trailing={
-          <>
-            <SupportPageSettingsSheet
-              exportDisabled={exportDisabled}
-              onExportScopeStatsCsv={onExportScopeStatsCsv}
-            />
-            <Button type="button" onClick={onNewTicket}>
-              <Plus size={16} aria-hidden />
-              New Ticket
-            </Button>
-          </>
-        }
-      />
-      <p className="text-muted-foreground text-sm">
-        Track incidents, SLAs, and project-linked support work.
-      </p>
-    </>
+          <Button type="button" onClick={onNewTicket}>
+            <Plus size={16} aria-hidden />
+            New Ticket
+          </Button>
+        </>
+      ),
+    }),
+    [
+      search,
+      onSearchChange,
+      filterValues,
+      onFilterChange,
+      onClearFilters,
+      view,
+      onViewChange,
+      exportDisabled,
+      onExportScopeStatsCsv,
+      onNewTicket,
+    ],
   );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
+  return null;
 }

@@ -1,13 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
-import {
-  readSupportPageViewFromStorage,
-  writeSupportPageViewToStorage,
-} from '@/features/support/constants/support-page-view-storage';
-import type { SupportPageViewMode } from '@/features/support/constants/support-page-view-options';
+import { useSupportPageViewMode } from '@/features/support/constants/support-page-view-storage';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 
 export function useSupportTicketsQuery() {
@@ -17,18 +13,9 @@ export function useSupportTicketsQuery() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<SupportPageViewMode>('kanban');
+  const [view, handleViewModeChange] = useSupportPageViewMode();
   const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
-
-  useLayoutEffect(() => {
-    setView(readSupportPageViewFromStorage());
-  }, []);
-
-  const handleViewModeChange = useCallback((next: SupportPageViewMode) => {
-    setView(next);
-    writeSupportPageViewToStorage(next);
-  }, []);
 
   const fetchTickets = useCallback(
     async (options?: { soft?: boolean }) => {
@@ -47,7 +34,7 @@ export function useSupportTicketsQuery() {
               ? filters.waitingState
               : undefined,
         });
-        setTickets(items);
+        setTickets(items.filter((ticket) => ticket.category !== 'CHANGE_REQUEST'));
         setError(null);
         try {
           setStats(await supportApi.getStats());

@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar, User } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
@@ -24,10 +24,15 @@ export function SalaryBoardPayoutLineCard({
   const remaining = parseSalaryBoardAmount(entry.cell.remainingAmount);
 
   return (
-    <button
+    <KanbanCardShell
+      as="button"
       type="button"
+      hoverShadow={false}
+      hoverSurface="muted40"
+      baseShadow="sm"
+      transition="colors"
+      className="w-full text-left"
       onClick={() => onOpen(entry.salaryLineId)}
-      className="border-border bg-card hover:bg-muted/40 w-full rounded-xl border p-3 text-left shadow-sm transition-colors"
     >
       <div className="flex items-start gap-2">
         <User size={14} className="text-muted-foreground mt-0.5 shrink-0" aria-hidden />
@@ -52,6 +57,6 @@ export function SalaryBoardPayoutLineCard({
       <div className="mt-2 flex flex-wrap gap-1">
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
       </div>
-    </button>
+    </KanbanCardShell>
   );
 }

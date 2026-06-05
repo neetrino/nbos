@@ -6,15 +6,28 @@ function makeDriveDealWonLinksMock() {
   return { linkApprovedDealMaterials: vi.fn().mockResolvedValue(0) };
 }
 
+function makeProductTeamSyncMock() {
+  return {
+    syncProductSlots: vi.fn().mockResolvedValue(undefined),
+    syncProductSeller: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 describe('DealWonHandler', () => {
   let prisma: MockPrisma;
   let handler: DealWonHandler;
   let driveDealWonLinks: ReturnType<typeof makeDriveDealWonLinksMock>;
+  let productTeamSync: ReturnType<typeof makeProductTeamSyncMock>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     driveDealWonLinks = makeDriveDealWonLinksMock();
-    handler = new DealWonHandler(prisma as never, driveDealWonLinks as never);
+    productTeamSync = makeProductTeamSyncMock();
+    handler = new DealWonHandler(
+      prisma as never,
+      driveDealWonLinks as never,
+      productTeamSync as never,
+    );
   });
 
   it('creates project and product for PRODUCT deal without project', async () => {

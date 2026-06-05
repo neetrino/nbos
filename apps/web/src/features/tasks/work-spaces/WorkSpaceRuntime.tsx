@@ -10,19 +10,17 @@ import {
   type SetStateAction,
 } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TaskMiniCard, TaskListTableView, type TaskBoardAction } from '@/features/tasks/task-board';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import { taskDetailPlaceholderFromListItem } from '@/features/tasks/utils/task-detail-placeholder';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
-import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
-import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -31,7 +29,7 @@ import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecyc
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
-import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
+import type { WorkspaceRuntimeTaskFilters } from './workspace-runtime-task-filters';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
 import type { WorkspaceArea } from './workspace-area';
@@ -45,10 +43,9 @@ export type WorkSpaceRuntimeProps = {
   setSprints?: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
-  /** When false, board view tabs + New Task live in the page header (standalone). */
-  hideInlineBoardToolbar?: boolean;
-  boardView?: WorkspaceBoardView;
-  setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
+  taskViewFilters: WorkspaceRuntimeTaskFilters;
+  boardView: WorkspaceBoardView;
+  setBoardView: Dispatch<SetStateAction<WorkspaceBoardView>>;
   quickCreateRef?: MutableRefObject<(() => void) | null>;
   /**
    * When true (e.g. `/work-spaces/[id]`), task sheet syncs with `TASK_OPEN_QUERY` in the URL.
@@ -56,6 +53,11 @@ export type WorkSpaceRuntimeProps = {
    */
   syncTaskSheetToUrl?: boolean;
   workspaceArea?: WorkspaceArea;
+  /** Refetch task list from server (merged list on product tab). Used after sprint bulk changes. */
+  refreshTasksFromServer?: () => Promise<void>;
+  taskListTotal?: number;
+  onLoadMoreTasks?: () => void;
+  loadingMoreTasks?: boolean;
 };
 
 export function WorkSpaceRuntime({
@@ -66,12 +68,16 @@ export function WorkSpaceRuntime({
   setSprints,
   mode,
   defaultTaskLink,
-  hideInlineBoardToolbar = false,
+  taskViewFilters,
   boardView: boardViewProp,
   setBoardView: setBoardViewProp,
   quickCreateRef,
   syncTaskSheetToUrl = false,
   workspaceArea = 'active',
+  refreshTasksFromServer,
+  taskListTotal,
+  onLoadMoreTasks,
+  loadingMoreTasks = false,
 }: WorkSpaceRuntimeProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -79,8 +85,7 @@ export function WorkSpaceRuntime({
   const openTaskIdFromUrl = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
 
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const [taskSearch, setTaskSearch] = useState('');
-  const [taskFilters, setTaskFilters] = useState<Record<string, string>>({});
+  const { search: taskSearch, filterValues: taskFilters } = taskViewFilters;
 
   const workspaceViewFilters = useMemo(
     () => ({ search: taskSearch, filterValues: taskFilters }),
@@ -95,14 +100,10 @@ export function WorkSpaceRuntime({
     [],
   );
 
-  const controlledBoard =
-    hideInlineBoardToolbar && boardViewProp !== undefined && setBoardViewProp
-      ? { boardView: boardViewProp, setBoardView: setBoardViewProp }
-      : null;
+  const controlledBoard = { boardView: boardViewProp, setBoardView: setBoardViewProp };
 
   const {
     boardView,
-    setBoardView,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
@@ -151,6 +152,12 @@ export function WorkSpaceRuntime({
 
   const selectedTaskId = syncTaskSheetToUrl ? openTaskIdFromUrl : localSelectedTaskId;
   const sheetOpen = syncTaskSheetToUrl ? Boolean(openTaskIdFromUrl) : localSheetOpen;
+
+  const initialTask = useMemo(() => {
+    if (!selectedTaskId) return null;
+    const match = tasks.find((task) => task.id === selectedTaskId);
+    return match ? taskDetailPlaceholderFromListItem(match) : null;
+  }, [selectedTaskId, tasks]);
 
   const handleTaskClick = useCallback(
     (task: Task) => {
@@ -224,21 +231,7 @@ export function WorkSpaceRuntime({
     };
   }, [quickCreateRef, openQuickCreate]);
 
-  const clearTaskViewFilters = useCallback(() => {
-    setTaskSearch('');
-    setTaskFilters({});
-  }, []);
-
-  const handleTaskFilterChange = useCallback((key: string, value: string) => {
-    setTaskFilters((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const clearTaskViewFilters = taskViewFilters.onClearFilters;
 
   const renderCard = useCallback(
     (task: Task) => (
@@ -319,7 +312,6 @@ export function WorkSpaceRuntime({
     );
   };
 
-  const newTaskDisabled = creatorReady && !creatorId;
   const hasActiveTaskViewQuery =
     Boolean(taskSearch.trim()) ||
     Object.entries(taskFilters).some(([, v]) => Boolean(v) && v !== 'all');
@@ -348,6 +340,7 @@ export function WorkSpaceRuntime({
           onBacklogTaskCreated={handleQuickCreateTask}
           creatorId={creatorId}
           creatorReady={creatorReady}
+          refreshTasksFromServer={refreshTasksFromServer}
         />
       ) : (
         <p className="text-muted-foreground border-border rounded-xl border border-dashed px-4 py-10 text-center text-sm">
@@ -359,49 +352,7 @@ export function WorkSpaceRuntime({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
-      <WorkspaceRuntimeFilterBar
-        search={taskSearch}
-        onSearchChange={setTaskSearch}
-        filterValues={{
-          boardScope: taskFilters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-          ...taskFilters,
-        }}
-        onFilterChange={handleTaskFilterChange}
-        onClearFilters={clearTaskViewFilters}
-      />
-
       <TasksWorkflowScopeBanner scope={boardScope} />
-
-      {!hideInlineBoardToolbar && !isPlanningArea ? (
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-          <Tabs
-            value={boardView}
-            onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
-          >
-            <TabsList variant="segmented">
-              {TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS.map((segment) => (
-                <TabsTrigger
-                  key={segment.value}
-                  value={segment.value}
-                  aria-label={segment.ariaLabel}
-                  className="gap-1.5 px-3 py-2"
-                >
-                  {segment.icon}
-                  {segment.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <Button
-            onClick={openQuickCreate}
-            disabled={newTaskDisabled}
-            title={newTaskDisabled ? 'Employee profile required' : undefined}
-          >
-            <Plus size={16} />
-            New Task
-          </Button>
-        </div>
-      ) : null}
 
       {actionError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -420,8 +371,18 @@ export function WorkSpaceRuntime({
 
       {showWorkspaceBoard ? (isPlanningArea ? renderPlanningArea() : renderBoard()) : null}
 
+      {taskListTotal !== undefined && onLoadMoreTasks ? (
+        <TaskListLoadMoreBanner
+          loadedCount={tasks.length}
+          totalCount={taskListTotal}
+          onLoadMore={onLoadMoreTasks}
+          loading={loadingMoreTasks}
+        />
+      ) : null}
+
       <TaskSheet
         taskId={selectedTaskId}
+        initialTask={initialTask}
         open={sheetOpen}
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}

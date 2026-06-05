@@ -10,7 +10,9 @@ import {
   useRegisterRelationCreated,
   type RelationCreatedEvent,
 } from '@/components/shared/relation-picker';
+import { DETAIL_SHEET_SECTION_STRETCH_CLASS } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+import { cn } from '@/lib/utils';
 import { applyProjectContactsRelationCreated } from './apply-project-contacts-relation-created';
 import {
   buildProjectContactsPatch,
@@ -21,9 +23,17 @@ import {
 interface ProjectContactsSectionProps {
   project: FullProject;
   onProjectUpdated: (project: FullProject) => void;
+  /** Render inside {@link ProjectInfoPanel} without card chrome. */
+  embedded?: boolean;
+  className?: string;
 }
 
-export function ProjectContactsSection({ project, onProjectUpdated }: ProjectContactsSectionProps) {
+export function ProjectContactsSection({
+  project,
+  onProjectUpdated,
+  embedded = false,
+  className,
+}: ProjectContactsSectionProps) {
   const [draft, setDraft] = useState<ProjectContactsDraft>(() =>
     projectContactsDraftFromProject(project),
   );
@@ -80,10 +90,17 @@ export function ProjectContactsSection({ project, onProjectUpdated }: ProjectCon
 
   return (
     <div
-      className={`bg-card border-border space-y-4 rounded-xl border p-5 ${saving ? 'opacity-70' : ''}`}
+      className={cn(
+        !embedded && [
+          DETAIL_SHEET_SECTION_STRETCH_CLASS,
+          'bg-card border-border space-y-4 rounded-xl border p-5',
+        ],
+        saving && 'opacity-70',
+        className,
+      )}
     >
-      <h3 className="text-sm font-semibold">Client contacts</h3>
-      <div className="grid gap-4 md:grid-cols-2">
+      {!embedded && <h3 className="text-sm font-semibold">Client contacts</h3>}
+      <div className={cn('flex flex-col gap-3', !embedded && 'flex-1 gap-4')}>
         <RelationPickerField
           label="Contacts"
           entityKind="contact"

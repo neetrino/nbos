@@ -2,29 +2,28 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import {
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   useModuleHeroSlots,
   IntegratedSearchFilters,
+  ViewModeSwitch,
   EmptyState,
   ErrorState,
   LoadingState,
-  StatusBadge,
   DeleteConfirmDialog,
   useDeleteConfirm,
 } from '@/components/shared';
+import { ContactCard } from '@/features/clients/components/ContactCard';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
+import { ContactsTable } from '@/features/clients/components/ContactsTable';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
-import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
+import {
+  CLIENTS_DIRECTORY_VIEW_OPTIONS,
+  type ClientsDirectoryViewMode,
+} from '@/features/clients/constants/clients-directory-view-options';
+import { CONTACT_ROLES } from '@/features/clients/constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { toast } from 'sonner';
 
@@ -40,6 +39,7 @@ function ContactsPageContent() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showCreate, setShowCreate] = useState(false);
+  const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
@@ -139,6 +139,8 @@ function ContactsPageContent() {
   };
 
   const handleRowClick = (contact: Contact) => {
+    setSelectedContact(contact);
+    setSheetOpen(true);
     pushOpenContactToUrl(contact.id);
   };
 
@@ -168,6 +170,9 @@ function ContactsPageContent() {
           onClearAll={() => setFilters({})}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch value={view} onChange={setView} options={CLIENTS_DIRECTORY_VIEW_OPTIONS} />
+      ),
       trailing: (
         <Button onClick={() => setShowCreate(true)}>
           <Plus size={16} aria-hidden />
@@ -175,7 +180,7 @@ function ContactsPageContent() {
         </Button>
       ),
     }),
-    [filterConfigs, filters, search],
+    [filterConfigs, filters, search, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -183,7 +188,10 @@ function ContactsPageContent() {
   return (
     <div className="flex h-full flex-col gap-5">
       {loading ? (
-        <LoadingState />
+        <LoadingState
+          variant={view === 'grid' ? 'cards' : 'list'}
+          count={view === 'grid' ? 6 : 5}
+        />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchContacts} />
       ) : contacts.length === 0 ? (
@@ -198,90 +206,14 @@ function ContactsPageContent() {
             </Button>
           }
         />
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Contact Type</TableHead>
-                <TableHead>Companies</TableHead>
-                <TableHead className="text-center">Projects</TableHead>
-                <TableHead className="text-center">Leads</TableHead>
-                <TableHead className="text-center">Deals</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {contacts.map((contact) => {
-                const role = getContactRole(contact.role);
-                return (
-                  <TableRow
-                    key={contact.id}
-                    className="cursor-pointer"
-                    onClick={() => handleRowClick(contact)}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-accent/20 text-accent flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold">
-                          {contact.firstName[0]}
-                          {contact.lastName[0]}
-                        </div>
-                        <span className="font-medium">
-                          {contact.firstName} {contact.lastName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-0.5">
-                        {contact.phone && (
-                          <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                            <Phone size={10} />
-                            {contact.phone}
-                          </div>
-                        )}
-                        {contact.email && (
-                          <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                            <Mail size={10} />
-                            {contact.email}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {role && <StatusBadge label={role.label} variant={role.variant} />}
-                    </TableCell>
-                    <TableCell>
-                      {contact.companies.length > 0 ? (
-                        <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                          <Building2 size={11} />
-                          <span className="max-w-[150px] truncate">
-                            {contact.companies.map((c) => c.name).join(', ')}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center font-medium">
-                      {contact._count.projects}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-center">
-                      {contact._count.leads}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-center">
-                      {contact._count.deals}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {new Date(contact.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+      ) : view === 'grid' ? (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+          {contacts.map((contact) => (
+            <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
+          ))}
         </div>
+      ) : (
+        <ContactsTable contacts={contacts} onOpen={handleRowClick} />
       )}
 
       <CreateContactDialog

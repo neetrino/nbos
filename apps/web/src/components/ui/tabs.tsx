@@ -6,9 +6,19 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-type TabsListVariant = 'default' | 'line' | 'segmented';
+/**
+ * Radix tabs for **pages** (`pill`) and **compact filters** (`segmented`).
+ *
+ * Entity detail sheets must use {@link DetailSheetTabBar} from `@/components/shared` —
+ * not `Tabs`, or every sheet tab inherits page/filter defaults by mistake.
+ */
+type TabsListVariant = 'pill' | 'segmented';
 
-const TabsListVariantContext = React.createContext<TabsListVariant>('default');
+const PILL_TAB_SHAPE_CLASS = 'gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors';
+const PILL_TAB_INACTIVE_CLASS = 'text-muted-foreground hover:bg-secondary hover:text-foreground';
+const PILL_TAB_ACTIVE_CLASS = 'bg-primary text-primary-foreground shadow-none';
+
+const TabsListVariantContext = React.createContext<TabsListVariant>('pill');
 
 const Tabs = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Root>,
@@ -21,22 +31,21 @@ Tabs.displayName = TabsPrimitive.Root.displayName;
 export const tabsListVariants = cva('text-muted-foreground', {
   variants: {
     variant: {
-      default: 'inline-flex h-auto min-w-0 items-center gap-1 rounded-xl bg-muted p-1',
-      line: 'inline-flex h-auto w-full min-w-0 items-center justify-start gap-0 rounded-none border-b border-border bg-transparent p-0',
+      pill: 'inline-flex h-auto min-w-0 items-center gap-1 overflow-x-auto pb-0',
       segmented:
         'inline-flex h-auto min-w-0 items-center gap-0.5 rounded-lg border border-border bg-background p-0.5',
     },
   },
   defaultVariants: {
-    variant: 'default',
+    variant: 'pill',
   },
 });
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>
->(({ className, variant = 'default', ...props }, ref) => (
-  <TabsListVariantContext.Provider value={variant ?? 'default'}>
+>(({ className, variant = 'pill', ...props }, ref) => (
+  <TabsListVariantContext.Provider value={variant ?? 'pill'}>
     <TabsPrimitive.List
       ref={ref}
       data-slot="tabs-list"
@@ -53,18 +62,29 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       listVariant: {
-        default:
-          'gap-2 rounded-lg px-4 py-2 text-sm hover:bg-background/60 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md',
-        line: 'relative gap-2 rounded-none border-0 bg-transparent px-3 py-2.5 text-sm shadow-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent after:transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:px-4',
+        pill: cn(
+          PILL_TAB_SHAPE_CLASS,
+          PILL_TAB_INACTIVE_CLASS,
+          'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none',
+        ),
         segmented:
           'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
       },
     },
     defaultVariants: {
-      listVariant: 'default',
+      listVariant: 'pill',
     },
   },
 );
+
+/** Pill tab button class for plain `<button>` strips (e.g. {@link DetailSheetTabBar}). */
+export function pillTabButtonClass(isActive: boolean): string {
+  return cn(
+    'inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70',
+    PILL_TAB_SHAPE_CLASS,
+    isActive ? PILL_TAB_ACTIVE_CLASS : PILL_TAB_INACTIVE_CLASS,
+  );
+}
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
@@ -91,6 +111,7 @@ const TabsContent = React.forwardRef<
     data-slot="tabs-content"
     className={cn(
       'flex-1 text-sm outline-none focus-visible:outline-none',
+      'data-[state=inactive]:hidden',
       'focus-visible:outline-ring/70 mt-2 outline-offset-2 focus-visible:outline focus-visible:outline-2',
       className,
     )}
@@ -99,5 +120,5 @@ const TabsContent = React.forwardRef<
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsTriggerVariants };
 export type { TabsListVariant };

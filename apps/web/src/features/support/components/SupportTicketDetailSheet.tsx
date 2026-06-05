@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import { DetailSheetTabBar, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import {
   getTicketCategory,
   getTicketCoverage,
@@ -31,6 +30,8 @@ import {
 
 export interface SupportTicketDetailSheetProps {
   ticketId: string | null;
+  /** Kanban/list row for instant header while ticket detail hydrates. */
+  initialTicket?: SupportTicket | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   refreshKey: number;
@@ -44,6 +45,7 @@ export interface SupportTicketDetailSheetProps {
 
 export function SupportTicketDetailSheet({
   ticketId,
+  initialTicket = null,
   open,
   onOpenChange,
   refreshKey,
@@ -62,6 +64,7 @@ export function SupportTicketDetailSheet({
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dirtyRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [auditItems, setAuditItems] = useState<AuditLogEntry[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
@@ -70,39 +73,98 @@ export function SupportTicketDetailSheet({
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [taskBusy, setTaskBusy] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'activity'>('general');
+
+  const supportTicketTabs = [
+    { value: 'general', label: 'General' },
+    { value: 'activity', label: 'Activity' },
+  ] as const;
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return;
-    setLoading(true);
     setError(null);
     try {
       const row = await supportApi.getById(ticketId);
       setTicket(row);
-      const d = triageDraftFromTicket(row);
-      setSnap(d);
-      setDraft(d);
-      const [proj, emps, cts] = await Promise.all([
-        projectsApi.getById(row.projectId),
-        employeesApi.getAll({ pageSize: 300 }),
-        contactsApi.getAll({ pageSize: 300 }),
-      ]);
-      setProductOptions(proj.products ?? []);
-      setEmployees(emps.items);
-      setContacts(cts.items);
+      if (!dirtyRef.current) {
+        const d = triageDraftFromTicket(row);
+        setSnap(d);
+        setDraft(d);
+      }
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Ticket could not be loaded.'));
-      setTicket(null);
-      setSnap(null);
-      setDraft(null);
+      if (!initialTicket || initialTicket.id !== ticketId) {
+        setTicket(null);
+        setSnap(null);
+        setDraft(null);
+      }
     } finally {
       setLoading(false);
     }
-  }, [ticketId]);
+  }, [initialTicket, ticketId]);
 
   useEffect(() => {
-    if (!open || !ticketId) return;
+    if (!open || !ticketId) {
+      setTicket(null);
+      setSnap(null);
+      setDraft(null);
+      setLoading(false);
+      return;
+    }
+
+    setActiveTab('general');
+    dirtyRef.current = false;
+
+    const seed = initialTicket?.id === ticketId ? initialTicket : null;
+    if (seed) {
+      setTicket(seed);
+      const d = triageDraftFromTicket(seed);
+      setSnap(d);
+      setDraft(d);
+      setLoading(false);
+    } else {
+      setTicket(null);
+      setSnap(null);
+      setDraft(null);
+      setLoading(true);
+    }
+
     void loadTicket();
-  }, [open, ticketId, refreshKey, loadTicket]);
+  }, [open, ticketId, refreshKey, initialTicket, loadTicket]);
+
+  useEffect(() => {
+    if (!open || !ticket?.projectId) {
+      setProductOptions([]);
+      setEmployees([]);
+      setContacts([]);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [proj, emps, cts] = await Promise.all([
+          projectsApi.getById(ticket.projectId!),
+          employeesApi.getAll({ pageSize: 300 }),
+          contactsApi.getAll({ pageSize: 300 }),
+        ]);
+        if (cancelled) return;
+        setProductOptions(proj.products ?? []);
+        setEmployees(emps.items);
+        setContacts(cts.items);
+      } catch {
+        if (!cancelled) {
+          setProductOptions([]);
+          setEmployees([]);
+          setContacts([]);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, ticket?.id, ticket?.projectId]);
 
   const loadAudit = useCallback(async () => {
     if (!ticketId) return;
@@ -121,6 +183,10 @@ export function SupportTicketDetailSheet({
     () => draft != null && snap != null && isSupportTriageDirty(draft, snap),
     [draft, snap],
   );
+
+  useEffect(() => {
+    dirtyRef.current = dirty;
+  }, [dirty]);
 
   const patchDraft = useCallback((partial: Partial<SupportTriageDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...partial } : null));
@@ -199,7 +265,7 @@ export function SupportTicketDetailSheet({
         >
           <div className="border-border flex h-full min-h-0 flex-col border-l">
             <div className="border-border bg-background shrink-0 border-b px-7 pt-5 pb-3">
-              {loading ? (
+              {loading && !ticket ? (
                 <p className="text-muted-foreground text-sm">Loading…</p>
               ) : ticket ? (
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -209,8 +275,12 @@ export function SupportTicketDetailSheet({
                     </h2>
                     <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wide">
                       {ticket.code}
-                      <span className="mx-1.5 font-sans">·</span>
-                      {ticket.project.name}
+                      {ticket.project ? (
+                        <>
+                          <span className="mx-1.5 font-sans">·</span>
+                          {ticket.project.name}
+                        </>
+                      ) : null}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -229,22 +299,18 @@ export function SupportTicketDetailSheet({
             {error ? <p className="text-destructive shrink-0 px-6 py-2 text-sm">{error}</p> : null}
 
             {ticket && draft ? (
-              <Tabs
-                defaultValue="general"
-                className="flex min-h-0 flex-1 flex-col"
-                onValueChange={(v) => {
-                  if (v === 'activity') void loadAudit();
-                }}
-              >
-                <TabsList variant="segmented" className="mx-6 mt-3 shrink-0 self-start">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="activity">Activity</TabsTrigger>
-                </TabsList>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <DetailSheetTabBar
+                  tabs={supportTicketTabs}
+                  activeTab={activeTab}
+                  onTabChange={(value) => {
+                    const next = value as 'general' | 'activity';
+                    setActiveTab(next);
+                    if (next === 'activity') void loadAudit();
+                  }}
+                />
 
-                <TabsContent
-                  value="general"
-                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-                >
+                {activeTab === 'general' ? (
                   <SupportTicketDetailGeneralTab
                     ticket={ticket}
                     draft={draft}
@@ -266,17 +332,14 @@ export function SupportTicketDetailSheet({
                     onRequestEscalate={onRequestEscalate}
                     onRequestTechnical={onRequestTechnical}
                   />
-                </TabsContent>
+                ) : null}
 
-                <TabsContent
-                  value="activity"
-                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-                >
+                {activeTab === 'activity' ? (
                   <ScrollArea className="min-h-0 flex-1">
                     <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
                   </ScrollArea>
-                </TabsContent>
-              </Tabs>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </EntityDetailSheetContent>

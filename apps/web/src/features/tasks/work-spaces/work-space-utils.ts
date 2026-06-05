@@ -1,5 +1,9 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
-import type { WorkSpace } from '@/lib/api/tasks';
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
+import type { Task, WorkSpace } from '@/lib/api/tasks';
 
 export type WorkSpaceFilterValues = {
   type?: string;
@@ -63,7 +67,11 @@ export function getWorkSpaceContextLabel(workspace: WorkSpace): string {
 
 export function buildWorkSpaceContextHref(workspace: WorkSpace): string | null {
   if (workspace.productId && workspace.projectId) {
-    return `/projects/${workspace.projectId}/products/${workspace.productId}?tab=tasks`;
+    return buildProductDetailPageHref(
+      workspace.projectId,
+      workspace.productId,
+      PRODUCT_DETAIL_TAB.tasks,
+    );
   }
   if (workspace.projectId) return `/projects/${workspace.projectId}`;
   return null;
@@ -134,4 +142,14 @@ export function groupWorkSpaces(workspaces: WorkSpace[]): Record<WorkSpaceGroupK
     },
     { standalone: [], product: [] },
   );
+}
+
+/** Workspace tasks plus legacy product-linked tasks without workspaceId. */
+export function mergeProductWorkSpaceTasks(primary: Task[], linked: Task[]): Task[] {
+  const seen = new Set<string>();
+  return [...primary, ...linked].filter((task) => {
+    if (seen.has(task.id)) return false;
+    seen.add(task.id);
+    return true;
+  });
 }

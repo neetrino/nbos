@@ -22,6 +22,7 @@ import {
   type TasksAccessContext,
 } from './tasks-scoped-access';
 import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
+import { reorderTasks, type TaskReorderScope } from './task-reorder.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
@@ -491,6 +492,10 @@ export class TasksService {
   }
 
   // ─── STATS ───────────────────────────────────────────────
+
+  async reorder(taskIds: string[], scope: TaskReorderScope, access?: TasksAccessContext) {
+    return reorderTasks(this.prisma, { taskIds, scope, access });
+  }
 
   async getStats(involvesEmployeeId?: string, access?: TasksAccessContext) {
     let participantWhere: Prisma.TaskWhereInput | undefined;

@@ -90,7 +90,7 @@ export function CredentialVaultCategoryBoard({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-2">
       <div className="min-h-0 flex-1">
         <KanbanBoard
           columns={columns}

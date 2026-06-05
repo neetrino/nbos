@@ -5,6 +5,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.service';
 import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
+import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 
 interface WonDealData {
   id: string;
@@ -51,6 +52,7 @@ export class DealWonHandler {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly driveDealWonLinks: DriveDealWonLinksService,
+    private readonly productTeamSync: ProductTeamSyncService,
   ) {}
 
   async handle(deal: WonDealData) {
@@ -132,7 +134,39 @@ export class DealWonHandler {
   private async ensureProductDeliveryShell(deal: WonDealData): Promise<ProductWonResult> {
     const projectId = await this.ensureProject(deal);
     const productId = await this.ensureProduct(deal, projectId);
+    await this.syncProjectTeamFromDealShell(deal, projectId, productId);
     return { projectId, productId };
+  }
+
+  private async syncProjectTeamFromDealShell(
+    deal: WonDealData,
+    projectId: string,
+    productId: string | null,
+  ): Promise<void> {
+    if (productId) {
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        select: {
+          pmId: true,
+          developerId: true,
+          designerId: true,
+          technicalSpecialistId: true,
+          qaLeadId: true,
+        },
+      });
+      if (product) {
+        await this.productTeamSync.syncProductSlots({
+          productId,
+          projectId,
+          row: product,
+        });
+      }
+    }
+
+    await this.productTeamSync.syncProductSeller({
+      projectId,
+      sellerId: deal.sellerId,
+    });
   }
 
   private async ensureProject(deal: WonDealData): Promise<string> {

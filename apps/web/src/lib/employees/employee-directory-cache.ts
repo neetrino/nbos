@@ -4,6 +4,7 @@ import {
   EMPLOYEE_PICKER_EMPTY_CACHE_TTL_MS,
   EMPLOYEE_PICKER_PAGE_SIZE,
 } from './employee-directory-constants';
+import { invalidateTeamDirectoryCache } from './team-directory-cache';
 
 type EmptyPageCache = {
   options: RelationPickerOption[];
@@ -67,6 +68,12 @@ async function loadEmptyPickerPage(): Promise<RelationPickerOption[]> {
 /** Clears cached empty list so the next open refetches page 1. */
 export function invalidateEmployeePickerEmptyCache(): void {
   emptyPageCache = null;
+}
+
+/** Clears picker + team directory caches after employee mutations. */
+export function invalidateEmployeeDirectoryCaches(): void {
+  invalidateEmployeePickerEmptyCache();
+  invalidateTeamDirectoryCache();
 }
 
 /** @deprecated Use {@link invalidateEmployeePickerEmptyCache}. */

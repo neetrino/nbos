@@ -139,7 +139,12 @@ export interface WorkSpace {
   createdAt: string;
   updatedAt: string;
   project?: { id: string; code: string; name: string } | null;
-  product?: { id: string; name: string; status: string } | null;
+  product?: {
+    id: string;
+    name: string;
+    status: string;
+    order?: { deal?: { id: string } | null } | null;
+  } | null;
   extension?: { id: string; name: string; status: string } | null;
   tasks?: Task[];
   _count?: { tasks: number };
@@ -262,6 +267,10 @@ export const tasksApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
   },
+  async reorder(taskIds: string[], scope: 'workspace' | 'my-plan'): Promise<{ success: true }> {
+    const resp = await api.patch<{ success: true }>('/api/tasks/reorder', { taskIds, scope });
+    return resp.data;
+  },
   async getStats(params?: { involvesEmployeeId?: string }): Promise<TaskStats> {
     const resp = await api.get<TaskStats>('/api/tasks/stats', { params });
     return resp.data;
@@ -274,6 +283,10 @@ export const tasksApi = {
   },
   async getWorkSpaceById(id: string): Promise<WorkSpace> {
     const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/${id}`);
+    return resp.data;
+  },
+  async getWorkSpaceByProductId(productId: string): Promise<WorkSpace> {
+    const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/by-product/${productId}`);
     return resp.data;
   },
   async createWorkSpace(data: {

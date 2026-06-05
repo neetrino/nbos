@@ -2,35 +2,31 @@
 
 import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
+import { Plus, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
 import {
   PageHero,
   IntegratedSearchFilters,
+  ViewModeSwitch,
   EmptyState,
   ErrorState,
   LoadingState,
-  StatusBadge,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
 } from '@/components/shared';
 import {
   PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
-  getPartnerLevel,
-  getPartnerDirection,
-  getPartnerStatus,
 } from '@/features/partners/constants/partners';
+import {
+  PARTNERS_DIRECTORY_VIEW_OPTIONS,
+  type PartnersDirectoryViewMode,
+} from '@/features/partners/constants/partners-directory-view-options';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
+import { PartnerCard } from '@/features/partners/components/PartnerCard';
 import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { PartnersPageSettingsSheet } from '@/features/partners/components/PartnersPageSettingsSheet';
+import { PartnersTable } from '@/features/partners/components/PartnersTable';
 import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
 import { usePartnersScopeStatsCsvExport } from '@/features/partners/components/use-partners-scope-stats-csv-export';
 import { buildPartnerListApiParams } from '@/features/partners/utils/build-partner-list-api-params';
@@ -41,16 +37,9 @@ import {
   type PartnerStats,
 } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
-
 import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
 
 const PARTNERS_LIST_PAGE_SIZE = 100;
-
-function formatPercent(value: string | number): string {
-  const n = typeof value === 'string' ? parseFloat(value) : value;
-  if (Number.isNaN(n)) return '—';
-  return `${Number.isInteger(n) ? n : n.toFixed(1)}%`;
-}
 
 function PartnersPageContent() {
   const router = useRouter();
@@ -58,11 +47,11 @@ function PartnersPageContent() {
   const openPartnerId = searchParams.get(PARTNER_OPEN_QUERY)?.trim() || null;
   const [partners, setPartners] = useState<Partner[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
-  const [listTotal, setListTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [view, setView] = useState<PartnersDirectoryViewMode>('grid');
   const [createOpen, setCreateOpen] = useState(false);
 
   const partnerListExportParams: Omit<PartnerListParams, 'page' | 'pageSize'> = useMemo(
@@ -71,7 +60,6 @@ function PartnersPageContent() {
   );
 
   const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
-
   const { handleExportScopeStatsCsv } = usePartnersScopeStatsCsvExport(stats);
 
   const closePartnerSheet = useCallback(() => {
@@ -82,9 +70,9 @@ function PartnersPageContent() {
   }, [router, searchParams]);
 
   const openPartnerSheet = useCallback(
-    (id: string) => {
+    (partner: Partner) => {
       const p = new URLSearchParams(searchParams.toString());
-      p.set(PARTNER_OPEN_QUERY, id);
+      p.set(PARTNER_OPEN_QUERY, partner.id);
       router.push(`/partners?${p.toString()}`);
     },
     [router, searchParams],
@@ -107,7 +95,6 @@ function PartnersPageContent() {
         partnersApi.getStats(),
       ]);
       setPartners(listRes.items);
-      setListTotal(listRes.meta.total);
       setStats(statsRes);
       setError(null);
     } catch (caught) {
@@ -168,6 +155,13 @@ function PartnersPageContent() {
             onClearAll={() => setFilters({})}
           />
         }
+        viewMode={
+          <ViewModeSwitch
+            value={view}
+            onChange={setView}
+            options={PARTNERS_DIRECTORY_VIEW_OPTIONS}
+          />
+        }
         trailing={
           <>
             <PartnersPageSettingsSheet
@@ -207,7 +201,10 @@ function PartnersPageContent() {
       </div>
 
       {loading ? (
-        <LoadingState count={4} />
+        <LoadingState
+          variant={view === 'grid' ? 'cards' : 'list'}
+          count={view === 'grid' ? 6 : 5}
+        />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchPartners} />
       ) : partners.length === 0 ? (
@@ -221,77 +218,19 @@ function PartnersPageContent() {
             </Button>
           }
         />
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Partner</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Direction</TableHead>
-                <TableHead>Default %</TableHead>
-                <TableHead>Orders</TableHead>
-                <TableHead>Subscriptions</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {partners.map((partner) => {
-                const tier = getPartnerLevel(partner.level);
-                const dir = getPartnerDirection(partner.direction);
-                const st = getPartnerStatus(partner.status);
-                const orders = partner._count?.orders ?? 0;
-                const subs = partner._count?.subscriptions ?? 0;
-                return (
-                  <TableRow
-                    key={partner.id}
-                    className="cursor-pointer"
-                    onClick={() => openPartnerSheet(partner.id)}
-                  >
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{partner.name}</p>
-                        {partner.contact ? (
-                          <p className="text-muted-foreground text-xs">
-                            {partner.contact.firstName} {partner.contact.lastName}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {tier && <StatusBadge label={tier.label} variant={tier.variant} />}
-                    </TableCell>
-                    <TableCell>
-                      {dir && (
-                        <div className="flex items-center gap-1">
-                          {partner.direction === 'INBOUND' ? (
-                            <ArrowDownLeft size={12} className="text-green-500" />
-                          ) : partner.direction === 'OUTBOUND' ? (
-                            <ArrowUpRight size={12} className="text-blue-500" />
-                          ) : (
-                            <ArrowLeftRight size={12} className="text-purple-500" />
-                          )}
-                          <StatusBadge label={dir.label} variant={dir.variant} />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm font-medium tabular-nums">
-                      {formatPercent(partner.defaultPercent)}
-                    </TableCell>
-                    <TableCell className="text-sm tabular-nums">{orders}</TableCell>
-                    <TableCell className="text-sm tabular-nums">{subs}</TableCell>
-                    <TableCell>
-                      {st && <StatusBadge label={st.label} variant={st.variant} />}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+      ) : view === 'grid' ? (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+          {partners.map((partner) => (
+            <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
+          ))}
         </div>
+      ) : (
+        <PartnersTable partners={partners} onOpen={openPartnerSheet} />
       )}
+
       <PartnerDetailSheet
         partnerId={openPartnerId}
+        initialPartner={partners.find((partner) => partner.id === openPartnerId) ?? null}
         open={Boolean(openPartnerId)}
         onOpenChange={(next) => {
           if (!next) closePartnerSheet();

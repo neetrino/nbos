@@ -7,8 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
 import {
-  readSalaryBoardViewMode,
-  writeSalaryBoardViewMode,
+  useSalaryBoardViewMode,
   type SalaryBoardViewMode,
 } from '@/features/finance/constants/salary-board-view';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -27,6 +26,10 @@ import {
   parsePayrollRunsListMonthParam,
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import {
+  buildSalaryLineMonthDetailFromBoardEntry,
+  findSalaryBoardEntryByLineId,
+} from '@/features/finance/utils/salary-line-month-detail-placeholder';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
@@ -83,7 +86,7 @@ export function SalaryBoardPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
-  const [view, setView] = useState<SalaryBoardViewMode>(() => readSalaryBoardViewMode());
+  const [view, handleViewChange] = useSalaryBoardViewMode();
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
@@ -135,12 +138,6 @@ export function SalaryBoardPageContent() {
       cancelled = true;
     };
   }, []);
-
-  const handleViewChange = useCallback((next: SalaryBoardViewMode) => {
-    setView(next);
-    writeSalaryBoardViewMode(next);
-  }, []);
-
   const employeeOptions = useMemo(() => {
     if (!data) return [];
     return data.rows.map((row) => ({
@@ -301,6 +298,12 @@ export function SalaryBoardPageContent() {
     [filteredEntries],
   );
 
+  const initialMonthDetail = useMemo(() => {
+    if (!openSalaryLineId) return null;
+    const entry = findSalaryBoardEntryByLineId(filteredEntries, openSalaryLineId);
+    return entry ? buildSalaryLineMonthDetailFromBoardEntry(entry) : null;
+  }, [filteredEntries, openSalaryLineId]);
+
   const { exportCsvSubmitting, handleExportCsv } = useSalaryBoardCsvExport(filteredEntries, {
     monthFrom,
     monthTo,
@@ -401,6 +404,7 @@ export function SalaryBoardPageContent() {
         salaryLineId={openSalaryLineId}
         open={monthSheetOpen}
         onOpenChange={handleMonthSheetOpenChange}
+        initialDetail={initialMonthDetail}
       />
     </div>
   );

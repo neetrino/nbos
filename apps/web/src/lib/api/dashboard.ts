@@ -1,6 +1,7 @@
 import { api } from '../api';
 
 export interface DashboardMetricProjection {
+  leads: number;
   dueTodayTasks: number;
   openTasks: number;
   openDeals: number;

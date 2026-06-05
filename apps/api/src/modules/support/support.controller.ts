@@ -84,7 +84,7 @@ export class SupportController {
     @Body()
     body: {
       title: string;
-      projectId: string;
+      projectId?: string;
       category?: string;
       description?: string;
       productId?: string;

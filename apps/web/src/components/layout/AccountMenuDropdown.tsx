@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { ChevronRight, LogOut, UserCircle2, Wallet } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import {
@@ -10,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
+import { useMyWalletSheet } from '@/features/account/components/my-wallet-sheet-provider';
 import type { MeResponse } from '@/lib/permissions/types';
 import {
   ACCOUNT_MENU_SIDE_OFFSET,
@@ -132,7 +133,8 @@ type AccountMenuDropdownProps = {
 };
 
 export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
-  const router = useRouter();
+  const { openMyAccountSheet } = useMyAccountSheet();
+  const { openMyWalletSheet } = useMyWalletSheet();
   const displayName = displayNameFromMe(me);
   const initials = initialsFromMe(me);
   const photo = me?.avatar?.trim();
@@ -155,8 +157,8 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         me={me}
         displayName={displayName}
         initials={initials}
-        onMyAccount={() => router.push('/my-account')}
-        onMyWallet={() => router.push('/my-account/wallet')}
+        onMyAccount={() => void openMyAccountSheet()}
+        onMyWallet={() => openMyWalletSheet()}
         onSignOut={() => signOut({ callbackUrl: '/sign-in' })}
       />
     </DropdownMenu>

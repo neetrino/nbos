@@ -1,19 +1,33 @@
 'use client';
 
-import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { ExternalLink, Eye, Link2, Trash2 } from 'lucide-react';
+import { ActionTileButton } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import {
+  DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS,
+  getPinnedActionTone,
+} from '../dashboard-pinned-action-tones';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
+import { cn } from '@/lib/utils';
 
-/** Flat tile shared by visible pinned, hidden pinned, and personal link cards. */
-export const PINNED_DASHBOARD_TILE_CLASS =
-  'rounded-md border border-border bg-card transition-colors hover:bg-muted/50';
+function DashboardPinnedTileShell({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn('flex w-full', DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS, className)}>
+      {children}
+    </div>
+  );
+}
 
 interface PinnedActionCardProps {
   action: PinnedAction;
-  /** `hidden` = same tile as visible, eye icon, no navigation (edit layout). */
   variant?: 'visible' | 'hidden';
-  /** Layout editor: no links — tile is dragged via the parent wrapper. */
   editMode: boolean;
 }
 
@@ -25,80 +39,55 @@ interface PersonalLinkCardProps {
 
 export function PinnedActionCard({ action, variant = 'visible', editMode }: PinnedActionCardProps) {
   const isHidden = variant === 'hidden';
-
-  const body = isHidden ? (
-    <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium">
-      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2" aria-hidden>
-        <Eye size={18} />
-      </span>
-      <span className="truncate">{action.label}</span>
-    </div>
-  ) : editMode ? (
-    <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium select-none">
-      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2">
-        <action.icon size={18} />
-      </span>
-      <span className="truncate">{action.label}</span>
-    </div>
-  ) : (
-    <Link
-      href={action.href}
-      className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium"
-    >
-      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2">
-        <action.icon size={18} />
-      </span>
-      <span className="truncate">{action.label}</span>
-    </Link>
-  );
+  const Icon = isHidden ? Eye : action.icon;
 
   return (
-    <div className={`${PINNED_DASHBOARD_TILE_CLASS} flex items-stretch gap-2 p-2.5`}>{body}</div>
+    <DashboardPinnedTileShell>
+      <ActionTileButton
+        label={action.label}
+        icon={<Icon aria-hidden />}
+        tone={isHidden ? 'muted' : getPinnedActionTone(action.key)}
+        size="lg"
+        fullWidth
+        className="h-full"
+        href={!editMode && !isHidden ? action.href : undefined}
+        displayOnly={editMode || isHidden}
+      />
+    </DashboardPinnedTileShell>
   );
 }
 
 export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardProps) {
-  const labelRow = (
-    <span className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium">
-      <span className="bg-secondary text-secondary-foreground flex shrink-0 rounded-md p-2">
-        <Link2 size={18} />
-      </span>
-      <span className="truncate">{link.label}</span>
-      {link.isExternal ? (
-        <ExternalLink className="text-muted-foreground h-3.5 w-3.5 shrink-0" aria-hidden />
-      ) : null}
-    </span>
-  );
-
-  const inner = link.isExternal ? (
-    <a
-      href={link.url}
-      target={link.openInNewTab ? '_blank' : undefined}
-      rel={link.openInNewTab ? 'noreferrer' : undefined}
-      className="flex min-w-0 flex-1 items-center"
-    >
-      {labelRow}
-    </a>
-  ) : (
-    <Link href={link.url} className="flex min-w-0 flex-1 items-center">
-      {labelRow}
-    </Link>
-  );
-
   return (
-    <div className={`${PINNED_DASHBOARD_TILE_CLASS} flex items-stretch gap-2 p-2.5`}>
-      {inner}
+    <DashboardPinnedTileShell className="items-stretch gap-2">
+      <ActionTileButton
+        label={link.label}
+        icon={<Link2 aria-hidden />}
+        trailing={
+          link.isExternal ? (
+            <ExternalLink className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
+          ) : null
+        }
+        tone="secondary"
+        size="lg"
+        fullWidth
+        className="h-full min-w-0 flex-1"
+        href={link.url}
+        external={link.isExternal}
+        openInNewTab={link.openInNewTab}
+        title={link.isExternal ? link.url : undefined}
+      />
       {editMode ? (
         <Button
           aria-label={`Delete ${link.label}`}
           variant="ghost"
           size="icon-xs"
-          className="shrink-0"
+          className="shrink-0 self-center"
           onClick={() => void onDelete()}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       ) : null}
-    </div>
+    </DashboardPinnedTileShell>
   );
 }

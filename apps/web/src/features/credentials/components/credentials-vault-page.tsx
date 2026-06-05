@@ -8,13 +8,13 @@ import {
   PageHeroTabs,
   IntegratedSearchFilters,
   ViewModeSwitch,
+  ListPagination,
 } from '@/components/shared';
 import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
-import { CredentialVaultPaginationFooter } from '@/features/credentials/components/credential-vault-pagination-footer';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
@@ -190,13 +190,14 @@ function CredentialsVaultPageContent() {
       </div>
 
       {vault.showPagedFooter ? (
-        <CredentialVaultPaginationFooter
-          page={vault.page}
-          pageSize={vault.pageSize}
-          total={vault.total}
-          totalPages={vault.totalPages}
+        <ListPagination
+          meta={{
+            total: vault.total,
+            page: vault.page,
+            pageSize: vault.pageSize,
+            totalPages: vault.totalPages,
+          }}
           onPageChange={vault.setPage}
-          onPageSizeChange={vault.setPageSize}
         />
       ) : null}
 

@@ -15,6 +15,20 @@ function normalizeRbacDriveScope(scope: string | undefined): RbacDriveScope {
   return 'OWN';
 }
 
+const GLOBAL_DRIVE_OWNER_ROLE_SLUGS = ['owner', 'ceo'] as const;
+
+/** Owner / CEO seats: RBAC `DRIVE_VIEW:ALL` is not narrowed by default ASSIGNED policy. */
+export function isGlobalDriveOwnerRole(roleSlug: string | undefined): boolean {
+  const key = roleSlug?.trim().toLowerCase();
+  if (!key) return false;
+  return (GLOBAL_DRIVE_OWNER_ROLE_SLUGS as readonly string[]).includes(key);
+}
+
+export type MergeDriveEffectiveScopeOptions = {
+  /** When true and RBAC ceiling is ALL, keep ALL even if platform policy is ASSIGNED. */
+  globalOwnerRole?: boolean;
+};
+
 /**
  * Merges RBAC `DRIVE_VIEW` ceiling with Settings role/personal policy for family `DRIVE`.
  * Policy `ASSIGNED` / `NONE` narrow company-wide RBAC to participation + own + grants path (`OWN`).
@@ -22,8 +36,13 @@ function normalizeRbacDriveScope(scope: string | undefined): RbacDriveScope {
 export function mergeDriveEffectiveScope(
   rbacScope: string | undefined,
   policyMode: AccessScopeMode,
+  options?: MergeDriveEffectiveScopeOptions,
 ): RbacDriveScope {
   const rbac = normalizeRbacDriveScope(rbacScope);
+
+  if (options?.globalOwnerRole && rbac === 'ALL') {
+    return 'ALL';
+  }
 
   if (policyMode === 'NONE' || policyMode === 'ASSIGNED') {
     return 'OWN';

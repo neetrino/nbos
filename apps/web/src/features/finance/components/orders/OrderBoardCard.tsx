@@ -3,7 +3,7 @@
 import type { KeyboardEvent } from 'react';
 import { AlertTriangle, Building2, FolderKanban, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
@@ -28,7 +28,14 @@ export function OrderBoardCard({ order, onOrderClick, onCreateInvoice }: OrderBo
   const typeLabel = order.type.replace(/_/g, ' ');
 
   return (
-    <article className="border-border bg-card group relative rounded-lg border shadow-sm transition-shadow hover:shadow-md">
+    <KanbanCardShell
+      as="article"
+      radius="lg"
+      padding="none"
+      baseShadow="sm"
+      hoverShadow="md"
+      className="group relative"
+    >
       <div
         role="button"
         tabIndex={0}
@@ -91,7 +98,7 @@ export function OrderBoardCard({ order, onOrderClick, onCreateInvoice }: OrderBo
       >
         <Plus size={14} aria-hidden />
       </Button>
-    </article>
+    </KanbanCardShell>
   );
 }
 

@@ -12,10 +12,6 @@ import {
   normalizeCredentialVaultSortFilter,
   resolveCredentialVaultListSort,
 } from '@/features/credentials/constants/credential-vault-list-sort';
-import {
-  isCredentialVaultPageSizeOption,
-  type CredentialVaultPageSizeOption,
-} from '@/features/credentials/constants/credential-vault-pagination';
 import { useCredentialVaultPagePreferences } from '@/features/credentials/constants/credential-vault-page-state-storage';
 import { quickCategoryChipsForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
@@ -204,14 +200,6 @@ export function useCredentialsVaultPage() {
     [stripOpenCredentialFromUrl],
   );
 
-  const setPageSize = useCallback(
-    (size: CredentialVaultPageSizeOption) => {
-      if (!isCredentialVaultPageSizeOption(size)) return;
-      setPreferences({ pageSize: size });
-    },
-    [setPreferences],
-  );
-
   const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
   const filterConfigs = useMemo(
     () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope),
@@ -247,7 +235,6 @@ export function useCredentialsVaultPage() {
     page,
     setPage,
     pageSize,
-    setPageSize,
     totalPages,
     total,
     showPagedFooter,

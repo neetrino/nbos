@@ -1,35 +1,34 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useCallback } from 'react';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
-export function useExpenseDetail(expenseId: string) {
-  const [expense, setExpense] = useState<Expense | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface UseExpenseDetailOptions {
+  open: boolean;
+  initialExpense?: Expense | null;
+  isDirty?: () => boolean;
+}
+
+export function useExpenseDetail(expenseId: string, options?: UseExpenseDetailOptions) {
+  const open = options?.open ?? Boolean(expenseId);
+  const { entity, setEntity, loading, hydrating, error, refresh } = useEntityDetailHydration({
+    entityId: expenseId,
+    open: open && Boolean(expenseId),
+    initialEntity: options?.initialExpense,
+    fetchById: expensesApi.getById,
+    isDirty: options?.isDirty,
+    loadErrorMessage: 'Expense could not be loaded.',
+  });
 
   const fetchExpense = useCallback(async () => {
-    if (!expenseId) {
-      setExpense(null);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await expensesApi.getById(expenseId);
-      setExpense(data);
-    } catch (caught) {
-      setExpense(null);
-      setError(getApiErrorMessage(caught, 'Expense could not be loaded.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [expenseId]);
+    await refresh();
+  }, [refresh]);
 
-  useEffect(() => {
-    void fetchExpense();
-  }, [fetchExpense]);
-
-  return { expense, setExpense, loading, error, fetchExpense };
+  return {
+    expense: entity,
+    setExpense: setEntity,
+    loading,
+    hydrating,
+    error,
+    fetchExpense,
+  };
 }

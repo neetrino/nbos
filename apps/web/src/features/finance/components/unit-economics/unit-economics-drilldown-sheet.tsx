@@ -16,13 +16,19 @@ import {
 import { buildUnitEconomicsDrilldownTabs } from '@/features/finance/components/unit-economics/unit-economics-drilldown-sheet-tabs';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { unitEconomicsDrilldownHref } from '@/features/finance/constants/unit-economics-drilldown-url';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import {
   unitEconomicsApi,
   type UnitEconomicsDrilldownFocus,
   type UnitEconomicsOrderDetail,
 } from '@/lib/api/unit-economics';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
+
+type HydratedUnitEconomicsDetail = UnitEconomicsOrderDetail & { id: string };
+
+function withDetailId(detail: UnitEconomicsOrderDetail): HydratedUnitEconomicsDetail {
+  return { ...detail, id: detail.orderId };
+}
 
 function DrilldownTabPanel({
   tab,
@@ -44,6 +50,7 @@ export function UnitEconomicsDrilldownSheet({
   onOpenChange,
   onFocusChange,
   onOpenPoolDetail,
+  initialOrderDetail = null,
 }: {
   orderId: string | null;
   focus: UnitEconomicsDrilldownFocus;
@@ -51,42 +58,37 @@ export function UnitEconomicsDrilldownSheet({
   onOpenChange: (next: boolean) => void;
   onFocusChange?: (focus: UnitEconomicsDrilldownFocus) => void;
   onOpenPoolDetail?: (orderId: string) => void;
+  /** Table-row seed for instant header/summary while order detail hydrates. */
+  initialOrderDetail?: UnitEconomicsOrderDetail | null;
 }) {
   const [tab, setTab] = useState<UnitEconomicsDrilldownFocus>(focus);
-  const [detail, setDetail] = useState<UnitEconomicsOrderDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const activeTab = open ? focus : tab;
-  const loadOrderId = open && orderId ? orderId : null;
+  const loadOrderId = open && orderId ? orderId : '';
 
-  useEffect(() => {
-    if (!loadOrderId) return;
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) {
-        setLoading(true);
-        setError(null);
-      }
-    });
-    void unitEconomicsApi
-      .orderDetail(loadOrderId)
-      .then((next) => {
-        if (!cancelled) setDetail(next);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) setError(getApiErrorMessage(err, 'Could not load unit detail.'));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [loadOrderId]);
+  const initialEntity = useMemo(() => {
+    if (!initialOrderDetail || initialOrderDetail.orderId !== loadOrderId) return null;
+    return withDetailId(initialOrderDetail);
+  }, [initialOrderDetail, loadOrderId]);
 
-  const displayedDetail = loadOrderId ? detail : null;
+  const { entity, loading, hydrating, error } = useEntityDetailHydration({
+    entityId: loadOrderId,
+    open: Boolean(loadOrderId),
+    initialEntity,
+    fetchById: async (id) => withDetailId(await unitEconomicsApi.orderDetail(id)),
+    loadErrorMessage: 'Could not load unit detail.',
+  });
+
+  const displayedDetail = entity;
   const displayedError = loadOrderId ? error : null;
   const displayedLoading = Boolean(loadOrderId) && loading;
+  const detailHasLineItems = Boolean(
+    displayedDetail &&
+    (displayedDetail.invoices.length > 0 ||
+      displayedDetail.payments.length > 0 ||
+      displayedDetail.expenses.length > 0 ||
+      displayedDetail.bonuses.length > 0),
+  );
+  const showLineItemsSkeleton = Boolean(displayedDetail && !detailHasLineItems && hydrating);
 
   const tabs = useMemo(
     () => (displayedDetail ? buildUnitEconomicsDrilldownTabs(displayedDetail) : []),
@@ -106,6 +108,10 @@ export function UnitEconomicsDrilldownSheet({
 
   const sourcePageHref =
     orderId != null ? unitEconomicsDrilldownHref(orderId, activeTab) : '/finance/unit-economics';
+
+  useEffect(() => {
+    if (!open) setTab(focus);
+  }, [focus, open]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -139,7 +145,7 @@ export function UnitEconomicsDrilldownSheet({
         ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
-          {displayedLoading ? (
+          {displayedLoading && !displayedDetail ? (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
               Loading…
@@ -152,7 +158,14 @@ export function UnitEconomicsDrilldownSheet({
                 detail={displayedDetail}
                 onFocusChange={handleSummaryFocus}
               />
-              <DrilldownTabPanel tab={activeTab} detail={displayedDetail} />
+              {detailHasLineItems ? (
+                <DrilldownTabPanel tab={activeTab} detail={displayedDetail} />
+              ) : showLineItemsSkeleton ? (
+                <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  Loading line items…
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-2 border-t border-stone-100 pt-4 dark:border-stone-800">
                 {onOpenPoolDetail ? (
                   <Button

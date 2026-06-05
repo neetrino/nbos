@@ -1,24 +1,40 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+import { prefetchProjectTeam } from '@/features/platform-access/project-team-request';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
-import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
-import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
-import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
+import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
+import { ProjectInfoPanel } from '@/features/projects/components/ProjectInfoPanel';
+import { useProjectDetailHeader } from '@/features/projects/hooks/use-project-detail-header';
+import {
+  PROJECT_DETAIL_MAIN_COLUMN_CLASS,
+  PROJECT_DETAIL_PAGE_ROW_CLASS,
+  PROJECT_DETAIL_SIDEBAR_CLASS,
+  PROJECT_DETAIL_SIDEBAR_EDGE_CLASS,
+} from '@/features/projects/components/project-detail-layout.constants';
+import {
+  projectDetailProductStatusFilterToTab,
+  projectDetailProductStatusTabToFilter,
+  useProjectDetailPagePreferences,
+} from '@/features/projects/constants/projects-page-preferences-storage';
+import { cn } from '@/lib/utils';
+import { ProjectExtensionsSection } from '@/features/projects/components/ProjectExtensionsSection';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
-import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
 
-export default function ProjectDetailPage() {
+function ProjectDetailPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<FullProject | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [detailPrefs, setDetailPrefs] = useProjectDetailPagePreferences();
+  const statusFilter = projectDetailProductStatusTabToFilter(detailPrefs.productStatusTab);
+  const detailViewMode = detailPrefs.viewMode;
+  const setDetailViewMode = (viewMode: typeof detailViewMode) => setDetailPrefs({ viewMode });
+  const [teamRefreshKey, setTeamRefreshKey] = useState(0);
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -34,8 +50,12 @@ export default function ProjectDetailPage() {
   }, [params.id, router]);
 
   useEffect(() => {
+    if (!params.id) return;
+    prefetchProjectTeam(params.id);
     fetchProject();
-  }, [fetchProject]);
+  }, [fetchProject, params.id]);
+
+  useProjectDetailHeader(project);
 
   if (loading) {
     return <ProjectDetailLoading />;
@@ -48,24 +68,45 @@ export default function ProjectDetailPage() {
     : project.products;
 
   return (
-    <div className="flex h-full flex-col gap-6">
-      <ProjectHeader project={project} onBack={() => router.push('/projects')} />
+    <div className="flex h-full min-h-0 flex-col">
+      <div className={PROJECT_DETAIL_PAGE_ROW_CLASS}>
+        <div className={PROJECT_DETAIL_MAIN_COLUMN_CLASS}>
+          <ProjectProductsSection
+            project={project}
+            products={products}
+            statusFilter={statusFilter}
+            setStatusFilter={(status) =>
+              setDetailPrefs({
+                productStatusTab: projectDetailProductStatusFilterToTab(status),
+              })
+            }
+            viewMode={detailViewMode}
+            onViewModeChange={setDetailViewMode}
+            onCreateProduct={() => setShowCreateProduct(true)}
+          />
+          <ProjectExtensionsSection
+            extensions={project.extensions}
+            viewMode={detailViewMode}
+            onOpenProduct={(productId) =>
+              router.push(`/projects/${params.id}/products/${productId}`)
+            }
+          />
+        </div>
 
-      <ProjectContactsSection project={project} onProjectUpdated={setProject} />
+        <ProjectInfoPanel
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_EDGE_CLASS)}
+          project={project}
+          teamRefreshKey={teamRefreshKey}
+          onProjectUpdated={setProject}
+        />
+      </div>
 
-      <ProjectInfoCard project={project} />
-
-      <ProjectParticipantsSection projectId={project.id} />
-
-      <ProjectExtensionsSnapshot project={project} />
-
-      <ProjectProductsSection
+      <EntityDetailSheetsHost
         project={project}
-        products={products}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        onCreateProduct={() => setShowCreateProduct(true)}
-        onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
+        onEntityUpdated={() => {
+          setTeamRefreshKey((key) => key + 1);
+          void fetchProject();
+        }}
       />
 
       <CreateProductDialog
@@ -78,15 +119,24 @@ export default function ProjectDetailPage() {
   );
 }
 
+export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={<ProjectDetailLoading />}>
+      <ProjectDetailPageContent />
+    </Suspense>
+  );
+}
+
 function ProjectDetailLoading() {
   return (
-    <div className="flex h-full flex-col gap-5">
-      <Skeleton className="h-12 w-72" />
-      <Skeleton className="h-40 w-full" />
-      <div className="grid grid-cols-3 gap-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-32" />
-        ))}
+    <div className="flex h-full flex-col">
+      <div className={PROJECT_DETAIL_PAGE_ROW_CLASS}>
+        <div className={PROJECT_DETAIL_MAIN_COLUMN_CLASS}>
+          <Skeleton className="h-48 w-full" />
+        </div>
+        <Skeleton
+          className={cn(PROJECT_DETAIL_SIDEBAR_CLASS, PROJECT_DETAIL_SIDEBAR_EDGE_CLASS, 'h-96')}
+        />
       </div>
     </div>
   );

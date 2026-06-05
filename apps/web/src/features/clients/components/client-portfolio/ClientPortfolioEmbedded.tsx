@@ -5,14 +5,7 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DetailSheetSection } from '@/components/shared';
-import {
-  DETAIL_SHEET_TAB_ACTIVE_CLASS,
-  DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
-  DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-  DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  DETAIL_SHEET_TAB_INDICATOR_CLASS,
-} from '@/components/shared/detail-sheet-classes';
-import { cn } from '@/lib/utils';
+import { DetailSheetTabBar } from '@/components/shared/DetailSheetTabBar';
 import {
   portfolioApi,
   type CompanyPortfolioResponse,
@@ -91,29 +84,11 @@ interface ClientDetailTabBarProps {
 
 export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTabBarProps) {
   return (
-    <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-      <div className={DETAIL_SHEET_TAB_BAR_SCROLL_CLASS}>
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onSelect(tab.id)}
-              className={cn(
-                DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-                active ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
-              )}
-            >
-              <Icon size={16} aria-hidden />
-              {tab.label}
-              {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <DetailSheetTabBar
+      tabs={tabs.map((tab) => ({ value: tab.id, label: tab.label, icon: tab.icon }))}
+      activeTab={activeTab}
+      onTabChange={(value) => onSelect(value as ClientDetailTabId)}
+    />
   );
 }
 

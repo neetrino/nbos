@@ -12,7 +12,8 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Check, SlidersHorizontal } from 'lucide-react';
+import { Check, Save, SlidersHorizontal } from 'lucide-react';
+import { ActionTileButton } from '@/components/shared';
 import { type FormEvent, useState } from 'react';
 import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
 import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
@@ -22,12 +23,13 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { resolveTwoColumnSortMove } from '../dashboard-two-column-dnd';
 import { PersonalLinkCard, PinnedActionCard } from './DashboardActionCards';
+import { DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS } from '../dashboard-pinned-action-tones';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
 
 const PINNED_DROP_VISIBLE = 'pinned-drop-visible';
 const PINNED_DROP_HIDDEN = 'pinned-drop-hidden';
 
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-4';
+const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0';
 
 interface PinnedActionsProps {
   actions: PinnedAction[];
@@ -226,8 +228,10 @@ function SortablePinnedTile({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'focus-visible:ring-ring touch-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+        'focus-visible:ring-ring touch-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         'cursor-grab active:cursor-grabbing',
+        DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS,
+        'w-full',
         isDragging && 'opacity-55',
       )}
       {...attributes}
@@ -275,9 +279,15 @@ function CreateLinkInline({
             placeholder="/path or example.com (https added)"
           />
         </div>
-        <Button type="submit" disabled={!canSubmit || saving}>
-          Save
-        </Button>
+        <ActionTileButton
+          label={saving ? 'Saving…' : 'Save'}
+          icon={<Save aria-hidden />}
+          tone="emerald"
+          size="sm"
+          buttonType="submit"
+          disabled={!canSubmit || saving}
+          className="shrink-0"
+        />
       </form>
     </div>
   );

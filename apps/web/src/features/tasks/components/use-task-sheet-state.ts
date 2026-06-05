@@ -29,6 +29,7 @@ import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
 interface UseTaskSheetStateParams {
   taskId: string | null;
   open: boolean;
+  initialTask?: Task | null;
   onUpdate?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
 }
@@ -37,7 +38,13 @@ function taskGeneralSaveErrorMessage(err: unknown): string {
   return getApiErrorMessage(err, 'Could not save changes.');
 }
 
-export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskSheetStateParams) {
+export function useTaskSheetState({
+  taskId,
+  open,
+  initialTask = null,
+  onUpdate,
+  onDelete,
+}: UseTaskSheetStateParams) {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
   const [workflowSaving, setWorkflowSaving] = useState(false);
@@ -81,23 +88,44 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   useEffect(() => {
     if (!taskId || !open) return;
     let cancelled = false;
+    const seed = initialTask?.id === taskId ? initialTask : null;
 
     async function loadTask() {
-      setLoading(true);
+      if (seed && !cancelled) {
+        workflowQueueRef.current = [];
+        setTask(seed);
+        workflowTaskIdRef.current = seed.id;
+        setWorkflowFooterStatus(null);
+        setGeneralError(null);
+        setCompletionBlockers([]);
+        setNewChecklistTitle('');
+        setNewItemTexts({});
+        const quickDraft = createTaskGeneralDraft(seed);
+        setGeneralDraft(quickDraft);
+        setGeneralSnap(quickDraft);
+        setLoading(false);
+      } else if (!cancelled) {
+        setLoading(true);
+      }
+
       try {
         const nextTask = await tasksApi.getById(taskId!);
         if (!cancelled) {
-          workflowQueueRef.current = [];
-          await applyTaskFromServer(nextTask, { forceDraftReset: true });
-          workflowTaskIdRef.current = nextTask.id;
-          setWorkflowFooterStatus(null);
-          setGeneralError(null);
-          setCompletionBlockers([]);
-          setNewChecklistTitle('');
-          setNewItemTexts({});
+          if (!generalDirtyRef.current) {
+            workflowQueueRef.current = [];
+            await applyTaskFromServer(nextTask, { forceDraftReset: true });
+            workflowTaskIdRef.current = nextTask.id;
+            setWorkflowFooterStatus(null);
+            setGeneralError(null);
+            setCompletionBlockers([]);
+            setNewChecklistTitle('');
+            setNewItemTexts({});
+          } else {
+            setTask(nextTask);
+          }
         }
       } catch (caught) {
-        if (!cancelled) {
+        if (!cancelled && !seed) {
           setGeneralError(getApiErrorMessage(caught, 'Task could not be loaded.'));
         }
       } finally {
@@ -109,7 +137,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     return () => {
       cancelled = true;
     };
-  }, [applyTaskFromServer, open, taskId]);
+  }, [applyTaskFromServer, initialTask, open, taskId]);
 
   useEffect(() => {
     if (open && taskId) return;

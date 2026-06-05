@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { parseMoneyAmount } from '@/lib/format/money';
@@ -30,7 +30,7 @@ export function ExpenseKanbanCard({ expense, onOpen, onRequestDelete }: ExpenseK
   const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
 
   return (
-    <div className="border-border bg-card relative rounded-xl border">
+    <KanbanCardShell padding="none" className="relative">
       <div
         role="button"
         tabIndex={0}
@@ -107,6 +107,6 @@ export function ExpenseKanbanCard({ expense, onOpen, onRequestDelete }: ExpenseK
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

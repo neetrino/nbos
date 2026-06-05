@@ -13,6 +13,12 @@ describe('ClientServicesService', () => {
     service = new ClientServicesService(prisma as never);
   });
 
+  it('getBoard rejects invalid view', async () => {
+    await expect(service.getBoard({ view: 'invalid' as 'status' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
   it('findAll returns paginated client service records', async () => {
     prisma.clientServiceRecord.findMany.mockResolvedValue([
       {

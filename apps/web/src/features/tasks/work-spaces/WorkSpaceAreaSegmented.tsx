@@ -4,8 +4,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { WorkspaceArea } from './workspace-area';
 
 const AREA_SEGMENTS: Array<{ value: WorkspaceArea; label: string }> = [
-  { value: 'planning', label: 'Planning' },
   { value: 'active', label: 'Active' },
+  { value: 'planning', label: 'Planning' },
 ];
 
 export function WorkSpaceAreaSegmented({

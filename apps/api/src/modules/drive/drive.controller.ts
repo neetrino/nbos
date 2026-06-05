@@ -24,6 +24,7 @@ import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
 import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
 import { DriveAccessContextService } from './drive-access-context.service';
+import { DriveLibraryEntitiesService } from './drive-library-entities.service';
 import { ApplyDriveCleanupDto } from './apply-drive-cleanup.dto';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
@@ -55,7 +56,30 @@ export class DriveController {
     private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
     private readonly driveCleanupApply: DriveCleanupApplyService,
     private readonly driveAccessContext: DriveAccessContextService,
+    private readonly driveLibraryEntities: DriveLibraryEntitiesService,
   ) {}
+
+  /** System Library entity grid (participation-filtered). */
+  @Get('library-entities')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'List business records visible in a System Library grid for the current Drive scope',
+  })
+  @ApiQuery({
+    name: 'library',
+    required: true,
+    description: 'deals | projects | products | clients | finance | partners | tasks | support',
+  })
+  async listLibraryEntities(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('library') library?: string,
+  ) {
+    return this.driveLibraryEntities.listForLibrary(
+      library ?? '',
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
+  }
 
   @Get('folders')
   @RequirePermission('DRIVE', 'VIEW')
