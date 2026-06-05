@@ -256,29 +256,11 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 /** Use on Save / Cancel in detail sheets and sticky form footers. */
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
-/** Tab strip wrapper (entity detail sheets — matches My Account tab bar). */
+/** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
 export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 
-/** Shared tab button — pairs with active/inactive classes below. */
-export const DETAIL_SHEET_TAB_BUTTON_BASE_CLASS =
-  'flex shrink-0 items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors';
-
-/** Active tab — solid primary block (My Account style). */
-export const DETAIL_SHEET_TAB_ACTIVE_CLASS = 'bg-primary text-primary-foreground';
-
-export const DETAIL_SHEET_TAB_INACTIVE_CLASS =
-  'text-muted-foreground hover:bg-secondary hover:text-foreground';
-
-/** Full-width page tab bar (My Account — no horizontal sheet padding). */
+/** Full-width page tab bar (no horizontal sheet padding). */
 export const PAGE_TAB_BAR_WRAPPER_CLASS =
   'border-border flex shrink-0 items-center gap-1 border-b pb-0';
-
-/** Compose tab trigger classes for buttons and links outside {@link DetailSheetTabBar}. */
-export function detailSheetTabButtonClass(isActive: boolean): string {
-  return cn(
-    DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-    isActive ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  );
-}

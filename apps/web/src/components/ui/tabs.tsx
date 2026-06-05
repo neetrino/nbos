@@ -6,8 +6,17 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-/** `pill` — top-rounded tab strip (default); `segmented` — compact bordered segmented control. */
+/**
+ * Radix tabs for **pages** (`pill`) and **compact filters** (`segmented`).
+ *
+ * Entity detail sheets must use {@link DetailSheetTabBar} from `@/components/shared` —
+ * not `Tabs`, or every sheet tab inherits page/filter defaults by mistake.
+ */
 type TabsListVariant = 'pill' | 'segmented';
+
+const PILL_TAB_SHAPE_CLASS = 'gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors';
+const PILL_TAB_INACTIVE_CLASS = 'text-muted-foreground hover:bg-secondary hover:text-foreground';
+const PILL_TAB_ACTIVE_CLASS = 'bg-primary text-primary-foreground shadow-none';
 
 const TabsListVariantContext = React.createContext<TabsListVariant>('pill');
 
@@ -53,7 +62,11 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       listVariant: {
-        pill: 'gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none',
+        pill: cn(
+          PILL_TAB_SHAPE_CLASS,
+          PILL_TAB_INACTIVE_CLASS,
+          'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none',
+        ),
         segmented:
           'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
       },
@@ -63,6 +76,15 @@ const tabsTriggerVariants = cva(
     },
   },
 );
+
+/** Pill tab button class for plain `<button>` strips (e.g. {@link DetailSheetTabBar}). */
+export function pillTabButtonClass(isActive: boolean): string {
+  return cn(
+    'inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70',
+    PILL_TAB_SHAPE_CLASS,
+    isActive ? PILL_TAB_ACTIVE_CLASS : PILL_TAB_INACTIVE_CLASS,
+  );
+}
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,

@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import { DetailSheetTabBar, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import {
   getTicketCategory,
   getTicketCoverage,
@@ -70,6 +69,12 @@ export function SupportTicketDetailSheet({
   const [taskDescription, setTaskDescription] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [taskBusy, setTaskBusy] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'activity'>('general');
+
+  const supportTicketTabs = [
+    { value: 'general', label: 'General' },
+    { value: 'activity', label: 'Activity' },
+  ] as const;
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return;
@@ -101,6 +106,7 @@ export function SupportTicketDetailSheet({
 
   useEffect(() => {
     if (!open || !ticketId) return;
+    setActiveTab('general');
     void loadTicket();
   }, [open, ticketId, refreshKey, loadTicket]);
 
@@ -229,22 +235,18 @@ export function SupportTicketDetailSheet({
             {error ? <p className="text-destructive shrink-0 px-6 py-2 text-sm">{error}</p> : null}
 
             {ticket && draft ? (
-              <Tabs
-                defaultValue="general"
-                className="flex min-h-0 flex-1 flex-col"
-                onValueChange={(v) => {
-                  if (v === 'activity') void loadAudit();
-                }}
-              >
-                <TabsList className="mx-6 mt-3 shrink-0 self-start">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="activity">Activity</TabsTrigger>
-                </TabsList>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <DetailSheetTabBar
+                  tabs={supportTicketTabs}
+                  activeTab={activeTab}
+                  onTabChange={(value) => {
+                    const next = value as 'general' | 'activity';
+                    setActiveTab(next);
+                    if (next === 'activity') void loadAudit();
+                  }}
+                />
 
-                <TabsContent
-                  value="general"
-                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-                >
+                {activeTab === 'general' ? (
                   <SupportTicketDetailGeneralTab
                     ticket={ticket}
                     draft={draft}
@@ -266,17 +268,14 @@ export function SupportTicketDetailSheet({
                     onRequestEscalate={onRequestEscalate}
                     onRequestTechnical={onRequestTechnical}
                   />
-                </TabsContent>
+                ) : null}
 
-                <TabsContent
-                  value="activity"
-                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-                >
+                {activeTab === 'activity' ? (
                   <ScrollArea className="min-h-0 flex-1">
                     <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
                   </ScrollArea>
-                </TabsContent>
-              </Tabs>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </EntityDetailSheetContent>

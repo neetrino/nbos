@@ -1,10 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 import { Banknote, Loader2, Wallet } from 'lucide-react';
-import { DetailSheetSection, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import {
+  DetailSheetSection,
+  DetailSheetTabBar,
+  EntityDetailSheetContent,
+  StatusBadge,
+} from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -215,6 +220,24 @@ export function EmployeeMonthCompensationSheet({
     : 'Select a month cell on the salary board.';
 
   const showKpiTab = detail?.hasKpiPolicy === true;
+  const [activeTab, setActiveTab] = useState('general');
+
+  const compensationTabs = useMemo(() => {
+    const tabs = [
+      { value: 'general', label: 'General' },
+      { value: 'bonuses', label: 'Bonuses' },
+    ];
+    if (showKpiTab) tabs.push({ value: 'kpi', label: 'KPI' });
+    return tabs;
+  }, [showKpiTab]);
+
+  useEffect(() => {
+    if (!open) setActiveTab('general');
+  }, [open]);
+
+  useEffect(() => {
+    if (!showKpiTab && activeTab === 'kpi') setActiveTab('general');
+  }, [activeTab, showKpiTab]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -240,42 +263,46 @@ export function EmployeeMonthCompensationSheet({
           {!loading && !loadError && detail ? (
             <>
               {readOnly ? <WalletMonthSheetHints detail={detail} /> : null}
-              <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
-                <TabsList className="w-auto shrink-0">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="bonuses">Bonuses</TabsTrigger>
-                  {showKpiTab ? <TabsTrigger value="kpi">KPI</TabsTrigger> : null}
-                </TabsList>
-                <TabsContent value="general" className="min-h-0 flex-1 overflow-y-auto">
-                  <div className="flex flex-col gap-4 pt-2">
-                    <SummaryGrid detail={detail} readOnly={readOnly} />
-                    <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
-                    <DetailSheetSection
-                      title={readOnly ? 'Payments' : 'Pay Now / payments'}
-                      icon={<Banknote className="size-4" aria-hidden />}
-                    >
-                      <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
-                    </DetailSheetSection>
+              <div className="flex min-h-0 flex-1 flex-col">
+                <DetailSheetTabBar
+                  tabs={compensationTabs}
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                />
+                {activeTab === 'general' ? (
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    <div className="flex flex-col gap-4 pt-2">
+                      <SummaryGrid detail={detail} readOnly={readOnly} />
+                      <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
+                      <DetailSheetSection
+                        title={readOnly ? 'Payments' : 'Pay Now / payments'}
+                        icon={<Banknote className="size-4" aria-hidden />}
+                      >
+                        <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
+                      </DetailSheetSection>
+                    </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="bonuses" className="min-h-0 flex-1 overflow-y-auto">
-                  <div className="pt-2">
-                    <DetailSheetSection
-                      title="Bonus breakdown"
-                      icon={<Banknote className="size-4" aria-hidden />}
-                    >
-                      <SalaryMonthBonusBreakdown detail={detail} />
-                    </DetailSheetSection>
+                ) : null}
+                {activeTab === 'bonuses' ? (
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    <div className="pt-2">
+                      <DetailSheetSection
+                        title="Bonus breakdown"
+                        icon={<Banknote className="size-4" aria-hidden />}
+                      >
+                        <SalaryMonthBonusBreakdown detail={detail} />
+                      </DetailSheetSection>
+                    </div>
                   </div>
-                </TabsContent>
-                {showKpiTab ? (
-                  <TabsContent value="kpi" className="min-h-0 flex-1 overflow-y-auto">
+                ) : null}
+                {activeTab === 'kpi' && showKpiTab ? (
+                  <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="pt-2">
                       <EmployeeMonthCompensationKpiSection detail={detail} />
                     </div>
-                  </TabsContent>
+                  </div>
                 ) : null}
-              </Tabs>
+              </div>
             </>
           ) : null}
         </div>
