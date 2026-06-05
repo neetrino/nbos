@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,15 +9,13 @@ import {
   DeleteConfirmDialog,
   IntegratedSearchFilters,
   LoadingState,
+  SEARCH_DEBOUNCE_MS,
   ViewModeSwitch,
+  useDebouncedValue,
   useDeleteConfirm,
   useModuleHeroSlots,
 } from '@/components/shared';
-import {
-  readClientServicesViewMode,
-  writeClientServicesViewMode,
-  type ClientServicesViewMode,
-} from '@/features/finance/constants/client-services-view';
+import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
 import { CLIENT_SERVICES_VIEW_OPTIONS } from './client-services-view-options';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
@@ -36,8 +34,8 @@ import { ClientServiceStatusBoardView } from './ClientServiceStatusBoardView';
 import { ClientServiceMonthsBoardView } from './ClientServiceMonthsBoardView';
 import {
   clientServicesApi,
+  type ClientServiceRecord,
   type ClientServiceRecordListParams,
-  type ClientServiceStats,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -56,59 +54,29 @@ function ClientServicesPageInner() {
   const searchParams = useSearchParams();
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
-  const [view, setView] = useState<ClientServicesViewMode>(() => readClientServicesViewMode());
+  const [view, handleViewChange] = useClientServicesViewMode();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
-  const [stats, setStats] = useState<ClientServiceStats | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
+  const [selectedService, setSelectedService] = useState<ClientServiceRecord | null>(null);
 
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [billingFilter, setBillingFilter] = useState('all');
-
-  const handleViewChange = useCallback((next: ClientServicesViewMode) => {
-    setView(next);
-    writeClientServicesViewMode(next);
-  }, []);
-
   const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
 
   const baseParams = useMemo<ClientServiceRecordListParams>(
     () => ({
-      ...(search.trim() ? { search: search.trim() } : {}),
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
       ...(typeFilter !== 'all' ? { type: typeFilter } : {}),
       ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
       ...(billingFilter !== 'all' ? { billingModel: billingFilter } : {}),
     }),
-    [billingFilter, search, statusFilter, typeFilter],
+    [billingFilter, debouncedSearch, statusFilter, typeFilter],
   );
-
-  const statsParams = useMemo(
-    () => ({
-      type: baseParams.type,
-      status: baseParams.status,
-      billingModel: baseParams.billingModel,
-      year,
-    }),
-    [baseParams.billingModel, baseParams.status, baseParams.type, year],
-  );
-
-  useEffect(() => {
-    let active = true;
-    clientServicesApi
-      .getStats(statsParams)
-      .then((next) => {
-        if (active) setStats(next);
-      })
-      .catch(() => {
-        if (active) setStats(null);
-      });
-    return () => {
-      active = false;
-    };
-  }, [statsParams, reloadToken]);
 
   const clientServiceFilterConfigs = useMemo(() => buildClientServiceIntegratedFilterConfigs(), []);
 
@@ -137,9 +105,10 @@ function ClientServicesPageInner() {
   const openCreate = useCallback(() => setCreateOpen(true), []);
 
   const openServiceDetail = useCallback(
-    (serviceId: string) => {
+    (service: ClientServiceRecord) => {
+      setSelectedService(service);
       const params = new URLSearchParams(searchParams.toString());
-      params.set(OPEN_CLIENT_SERVICE_QUERY, serviceId);
+      params.set(OPEN_CLIENT_SERVICE_QUERY, service.id);
       router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`);
     },
     [pathname, router, searchParams],
@@ -148,6 +117,7 @@ function ClientServicesPageInner() {
   const handleServiceSheetOpenChange = useCallback(
     (next: boolean) => {
       if (next) return;
+      setSelectedService(null);
       const params = new URLSearchParams(searchParams.toString());
       if (!params.has(OPEN_CLIENT_SERVICE_QUERY)) return;
       params.delete(OPEN_CLIENT_SERVICE_QUERY);
@@ -228,14 +198,12 @@ function ClientServicesPageInner() {
         {view === 'status' ? (
           <ClientServiceStatusBoardView
             baseParams={baseParams}
-            stats={stats}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
           />
         ) : view === 'months' ? (
           <ClientServiceMonthsBoardView
             baseParams={baseParams}
-            stats={stats}
             year={year}
             onYearChange={setYear}
             reloadToken={reloadToken}
@@ -259,6 +227,7 @@ function ClientServicesPageInner() {
 
       <ClientServiceDetailSheet
         serviceId={openServiceIdFromUrl}
+        initialService={selectedService}
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={refreshAll}

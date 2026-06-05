@@ -9,6 +9,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   EntityDetailSheetContent,
+  EntityDetailSheetLoadingShell,
   StatusBadge,
 } from '@/components/shared';
 import { getContactRole } from '../constants/clients';
@@ -120,7 +121,17 @@ export function ContactSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
-  if (!contact || !draft || !snap) return null;
+  if (!open) return null;
+
+  if (!contact || !draft || !snap) {
+    return (
+      <EntityDetailSheetLoadingShell
+        open={open}
+        onOpenChange={onOpenChange}
+        label="Loading contact…"
+      />
+    );
+  }
 
   const role = getContactRole(draft.role);
   const displayTitle =

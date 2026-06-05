@@ -41,7 +41,14 @@ interface UpdateWorkSpaceDto {
 
 const WORK_SPACE_INCLUDE = {
   project: { select: { id: true, code: true, name: true } },
-  product: { select: { id: true, name: true, status: true } },
+  product: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      order: { select: { deal: { select: { id: true } } } },
+    },
+  },
   extension: { select: { id: true, name: true, status: true } },
   _count: { select: { tasks: true } },
 } satisfies Prisma.WorkSpaceInclude;
@@ -118,12 +125,27 @@ export class WorkSpacesService {
   async findById(id: string) {
     const workspace = await this.prisma.workSpace.findUnique({
       where: { id },
-      include: {
-        ...WORK_SPACE_INCLUDE,
-        tasks: { orderBy: { workspaceSortOrder: 'asc' }, take: 50 },
-      },
+      include: WORK_SPACE_INCLUDE,
     });
     if (!workspace) throw new NotFoundException(`Work Space ${id} not found`);
+    return workspace;
+  }
+
+  /** Read-only lookup for product delivery workspace (does not create or run legacy attach). */
+  async findByProductId(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
+
+    const workspace = await this.prisma.workSpace.findUnique({
+      where: { productId },
+      include: WORK_SPACE_INCLUDE,
+    });
+    if (!workspace) {
+      throw new NotFoundException(`Work Space for product ${productId} not found`);
+    }
     return workspace;
   }
 

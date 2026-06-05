@@ -343,6 +343,8 @@ function LeadsPipelinePageContent() {
 
   const handleCardClick = (lead: Lead) => {
     setLeadBlockerNav(null);
+    setSelectedLead(lead);
+    setSheetOpen(true);
     pushOpenLeadToUrl(lead.id);
   };
 

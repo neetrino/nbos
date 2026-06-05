@@ -2,6 +2,10 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type ProjectTeamRoleEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import {
+  assertCanAssignProjectTeamAdmin,
+  assertCanManageProjectTeam,
+} from './project-team-authorization';
 import { teamMemberEmployeeSelect } from './team-member.select';
 
 interface AddProjectTeamMemberDto {
@@ -29,8 +33,19 @@ export class ProjectTeamService {
     });
   }
 
-  async addMember(projectId: string, dto: AddProjectTeamMemberDto, actorId: string) {
+  async addMember(
+    projectId: string,
+    dto: AddProjectTeamMemberDto,
+    actorId: string,
+    actorRoleSlug: string,
+  ) {
     await this.assertProjectExists(projectId);
+    const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
+    const role = dto.role ?? 'MEMBER';
+    if (role === 'ADMIN') {
+      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole);
+    }
     const member = await this.prisma.projectTeamMember.upsert({
       where: {
         projectId_employeeId: { projectId, employeeId: dto.employeeId },
@@ -38,12 +53,12 @@ export class ProjectTeamService {
       create: {
         projectId,
         employeeId: dto.employeeId,
-        role: dto.role ?? 'MEMBER',
+        role,
         source: 'MANUAL',
         addedById: actorId,
       },
       update: {
-        role: dto.role ?? undefined,
+        ...(dto.role !== undefined && { role }),
         source: 'MANUAL',
         addedById: actorId,
       },
@@ -65,8 +80,14 @@ export class ProjectTeamService {
     employeeId: string,
     dto: UpdateProjectTeamMemberDto,
     actorId: string,
+    actorRoleSlug: string,
   ) {
     const existing = await this.findMemberOrThrow(projectId, employeeId);
+    const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
+    if (dto.role === 'ADMIN') {
+      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole);
+    }
     const member = await this.prisma.projectTeamMember.update({
       where: { id: existing.id },
       data: {
@@ -86,8 +107,15 @@ export class ProjectTeamService {
     return member;
   }
 
-  async removeMember(projectId: string, employeeId: string, actorId: string) {
+  async removeMember(
+    projectId: string,
+    employeeId: string,
+    actorId: string,
+    actorRoleSlug: string,
+  ) {
     const existing = await this.findMemberOrThrow(projectId, employeeId);
+    const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
     await this.prisma.projectTeamMember.delete({ where: { id: existing.id } });
     await this.audit.log({
       entityType: 'project',
@@ -106,6 +134,17 @@ export class ProjectTeamService {
       select: { id: true },
     });
     if (!project) throw new NotFoundException(`Project ${projectId} not found`);
+  }
+
+  private async findActorProjectRole(
+    projectId: string,
+    actorId: string,
+  ): Promise<ProjectTeamRoleEnum | null> {
+    const row = await this.prisma.projectTeamMember.findUnique({
+      where: { projectId_employeeId: { projectId, employeeId: actorId } },
+      select: { role: true },
+    });
+    return row?.role ?? null;
   }
 
   private async findMemberOrThrow(projectId: string, employeeId: string) {

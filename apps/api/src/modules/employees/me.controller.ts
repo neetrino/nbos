@@ -15,6 +15,7 @@ import { PrismaClient } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { PRISMA_TOKEN } from '../../database.module';
 import { EmployeeWalletService } from './employee-wallet.service';
+import { EmployeesService } from './employees.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { UpdateNavigationPreferenceDto } from '../dashboard/dto/update-navigation-preference.dto';
 import { CreatePersonalLinkDto } from '../dashboard/dto/create-personal-link.dto';
@@ -33,6 +34,7 @@ export class MeController {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly employeeWalletService: EmployeeWalletService,
+    private readonly employeesService: EmployeesService,
     private readonly dashboardService: DashboardService,
   ) {}
 
@@ -104,6 +106,17 @@ export class MeController {
       throw new NotFoundException('Employee record not found for this user');
     }
     return this.dashboardService.deletePersonalLink(user.id, id);
+  }
+
+  @Get('employee')
+  @ApiOperation({
+    summary: 'Get current employee full record (same shape as GET /employees/:id)',
+  })
+  async getEmployee(@CurrentUser() user: CurrentUserPayload) {
+    if (!user?.id) {
+      throw new NotFoundException('Employee record not found for this user');
+    }
+    return this.employeesService.findById(user.id);
   }
 
   @Get()

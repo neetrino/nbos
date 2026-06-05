@@ -20,6 +20,7 @@ import { loadTasksScopedEmployeeIds, tasksViewBypassesRowFilter } from './tasks-
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
 import type { TasksAccessContext } from './tasks-scoped-access';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+import { normalizeTaskListPage, normalizeTaskListPageSize } from './task-list-pagination';
 
 const TASK_SORT_FIELDS = new Set([
   'createdAt',
@@ -28,6 +29,8 @@ const TASK_SORT_FIELDS = new Set([
   'priority',
   'status',
   'title',
+  'workspaceSortOrder',
+  'myPlanSortOrder',
 ]);
 
 export interface TaskFindAllPaginatedParams {
@@ -63,8 +66,8 @@ export async function taskFindAllPaginated(
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }> {
   const {
-    page = 1,
-    pageSize = 20,
+    page: rawPage = 1,
+    pageSize: rawPageSize,
     status,
     priority,
     assigneeId,
@@ -77,6 +80,9 @@ export async function taskFindAllPaginated(
     sortBy = 'createdAt',
     sortOrder = 'desc',
   } = params;
+
+  const page = normalizeTaskListPage(rawPage);
+  const pageSize = normalizeTaskListPageSize(rawPageSize);
 
   const parts: Prisma.TaskWhereInput[] = [];
   if (status) parts.push({ status: status as TaskStatusEnum });

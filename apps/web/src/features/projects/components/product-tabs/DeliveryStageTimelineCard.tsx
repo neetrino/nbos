@@ -47,19 +47,32 @@ export function DeliveryStageTimelineCard({
           />
         ) : null}
       </div>
-      <div className="grid gap-2 sm:grid-cols-4">
+      <DeliveryStageTimelineStrip lifecycle={lifecycle} />
+    </section>
+  );
+}
+
+/** Compact stage strip for embedded overview panels. */
+export function DeliveryStageTimelineStrip({
+  lifecycle,
+}: {
+  lifecycle: DeliveryLifecycleProjection;
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
         {DELIVERY_STAGES.map((stage) => (
           <DeliveryStageStep key={stage.value} stage={stage} lifecycle={lifecycle} />
         ))}
       </div>
       {lifecycle.currentStageReadiness && !lifecycle.isTerminal ? (
-        <p className="text-muted-foreground mt-3 text-xs font-medium">
-          Current stage requirements: {lifecycle.currentStageReadiness.completed}/
+        <p className="text-muted-foreground mt-2 text-[11px] font-medium">
+          Stage checklist {lifecycle.currentStageReadiness.completed}/
           {lifecycle.currentStageReadiness.total}
         </p>
       ) : null}
       {lifecycle.workStatus === 'ON_HOLD' ? <HoldStateCopy lifecycle={lifecycle} /> : null}
-    </section>
+    </>
   );
 }
 
@@ -73,7 +86,7 @@ function HoldStateCopy({ lifecycle }: { lifecycle: DeliveryLifecycleProjection }
 
   return (
     <p
-      className={`mt-3 text-xs ${expired ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}
+      className={`mt-2 text-[11px] ${expired ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}
     >
       {copy}
     </p>
@@ -95,7 +108,7 @@ function DeliveryStageStep({
   const stateClassName = getStageStepClassName({ isCurrent, isDone, lifecycle });
 
   return (
-    <div className={`rounded-lg border px-3 py-2 text-xs font-medium ${stateClassName}`}>
+    <div className={`rounded-md border px-2 py-1.5 text-[11px] font-medium ${stateClassName}`}>
       {stage.label}
     </div>
   );

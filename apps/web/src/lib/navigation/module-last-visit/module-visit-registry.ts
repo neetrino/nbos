@@ -1,5 +1,6 @@
 import type { ModuleVisitConfig, RegisteredModuleKey } from './types';
 import { FINANCE_MODULE_VISIT_CONFIG, isFinanceModulePath } from './finance-visit-config';
+import { REPORTS_MODULE_VISIT_CONFIG, isReportsModulePath } from './reports-visit-config';
 
 function startsWithPath(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -108,6 +109,7 @@ export const MODULE_VISIT_REGISTRY: Record<RegisteredModuleKey, ModuleVisitConfi
     isModulePath: (pathname) => startsWithPath(pathname, '/credentials'),
     isValidPath: (pathname) => startsWithPath(pathname, '/credentials'),
   },
+  reports: REPORTS_MODULE_VISIT_CONFIG,
 };
 
 export function isRegisteredModuleKey(key: string): key is RegisteredModuleKey {
@@ -116,8 +118,9 @@ export function isRegisteredModuleKey(key: string): key is RegisteredModuleKey {
 
 export function resolveRegisteredModuleFromPathname(pathname: string): RegisteredModuleKey | null {
   if (isFinanceModulePath(pathname)) return 'finance';
+  if (isReportsModulePath(pathname)) return 'reports';
   for (const moduleKey of Object.keys(MODULE_VISIT_REGISTRY) as RegisteredModuleKey[]) {
-    if (moduleKey === 'finance') continue;
+    if (moduleKey === 'finance' || moduleKey === 'reports') continue;
     const config = MODULE_VISIT_REGISTRY[moduleKey];
     if (config.kind === 'flat' && config.isModulePath(pathname)) return moduleKey;
     if (config.kind === 'sections' && config.resolveSection(pathname)) return moduleKey;

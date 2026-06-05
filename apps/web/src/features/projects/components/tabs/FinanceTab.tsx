@@ -1,350 +1,233 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import {
   DollarSign,
-  TrendingUp,
-  TrendingDown,
-  CreditCard,
   ExternalLink,
   HardDrive,
+  TrendingDown,
+  TrendingUp,
+  CreditCard,
 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
-import { buttonVariants } from '@/components/ui/button';
-import { useState } from 'react';
-import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
-import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
+import {
+  IntegratedSearchFilters,
+  PageHero,
+  PageHeroTabs,
+  ViewModeSwitch,
+} from '@/components/shared';
+import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
+import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
+import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/expenses-view-options';
+import { CLIENT_SERVICES_VIEW_OPTIONS } from '@/features/finance/components/client-services/client-services-view-options';
+import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
+import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
+import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
+import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
+import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
+import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
+import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
+import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
+import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
+import { buttonVariants } from '@/components/ui/button';
 import {
-  projectExpensesBacklogDrilldownHref,
-  projectExpensesDrilldownHref,
-} from '@/features/finance/constants/project-expenses-drilldown';
-import type {
-  ProjectOrder,
-  ProjectSubscription,
-  ProjectExpense,
-  ProjectDomain,
-} from '@/lib/api/projects';
+  formatProjectFinanceAmount,
+  projectSubscriptionMonthlyAmount,
+} from '@/features/projects/utils/project-finance-amount';
 
 interface FinanceTabProps {
   orders: ProjectOrder[];
   subscriptions: ProjectSubscription[];
   expenses: ProjectExpense[];
-  domains: ProjectDomain[];
-  /** When set, Finance expenses section links to filtered expenses (main list + backlog). */
-  projectId?: string;
-  /** Called after Drive quick-attach uploads (e.g. refresh parent project payload). */
-  onAfterDriveUpload?: () => void;
+  projectId: string;
+  project: { id: string; name: string; code: string };
+  productOrderId?: string | null;
 }
-
-function formatAmount(amount: number | string): string {
-  return Number(amount).toLocaleString('en-US');
-}
-
-const ORDER_STATUS_MAP: Record<
-  string,
-  { label: string; variant: 'blue' | 'amber' | 'green' | 'gray' }
-> = {
-  ACTIVE: { label: 'Active', variant: 'blue' },
-  PARTIALLY_PAID: { label: 'Partial', variant: 'amber' },
-  FULLY_PAID: { label: 'Paid', variant: 'green' },
-  CLOSED: { label: 'Closed', variant: 'gray' },
-};
-
-const INVOICE_MONEY_STATUS_MAP: Record<
-  string,
-  { label: string; variant: 'blue' | 'purple' | 'red' | 'gray' | 'green' }
-> = {
-  NEW: { label: 'New', variant: 'blue' },
-  AWAITING_PAYMENT: { label: 'Awaiting', variant: 'purple' },
-  OVERDUE: { label: 'Overdue', variant: 'red' },
-  ON_HOLD: { label: 'Hold', variant: 'gray' },
-  PAID: { label: 'Paid', variant: 'green' },
-  CANCELLED: { label: 'Cancelled', variant: 'gray' },
-};
-
-const SUB_STATUS_MAP: Record<
-  string,
-  { label: string; variant: 'green' | 'amber' | 'red' | 'gray' | 'blue' }
-> = {
-  PENDING: { label: 'Pending', variant: 'amber' },
-  ACTIVE: { label: 'Active', variant: 'green' },
-  ON_HOLD: { label: 'On Hold', variant: 'gray' },
-  CANCELLED: { label: 'Cancelled', variant: 'red' },
-  COMPLETED: { label: 'Completed', variant: 'blue' },
-};
 
 export function FinanceTab({
   orders,
   subscriptions,
   expenses,
-  domains,
   projectId,
-  onAfterDriveUpload,
+  project,
+  productOrderId,
 }: FinanceTabProps) {
-  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.totalAmount), 0);
-  const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.moneyStatus === 'PAID');
+  const financeSection = useProductFinanceSection();
+  const [ordersView, setOrdersView] = useOrdersBoardViewMode();
+  const [expensesView, setExpensesView] = useExpensesBoardViewMode();
+  const [clientServicesView, setClientServicesView] = useClientServicesViewMode();
+
+  const scopedOrders = useMemo(() => {
+    if (!productOrderId) return orders;
+    return orders.filter((order) => order.id === productOrderId);
+  }, [orders, productOrderId]);
+
+  const financeOrders = useMemo(
+    () => scopedOrders.map((order) => projectOrderToFinanceOrder(order, project)),
+    [scopedOrders, project],
+  );
+
+  const totalRevenue = scopedOrders.reduce((s, o) => s + Number(o.totalAmount), 0);
+  const paidInvoices = scopedOrders
+    .flatMap((o) => o.invoices)
+    .filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
   const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const monthlyMRR = subscriptions
     .filter((s) => s.status === 'ACTIVE')
-    .reduce((s, sub) => s + Number(sub.amount), 0);
+    .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);
+
+  const openFinanceHref =
+    financeSection.activeSection === 'subscriptions'
+      ? '/finance/subscriptions'
+      : financeSection.activeSection === 'expenses'
+        ? projectExpensesDrilldownHref(projectId)
+        : financeSection.activeSection === 'client-services'
+          ? '/finance/client-services'
+          : '/finance/orders';
 
   return (
-    <div className="space-y-6">
-      {projectId ? (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <EntityDriveQuickAttach
-              libraryKey="finance"
-              entityType="PROJECT"
-              entityId={projectId}
-              onUploaded={() => {
-                setDriveFilesRefreshKey((key) => key + 1);
-                onAfterDriveUpload?.();
-              }}
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <FinanceStatCard
+          icon={DollarSign}
+          tone="text-emerald-500"
+          label="Total Revenue"
+          value={formatProjectFinanceAmount(totalRevenue)}
+        />
+        <FinanceStatCard
+          icon={TrendingUp}
+          tone="text-blue-500"
+          label="Received"
+          value={formatProjectFinanceAmount(totalPaid)}
+        />
+        <FinanceStatCard
+          icon={TrendingDown}
+          tone="text-red-500"
+          label="Expenses"
+          value={formatProjectFinanceAmount(totalExpenses)}
+        />
+        <FinanceStatCard
+          icon={CreditCard}
+          tone="text-purple-500"
+          label="MRR"
+          value={formatProjectFinanceAmount(monthlyMRR)}
+        />
+      </div>
+
+      <PageHero
+        title="Product finance"
+        syncModuleTitle={false}
+        className="mt-0"
+        tabs={
+          <PageHeroTabs
+            value={financeSection.activeSection}
+            onChange={financeSection.setActiveSection}
+            options={PRODUCT_FINANCE_SECTION_OPTIONS}
+            ariaLabel="Product finance section"
+          />
+        }
+        search={
+          <IntegratedSearchFilters
+            search={financeSection.search}
+            onSearchChange={financeSection.setSearch}
+            searchPlaceholder={financeSection.searchPlaceholder}
+            filters={financeSection.filterConfigs}
+            filterValues={financeSection.filterValuesForUi}
+            onFilterChange={financeSection.handleFilterChange}
+            onClearAll={financeSection.clearFilters}
+          />
+        }
+        viewMode={
+          financeSection.activeSection === 'orders' ? (
+            <ViewModeSwitch
+              value={ordersView}
+              onChange={setOrdersView}
+              options={ORDER_VIEW_OPTIONS}
             />
+          ) : financeSection.activeSection === 'expenses' &&
+            financeSection.filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] !== 'backlog' ? (
+            <ViewModeSwitch
+              value={expensesView}
+              onChange={setExpensesView}
+              options={EXPENSES_VIEW_OPTIONS}
+            />
+          ) : financeSection.activeSection === 'client-services' ? (
+            <ViewModeSwitch
+              value={clientServicesView}
+              onChange={setClientServicesView}
+              options={CLIENT_SERVICES_VIEW_OPTIONS}
+              ariaLabel="Client services view mode"
+            />
+          ) : undefined
+        }
+        trailing={
+          <>
             <Link
               href={buildDriveHrefWithFinanceProject(projectId)}
               className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
             >
-              <HardDrive className="size-4" aria-hidden />
-              Drive files
+              <HardDrive size={14} aria-hidden />
+              Drive
             </Link>
-          </div>
-          <EntityDriveFilesPanel
-            entityType="PROJECT"
-            entityId={projectId}
-            driveHref={buildDriveHrefWithFinanceProject(projectId)}
-            refreshKey={driveFilesRefreshKey}
-          />
-        </div>
-      ) : null}
+            <Link
+              href={openFinanceHref}
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+            >
+              Finance
+              <ExternalLink size={12} className="opacity-70" aria-hidden />
+            </Link>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="bg-card border-border rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <DollarSign size={16} className="text-emerald-500" />
-            <span className="text-muted-foreground text-xs">Total Revenue</span>
-          </div>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalRevenue)}</p>
-        </div>
-        <div className="bg-card border-border rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={16} className="text-blue-500" />
-            <span className="text-muted-foreground text-xs">Received</span>
-          </div>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalPaid)}</p>
-        </div>
-        <div className="bg-card border-border rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <TrendingDown size={16} className="text-red-500" />
-            <span className="text-muted-foreground text-xs">Expenses</span>
-          </div>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalExpenses)}</p>
-        </div>
-        <div className="bg-card border-border rounded-xl border p-4">
-          <div className="flex items-center gap-2">
-            <CreditCard size={16} className="text-purple-500" />
-            <span className="text-muted-foreground text-xs">MRR</span>
-          </div>
-          <p className="mt-1 text-xl font-bold">{formatAmount(monthlyMRR)}</p>
-        </div>
+      <div
+        className={
+          (financeSection.activeSection === 'orders' && ordersView === 'board') ||
+          (financeSection.activeSection === 'expenses' && expensesView === 'kanban') ||
+          (financeSection.activeSection === 'client-services' &&
+            (clientServicesView === 'status' || clientServicesView === 'months'))
+            ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
+            : undefined
+        }
+      >
+        <ProductFinanceSectionContent
+          section={financeSection.activeSection}
+          search={financeSection.search}
+          debouncedSearch={financeSection.debouncedSearch}
+          filters={financeSection.filters}
+          ordersView={ordersView}
+          expensesView={expensesView}
+          clientServicesView={clientServicesView}
+          financeOrders={financeOrders}
+          subscriptions={subscriptions}
+          projectId={projectId}
+        />
       </div>
+    </div>
+  );
+}
 
-      <section>
-        <h3 className="mb-3 text-sm font-semibold">Orders ({orders.length})</h3>
-        {orders.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No orders</p>
-        ) : (
-          <div className="space-y-3">
-            {orders.map((order) => {
-              const st = ORDER_STATUS_MAP[order.status];
-              const paidAmount = order.invoices
-                .filter((i) => i.moneyStatus === 'PAID')
-                .reduce((s, i) => s + Number(i.amount), 0);
-              const progress =
-                Number(order.totalAmount) > 0 ? (paidAmount / Number(order.totalAmount)) * 100 : 0;
-
-              return (
-                <div key={order.id} className="bg-card border-border rounded-xl border p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{order.code}</p>
-                        {st && <StatusBadge label={st.label} variant={st.variant} />}
-                      </div>
-                      <p className="text-muted-foreground text-xs">
-                        {order.type} &middot; {order.paymentType.replace(/_/g, ' ')}
-                      </p>
-                    </div>
-                    <p className="text-lg font-bold">{formatAmount(order.totalAmount)}</p>
-                  </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="bg-secondary h-1.5 flex-1 rounded-full">
-                      <div
-                        className="h-1.5 rounded-full bg-green-500"
-                        style={{ width: `${Math.min(progress, 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-muted-foreground text-[10px]">
-                      {formatAmount(paidAmount)} / {formatAmount(order.totalAmount)}
-                    </span>
-                  </div>
-                  {order.invoices.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                      {order.invoices.map((inv) => {
-                        const invSt = INVOICE_MONEY_STATUS_MAP[inv.moneyStatus];
-                        return (
-                          <div key={inv.id} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono">{inv.code}</span>
-                              {invSt && <StatusBadge label={invSt.label} variant={invSt.variant} />}
-                            </div>
-                            <span className="font-medium">{formatAmount(inv.amount)}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {subscriptions.length > 0 && (
-        <section>
-          <h3 className="mb-3 text-sm font-semibold">Subscriptions ({subscriptions.length})</h3>
-          <div className="space-y-3">
-            {subscriptions.map((sub) => {
-              const st = SUB_STATUS_MAP[sub.status];
-              return (
-                <div key={sub.id} className="bg-card border-border rounded-xl border p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{sub.code}</p>
-                      {st && <StatusBadge label={st.label} variant={st.variant} />}
-                    </div>
-                    <p className="font-bold">{formatAmount(sub.amount)} / mo</p>
-                  </div>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {sub.type.replace(/_/g, ' ')} &middot; Billing day: {sub.billingDay} &middot;
-                    Since {new Date(sub.startDate).toLocaleDateString()}
-                  </p>
-                  {sub.status === 'PENDING' && (
-                    <p className="mt-2 text-xs text-amber-600">
-                      Pending activation in Finance subscriptions.
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {expenses.length > 0 && (
-        <section>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold">Expenses ({expenses.length})</h3>
-            {projectId ? (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <Link
-                  href={projectExpensesDrilldownHref(projectId)}
-                  className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                >
-                  Open in Finance
-                  <ExternalLink size={12} className="opacity-70" aria-hidden />
-                </Link>
-                <Link
-                  href={projectExpensesBacklogDrilldownHref(projectId)}
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                >
-                  Deferred backlog
-                  <ExternalLink size={12} className="opacity-70" aria-hidden />
-                </Link>
-              </div>
-            ) : null}
-          </div>
-          <div className="border-border overflow-hidden rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-4 py-2 text-left font-medium">Expense</th>
-                  <th className="px-4 py-2 text-left font-medium">Category</th>
-                  <th className="px-4 py-2 text-left font-medium">Frequency</th>
-                  <th className="px-4 py-2 text-right font-medium">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenses.map((exp) => (
-                  <tr key={exp.id} className="border-border border-t">
-                    <td className="px-4 py-2 font-medium">
-                      {exp.name}
-                      {exp.isPassThrough && (
-                        <StatusBadge label="Pass-through" variant="gray" className="ml-2" />
-                      )}
-                    </td>
-                    <td className="text-muted-foreground px-4 py-2">{exp.category}</td>
-                    <td className="text-muted-foreground px-4 py-2">
-                      {exp.frequency.replace(/_/g, ' ')}
-                    </td>
-                    <td className="px-4 py-2 text-right font-medium">{formatAmount(exp.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-
-      {domains.length > 0 && (
-        <section>
-          <h3 className="mb-3 text-sm font-semibold">Domains ({domains.length})</h3>
-          <div className="space-y-2">
-            {domains.map((dom) => (
-              <div
-                key={dom.id}
-                className="bg-card border-border flex items-center justify-between rounded-lg border px-4 py-3"
-              >
-                <div>
-                  <p className="font-mono text-sm font-medium">{dom.domainName}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {dom.provider ?? ''} &middot;{' '}
-                    {dom.expiryDate
-                      ? `Expires ${new Date(dom.expiryDate).toLocaleDateString()}`
-                      : 'No expiry'}
-                  </p>
-                  {dom.clientServiceRecordId ? (
-                    <Link
-                      href={`/finance/client-services?open=${dom.clientServiceRecordId}`}
-                      className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'h-auto px-0')}
-                    >
-                      Client service record
-                    </Link>
-                  ) : null}
-                </div>
-                <StatusBadge
-                  label={dom.status.replace(/_/g, ' ')}
-                  variant={
-                    dom.status === 'ACTIVE'
-                      ? 'green'
-                      : dom.status === 'EXPIRING_SOON'
-                        ? 'amber'
-                        : dom.status === 'EXPIRED'
-                          ? 'red'
-                          : 'gray'
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+function FinanceStatCard({
+  icon: Icon,
+  tone,
+  label,
+  value,
+}: {
+  icon: typeof DollarSign;
+  tone: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="bg-card border-border rounded-xl border p-4">
+      <div className="flex items-center gap-2">
+        <Icon size={16} className={tone} />
+        <span className="text-muted-foreground text-xs">{label}</span>
+      </div>
+      <p className="mt-1 text-xl font-bold">{value}</p>
     </div>
   );
 }

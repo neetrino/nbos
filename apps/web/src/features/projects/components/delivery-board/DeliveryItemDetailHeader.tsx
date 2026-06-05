@@ -136,7 +136,7 @@ export function DeliveryItemDetailHeader({
                 )}
                 title={loading ? undefined : 'Click to edit name'}
               >
-                {loading ? '…' : title}
+                {loading && !title.trim() ? '…' : title}
               </h2>
             )}
             <span

@@ -226,9 +226,6 @@ function NoteStack({
           {activeDragNote ? <NoteDragPreview note={activeDragNote} /> : null}
         </DragOverlay>
       </DndContext>
-      <p className="text-center text-xs font-medium text-amber-900/50">
-        {formatNoteCount(notes.length)}
-      </p>
     </div>
   );
 }
@@ -471,8 +468,4 @@ function formatNoteTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Just now';
   return NOTE_TIME_FORMAT.format(date);
-}
-
-function formatNoteCount(count: number): string {
-  return `${count} saved ${count === 1 ? 'note' : 'notes'}`;
 }

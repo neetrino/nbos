@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment } from 'react';
+import { KanbanCardShell } from '@/components/shared';
 import { StatusBadge, type StatusVariant } from '@/components/shared/StatusBadge';
 import { cn } from '@/lib/utils';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
@@ -21,19 +22,9 @@ type CredentialVaultCardVariant = 'grid' | 'kanban';
 
 const VAULT_CARD_BADGE_CLASS = 'h-4 shrink-0 px-1.5 py-0 text-[10px] leading-none';
 
-const VAULT_CARD_SHELL_CLASS = cn(
-  'border-border bg-card group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden border',
-  'shadow-none transition-shadow duration-200 ease-out hover:shadow-md',
-  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-);
-
 const VAULT_CARD_BODY_CLASS = 'flex h-full min-h-0 flex-1 flex-col gap-1.5 p-2.5 pl-3';
 
 const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
-
-function shellClassForVariant(variant: CredentialVaultCardVariant): string {
-  return cn(VAULT_CARD_SHELL_CLASS, variant === 'grid' ? 'rounded-lg' : 'rounded-xl');
-}
 
 interface VaultCardMetaItem {
   key: string;
@@ -107,10 +98,16 @@ export function CredentialVaultCard({
   metaItems.push({ key: 'access', label: accessLabel, variant: 'gray' });
 
   return (
-    <div
+    <KanbanCardShell
       role="button"
       tabIndex={0}
-      className={shellClassForVariant(variant)}
+      radius={variant === 'grid' ? 'lg' : 'xl'}
+      padding="none"
+      hoverShadow="md"
+      className={cn(
+        'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
+        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+      )}
       onClick={(event) => {
         if (isCredentialVaultCheckboxTarget(event.target)) return;
         onOpen(credential.id);
@@ -159,6 +156,6 @@ export function CredentialVaultCard({
         </div>
         <CredentialVaultCardMetaRow items={metaItems} />
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

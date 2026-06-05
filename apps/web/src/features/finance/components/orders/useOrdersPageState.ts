@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import {
   ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
   parseOrderReconciliationGap,
@@ -9,11 +10,7 @@ import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
-import {
-  readOrdersBoardViewMode,
-  writeOrdersBoardViewMode,
-} from '@/features/finance/constants/orders-board-view';
-import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
+import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   ordersApi,
@@ -43,6 +40,7 @@ export function useOrdersPageState({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -50,22 +48,18 @@ export function useOrdersPageState({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [sheetRefreshKey, setSheetRefreshKey] = useState(0);
-  const [view, setViewState] = useState<OrderViewMode>(() => readOrdersBoardViewMode());
-  const setView = useCallback((next: OrderViewMode) => {
-    setViewState(next);
-    writeOrdersBoardViewMode(next);
-  }, []);
+  const [view, setView] = useOrdersBoardViewMode();
 
   const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
     () =>
       buildOrderListApiParams({
-        search,
+        search: debouncedSearch,
         filters,
         partnerIdFromUrl,
         period,
         gap,
       }),
-    [search, filters, partnerIdFromUrl, period, gap],
+    [debouncedSearch, filters, partnerIdFromUrl, period, gap],
   );
 
   const orderStatsQueryParams = useMemo((): OrderStatsQueryParams => {
@@ -78,11 +72,11 @@ export function useOrdersPageState({
         ? {
             gap,
             status: statusFilter,
-            search: search.trim() || undefined,
+            search: debouncedSearch || undefined,
           }
         : {}),
     };
-  }, [period, partnerIdFromUrl, gap, filters.status, search]);
+  }, [period, partnerIdFromUrl, gap, filters.status, debouncedSearch]);
 
   const clearMutationError = useCallback(() => {
     setMutationError(null);
@@ -111,7 +105,7 @@ export function useOrdersPageState({
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
       const listParams: OrderListParams = {
         ...buildOrderListApiParams({
-          search,
+          search: debouncedSearch,
           filters,
           partnerIdFromUrl,
           period,
@@ -137,7 +131,7 @@ export function useOrdersPageState({
     } finally {
       setLoading(false);
     }
-  }, [search, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
+  }, [debouncedSearch, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
 
   useEffect(() => {
     void fetchOrders();
@@ -145,6 +139,12 @@ export function useOrdersPageState({
 
   useEffect(() => {
     if (!openOrderIdFromUrl) return;
+    const fromList = orders.find((row) => row.id === openOrderIdFromUrl);
+    if (fromList) {
+      setSelectedOrder(fromList);
+      setSheetOpen(true);
+      return;
+    }
     let cancelled = false;
     void (async () => {
       try {
@@ -161,7 +161,7 @@ export function useOrdersPageState({
     return () => {
       cancelled = true;
     };
-  }, [openOrderIdFromUrl, stripOpenOrderFromUrl]);
+  }, [openOrderIdFromUrl, orders, stripOpenOrderFromUrl]);
 
   const refreshOrdersAfterInvoice = useCallback(async () => {
     try {

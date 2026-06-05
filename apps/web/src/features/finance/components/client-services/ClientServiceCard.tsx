@@ -7,12 +7,13 @@ import {
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
+import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 
 interface ClientServiceCardProps {
   service: ClientServiceRecord;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 function formatShortDate(value: string | null): string {
@@ -29,11 +30,9 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
   );
 
   return (
-    <div
-      className={cn(
-        'border-border bg-card relative rounded-xl border',
-        service.overdue && 'border-red-300 dark:border-red-900/50',
-      )}
+    <KanbanCardShell
+      padding="none"
+      className={cn('relative', service.overdue && 'border-red-300 dark:border-red-900/50')}
     >
       <div
         role="button"
@@ -42,11 +41,11 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
           'focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none',
           service.overdue && 'bg-red-50/60 dark:bg-red-950/20',
         )}
-        onClick={() => onOpen(service.id)}
+        onClick={() => onOpen(service)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            onOpen(service.id);
+            onOpen(service);
           }
         }}
       >
@@ -71,6 +70,6 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
           {formatShortDate(service.renewalDate)}
         </div>
       </div>
-    </div>
+    </KanbanCardShell>
   );
 }

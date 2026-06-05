@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { useModuleHeroSlots } from '@/components/shared/page-hero';
 import {
   reportsApi,
   type ReportDataQualityWarning,
@@ -12,16 +14,20 @@ import {
   type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ReportsHeader, ReportViewTabs, type ReportsView } from './ReportsCenterChrome';
+import { REPORTS_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/reports-visit-config';
+import { buildReportsHeroSearch } from './build-reports-hero-search';
+import { reportViewLabel } from './ReportsCenterChrome';
+import { ReportsPageSettingsSheet } from './ReportsPageSettingsSheet';
 import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
-import { ReportFilterBar } from './ReportFilterBar';
+import { ReportActions } from './tabs/ReportActions';
 import {
   buildInitialReportFilters,
   buildReportFilters,
   type ReportFilterState,
 } from '../report-filters';
+import { buildReportsViewPath, parseReportsPathname, type ReportsViewId } from '../reports-routing';
 import {
   useFinanceReportsTabData,
   useMarketingReportsTabData,
@@ -36,12 +42,22 @@ import { SalesReportsTab } from './tabs/SalesReportsTab';
 import { SpecialistsReportsTab } from './tabs/SpecialistsReportsTab';
 
 export function ReportsCenter() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const parsedPath = parseReportsPathname(pathname);
+  const view = parsedPath?.viewId ?? 'FINANCE';
+
+  useEffect(() => {
+    if (!parsedPath) {
+      router.replace(REPORTS_SECTION_DEFAULTS.finance);
+    }
+  }, [parsedPath, router]);
+
   const [definitions, setDefinitions] = useState<ReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
-  const [view, setView] = useState<ReportsView>('FINANCE');
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<ReportFilterState>(buildInitialReportFilters());
   const [loading, setLoading] = useState(true);
@@ -92,7 +108,7 @@ export function ReportsCenter() {
         filters: exportFilters,
       });
       setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
-      setView('EXPORTS');
+      router.push(buildReportsViewPath('EXPORTS'));
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
     } finally {
@@ -100,25 +116,82 @@ export function ReportsCenter() {
     }
   }
 
+  async function retryExport(jobId: string) {
+    setError(null);
+    try {
+      const retried = await reportsApi.retryExportJob(jobId);
+      setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
+      router.push(buildReportsViewPath('EXPORTS'));
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
+    }
+  }
+
+  async function cancelExport(jobId: string) {
+    setError(null);
+    try {
+      const cancelled = await reportsApi.cancelExportJob(jobId);
+      setExportJobs((current) =>
+        current.map((item) => (item.id === cancelled.id ? cancelled : item)),
+      );
+      router.push(buildReportsViewPath('EXPORTS'));
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
+    }
+  }
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setFilters(buildInitialReportFilters());
+  }, []);
+
+  const showReportActions = isReportDataView(view);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: buildReportsHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        filters,
+        onFiltersChange: setFilters,
+        savedViews,
+        onClearAll: handleClearFilters,
+      }),
+      trailing: showReportActions ? (
+        <ReportsPageSettingsSheet
+          title={`${reportViewLabel(view)} — settings`}
+          description="Download report files for the current filters."
+          triggerAriaLabel={`${reportViewLabel(view)} settings`}
+        >
+          <ReportActions
+            definitions={visibleDefinitions}
+            creatingExportToken={creatingExportToken}
+            onExport={(definition, format) => void requestExport(definition, format)}
+          />
+        </ReportsPageSettingsSheet>
+      ) : null,
+    }),
+    [
+      creatingExportToken,
+      filters,
+      handleClearFilters,
+      savedViews,
+      search,
+      showReportActions,
+      view,
+      visibleDefinitions,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
+  if (!parsedPath) return <LoadingState variant="cards" count={6} />;
+
   if (loading) return <LoadingState variant="cards" count={6} />;
   if (error) return <ErrorState title="Reports unavailable" description={error} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <ReportsHeader
-        view={view}
-        onRefresh={() => void refreshActiveView(view, load, tabRefreshers)}
-      />
-      <ReportViewTabs view={view} onViewChange={setView} />
-      <ReportFilterBar
-        definitions={definitions}
-        filters={filters}
-        search={search}
-        savedViews={savedViews}
-        onFiltersChange={setFilters}
-        onSearchChange={setSearch}
-        onSavedViewsChange={setSavedViews}
-      />
+    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
       {view === 'SCHEDULED' ? (
         <ReportsSchedulePanel
           definitions={definitions}
@@ -137,81 +210,23 @@ export function ReportsCenter() {
       ) : view === 'QUALITY' ? (
         <ReportsDataQualityPanel warnings={warnings} onRefresh={() => void load()} />
       ) : view === 'FINANCE' ? (
-        <FinanceReportsTab
-          definitions={visibleDefinitions}
-          state={finance}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <FinanceReportsTab state={finance} />
       ) : view === 'SALES' ? (
-        <SalesReportsTab
-          definitions={visibleDefinitions}
-          state={sales}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <SalesReportsTab state={sales} />
       ) : view === 'MARKETING' ? (
-        <MarketingReportsTab
-          definitions={visibleDefinitions}
-          state={marketing}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <MarketingReportsTab state={marketing} />
       ) : view === 'PROJECTS' ? (
-        <ProjectsReportsTab
-          definitions={visibleDefinitions}
-          state={projects}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <ProjectsReportsTab state={projects} />
       ) : (
-        <SpecialistsReportsTab
-          definitions={visibleDefinitions}
-          state={specialists}
-          creatingExportToken={creatingExportToken}
-          onExport={(definition, format) => void requestExport(definition, format)}
-        />
+        <SpecialistsReportsTab state={specialists} />
       )}
     </div>
   );
-
-  function tabRefreshers(viewId: ReportsView) {
-    if (viewId === 'FINANCE') return finance.refresh;
-    if (viewId === 'SALES') return sales.refresh;
-    if (viewId === 'MARKETING') return marketing.refresh;
-    if (viewId === 'PROJECTS') return projects.refresh;
-    if (viewId === 'SPECIALISTS') return specialists.refresh;
-    return null;
-  }
-
-  async function retryExport(jobId: string) {
-    setError(null);
-    try {
-      const retried = await reportsApi.retryExportJob(jobId);
-      setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
-      setView('EXPORTS');
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
-    }
-  }
-
-  async function cancelExport(jobId: string) {
-    setError(null);
-    try {
-      const cancelled = await reportsApi.cancelExportJob(jobId);
-      setExportJobs((current) =>
-        current.map((item) => (item.id === cancelled.id ? cancelled : item)),
-      );
-      setView('EXPORTS');
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
-    }
-  }
 }
 
 function filterDefinitions(
   definitions: ReportDefinition[],
-  view: ReportsView,
+  view: ReportsViewId,
   search: string,
 ): ReportDefinition[] {
   const q = search.trim().toLowerCase();
@@ -243,15 +258,12 @@ async function loadReportShellData() {
   };
 }
 
-function refreshActiveView(
-  view: ReportsView,
-  reloadShell: () => Promise<void>,
-  getTabRefresh: (view: ReportsView) => (() => void) | null,
-) {
-  const refresh = getTabRefresh(view);
-  if (refresh) {
-    refresh();
-    return;
-  }
-  void reloadShell();
+function isReportDataView(view: ReportsViewId): boolean {
+  return (
+    view === 'FINANCE' ||
+    view === 'SALES' ||
+    view === 'MARKETING' ||
+    view === 'PROJECTS' ||
+    view === 'SPECIALISTS'
+  );
 }

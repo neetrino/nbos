@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { tasksApi, type Task } from '@/lib/api/tasks';
+import { fetchWorkspaceTaskPage } from '@/features/tasks/work-spaces/work-space-task-fetch';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { groupTasksForScrumPlanner, sprintCompletionPercent } from '../workspace-scrum-groups';
 import { WorkspaceScrumTaskRow } from './WorkspaceScrumTaskRow';
@@ -24,6 +25,7 @@ export function WorkspaceScrumPlanner({
   onBacklogTaskCreated,
   creatorId,
   creatorReady,
+  refreshTasksFromServer,
 }: {
   workspaceId: string;
   tasks: Task[];
@@ -35,12 +37,24 @@ export function WorkspaceScrumPlanner({
   onBacklogTaskCreated: (task: Task) => void;
   creatorId: string | null;
   creatorReady: boolean;
+  refreshTasksFromServer?: () => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [closeSprint, setCloseSprint] = useState<WorkSpaceSprint | null>(null);
   const [closedOpen, setClosedOpen] = useState(false);
 
   const grouped = useMemo(() => groupTasksForScrumPlanner(tasks, sprints), [tasks, sprints]);
+
+  const applyServerTaskList = useCallback(
+    async (taskList: Task[]) => {
+      if (refreshTasksFromServer) {
+        await refreshTasksFromServer();
+        return;
+      }
+      setTasks(taskList);
+    },
+    [refreshTasksFromServer, setTasks],
+  );
 
   const moveTask = useCallback(
     async (taskId: string, sprintId: string | null) => {
@@ -81,10 +95,10 @@ export function WorkspaceScrumPlanner({
       await workSpaceSprintsApi.start(workspaceId, sprintId);
       const [nextSprints, taskList] = await Promise.all([
         workSpaceSprintsApi.list(workspaceId),
-        tasksApi.getAll({ workspaceId, pageSize: 100 }),
+        fetchWorkspaceTaskPage(workspaceId),
       ]);
       setSprints(nextSprints);
-      setTasks(taskList.items);
+      await applyServerTaskList(taskList.items);
       toast.success('Sprint started.');
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Could not start sprint.'));
@@ -211,10 +225,10 @@ export function WorkspaceScrumPlanner({
           onClosed={async () => {
             const [nextSprints, taskList] = await Promise.all([
               workSpaceSprintsApi.list(workspaceId),
-              tasksApi.getAll({ workspaceId, pageSize: 100 }),
+              fetchWorkspaceTaskPage(workspaceId),
             ]);
             setSprints(nextSprints);
-            setTasks(taskList.items);
+            await applyServerTaskList(taskList.items);
             setCloseSprint(null);
           }}
         />

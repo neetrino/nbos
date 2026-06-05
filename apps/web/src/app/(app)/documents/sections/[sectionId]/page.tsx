@@ -15,10 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PageHero, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHero,
+  useDebouncedValue,
+} from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
+import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
 import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
 
@@ -39,7 +46,7 @@ export default function DocumentSectionPage() {
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, DOCUMENTS_SEARCH_DEBOUNCE_MS).trim();
   const [listScope, setListScope] = useState<string>('ALL');
   const [sectionSaving, setSectionSaving] = useState(false);
   const [sectionSettingsError, setSectionSettingsError] = useState<string | null>(null);
@@ -54,11 +61,6 @@ export default function DocumentSectionPage() {
       setListScope(section.defaultListScope);
     }
   }, [section?.defaultListScope]);
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 320);
-    return () => window.clearTimeout(t);
-  }, [search]);
 
   const load = useCallback(async () => {
     if (!sectionId) return;

@@ -319,6 +319,15 @@ export const driveApi = {
     return resp.data;
   },
 
+  async listLibraryEntities(library: string): Promise<{
+    items: Array<{ id: string; entityType: string; label: string; code?: string }>;
+  }> {
+    const resp = await api.get<{
+      items: Array<{ id: string; entityType: string; label: string; code?: string }>;
+    }>('/api/drive/library-entities', { params: { library } });
+    return resp.data;
+  },
+
   async listFolder(params: DriveFolderListParams): Promise<DriveFolderListing> {
     const resp = await api.get<DriveFolderListing>('/api/drive/folders', {
       params: {

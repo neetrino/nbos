@@ -6,6 +6,7 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollRunsPaidProgressBar } from '@/features/finance/components/payroll/payroll-runs-paid-progress';
 import { formatPayrollMonthLabel } from '@/features/finance/utils/salary-board-month-utils';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
+import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 function parseAmount(value: string): number {
@@ -36,12 +37,16 @@ export function PayrollRunBoardCard({ run }: { run: PayrollRunListRow }) {
   const monthLabel = formatPayrollMonthLabel(run.payrollMonth);
 
   return (
-    <div
+    <KanbanCardShell
       role="link"
       tabIndex={0}
+      radius="lg"
+      hoverShadow={false}
+      hoverSurface="muted30"
+      baseShadow="sm"
+      transition="colors"
       className={cn(
-        'border-border bg-card hover:bg-muted/30 cursor-pointer rounded-lg border p-3 shadow-sm transition-colors',
-        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        'focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none',
       )}
       onClick={() => router.push(href)}
       onKeyDown={(event) => handleCardKeyDown(event, href, router.push)}
@@ -63,6 +68,6 @@ export function PayrollRunBoardCard({ run }: { run: PayrollRunListRow }) {
         <dt>Cards</dt>
         <dd className="text-right tabular-nums">{run.materializedExpenseLineCount}</dd>
       </dl>
-    </div>
+    </KanbanCardShell>
   );
 }

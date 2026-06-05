@@ -34,14 +34,11 @@ import {
   UNIT_ECONOMICS_DRILLDOWN_FOCUS_QUERY,
   UNIT_ECONOMICS_OPEN_ORDER_QUERY,
 } from '@/features/finance/constants/unit-economics-drilldown-url';
-import {
-  readUnitEconomicsBoardViewMode,
-  writeUnitEconomicsBoardViewMode,
-  type UnitEconomicsBoardViewMode,
-} from '@/features/finance/constants/unit-economics-board-view';
+import { useUnitEconomicsBoardViewMode } from '@/features/finance/constants/unit-economics-board-view';
 import { useUnitEconomicsPoolSheet } from '@/features/finance/hooks/use-unit-economics-pool-sheet';
 import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { buildUnitEconomicsOrderDetailPlaceholder } from '@/features/finance/utils/unit-economics-order-detail-placeholder';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 
 /** Operational finance per delivery unit — money in, money out, balance. */
@@ -55,9 +52,7 @@ export function UnitEconomicsPageContent() {
   const { items, projects, products, totals, loading, error, reload } = useUnitEconomicsList();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<UnitEconomicsFilterValues>(UE_FILTER_DEFAULTS);
-  const [view, setView] = useState<UnitEconomicsBoardViewMode>(() =>
-    readUnitEconomicsBoardViewMode(),
-  );
+  const [view, handleViewChange] = useUnitEconomicsBoardViewMode();
 
   const [drilldownOrderId, setDrilldownOrderId] = useState<string | null>(null);
   const [drilldownFocus, setDrilldownFocus] = useState<UnitEconomicsDrilldownFocus>('invoices');
@@ -74,12 +69,6 @@ export function UnitEconomicsPageContent() {
     },
     [pathname, router, searchParams],
   );
-
-  const handleViewChange = useCallback((mode: UnitEconomicsBoardViewMode) => {
-    setView(mode);
-    writeUnitEconomicsBoardViewMode(mode);
-  }, []);
-
   const onDrilldown = useCallback(
     (orderId: string, focus: UnitEconomicsDrilldownFocus) => {
       setDrilldownOrderId(orderId);
@@ -147,6 +136,12 @@ export function UnitEconomicsPageContent() {
     () => computeUnitEconomicsFilteredTotals(filteredItems),
     [filteredItems],
   );
+
+  const initialDrilldownDetail = useMemo(() => {
+    if (!drilldownOrderId) return null;
+    const row = filteredItems.find((item) => item.orderId === drilldownOrderId);
+    return row ? buildUnitEconomicsOrderDetailPlaceholder(row) : null;
+  }, [drilldownOrderId, filteredItems]);
 
   const boardData: UnitEconomicsBoardData = useMemo(
     () => ({
@@ -289,6 +284,7 @@ export function UnitEconomicsPageContent() {
         onOpenChange={handleDrilldownOpenChange}
         onFocusChange={handleDrilldownFocusChange}
         onOpenPoolDetail={onOpenPoolDetail}
+        initialOrderDetail={initialDrilldownDetail}
       />
 
       <ProductBonusPoolSheet

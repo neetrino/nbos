@@ -43,6 +43,14 @@
   --chart-3: oklch(0.631 0.098 240);
   --chart-4: oklch(0.577 0.245 27.325);
   --chart-5: oklch(0.7 0.15 300);
+  --shadow-panel: 0 1px 2px oklch(0.15 0.02 260 / 0.05), 0 6px 20px oklch(0.2 0.04 260 / 0.07);
+  --shadow-panel-hover:
+    0 2px 4px oklch(0.15 0.02 260 / 0.06), 0 10px 28px oklch(0.22 0.05 260 / 0.1);
+  --primary-soft: color-mix(in oklch, var(--primary) 14%, transparent);
+  --primary-glow: color-mix(in oklch, var(--primary) 28%, transparent);
+  --motion-duration-fast: 150ms;
+  --motion-duration-base: 280ms;
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
@@ -83,6 +91,10 @@
   --chart-3: oklch(0.68 0.1 240);
   --chart-4: oklch(0.704 0.191 22.216);
   --chart-5: oklch(0.75 0.15 300);
+  --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.35), 0 8px 24px oklch(0.1 0.04 260 / 0.45);
+  --shadow-panel-hover: 0 2px 6px oklch(0 0 0 / 0.4), 0 12px 32px oklch(0.12 0.05 260 / 0.55);
+  --primary-soft: color-mix(in oklch, var(--primary) 22%, transparent);
+  --primary-glow: color-mix(in oklch, var(--primary) 38%, transparent);
 }
 
 @theme inline {
@@ -173,6 +185,74 @@ body {
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .nbos-insight-panel {
+    @apply border-border/80 bg-card rounded-2xl border p-4;
+    background-image: linear-gradient(
+      165deg,
+      var(--card) 0%,
+      color-mix(in oklch, var(--primary) 5%, var(--card)) 100%
+    );
+    box-shadow: var(--shadow-panel);
+    transition:
+      box-shadow var(--motion-duration-base) var(--motion-ease-out),
+      border-color var(--motion-duration-fast) ease-out;
+  }
+
+  .nbos-insight-panel:hover {
+    box-shadow: var(--shadow-panel-hover);
+  }
+
+  .nbos-insight-panel-icon {
+    @apply flex size-8 shrink-0 items-center justify-center rounded-xl;
+    background: linear-gradient(
+      145deg,
+      color-mix(in oklch, var(--primary) 18%, var(--card)) 0%,
+      color-mix(in oklch, var(--primary) 8%, var(--muted)) 100%
+    );
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 12%, transparent);
+  }
+
+  .nbos-metric-row {
+    @apply border-border/70 bg-background/80 relative overflow-hidden rounded-xl border;
+    transition:
+      border-color var(--motion-duration-fast) ease-out,
+      background-color var(--motion-duration-fast) ease-out;
+  }
+
+  .nbos-metric-row:hover {
+    @apply border-primary/25 bg-background;
+  }
+
+  .nbos-metric-row-fill {
+    @apply bg-primary/25 absolute inset-x-0 bottom-0 origin-left rounded-b-[inherit];
+    height: 3px;
+  }
+
+  .nbos-metric-row-fill--peak {
+    @apply bg-primary;
+    box-shadow: 0 0 12px var(--primary-glow);
+  }
+}
+
+@keyframes nbos-pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.92);
+  }
+}
+
+@layer utilities {
+  .nbos-animate-pulse-soft {
+    animation: nbos-pulse-soft 2s var(--motion-ease-out) infinite;
   }
 }
 

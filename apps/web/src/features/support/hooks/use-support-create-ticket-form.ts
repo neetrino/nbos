@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { contactsApi, type Contact } from '@/lib/api/clients';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { projectsApi, type Project, type ProjectProductSummary } from '@/lib/api/projects';
 import { supportApi } from '@/lib/api/support';
@@ -14,6 +13,7 @@ type UseSupportCreateTicketFormParams = {
   portfolioCreateTicketFromUrl: boolean;
   refreshSupportViews: () => Promise<void>;
   setError: (message: string | null) => void;
+  defaultCategory?: string;
 };
 
 export function useSupportCreateTicketForm({
@@ -23,6 +23,7 @@ export function useSupportCreateTicketForm({
   portfolioCreateTicketFromUrl,
   refreshSupportViews,
   setError,
+  defaultCategory = 'UNCLASSIFIED',
 }: UseSupportCreateTicketFormParams) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createTitle, setCreateTitle] = useState('');
@@ -31,26 +32,8 @@ export function useSupportCreateTicketForm({
   const [createCategory, setCreateCategory] = useState('UNCLASSIFIED');
   const [createPriority, setCreatePriority] = useState('P3');
   const [createDescription, setCreateDescription] = useState('');
-  const [createCoverageDecision, setCreateCoverageDecision] = useState('');
-  const [createContactId, setCreateContactId] = useState('');
   const [createProductOptions, setCreateProductOptions] = useState<ProjectProductSummary[]>([]);
-  const [createContacts, setCreateContacts] = useState<Contact[]>([]);
   const [actionId, setActionId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!createOpen) {
-      return;
-    }
-    let cancelled = false;
-    void contactsApi.getAll({ pageSize: 200 }).then((res) => {
-      if (!cancelled) {
-        setCreateContacts(res.items);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [createOpen]);
 
   useEffect(() => {
     if (!createProjectId) {
@@ -83,13 +66,17 @@ export function useSupportCreateTicketForm({
     setCreateTitle('');
     setCreateProjectId(projectOk);
     setCreateProductId('');
-    setCreateCategory('UNCLASSIFIED');
+    setCreateCategory(defaultCategory);
     setCreatePriority('P3');
     setCreateDescription('');
-    setCreateCoverageDecision('');
-    setCreateContactId('');
     setCreateProductOptions([]);
-  }, [createOpen, portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, projectsForFilters]);
+  }, [
+    createOpen,
+    portfolioCreateTicketFromUrl,
+    portfolioProjectIdFromUrl,
+    projectsForFilters,
+    defaultCategory,
+  ]);
 
   useEffect(() => {
     if (!portfolioCreateTicketFromUrl || !portfolioProjectIdFromUrl || loading) {
@@ -103,21 +90,19 @@ export function useSupportCreateTicketForm({
 
   const submitCreateTicket = useCallback(async () => {
     const title = createTitle.trim();
-    if (!title || !createProjectId) {
-      setError('Title and project are required to create a ticket.');
+    if (!title) {
+      setError('Title is required to create a ticket.');
       return;
     }
     setActionId('create-ticket');
     try {
       await supportApi.create({
         title,
-        projectId: createProjectId,
+        projectId: createProjectId || undefined,
         category: createCategory,
         priority: createPriority,
         description: createDescription.trim() || undefined,
         productId: createProductId || undefined,
-        coverageDecision: createCoverageDecision || undefined,
-        contactId: createContactId || undefined,
       });
       setCreateOpen(false);
       setError(null);
@@ -134,8 +119,6 @@ export function useSupportCreateTicketForm({
     createPriority,
     createDescription,
     createProductId,
-    createCoverageDecision,
-    createContactId,
     refreshSupportViews,
     setError,
   ]);
@@ -155,12 +138,7 @@ export function useSupportCreateTicketForm({
     setCreatePriority,
     createDescription,
     setCreateDescription,
-    createCoverageDecision,
-    setCreateCoverageDecision,
-    createContactId,
-    setCreateContactId,
     createProductOptions,
-    createContacts,
     projectsForFilters,
     submitCreateTicket,
     createSubmitting: actionId === 'create-ticket',

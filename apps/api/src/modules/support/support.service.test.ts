@@ -12,6 +12,9 @@ describe('SupportService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.project.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+      Promise.resolve({ id: where.id }),
+    );
     auditService = { log: vi.fn().mockResolvedValue(undefined) } as Pick<AuditService, 'log'>;
     notificationService = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
     service = new SupportService(
@@ -119,6 +122,34 @@ describe('SupportService', () => {
       await service.create({ title: 'Request', projectId: 'p1', category: 'SERVICE_REQUEST' });
       expect(prisma.supportTicket.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ priority: 'P3' }) }),
+      );
+    });
+
+    it('creates ticket with title only for intake', async () => {
+      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.supportTicket.create.mockResolvedValue({
+        id: '1',
+        code: 'TKT-2026-0002',
+        projectId: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
+        status: 'NEW',
+      });
+
+      await service.create({ title: 'Intake only' });
+
+      expect(prisma.supportTicket.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            title: 'Intake only',
+            projectId: null,
+            category: 'UNCLASSIFIED',
+          }),
+        }),
       );
     });
 

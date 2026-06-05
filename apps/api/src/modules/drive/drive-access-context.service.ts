@@ -3,7 +3,7 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { PlatformAccessResolverService } from '../platform-access/platform-access-resolver.service';
 import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
-import { mergeDriveEffectiveScope } from './drive-effective-scope';
+import { isGlobalDriveOwnerRole, mergeDriveEffectiveScope } from './drive-effective-scope';
 
 @Injectable()
 export class DriveAccessContextService {
@@ -17,7 +17,9 @@ export class DriveAccessContextService {
     return {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
-      driveScope: mergeDriveEffectiveScope(rbacScope, policyMode),
+      driveScope: mergeDriveEffectiveScope(rbacScope, policyMode, {
+        globalOwnerRole: isGlobalDriveOwnerRole(user.role),
+      }),
     };
   }
 

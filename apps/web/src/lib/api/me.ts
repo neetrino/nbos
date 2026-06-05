@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { Employee } from './employees';
 import type { SalaryLineMonthDetail } from './payroll-runs';
 import type { CompensationPayoutPhase } from './payroll-runs';
 
@@ -112,6 +113,11 @@ export interface EmployeeWalletSnapshot {
 }
 
 export const meApi = {
+  async getEmployee(): Promise<Employee> {
+    const resp = await api.get<Employee>('/api/me/employee');
+    return resp.data;
+  },
+
   async getWallet(): Promise<EmployeeWalletSnapshot> {
     const resp = await api.get<EmployeeWalletSnapshot>('/api/me/wallet');
     return resp.data;

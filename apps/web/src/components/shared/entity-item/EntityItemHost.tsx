@@ -1,14 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { invoicesApi, paymentsApi, type Invoice } from '@/lib/api/finance';
+import { invoicesApi, paymentsApi, type Expense, type Invoice } from '@/lib/api/finance';
 import { bonusesApi, type BonusEntryListRow } from '@/lib/api/bonus';
+import type { Task } from '@/lib/api/tasks';
 import { EntityItemHostProvider } from './entity-item-context';
 import type { EntityItemOpenTarget } from './entity-item.types';
 
@@ -21,43 +22,85 @@ export interface EntityItemHostProps {
 
 export function EntityItemHost({ children, nested = true, onEntityChanged }: EntityItemHostProps) {
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [initialTask, setInitialTask] = useState<Task | null>(null);
   const [taskSheetOpen, setTaskSheetOpen] = useState(false);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [invoiceLoadId, setInvoiceLoadId] = useState<string | null>(null);
   const [invoiceSheetOpen, setInvoiceSheetOpen] = useState(false);
   const [bonusEntry, setBonusEntry] = useState<BonusEntryListRow | null>(null);
+  const [bonusEntryLoadId, setBonusEntryLoadId] = useState<string | null>(null);
   const [bonusEntrySheetOpen, setBonusEntrySheetOpen] = useState(false);
   const [expenseId, setExpenseId] = useState<string | null>(null);
+  const [initialExpense, setInitialExpense] = useState<Expense | null>(null);
   const [expenseSheetOpen, setExpenseSheetOpen] = useState(false);
 
-  const openEntityItem = useCallback(async (target: EntityItemOpenTarget) => {
+  useEffect(() => {
+    if (!invoiceSheetOpen || !invoiceLoadId || invoice?.id === invoiceLoadId) return;
+    let cancelled = false;
+    void invoicesApi
+      .getById(invoiceLoadId)
+      .then((loaded) => {
+        if (!cancelled) setInvoice(loaded);
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(caught, 'Invoice could not be opened.'));
+          setInvoiceSheetOpen(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setInvoiceLoadId(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [invoice?.id, invoiceLoadId, invoiceSheetOpen]);
+
+  useEffect(() => {
+    if (!bonusEntrySheetOpen || !bonusEntryLoadId || bonusEntry?.id === bonusEntryLoadId) return;
+    let cancelled = false;
+    void bonusesApi
+      .getById(bonusEntryLoadId)
+      .then((loaded) => {
+        if (!cancelled) setBonusEntry(loaded);
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(caught, 'Bonus entry could not be opened.'));
+          setBonusEntrySheetOpen(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setBonusEntryLoadId(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bonusEntry?.id, bonusEntryLoadId, bonusEntrySheetOpen]);
+
+  const openEntityItem = useCallback((target: EntityItemOpenTarget) => {
     if (target.kind === 'task') {
       setTaskId(target.id);
+      setInitialTask(target.task ?? null);
       setTaskSheetOpen(true);
       return;
     }
     if (target.kind === 'expense') {
       setExpenseId(target.id);
+      setInitialExpense(target.expense ?? null);
       setExpenseSheetOpen(true);
       return;
     }
     if (target.kind === 'invoice') {
-      try {
-        const loaded = await invoicesApi.getById(target.id);
-        setInvoice(loaded);
-        setInvoiceSheetOpen(true);
-      } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Invoice could not be opened.'));
-      }
+      setInvoice(target.invoice ?? null);
+      setInvoiceLoadId(target.invoice ? null : target.id);
+      setInvoiceSheetOpen(true);
       return;
     }
     if (target.kind === 'bonus_entry') {
-      try {
-        const loaded = await bonusesApi.getById(target.id);
-        setBonusEntry(loaded);
-        setBonusEntrySheetOpen(true);
-      } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Bonus entry could not be opened.'));
-      }
+      setBonusEntry(target.entry ?? null);
+      setBonusEntryLoadId(target.entry ? null : target.id);
+      setBonusEntrySheetOpen(true);
     }
   }, []);
 
@@ -65,22 +108,34 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
 
   const handleTaskSheetOpenChange = useCallback((next: boolean) => {
     setTaskSheetOpen(next);
-    if (!next) setTaskId(null);
+    if (!next) {
+      setTaskId(null);
+      setInitialTask(null);
+    }
   }, []);
 
   const handleInvoiceSheetOpenChange = useCallback((next: boolean) => {
     setInvoiceSheetOpen(next);
-    if (!next) setInvoice(null);
+    if (!next) {
+      setInvoice(null);
+      setInvoiceLoadId(null);
+    }
   }, []);
 
   const handleBonusEntrySheetOpenChange = useCallback((next: boolean) => {
     setBonusEntrySheetOpen(next);
-    if (!next) setBonusEntry(null);
+    if (!next) {
+      setBonusEntry(null);
+      setBonusEntryLoadId(null);
+    }
   }, []);
 
   const handleExpenseSheetOpenChange = useCallback((next: boolean) => {
     setExpenseSheetOpen(next);
-    if (!next) setExpenseId(null);
+    if (!next) {
+      setExpenseId(null);
+      setInitialExpense(null);
+    }
   }, []);
 
   const handleInvoiceUpdated = useCallback(
@@ -120,12 +175,16 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
     [onEntityChanged],
   );
 
+  const invoiceLoading = invoiceSheetOpen && !invoice && invoiceLoadId != null;
+  const bonusLoading = bonusEntrySheetOpen && !bonusEntry && bonusEntryLoadId != null;
+
   return (
     <EntityItemHostProvider value={api}>
       {children}
 
       <TaskSheet
         taskId={taskId}
+        initialTask={initialTask}
         open={taskSheetOpen}
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={() => onEntityChanged?.()}
@@ -135,6 +194,7 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
       <InvoiceSheet
         invoice={invoice}
         open={invoiceSheetOpen}
+        loading={invoiceLoading}
         onOpenChange={handleInvoiceSheetOpenChange}
         onInvoiceUpdated={handleInvoiceUpdated}
         onMoneyStatusChange={handleMoneyStatusChange}
@@ -145,6 +205,7 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
       <BonusEntryReleasesSheet
         entry={bonusEntry}
         open={bonusEntrySheetOpen}
+        loading={bonusLoading}
         onOpenChange={handleBonusEntrySheetOpenChange}
         onAfterPatch={() => onEntityChanged?.()}
         forceNestedBackdrop={nested}
@@ -152,6 +213,7 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
 
       <ExpenseDetailSheet
         expenseId={expenseId}
+        initialExpense={initialExpense}
         open={expenseSheetOpen}
         onOpenChange={handleExpenseSheetOpenChange}
         onExpenseUpdated={() => onEntityChanged?.()}

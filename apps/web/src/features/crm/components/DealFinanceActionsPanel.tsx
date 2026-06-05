@@ -1,9 +1,8 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { CheckSquare, ExternalLink, FileText, Plus, Rocket, TrendingUp } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { CheckSquare, FileText, Plus, Rocket, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import {
@@ -12,6 +11,7 @@ import {
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
+import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { dealOrderToCreateInvoiceOrder } from '@/features/finance/components/invoices/deal-order-to-create-invoice-order';
@@ -193,13 +193,11 @@ export function DealFinanceActionsPanel({
             </Button>
           ) : null}
 
-          <Link
+          <EntityDriveNavAction
             href={buildDriveHrefWithDeal(deal.id)}
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full gap-1.5')}
-          >
-            <ExternalLink className="size-4" aria-hidden />
-            Open Drive
-          </Link>
+            label="Open Drive"
+            variant="block"
+          />
 
           {actionError ? <p className="text-destructive text-xs">{actionError}</p> : null}
         </div>

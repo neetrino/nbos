@@ -57,6 +57,8 @@ export interface Product {
   } | null;
   _count: { extensions: number; tasks: number; tickets: number };
   checklistStageProgress?: ChecklistStageProgress | null;
+  /** Product delivery Work Space id when provisioned; null if not yet created. */
+  workSpaceId?: string | null;
 }
 
 export interface ProductTechnicalProfileRef {
@@ -116,6 +118,10 @@ export interface ProductExtensionRef {
   assignedTo: string | null;
   assignee: ProductEmployee | null;
   createdAt: string;
+  order?: {
+    id: string;
+    deal?: { id: string; code?: string; name?: string | null } | null;
+  } | null;
 }
 
 export interface ProductTaskRef {

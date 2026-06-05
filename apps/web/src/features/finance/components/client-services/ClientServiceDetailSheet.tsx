@@ -35,6 +35,7 @@ import {
 } from '@/features/finance/utils/client-service-form-state';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
@@ -46,6 +47,7 @@ import { useClientServiceProjects } from './use-client-service-projects';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
+  initialService?: ClientServiceRecord | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
@@ -74,17 +76,29 @@ function closeCreateDialogs(setters: {
 
 export function ClientServiceDetailSheet({
   serviceId,
+  initialService = null,
   open,
   onOpenChange,
   onSaved,
   onRequestDelete,
 }: ClientServiceDetailSheetProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const [service, setService] = useState<ClientServiceRecord | null>(null);
+  const {
+    entity: service,
+    setEntity: setService,
+    loading,
+    error,
+    refresh: fetchService,
+  } = useEntityDetailHydration({
+    entityId: serviceId ?? '',
+    open: open && Boolean(serviceId),
+    initialEntity: initialService,
+    fetchById: clientServicesApi.getById,
+    isDirty: () => dirtyRef.current,
+    loadErrorMessage: 'Client service could not be loaded.',
+  });
   const [draft, setDraft] = useState<ClientServiceFormState | null>(null);
   const [snap, setSnap] = useState<ClientServiceFormState | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
@@ -93,27 +107,6 @@ export function ClientServiceDetailSheet({
   const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
   const projects = useClientServiceProjects(open);
-
-  const fetchService = useCallback(async () => {
-    if (!serviceId) return;
-    setLoading(true);
-    try {
-      const row = await clientServicesApi.getById(serviceId);
-      setService(row);
-      setError(null);
-      setFormError(null);
-    } catch (caught) {
-      setService(null);
-      setError(getApiErrorMessage(caught, 'Client service could not be loaded.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [serviceId]);
-
-  useEffect(() => {
-    if (!open || !serviceId) return;
-    void fetchService();
-  }, [open, serviceId, fetchService]);
 
   useEffect(() => {
     setActiveTab('general');
@@ -242,7 +235,7 @@ export function ClientServiceDetailSheet({
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-            {loading ? (
+            {loading && !service ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : service ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -280,7 +273,7 @@ export function ClientServiceDetailSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-5 py-5">
-              {loading ? (
+              {loading && !service ? (
                 <LoadingState count={3} />
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchService()} />

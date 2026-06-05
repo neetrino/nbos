@@ -74,6 +74,35 @@ export class ClientServicesController {
     });
   }
 
+  @Get('board')
+  @ApiOperation({ summary: 'Load client service kanban board (columns + first page per column)' })
+  @ApiQuery({ name: 'view', required: true, enum: ['status', 'months'] })
+  @ApiQuery({ name: 'year', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  async getBoard(
+    @Query('view') view: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
+    @Query('type') type?: string,
+    @Query('status') status?: string,
+    @Query('billingModel') billingModel?: string,
+    @Query('search') search?: string,
+    @Query('year') year?: string,
+  ) {
+    return this.clientServicesService.getBoard({
+      view: view as 'status' | 'months',
+      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+      projectId,
+      productId,
+      type,
+      status,
+      billingModel,
+      search,
+      year: year ? parseInt(year, 10) : undefined,
+    });
+  }
+
   @Get('stats')
   @ApiOperation({ summary: 'Get client service scope statistics' })
   @ApiQuery({ name: 'year', required: false })

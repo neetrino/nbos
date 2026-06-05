@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { FolderKanban, LayoutGrid, List, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +13,20 @@ import {
   ErrorState,
   type FilterConfig,
   LoadingState,
+  ListPagination,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  WorkSpaceNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
+import type { FullProduct } from '@/lib/api/products';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
-import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
-import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
+import {
+  loadWorkSpaceProductForSheets,
+  WorkSpacesEntitySheetsHost,
+} from './WorkSpacesEntitySheetsHost';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
 type WorkSpaceView = 'grid' | 'list';
@@ -40,6 +48,8 @@ const WORKSPACE_VIEW_OPTIONS: ViewModeOption<WorkSpaceView>[] = [
 
 export function WorkSpacesPage() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [sheetProduct, setSheetProduct] = useState<FullProduct | null>(null);
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const directory = useWorkSpacesDirectory();
   const {
     tab,
@@ -49,8 +59,6 @@ export function WorkSpacesPage() {
     mode,
     setMode,
     setPage,
-    pageSize,
-    setPageSize,
     view,
     setView,
     items,
@@ -61,11 +69,27 @@ export function WorkSpacesPage() {
     refetch,
   } = directory;
 
+  const handleOpenProductDelivery = useCallback(
+    async (productId: string) => {
+      try {
+        const loaded = await loadWorkSpaceProductForSheets(productId);
+        setSheetProduct(loaded);
+        openDeliveryItem(`product-${productId}`);
+      } catch {
+        toast.error('Product could not be loaded.');
+      }
+    },
+    [openDeliveryItem],
+  );
+
+  const handleOpenProductDeal = useCallback(
+    (dealId: string) => {
+      openDeal(dealId);
+    },
+    [openDeal],
+  );
+
   const workSpaceFilterConfigs = useMemo((): FilterConfig[] => {
-    const pageSizeOptions = WORK_SPACES_PAGE_SIZE_OPTIONS.map((n) => ({
-      value: String(n),
-      label: `${n} / page`,
-    }));
     return [
       {
         key: 'mode',
@@ -74,12 +98,6 @@ export function WorkSpacesPage() {
           { value: 'scrum', label: 'Scrum' },
           { value: 'kanban', label: 'Kanban' },
         ],
-      },
-      {
-        key: 'pageSize',
-        label: 'Per page',
-        options: pageSizeOptions,
-        includeAllOption: false,
       },
     ];
   }, []);
@@ -114,14 +132,10 @@ export function WorkSpacesPage() {
             onSearchChange={setSearchInput}
             searchPlaceholder="Search by name, project, product…"
             filters={workSpaceFilterConfigs}
-            filterValues={{ mode, pageSize: String(pageSize) }}
+            filterValues={{ mode }}
             onFilterChange={(key, value) => {
               if (key === 'mode') {
                 setMode(value as 'all' | 'scrum' | 'kanban');
-                return;
-              }
-              if (key === 'pageSize') {
-                setPageSize(Number(value));
               }
             }}
             onClearAll={() => {
@@ -178,9 +192,14 @@ export function WorkSpacesPage() {
           }
         />
       ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
           {items.map((workspace) => (
-            <WorkSpaceCard key={workspace.id} workspace={workspace} />
+            <WorkSpaceNavigableCard
+              key={workspace.id}
+              workspace={workspace}
+              onOpenProductDelivery={handleOpenProductDelivery}
+              onOpenProductDeal={handleOpenProductDeal}
+            />
           ))}
         </div>
       ) : (
@@ -190,7 +209,7 @@ export function WorkSpacesPage() {
       )}
 
       {!loading && !error && items.length > 0 ? (
-        <WorkSpacesPaginationFooter meta={meta} onPageChange={setPage} />
+        <ListPagination meta={meta} onPageChange={setPage} />
       ) : null}
 
       <CreateStandaloneWorkSpaceDialog
@@ -198,50 +217,11 @@ export function WorkSpacesPage() {
         onOpenChange={setCreateOpen}
         onCreated={() => void refetch()}
       />
-    </div>
-  );
-}
 
-function WorkSpacesPaginationFooter({
-  meta,
-  onPageChange,
-}: {
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
-  onPageChange: (page: number) => void;
-}) {
-  const start = meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
-  const end = Math.min(meta.page * meta.pageSize, meta.total);
-
-  return (
-    <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-      <span className="tabular-nums">
-        {start}–{end} of {meta.total}
-      </span>
-      {meta.totalPages > 1 ? (
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={meta.page <= 1}
-            onClick={() => onPageChange(meta.page - 1)}
-          >
-            Previous
-          </Button>
-          <span className="text-muted-foreground px-1 tabular-nums">
-            Page {meta.page} of {meta.totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={meta.page >= meta.totalPages}
-            onClick={() => onPageChange(meta.page + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      ) : null}
+      <WorkSpacesEntitySheetsHost
+        sheetProduct={sheetProduct}
+        onSheetProductChange={setSheetProduct}
+      />
     </div>
   );
 }

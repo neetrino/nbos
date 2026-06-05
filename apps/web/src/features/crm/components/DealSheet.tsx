@@ -15,6 +15,7 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   EntityDetailSheetContent,
+  EntityDetailSheetLoadingShell,
   EntityItemHost,
 } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
@@ -215,7 +216,17 @@ export function DealSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
-  if (!deal) return null;
+  if (!open) return null;
+
+  if (!deal) {
+    return (
+      <EntityDetailSheetLoadingShell
+        open={open}
+        onOpenChange={onOpenChange}
+        label="Loading deal…"
+      />
+    );
+  }
 
   const typeVisual = getDealTypePresentation(deal.type);
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);

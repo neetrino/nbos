@@ -28,12 +28,15 @@ export function BonusEntryReleasesSheet({
   open,
   onOpenChange,
   onAfterPatch,
+  loading = false,
   forceNestedBackdrop,
 }: {
   entry: BonusEntryListRow | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
   onAfterPatch: () => void;
+  /** True while nested host fetches entry by id. */
+  loading?: boolean;
   forceNestedBackdrop?: boolean;
 }) {
   const ledger = useBonusEntryReleasesLedger(entry, open, onAfterPatch);
@@ -65,6 +68,13 @@ export function BonusEntryReleasesSheet({
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
+          {loading && !entry ? (
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Loading bonus entry…
+            </div>
+          ) : null}
+
           {entry ? (
             <BonusEntryReleasesSheetSummary
               entry={entry}

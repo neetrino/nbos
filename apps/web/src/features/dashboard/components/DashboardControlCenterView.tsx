@@ -16,11 +16,8 @@ import { PinnedActions } from './DashboardPinnedActions';
 
 const PINNED_SKELETON_COUNT = 6;
 
-/**
- * Caps the notes column (~95% viewport) so long note lists scroll inside the panel.
- * The dashboard page itself remains scrollable in the app shell (`main`).
- */
-const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[min(95dvh,calc(100dvh-4.5rem))]';
+/** Topbar (4rem) + main inset pt-4 (1rem) — keeps notes column inside `main` without page scroll. */
+const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[calc(100dvh-5rem)]';
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
@@ -119,7 +116,7 @@ export function DashboardLoadingSkeleton() {
         <div className="min-h-0 space-y-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
-              <Skeleton key={index} className="h-20 rounded-md" />
+              <Skeleton key={index} className="min-h-[4.75rem] rounded-xl" />
             ))}
           </div>
           <div className="grid gap-5 lg:grid-cols-2">

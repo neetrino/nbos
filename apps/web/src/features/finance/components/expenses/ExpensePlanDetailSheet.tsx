@@ -37,6 +37,7 @@ import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 
 export interface ExpensePlanDetailSheetProps {
   planId: string | null;
+  initialPlan?: ExpensePlan | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPlanUpdated?: (plan: ExpensePlan) => void;
@@ -45,13 +46,18 @@ export interface ExpensePlanDetailSheetProps {
 
 export function ExpensePlanDetailSheet({
   planId,
+  initialPlan = null,
   open,
   onOpenChange,
   onPlanUpdated,
   onPlanDeleted,
 }: ExpensePlanDetailSheetProps) {
   const activePlanId = open && planId ? planId : '';
-  const { plan, loading, error, fetchPlan } = useExpensePlanDetail(activePlanId);
+  const { plan, loading, error, fetchPlan } = useExpensePlanDetail(activePlanId, {
+    open,
+    initialPlan,
+    isDirty: () => generalDirtyRef.current,
+  });
   const [activeTab, setActiveTab] = useState<ExpensePlanDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<ExpensePlanGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<ExpensePlanGeneralDraft | null>(null);
@@ -175,7 +181,7 @@ export function ExpensePlanDetailSheet({
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-            {loading ? (
+            {loading && !plan ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : plan ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -205,7 +211,7 @@ export function ExpensePlanDetailSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-5 py-5">
-              {loading ? (
+              {loading && !plan ? (
                 <LoadingState count={3} />
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchPlan()} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useDebouncedValue } from '@/components/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FileText, FolderOpen, LayoutGrid, Plus } from 'lucide-react';
@@ -16,6 +17,7 @@ import {
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
+import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
 import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
 
@@ -29,12 +31,7 @@ export default function DocumentsHomePage() {
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 320);
-    return () => window.clearTimeout(t);
-  }, [search]);
+  const debouncedSearch = useDebouncedValue(search, DOCUMENTS_SEARCH_DEBOUNCE_MS).trim();
 
   const load = useCallback(async () => {
     setLoading(true);

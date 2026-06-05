@@ -19,7 +19,7 @@ import {
   CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
@@ -27,7 +27,7 @@ import { useClientServiceList } from './use-client-service-list';
 interface ClientServiceListViewProps {
   baseParams: ClientServiceRecordListParams;
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
   onCreate: () => void;
 }
 
@@ -93,7 +93,7 @@ export function ClientServiceListView({
                 'hover:bg-muted/40 cursor-pointer',
                 service.overdue && 'bg-red-50/40 dark:bg-red-950/10',
               )}
-              onClick={() => onOpen(service.id)}
+              onClick={() => onOpen(service)}
             >
               <TableCell className="max-w-[240px] py-2.5">
                 <ListCellPrimary>{service.name}</ListCellPrimary>

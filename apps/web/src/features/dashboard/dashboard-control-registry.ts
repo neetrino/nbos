@@ -48,11 +48,7 @@ export type DashboardPinnedActionKey =
   | 'open-messenger'
   | 'open-credentials'
   | 'mail-inbox';
-export type DashboardWidgetKey =
-  | 'open-deals'
-  | 'open-tasks'
-  | 'open-support-tickets'
-  | 'detailed-reports';
+export type DashboardWidgetKey = 'leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
 export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
@@ -185,21 +181,16 @@ export const PINNED_ACTIONS: PinnedAction[] = [
 ];
 
 export const MINI_METRICS = [
-  { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals' },
-  { id: 'open-tasks', icon: CheckSquare, label: 'Open tasks', key: 'openTasks' },
+  { id: 'leads', icon: Plus, label: 'Leads', key: 'leads', href: '/crm/leads' },
+  { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals', href: '/crm/deals' },
   {
     id: 'open-support-tickets',
     icon: Headphones,
-    label: 'Open support tickets',
+    label: 'Open tickets',
     key: 'openTickets',
+    href: '/support',
   },
-  {
-    id: 'detailed-reports',
-    icon: FolderKanban,
-    label: 'Detailed reports',
-    value: 'Open catalog',
-    href: '/reports',
-  },
+  { id: 'open-tasks', icon: CheckSquare, label: 'Open tasks', key: 'openTasks', href: '/tasks' },
 ] as const;
 
 export type MiniMetricDefinition = (typeof MINI_METRICS)[number];

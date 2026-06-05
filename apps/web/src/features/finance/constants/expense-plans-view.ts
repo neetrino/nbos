@@ -1,11 +1,8 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { createPersistedScalarStore } from '@/lib/persisted-client-state';
 
 export type ExpensePlansViewMode = 'grid' | 'board' | 'list';
-
-const STORAGE_KEY = 'nbos:finance:expense-plans-view';
-const VIEW_MODE_CHANGE_EVENT = 'nbos:expense-plans-view-change';
 
 export const DEFAULT_EXPENSE_PLANS_VIEW_MODE: ExpensePlansViewMode = 'grid';
 
@@ -15,55 +12,17 @@ export const EXPENSE_PLANS_VIEW_OPTIONS = [
   { value: 'list' as const, label: 'List' },
 ];
 
-function parseStoredViewMode(raw: string | null): ExpensePlansViewMode {
-  if (raw === 'list') return 'list';
-  if (raw === 'board') return 'board';
-  return DEFAULT_EXPENSE_PLANS_VIEW_MODE;
-}
-
-export function readExpensePlansViewMode(): ExpensePlansViewMode {
-  if (typeof window === 'undefined') {
+const expensePlansViewStore = createPersistedScalarStore<ExpensePlansViewMode>({
+  storageKey: 'nbos:finance:expense-plans-view',
+  defaultValue: DEFAULT_EXPENSE_PLANS_VIEW_MODE,
+  changeEvent: 'nbos:expense-plans-view-change',
+  parse: (raw) => {
+    if (raw === 'list') return 'list';
+    if (raw === 'board') return 'board';
     return DEFAULT_EXPENSE_PLANS_VIEW_MODE;
-  }
-  return parseStoredViewMode(window.localStorage.getItem(STORAGE_KEY));
-}
+  },
+});
 
-export function writeExpensePlansViewMode(mode: ExpensePlansViewMode): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.localStorage.setItem(STORAGE_KEY, mode);
-  window.dispatchEvent(new Event(VIEW_MODE_CHANGE_EVENT));
-}
-
-function subscribeExpensePlansViewMode(onStoreChange: () => void): () => void {
-  const onChange = () => onStoreChange();
-  window.addEventListener('storage', onChange);
-  window.addEventListener(VIEW_MODE_CHANGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener('storage', onChange);
-    window.removeEventListener(VIEW_MODE_CHANGE_EVENT, onChange);
-  };
-}
-
-function getExpensePlansViewModeServerSnapshot(): ExpensePlansViewMode {
-  return DEFAULT_EXPENSE_PLANS_VIEW_MODE;
-}
-
-/** SSR-safe view mode synced with localStorage after hydration. */
-export function useExpensePlansViewMode(): [
-  ExpensePlansViewMode,
-  (mode: ExpensePlansViewMode) => void,
-] {
-  const view = useSyncExternalStore(
-    subscribeExpensePlansViewMode,
-    readExpensePlansViewMode,
-    getExpensePlansViewModeServerSnapshot,
-  );
-
-  const setView = useCallback((mode: ExpensePlansViewMode) => {
-    writeExpensePlansViewMode(mode);
-  }, []);
-
-  return [view, setView];
-}
+export const readExpensePlansViewMode = expensePlansViewStore.read;
+export const writeExpensePlansViewMode = expensePlansViewStore.write;
+export const useExpensePlansViewMode = expensePlansViewStore.useValue;

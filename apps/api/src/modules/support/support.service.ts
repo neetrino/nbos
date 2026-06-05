@@ -95,7 +95,7 @@ const SUPPORT_TASK_INCLUDE = {
 
 interface CreateTicketDto {
   title: string;
-  projectId: string;
+  projectId?: string;
   category?: string;
   description?: string;
   productId?: string;
@@ -224,24 +224,47 @@ export class SupportService {
   }
 
   async create(data: CreateTicketDto) {
+    const title = data.title?.trim();
+    if (!title) {
+      throw new BadRequestException('Title is required.');
+    }
+
+    const projectId = data.projectId?.trim() || null;
+    const productId = data.productId ?? null;
+
+    if (productId && !projectId) {
+      throw new BadRequestException('Project is required when product is set.');
+    }
+
+    if (projectId) {
+      const project = await this.prisma.project.findUnique({
+        where: { id: projectId },
+        select: { id: true },
+      });
+      if (!project) {
+        throw new NotFoundException(`Project ${projectId} not found`);
+      }
+    }
+
     const code = await this.generateCode();
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
-    const productId = data.productId ?? null;
     const category = (data.category as TicketCategoryEnum | undefined) ?? 'UNCLASSIFIED';
 
-    await assertSupportTechnicalLinksValid(this.prisma, {
-      projectId: data.projectId,
-      productId,
-      technicalAssetId: data.technicalAssetId,
-      technicalEnvironmentId: data.technicalEnvironmentId,
-    });
+    if (projectId) {
+      await assertSupportTechnicalLinksValid(this.prisma, {
+        projectId,
+        productId,
+        technicalAssetId: data.technicalAssetId,
+        technicalEnvironmentId: data.technicalEnvironmentId,
+      });
+    }
 
     const ticket = await this.prisma.supportTicket.create({
       data: {
         code,
-        title: data.title,
-        projectId: data.projectId,
+        title,
+        projectId,
         productId: data.productId,
         category,
         coverageDecision: data.coverageDecision as SupportCoverageEnum | undefined,
@@ -294,12 +317,18 @@ export class SupportService {
       nextTechnicalEnvironmentId = null;
     }
 
-    await assertSupportTechnicalLinksValid(this.prisma, {
-      projectId: nextProjectId,
-      productId: nextProductId,
-      technicalAssetId: nextTechnicalAssetId,
-      technicalEnvironmentId: nextTechnicalEnvironmentId,
-    });
+    if (nextProductId && !nextProjectId) {
+      throw new BadRequestException('Project is required when product is set.');
+    }
+
+    if (nextProjectId) {
+      await assertSupportTechnicalLinksValid(this.prisma, {
+        projectId: nextProjectId,
+        productId: nextProductId,
+        technicalAssetId: nextTechnicalAssetId,
+        technicalEnvironmentId: nextTechnicalEnvironmentId,
+      });
+    }
 
     if (data.resolutionSummary !== undefined) {
       if (existing.status === 'CLOSED') {
@@ -313,7 +342,9 @@ export class SupportService {
       ...(data.resolutionSummary !== undefined && {
         resolutionSummary: data.resolutionSummary?.trim() || null,
       }),
-      ...(data.projectId && { project: { connect: { id: data.projectId } } }),
+      ...(data.projectId !== undefined && {
+        project: data.projectId ? { connect: { id: data.projectId } } : { disconnect: true },
+      }),
       ...(data.productId !== undefined && {
         product: data.productId ? { connect: { id: data.productId } } : { disconnect: true },
       }),
@@ -703,7 +734,7 @@ export class SupportService {
       code: string;
       title: string;
       assignedTo: string | null;
-      project: { name: string };
+      project: { name: string } | null;
     },
     mergedReason: string | null,
   ): Promise<void> {
@@ -730,7 +761,7 @@ export class SupportService {
         payload: {
           ticketCode: ticket.code,
           ticketTitle: ticket.title,
-          projectName: ticket.project.name,
+          projectName: ticket.project?.name ?? 'Unassigned',
           reason: mergedReason,
         },
       });
@@ -855,6 +886,9 @@ export class SupportService {
     if (!ticket.productId) {
       throw new BadRequestException('Product context is required to create an Extension Deal.');
     }
+    if (!ticket.projectId) {
+      throw new BadRequestException('Project context is required to create an Extension Deal.');
+    }
     if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
       throw new BadRequestException('Resolved or closed support tickets cannot create deals.');
     }
@@ -881,7 +915,9 @@ export class SupportService {
   private buildTaskLinks(ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>) {
     return [
       { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticket.id },
-      { entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId },
+      ...(ticket.projectId
+        ? [{ entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId }]
+        : []),
       ...(ticket.productId
         ? [{ entityType: PRODUCT_ENTITY_TYPE, entityId: ticket.productId }]
         : []),
@@ -931,7 +967,7 @@ export class SupportService {
 
   private async logStatusEvent(
     ticketId: string,
-    projectId: string,
+    projectId: string | null,
     actorId: string,
     action: string,
     changes: InputJsonValue,
@@ -941,7 +977,7 @@ export class SupportService {
       entityId: ticketId,
       action,
       userId: actorId,
-      projectId,
+      projectId: projectId ?? undefined,
       changes,
     });
   }

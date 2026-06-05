@@ -3,6 +3,8 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
+import { cn } from '@/lib/utils';
+
 /** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
 export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
 
@@ -223,6 +225,21 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 
+/** Compact select on {@link RelationPickerChip} trailing slot (no chevron, thin trigger). */
+export const RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS =
+  'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
+
+/** Same slot as above — plain label by default; muted fill on hover, focus, or open (no border). */
+export const RELATION_PICKER_CHIP_TRAILING_SELECT_IDLE_CLASS = [
+  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
+  'border-0 bg-transparent text-muted-foreground font-normal shadow-none',
+  'dark:border-0 dark:bg-transparent',
+  'hover:border-0 hover:bg-muted/30 hover:text-foreground hover:shadow-none',
+  'dark:hover:border-0 dark:hover:bg-input/45',
+  'focus-visible:border-0 focus-visible:bg-muted/30 focus-visible:text-foreground focus-visible:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0',
+  'data-popup-open:border-0 data-popup-open:bg-muted/30 data-popup-open:text-foreground data-popup-open:shadow-none',
+].join(' ');
+
 /** Default relation picker dropdown list (~4 rows). */
 export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
 
@@ -239,22 +256,11 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 /** Use on Save / Cancel in detail sheets and sticky form footers. */
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
-/** Tab strip wrapper (Deal / entity detail sheets). */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS =
-  'border-border shrink-0 border-b px-5 dark:border-stone-800';
+/** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
 
-export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex gap-1 overflow-x-auto';
+export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 
-/** Shared tab button — pairs with active/inactive classes below. */
-export const DETAIL_SHEET_TAB_BUTTON_BASE_CLASS =
-  'relative flex shrink-0 items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors';
-
-/** Active tab: brand tint (`--sidebar-accent` / `--primary`). */
-export const DETAIL_SHEET_TAB_ACTIVE_CLASS = 'bg-sidebar-accent text-sidebar-accent-foreground';
-
-export const DETAIL_SHEET_TAB_INACTIVE_CLASS =
-  'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300';
-
-/** Bottom indicator — matches floating rail `bg-primary`. */
-export const DETAIL_SHEET_TAB_INDICATOR_CLASS =
-  'absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-primary';
+/** Full-width page tab bar (no horizontal sheet padding). */
+export const PAGE_TAB_BAR_WRAPPER_CLASS =
+  'border-border flex shrink-0 items-center gap-1 border-b pb-0';

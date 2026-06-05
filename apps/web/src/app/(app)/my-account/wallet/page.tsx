@@ -1,11 +1,7 @@
-import { Suspense } from 'react';
-import { LoadingState } from '@/components/shared';
-import { EmployeeWalletPage } from '@/features/account/components/EmployeeWalletPage';
+import { redirect } from 'next/navigation';
+import { MY_WALLET_OPEN_QUERY } from '@/features/account/constants/my-account-sheet';
 
-export default function MyAccountWalletPage() {
-  return (
-    <Suspense fallback={<LoadingState />}>
-      <EmployeeWalletPage />
-    </Suspense>
-  );
+/** Legacy bookmark — opens global wallet sheet on dashboard. */
+export default function MyAccountWalletLegacyRedirectPage() {
+  redirect(`/dashboard?${MY_WALLET_OPEN_QUERY}=1`);
 }

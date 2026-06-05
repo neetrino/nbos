@@ -22,7 +22,9 @@ import { usePageHeroCompactToolbar } from './use-page-hero-compact-toolbar';
 import { usePageHeroToolsRowOverflow } from './use-page-hero-tools-row-overflow';
 
 export interface PageHeroProps {
-  title: string;
+  title?: string;
+  /** When false, does not update the app header module title (e.g. entity detail with its own title). */
+  syncModuleTitle?: boolean;
   tabs?: ReactNode;
   search?: ReactNode;
   secondaryTabs?: ReactNode;
@@ -41,6 +43,7 @@ export function PageHero(props: PageHeroProps) {
 
 function PageHeroInner({
   title,
+  syncModuleTitle = true,
   tabs,
   search,
   secondaryTabs,
@@ -50,7 +53,7 @@ function PageHeroInner({
 }: PageHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const toolsRowRef = useRef<HTMLDivElement>(null);
-  useHeaderModuleTitle(title);
+  useHeaderModuleTitle(syncModuleTitle ? (title ?? null) : null, syncModuleTitle);
 
   const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
@@ -91,7 +94,16 @@ function PageHeroInner({
             <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
           ) : null}
           {hasSearch || trailingNode ? (
-            <div ref={toolsRowRef} className={cn(PAGE_HERO_TOOLS_ROW, filterOverflowClass)}>
+            <div
+              ref={toolsRowRef}
+              className={cn(
+                PAGE_HERO_TOOLS_ROW,
+                !hasSearch &&
+                  trailingNode &&
+                  'ml-auto min-w-0 flex-[0_0_auto] shrink-0 justify-end',
+                filterOverflowClass,
+              )}
+            >
               {search ? (
                 <div
                   className={cn(

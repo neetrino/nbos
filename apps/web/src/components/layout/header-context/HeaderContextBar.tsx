@@ -30,7 +30,7 @@ export function HeaderContextBar() {
         </div>
       );
     case 'custom':
-      return <div className="flex min-w-0 flex-1 items-center">{content.node}</div>;
+      return <div className="flex min-w-0 flex-1 items-center self-stretch">{content.node}</div>;
     default: {
       const _exhaustive: never = content;
       return _exhaustive;

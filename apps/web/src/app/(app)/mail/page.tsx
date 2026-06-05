@@ -12,6 +12,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  ListPagination,
   type PageHeroTabOption,
 } from '@/components/shared';
 import {
@@ -273,76 +274,41 @@ export default function MailInboxPage() {
                   }
                 />
               ) : threads.length === 0 ? (
-                <div className="space-y-3">
-                  <p className="text-muted-foreground text-sm">
-                    No threads on this page. Try the previous page.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={loading || !threadListMeta?.hasPreviousPage}
-                    onClick={() => setThreadPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous page
-                  </Button>
-                </div>
+                <p className="text-muted-foreground text-sm">No threads on this page.</p>
               ) : (
-                <>
-                  <ul className="divide-y rounded-md border">
-                    {threads.map((t) => (
-                      <li key={t.id}>
-                        <Link
-                          href={`/mail/threads/${t.id}`}
-                          className="hover:bg-muted/50 flex flex-col gap-0.5 px-3 py-3 text-sm"
-                        >
-                          <span className="font-medium">
-                            {formatThreadTitle(t.subjectNormalized)}
-                          </span>
-                          <span className="text-muted-foreground text-xs">
-                            {new Date(t.lastMessageAt).toLocaleString()}
-                            {t.hasUnread ? ' · Unread' : ''}
-                            {t.needsBusinessLink ? ' · Needs link' : ''}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  {threadListMeta && threadListMeta.totalPages > 1 ? (
-                    <div className="text-muted-foreground mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span>
-                        Page {threadListMeta.page} of {threadListMeta.totalPages} ·{' '}
-                        {threadListMeta.totalCount} threads
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={loading || !threadListMeta.hasPreviousPage}
-                          onClick={() => setThreadPage((p) => Math.max(1, p - 1))}
-                        >
-                          Previous
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={loading || !threadListMeta.hasNextPage}
-                          onClick={() => setThreadPage((p) => p + 1)}
-                        >
-                          Next
-                        </Button>
-                      </div>
-                    </div>
-                  ) : threadListMeta && threadListMeta.totalCount > 0 ? (
-                    <p className="text-muted-foreground mt-2 text-xs">
-                      {threadListMeta.totalCount} thread
-                      {threadListMeta.totalCount === 1 ? '' : 's'}
-                    </p>
-                  ) : null}
-                </>
+                <ul className="divide-y rounded-md border">
+                  {threads.map((t) => (
+                    <li key={t.id}>
+                      <Link
+                        href={`/mail/threads/${t.id}`}
+                        className="hover:bg-muted/50 flex flex-col gap-0.5 px-3 py-3 text-sm"
+                      >
+                        <span className="font-medium">
+                          {formatThreadTitle(t.subjectNormalized)}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {new Date(t.lastMessageAt).toLocaleString()}
+                          {t.hasUnread ? ' · Unread' : ''}
+                          {t.needsBusinessLink ? ' · Needs link' : ''}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               )}
+
+              {threadListMeta && threadListMeta.totalCount > 0 ? (
+                <ListPagination
+                  className="pt-4"
+                  meta={{
+                    total: threadListMeta.totalCount,
+                    page: threadListMeta.page,
+                    pageSize: threadListMeta.pageSize,
+                    totalPages: threadListMeta.totalPages,
+                  }}
+                  onPageChange={setThreadPage}
+                />
+              ) : null}
             </CardContent>
           </Card>
         </div>

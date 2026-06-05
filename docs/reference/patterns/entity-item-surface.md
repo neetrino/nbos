@@ -21,12 +21,14 @@ Rules:
 
 | Surface                                      | Use instead                                                       |
 | -------------------------------------------- | ----------------------------------------------------------------- |
-| Module page board / kanban                   | `KanbanBoard` + module board card (`TaskMiniCard`, `DealCard`, …) |
+| Module page board / kanban                   | `KanbanBoard` + module board card (`TaskMiniCard`, `DealCard`, …) wrapped in `KanbanCardShell` |
 | Module page list / table                     | Module table or list renderer                                     |
 | Single link to filtered page                 | `Link` drill-down when preview adds no value                      |
 | Full workspace tab (e.g. Product Work Space) | Dedicated workspace runtime, not `EntityItemList`                 |
 
-Board cards and tab preview items may share visual tokens but are **different components** — board cards support drag, column actions, and dense board context.
+Board cards and tab preview items may share visual tokens but are **different components** — board cards support drag, column actions, and dense board context. Board card outer chrome uses `KanbanCardShell`; tab previews use `EntityItemSurface` (not the shell).
+
+Board engine exceptions (Delivery `@dnd-kit`, client-services columns, payroll lanes): see `docs/NBOS/05-UI-Specifications/09-Kanban-Board-and-List-Standard.md` § Board engine.
 
 ## Components
 

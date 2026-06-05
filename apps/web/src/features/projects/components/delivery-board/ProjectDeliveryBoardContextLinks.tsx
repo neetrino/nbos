@@ -1,9 +1,9 @@
 import { ListChecks, Puzzle, Ticket } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ActionTileButton } from '@/components/shared';
 import { tasksApi } from '@/lib/api/tasks';
 import { getNavigableProductId, type DeliveryBoardItem } from './project-delivery-board-model';
 
-export type ProductBoardTab = 'tasks' | 'tickets' | 'extensions';
+export type ProductBoardTab = 'tasks' | 'support' | 'extensions';
 
 interface ProjectDeliveryBoardContextLinksProps {
   item: DeliveryBoardItem;
@@ -55,7 +55,7 @@ function ProductContextLinks({
       <ContextLink
         icon={Ticket}
         label={`${item.product._count.tickets} tickets`}
-        onClick={() => onOpenProductTab(productId, 'tickets')}
+        onClick={() => onOpenProductTab(productId, 'support')}
       />
       <ContextLink
         icon={Puzzle}
@@ -110,9 +110,12 @@ function ContextLink({
   onClick: () => void;
 }) {
   return (
-    <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={onClick}>
-      <Icon size={12} />
-      {label}
-    </Button>
+    <ActionTileButton
+      label={label}
+      icon={<Icon aria-hidden />}
+      tone="neutral"
+      size="card"
+      onClick={onClick}
+    />
   );
 }

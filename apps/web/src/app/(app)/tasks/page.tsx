@@ -1,9 +1,9 @@
 'use client';
 
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { Plus, CheckSquare } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
+import { OpenMyAccountButton } from '@/features/account/components/open-my-account-button';
 import {
   PageHero,
   ViewModeSwitch,
@@ -20,6 +20,7 @@ import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
+import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
@@ -58,9 +59,13 @@ function TasksPageContent() {
     creatorId,
     creatorReady,
     selectedTaskId,
+    initialTask,
     handleTaskUpdate,
     handleTaskDelete,
     handleTaskCreated,
+    taskMeta,
+    loadMoreTasks,
+    loadingMore,
     renderBoard,
   } = useTasksListPage();
 
@@ -116,11 +121,7 @@ function TasksPageContent() {
           icon={CheckSquare}
           title="Employee profile required"
           description="Complete your employee profile to load tasks you participate in and use My Plan."
-          action={
-            <Link href="/my-account" className={buttonVariants({ variant: 'default' })}>
-              Open My Account
-            </Link>
-          }
+          action={<OpenMyAccountButton>Open My Account</OpenMyAccountButton>}
         />
       ) : displayTasks.length === 0 ? (
         <EmptyState
@@ -129,11 +130,22 @@ function TasksPageContent() {
           description="Try another status scope or clear filters."
         />
       ) : (
-        renderBoard()
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {renderBoard()}
+          {taskMeta ? (
+            <TaskListLoadMoreBanner
+              loadedCount={displayTasks.length}
+              totalCount={taskMeta.total}
+              onLoadMore={() => void loadMoreTasks()}
+              loading={loadingMore}
+            />
+          ) : null}
+        </div>
       )}
 
       <TaskSheet
         taskId={selectedTaskId}
+        initialTask={initialTask}
         open={sheetOpen}
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}

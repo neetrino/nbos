@@ -333,6 +333,12 @@ export class ProductsService {
         extensions: {
           include: {
             assignee: { select: { id: true, firstName: true, lastName: true } },
+            order: {
+              select: {
+                id: true,
+                deal: { select: { id: true, code: true, name: true } },
+              },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },
@@ -346,26 +352,29 @@ export class ProductsService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
+        workSpace: { select: { id: true } },
       },
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
+    const { workSpace, ...productRecord } = product;
     const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
       {
         ownerEntityType: 'PRODUCT',
-        ownerEntityId: product.id,
-        stage: attachProductDeliveryLifecycle(product).deliveryLifecycle.stage,
+        ownerEntityId: productRecord.id,
+        stage: attachProductDeliveryLifecycle(productRecord).deliveryLifecycle.stage,
       },
     ]);
-    const withLc = attachProductDeliveryLifecycle(product);
+    const withLc = attachProductDeliveryLifecycle(productRecord);
     const checklistStageProgress = pickProgressForEntity(
       checklistProgressMap,
       'PRODUCT',
-      product.id,
+      productRecord.id,
       withLc.deliveryLifecycle.stage,
     );
     return {
       ...withLc,
-      doneReadiness: buildProductDoneReadiness(product),
+      workSpaceId: workSpace?.id ?? null,
+      doneReadiness: buildProductDoneReadiness(productRecord),
       checklistStageProgress,
     };
   }
@@ -649,6 +658,20 @@ export class ProductsService {
         qaLeadId: product.qaLeadId,
       },
     });
+    const sellerId = await this.loadLinkedProductSellerId(product.id);
+    await this.productTeamSync.syncProductSeller({
+      projectId: product.projectId,
+      sellerId,
+    });
+  }
+
+  private async loadLinkedProductSellerId(productId: string): Promise<string | null> {
+    const order = await this.prisma.order.findFirst({
+      where: { productId },
+      select: { deal: { select: { sellerId: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return order?.deal?.sellerId ?? null;
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

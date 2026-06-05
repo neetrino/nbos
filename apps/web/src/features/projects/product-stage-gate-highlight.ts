@@ -5,7 +5,7 @@ import {
   stageGateFieldClass,
 } from '@/lib/stage-gate-highlight';
 
-export type ProductTabForGate = 'overview' | 'tasks' | 'extensions' | 'tickets' | 'finance';
+export type ProductTabForGate = 'overview' | 'tasks' | 'extensions' | 'support' | 'finance';
 
 const PRODUCT_ACTION_BLOCKER_FIELDS = new Set([
   'tasks',
@@ -40,14 +40,14 @@ export function resolveProductTabFromGateErrors(errors: ApiFieldError[]): Produc
   const fields = buildStageGateRequiredFields(errors);
   if (fields.has('tasks')) return 'tasks';
   if (fields.has('extensions')) return 'extensions';
-  if (fields.has('tickets')) return 'tickets';
+  if (fields.has('tickets')) return 'support';
   if (fields.has('finance') || fields.has('order')) return 'finance';
   return 'overview';
 }
 
 export function resolveProductTabFromBlockerActionKey(key: string): ProductTabForGate {
   if (key === 'product-workspace-tasks') return 'tasks';
-  if (key === 'product-support-tickets') return 'tickets';
+  if (key === 'product-support-tickets') return 'support';
   if (key === 'product-extensions') return 'extensions';
   if (key === 'product-finance') return 'finance';
   return 'overview';

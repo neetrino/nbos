@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { cn } from '@/lib/utils';
 import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
 
@@ -19,6 +20,7 @@ type SidebarSettingsMenuProps = {
 
 export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSettingsMenuProps) {
   const router = useRouter();
+  const { openMyAccountSheet } = useMyAccountSheet();
 
   return (
     <DropdownMenu>
@@ -48,7 +50,7 @@ export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSetti
           <Settings size={16} className="opacity-70" />
           Platform settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/my-account')}>
+        <DropdownMenuItem onClick={() => void openMyAccountSheet()}>
           <UserCircle2 size={16} className="opacity-70" />
           My account
         </DropdownMenuItem>

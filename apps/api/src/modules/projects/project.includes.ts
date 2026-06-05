@@ -15,6 +15,12 @@ export const projectDetailInclude = {
   products: {
     include: {
       pm: { select: { id: true, firstName: true, lastName: true } },
+      order: {
+        select: {
+          id: true,
+          deal: { select: { id: true, code: true, name: true } },
+        },
+      },
       _count: { select: { extensions: true, tasks: true, tickets: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -23,6 +29,12 @@ export const projectDetailInclude = {
     include: {
       product: { select: { id: true, name: true, productType: true, status: true } },
       assignee: { select: { id: true, firstName: true, lastName: true } },
+      order: {
+        select: {
+          id: true,
+          deal: { select: { id: true, code: true, name: true } },
+        },
+      },
       _count: { select: { tasks: true } },
     },
     orderBy: { createdAt: 'desc' },

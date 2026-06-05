@@ -1,5 +1,6 @@
 import type { KanbanColumn } from '@/components/shared';
 import type { Task, TaskBoardStage } from '@/lib/api/tasks';
+import { sortTasksByBoardOrder } from './sort-tasks-by-board-order';
 
 export function buildMyPlanColumns(
   tasks: Task[],
@@ -22,7 +23,10 @@ export function buildMyPlanColumns(
     label: stage.title,
     color: stage.color,
     hexColor: stage.color,
-    items: tasks.filter((t) => t.myPlanStageId === stage.id),
+    items: sortTasksByBoardOrder(
+      tasks.filter((task) => task.myPlanStageId === stage.id),
+      'myPlanSortOrder',
+    ),
   }));
 
   const assignedIds = new Set(myPlanStages.map((s) => s.id));

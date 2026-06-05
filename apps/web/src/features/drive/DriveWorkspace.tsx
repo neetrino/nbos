@@ -101,6 +101,7 @@ import {
 } from './drive-file-sort';
 import { toFileSizeNumber } from './drive-format';
 import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
+import { isDriveBrowseSilentError } from './drive-browse-silent-errors';
 import { resolveDriveEntityFolderScope } from './drive-entity-folder-scope';
 import { folderListingMatchesBrowseContext } from './drive-folder-listing-match';
 import { enrichDriveFolderListing } from './enrich-drive-folder-listing';
@@ -841,7 +842,9 @@ export function DriveWorkspace() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load Drive files';
       setError(message);
-      toast.error(message);
+      if (!isDriveBrowseSilentError(err)) {
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -937,8 +940,7 @@ export function DriveWorkspace() {
       .then((rows) => {
         if (!cancelled) setLibraryEntityFolderRows(rows);
       })
-      .catch((err: unknown) => {
-        toast.error(err instanceof Error ? err.message : 'Could not load library records');
+      .catch(() => {
         if (!cancelled) setLibraryEntityFolderRows([]);
       })
       .finally(() => {
@@ -968,6 +970,10 @@ export function DriveWorkspace() {
         }
       } catch (err) {
         if (requestId !== folderListingRequestId.current) return;
+        if (isDriveBrowseSilentError(err)) {
+          setSystemLibraryLink(null);
+          return;
+        }
         toast.error(err instanceof Error ? err.message : 'Failed to load record folders');
       }
       return;
@@ -2221,7 +2227,7 @@ export function DriveWorkspace() {
                         />
                       ),
                     }
-                  : browseEntityScopedFolders && libraryEntityFolderScope
+                  : browseEntityScopedFolders && libraryEntityFolderScope && scopedFolderListing
                     ? {
                         forLibraryKey: selectedLibrary.key,
                         children: (

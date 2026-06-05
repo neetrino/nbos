@@ -1,8 +1,9 @@
 'use client';
 
 import { CLIENT_SERVICE_BOARD_COLUMN_WIDTH } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardColumn } from './ClientServiceBoardColumn';
+import type { ClientServiceListSeed } from './use-client-service-list';
 
 export interface ClientServiceBoardColumnDef {
   key: string;
@@ -11,12 +12,13 @@ export interface ClientServiceBoardColumnDef {
   count: number;
   sum: string;
   params: ClientServiceRecordListParams;
+  seed?: ClientServiceListSeed | null;
 }
 
 interface ClientServiceBoardScrollProps {
   columns: ClientServiceBoardColumnDef[];
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 export function ClientServiceBoardScroll({
@@ -39,6 +41,7 @@ export function ClientServiceBoardScroll({
             sum={column.sum}
             params={column.params}
             reloadToken={reloadToken}
+            seed={column.seed}
             onOpen={onOpen}
             showLeftRule={index > 0}
           />

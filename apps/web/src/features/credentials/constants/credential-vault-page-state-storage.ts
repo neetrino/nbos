@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { createPersistedJsonStore } from '@/lib/persisted-client-state';
 import type { CredentialVaultViewMode } from '@/features/credentials/constants/credential-vault';
 import {
   CREDENTIAL_VAULT_PAGED_DEFAULT_SIZE,
@@ -17,9 +17,6 @@ export type CredentialVaultPagePreferences = {
   vaultListScope: CredentialVaultListScope;
   pageSize: CredentialVaultPageSizeOption;
 };
-
-const STORAGE_KEY = 'nbos:credentials:vault-page-state';
-const CHANGE_EVENT = 'nbos:credentials:vault-page-state-change';
 
 const VALID_VIEW_MODES = new Set<CredentialVaultViewMode>(['list', 'tiles', 'category-board']);
 const VALID_TABS = new Set<CredentialVaultScope>(['all', 'my', 'team', 'project', 'secret']);
@@ -72,72 +69,13 @@ function parseStoredPreferences(raw: string | null): CredentialVaultPagePreferen
   }
 }
 
-let cachedPreferencesRaw: string | null | undefined;
-let cachedPreferencesSnapshot: CredentialVaultPagePreferences =
-  DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES;
+const credentialVaultPageStore = createPersistedJsonStore<CredentialVaultPagePreferences>({
+  storageKey: 'nbos:credentials:vault-page-state',
+  defaultValue: DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES,
+  changeEvent: 'nbos:credentials:vault-page-state-change',
+  parse: parseStoredPreferences,
+});
 
-function getCredentialVaultPagePreferencesSnapshot(): CredentialVaultPagePreferences {
-  if (typeof window === 'undefined') {
-    return DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (raw === cachedPreferencesRaw) {
-    return cachedPreferencesSnapshot;
-  }
-  cachedPreferencesRaw = raw;
-  cachedPreferencesSnapshot = parseStoredPreferences(raw);
-  return cachedPreferencesSnapshot;
-}
-
-export function readCredentialVaultPagePreferences(): CredentialVaultPagePreferences {
-  return getCredentialVaultPagePreferencesSnapshot();
-}
-
-export function writeCredentialVaultPagePreferences(
-  partial: Partial<CredentialVaultPagePreferences>,
-): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  const next: CredentialVaultPagePreferences = {
-    ...getCredentialVaultPagePreferencesSnapshot(),
-    ...partial,
-  };
-  const serialized = JSON.stringify(next);
-  window.localStorage.setItem(STORAGE_KEY, serialized);
-  cachedPreferencesRaw = serialized;
-  cachedPreferencesSnapshot = next;
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-function subscribeCredentialVaultPagePreferences(onStoreChange: () => void): () => void {
-  const onChange = () => onStoreChange();
-  window.addEventListener('storage', onChange);
-  window.addEventListener(CHANGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener('storage', onChange);
-    window.removeEventListener(CHANGE_EVENT, onChange);
-  };
-}
-
-function getCredentialVaultPagePreferencesServerSnapshot(): CredentialVaultPagePreferences {
-  return DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES;
-}
-
-/** SSR-safe vault page preferences synced with localStorage after hydration. */
-export function useCredentialVaultPagePreferences(): [
-  CredentialVaultPagePreferences,
-  (partial: Partial<CredentialVaultPagePreferences>) => void,
-] {
-  const preferences = useSyncExternalStore(
-    subscribeCredentialVaultPagePreferences,
-    getCredentialVaultPagePreferencesSnapshot,
-    getCredentialVaultPagePreferencesServerSnapshot,
-  );
-
-  const setPreferences = useCallback((partial: Partial<CredentialVaultPagePreferences>) => {
-    writeCredentialVaultPagePreferences(partial);
-  }, []);
-
-  return [preferences, setPreferences];
-}
+export const readCredentialVaultPagePreferences = credentialVaultPageStore.read;
+export const writeCredentialVaultPagePreferences = credentialVaultPageStore.write;
+export const useCredentialVaultPagePreferences = credentialVaultPageStore.useValue;

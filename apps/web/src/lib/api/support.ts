@@ -7,7 +7,7 @@ export interface SupportTicket {
   code: string;
   title: string;
   description: string | null;
-  projectId: string;
+  projectId: string | null;
   productId: string | null;
   extensionDealId: string | null;
   category: string;
@@ -20,7 +20,7 @@ export interface SupportTicket {
   waitingReason: string | null;
   createdAt: string;
   updatedAt: string;
-  project: { id: string; code: string; name: string };
+  project: { id: string; code: string; name: string } | null;
   product: { id: string; name: string; status: string } | null;
   extensionDeal: {
     id: string;
@@ -95,13 +95,11 @@ export const supportApi = {
   },
   async create(data: {
     title: string;
-    projectId: string;
+    projectId?: string;
     category?: string;
     priority?: string;
     description?: string;
     productId?: string;
-    coverageDecision?: string | null;
-    contactId?: string;
     billable?: boolean;
     assignedTo?: string;
   }): Promise<SupportTicket> {

@@ -45,6 +45,10 @@ import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
 import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
+import {
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -167,30 +171,62 @@ export function DeliveryItemDetailSheet({
 
   const lifecycle = item ? mergeDeliveryDetailLifecycle(item, product, extension) : undefined;
   const displayTitle = product?.name ?? extension?.name ?? (item ? getItemLabel(item) : '');
+  const detailHydrating = loading && !product && !extension;
+
+  const seedOrderId =
+    item?.kind === 'PRODUCT'
+      ? item.product.order?.id
+      : item?.kind === 'EXTENSION'
+        ? item.extension.order?.id
+        : null;
+  const seedDeal =
+    item?.kind === 'PRODUCT'
+      ? item.product.order?.deal
+      : item?.kind === 'EXTENSION'
+        ? item.extension.order?.deal
+        : null;
 
   const headerProps =
     item && item.kind === 'PRODUCT'
-      ? {
-          entityKind: 'PRODUCT' as const,
-          projectCode: item.product.project?.code ?? '—',
-          projectName: item.product.project?.name ?? '—',
-          projectHref: `/projects/${item.product.projectId}`,
-          deadline: item.product.deadline,
-          workSpaceHref: `/projects/${item.product.projectId}/products/${item.product.id}?tab=tasks`,
-          sourcePageHref: `/projects/${item.product.projectId}/products/${item.product.id}`,
-          productId: item.product.id,
-        }
+      ? (() => {
+          const productProjectId = item.product.projectId ?? item.product.project?.id ?? '';
+          return {
+            entityKind: 'PRODUCT' as const,
+            projectCode: item.product.project?.code ?? '—',
+            projectName: item.product.project?.name ?? '—',
+            projectHref: `/projects/${productProjectId}`,
+            deadline: item.product.deadline,
+            workSpaceHref: buildProductDetailPageHref(
+              productProjectId,
+              item.product.id,
+              PRODUCT_DETAIL_TAB.tasks,
+            ),
+            sourcePageHref: buildProductDetailPageHref(productProjectId, item.product.id),
+            productId: item.product.id,
+          };
+        })()
       : item && item.kind === 'EXTENSION'
-        ? {
-            entityKind: 'EXTENSION' as const,
-            projectCode: item.extension.project?.code ?? '—',
-            projectName: item.extension.project?.name ?? '—',
-            projectHref: `/projects/${item.extension.projectId}`,
-            deadline: null as string | null,
-            workSpaceHref: `/projects/${item.extension.projectId}/products/${item.extension.productId}?tab=tasks`,
-            sourcePageHref: `/projects/${item.extension.projectId}/products/${item.extension.productId}?tab=extensions`,
-            productId: item.extension.productId,
-          }
+        ? (() => {
+            const extensionProjectId = item.extension.projectId ?? item.extension.project?.id ?? '';
+            return {
+              entityKind: 'EXTENSION' as const,
+              projectCode: item.extension.project?.code ?? '—',
+              projectName: item.extension.project?.name ?? '—',
+              projectHref: `/projects/${extensionProjectId}`,
+              deadline: null as string | null,
+              workSpaceHref: buildProductDetailPageHref(
+                extensionProjectId,
+                item.extension.productId,
+                PRODUCT_DETAIL_TAB.tasks,
+              ),
+              sourcePageHref: buildProductDetailPageHref(
+                extensionProjectId,
+                item.extension.productId,
+                PRODUCT_DETAIL_TAB.extensions,
+              ),
+              productId: item.extension.productId,
+            };
+          })()
         : null;
 
   const panelProjectId =
@@ -201,12 +237,20 @@ export function DeliveryItemDetailSheet({
         : '';
   const financeTabHref =
     headerProps && panelProjectId
-      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=finance`
+      ? buildProductDetailPageHref(
+          panelProjectId,
+          headerProps.productId,
+          PRODUCT_DETAIL_TAB.finance,
+        )
       : '#';
   const projectHubHref = panelProjectId ? `/projects/${panelProjectId}` : '#';
   const credentialsTabHref =
     headerProps && panelProjectId
-      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=credentials`
+      ? buildProductDetailPageHref(
+          panelProjectId,
+          headerProps.productId,
+          PRODUCT_DETAIL_TAB.credentials,
+        )
       : '#';
 
   const handleCommitTitle = useCallback(
@@ -320,7 +364,7 @@ export function DeliveryItemDetailSheet({
               title={displayTitle}
               entityKind={headerProps?.entityKind ?? 'PRODUCT'}
               workspaceHref={headerProps?.workSpaceHref ?? '#'}
-              loading={loading}
+              loading={detailHydrating}
               onCommitTitle={handleCommitTitle}
             />
 
@@ -360,7 +404,7 @@ export function DeliveryItemDetailSheet({
             <DeliveryItemDetailTabBar panel={panel} onSelect={setPanel} />
 
             <ScrollArea className="min-h-0 flex-1">
-              {loading ? (
+              {detailHydrating && panel === 'general' ? (
                 <div className="space-y-4 px-7 py-6">
                   <Skeleton className="h-32 w-full" />
                   <Skeleton className="h-48 w-full" />
@@ -385,7 +429,11 @@ export function DeliveryItemDetailSheet({
                   gateRequiredFields={gateRequiredFields}
                   stageGateActionBlockers={stageGateActionBlockers}
                 />
-              ) : panel !== 'general' && !loading && headerProps && item ? (
+              ) : detailHydrating && panel !== 'general' ? (
+                <div className="space-y-4 px-7 py-6">
+                  <Skeleton className="h-40 w-full" />
+                </div>
+              ) : panel !== 'general' && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels
                   view={panel}
                   auditEntityType={item.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
@@ -393,15 +441,22 @@ export function DeliveryItemDetailSheet({
                   financeTabHref={financeTabHref}
                   projectHubHref={projectHubHref}
                   workSpaceHref={headerProps.workSpaceHref}
-                  bonusOrderId={product?.order?.id ?? extension?.order?.id ?? null}
+                  bonusOrderId={product?.order?.id ?? extension?.order?.id ?? seedOrderId ?? null}
                   openDealHref={
                     product?.order?.deal?.id != null
                       ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
                       : extension?.order?.deal?.id != null
                         ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
-                        : null
+                        : seedDeal?.id != null
+                          ? `/crm/deals?openDealId=${encodeURIComponent(seedDeal.id)}`
+                          : null
                   }
-                  dealCode={product?.order?.deal?.code ?? extension?.order?.deal?.code ?? null}
+                  dealCode={
+                    product?.order?.deal?.code ??
+                    extension?.order?.deal?.code ??
+                    seedDeal?.code ??
+                    null
+                  }
                 />
               ) : (
                 <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
@@ -411,7 +466,7 @@ export function DeliveryItemDetailSheet({
             <DetailSheetFormFooter
               visible={
                 panel === 'general' &&
-                !loading &&
+                !detailHydrating &&
                 Boolean(product || extension) &&
                 !lifecycle?.isTerminal
               }

@@ -26,12 +26,42 @@ export {
   type IntegratedSearchFiltersProps,
 } from './IntegratedSearchFilters';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
+export { ActionTileButton, type ActionTileButtonProps } from './ActionTileButton';
+export { ActionTileHoverBar, type ActionTileHoverBarVariant } from './ActionTileHoverBar';
+export { EntityLinkedSheetsHoverActions } from './EntityLinkedSheetsHoverActions';
+export {
+  NavigableEntityCard,
+  type NavigableEntityCardBadge,
+  type NavigableEntityCardMetaLine,
+  type NavigableEntityCardProps,
+} from './NavigableEntityCard';
+export {
+  NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+} from './navigable-entity-card.constants';
+export {
+  ProductNavigableCard,
+  ProjectNavigableCard,
+  WorkSpaceNavigableCard,
+} from './navigable-entity-card-presets';
+export {
+  actionTileIconVariants,
+  actionTileShellVariants,
+  type ActionTileSize,
+  type ActionTileTone,
+} from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
+export {
+  KanbanCardShell,
+  type KanbanCardShellPreset,
+  type KanbanCardShellProps,
+} from './kanban/KanbanCardShell';
 export type {
   KanbanColumnQuickCreateConfig,
   KanbanColumnQuickCreateInput,
@@ -114,9 +144,12 @@ export {
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
+  DETAIL_SHEET_TAB_LIST_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
 } from './detail-sheet-classes';
 export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { toSheetPipelineStages, type SheetPipelineStageSource } from './pipeline-stage-config';
@@ -138,6 +171,7 @@ export {
   type EntityDetailSheetLayout,
   type EntityDetailSheetWidth,
 } from './EntityDetailSheetContent';
+export { EntityDetailSheetLoadingShell } from './entity-detail-sheet-loading-shell';
 export {
   EntityCenterSheetContent,
   type EntityCenterSheetContentProps,
@@ -178,3 +212,11 @@ export {
   type DeleteConfirmLevel,
   type DeleteConfirmTarget,
 } from './delete-confirm';
+export { SEARCH_DEBOUNCE_MS } from './constants/search-debounce';
+export { useDebouncedValue } from './hooks/use-debounced-value';
+export {
+  ListPagination,
+  buildListPageSequence,
+  type ListPaginationMeta,
+  type ListPaginationProps,
+} from './pagination';

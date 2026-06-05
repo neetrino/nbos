@@ -3,6 +3,7 @@ import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/b
 import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
 import type { Task } from '@/lib/api/tasks';
 import { DEADLINE_COLUMNS_DEF, getDeadlineColumn } from './task-board-constants';
+import { sortTasksByBoardOrder } from './sort-tasks-by-board-order';
 
 /**
  * Primary workflow columns for task boards driven by `task.status`
@@ -54,7 +55,10 @@ export function buildWorkspaceKanbanColumns(
       label: def.label,
       color: def.color,
       hexColor: def.hexColor,
-      items: tasks.filter((t) => matchesWorkspaceColumn(t.status, def.key)),
+      items: sortTasksByBoardOrder(
+        tasks.filter((t) => matchesWorkspaceColumn(t.status, def.key)),
+        'workspaceSortOrder',
+      ),
     }),
   );
 }

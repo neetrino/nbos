@@ -1,4 +1,5 @@
 export interface DashboardMetricProjection {
+  leads: number;
   dueTodayTasks: number;
   openTasks: number;
   openDeals: number;

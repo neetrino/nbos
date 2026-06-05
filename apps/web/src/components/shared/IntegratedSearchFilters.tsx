@@ -10,6 +10,10 @@ import {
   buildActiveFilterChips,
   IntegratedSearchFilterChips,
 } from './integrated-search-filters/integrated-search-filter-chips';
+import {
+  INTEGRATED_SEARCH_FILTER_PANEL_POSITION,
+  INTEGRATED_SEARCH_FILTER_PANEL_SURFACE,
+} from './integrated-search-filters/integrated-search-filter-constants';
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
 import { useHeroSearchExpansionState } from './page-hero/page-hero-toolbar-context';
 import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
@@ -179,8 +183,8 @@ export function IntegratedSearchFilters({
           role="dialog"
           aria-label="Search filters"
           className={cn(
-            'bg-popover/95 text-popover-foreground border-border/60',
-            'ring-border/40 absolute top-[calc(100%+0.5rem)] right-0 left-0 z-50 rounded-xl border p-4 shadow-xl ring-1',
+            INTEGRATED_SEARCH_FILTER_PANEL_POSITION,
+            INTEGRATED_SEARCH_FILTER_PANEL_SURFACE,
           )}
         >
           <IntegratedSearchFilterPanel

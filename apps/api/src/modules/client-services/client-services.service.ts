@@ -35,6 +35,8 @@ import {
   CLIENT_SERVICE_PAYMENT_STAGES,
   isClientServicePaymentStage,
 } from './client-service-payment-stage';
+import { loadClientServiceBoard } from './client-services-board.loader';
+import type { ClientServiceBoardQueryParams } from './client-services-board.types';
 import type {
   ClientServiceRecordBody,
   ClientServiceRecordQueryParams,
@@ -67,6 +69,13 @@ export class ClientServicesService {
       items: items.map((row) => serializeClientServiceListRow(row, now)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  async getBoard(params: ClientServiceBoardQueryParams) {
+    if (params.view !== 'status' && params.view !== 'months') {
+      throw new BadRequestException('view must be status or months');
+    }
+    return loadClientServiceBoard(this.prisma, params, (scope, now) => this.buildWhere(scope, now));
   }
 
   async getStats(params: ClientServiceRecordQueryParams) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { CalendarDays, FolderKanban } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   expensePlanFrequencyLabel,
@@ -17,10 +17,11 @@ export interface ExpensePlanBoardCardProps {
 /** Kanban card — whole surface opens detail sheet (invoice board parity). */
 export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps) {
   return (
-    <div
+    <KanbanCardShell
       role="button"
       tabIndex={0}
-      className="border-border bg-card hover:bg-muted/30 cursor-pointer space-y-1.5 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+      hoverSurface="muted30"
+      className="cursor-pointer space-y-1.5"
       onClick={() => onOpen(plan)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -55,6 +56,6 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
         {plan._count.expenses} linked card{plan._count.expenses === 1 ? '' : 's'}
         {plan.autoGenerate ? ' · Auto-generate' : ''}
       </p>
-    </div>
+    </KanbanCardShell>
   );
 }

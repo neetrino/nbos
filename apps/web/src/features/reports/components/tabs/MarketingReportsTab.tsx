@@ -2,28 +2,18 @@
 
 import { AlertTriangle, BadgeDollarSign, Megaphone, TrendingUp } from 'lucide-react';
 import type { MarketingDashboardSummary } from '@/lib/api/marketing';
-import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import { count, money, ratio } from '../../report-number-format';
 import { ChartCard } from '../charts/ChartCard';
 import { KpiCard } from '../charts/KpiCard';
 import { ReportBarChart, ReportPieChart, type ChartDatum } from '../charts/ReportCharts';
-import { ReportActions } from './ReportActions';
 import { ReportTabState } from './ReportTabState';
 
 interface MarketingReportsTabProps {
-  definitions: ReportDefinition[];
   state: LazyReportTabState<MarketingDashboardSummary>;
-  creatingExportToken: string | null;
-  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
-export function MarketingReportsTab({
-  definitions,
-  state,
-  creatingExportToken,
-  onExport,
-}: MarketingReportsTabProps) {
+export function MarketingReportsTab({ state }: MarketingReportsTabProps) {
   const data = state.data;
 
   return (
@@ -46,11 +36,6 @@ export function MarketingReportsTab({
           </div>
         </>
       ) : null}
-      <ReportActions
-        definitions={definitions}
-        creatingExportToken={creatingExportToken}
-        onExport={onExport}
-      />
     </div>
   );
 }
