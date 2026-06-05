@@ -139,7 +139,12 @@ export interface WorkSpace {
   createdAt: string;
   updatedAt: string;
   project?: { id: string; code: string; name: string } | null;
-  product?: { id: string; name: string; status: string } | null;
+  product?: {
+    id: string;
+    name: string;
+    status: string;
+    order?: { deal?: { id: string } | null } | null;
+  } | null;
   extension?: { id: string; name: string; status: string } | null;
   tasks?: Task[];
   _count?: { tasks: number };

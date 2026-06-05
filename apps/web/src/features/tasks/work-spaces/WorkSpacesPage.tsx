@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { FolderKanban, LayoutGrid, List, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,12 +13,19 @@ import {
   ErrorState,
   type FilterConfig,
   LoadingState,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   type ViewModeOption,
 } from '@/components/shared';
+import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
+import type { FullProduct } from '@/lib/api/products';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
+import {
+  loadWorkSpaceProductForSheets,
+  WorkSpacesEntitySheetsHost,
+} from './WorkSpacesEntitySheetsHost';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
 type WorkSpaceView = 'grid' | 'list';
@@ -39,6 +47,8 @@ const WORKSPACE_VIEW_OPTIONS: ViewModeOption<WorkSpaceView>[] = [
 
 export function WorkSpacesPage() {
   const [createOpen, setCreateOpen] = useState(false);
+  const [sheetProduct, setSheetProduct] = useState<FullProduct | null>(null);
+  const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const directory = useWorkSpacesDirectory();
   const {
     tab,
@@ -57,6 +67,26 @@ export function WorkSpacesPage() {
     error,
     refetch,
   } = directory;
+
+  const handleOpenProductDelivery = useCallback(
+    async (productId: string) => {
+      try {
+        const loaded = await loadWorkSpaceProductForSheets(productId);
+        setSheetProduct(loaded);
+        openDeliveryItem(`product-${productId}`);
+      } catch {
+        toast.error('Product could not be loaded.');
+      }
+    },
+    [openDeliveryItem],
+  );
+
+  const handleOpenProductDeal = useCallback(
+    (dealId: string) => {
+      openDeal(dealId);
+    },
+    [openDeal],
+  );
 
   const workSpaceFilterConfigs = useMemo((): FilterConfig[] => {
     return [
@@ -161,9 +191,14 @@ export function WorkSpacesPage() {
           }
         />
       ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
           {items.map((workspace) => (
-            <WorkSpaceCard key={workspace.id} workspace={workspace} />
+            <WorkSpaceCard
+              key={workspace.id}
+              workspace={workspace}
+              onOpenProductDelivery={handleOpenProductDelivery}
+              onOpenProductDeal={handleOpenProductDeal}
+            />
           ))}
         </div>
       ) : (
@@ -180,6 +215,11 @@ export function WorkSpacesPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={() => void refetch()}
+      />
+
+      <WorkSpacesEntitySheetsHost
+        sheetProduct={sheetProduct}
+        onSheetProductChange={setSheetProduct}
       />
     </div>
   );

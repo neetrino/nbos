@@ -41,7 +41,14 @@ interface UpdateWorkSpaceDto {
 
 const WORK_SPACE_INCLUDE = {
   project: { select: { id: true, code: true, name: true } },
-  product: { select: { id: true, name: true, status: true } },
+  product: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      order: { select: { deal: { select: { id: true } } } },
+    },
+  },
   extension: { select: { id: true, name: true, status: true } },
   _count: { select: { tasks: true } },
 } satisfies Prisma.WorkSpaceInclude;

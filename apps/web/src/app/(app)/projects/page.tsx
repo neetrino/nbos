@@ -20,6 +20,8 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  NavigableEntityCard,
+  NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   type ViewModeOption,
 } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
@@ -125,51 +127,29 @@ export default function ProjectsPage() {
           }
         />
       ) : view === 'grid' ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
           {projects.map((project) => (
-            <div
+            <NavigableEntityCard
               key={project.id}
-              className="group border-border bg-card cursor-pointer rounded-2xl border p-5 transition-all hover:shadow-md"
-              onClick={() => handleClick(project)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent/10 text-accent rounded-xl p-2.5">
-                    <FolderKanban size={18} />
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-[10px] font-medium">{project.code}</p>
-                    <h3 className="text-foreground text-sm font-semibold">{project.name}</h3>
-                  </div>
-                </div>
-                {project.isArchived && <Archive size={14} className="text-muted-foreground" />}
-              </div>
-
-              {project.description && (
-                <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">
-                  {project.description}
-                </p>
-              )}
-
-              <div className="mt-4 space-y-2">
-                {project.company && (
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                    <Building2 size={11} />
-                    <span>{project.company.name}</span>
-                  </div>
-                )}
-                <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                  <User size={11} />
-                  <span>
-                    {project.contact?.firstName} {project.contact?.lastName}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-muted-foreground mt-4 flex items-center justify-end text-[10px]">
-                <span>{project._count.orders} orders</span>
-              </div>
-            </div>
+              href={`/projects/${project.id}`}
+              icon={FolderKanban}
+              eyebrow={project.code}
+              title={project.name}
+              description={project.description}
+              headerTrailing={
+                project.isArchived ? (
+                  <Archive size={14} className="text-muted-foreground shrink-0" />
+                ) : undefined
+              }
+              metaLines={[
+                ...(project.company ? [{ icon: Building2, text: project.company.name }] : []),
+                {
+                  icon: User,
+                  text: `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim(),
+                },
+              ]}
+              footer={<span>{project._count.orders} orders</span>}
+            />
           ))}
         </div>
       ) : (

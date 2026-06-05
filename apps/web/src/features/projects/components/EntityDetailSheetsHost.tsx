@@ -18,6 +18,8 @@ interface EntityDetailSheetsHostProps {
   project?: FullProject | null;
   product?: FullProduct | null;
   onEntityUpdated: () => void;
+  /** Keep delivery query param while product/items are still loading (Work Spaces directory). */
+  allowPendingDeliveryKey?: boolean;
 }
 
 function boardItemsForProduct(product: FullProduct): DeliveryBoardItem[] {
@@ -81,6 +83,7 @@ export function EntityDetailSheetsHost({
   project,
   product,
   onEntityUpdated,
+  allowPendingDeliveryKey = false,
 }: EntityDetailSheetsHostProps) {
   const { openDeliveryItemKey, openDealId, closeDeliveryItem, closeDeal } =
     useEntityDetailSheetUrl();
@@ -109,9 +112,10 @@ export function EntityDetailSheetsHost({
 
   useEffect(() => {
     if (!openDeliveryItemKey) return;
+    if (allowPendingDeliveryKey && deliveryItems.length === 0) return;
     const exists = deliveryItems.some((item) => getItemKey(item) === openDeliveryItemKey);
     if (!exists) closeDeliveryItem();
-  }, [openDeliveryItemKey, deliveryItems, closeDeliveryItem]);
+  }, [openDeliveryItemKey, deliveryItems, closeDeliveryItem, allowPendingDeliveryKey]);
 
   return (
     <>

@@ -28,6 +28,17 @@ export {
 export { StatusBadge, type StatusVariant } from './StatusBadge';
 export { ActionTileButton, type ActionTileButtonProps } from './ActionTileButton';
 export { ActionTileHoverBar, type ActionTileHoverBarVariant } from './ActionTileHoverBar';
+export { EntityLinkedSheetsHoverActions } from './EntityLinkedSheetsHoverActions';
+export {
+  NavigableEntityCard,
+  type NavigableEntityCardBadge,
+  type NavigableEntityCardMetaLine,
+  type NavigableEntityCardProps,
+} from './NavigableEntityCard';
+export {
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+} from './navigable-entity-card.constants';
 export {
   actionTileIconVariants,
   actionTileShellVariants,

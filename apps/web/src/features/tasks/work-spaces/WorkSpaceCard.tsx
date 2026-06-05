@@ -1,14 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowUpRight, FolderKanban, ListChecks } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared';
-import type { WorkSpace } from '@/lib/api/tasks';
-import { cn } from '@/lib/utils';
+import { useCallback, useState } from 'react';
+import { FolderKanban, ListChecks, Package } from 'lucide-react';
+import { EntityLinkedSheetsHoverActions, NavigableEntityCard } from '@/components/shared';
 import {
-  buildWorkSpaceContextHref,
+  buildProductDetailPageHref,
+  PRODUCT_DETAIL_TAB,
+} from '@/features/projects/constants/product-detail-tab';
+import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import type { WorkSpace } from '@/lib/api/tasks';
+import {
   getWorkSpaceContextLabel,
   getWorkSpaceTypeLabel,
   getWorkSpaceTypeVariant,
@@ -16,54 +17,61 @@ import {
 
 interface WorkSpaceCardProps {
   workspace: WorkSpace;
+  onOpenProductDelivery?: (productId: string) => void;
+  onOpenProductDeal?: (dealId: string) => void;
 }
 
-export function WorkSpaceCard({ workspace }: WorkSpaceCardProps) {
-  const contextHref = buildWorkSpaceContextHref(workspace);
+export function WorkSpaceCard({
+  workspace,
+  onOpenProductDelivery,
+  onOpenProductDeal,
+}: WorkSpaceCardProps) {
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
+  const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
+  const contextLabel = getWorkSpaceContextLabel(workspace);
+  const dealId = workspace.product ? getEntityOrderDealId(workspace.product.order) : null;
+  const contextHref =
+    workspace.productId && workspace.projectId
+      ? buildProductDetailPageHref(
+          workspace.projectId,
+          workspace.productId,
+          PRODUCT_DETAIL_TAB.overview,
+        )
+      : undefined;
+
+  const hoverActions =
+    isProductDelivery && workspace.productId && onOpenProductDelivery ? (
+      <EntityLinkedSheetsHoverActions
+        contextHref={contextHref}
+        onOpenDelivery={() => onOpenProductDelivery(workspace.productId!)}
+        onOpenDeal={dealId && onOpenProductDeal ? () => onOpenProductDeal(dealId) : undefined}
+      />
+    ) : null;
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="flex items-start justify-between gap-3">
-          <span className="line-clamp-2">{workspace.name}</span>
-          <FolderKanban className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-        </CardTitle>
-        <div className="flex flex-wrap gap-2 pt-2">
-          <StatusBadge
-            label={getWorkSpaceTypeLabel(workspace.type)}
-            variant={getWorkSpaceTypeVariant(workspace.type)}
-          />
-          <StatusBadge
-            label={workspace.scrumEnabled ? 'Scrum-enabled' : 'Kanban'}
-            variant={workspace.scrumEnabled ? 'blue' : 'gray'}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-muted-foreground line-clamp-2 text-sm">
-          {workspace.description ?? getWorkSpaceContextLabel(workspace)}
-        </p>
-        <div className="text-muted-foreground flex items-center gap-2 text-xs">
-          <ListChecks size={14} />
-          <span>{taskCount} tasks</span>
-          <span>·</span>
-          <span>{getWorkSpaceContextLabel(workspace)}</span>
-        </div>
-      </CardContent>
-      <CardFooter className="gap-2">
-        <Link href={`/work-spaces/${workspace.id}`} className={buttonVariants({ size: 'sm' })}>
-          Open Work Space
-        </Link>
-        {contextHref && (
-          <Link
-            href={contextHref}
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1')}
-          >
-            Context <ArrowUpRight size={13} />
-          </Link>
-        )}
-      </CardFooter>
-    </Card>
+    <NavigableEntityCard
+      href={`/work-spaces/${workspace.id}`}
+      icon={isProductDelivery ? Package : FolderKanban}
+      eyebrow={workspace.project?.code ?? undefined}
+      title={workspace.name}
+      badges={[
+        {
+          label: getWorkSpaceTypeLabel(workspace.type),
+          variant: getWorkSpaceTypeVariant(workspace.type),
+        },
+        {
+          label: workspace.scrumEnabled ? 'Scrum-enabled' : 'Kanban',
+          variant: workspace.scrumEnabled ? 'blue' : 'gray',
+        },
+      ]}
+      description={workspace.description ?? contextLabel}
+      metaLines={[
+        {
+          icon: ListChecks,
+          text: `${taskCount} tasks · ${contextLabel}`,
+        },
+      ]}
+      hoverActions={hoverActions}
+    />
   );
 }
