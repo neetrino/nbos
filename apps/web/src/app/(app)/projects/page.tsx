@@ -20,6 +20,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  ListPagination,
   NavigableEntityCard,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   type ViewModeOption,
@@ -196,7 +197,7 @@ export default function ProjectsPage() {
       )}
 
       {!loading && !error && projects.length > 0 ? (
-        <ProjectsHubPaginationFooter meta={meta} onPageChange={setPage} />
+        <ListPagination meta={meta} onPageChange={setPage} />
       ) : null}
 
       <CreateProjectHubDialog
@@ -207,50 +208,6 @@ export default function ProjectsPage() {
           router.push(`/projects/${project.id}`);
         }}
       />
-    </div>
-  );
-}
-
-function ProjectsHubPaginationFooter({
-  meta,
-  onPageChange,
-}: {
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
-  onPageChange: (page: number) => void;
-}) {
-  const start = meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
-  const end = Math.min(meta.page * meta.pageSize, meta.total);
-
-  return (
-    <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-      <span className="tabular-nums">
-        {start}–{end} of {meta.total}
-      </span>
-      {meta.totalPages > 1 ? (
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={meta.page <= 1}
-            onClick={() => onPageChange(meta.page - 1)}
-          >
-            Previous
-          </Button>
-          <span className="text-muted-foreground px-1 tabular-nums">
-            Page {meta.page} of {meta.totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={meta.page >= meta.totalPages}
-            onClick={() => onPageChange(meta.page + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }
