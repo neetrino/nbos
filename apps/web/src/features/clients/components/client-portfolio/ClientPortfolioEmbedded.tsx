@@ -8,9 +8,9 @@ import { DetailSheetSection } from '@/components/shared';
 import {
   DETAIL_SHEET_TAB_ACTIVE_CLASS,
   DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
+  DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
   DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
   DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  DETAIL_SHEET_TAB_INDICATOR_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import {
@@ -91,7 +91,7 @@ interface ClientDetailTabBarProps {
 
 export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTabBarProps) {
   return (
-    <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+    <div className={DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS}>
       <div className={DETAIL_SHEET_TAB_BAR_SCROLL_CLASS}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -108,7 +108,6 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
             >
               <Icon size={16} aria-hidden />
               {tab.label}
-              {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
             </button>
           );
         })}

@@ -8,7 +8,6 @@ import {
   DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
   DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
   DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  DETAIL_SHEET_TAB_INDICATOR_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
@@ -65,13 +64,11 @@ export function PartnerDetailTabs(props: {
                 onClick={() => setPanel(tab.id)}
                 className={cn(
                   DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-                  'px-4 sm:px-5',
                   active ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
                 )}
               >
                 <Icon size={16} aria-hidden />
                 {tab.label}
-                {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
               </button>
             );
           })}

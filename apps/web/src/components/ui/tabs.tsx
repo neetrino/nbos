@@ -21,7 +21,7 @@ Tabs.displayName = TabsPrimitive.Root.displayName;
 export const tabsListVariants = cva('text-muted-foreground', {
   variants: {
     variant: {
-      default: 'inline-flex h-auto min-w-0 items-center gap-1 rounded-xl bg-muted p-1',
+      default: 'inline-flex h-auto min-w-0 items-center gap-1 overflow-x-auto pb-0',
       segmented:
         'inline-flex h-auto min-w-0 items-center gap-0.5 rounded-lg border border-border bg-background p-0.5',
     },
@@ -53,7 +53,7 @@ const tabsTriggerVariants = cva(
     variants: {
       listVariant: {
         default:
-          'gap-2 rounded-lg px-4 py-2 text-sm hover:bg-background/60 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md',
+          'gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none',
         segmented:
           'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
       },

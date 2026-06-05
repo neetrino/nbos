@@ -240,7 +240,7 @@ export default function DocumentDetailPage() {
                   onValueChange={(v) => setContentTab(v as ContentTab)}
                   className="w-full"
                 >
-                  <TabsList className="w-full justify-start">
+                  <TabsList className="border-border w-full justify-start border-b pb-0">
                     <TabsTrigger value="view">Read</TabsTrigger>
                     <TabsTrigger value="edit">Edit</TabsTrigger>
                   </TabsList>

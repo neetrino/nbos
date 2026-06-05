@@ -2,9 +2,9 @@ import { Gift, History, Kanban, LayoutGrid, Phone } from 'lucide-react';
 import {
   DETAIL_SHEET_TAB_ACTIVE_CLASS,
   DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
+  DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
   DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
   DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  DETAIL_SHEET_TAB_INDICATOR_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import { DELIVERY_DETAIL_TABS, type DeliveryDetailTabId } from './delivery-item-detail.constants';
@@ -24,7 +24,7 @@ interface DeliveryItemDetailTabBarProps {
 
 export function DeliveryItemDetailTabBar({ panel, onSelect }: DeliveryItemDetailTabBarProps) {
   return (
-    <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+    <div className={DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS}>
       <div className={DETAIL_SHEET_TAB_BAR_SCROLL_CLASS}>
         {DELIVERY_DETAIL_TABS.map((tab) => {
           const Icon = TAB_ICONS[tab.id];
@@ -41,7 +41,6 @@ export function DeliveryItemDetailTabBar({ panel, onSelect }: DeliveryItemDetail
             >
               <Icon size={16} aria-hidden />
               {tab.label}
-              {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
             </button>
           );
         })}

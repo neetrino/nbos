@@ -7,7 +7,6 @@ import {
   DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
   DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
   DETAIL_SHEET_TAB_INACTIVE_CLASS,
-  DETAIL_SHEET_TAB_INDICATOR_CLASS,
 } from './detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +48,6 @@ export function DetailSheetTabBar({
             >
               {Icon ? <Icon size={16} aria-hidden /> : null}
               {tab.label}
-              {isActive ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
             </button>
           );
         })}
