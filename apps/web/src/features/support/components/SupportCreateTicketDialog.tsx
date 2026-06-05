@@ -89,7 +89,7 @@ export function SupportCreateTicketDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="support-new-title">Title</Label>
+            <Label htmlFor="support-new-title">Title *</Label>
             <Input
               id="support-new-title"
               value={title}
@@ -98,8 +98,40 @@ export function SupportCreateTicketDialog({
               autoFocus
             />
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="support-new-category">Category</Label>
+              <select
+                id="support-new-category"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={category}
+                onChange={(event) => onCategoryChange(event.target.value)}
+              >
+                {TICKET_CATEGORIES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-priority">Priority</Label>
+              <select
+                id="support-new-priority"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={priority}
+                onChange={(event) => onPriorityChange(event.target.value)}
+              >
+                {TICKET_PRIORITIES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <RelationPickerField
-            label="Project (optional)"
+            label="Project"
             entityKind="project"
             value={projectId || null}
             selectionLabel={projectSelectionLabel}
@@ -117,59 +149,28 @@ export function SupportCreateTicketDialog({
             onClear={clearProjectSelection}
             {...projectPicker}
           />
-          <RelationPickerField
-            label="Product (optional)"
-            entityKind="product"
-            value={productId || null}
-            selectionLabel={productSelectionLabel}
-            placeholder={projectId ? 'Search products…' : 'Select a project first'}
-            icon={<Layers size={12} />}
-            disabled={!projectId}
-            onSearch={searchProducts}
-            onSelect={(id, label) => {
-              onProductIdChange(id);
-              setProductLabel(label);
-            }}
-            onClear={() => {
-              onProductIdChange('');
-              setProductLabel('');
-            }}
-            {...productPicker}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label htmlFor="support-new-category">Category (optional)</Label>
-              <select
-                id="support-new-category"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-                value={category}
-                onChange={(event) => onCategoryChange(event.target.value)}
-              >
-                {TICKET_CATEGORIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="support-new-priority">Priority (optional)</Label>
-              <select
-                id="support-new-priority"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-                value={priority}
-                onChange={(event) => onPriorityChange(event.target.value)}
-              >
-                {TICKET_PRIORITIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          {projectId ? (
+            <RelationPickerField
+              label="Product"
+              entityKind="product"
+              value={productId || null}
+              selectionLabel={productSelectionLabel}
+              placeholder="Search products…"
+              icon={<Layers size={12} />}
+              onSearch={searchProducts}
+              onSelect={(id, label) => {
+                onProductIdChange(id);
+                setProductLabel(label);
+              }}
+              onClear={() => {
+                onProductIdChange('');
+                setProductLabel('');
+              }}
+              {...productPicker}
+            />
+          ) : null}
           <div className="space-y-1">
-            <Label htmlFor="support-new-desc">Description (optional)</Label>
+            <Label htmlFor="support-new-desc">Description</Label>
             <Textarea
               id="support-new-desc"
               value={description}
