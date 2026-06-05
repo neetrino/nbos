@@ -273,7 +273,7 @@ export function EmployeeSheet({
             className="flex min-h-0 flex-1 flex-col"
           >
             <div className={TEAM_SHEET_TABS_WRAPPER_CLASS}>
-              <TabsList variant="default" className="w-full justify-start">
+              <TabsList className="w-full justify-start">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
                 {current.status === 'TERMINATED' ? (

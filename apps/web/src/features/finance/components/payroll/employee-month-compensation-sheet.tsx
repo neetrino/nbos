@@ -241,7 +241,7 @@ export function EmployeeMonthCompensationSheet({
             <>
               {readOnly ? <WalletMonthSheetHints detail={detail} /> : null}
               <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
-                <TabsList variant="segmented" className="w-auto shrink-0">
+                <TabsList className="w-auto shrink-0">
                   <TabsTrigger value="general">General</TabsTrigger>
                   <TabsTrigger value="bonuses">Bonuses</TabsTrigger>
                   {showKpiTab ? <TabsTrigger value="kpi">KPI</TabsTrigger> : null}

@@ -60,7 +60,7 @@ export function ProjectDeliveryBoardHeader({
           value={statusFilter}
           onValueChange={(next) => onStatusFilterChange(next as DeliveryBoardStatusFilter)}
         >
-          <TabsList variant="segmented" className="w-fit">
+          <TabsList className="w-fit">
             {STATUS_FILTERS.map((filter) => (
               <TabsTrigger key={filter.value} value={filter.value} className="px-3 py-2 text-xs">
                 {filter.label}

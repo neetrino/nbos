@@ -236,7 +236,7 @@ export function SupportTicketDetailSheet({
                   if (v === 'activity') void loadAudit();
                 }}
               >
-                <TabsList variant="segmented" className="mx-6 mt-3 shrink-0 self-start">
+                <TabsList className="mx-6 mt-3 shrink-0 self-start">
                   <TabsTrigger value="general">General</TabsTrigger>
                   <TabsTrigger value="activity">Activity</TabsTrigger>
                 </TabsList>
