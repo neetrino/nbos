@@ -1,7 +1,11 @@
 'use client';
 
 import { Puzzle, User } from 'lucide-react';
-import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import {
+  KanbanCardShell,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  StatusBadge,
+} from '@/components/shared';
 import {
   DeliveryDealCardHoverActions,
   DeliveryDealRowHoverActions,
@@ -14,7 +18,6 @@ import {
 import {
   PROJECT_ENTITY_LIST_CLASS,
   PROJECT_ENTITY_LIST_ROW_CLASS,
-  PROJECT_PRODUCTS_CARD_GRID_CLASS,
 } from '@/features/projects/components/project-detail-layout.constants';
 import type { ExtensionEntityViewModel } from '@/features/projects/utils/extension-entity-view-model';
 
@@ -50,7 +53,7 @@ export function ExtensionEntityViews({
   }
 
   return (
-    <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
+    <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
       {extensions.map((extension) => (
         <ExtensionEntityCard
           key={extension.id}

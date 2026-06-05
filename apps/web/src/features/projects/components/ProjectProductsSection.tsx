@@ -5,6 +5,7 @@ import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   EntityLinkedSheetsHoverActions,
+  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   PageHero,
   PageHeroTabs,
   ProductNavigableCard,
@@ -24,7 +25,6 @@ import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-dea
 import {
   PROJECT_ENTITY_LIST_CLASS,
   PROJECT_ENTITY_LIST_ROW_CLASS,
-  PROJECT_PRODUCTS_CARD_GRID_CLASS,
   type ProjectDetailViewMode,
 } from './project-detail-layout.constants';
 
@@ -125,7 +125,7 @@ export function ProjectProductsSection({
           ))}
         </div>
       ) : (
-        <div className={PROJECT_PRODUCTS_CARD_GRID_CLASS}>
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
           {products.map((product) => (
             <ProductNavigableCard key={product.id} projectId={project.id} product={product} />
           ))}

@@ -37,9 +37,8 @@ export const PROJECT_ENTITY_LIST_ROW_CLASS =
 /** Minimum card track width (px) — aligned with drive tile grid pattern. */
 export const PROJECT_ENTITY_CARD_MIN_WIDTH_PX = 280;
 
-/** Product/extension cards — fluid columns that fill the main column width. */
-export const PROJECT_PRODUCTS_CARD_GRID_CLASS =
-  'grid w-full min-w-0 auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))] items-stretch gap-3';
+/** @deprecated Use {@link NAVIGABLE_ENTITY_CARD_GRID_CLASS} from `@/components/shared`. */
+export { NAVIGABLE_ENTITY_CARD_GRID_CLASS as PROJECT_PRODUCTS_CARD_GRID_CLASS } from '@/components/shared/navigable-entity-card.constants';
 
 /** Section headings (Extensions) — below project name in app header. */
 export const PROJECT_SECTION_TITLE_CLASS =

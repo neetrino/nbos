@@ -1,7 +1,13 @@
-/** Fluid grid for hub-style entity cards (projects, work spaces, …). */
-export const NAVIGABLE_ENTITY_CARD_GRID_CLASS =
-  'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+/**
+ * Min card track (~448px) before the grid drops to fewer columns.
+ * Wide layouts fit up to 3 columns; narrower areas step down to 2 then 1
+ * instead of squeezing card proportions.
+ */
+export const NAVIGABLE_ENTITY_CARD_MIN_TRACK = '28rem';
 
-/** Project Hub uses slightly wider cards on large screens. */
-export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS =
-  'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3';
+/** Fluid hub-style card grid — max ~3 wide columns, wraps when space is tight. */
+export const NAVIGABLE_ENTITY_CARD_GRID_CLASS =
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))]';
+
+/** Same responsive behavior as {@link NAVIGABLE_ENTITY_CARD_GRID_CLASS}. */
+export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS = NAVIGABLE_ENTITY_CARD_GRID_CLASS;
