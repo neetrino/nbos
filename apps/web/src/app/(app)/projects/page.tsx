@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FolderKanban, LayoutGrid, List, Plus, User, Building2, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,13 +23,11 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
-import {
-  useProjectsHubPagePreferences,
-  type ProjectsHubViewMode,
-} from '@/features/projects/constants/projects-page-preferences-storage';
+import type { ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
-import { projectsApi, type Project } from '@/lib/api/projects';
+import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
+import type { Project } from '@/lib/api/projects';
 
 const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
   {
@@ -48,37 +46,22 @@ const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [hubPrefs, setHubPrefs] = useProjectsHubPagePreferences();
-  const { activeTab, viewMode: view } = hubPrefs;
-  const setActiveTab = (tab: typeof activeTab) => setHubPrefs({ activeTab: tab });
-  const setView = (viewMode: typeof view) => setHubPrefs({ viewMode });
   const [createOpen, setCreateOpen] = useState(false);
-
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await projectsApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-        ...(activeTab === 'active' ? { isArchived: false } : {}),
-        ...(activeTab === 'archived' ? { isArchived: true } : {}),
-      });
-      setProjects(data.items);
-      setError(null);
-    } catch {
-      setError('Projects could not be loaded. Check your connection and try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [search, activeTab]);
-
-  useEffect(() => {
-    void fetchProjects();
-  }, [fetchProjects]);
+  const directory = useProjectsHubDirectory();
+  const {
+    activeTab,
+    setActiveTab,
+    viewMode: view,
+    setViewMode: setView,
+    searchInput,
+    setSearchInput,
+    setPage,
+    items: projects,
+    meta,
+    loading,
+    error,
+    refetch,
+  } = directory;
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -98,10 +81,10 @@ export default function ProjectsPage() {
         }
         search={
           <IntegratedSearchFilters
-            search={search}
-            onSearchChange={setSearch}
+            search={searchInput}
+            onSearchChange={setSearchInput}
             searchPlaceholder="Search by project name, code, company, contact…"
-            onClearAll={() => setSearch('')}
+            onClearAll={() => setSearchInput('')}
           />
         }
         viewMode={<ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />}
@@ -124,7 +107,7 @@ export default function ProjectsPage() {
       {loading ? (
         <LoadingState variant="cards" count={6} />
       ) : error ? (
-        <ErrorState description={error} onRetry={fetchProjects} />
+        <ErrorState description={error} onRetry={() => void refetch()} />
       ) : projects.length === 0 ? (
         <EmptyState
           icon={FolderKanban}
@@ -232,14 +215,62 @@ export default function ProjectsPage() {
         </div>
       )}
 
+      {!loading && !error && projects.length > 0 ? (
+        <ProjectsHubPaginationFooter meta={meta} onPageChange={setPage} />
+      ) : null}
+
       <CreateProjectHubDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(project) => {
-          void fetchProjects();
+          void refetch();
           router.push(`/projects/${project.id}`);
         }}
       />
+    </div>
+  );
+}
+
+function ProjectsHubPaginationFooter({
+  meta,
+  onPageChange,
+}: {
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+  onPageChange: (page: number) => void;
+}) {
+  const start = meta.total === 0 ? 0 : (meta.page - 1) * meta.pageSize + 1;
+  const end = Math.min(meta.page * meta.pageSize, meta.total);
+
+  return (
+    <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+      <span className="tabular-nums">
+        {start}–{end} of {meta.total}
+      </span>
+      {meta.totalPages > 1 ? (
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={meta.page <= 1}
+            onClick={() => onPageChange(meta.page - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-muted-foreground px-1 tabular-nums">
+            Page {meta.page} of {meta.totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={meta.page >= meta.totalPages}
+            onClick={() => onPageChange(meta.page + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

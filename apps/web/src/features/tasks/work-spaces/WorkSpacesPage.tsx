@@ -18,7 +18,6 @@ import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDial
 import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
-import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
 type WorkSpaceView = 'grid' | 'list';
@@ -49,8 +48,6 @@ export function WorkSpacesPage() {
     mode,
     setMode,
     setPage,
-    pageSize,
-    setPageSize,
     view,
     setView,
     items,
@@ -62,10 +59,6 @@ export function WorkSpacesPage() {
   } = directory;
 
   const workSpaceFilterConfigs = useMemo((): FilterConfig[] => {
-    const pageSizeOptions = WORK_SPACES_PAGE_SIZE_OPTIONS.map((n) => ({
-      value: String(n),
-      label: `${n} / page`,
-    }));
     return [
       {
         key: 'mode',
@@ -74,12 +67,6 @@ export function WorkSpacesPage() {
           { value: 'scrum', label: 'Scrum' },
           { value: 'kanban', label: 'Kanban' },
         ],
-      },
-      {
-        key: 'pageSize',
-        label: 'Per page',
-        options: pageSizeOptions,
-        includeAllOption: false,
       },
     ];
   }, []);
@@ -114,14 +101,10 @@ export function WorkSpacesPage() {
             onSearchChange={setSearchInput}
             searchPlaceholder="Search by name, project, product…"
             filters={workSpaceFilterConfigs}
-            filterValues={{ mode, pageSize: String(pageSize) }}
+            filterValues={{ mode }}
             onFilterChange={(key, value) => {
               if (key === 'mode') {
                 setMode(value as 'all' | 'scrum' | 'kanban');
-                return;
-              }
-              if (key === 'pageSize') {
-                setPageSize(Number(value));
               }
             }}
             onClearAll={() => {

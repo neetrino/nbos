@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { tasksApi, type WorkSpace, type WorkSpaceListPayload } from '@/lib/api/tasks';
 import {
-  WORK_SPACES_DEFAULT_PAGE_SIZE,
+  WORK_SPACES_PAGE_SIZE,
   WORK_SPACES_SEARCH_DEBOUNCE_MS,
 } from './work-spaces-page-constants';
 
@@ -12,10 +12,10 @@ const TYPE_BY_TAB: Record<WorkSpaceDirectoryTab, WorkSpace['type']> = {
   product: 'PRODUCT_DELIVERY',
 };
 
-const emptyMeta = (pageSize: number) => ({
+const emptyMeta = () => ({
   total: 0,
   page: 1,
-  pageSize,
+  pageSize: WORK_SPACES_PAGE_SIZE,
   totalPages: 0,
 });
 
@@ -25,7 +25,6 @@ export function useWorkSpacesDirectory() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [mode, setMode] = useState<'all' | 'scrum' | 'kanban'>('all');
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(WORK_SPACES_DEFAULT_PAGE_SIZE);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [payload, setPayload] = useState<WorkSpaceListPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +40,7 @@ export function useWorkSpacesDirectory() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, mode, pageSize]);
+  }, [debouncedSearch, mode]);
 
   const handleTabChange = useCallback((next: WorkSpaceDirectoryTab) => {
     setTab(next);
@@ -54,7 +53,7 @@ export function useWorkSpacesDirectory() {
       const data = await tasksApi.getWorkSpaces({
         type: TYPE_BY_TAB[tab],
         page,
-        pageSize,
+        pageSize: WORK_SPACES_PAGE_SIZE,
         search: debouncedSearch || undefined,
         ...(mode !== 'all' ? { mode } : {}),
       });
@@ -65,7 +64,7 @@ export function useWorkSpacesDirectory() {
     } finally {
       setLoading(false);
     }
-  }, [tab, page, pageSize, debouncedSearch, mode]);
+  }, [tab, page, debouncedSearch, mode]);
 
   useEffect(() => {
     void fetchList();
@@ -80,12 +79,10 @@ export function useWorkSpacesDirectory() {
     setMode,
     page,
     setPage,
-    pageSize,
-    setPageSize,
     view,
     setView,
     items: payload?.items ?? [],
-    meta: payload?.meta ?? emptyMeta(pageSize),
+    meta: payload?.meta ?? emptyMeta(),
     counts: payload?.counts ?? { standalone: 0, product: 0, total: 0 },
     loading,
     error,
