@@ -3,6 +3,8 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
+import { cn } from '@/lib/utils';
+
 /** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
 export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
 
@@ -268,3 +270,15 @@ export const DETAIL_SHEET_TAB_ACTIVE_CLASS = 'bg-primary text-primary-foreground
 
 export const DETAIL_SHEET_TAB_INACTIVE_CLASS =
   'text-muted-foreground hover:bg-secondary hover:text-foreground';
+
+/** Full-width page tab bar (My Account — no horizontal sheet padding). */
+export const PAGE_TAB_BAR_WRAPPER_CLASS =
+  'border-border flex shrink-0 items-center gap-1 border-b pb-0';
+
+/** Compose tab trigger classes for buttons and links outside {@link DetailSheetTabBar}. */
+export function detailSheetTabButtonClass(isActive: boolean): string {
+  return cn(
+    DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
+    isActive ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
+  );
+}

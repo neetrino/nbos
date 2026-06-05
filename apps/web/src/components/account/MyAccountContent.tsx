@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, Shield, User, Wallet } from 'lucide-react';
 import { NotificationsTab, ProfileTab, SecurityTab } from '@/components/account/MyAccountTabs';
+import {
+  PAGE_TAB_BAR_WRAPPER_CLASS,
+  detailSheetTabButtonClass,
+} from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 
 type TabId = 'profile' | 'notifications' | 'security';
 
@@ -23,33 +28,23 @@ const PROFILE_TABS: Tab[] = [
 export function MyAccountContent() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const walletActive = pathname.startsWith('/my-account/wallet');
 
   return (
     <>
-      <div className="border-border flex items-center gap-1 border-b pb-0">
+      <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
         {PROFILE_TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-            }`}
+            className={detailSheetTabButtonClass(activeTab === tab.id)}
           >
             <tab.icon size={16} />
             {tab.label}
           </button>
         ))}
-        <Link
-          href="/my-account/wallet"
-          className={`flex items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-            pathname.startsWith('/my-account/wallet')
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-          }`}
-        >
+        <Link href="/my-account/wallet" className={cn(detailSheetTabButtonClass(walletActive))}>
           <Wallet size={16} />
           Wallet
         </Link>

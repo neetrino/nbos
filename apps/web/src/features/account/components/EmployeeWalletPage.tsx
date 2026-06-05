@@ -21,6 +21,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import {
+  PAGE_TAB_BAR_WRAPPER_CLASS,
+  detailSheetTabButtonClass,
+} from '@/components/shared/detail-sheet-classes';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
@@ -155,15 +159,12 @@ export function EmployeeWalletPage() {
         </p>
       </div>
 
-      <div className="border-border flex items-center gap-1 border-b pb-0">
-        <Link
-          href="/my-account"
-          className="text-muted-foreground hover:bg-secondary hover:text-foreground flex items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors"
-        >
+      <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
+        <Link href="/my-account" className={detailSheetTabButtonClass(false)}>
           <User size={16} aria-hidden />
           Profile
         </Link>
-        <span className="bg-primary text-primary-foreground flex items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium">
+        <span className={detailSheetTabButtonClass(true)}>
           <Wallet size={16} aria-hidden />
           Wallet
         </span>

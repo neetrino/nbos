@@ -2,11 +2,9 @@
 
 import type { LucideIcon } from 'lucide-react';
 import {
-  DETAIL_SHEET_TAB_ACTIVE_CLASS,
   DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
   DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
-  DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-  DETAIL_SHEET_TAB_INACTIVE_CLASS,
+  detailSheetTabButtonClass,
 } from './detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
@@ -21,30 +19,28 @@ export interface DetailSheetTabBarProps {
   activeTab: string;
   onTabChange: (value: string) => void;
   className?: string;
+  scrollClassName?: string;
 }
 
-/** CRM Deal-style tab strip for entity detail sheets. */
+/** Primary tab strip for entity detail sheets and inline detail panels. */
 export function DetailSheetTabBar({
   tabs,
   activeTab,
   onTabChange,
   className,
+  scrollClassName,
 }: DetailSheetTabBarProps) {
   return (
     <div className={cn(DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS, className)}>
-      <div className={DETAIL_SHEET_TAB_BAR_SCROLL_CLASS}>
+      <div className={cn(DETAIL_SHEET_TAB_BAR_SCROLL_CLASS, scrollClassName)}>
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.value;
           const Icon = tab.icon;
           return (
             <button
               key={tab.value}
               type="button"
               onClick={() => onTabChange(tab.value)}
-              className={cn(
-                DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
-                isActive ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
-              )}
+              className={detailSheetTabButtonClass(activeTab === tab.value)}
             >
               {Icon ? <Icon size={16} aria-hidden /> : null}
               {tab.label}
