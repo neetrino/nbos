@@ -227,6 +227,17 @@ export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 export const RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS =
   'w-auto min-w-[3.75rem] shrink-0 uppercase tracking-wide [&_svg]:hidden';
 
+/** Same slot as above — plain label by default; muted fill on hover, focus, or open (no border). */
+export const RELATION_PICKER_CHIP_TRAILING_SELECT_IDLE_CLASS = [
+  RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
+  'border-0 bg-transparent text-muted-foreground font-normal shadow-none',
+  'dark:border-0 dark:bg-transparent',
+  'hover:border-0 hover:bg-muted/30 hover:text-foreground hover:shadow-none',
+  'dark:hover:border-0 dark:hover:bg-input/45',
+  'focus-visible:border-0 focus-visible:bg-muted/30 focus-visible:text-foreground focus-visible:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0',
+  'data-popup-open:border-0 data-popup-open:bg-muted/30 data-popup-open:text-foreground data-popup-open:shadow-none',
+].join(' ');
+
 /** Default relation picker dropdown list (~4 rows). */
 export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
 

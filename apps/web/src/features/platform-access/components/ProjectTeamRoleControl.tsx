@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS } from '@/components/shared';
+import { RELATION_PICKER_CHIP_TRAILING_SELECT_IDLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import { projectTeamRoleShortLabel } from '../team-member-labels';
 
@@ -29,9 +28,9 @@ export function ProjectTeamRoleControl({
 }: ProjectTeamRoleControlProps) {
   if (!canManageTeam) {
     return (
-      <Badge variant="secondary" className="text-[10px] uppercase">
+      <span className="text-muted-foreground shrink-0 text-xs font-medium">
         {projectTeamRoleShortLabel(role)}
-      </Badge>
+      </span>
     );
   }
 
@@ -45,7 +44,10 @@ export function ProjectTeamRoleControl({
     >
       <SelectTrigger
         size="sm"
-        className={cn(RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS, 'tracking-normal normal-case')}
+        className={cn(
+          RELATION_PICKER_CHIP_TRAILING_SELECT_IDLE_CLASS,
+          'tracking-normal normal-case',
+        )}
         aria-label="Project team role"
       >
         <SelectValue>{projectTeamRoleShortLabel(role)}</SelectValue>
