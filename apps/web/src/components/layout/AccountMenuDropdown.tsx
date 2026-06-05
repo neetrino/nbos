@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import type { MeResponse } from '@/lib/permissions/types';
 import {
   ACCOUNT_MENU_SIDE_OFFSET,
@@ -133,6 +134,7 @@ type AccountMenuDropdownProps = {
 
 export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
   const router = useRouter();
+  const { openMyAccountSheet } = useMyAccountSheet();
   const displayName = displayNameFromMe(me);
   const initials = initialsFromMe(me);
   const photo = me?.avatar?.trim();
@@ -155,7 +157,7 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         me={me}
         displayName={displayName}
         initials={initials}
-        onMyAccount={() => router.push('/my-account')}
+        onMyAccount={() => void openMyAccountSheet()}
         onMyWallet={() => router.push('/my-account/wallet')}
         onSignOut={() => signOut({ callbackUrl: '/sign-in' })}
       />

@@ -1,9 +1,9 @@
 'use client';
 
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { Plus, CheckSquare } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
+import { OpenMyAccountButton } from '@/features/account/components/open-my-account-button';
 import {
   PageHero,
   ViewModeSwitch,
@@ -120,11 +120,7 @@ function TasksPageContent() {
           icon={CheckSquare}
           title="Employee profile required"
           description="Complete your employee profile to load tasks you participate in and use My Plan."
-          action={
-            <Link href="/my-account" className={buttonVariants({ variant: 'default' })}>
-              Open My Account
-            </Link>
-          }
+          action={<OpenMyAccountButton>Open My Account</OpenMyAccountButton>}
         />
       ) : displayTasks.length === 0 ? (
         <EmptyState

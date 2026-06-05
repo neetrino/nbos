@@ -58,6 +58,10 @@ interface EmployeeSheetProps {
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void | Promise<void>;
   canEdit?: boolean;
+  /** My Account profile — same sheet UI without HR lifecycle actions. */
+  selfProfile?: boolean;
+  /** Deep link for global My Account sheet (current page + query). */
+  selfProfileDeepLinkHref?: string;
 }
 
 function saveErrorMessage(err: unknown): string {
@@ -71,6 +75,8 @@ export function EmployeeSheet({
   onOpenChange,
   onSaved,
   canEdit = false,
+  selfProfile = false,
+  selfProfileDeepLinkHref,
 }: EmployeeSheetProps) {
   const [draft, setDraft] = useState<EmployeeGeneralDraft | null>(null);
   const [snap, setSnap] = useState<EmployeeGeneralDraft | null>(null);
@@ -212,7 +218,11 @@ export function EmployeeSheet({
         open={open}
         layout="full"
         width={TEAM_SHEET_WIDTH}
-        sourcePageHref={`${TEAM_PAGE_HREF}?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`}
+        sourcePageHref={
+          selfProfile
+            ? (selfProfileDeepLinkHref ?? '/dashboard')
+            : `${TEAM_PAGE_HREF}?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`
+        }
       >
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>
@@ -235,7 +245,7 @@ export function EmployeeSheet({
                   {levelInfo && <StatusBadge label={levelInfo.label} variant={levelInfo.variant} />}
                 </div>
               </div>
-              {canEdit && current.status !== 'TERMINATED' && (
+              {!selfProfile && canEdit && current.status !== 'TERMINATED' && (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"
@@ -246,7 +256,7 @@ export function EmployeeSheet({
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               )}
-              {canReactivate && current.status === 'TERMINATED' && (
+              {!selfProfile && canReactivate && current.status === 'TERMINATED' && (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                     <UserCheck className="mr-2 size-4" />

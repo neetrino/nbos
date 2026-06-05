@@ -1,9 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, User, Wallet } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { WalletBonusForecastCard } from '@/features/account/components/wallet-bonus-forecast-card';
 import { WalletBonusPipelineSection } from '@/features/account/components/wallet-bonus-pipeline-section';
@@ -21,10 +20,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
-import {
-  PAGE_TAB_BAR_WRAPPER_CLASS,
-  detailSheetTabButtonClass,
-} from '@/components/shared/detail-sheet-classes';
+import { MyAccountPageHeader } from '@/features/account/components/my-account-page-header';
+import { MyAccountTabBar } from '@/features/account/components/my-account-tab-bar';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
@@ -152,23 +149,8 @@ export function EmployeeWalletPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">My Account</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Profile, wallet, security, and notification preferences.
-        </p>
-      </div>
-
-      <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
-        <Link href="/my-account" className={detailSheetTabButtonClass(false)}>
-          <User size={16} aria-hidden />
-          Profile
-        </Link>
-        <span className={detailSheetTabButtonClass(true)}>
-          <Wallet size={16} aria-hidden />
-          Wallet
-        </span>
-      </div>
+      <MyAccountPageHeader />
+      <MyAccountTabBar />
 
       <div className="flex flex-col gap-6">
         <PageHeader
