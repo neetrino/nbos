@@ -18,6 +18,7 @@ import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTa
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import { taskDetailPlaceholderFromListItem } from '@/features/tasks/utils/task-detail-placeholder';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import {
@@ -151,6 +152,12 @@ export function WorkSpaceRuntime({
 
   const selectedTaskId = syncTaskSheetToUrl ? openTaskIdFromUrl : localSelectedTaskId;
   const sheetOpen = syncTaskSheetToUrl ? Boolean(openTaskIdFromUrl) : localSheetOpen;
+
+  const initialTask = useMemo(() => {
+    if (!selectedTaskId) return null;
+    const match = tasks.find((task) => task.id === selectedTaskId);
+    return match ? taskDetailPlaceholderFromListItem(match) : null;
+  }, [selectedTaskId, tasks]);
 
   const handleTaskClick = useCallback(
     (task: Task) => {
@@ -375,6 +382,7 @@ export function WorkSpaceRuntime({
 
       <TaskSheet
         taskId={selectedTaskId}
+        initialTask={initialTask}
         open={sheetOpen}
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}

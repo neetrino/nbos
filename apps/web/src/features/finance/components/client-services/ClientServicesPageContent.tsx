@@ -32,7 +32,11 @@ import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsShe
 import { ClientServiceListView } from './ClientServiceListView';
 import { ClientServiceStatusBoardView } from './ClientServiceStatusBoardView';
 import { ClientServiceMonthsBoardView } from './ClientServiceMonthsBoardView';
-import { clientServicesApi, type ClientServiceRecordListParams } from '@/lib/api/client-services';
+import {
+  clientServicesApi,
+  type ClientServiceRecord,
+  type ClientServiceRecordListParams,
+} from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 export function ClientServicesPageContent() {
@@ -55,6 +59,7 @@ function ClientServicesPageInner() {
   const [reloadToken, setReloadToken] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
+  const [selectedService, setSelectedService] = useState<ClientServiceRecord | null>(null);
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
@@ -100,9 +105,10 @@ function ClientServicesPageInner() {
   const openCreate = useCallback(() => setCreateOpen(true), []);
 
   const openServiceDetail = useCallback(
-    (serviceId: string) => {
+    (service: ClientServiceRecord) => {
+      setSelectedService(service);
       const params = new URLSearchParams(searchParams.toString());
-      params.set(OPEN_CLIENT_SERVICE_QUERY, serviceId);
+      params.set(OPEN_CLIENT_SERVICE_QUERY, service.id);
       router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`);
     },
     [pathname, router, searchParams],
@@ -111,6 +117,7 @@ function ClientServicesPageInner() {
   const handleServiceSheetOpenChange = useCallback(
     (next: boolean) => {
       if (next) return;
+      setSelectedService(null);
       const params = new URLSearchParams(searchParams.toString());
       if (!params.has(OPEN_CLIENT_SERVICE_QUERY)) return;
       params.delete(OPEN_CLIENT_SERVICE_QUERY);
@@ -220,6 +227,7 @@ function ClientServicesPageInner() {
 
       <ClientServiceDetailSheet
         serviceId={openServiceIdFromUrl}
+        initialService={selectedService}
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={refreshAll}

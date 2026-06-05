@@ -188,6 +188,7 @@ function OrdersPageInner() {
       </div>
       <OrderDetailSheet
         orderId={state.selectedOrder?.id ?? openOrderIdFromUrl}
+        initialOrder={state.selectedOrder}
         open={state.sheetOpen}
         onOpenChange={state.handleOrderSheetOpenChange}
         onCreateInvoice={state.handleCreateInvoice}

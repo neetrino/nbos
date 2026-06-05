@@ -73,8 +73,8 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
 
   const openMyAccountSheet = useCallback(async () => {
     if (!me?.id || permissionsLoading) return;
-    const record = employee ?? (await refreshEmployee());
-    if (record) setOpen(true);
+    setOpen(true);
+    if (!employee) await refreshEmployee();
   }, [employee, me?.id, permissionsLoading, refreshEmployee]);
 
   const closeMyAccountSheet = useCallback(() => {
@@ -103,7 +103,7 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
       {children}
       <EmployeeSheet
         employee={employee}
-        open={open && employee != null}
+        open={open}
         selfProfile
         selfProfileDeepLinkHref={deepLinkHref}
         canEdit={canEdit}

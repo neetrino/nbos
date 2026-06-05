@@ -26,6 +26,11 @@ export function SupportPageView() {
     createForm.setCreateOpen(true);
   }, [createForm.setCreateOpen]);
 
+  const initialTicket = useMemo(
+    () => page.displayTickets.find((ticket) => ticket.id === page.openTicketIdFromUrl) ?? null,
+    [page.displayTickets, page.openTicketIdFromUrl],
+  );
+
   return (
     <div className="flex h-full flex-col gap-5">
       <SupportPageHero
@@ -65,6 +70,7 @@ export function SupportPageView() {
 
       <SupportTicketActionOverlays
         ticketId={page.openTicketIdFromUrl}
+        initialTicket={initialTicket}
         open={Boolean(page.openTicketIdFromUrl)}
         onOpenChange={page.handleSupportDetailOpenChange}
         detailRefreshKey={query.detailRefreshKey}

@@ -26,6 +26,7 @@ import { useTaskSheetState } from './use-task-sheet-state';
 
 interface TaskSheetProps {
   taskId: string | null;
+  initialTask?: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate?: (task: Task) => void;
@@ -41,13 +42,14 @@ const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(96vw,112rem)] 2xl:right-[min
 
 export function TaskSheet({
   taskId,
+  initialTask = null,
   open,
   onOpenChange,
   onUpdate,
   onDelete,
   forceNestedBackdrop,
 }: TaskSheetProps) {
-  const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
+  const state = useTaskSheetState({ taskId, open, initialTask, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 

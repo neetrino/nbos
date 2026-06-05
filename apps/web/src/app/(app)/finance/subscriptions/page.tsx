@@ -59,6 +59,10 @@ function SubscriptionsPageInner() {
   const openSubscriptionIdFromUrl = searchParams.get(OPEN_SUBSCRIPTION_QUERY)?.trim() || null;
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
+  const initialSubscription = useMemo(
+    () => page.subscriptions.find((row) => row.id === openSubscriptionIdFromUrl) ?? null,
+    [openSubscriptionIdFromUrl, page.subscriptions],
+  );
   const [gridYear, setGridYear] = useState(() => new Date().getFullYear());
   const subscriptionGrid = useSubscriptionGrid({
     year: gridYear,
@@ -282,6 +286,7 @@ function SubscriptionsPageInner() {
 
       <SubscriptionDetailSheet
         subscriptionId={openSubscriptionIdFromUrl}
+        initialSubscription={initialSubscription}
         open={Boolean(openSubscriptionIdFromUrl)}
         onOpenChange={handleSubscriptionSheetOpenChange}
         onSubscriptionUpdated={() => {

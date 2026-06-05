@@ -15,7 +15,7 @@ import {
 import { formatAmount } from '@/features/finance/constants/finance';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { ordersApi, type Order } from '@/lib/api/finance';
 import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
@@ -25,6 +25,7 @@ import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderDetailSheetProps {
   orderId: string | null;
+  initialOrder?: Order | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateInvoice: (order: Order) => void;
@@ -33,39 +34,39 @@ interface OrderDetailSheetProps {
 
 export function OrderDetailSheet({
   orderId,
+  initialOrder = null,
   open,
   onOpenChange,
   onCreateInvoice,
   refreshSignal = 0,
 }: OrderDetailSheetProps) {
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<OrderDetailSheetTab>('general');
 
-  const fetchOrder = useCallback(async () => {
-    if (!orderId) return;
-    setLoading(true);
-    try {
-      const row = await ordersApi.getById(orderId);
-      setOrder(row);
-      setError(null);
-    } catch (caught) {
-      setOrder(null);
-      setError(getApiErrorMessage(caught, 'Order could not be loaded.'));
-    } finally {
-      setLoading(false);
-    }
-  }, [orderId]);
+  const {
+    entity: order,
+    loading,
+    error,
+    refresh,
+  } = useEntityDetailHydration({
+    entityId: orderId ?? '',
+    open: open && Boolean(orderId),
+    initialEntity: initialOrder,
+    fetchById: ordersApi.getById,
+    loadErrorMessage: 'Order could not be loaded.',
+  });
 
   useEffect(() => {
-    if (!open || !orderId) return;
-    void fetchOrder();
-  }, [open, orderId, fetchOrder, refreshSignal]);
+    if (!open || !orderId || refreshSignal === 0) return;
+    void refresh();
+  }, [open, orderId, refresh, refreshSignal]);
 
   useEffect(() => {
     setActiveTab('general');
   }, [orderId, open]);
+
+  const fetchOrder = useCallback(async () => {
+    await refresh();
+  }, [refresh]);
 
   const handleCreateInvoice = useCallback(() => {
     if (!order) return;
@@ -88,7 +89,7 @@ export function OrderDetailSheet({
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-            {loading ? (
+            {loading && !order ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : order ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -120,9 +121,9 @@ export function OrderDetailSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-5 py-5">
-              {loading ? (
+              {loading && !order ? (
                 <LoadingState count={3} />
-              ) : error ? (
+              ) : error && !order ? (
                 <ErrorState description={error} onRetry={() => void fetchOrder()} />
               ) : order ? (
                 <OrderDetailSheetBody

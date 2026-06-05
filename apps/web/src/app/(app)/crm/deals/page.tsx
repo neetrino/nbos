@@ -371,6 +371,9 @@ function DealsPipelinePageContent() {
   const handleCardClick = (deal: Deal) => {
     clearDealBlockerNav();
     setStageGateHighlight(null);
+    setSelectedDeal(deal);
+    setDealBlockerNav(null);
+    setSheetOpen(true);
     pushOpenDealToUrl(deal.id);
   };
 

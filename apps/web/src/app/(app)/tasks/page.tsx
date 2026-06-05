@@ -59,6 +59,7 @@ function TasksPageContent() {
     creatorId,
     creatorReady,
     selectedTaskId,
+    initialTask,
     handleTaskUpdate,
     handleTaskDelete,
     handleTaskCreated,
@@ -144,6 +145,7 @@ function TasksPageContent() {
 
       <TaskSheet
         taskId={selectedTaskId}
+        initialTask={initialTask}
         open={sheetOpen}
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}

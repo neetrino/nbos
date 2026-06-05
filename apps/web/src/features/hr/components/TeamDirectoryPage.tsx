@@ -230,6 +230,8 @@ function TeamDirectoryPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   function openSheet(emp: Employee) {
+    setSelectedEmployee(emp);
+    setSheetOpen(true);
     pushOpenEmployeeToUrl(emp.id);
   }
 

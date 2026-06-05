@@ -1,5 +1,6 @@
 'use client';
 
+import type { SupportTicket } from '@/lib/api/support';
 import { SupportEscalateDialog } from '@/features/support/components/SupportEscalateDialog';
 import { SupportStatusDialogs } from '@/features/support/components/SupportStatusDialogs';
 import { SupportTechnicalContextDialog } from '@/features/support/components/SupportTechnicalContextDialog';
@@ -8,6 +9,7 @@ import type { useSupportTicketActions } from '@/features/support/hooks/use-suppo
 
 export interface SupportTicketActionOverlaysProps {
   ticketId: string | null;
+  initialTicket?: SupportTicket | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   detailRefreshKey: number;
@@ -18,6 +20,7 @@ export interface SupportTicketActionOverlaysProps {
 
 export function SupportTicketActionOverlays({
   ticketId,
+  initialTicket = null,
   open,
   onOpenChange,
   detailRefreshKey,
@@ -66,6 +69,7 @@ export function SupportTicketActionOverlays({
 
       <SupportTicketDetailSheet
         ticketId={ticketId}
+        initialTicket={initialTicket}
         open={open}
         onOpenChange={onOpenChange}
         refreshKey={detailRefreshKey}

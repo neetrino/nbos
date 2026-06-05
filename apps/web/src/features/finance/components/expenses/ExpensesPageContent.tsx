@@ -539,6 +539,7 @@ export function ExpensesPageContent({
 
       <ExpenseDetailSheet
         expenseId={sheetOpen ? (openExpenseIdFromUrl ?? selectedExpense?.id ?? null) : null}
+        initialExpense={selectedExpense}
         open={sheetOpen || Boolean(openExpenseIdFromUrl)}
         onOpenChange={handleExpenseSheetOpenChange}
         listProjectId={effectiveProjectId ?? null}

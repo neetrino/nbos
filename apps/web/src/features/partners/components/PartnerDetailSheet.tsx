@@ -12,6 +12,7 @@ import { PartnerDetailTabs } from '@/features/partners/components/PartnerDetailT
 import { PartnerLifecycleStages } from '@/features/partners/components/PartnerLifecycleStages';
 import { getPartnerLevel } from '@/features/partners/constants/partners';
 import { formatPartnerDateTime } from '@/features/partners/utils/partner-detail-format';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-q
 
 interface PartnerDetailSheetProps {
   partnerId: string | null;
+  initialPartner?: Partner | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPartnerUpdated?: (partner: Partner) => void;
@@ -27,46 +29,36 @@ interface PartnerDetailSheetProps {
 
 export function PartnerDetailSheet({
   partnerId,
+  initialPartner = null,
   open,
   onOpenChange,
   onPartnerUpdated,
 }: PartnerDetailSheetProps) {
-  const [partner, setPartner] = useState<Partner | null>(null);
-  const [loading, setLoading] = useState(false);
+  const {
+    entity: partner,
+    setEntity: setPartner,
+    loading,
+  } = useEntityDetailHydration({
+    entityId: partnerId ?? '',
+    open: open && Boolean(partnerId),
+    initialEntity: initialPartner,
+    fetchById: partnersApi.getById,
+    loadErrorMessage: 'Partner could not be opened.',
+  });
   const [statusBusy, setStatusBusy] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [accrualsReloadKey, setAccrualsReloadKey] = useState(0);
 
-  const load = useCallback(async () => {
-    if (!partnerId) return;
-    setLoading(true);
-    try {
-      const data = await partnersApi.getById(partnerId);
-      setPartner(data);
-      setAccrualsReloadKey((k) => k + 1);
-    } catch (caught) {
-      setPartner(null);
-      toast.error(getApiErrorMessage(caught, 'Partner could not be opened.'));
-      onOpenChange(false);
-    } finally {
-      setLoading(false);
-    }
-  }, [partnerId, onOpenChange]);
-
   useEffect(() => {
-    if (!open || !partnerId) {
-      setPartner(null);
-      return;
-    }
-    void load();
-  }, [open, partnerId, load]);
+    if (partner?.id) setAccrualsReloadKey((k) => k + 1);
+  }, [partner?.id, partner?.updatedAt]);
 
   const patchPartner = useCallback(
     (next: Partner) => {
       setPartner(next);
       onPartnerUpdated?.(next);
     },
-    [onPartnerUpdated],
+    [onPartnerUpdated, setPartner],
   );
 
   const handleStatusSelect = useCallback(
@@ -85,10 +77,11 @@ export function PartnerDetailSheet({
         setStatusBusy(false);
       }
     },
-    [partner, patchPartner, statusBusy],
+    [partner, patchPartner, setPartner, statusBusy],
   );
 
   const tier = partner ? getPartnerLevel(partner.level) : null;
+  const showBodyLoading = loading && !partner;
 
   return (
     <>
@@ -109,7 +102,7 @@ export function PartnerDetailSheet({
                     <div className="mt-1 inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                       <Handshake className="text-primary size-5 shrink-0" aria-hidden />
                       <h2 className="text-foreground max-w-[28rem] truncate text-xl font-bold tracking-tight">
-                        {loading ? '…' : (partner?.name ?? 'Partner')}
+                        {showBodyLoading ? '…' : (partner?.name ?? 'Partner')}
                       </h2>
                       {tier ? (
                         <span
@@ -171,19 +164,19 @@ export function PartnerDetailSheet({
 
               <ScrollArea className="min-h-0 flex-1">
                 <div className="px-7 py-5">
-                  {loading || !partner ? (
+                  {showBodyLoading ? (
                     <div className="space-y-4">
                       <Skeleton className="h-40 w-full" />
                       <Skeleton className="h-32 w-full" />
                     </div>
-                  ) : (
+                  ) : partner ? (
                     <PartnerDetailTabs
                       key={partner.id}
                       partner={partner}
                       onPartnerUpdated={patchPartner}
                       accrualsReloadKey={accrualsReloadKey}
                     />
-                  )}
+                  ) : null}
                 </div>
               </ScrollArea>
             </>

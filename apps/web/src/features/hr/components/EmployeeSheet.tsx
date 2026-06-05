@@ -205,7 +205,17 @@ export function EmployeeSheet({
     await onSaved?.();
   }, [current, onSaved]);
 
-  if (!current || !draft || !snap) return null;
+  if (!open) return null;
+
+  if (!current || !draft || !snap) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent open={open} layout="full" width={TEAM_SHEET_WIDTH}>
+          <p className="text-muted-foreground p-5 text-sm">Loading profile…</p>
+        </EntityDetailSheetContent>
+      </Sheet>
+    );
+  }
 
   const fullName = employeeFullName(current);
   const levelInfo = getEmployeeLevel(current.level ?? '');

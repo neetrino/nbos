@@ -18,7 +18,7 @@ export interface ClientServiceBoardColumnDef {
 interface ClientServiceBoardScrollProps {
   columns: ClientServiceBoardColumnDef[];
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 export function ClientServiceBoardScroll({

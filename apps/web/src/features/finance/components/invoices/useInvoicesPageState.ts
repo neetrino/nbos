@@ -132,6 +132,12 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
 
   useEffect(() => {
     if (!openInvoiceIdFromUrl) return;
+    const fromList = invoices.find((row) => row.id === openInvoiceIdFromUrl);
+    if (fromList) {
+      setSelectedInvoice(fromList);
+      setSheetOpen(true);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -148,7 +154,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     return () => {
       cancelled = true;
     };
-  }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
+  }, [openInvoiceIdFromUrl, invoices, stripOpenInvoiceFromUrl]);
 
   const portfolioCreateIntent = portfolioCreateInvoiceFromUrl;
 

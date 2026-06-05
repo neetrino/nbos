@@ -135,6 +135,8 @@ function CompaniesPageContent() {
   };
 
   const handleRowClick = (company: Company) => {
+    setSelectedCompany(company);
+    setSheetOpen(true);
     pushOpenCompanyToUrl(company.id);
   };
 

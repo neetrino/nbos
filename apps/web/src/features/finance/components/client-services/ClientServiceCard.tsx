@@ -13,7 +13,7 @@ import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 
 interface ClientServiceCardProps {
   service: ClientServiceRecord;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 function formatShortDate(value: string | null): string {
@@ -41,11 +41,11 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
           'focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none',
           service.overdue && 'bg-red-50/60 dark:bg-red-950/20',
         )}
-        onClick={() => onOpen(service.id)}
+        onClick={() => onOpen(service)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            onOpen(service.id);
+            onOpen(service);
           }
         }}
       >

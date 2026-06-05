@@ -139,6 +139,12 @@ export function useOrdersPageState({
 
   useEffect(() => {
     if (!openOrderIdFromUrl) return;
+    const fromList = orders.find((row) => row.id === openOrderIdFromUrl);
+    if (fromList) {
+      setSelectedOrder(fromList);
+      setSheetOpen(true);
+      return;
+    }
     let cancelled = false;
     void (async () => {
       try {
@@ -155,7 +161,7 @@ export function useOrdersPageState({
     return () => {
       cancelled = true;
     };
-  }, [openOrderIdFromUrl, stripOpenOrderFromUrl]);
+  }, [openOrderIdFromUrl, orders, stripOpenOrderFromUrl]);
 
   const refreshOrdersAfterInvoice = useCallback(async () => {
     try {

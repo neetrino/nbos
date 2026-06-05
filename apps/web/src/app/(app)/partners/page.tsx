@@ -230,6 +230,7 @@ function PartnersPageContent() {
 
       <PartnerDetailSheet
         partnerId={openPartnerId}
+        initialPartner={partners.find((partner) => partner.id === openPartnerId) ?? null}
         open={Boolean(openPartnerId)}
         onOpenChange={(next) => {
           if (!next) closePartnerSheet();

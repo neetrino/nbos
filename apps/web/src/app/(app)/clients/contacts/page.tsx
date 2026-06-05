@@ -139,6 +139,8 @@ function ContactsPageContent() {
   };
 
   const handleRowClick = (contact: Contact) => {
+    setSelectedContact(contact);
+    setSheetOpen(true);
     pushOpenContactToUrl(contact.id);
   };
 

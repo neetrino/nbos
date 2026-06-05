@@ -18,6 +18,7 @@ import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/
 import { TASK_LIST_GLOBAL_PAGE_SIZE } from '@/features/tasks/constants/task-list-pagination';
 import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { taskDetailPlaceholderFromListItem } from '@/features/tasks/utils/task-detail-placeholder';
 
 export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
@@ -261,6 +262,12 @@ export function useTasksListPage() {
       onDeleteMyPlanStage: boardMutations.handleDeleteMyPlanStage,
     });
 
+  const initialTask = useMemo(() => {
+    if (!openTaskId) return null;
+    const match = tasks.find((task) => task.id === openTaskId);
+    return match ? taskDetailPlaceholderFromListItem(match) : null;
+  }, [openTaskId, tasks]);
+
   return {
     creatorId,
     creatorReady,
@@ -282,6 +289,7 @@ export function useTasksListPage() {
     filterConfigs: FILTER_CONFIGS,
     handleExportScopeStatsCsv,
     selectedTaskId: openTaskId,
+    initialTask,
     sheetOpen: Boolean(openTaskId),
     handleTaskSheetOpenChange,
     quickCreateOpen,

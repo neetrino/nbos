@@ -15,7 +15,7 @@ interface ClientServiceMonthsBoardViewProps {
   year: number;
   onYearChange: (year: number) => void;
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 const MONTH_LABELS = [

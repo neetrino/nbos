@@ -14,7 +14,7 @@ import { useClientServiceBoard } from './use-client-service-board';
 interface ClientServiceStatusBoardViewProps {
   baseParams: ClientServiceRecordListParams;
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
 }
 
 export function ClientServiceStatusBoardView({

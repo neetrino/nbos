@@ -29,6 +29,7 @@ import {
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
 import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
@@ -40,6 +41,7 @@ import {
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
+  initialSubscription?: Subscription | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubscriptionUpdated?: (subscription: Subscription) => void;
@@ -52,13 +54,25 @@ function subscriptionSaveErrorMessage(err: unknown): string {
 
 export function SubscriptionDetailSheet({
   subscriptionId,
+  initialSubscription = null,
   open,
   onOpenChange,
   onSubscriptionUpdated,
 }: SubscriptionDetailSheetProps) {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    entity: subscription,
+    setEntity: setSubscription,
+    loading,
+    error,
+    refresh: fetchSubscription,
+  } = useEntityDetailHydration({
+    entityId: subscriptionId ?? '',
+    open: open && Boolean(subscriptionId),
+    initialEntity: initialSubscription,
+    fetchById: subscriptionsApi.getById,
+    isDirty: () => generalDirtyRef.current,
+    loadErrorMessage: 'Subscription could not be loaded. It may have been removed.',
+  });
   const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SubscriptionDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
@@ -66,29 +80,6 @@ export function SubscriptionDetailSheet({
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const generalDirtyRef = useRef(false);
-
-  const fetchSubscription = useCallback(async () => {
-    if (!subscriptionId) return;
-    setLoading(true);
-    try {
-      const data = await subscriptionsApi.getById(subscriptionId);
-      setSubscription(data);
-      setError(null);
-      setActionError(null);
-    } catch (caught) {
-      setSubscription(null);
-      setError(
-        getApiErrorMessage(caught, 'Subscription could not be loaded. It may have been removed.'),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [subscriptionId]);
-
-  useEffect(() => {
-    if (!open || !subscriptionId) return;
-    void fetchSubscription();
-  }, [open, subscriptionId, fetchSubscription]);
 
   useEffect(() => {
     setActiveTab('general');
@@ -183,7 +174,7 @@ export function SubscriptionDetailSheet({
           workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
         >
           <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-            {loading ? (
+            {loading && !subscription ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : subscription ? (
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -222,7 +213,7 @@ export function SubscriptionDetailSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-7 py-5">
-              {loading ? (
+              {loading && !subscription ? (
                 <LoadingState count={3} />
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchSubscription()} />

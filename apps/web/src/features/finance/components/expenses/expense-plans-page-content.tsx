@@ -330,6 +330,10 @@ export function ExpensePlansPageContent() {
 
   const openPlanIdFromUrl = searchParams.get(OPEN_EXPENSE_PLAN_QUERY)?.trim() || null;
   const sheetOpen = Boolean(openPlanIdFromUrl);
+  const initialPlan = useMemo(
+    () => plans.find((plan) => plan.id === openPlanIdFromUrl) ?? null,
+    [openPlanIdFromUrl, plans],
+  );
 
   const openExpensePlanDetail = useCallback(
     (plan: ExpensePlan) => {
@@ -481,6 +485,7 @@ export function ExpensePlansPageContent() {
 
       <ExpensePlanDetailSheet
         planId={openPlanIdFromUrl}
+        initialPlan={initialPlan}
         open={sheetOpen}
         onOpenChange={handlePlanSheetOpenChange}
         onPlanUpdated={() => void refreshAll()}

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ExternalLink, Headphones, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -32,6 +32,7 @@ interface ProductSupportTabProps extends UseProductSupportTabResult {
 
 export function ProductSupportTab({
   projectId,
+  tickets,
   displayTickets,
   kanbanColumns,
   boardScope,
@@ -64,6 +65,11 @@ export function ProductSupportTab({
       setDetailRefreshKey((key) => key + 1);
     });
   }, [refetch]);
+
+  const initialTicket = useMemo(
+    () => tickets.find((ticket) => ticket.id === ticketSheet.entityId) ?? null,
+    [ticketSheet.entityId, tickets],
+  );
 
   if (loading && displayTickets.length === 0) {
     return <LoadingState count={3} />;
@@ -145,6 +151,7 @@ export function ProductSupportTab({
 
       <SupportTicketActionOverlays
         ticketId={ticketSheet.entityId}
+        initialTicket={initialTicket}
         open={ticketSheet.isOpen}
         onOpenChange={ticketSheet.handleOpenChange}
         detailRefreshKey={detailRefreshKey}

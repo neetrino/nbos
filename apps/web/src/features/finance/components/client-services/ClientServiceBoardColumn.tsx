@@ -17,7 +17,7 @@ interface ClientServiceBoardColumnProps {
   sum: string;
   params: ClientServiceRecordListParams;
   reloadToken: number;
-  onOpen: (id: string) => void;
+  onOpen: (service: ClientServiceRecord) => void;
   showLeftRule?: boolean;
   seed?: ClientServiceListSeed | null;
 }
