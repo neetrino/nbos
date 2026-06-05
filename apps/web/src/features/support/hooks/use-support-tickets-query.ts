@@ -34,7 +34,7 @@ export function useSupportTicketsQuery() {
               ? filters.waitingState
               : undefined,
         });
-        setTickets(items);
+        setTickets(items.filter((ticket) => ticket.category !== 'CHANGE_REQUEST'));
         setError(null);
         try {
           setStats(await supportApi.getStats());

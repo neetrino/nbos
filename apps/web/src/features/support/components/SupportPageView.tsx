@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useMemo } from 'react';
 import { Headphones, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
@@ -22,22 +23,31 @@ export function SupportPageView() {
   const page = useSupportPage();
   const { query, createForm, actions } = page;
 
+  const filterValues = useMemo(
+    () => ({
+      boardScope: query.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      ...query.filters,
+    }),
+    [query.filters],
+  );
+
+  const handleNewTicket = useCallback(() => {
+    createForm.setCreateOpen(true);
+  }, [createForm.setCreateOpen]);
+
   return (
     <div className="flex h-full flex-col gap-5">
       <SupportPageHero
         search={query.search}
         onSearchChange={query.setSearch}
-        filterValues={{
-          boardScope: query.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-          ...query.filters,
-        }}
+        filterValues={filterValues}
         onFilterChange={query.handleFilterChange}
         onClearFilters={query.clearFilters}
         view={query.view}
         onViewChange={query.handleViewModeChange}
         exportDisabled={page.exportScopeStatsDisabled}
         onExportScopeStatsCsv={page.handleExportScopeStatsCsv}
-        onNewTicket={() => createForm.setCreateOpen(true)}
+        onNewTicket={handleNewTicket}
       />
 
       <SupportWorkflowScopeBanner scope={page.boardScope} />
