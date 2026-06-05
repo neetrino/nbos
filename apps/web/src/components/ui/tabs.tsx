@@ -6,10 +6,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-/** `default` — compact segmented control; `pill` — legacy top-rounded pill tabs (v2). */
-type TabsListVariant = 'default' | 'pill';
+/** `pill` — top-rounded tab strip (default); `segmented` — compact bordered segmented control. */
+type TabsListVariant = 'pill' | 'segmented';
 
-const TabsListVariantContext = React.createContext<TabsListVariant>('default');
+const TabsListVariantContext = React.createContext<TabsListVariant>('pill');
 
 const Tabs = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Root>,
@@ -22,21 +22,21 @@ Tabs.displayName = TabsPrimitive.Root.displayName;
 export const tabsListVariants = cva('text-muted-foreground', {
   variants: {
     variant: {
-      default:
-        'inline-flex h-auto min-w-0 items-center gap-0.5 rounded-lg border border-border bg-background p-0.5',
       pill: 'inline-flex h-auto min-w-0 items-center gap-1 overflow-x-auto pb-0',
+      segmented:
+        'inline-flex h-auto min-w-0 items-center gap-0.5 rounded-lg border border-border bg-background p-0.5',
     },
   },
   defaultVariants: {
-    variant: 'default',
+    variant: 'pill',
   },
 });
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>
->(({ className, variant = 'default', ...props }, ref) => (
-  <TabsListVariantContext.Provider value={variant ?? 'default'}>
+>(({ className, variant = 'pill', ...props }, ref) => (
+  <TabsListVariantContext.Provider value={variant ?? 'pill'}>
     <TabsPrimitive.List
       ref={ref}
       data-slot="tabs-list"
@@ -53,13 +53,13 @@ const tabsTriggerVariants = cva(
   {
     variants: {
       listVariant: {
-        default:
-          'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
         pill: 'gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none',
+        segmented:
+          'gap-1.5 rounded-md px-2.5 py-1.5 text-xs hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm',
       },
     },
     defaultVariants: {
-      listVariant: 'default',
+      listVariant: 'pill',
     },
   },
 );

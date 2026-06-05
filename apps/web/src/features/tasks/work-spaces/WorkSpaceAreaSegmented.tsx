@@ -23,7 +23,7 @@ export function WorkSpaceAreaSegmented({
       onValueChange={(next) => onValueChange(next as WorkspaceArea)}
       className={className}
     >
-      <TabsList className="w-full min-w-0 sm:w-auto">
+      <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
         {AREA_SEGMENTS.map((segment) => (
           <TabsTrigger
             key={segment.value}

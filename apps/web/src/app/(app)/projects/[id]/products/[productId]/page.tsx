@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { PAGE_TAB_BAR_WRAPPER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
@@ -173,15 +174,17 @@ function ProductDetailPageContent() {
         onValueChange={handleTabChange}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <TabsList>
-          {TAB_ITEMS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-              <tab.icon size={14} />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </TabsTrigger>
-          ))}
-          <EntityDriveNavAction href={driveHref} variant="tab" hideLabelOnMobile />
-        </TabsList>
+        <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
+          <TabsList className="min-w-0 flex-1 justify-start overflow-x-auto">
+            {TAB_ITEMS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
+                <tab.icon size={14} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </TabsTrigger>
+            ))}
+            <EntityDriveNavAction href={driveHref} variant="tab" hideLabelOnMobile />
+          </TabsList>
+        </div>
 
         <TabsContent value="overview" className="mt-5">
           <ProductOverviewTab product={product} onStatusChange={fetchProduct} />

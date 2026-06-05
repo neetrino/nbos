@@ -28,7 +28,7 @@ export function ClientsDirectoryTabs({ activeTab }: ClientsDirectoryTabsProps) {
       onValueChange={(value) => router.push(CLIENTS_DIRECTORY_HREFS[value as ClientsDirectoryTab])}
       className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
     >
-      <TabsList className="w-full min-w-0 sm:w-auto">
+      <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
         {CLIENTS_DIRECTORY_TABS.map((tab) => (
           <TabsTrigger
             key={tab.value}

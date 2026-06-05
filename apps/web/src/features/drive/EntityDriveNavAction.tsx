@@ -26,7 +26,7 @@ const INLINE_CLASS = cn(
 
 function resolveVariantClass(variant: EntityDriveNavActionVariant): string {
   if (variant === 'tab') {
-    return tabsTriggerVariants({ listVariant: 'default' });
+    return tabsTriggerVariants({ listVariant: 'pill' });
   }
   if (variant === 'block') {
     return cn(INLINE_CLASS, 'w-full justify-center');

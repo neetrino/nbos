@@ -30,7 +30,7 @@ export function DeliveryBoardKindSegmented({
       onValueChange={(next) => onValueChange(next as DeliveryBoardKindFilter)}
       className="w-auto shrink-0"
     >
-      <TabsList className="w-auto shrink-0">
+      <TabsList variant="segmented" className="w-auto shrink-0">
         {KIND_SEGMENTS.map(({ value: segmentValue, label, Icon }) => (
           <TabsTrigger
             key={segmentValue}
