@@ -1,8 +1,13 @@
 # Instant sheet open — план унификации
 
-> **Статус:** **Завершено** — все модули из плана, включая delivery board.
+> **Статус:** **Завершено** — включая relation picker, deal deep link, CRM loading shells, bonus deep link.
 
-## Реализовано
+## Реализовано (хвосты)
+
+- [x] **EntityRelationHost** — sheet сразу по id; hydrate contact/company/employee в фоне
+- [x] **EntityDealSheetDeepLink** — sheet сразу + `DealSheet` loading shell
+- [x] **DealSheet / LeadSheet / ContactSheet / CompanySheet** — `EntityDetailSheetLoadingShell` при `open && !entity`
+- [x] **Bonus board deep link** — sheet по URL сразу; `getById` если нет в list
 
 ### Phase 0 — инфраструктура
 

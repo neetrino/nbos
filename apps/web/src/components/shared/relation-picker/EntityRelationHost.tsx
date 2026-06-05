@@ -1,8 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 
@@ -26,6 +27,7 @@ import { employeesApi, type Employee } from '@/lib/api/employees';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import type { Project } from '@/lib/api/projects';
 import { productsApi, type Product } from '@/lib/api/products';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { parseRelationCreateIntent } from './parse-relation-create-intent';
 import { emitRelationCreatedHandlers } from './relation-created-registry';
 import { EntityRelationsProvider, type EntityRelationsApi } from './entity-relations-context';
@@ -55,36 +57,91 @@ export function EntityRelationHost({
   onRelationCreated,
 }: EntityRelationHostProps) {
   const router = useRouter();
+  const [contactOpenId, setContactOpenId] = useState<string | null>(null);
   const [contactSheet, setContactSheet] = useState<Contact | null>(null);
+  const [companyOpenId, setCompanyOpenId] = useState<string | null>(null);
   const [companySheet, setCompanySheet] = useState<Company | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [employeeOpenId, setEmployeeOpenId] = useState<string | null>(null);
   const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    if (!contactOpenId) return;
+    if (contactSheet?.id === contactOpenId) return;
+    let cancelled = false;
+    void contactsApi
+      .getById(contactOpenId)
+      .then((contact) => {
+        if (!cancelled) setContactSheet(contact);
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(caught, 'Contact could not be opened.'));
+          setContactOpenId(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [contactOpenId, contactSheet?.id]);
+
+  useEffect(() => {
+    if (!companyOpenId) return;
+    if (companySheet?.id === companyOpenId) return;
+    let cancelled = false;
+    void companiesApi
+      .getById(companyOpenId)
+      .then((company) => {
+        if (!cancelled) setCompanySheet(company);
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(caught, 'Company could not be opened.'));
+          setCompanyOpenId(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [companyOpenId, companySheet?.id]);
+
+  useEffect(() => {
+    if (!employeeOpenId) return;
+    if (employeeSheet?.id === employeeOpenId) return;
+    let cancelled = false;
+    void employeesApi
+      .getById(employeeOpenId)
+      .then((employee) => {
+        if (!cancelled) setEmployeeSheet(employee);
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(caught, 'Employee could not be opened.'));
+          setEmployeeOpenId(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [employeeOpenId, employeeSheet?.id]);
+
   const openEntity = useCallback(
-    async (kind: RelationEntityKind, id: string) => {
+    (kind: RelationEntityKind, id: string) => {
       if (kind === 'project') {
         router.push(`/projects/${id}`);
         return;
       }
       if (kind === 'contact') {
-        try {
-          const contact = await contactsApi.getById(id);
-          setContactSheet(contact);
-        } catch {
-          /* host consumer may toast via page refresh */
-        }
+        setContactOpenId(id);
+        setContactSheet((current) => (current?.id === id ? current : null));
         return;
       }
       if (kind === 'company') {
-        try {
-          const company = await companiesApi.getById(id);
-          setCompanySheet(company);
-        } catch {
-          /* ignore */
-        }
+        setCompanyOpenId(id);
+        setCompanySheet((current) => (current?.id === id ? current : null));
         return;
       }
       if (kind === 'partner') {
@@ -92,21 +149,19 @@ export function EntityRelationHost({
         return;
       }
       if (kind === 'employee') {
-        try {
-          const employee = await employeesApi.getById(id);
-          setEmployeeSheet(employee);
-        } catch {
-          /* ignore */
-        }
+        setEmployeeOpenId(id);
+        setEmployeeSheet((current) => (current?.id === id ? current : null));
         return;
       }
       if (kind === 'product') {
-        try {
-          const product = await productsApi.getById(id);
-          router.push(`/projects/${product.projectId}/products/${id}`);
-        } catch {
-          /* ignore */
-        }
+        void productsApi
+          .getById(id)
+          .then((product) => {
+            router.push(`/projects/${product.projectId}/products/${id}`);
+          })
+          .catch((caught) => {
+            toast.error(getApiErrorMessage(caught, 'Product could not be opened.'));
+          });
       }
     },
     [router],
@@ -161,6 +216,7 @@ export function EntityRelationHost({
     closeCreate();
     if (contact) {
       const label = `${contact.firstName} ${contact.lastName}`.trim();
+      setContactOpenId(contact.id);
       setContactSheet(contact);
       emitCreated({
         kind: 'contact',
@@ -175,6 +231,7 @@ export function EntityRelationHost({
     const intent = createIntent;
     closeCreate();
     if (company) {
+      setCompanyOpenId(company.id);
       setCompanySheet(company);
       emitCreated({
         kind: 'company',
@@ -229,9 +286,12 @@ export function EntityRelationHost({
 
       <ContactSheet
         contact={contactSheet}
-        open={Boolean(contactSheet)}
+        open={contactOpenId !== null}
         onOpenChange={(next) => {
-          if (!next) setContactSheet(null);
+          if (!next) {
+            setContactOpenId(null);
+            setContactSheet(null);
+          }
         }}
         onUpdate={async (id, data) => {
           const updated = await contactsApi.update(id, data);
@@ -242,9 +302,12 @@ export function EntityRelationHost({
 
       <CompanySheet
         company={companySheet}
-        open={Boolean(companySheet)}
+        open={companyOpenId !== null}
         onOpenChange={(next) => {
-          if (!next) setCompanySheet(null);
+          if (!next) {
+            setCompanyOpenId(null);
+            setCompanySheet(null);
+          }
         }}
         onUpdate={async (id, data) => {
           const updated = await companiesApi.update(id, data);
@@ -264,9 +327,12 @@ export function EntityRelationHost({
 
       <EmployeeSheet
         employee={employeeSheet}
-        open={Boolean(employeeSheet)}
+        open={employeeOpenId !== null}
         onOpenChange={(next) => {
-          if (!next) setEmployeeSheet(null);
+          if (!next) {
+            setEmployeeOpenId(null);
+            setEmployeeSheet(null);
+          }
         }}
       />
 

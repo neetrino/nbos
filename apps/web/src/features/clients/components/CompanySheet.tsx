@@ -8,6 +8,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
+import { EntityDetailSheetLoadingShell } from '@/components/shared/entity-detail-sheet-loading-shell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getCompanyType, getTaxStatus } from '../constants/clients';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
@@ -159,7 +160,17 @@ export function CompanySheet({
     }
   };
 
-  if (!company || !draft || !snap) return null;
+  if (!open) return null;
+
+  if (!company || !draft || !snap) {
+    return (
+      <EntityDetailSheetLoadingShell
+        open={open}
+        onOpenChange={onOpenChange}
+        label="Loading company…"
+      />
+    );
+  }
 
   const compType = getCompanyType(draft.type);
   const taxStatus = getTaxStatus(company.taxStatus);

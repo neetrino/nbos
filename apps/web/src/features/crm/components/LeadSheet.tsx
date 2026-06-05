@@ -11,6 +11,7 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   EntityDetailSheetContent,
+  EntityDetailSheetLoadingShell,
 } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
@@ -191,7 +192,18 @@ export function LeadSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
-  if (!lead) return null;
+  if (!open) return null;
+
+  if (!lead) {
+    return (
+      <EntityDetailSheetLoadingShell
+        open={open}
+        onOpenChange={onOpenChange}
+        label="Loading lead…"
+        width="medium"
+      />
+    );
+  }
 
   const currentStage = LEAD_STAGES.find((s) => s.key === lead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;

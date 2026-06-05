@@ -100,12 +100,15 @@ export function BonusBoardPageContent() {
 
   const openBonusEntryId = searchParams.get(BONUS_BOARD_OPEN_ENTRY_QUERY)?.trim() || null;
 
+  const [fetchedLedgerEntry, setFetchedLedgerEntry] = useState<BonusEntryListRow | null>(null);
+
   const ledgerEntry = useMemo(() => {
     if (!openBonusEntryId) return null;
-    return rows.find((r) => r.id === openBonusEntryId) ?? null;
-  }, [openBonusEntryId, rows]);
+    return rows.find((r) => r.id === openBonusEntryId) ?? fetchedLedgerEntry;
+  }, [fetchedLedgerEntry, openBonusEntryId, rows]);
 
-  const ledgerOpen = Boolean(openBonusEntryId && ledgerEntry);
+  const ledgerOpen = Boolean(openBonusEntryId);
+  const ledgerLoading = ledgerOpen && ledgerEntry == null;
 
   const openReleaseLedger = useCallback(
     (row: BonusEntryListRow) => {
@@ -117,13 +120,34 @@ export function BonusBoardPageContent() {
   );
 
   useEffect(() => {
-    if (loading || !openBonusEntryId) return;
-    if (!rows.some((r) => r.id === openBonusEntryId)) {
-      replaceBonusUrl((params) => {
-        params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
-      });
+    if (!openBonusEntryId) {
+      setFetchedLedgerEntry(null);
+      return;
     }
-  }, [loading, openBonusEntryId, rows, replaceBonusUrl]);
+    const fromList = rows.find((r) => r.id === openBonusEntryId);
+    if (fromList) {
+      setFetchedLedgerEntry(fromList);
+      return;
+    }
+    if (loading) return;
+
+    let cancelled = false;
+    void bonusesApi
+      .getById(openBonusEntryId)
+      .then((entry) => {
+        if (!cancelled) setFetchedLedgerEntry(entry);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          replaceBonusUrl((params) => {
+            params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, openBonusEntryId, replaceBonusUrl, rows]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -369,6 +393,7 @@ export function BonusBoardPageContent() {
       <BonusEntryReleasesSheet
         entry={ledgerEntry}
         open={ledgerOpen}
+        loading={ledgerLoading}
         onOpenChange={(next) => {
           if (!next) {
             replaceBonusUrl((params) => {

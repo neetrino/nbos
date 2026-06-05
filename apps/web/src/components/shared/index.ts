@@ -171,6 +171,7 @@ export {
   type EntityDetailSheetLayout,
   type EntityDetailSheetWidth,
 } from './EntityDetailSheetContent';
+export { EntityDetailSheetLoadingShell } from './entity-detail-sheet-loading-shell';
 export {
   EntityCenterSheetContent,
   type EntityCenterSheetContentProps,
