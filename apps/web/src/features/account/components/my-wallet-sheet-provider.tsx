@@ -71,13 +71,15 @@ export function MyWalletSheetProvider({ children }: { children: ReactNode }) {
     if (searchParams.get(MY_WALLET_OPEN_QUERY) !== '1') return;
 
     const salaryLineId = searchParams.get(WALLET_OPEN_SALARY_LINE_QUERY)?.trim() || undefined;
-    openMyWalletSheet(salaryLineId);
+    queueMicrotask(() => {
+      openMyWalletSheet(salaryLineId);
 
-    const next = new URLSearchParams(searchParams.toString());
-    next.delete(MY_WALLET_OPEN_QUERY);
-    next.delete(WALLET_OPEN_SALARY_LINE_QUERY);
-    const q = next.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete(MY_WALLET_OPEN_QUERY);
+      next.delete(WALLET_OPEN_SALARY_LINE_QUERY);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+    });
   }, [openMyWalletSheet, pathname, router, searchParams]);
 
   const value = useMemo(

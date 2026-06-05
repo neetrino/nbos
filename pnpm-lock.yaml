@@ -358,6 +358,9 @@ importers:
         specifier: ^8.20.0
         version: 8.20.0
     devDependencies:
+      '@nbos/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@nbos/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

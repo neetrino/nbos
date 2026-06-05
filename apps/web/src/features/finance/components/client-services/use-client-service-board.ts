@@ -39,10 +39,15 @@ export function useClientServiceBoard({
     () => JSON.stringify({ view, baseParams, year, reloadToken }),
     [view, baseParams, year, reloadToken],
   );
+  const [trackedFetchKey, setTrackedFetchKey] = useState(fetchKey);
+
+  if (trackedFetchKey !== fetchKey) {
+    setTrackedFetchKey(fetchKey);
+    setLoading(true);
+  }
 
   useEffect(() => {
     const requestId = ++requestIdRef.current;
-    setLoading(true);
 
     void clientServicesApi
       .getBoard({ view, year, pageSize: BOARD_PAGE_SIZE, ...baseParams })

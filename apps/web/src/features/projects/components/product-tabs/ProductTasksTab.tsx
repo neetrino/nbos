@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type SetStateAction } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -59,12 +59,18 @@ export function ProductTasksTab({
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
 
-  useEffect(() => {
-    if (boardView === 'planning') {
-      setWorkspaceArea(WORKSPACE_AREA_PLANNING);
-      setBoardView('kanban');
-    }
-  }, [boardView]);
+  const handleBoardViewChange = useCallback(
+    (next: SetStateAction<WorkspaceBoardView>) => {
+      const resolved = typeof next === 'function' ? next(boardView) : next;
+      if (resolved === 'planning') {
+        setWorkspaceArea(WORKSPACE_AREA_PLANNING);
+        setBoardView('kanban');
+        return;
+      }
+      setBoardView(resolved);
+    },
+    [boardView],
+  );
 
   const onWorkspaceUpdate = async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
     await handleWorkspaceUpdate(updated);
@@ -100,7 +106,7 @@ export function ProductTasksTab({
           isPlanningArea ? undefined : (
             <ViewModeSwitch
               value={boardView}
-              onChange={setBoardView}
+              onChange={handleBoardViewChange}
               options={WORKSPACE_BOARD_VIEW_OPTIONS}
             />
           )
@@ -150,7 +156,7 @@ export function ProductTasksTab({
         defaultTaskLink={defaultLink ?? undefined}
         taskViewFilters={taskViewFilters}
         boardView={boardView}
-        setBoardView={setBoardView}
+        setBoardView={handleBoardViewChange}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
         refreshTasksFromServer={refreshTasksFromServer}

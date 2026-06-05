@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ClipboardEvent } from 'react';
+import { useMemo, useState, type ClipboardEvent } from 'react';
 import { ChevronDown, Copy, Download, Eye, Plus } from 'lucide-react';
 import {
   entriesFromEnvBundleSerialized,
@@ -67,11 +67,13 @@ export function CredentialEnvTableEditor({
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
+  const [trackedInstanceKey, setTrackedInstanceKey] = useState(instanceKey);
 
-  useEffect(() => {
+  if (trackedInstanceKey !== instanceKey) {
+    setTrackedInstanceKey(instanceKey);
     setLocalEntries([]);
     setExpanded(false);
-  }, [instanceKey]);
+  }
 
   const parsedFromValue = useMemo(() => entriesFromEnvBundleSerialized(value), [value]);
   const parsedFromRevealed = useMemo(

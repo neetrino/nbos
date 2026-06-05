@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type SetStateAction } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowUpRight, Plus } from 'lucide-react';
@@ -60,12 +60,18 @@ export function WorkSpaceDetailPage() {
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
 
-  useEffect(() => {
-    if (boardView === 'planning') {
-      setWorkspaceArea(WORKSPACE_AREA_PLANNING);
-      setBoardView('kanban');
-    }
-  }, [boardView]);
+  const handleBoardViewChange = useCallback(
+    (next: SetStateAction<WorkspaceBoardView>) => {
+      const resolved = typeof next === 'function' ? next(boardView) : next;
+      if (resolved === 'planning') {
+        setWorkspaceArea(WORKSPACE_AREA_PLANNING);
+        setBoardView('kanban');
+        return;
+      }
+      setBoardView(resolved);
+    },
+    [boardView],
+  );
 
   const onWorkspaceUpdate = useCallback(
     async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
@@ -106,7 +112,7 @@ export function WorkSpaceDetailPage() {
           isPlanningArea ? undefined : (
             <ViewModeSwitch
               value={boardView}
-              onChange={setBoardView}
+              onChange={handleBoardViewChange}
               options={WORKSPACE_BOARD_VIEW_OPTIONS}
             />
           )
@@ -151,7 +157,7 @@ export function WorkSpaceDetailPage() {
         defaultTaskLink={defaultLink ?? undefined}
         taskViewFilters={taskViewFilters}
         boardView={boardView}
-        setBoardView={setBoardView}
+        setBoardView={handleBoardViewChange}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}
         syncTaskSheetToUrl

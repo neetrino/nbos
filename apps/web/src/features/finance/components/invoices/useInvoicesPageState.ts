@@ -134,8 +134,10 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     if (!openInvoiceIdFromUrl) return;
     const fromList = invoices.find((row) => row.id === openInvoiceIdFromUrl);
     if (fromList) {
-      setSelectedInvoice(fromList);
-      setSheetOpen(true);
+      queueMicrotask(() => {
+        setSelectedInvoice(fromList);
+        setSheetOpen(true);
+      });
       return;
     }
     let cancelled = false;

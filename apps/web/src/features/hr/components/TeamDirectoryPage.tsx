@@ -106,8 +106,10 @@ function TeamDirectoryPageContent() {
     if (!openEmployeeId || (loading && employees.length === 0)) return;
     const match = employees.find((e) => e.id === openEmployeeId);
     if (match) {
-      setSelectedEmployee(match);
-      setSheetOpen(true);
+      queueMicrotask(() => {
+        setSelectedEmployee(match);
+        setSheetOpen(true);
+      });
       return;
     }
     if (deepLinkEmployeeAttemptedRef.current === openEmployeeId) return;
