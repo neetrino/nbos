@@ -1,7 +1,7 @@
 'use client';
 
 import { CLIENT_SERVICE_BOARD_COLUMN_WIDTH } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardColumn } from './ClientServiceBoardColumn';
 import type { ClientServiceListSeed } from './use-client-service-list';
 

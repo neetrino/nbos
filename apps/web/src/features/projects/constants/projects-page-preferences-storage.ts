@@ -158,7 +158,11 @@ export function projectDetailProductStatusTabToFilter(
 export function projectDetailProductStatusFilterToTab(
   filter: string | null,
 ): ProjectDetailProductStatusTab {
-  return filter ?? PROJECT_DETAIL_PRODUCT_STATUS_TAB_ALL;
+  if (filter == null) return PROJECT_DETAIL_PRODUCT_STATUS_TAB_ALL;
+  const isKnownStatus = PRODUCT_STATUSES.some((status) => status.value === filter);
+  return isKnownStatus
+    ? (filter as ProjectDetailProductStatusTab)
+    : PROJECT_DETAIL_PRODUCT_STATUS_TAB_ALL;
 }
 
 /** @deprecated Use {@link useProjectDetailPagePreferences}. */

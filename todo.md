@@ -1,6 +1,6 @@
 # Instant sheet open — план унификации
 
-> **Статус:** Phase 0 + P0 + P1 + P2 + backlog — **реализовано** (кроме delivery board body skeleton).
+> **Статус:** **Завершено** — все модули из плана, включая delivery board.
 
 ## Реализовано
 
@@ -22,7 +22,7 @@
 - [x] **Client services** — `initialService`, onOpen передаёт record
 - [x] **Subscriptions** — `initialSubscription`, hydration в sheet
 - [x] **Partners** — `initialPartner`, hydration в sheet
-- [ ] **Delivery board** — header уже из `item`; full product fetch остаётся (частично OK)
+- [x] **Delivery board** — header/pipeline/tabs из list `item`; body skeleton + hydrate в фоне
 
 ### P2 — sync click + account
 
@@ -32,7 +32,7 @@
 - [x] **Invoices** — deep link seed из list
 - [x] **My Account** — sheet открывается сразу, loading state в EmployeeSheet
 
-### Backlog (завершено)
+### Backlog
 
 - [x] **Salary board / payroll run / wallet** — `salary-line-month-detail-placeholder`, `initialDetail`
 - [x] **Unit economics** — seed из table row в drilldown sheet

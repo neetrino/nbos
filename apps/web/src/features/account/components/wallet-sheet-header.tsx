@@ -45,12 +45,20 @@ export function WalletSheetHeader({
         </div>
         {anyExport ? (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="icon" className="size-9 shrink-0">
-                <MoreHorizontal size={16} aria-hidden />
-                <span className="sr-only">Export wallet data</span>
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={(props) => (
+                <Button
+                  {...props}
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-9 shrink-0"
+                >
+                  <MoreHorizontal size={16} aria-hidden />
+                  <span className="sr-only">Export wallet data</span>
+                </Button>
+              )}
+            />
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem
                 disabled={bonusSubmitting || !canExportBonuses}

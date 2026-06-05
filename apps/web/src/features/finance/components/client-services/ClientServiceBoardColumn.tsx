@@ -5,7 +5,7 @@ import { KanbanColumnMoneyPill } from '@/components/shared';
 import { contrastText } from '@/components/shared/kanban/kanban.types';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
 import { CLIENT_SERVICE_BOARD_COLUMN_WIDTH } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceCard } from './ClientServiceCard';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { useClientServiceList, type ClientServiceListSeed } from './use-client-service-list';

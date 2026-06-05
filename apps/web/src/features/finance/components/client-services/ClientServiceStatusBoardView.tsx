@@ -7,7 +7,7 @@ import {
   clientServiceStageHex,
   clientServiceStageLabel,
 } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
 import { useClientServiceBoard } from './use-client-service-board';
 

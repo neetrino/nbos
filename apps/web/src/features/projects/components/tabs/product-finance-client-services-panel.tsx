@@ -10,7 +10,7 @@ import { ClientServiceStatusBoardView } from '@/features/finance/components/clie
 import type { ClientServicesViewMode } from '@/features/finance/constants/client-services-view';
 import { buildProductClientServiceListParams } from '@/features/projects/utils/build-product-client-service-list-params';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
-import { clientServicesApi } from '@/lib/api/client-services';
+import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
@@ -28,7 +28,7 @@ export function ProductFinanceClientServicesPanel({
   view,
 }: ProductFinanceClientServicesPanelProps) {
   const router = useRouter();
-  const serviceSheet = useProductEntityDetailSheet();
+  const serviceSheet = useProductEntityDetailSheet<ClientServiceRecord>();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -43,8 +43,8 @@ export function ProductFinanceClientServicesPanel({
   }, []);
 
   const handleOpen = useCallback(
-    (serviceId: string) => {
-      serviceSheet.openEntity(serviceId);
+    (service: ClientServiceRecord) => {
+      serviceSheet.openEntity(service);
     },
     [serviceSheet],
   );
@@ -101,6 +101,7 @@ export function ProductFinanceClientServicesPanel({
 
       <ClientServiceDetailSheet
         serviceId={serviceSheet.entityId}
+        initialService={serviceSheet.seedEntity}
         open={serviceSheet.isOpen}
         onOpenChange={serviceSheet.handleOpenChange}
         onSaved={refreshAll}

@@ -22,7 +22,7 @@ import type { SupportTriageDraft } from './support-ticket-detail-helpers';
 export interface SupportTicketDetailTriageFieldsProps {
   draft: SupportTriageDraft;
   terminal: boolean;
-  projectId: string;
+  projectId: string | null;
   assigneeLabel?: string | null;
   productLabel?: string | null;
   contactLabel?: string | null;

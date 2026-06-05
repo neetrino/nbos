@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import { clientServiceStageHex } from '@/features/finance/constants/client-service-payment-stage';
-import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
 import { useClientServiceBoard } from './use-client-service-board';
 
