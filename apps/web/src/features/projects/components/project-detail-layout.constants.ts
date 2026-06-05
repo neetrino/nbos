@@ -34,9 +34,12 @@ export const PROJECT_ENTITY_LIST_CLASS =
 export const PROJECT_ENTITY_LIST_ROW_CLASS =
   'hover:bg-muted/50 group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors';
 
-/** Product cards: 1 → 2 (sm) → 3 (2xl) columns; avoids squeezed 4-up rows. */
+/** Minimum card track width (px) — aligned with drive tile grid pattern. */
+export const PROJECT_ENTITY_CARD_MIN_WIDTH_PX = 280;
+
+/** Product/extension cards — fluid columns that fill the main column width. */
 export const PROJECT_PRODUCTS_CARD_GRID_CLASS =
-  'grid min-w-0 grid-cols-1 items-stretch gap-3 sm:grid-cols-2 2xl:grid-cols-3';
+  'grid w-full min-w-0 auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))] items-stretch gap-3';
 
 /** Section headings (Extensions) — below project name in app header. */
 export const PROJECT_SECTION_TITLE_CLASS =

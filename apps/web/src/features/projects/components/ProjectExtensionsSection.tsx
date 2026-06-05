@@ -24,7 +24,7 @@ export function ProjectExtensionsSection({
   const items = extensions.map((extension) => projectExtensionToViewModel(extension));
 
   return (
-    <div className="min-w-0 space-y-4 overflow-hidden">
+    <div className="border-border w-full min-w-0 space-y-4 border-t pt-6">
       <div className="flex items-center gap-3">
         <h2 className={PROJECT_SECTION_TITLE_CLASS}>Extensions</h2>
         <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">

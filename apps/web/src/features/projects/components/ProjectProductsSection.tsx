@@ -87,7 +87,7 @@ export function ProjectProductsSection({
   const hasProducts = project.products.length > 0;
 
   return (
-    <div className="min-w-0 flex-1 space-y-4 overflow-hidden">
+    <div className="w-full min-w-0 space-y-4">
       <PageHero
         syncModuleTitle={false}
         className="mt-0"
