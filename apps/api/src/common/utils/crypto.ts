@@ -1,48 +1,75 @@
-import { createCipheriv, createDecipheriv, randomBytes, createHash, timingSafeEqual } from 'crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
+const V2_FORMAT_PREFIX = 'v2';
+const V2_KEY_SALT = 'NBOS_CREDENTIALS_ENCRYPTION_V2';
+const SCRYPT_KEY_LENGTH = 32;
+const SCRYPT_DERIVATION_OPTIONS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
-/** Derives a 32-byte key from an arbitrary-length secret via SHA-256 */
-export function deriveKey(secret: string): Buffer {
-  return createHash('sha256').update(secret).digest();
+/** Legacy decrypt-only: SHA-256 key derivation for pre-v2 ciphertext blobs. */
+export function deriveLegacyKey(masterKeyMaterial: string): Buffer {
+  return createHash('sha256').update(masterKeyMaterial).digest();
 }
 
-/**
- * Encrypts plaintext using AES-256-GCM.
- * @returns `iv:authTag:ciphertext` (hex-encoded)
- */
-export function encrypt(plaintext: string, key: string): string {
-  const derivedKey = deriveKey(key);
+/** scrypt-based key derivation for v2 encryptions (not used for password hashing). */
+export function deriveV2Key(masterKeyMaterial: string): Buffer {
+  return scryptSync(masterKeyMaterial, V2_KEY_SALT, SCRYPT_KEY_LENGTH, SCRYPT_DERIVATION_OPTIONS);
+}
+
+/** @deprecated Prefer {@link deriveLegacyKey} or {@link deriveV2Key}. */
+export function deriveKey(masterKeyMaterial: string): Buffer {
+  return deriveLegacyKey(masterKeyMaterial);
+}
+
+function encryptWithDerivedKey(plaintext: string, derivedKey: Buffer): string {
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, derivedKey, iv, { authTagLength: AUTH_TAG_LENGTH });
-
   const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
-
   return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
-/**
- * Decrypts an `iv:authTag:ciphertext` string encrypted by {@link encrypt}.
- */
-export function decrypt(encrypted: string, key: string): string {
-  const parts = encrypted.split(':');
+function decryptWithDerivedKey(payload: string, derivedKey: Buffer): string {
+  const parts = payload.split(':');
   if (parts.length !== 3) {
     throw new Error('Invalid encrypted format: expected iv:authTag:ciphertext');
   }
-
   const [ivHex, authTagHex, ciphertextHex] = parts;
-  const derivedKey = deriveKey(key);
   const iv = Buffer.from(ivHex!, 'hex');
   const authTag = Buffer.from(authTagHex!, 'hex');
   const ciphertext = Buffer.from(ciphertextHex!, 'hex');
-
   const decipher = createDecipheriv(ALGORITHM, derivedKey, iv, { authTagLength: AUTH_TAG_LENGTH });
   decipher.setAuthTag(authTag);
-
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+}
+
+/**
+ * Encrypts plaintext using AES-256-GCM with v2 scrypt key derivation.
+ * @returns `v2:iv:authTag:ciphertext` (hex-encoded body)
+ */
+export function encrypt(plaintext: string, masterKeyMaterial: string): string {
+  const body = encryptWithDerivedKey(plaintext, deriveV2Key(masterKeyMaterial));
+  return `${V2_FORMAT_PREFIX}:${body}`;
+}
+
+/**
+ * Decrypts legacy `iv:authTag:ciphertext` or v2 `v2:iv:authTag:ciphertext` blobs.
+ */
+export function decrypt(encrypted: string, masterKeyMaterial: string): string {
+  if (encrypted.startsWith(`${V2_FORMAT_PREFIX}:`)) {
+    const payload = encrypted.slice(V2_FORMAT_PREFIX.length + 1);
+    return decryptWithDerivedKey(payload, deriveV2Key(masterKeyMaterial));
+  }
+  return decryptWithDerivedKey(encrypted, deriveLegacyKey(masterKeyMaterial));
 }
 
 /**

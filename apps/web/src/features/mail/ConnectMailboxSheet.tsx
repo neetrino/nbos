@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Mail, ServerCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -23,12 +23,9 @@ export function ConnectMailboxSheet({ enabled, onConnected, onClose }: ConnectMa
   const [step, setStep] = useState<ConnectStep>('choose');
   const [gmailLoading, setGmailLoading] = useState(false);
 
-  useEffect(() => {
-    if (!enabled) {
-      setStep('choose');
-      setGmailLoading(false);
-    }
-  }, [enabled]);
+  if (!enabled) {
+    return null;
+  }
 
   const startGmail = async () => {
     setGmailLoading(true);

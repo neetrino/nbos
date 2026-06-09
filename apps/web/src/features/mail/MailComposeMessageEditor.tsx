@@ -117,7 +117,6 @@ export function MailComposeMessageEditor({
     skipEmitRef.current = true;
     editor.commands.setContent(html, { emitUpdate: false });
     skipEmitRef.current = false;
-    setHtmlSource(html);
   }, [editor, value]);
 
   useEffect(() => {

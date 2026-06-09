@@ -58,12 +58,13 @@ export function MailThreadDetailContent({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
+  const clearDeleteConfirm = deleteConfirm.clear;
 
   useEffect(() => {
     setReplyComposerOpen(false);
     setDeleteError(null);
-    deleteConfirm.clear();
-  }, [threadId, deleteConfirm.clear]);
+    clearDeleteConfirm();
+  }, [threadId, clearDeleteConfirm]);
 
   if (loading) {
     return <LoadingState />;

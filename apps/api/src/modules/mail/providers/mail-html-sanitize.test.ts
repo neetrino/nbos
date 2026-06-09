@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeEmailHtml } from './mail-html-sanitize';
+import { normalizeEmailSubject, sanitizeEmailHtml } from './mail-html-sanitize';
 
 function sanitized(html: string): string {
   const result = sanitizeEmailHtml(html);
@@ -79,5 +79,32 @@ describe('sanitizeEmailHtml', () => {
     const out = sanitized('<p style="background-image:url(javascript:alert(1))">Text</p>');
     expect(out.toLowerCase()).not.toContain('url(');
     expect(out).toContain('Text');
+  });
+});
+
+describe('normalizeEmailSubject', () => {
+  it('strips single Re:/Fwd:/FW: prefixes', () => {
+    expect(normalizeEmailSubject('Re: Test')).toBe('Test');
+    expect(normalizeEmailSubject('Fwd: Test')).toBe('Test');
+    expect(normalizeEmailSubject('FW: Test')).toBe('Test');
+  });
+
+  it('strips chained prefixes', () => {
+    expect(normalizeEmailSubject('Re: Fwd: FW: Test')).toBe('Test');
+  });
+
+  it('handles spaces around prefix and colon', () => {
+    expect(normalizeEmailSubject('   Re   :   Test')).toBe('Test');
+  });
+
+  it('does not strip malformed prefixes without colon', () => {
+    expect(normalizeEmailSubject('Re Test')).toBe('Re Test');
+  });
+
+  it('returns quickly for huge whitespace-only prefix attempts', () => {
+    const huge = `${' '.repeat(50_000)}Re: Final subject`;
+    const started = performance.now();
+    expect(normalizeEmailSubject(huge)).toBe('Final subject');
+    expect(performance.now() - started).toBeLessThan(500);
   });
 });
