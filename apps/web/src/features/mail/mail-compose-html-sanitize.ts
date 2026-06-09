@@ -1,93 +1,15 @@
 import DOMPurify from 'dompurify';
 import type { Config } from 'dompurify';
+import {
+  MAIL_EMAIL_ALLOWED_URI_REGEXP,
+  MAIL_EMAIL_PURIFY_CONFIG,
+  ensureMailEmailPurifyHooks,
+  sanitizeMailEmailInlineStyle,
+} from './mail-email-purify-config';
 
 const HTML_LIKE_RE = /<\/?[a-z][\s\S]*>/i;
 
-const ALLOWED_STYLE_PROPS = new Set([
-  'font-size',
-  'font-family',
-  'color',
-  'background-color',
-  'text-align',
-  'border',
-  'border-collapse',
-  'width',
-  'padding',
-  'vertical-align',
-  'text-decoration',
-  'margin',
-]);
-
-export const MAIL_COMPOSE_PURIFY_CONFIG: Config = {
-  USE_PROFILES: { html: true },
-  ALLOWED_TAGS: [
-    'p',
-    'br',
-    'div',
-    'span',
-    'strong',
-    'b',
-    'em',
-    'i',
-    'u',
-    's',
-    'strike',
-    'ul',
-    'ol',
-    'li',
-    'a',
-    'table',
-    'thead',
-    'tbody',
-    'tr',
-    'th',
-    'td',
-    'pre',
-    'code',
-    'mark',
-    'blockquote',
-  ],
-  ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'colspan', 'rowspan', 'align'],
-  FORBID_TAGS: [
-    'script',
-    'iframe',
-    'object',
-    'embed',
-    'form',
-    'input',
-    'button',
-    'link',
-    'meta',
-    'base',
-    'style',
-  ],
-  FORBID_ATTR: ['onerror', 'onload', 'onclick'],
-};
-
-function sanitizeInlineStyle(style: string): string {
-  return style
-    .split(';')
-    .map((part) => part.trim())
-    .filter((part) => {
-      if (!part) {
-        return false;
-      }
-      const colon = part.indexOf(':');
-      if (colon <= 0) {
-        return false;
-      }
-      const prop = part.slice(0, colon).trim().toLowerCase();
-      const value = part
-        .slice(colon + 1)
-        .trim()
-        .toLowerCase();
-      if (value.includes('javascript:') || value.includes('expression(')) {
-        return false;
-      }
-      return ALLOWED_STYLE_PROPS.has(prop);
-    })
-    .join('; ');
-}
+export const MAIL_COMPOSE_PURIFY_CONFIG: Config = MAIL_EMAIL_PURIFY_CONFIG;
 
 let composeSanitizerHookRegistered = false;
 
@@ -95,30 +17,8 @@ function ensureComposeSanitizerHooks(): void {
   if (composeSanitizerHookRegistered || typeof window === 'undefined') {
     return;
   }
-  DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
-    if (data.attrName === 'style' && data.attrValue) {
-      data.attrValue = sanitizeInlineStyle(data.attrValue);
-      if (!data.attrValue) {
-        data.keepAttr = false;
-      }
-    }
-    if (data.attrName === 'class') {
-      const tag = node.tagName?.toLowerCase();
-      if (tag === 'pre' && data.attrValue.includes('bxhtmled-code')) {
-        data.attrValue = 'bxhtmled-code';
-        return;
-      }
-      data.keepAttr = false;
-    }
-  });
+  ensureMailEmailPurifyHooks(DOMPurify);
   composeSanitizerHookRegistered = true;
-}
-
-function normalizeBxCodePre(html: string): string {
-  return html.replace(
-    /<pre\b[^>]*class=["'][^"']*bxhtmled-code[^"']*["'][^>]*>/gi,
-    '<pre class="bxhtmled-code">',
-  );
 }
 
 /** Sanitizes compose / preview / storage HTML on the client. */
@@ -127,23 +27,37 @@ export function sanitizeComposeEmailHtml(html: string): string {
     return html;
   }
   ensureComposeSanitizerHooks();
-  return DOMPurify.sanitize(normalizeBxCodePre(html), MAIL_COMPOSE_PURIFY_CONFIG);
+  return DOMPurify.sanitize(html, MAIL_COMPOSE_PURIFY_CONFIG);
+}
+
+function normalizeExtractedPlainText(text: string): string {
+  return text
+    .replace(/\u00a0/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .trim();
+}
+
+/** Parser-based plain text extraction (no regex tag stripping). */
+export function extractPlainTextFromHtml(html: string): string {
+  if (typeof window !== 'undefined' && typeof DOMParser !== 'undefined') {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return normalizeExtractedPlainText(doc.body.textContent ?? '');
+  }
+  if (typeof window !== 'undefined') {
+    ensureComposeSanitizerHooks();
+    const stripped = DOMPurify.sanitize(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    return normalizeExtractedPlainText(stripped);
+  }
+  return '';
 }
 
 function stripEmptyEditorHtml(html: string): string {
-  const text = html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .trim();
+  const text = extractPlainTextFromHtml(html);
   return text.length === 0 ? '' : html;
 }
 
 export function htmlToPlainTextFallback(html: string): string {
-  if (typeof window === 'undefined') {
-    return html.replace(/<[^>]+>/g, '').trim();
-  }
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return (doc.body.textContent ?? '').replace(/\u00a0/g, ' ').trim();
+  return extractPlainTextFromHtml(html);
 }
 
 export function isHtmlLikeValue(value: string): boolean {
@@ -184,3 +98,6 @@ export function isComposeHtmlEmpty(value: string | null | undefined): boolean {
   }
   return composeEditorHtmlToValue(composeValueToEditorHtml(value)) === null;
 }
+
+// Re-export for toolbar hooks that may reference inline style sanitizer.
+export { sanitizeMailEmailInlineStyle, MAIL_EMAIL_ALLOWED_URI_REGEXP };

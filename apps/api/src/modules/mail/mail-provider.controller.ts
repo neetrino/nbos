@@ -11,7 +11,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import {
   CurrentUser,
