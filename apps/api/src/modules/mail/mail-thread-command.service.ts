@@ -6,14 +6,21 @@ import { NotificationService } from '../notifications/notification.service';
 import {
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD,
+  MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM,
   MAIL_AUDIT_ACTION_THREAD_NEEDS_LINK_UPDATED,
+  MAIL_AUDIT_ACTION_THREAD_DELETED,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import type { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { patchThreadNeedsBusinessLinkIfChanged } from './mail-thread-needs-link.ops';
 import { publishMailThreadNeedsLinkChangedNotifications } from './mail-thread-needs-link-notify.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
+import {
+  listUnreadInboundProviderMessageIds,
+  markThreadReadOnProvider,
+} from './mail-thread-mark-read-provider.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
+import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
 import type { MailThreadDetailDto } from './mail.types';
 
 @Injectable()
@@ -22,10 +29,12 @@ export class MailThreadCommandService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
     private readonly notificationService: NotificationService,
+    private readonly adapterFactory: MailProviderAdapterFactory,
   ) {}
 
   /**
-   * Marks every message in the thread read and clears thread-level unread (NBOS user state).
+   * Marks every message in the thread read (NBOS first, then best-effort provider sync).
+   * Idempotent when the thread is already read.
    */
   async markThreadRead(
     employeeId: string,
@@ -40,6 +49,14 @@ export class MailThreadCommandService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    if (!thread.hasUnread) {
+      return requireMailThreadDetailDto(this.prisma, {
+        employeeId,
+        viewScope: accessScope,
+        threadId,
+      });
+    }
+    const providerMessageIds = await listUnreadInboundProviderMessageIds(this.prisma, threadId);
     await this.prisma.$transaction([
       this.prisma.emailMessage.updateMany({
         where: { threadId },
@@ -50,6 +67,12 @@ export class MailThreadCommandService {
         data: { hasUnread: false },
       }),
     ]);
+    await markThreadReadOnProvider(this.prisma, this.adapterFactory, {
+      threadId,
+      mailAccountId: thread.mailAccountId,
+      providerThreadId: thread.providerThreadId,
+      providerMessageIds,
+    });
     const auditChanges: InputJsonValue = {
       mailAccountId: thread.mailAccountId,
       subjectNormalized: thread.subjectNormalized,
@@ -157,5 +180,72 @@ export class MailThreadCommandService {
       viewScope: accessScope,
       threadId,
     });
+  }
+
+  /** Flags thread as spam in NBOS (no provider spam folder move in MVP). */
+  async markThreadSpam(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    if (!thread.isSpam) {
+      await this.prisma.emailThread.update({
+        where: { id: threadId },
+        data: { isSpam: true },
+      });
+      const auditChanges: InputJsonValue = {
+        mailAccountId: thread.mailAccountId,
+        subjectNormalized: thread.subjectNormalized,
+      };
+      await this.auditService.log({
+        entityType: MAIL_AUDIT_ENTITY_THREAD,
+        entityId: threadId,
+        action: MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM,
+        userId: employeeId,
+        changes: auditChanges,
+      });
+    }
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
+  }
+
+  /** Removes thread and cascaded messages from NBOS (no provider mailbox delete in MVP). */
+  async deleteThread(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<{ deleted: true; threadId: string }> {
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    await this.prisma.emailThread.delete({ where: { id: threadId } });
+    const auditChanges: InputJsonValue = {
+      mailAccountId: thread.mailAccountId,
+      subjectNormalized: thread.subjectNormalized,
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_THREAD,
+      entityId: threadId,
+      action: MAIL_AUDIT_ACTION_THREAD_DELETED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return { deleted: true, threadId };
   }
 }

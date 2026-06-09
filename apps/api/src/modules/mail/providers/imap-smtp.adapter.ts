@@ -5,6 +5,7 @@ import { normalizeParsedMail } from './imap-message.normalize';
 import type {
   FetchDeltaResult,
   MailProviderAdapter,
+  MarkThreadReadInput,
   NormalizedMessage,
   ProviderSyncCursor,
   SendMessageInput,
@@ -189,6 +190,24 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       };
     } finally {
       transport.close();
+    }
+  }
+
+  async markThreadRead(input: MarkThreadReadInput): Promise<void> {
+    const uids = input.providerMessageIds
+      .map((id) => Number(id))
+      .filter((uid) => Number.isFinite(uid) && uid > 0);
+    if (uids.length === 0) {
+      return;
+    }
+    const client = this.createImapClient();
+    await client.connect();
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      await client.messageFlagsAdd(uids, ['\\Seen'], { uid: true });
+    } finally {
+      lock.release();
+      await client.logout();
     }
   }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,9 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { MailComposeMessageEditor } from './MailComposeMessageEditor';
+import { splitEmailList } from './mail-thread-helpers';
 
 interface ComposeMailDialogProps {
   open: boolean;
@@ -30,13 +31,6 @@ interface ComposeMailDialogProps {
   accounts: MailAccountRow[];
   defaultAccountId?: string | null;
   onSent: (threadId: string) => void;
-}
-
-function parseEmails(value: string): string[] {
-  return value
-    .split(/[,;\s]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 export function ComposeMailDialog({
@@ -50,11 +44,24 @@ export function ComposeMailDialog({
   const [to, setTo] = useState('');
   const [cc, setCc] = useState('');
   const [subject, setSubject] = useState('');
+  const [bodyHtml, setBodyHtml] = useState<string | null>(null);
   const [bodyText, setBodyText] = useState('');
   const [sending, setSending] = useState(false);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    setMailAccountId(defaultAccountId ?? accounts[0]?.id ?? '');
+    setTo('');
+    setCc('');
+    setSubject('');
+    setBodyHtml(null);
+    setBodyText('');
+  }, [open, defaultAccountId, accounts]);
+
   const send = async () => {
-    const toList = parseEmails(to);
+    const toList = splitEmailList(to);
     if (!mailAccountId || toList.length === 0 || subject.trim() === '') {
       toast.error('Choose a mailbox and fill in recipient and subject.');
       return;
@@ -64,9 +71,10 @@ export function ComposeMailDialog({
       const detail = await mailApi.compose({
         mailAccountId,
         to: toList,
-        cc: parseEmails(cc),
+        cc: splitEmailList(cc),
         subject: subject.trim(),
         bodyText,
+        ...(bodyHtml ? { bodyHtml } : {}),
       });
       toast.success('Email sent.');
       onSent(detail.thread.id);
@@ -91,7 +99,14 @@ export function ComposeMailDialog({
             <Label>From</Label>
             <Select value={mailAccountId} onValueChange={(v) => setMailAccountId(v ?? '')}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a mailbox" />
+                <SelectValue placeholder="Select a mailbox">
+                  {(selected: string | null) =>
+                    selected
+                      ? (accounts.find((account) => account.id === selected)?.emailAddress ??
+                        'Mailbox')
+                      : null
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => (
@@ -125,11 +140,14 @@ export function ComposeMailDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="compose-body">Message</Label>
-            <Textarea
+            <MailComposeMessageEditor
               id="compose-body"
-              rows={8}
-              value={bodyText}
-              onChange={(e) => setBodyText(e.target.value)}
+              value={bodyHtml}
+              disabled={sending}
+              onChange={({ bodyHtml: html, bodyText: text }) => {
+                setBodyHtml(html);
+                setBodyText(text);
+              }}
             />
           </div>
         </div>

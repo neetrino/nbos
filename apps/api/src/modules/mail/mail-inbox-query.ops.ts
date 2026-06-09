@@ -18,6 +18,8 @@ export interface ListMailThreadsOptions {
   assignedToMe?: boolean;
   /** When true, only threads with outbound activity (Sent). */
   sentOnly?: boolean;
+  /** When true, only threads flagged as spam. Default lists exclude spam. */
+  spamOnly?: boolean;
   /** Case-insensitive substring match on `subjectNormalized` (from query `q`). */
   search?: string;
   /** 1-based page index (default 1). */
@@ -49,7 +51,7 @@ export async function listMailThreadsForViewer(
   viewScope: string,
   options: ListMailThreadsOptions = {},
 ): Promise<ListMailThreadsQueryResult> {
-  const { mailAccountId, unreadOnly, needsLinkOnly, assignedToMe, sentOnly } = options;
+  const { mailAccountId, unreadOnly, needsLinkOnly, assignedToMe, sentOnly, spamOnly } = options;
   const searchTerm = normalizeMailThreadSearchQuery(options.search);
   const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
   const accounts = await prisma.mailAccount.findMany({
@@ -79,6 +81,7 @@ export async function listMailThreadsForViewer(
     ...(needsLinkOnly ? { needsBusinessLink: true } : {}),
     ...(assignedToMe ? { assignedToEmployeeId: employeeId } : {}),
     ...(sentOnly ? { lastOutboundAt: { not: null } } : {}),
+    ...(spamOnly ? { isSpam: true } : { isSpam: false }),
     ...(searchTerm
       ? {
           subjectNormalized: {

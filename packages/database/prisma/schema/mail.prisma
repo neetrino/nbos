@@ -170,6 +170,7 @@ model EmailThread {
   status            EmailThreadStatus @default(OPEN)
   hasUnread         Boolean           @default(true) @map("has_unread")
   needsBusinessLink Boolean           @default(false) @map("needs_business_link")
+  isSpam            Boolean           @default(false) @map("is_spam")
   providerThreadId  String?           @map("provider_thread_id")
   assignedToEmployeeId String?        @map("assigned_to_employee_id")
   assignedByEmployeeId String?        @map("assigned_by_employee_id")
@@ -183,6 +184,7 @@ model EmailThread {
   assignedBy  Employee?      @relation("EmailThreadAssignedBy", fields: [assignedByEmployeeId], references: [id], onDelete: SetNull)
 
   @@index([mailAccountId, lastMessageAt])
+  @@index([mailAccountId, isSpam])
   @@index([assignedToEmployeeId])
   @@map("email_threads")
 }

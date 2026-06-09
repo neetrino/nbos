@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { UserCheck } from 'lucide-react';
+import { User, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,14 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { LoadingState } from '@/components/shared';
+import { LoadingState, RelationPickerField } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -47,6 +41,8 @@ export function AssignThreadControl({
   const [busy, setBusy] = useState(false);
   const [users, setUsers] = useState<AssignableUser[]>([]);
   const [selected, setSelected] = useState<string>(assignedToEmployeeId ?? '');
+  const [selectionLabel, setSelectionLabel] = useState<string | null>(assignedToName);
+  const assignPicker = useRelationPickerActions('employee', 'mail-assign-thread');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,12 +63,23 @@ export function AssignThreadControl({
     }
   }, [mailAccountId]);
 
+  const searchMailboxUsers = useCallback(
+    async (query: string) => {
+      const needle = query.trim().toLowerCase();
+      return users
+        .filter((u) => !needle || u.employeeName.toLowerCase().includes(needle))
+        .map((u) => ({ value: u.employeeId, label: u.employeeName }));
+    },
+    [users],
+  );
+
   useEffect(() => {
     if (open) {
       setSelected(assignedToEmployeeId ?? '');
+      setSelectionLabel(assignedToName);
       void load();
     }
-  }, [open, assignedToEmployeeId, load]);
+  }, [open, assignedToEmployeeId, assignedToName, load]);
 
   const assign = async () => {
     if (!selected) {
@@ -117,7 +124,7 @@ export function AssignThreadControl({
         {assignedToName ? `Assigned: ${assignedToName}` : 'Assign'}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" forceNestedBackdrop>
           <DialogHeader>
             <DialogTitle>Assign thread</DialogTitle>
             <DialogDescription>
@@ -128,18 +135,25 @@ export function AssignThreadControl({
             <LoadingState />
           ) : (
             <div className="flex flex-col gap-3">
-              <Select value={selected} onValueChange={(v) => setSelected(v ?? '')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((u) => (
-                    <SelectItem key={u.employeeId} value={u.employeeId}>
-                      {u.employeeName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <RelationPickerField
+                label="Assign to"
+                entityKind="employee"
+                value={selected || null}
+                selectionLabel={selectionLabel}
+                placeholder="Select user…"
+                icon={<User size={12} />}
+                disabled={busy}
+                onSearch={searchMailboxUsers}
+                onSelect={(id, label) => {
+                  setSelected(id);
+                  setSelectionLabel(label);
+                }}
+                onClear={() => {
+                  setSelected('');
+                  setSelectionLabel(null);
+                }}
+                {...assignPicker}
+              />
               <div className="flex justify-between gap-2">
                 <Button
                   type="button"

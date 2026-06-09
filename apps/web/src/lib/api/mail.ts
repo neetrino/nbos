@@ -43,6 +43,7 @@ export interface MailThreadListRow {
   lastOutboundAt: string | null;
   hasUnread: boolean;
   needsBusinessLink: boolean;
+  isSpam: boolean;
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
@@ -73,6 +74,8 @@ export interface MailMessageRow {
   direction: string;
   subject: string;
   bodyText: string | null;
+  /** Server-sanitized HTML body; null when only plain text was available. */
+  bodyHtmlSanitized: string | null;
   sentAt: string | null;
   receivedAt: string | null;
   readState: string;
@@ -166,6 +169,7 @@ export interface ComposeMailPayload {
   cc?: string[];
   subject: string;
   bodyText: string;
+  bodyHtml?: string;
   fileAssetIds?: string[];
 }
 
@@ -183,6 +187,7 @@ export interface ListMailThreadsOptions {
   needsLinkOnly?: boolean;
   assignedToMe?: boolean;
   sentOnly?: boolean;
+  spamOnly?: boolean;
   search?: string;
   page?: number;
   pageSize?: number;
@@ -221,6 +226,9 @@ export const mailApi = {
     if (options.sentOnly) {
       params.sentOnly = 'true';
     }
+    if (options.spamOnly) {
+      params.spamOnly = 'true';
+    }
     if (options.search !== undefined && options.search.trim() !== '') {
       params.q = options.search.trim();
     }
@@ -258,6 +266,13 @@ export const mailApi = {
 
   async markThreadRead(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-read`);
+    return resp.data;
+  },
+
+  async deleteThread(threadId: string): Promise<{ deleted: true; threadId: string }> {
+    const resp = await api.post<{ deleted: true; threadId: string }>(
+      `/api/mail/threads/${threadId}/delete`,
+    );
     return resp.data;
   },
 
@@ -381,6 +396,11 @@ export const mailApi = {
 
   async markThreadUnread(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-unread`);
+    return resp.data;
+  },
+
+  async markThreadSpam(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-spam`);
     return resp.data;
   },
 

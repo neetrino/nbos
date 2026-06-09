@@ -55,6 +55,10 @@
     "vitest": "^4.1.0"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma"
+    ],
     "overrides": {
       "@hono/node-server": ">=1.19.10",
       "@vitest/coverage-v8": ">=4.1.0",

@@ -4,6 +4,7 @@ import { normalizeGmailMessage } from './gmail-message.normalize';
 import type {
   FetchDeltaResult,
   MailProviderAdapter,
+  MarkThreadReadInput,
   NormalizedMessage,
   ProviderHealth,
   ProviderSyncCursor,
@@ -137,6 +138,24 @@ export class GmailProviderAdapter implements MailProviderAdapter {
       messageIdHeader: input.inReplyToMessageIdHeader ?? null,
       providerThreadId: response.data.threadId ?? input.providerThreadId ?? null,
     };
+  }
+
+  async markThreadRead(input: MarkThreadReadInput): Promise<void> {
+    if (input.providerThreadId) {
+      await this.gmail.users.threads.modify({
+        userId: 'me',
+        id: input.providerThreadId,
+        requestBody: { removeLabelIds: ['UNREAD'] },
+      });
+      return;
+    }
+    for (const messageId of input.providerMessageIds) {
+      await this.gmail.users.messages.modify({
+        userId: 'me',
+        id: messageId,
+        requestBody: { removeLabelIds: ['UNREAD'] },
+      });
+    }
   }
 
   async getHealth(): Promise<ProviderHealth> {

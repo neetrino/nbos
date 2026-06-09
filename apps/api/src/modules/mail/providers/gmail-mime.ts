@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import type { SendMessageInput } from './mail-provider-adapter';
 
 export interface ParsedAddress {
@@ -62,6 +63,27 @@ export function buildRawGmailMessage(input: SendMessageInput): string {
     headers.push(`References: ${input.references}`);
   }
   headers.push('MIME-Version: 1.0');
+  const html = input.bodyHtml?.trim();
+  if (html) {
+    const boundary = `nbos_${randomBytes(16).toString('hex')}`;
+    headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+    const body = [
+      `--${boundary}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      input.bodyText,
+      `--${boundary}`,
+      'Content-Type: text/html; charset="UTF-8"',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      html,
+      `--${boundary}--`,
+      '',
+    ].join('\r\n');
+    const raw = `${headers.join('\r\n')}\r\n\r\n${body}`;
+    return encodeBase64Url(raw);
+  }
   headers.push('Content-Type: text/plain; charset="UTF-8"');
   const raw = `${headers.join('\r\n')}\r\n\r\n${input.bodyText}`;
   return encodeBase64Url(raw);

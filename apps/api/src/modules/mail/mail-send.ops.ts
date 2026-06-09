@@ -11,6 +11,7 @@ export interface OutboundSendContext {
   bcc: string[];
   subject: string;
   bodyText: string;
+  bodyHtml: string | null;
   providerThreadId: string | null;
   inReplyToMessageIdHeader: string | null;
   references: string | null;
@@ -75,6 +76,7 @@ export async function loadOutboundSendContext(
     bcc: recipientsByKind(message.recipients, 'BCC'),
     subject: message.subject,
     bodyText: message.bodyText ?? '',
+    bodyHtml: message.bodyHtmlSanitized,
     providerThreadId: message.thread.providerThreadId,
     inReplyToMessageIdHeader: lastInbound?.messageIdHeader ?? null,
     references: lastInbound?.messageIdHeader ?? null,
@@ -90,6 +92,7 @@ export function buildSendMessageInput(context: OutboundSendContext): SendMessage
     bcc: context.bcc,
     subject: context.subject,
     bodyText: context.bodyText,
+    bodyHtml: context.bodyHtml ?? undefined,
     inReplyToMessageIdHeader: context.inReplyToMessageIdHeader,
     references: context.references,
     providerThreadId: context.providerThreadId,

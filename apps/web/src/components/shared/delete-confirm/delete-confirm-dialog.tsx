@@ -28,6 +28,8 @@ export interface DeleteConfirmDialogProps {
   isSubmitting?: boolean;
   errorMessage?: string | null;
   onConfirm: () => void | Promise<void>;
+  /** Use when the dialog opens inside a sheet or another modal. */
+  forceNestedBackdrop?: boolean;
 }
 
 const DEFAULT_TITLES: Record<DeleteConfirmLevel, string> = {
@@ -51,6 +53,7 @@ export function DeleteConfirmDialog({
   isSubmitting = false,
   errorMessage,
   onConfirm,
+  forceNestedBackdrop = false,
 }: DeleteConfirmDialogProps) {
   const [typedName, setTypedName] = useState('');
   const resolvedTitle = title ?? DEFAULT_TITLES[level];
@@ -78,7 +81,11 @@ export function DeleteConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={false}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <DialogHeader>
           <DialogTitle>{resolvedTitle}</DialogTitle>
           <DialogDescription>{resolvedDescription}</DialogDescription>

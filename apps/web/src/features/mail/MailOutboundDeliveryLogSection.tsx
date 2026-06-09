@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 import { mailApi, type MailDeliveryLogRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { formatMailDeliveryLogKind } from './mail-delivery-log-labels';
@@ -14,6 +17,7 @@ export function MailOutboundDeliveryLogSection({
   threadId,
   messageId,
 }: MailOutboundDeliveryLogSectionProps) {
+  const [open, setOpen] = useState(false);
   const [items, setItems] = useState<MailDeliveryLogRow[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,20 +35,27 @@ export function MailOutboundDeliveryLogSection({
     }
   }, [threadId, messageId]);
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next && items === null && !loading) {
+      void load();
+    }
+  };
+
   return (
-    <details
+    <Collapsible
+      open={open}
+      onOpenChange={handleOpenChange}
       className="border-muted mt-2 rounded-md border"
-      onToggle={(e) => {
-        const el = e.currentTarget;
-        if (el.open && items === null && !loading) {
-          void load();
-        }
-      }}
     >
-      <summary className="text-muted-foreground cursor-pointer px-2 py-1.5 text-xs select-none">
-        Delivery pipeline log
-      </summary>
-      <div className="border-muted border-t px-2 py-2">
+      <CollapsibleTrigger className="text-muted-foreground hover:bg-muted/40 flex w-full items-center justify-between gap-2 px-2 py-1.5 text-xs select-none">
+        <span>Delivery pipeline log</span>
+        <ChevronDown
+          className={cn('size-3 shrink-0 transition-transform duration-200', open && 'rotate-180')}
+          aria-hidden
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="border-muted border-t px-2 py-2">
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
         {loading ? <p className="text-muted-foreground text-xs">Loading…</p> : null}
         {!loading && items?.length === 0 ? (
@@ -69,7 +80,7 @@ export function MailOutboundDeliveryLogSection({
             ))}
           </ul>
         ) : null}
-      </div>
-    </details>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

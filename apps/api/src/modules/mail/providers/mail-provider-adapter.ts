@@ -70,6 +70,12 @@ export interface ProviderHealth {
   detail: string | null;
 }
 
+export interface MarkThreadReadInput {
+  providerThreadId: string | null;
+  /** Provider-native message ids (Gmail message id or IMAP UID). */
+  providerMessageIds: string[];
+}
+
 export interface MailProviderAdapter {
   validateConnection(): Promise<ValidateConnectionResult>;
   /** Start Gmail Pub/Sub watch or IMAP IDLE (no-op when not applicable). */
@@ -77,6 +83,8 @@ export interface MailProviderAdapter {
   fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult>;
   fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null>;
   sendMessage(input: SendMessageInput): Promise<SendMessageResult>;
+  /** Removes UNREAD / \\Seen on provider when supported. */
+  markThreadRead(input: MarkThreadReadInput): Promise<void>;
   getHealth(): Promise<ProviderHealth>;
   reconnect(): Promise<ValidateConnectionResult>;
 }

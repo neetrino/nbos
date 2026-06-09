@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nest build && node --import tsx --watch dist/main",
+    "dev": "nest build && node --import tsx --watch dist/main.js",
     "dev:watch": "nest start --watch",
     "build": "nest build",
     "start": "node --import tsx dist/main",

@@ -36,19 +36,19 @@ export async function listMailAccountHealthSummariesForViewer(
     prisma.emailThread.groupBy({
       by: ['mailAccountId'],
       orderBy: { mailAccountId: 'asc' },
-      where: { mailAccountId: { in: ids } },
+      where: { mailAccountId: { in: ids }, isSpam: false },
       _count: { _all: true },
     }),
     prisma.emailThread.groupBy({
       by: ['mailAccountId'],
       orderBy: { mailAccountId: 'asc' },
-      where: { mailAccountId: { in: ids }, hasUnread: true },
+      where: { mailAccountId: { in: ids }, hasUnread: true, isSpam: false },
       _count: { _all: true },
     }),
     prisma.emailThread.groupBy({
       by: ['mailAccountId'],
       orderBy: { mailAccountId: 'asc' },
-      where: { mailAccountId: { in: ids }, needsBusinessLink: true },
+      where: { mailAccountId: { in: ids }, needsBusinessLink: true, isSpam: false },
       _count: { _all: true },
     }),
   ]);

@@ -5,13 +5,14 @@ import * as jwt from 'jsonwebtoken';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { MailConnectService } from './mail-connect.service';
+import {
+  GMAIL_SCOPES,
+  hasGmailModifyScope,
+  parseOAuthGrantedScopes,
+} from './providers/gmail-oauth-scopes';
 import { MailProviderConfig } from './providers/mail-provider.config';
 import { MailProviderSecretStore } from './providers/mail-provider-secret.store';
 
-const GMAIL_SCOPES = [
-  'https://www.googleapis.com/auth/gmail.readonly',
-  'https://www.googleapis.com/auth/gmail.send',
-];
 const STATE_TTL_SECONDS = 600;
 
 interface GmailOAuthState {
@@ -56,7 +57,8 @@ export class MailGmailOAuthService {
     return this.createOAuthClient().generateAuthUrl({
       access_type: 'offline',
       prompt: 'consent',
-      scope: GMAIL_SCOPES,
+      include_granted_scopes: true,
+      scope: [...GMAIL_SCOPES],
       state,
     });
   }
@@ -66,17 +68,27 @@ export class MailGmailOAuthService {
     const employeeId = this.verifyState(state);
     const client = this.createOAuthClient();
     const { tokens } = await client.getToken(code);
-    if (!tokens.refresh_token) {
-      throw new BadRequestException('Google did not return a refresh token; retry with consent');
-    }
     client.setCredentials(tokens);
+    const grantedScopes = parseOAuthGrantedScopes(tokens.scope, GMAIL_SCOPES);
+    if (!hasGmailModifyScope(grantedScopes)) {
+      throw new BadRequestException(
+        'Gmail connection is missing modify permission. Revoke NBOS in Google Account settings, then connect again.',
+      );
+    }
     const gmail = google.gmail({ version: 'v1', auth: client });
     const profile = await gmail.users.getProfile({ userId: 'me' });
     const emailAddress = profile.data.emailAddress ?? '';
-    const accountId = await this.upsertGmailAccount(employeeId, emailAddress);
+    const accountId = await this.upsertGmailAccount(employeeId, emailAddress, grantedScopes);
+    const existingSecret = await this.secretStore.read(accountId);
+    const refreshToken =
+      tokens.refresh_token ??
+      (existingSecret?.kind === 'gmail' ? existingSecret.refreshToken : null);
+    if (!refreshToken) {
+      throw new BadRequestException('Google did not return a refresh token; retry with consent');
+    }
     await this.secretStore.store(accountId, {
       kind: 'gmail',
-      refreshToken: tokens.refresh_token,
+      refreshToken,
       accessToken: tokens.access_token ?? undefined,
       expiryDate: tokens.expiry_date ?? undefined,
     });
@@ -93,7 +105,11 @@ export class MailGmailOAuthService {
     }
   }
 
-  private async upsertGmailAccount(employeeId: string, emailAddress: string): Promise<string> {
+  private async upsertGmailAccount(
+    employeeId: string,
+    emailAddress: string,
+    grantedScopes: string[],
+  ): Promise<string> {
     const existing = await this.prisma.mailAccount.findFirst({
       where: { ownerEmployeeId: employeeId, emailAddress, providerType: 'GMAIL' },
       select: { id: true },
@@ -101,7 +117,14 @@ export class MailGmailOAuthService {
     if (existing) {
       await this.prisma.mailProviderConnection.update({
         where: { mailAccountId: existing.id },
-        data: { status: 'CONNECTED', providerAccountId: emailAddress, lastValidatedAt: new Date() },
+        data: {
+          status: 'CONNECTED',
+          providerAccountId: emailAddress,
+          grantedScopes,
+          lastValidatedAt: new Date(),
+          lastErrorAt: null,
+          lastErrorMessage: null,
+        },
       });
       await this.prisma.mailAccount.update({
         where: { id: existing.id },

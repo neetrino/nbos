@@ -7,7 +7,6 @@ import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
 import { appendMailDeliveryLog } from './mail-delivery-log-append.ops';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
 import { queueOutboundDraftMessage } from './mail-outbound-queue.ops';
-import { MailQueueService } from './mail-queue.service';
 import { MailSendService } from './mail-send.service';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
@@ -18,7 +17,6 @@ import type { MailThreadDetailDto } from './mail.types';
 export class MailComposeService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly queueService: MailQueueService,
     private readonly sendService: MailSendService,
   ) {}
 
@@ -97,7 +95,7 @@ export class MailComposeService {
     return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope, threadId });
   }
 
-  /** Moves the draft to QUEUED, logs it, and dispatches to the provider (queue or inline). */
+  /** Moves the draft to QUEUED, logs it, and sends via the mailbox provider (Gmail/IMAP). */
   private async dispatch(
     threadId: string,
     messageId: string,
@@ -111,13 +109,6 @@ export class MailComposeService {
       actorEmployeeId: employeeId,
       kind: MailDeliveryLogKind.OUTBOUND_QUEUED,
     });
-    const queued = await this.queueService.enqueueSend({
-      mailAccountId,
-      messageId,
-      actorEmployeeId: employeeId,
-    });
-    if (!queued) {
-      await this.sendService.sendQueuedMessage(mailAccountId, messageId, employeeId);
-    }
+    await this.sendService.sendQueuedMessage(mailAccountId, messageId, employeeId);
   }
 }

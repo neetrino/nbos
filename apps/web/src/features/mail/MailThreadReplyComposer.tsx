@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { mailApi, type MailMessageRow, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -18,12 +19,16 @@ export interface MailThreadReplyComposerProps {
   threadId: string;
   messages: MailMessageRow[];
   onThreadUpdated: (detail: MailThreadDetailDto) => void;
+  onDismiss?: () => void;
+  onSent?: () => void;
 }
 
 export function MailThreadReplyComposer({
   threadId,
   messages,
   onThreadUpdated,
+  onDismiss,
+  onSent,
 }: MailThreadReplyComposerProps) {
   const [to, setTo] = useState('');
   const [cc, setCc] = useState('');
@@ -62,12 +67,13 @@ export function MailThreadReplyComposer({
       onThreadUpdated(d);
       setBody('');
       toast.success('Reply sent.');
+      onSent?.();
     } catch (e) {
       toast.error(getApiErrorMessage(e, 'Reply could not be sent.'));
     } finally {
       setSending(false);
     }
-  }, [threadId, to, cc, subject, body, onThreadUpdated]);
+  }, [threadId, to, cc, subject, body, onThreadUpdated, onSent]);
 
   return (
     <Card>
@@ -79,9 +85,7 @@ export function MailThreadReplyComposer({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <label htmlFor="mail-reply-to" className="text-muted-foreground text-xs font-medium">
-            To (comma-separated)
-          </label>
+          <Label htmlFor="mail-reply-to">To (comma-separated)</Label>
           <Input
             id="mail-reply-to"
             value={to}
@@ -90,9 +94,7 @@ export function MailThreadReplyComposer({
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="mail-reply-cc" className="text-muted-foreground text-xs font-medium">
-            Cc (optional)
-          </label>
+          <Label htmlFor="mail-reply-cc">Cc (optional)</Label>
           <Input
             id="mail-reply-cc"
             value={cc}
@@ -101,9 +103,7 @@ export function MailThreadReplyComposer({
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="mail-reply-subject" className="text-muted-foreground text-xs font-medium">
-            Subject
-          </label>
+          <Label htmlFor="mail-reply-subject">Subject</Label>
           <Input
             id="mail-reply-subject"
             value={subject}
@@ -112,9 +112,7 @@ export function MailThreadReplyComposer({
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="mail-reply-body" className="text-muted-foreground text-xs font-medium">
-            Body
-          </label>
+          <Label htmlFor="mail-reply-body">Body</Label>
           <Textarea
             id="mail-reply-body"
             value={body}
@@ -123,9 +121,16 @@ export function MailThreadReplyComposer({
             className="min-h-24 resize-y"
           />
         </div>
-        <Button type="button" disabled={sending} onClick={() => void send()}>
-          {sending ? 'Sending…' : 'Send reply'}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {onDismiss ? (
+            <Button type="button" variant="outline" disabled={sending} onClick={onDismiss}>
+              Cancel
+            </Button>
+          ) : null}
+          <Button type="button" disabled={sending} onClick={() => void send()}>
+            {sending ? 'Sending…' : 'Send reply'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

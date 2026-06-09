@@ -97,6 +97,11 @@ export class MailController {
     description: 'If true, only threads with needsBusinessLink',
   })
   @ApiQuery({
+    name: 'spamOnly',
+    required: false,
+    description: 'If true, only spam threads; default inbox excludes spam',
+  })
+  @ApiQuery({
     name: 'q',
     required: false,
     description: 'Search thread subject (normalized); case-insensitive substring',
@@ -117,6 +122,7 @@ export class MailController {
     @Query('mailAccountId') mailAccountId?: string,
     @Query('unreadOnly') unreadOnly?: string,
     @Query('needsLinkOnly') needsLinkOnly?: string,
+    @Query('spamOnly') spamOnly?: string,
     @Query('assignedToMe') assignedToMe?: string,
     @Query('sentOnly') sentOnly?: string,
     @Query('q') q?: string,
@@ -127,6 +133,7 @@ export class MailController {
       mailAccountId,
       unreadOnly: isQueryFlagTrue(unreadOnly),
       needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
+      spamOnly: isQueryFlagTrue(spamOnly),
       assignedToMe: isQueryFlagTrue(assignedToMe),
       sentOnly: isQueryFlagTrue(sentOnly),
       search: q,
@@ -285,14 +292,30 @@ export class MailController {
 
   @Post('threads/:threadId/mark-read')
   @HttpCode(HttpStatus.OK)
-  @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Mark all messages in a thread as read (NBOS state)' })
+  @RequirePermission('MAIL', 'VIEW')
+  @ApiOperation({ summary: 'Mark all messages in a thread as read (NBOS + provider)' })
   async markThreadRead(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Param('threadId') threadId: string,
   ) {
     return this.mailThreadCommandService.markThreadRead(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
+  }
+
+  @Post('threads/:threadId/delete')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Delete thread and its messages from NBOS (no provider delete in MVP)' })
+  async deleteThread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    return this.mailThreadCommandService.deleteThread(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,

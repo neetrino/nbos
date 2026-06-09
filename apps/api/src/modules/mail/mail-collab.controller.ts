@@ -148,6 +148,22 @@ export class MailCollabController {
     );
   }
 
+  @Post('threads/:threadId/mark-spam')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Mark a thread as spam (NBOS user state)' })
+  markSpam(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    return this.threadCommandService.markThreadSpam(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
+  }
+
   @Post('compose')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })

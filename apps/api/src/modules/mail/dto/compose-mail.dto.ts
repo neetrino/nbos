@@ -55,6 +55,15 @@ export class ComposeMailDto {
   bodyText!: string;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    const trimmed = String(value ?? '').trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  })
+  @IsString()
+  @MaxLength(MAIL_OUTBOUND_DRAFT_BODY_MAX_LENGTH)
+  bodyHtml?: string;
+
+  @IsOptional()
   @Transform(({ value }) => trimStringArray(value))
   @IsArray()
   @ArrayMaxSize(MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS)

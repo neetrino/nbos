@@ -82,9 +82,9 @@ export function refreshEmployeeDirectory(): Promise<void> {
   return loadEmptyPickerPage().then(() => undefined);
 }
 
-/** Warm first picker page (20 active employees) after sign-in. */
+/** Warm first picker page (20 active employees) after sign-in. Best-effort — never throws. */
 export function prefetchEmployeePickerEmptyPage(): void {
-  void loadEmptyPickerPage();
+  void loadEmptyPickerPage().catch(() => undefined);
 }
 
 /**

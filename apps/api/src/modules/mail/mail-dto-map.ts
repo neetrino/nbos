@@ -12,6 +12,7 @@ export interface MessageWithRecipients {
   direction: string;
   subject: string;
   bodyText: string | null;
+  bodyHtmlSanitized: string | null;
   sentAt: Date | null;
   receivedAt: Date | null;
   readState: string;
@@ -100,6 +101,7 @@ export function toThreadListRow(row: {
   lastOutboundAt: Date | null;
   hasUnread: boolean;
   needsBusinessLink: boolean;
+  isSpam: boolean;
   status: string;
   assignedToEmployeeId?: string | null;
   assignedTo?: { firstName: string; lastName: string } | null;
@@ -113,6 +115,7 @@ export function toThreadListRow(row: {
     lastOutboundAt: row.lastOutboundAt?.toISOString() ?? null,
     hasUnread: row.hasUnread,
     needsBusinessLink: row.needsBusinessLink,
+    isSpam: row.isSpam,
     status: row.status,
     assignedToEmployeeId: row.assignedToEmployeeId ?? null,
     assignedToName: row.assignedTo
@@ -149,6 +152,7 @@ export function toMessageRow(m: MessageWithRecipients): MailMessageRow {
     direction: m.direction,
     subject: m.subject,
     bodyText: m.bodyText,
+    bodyHtmlSanitized: m.bodyHtmlSanitized,
     sentAt: m.sentAt?.toISOString() ?? null,
     receivedAt: m.receivedAt?.toISOString() ?? null,
     readState: m.readState,
