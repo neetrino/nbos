@@ -2,7 +2,7 @@ import type { MailMessageRow } from '@/lib/api/mail';
 
 export function splitEmailList(raw: string): string[] {
   return raw
-    .split(/[,;]+/)
+    .split(/[,;\s]+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 }
@@ -22,4 +22,11 @@ export function defaultReplySubjectFromMessages(messages: MailMessageRow[]): str
     messages.find((m) => m.direction === 'INBOUND')?.subject ?? messages[0]?.subject ?? '';
   if (/^re:\s*/i.test(sub)) return sub;
   return sub ? `Re: ${sub}` : 'Re:';
+}
+
+export function defaultForwardSubjectFromMessages(messages: MailMessageRow[]): string {
+  const sub =
+    messages.find((m) => m.direction === 'INBOUND')?.subject ?? messages[0]?.subject ?? '';
+  if (/^fwd:\s*/i.test(sub)) return sub;
+  return sub ? `Fwd: ${sub}` : 'Fwd:';
 }

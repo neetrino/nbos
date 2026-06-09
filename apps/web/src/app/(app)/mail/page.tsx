@@ -1,131 +1,336 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Mail, RefreshCcw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { Mail, Plus } from 'lucide-react';
+
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { useHeaderContext, useHeaderModuleTitle } from '@/components/layout/header-context';
+
 import {
-  PageHero,
-  PageHeroSearch,
-  PageHeroTabs,
   EmptyState,
   ErrorState,
   LoadingState,
   ListPagination,
-  type PageHeroTabOption,
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
 } from '@/components/shared';
+
 import {
   mailApi,
   type MailAccountHealthSummaryRow,
   type MailThreadListPageMeta,
   type MailThreadListRow,
 } from '@/lib/api/mail';
+
 import { getApiErrorMessage } from '@/lib/api-errors';
+
 import { usePermission } from '@/lib/permissions';
-import { cn } from '@/lib/utils';
-import { MailProviderConnectionBadge } from '@/features/mail/MailProviderConnectionBadge';
 
-const MAIL_INBOX_SEARCH_DEBOUNCE_MS = 350;
+import { MailActivePanelHost } from '@/features/mail/MailActivePanelHost';
 
-type MailThreadListSegment = 'all' | 'unread' | 'needs_link';
+import { MailBulkActionBar } from '@/features/mail/MailBulkActionBar';
 
-const MAIL_THREAD_SEGMENT_OPTIONS: PageHeroTabOption<MailThreadListSegment>[] = [
-  { value: 'all', label: 'All threads' },
-  { value: 'unread', label: 'Unread' },
-  { value: 'needs_link', label: 'Needs link' },
-];
+import { MailFolderSidebar } from '@/features/mail/MailFolderSidebar';
 
-function formatThreadTitle(subjectNormalized: string): string {
-  const t = subjectNormalized.trim();
-  if (t.length === 0) {
-    return '(No subject)';
-  }
-  return t.replace(/\b\w/g, (c) => c.toUpperCase());
+import { MailThreadList } from '@/features/mail/MailThreadList';
+
+import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
+
+import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
+
+import { mailFolderListParams, type MailFolderKey } from '@/features/mail/mail-folder-config';
+
+function clearThreadSelection(setSelectedThreadIds: (ids: Set<string>) => void) {
+  setSelectedThreadIds(new Set());
 }
 
 export default function MailInboxPage() {
   const { can } = usePermission();
+
   const canView = can('VIEW', 'MAIL');
+
   const canEdit = can('EDIT', 'MAIL');
+
   const [accountHealth, setAccountHealth] = useState<MailAccountHealthSummaryRow[]>([]);
+
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
+
   const [threadListMeta, setThreadListMeta] = useState<MailThreadListPageMeta | null>(null);
+
   const [threadPage, setThreadPage] = useState(1);
+
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
-  /** Inbox segment: all, unread-only, or needs-business-link only (mutually exclusive). */
-  const [threadListSegment, setThreadListSegment] = useState<MailThreadListSegment>('all');
+
+  const [activeFolder, setActiveFolder] = useState<MailFolderKey>('all');
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
+
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const [threadSearchDraft, setThreadSearchDraft] = useState('');
-  const [threadSearchQuery, setThreadSearchQuery] = useState('');
+
+  const threadSearchQuery = useDebouncedValue(threadSearchDraft, SEARCH_DEBOUNCE_MS).trim();
+
+  const [activePanel, setActivePanel] = useState<ActiveMailPanel>(null);
+
+  const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(() => new Set());
+
+  const selectedThreadId = activeMailThreadId(activePanel);
+
+  useHeaderModuleTitle('Mail');
+
+  const headerActions = useMemo(() => {
+    if (!canEdit) {
+      return null;
+    }
+
+    return {
+      kind: 'actions' as const,
+
+      ariaLabel: 'Mail actions',
+
+      children: (
+        <Button
+          type="button"
+          size="sm"
+          disabled={accountHealth.length === 0 || loading || bulkBusy}
+          onClick={() => setActivePanel({ type: 'compose', defaultAccountId: filterAccountId })}
+        >
+          <Plus size={16} aria-hidden />
+          Compose
+        </Button>
+      ),
+    };
+  }, [canEdit, accountHealth.length, loading, bulkBusy, filterAccountId]);
+
+  useHeaderContext(headerActions);
+
+  const accountEmailById = useMemo(
+    () => new Map(accountHealth.map((account) => [account.id, account.emailAddress])),
+
+    [accountHealth],
+  );
+
+  const visibleThreadIds = useMemo(() => threads.map((thread) => thread.id), [threads]);
+
+  const selectedCount = selectedThreadIds.size;
+
+  const allVisibleSelected =
+    visibleThreadIds.length > 0 && visibleThreadIds.every((id) => selectedThreadIds.has(id));
 
   useEffect(() => {
-    const t = window.setTimeout(() => {
-      setThreadPage(1);
-      setThreadSearchQuery(threadSearchDraft.trim());
-    }, MAIL_INBOX_SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(t);
-  }, [threadSearchDraft]);
+    setThreadPage(1);
+  }, [threadSearchQuery]);
+
+  useEffect(() => {
+    setActivePanel(null);
+
+    clearThreadSelection(setSelectedThreadIds);
+  }, [filterAccountId, activeFolder, threadSearchQuery, threadPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
+
     setError(null);
+
     try {
-      const [health, th] = await Promise.all([
+      const folderParams = mailFolderListParams(activeFolder);
+
+      const [health, threadPageResult] = await Promise.all([
         mailApi.listAccountHealthSummaries(),
-        mailApi.listThreads(
-          filterAccountId ?? undefined,
-          threadListSegment === 'unread',
-          threadListSegment === 'needs_link',
-          threadSearchQuery || undefined,
-          { page: threadPage },
-        ),
+
+        mailApi.listThreads({
+          mailAccountId: filterAccountId ?? undefined,
+
+          search: threadSearchQuery || undefined,
+
+          page: threadPage,
+
+          ...folderParams,
+        }),
       ]);
+
       setAccountHealth(health);
-      setThreads(th.items);
-      setThreadListMeta(th.meta);
-    } catch (e) {
-      setError(getApiErrorMessage(e, 'Mail could not be loaded.'));
+
+      setThreads(threadPageResult.items);
+
+      setThreadListMeta(threadPageResult.meta);
+    } catch (loadError) {
+      setError(getApiErrorMessage(loadError, 'Mail could not be loaded.'));
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, threadListSegment, threadSearchQuery, threadPage]);
+  }, [activeFolder, filterAccountId, threadSearchQuery, threadPage]);
 
-  const runSyncStub = useCallback(
+  const runSync = useCallback(
     async (accountId: string) => {
       setSyncingAccountId(accountId);
-      setError(null);
+
       try {
-        await mailApi.recordMailAccountSyncStub(accountId);
+        await mailApi.syncAccount(accountId);
+
+        toast.success('Sync started.');
+
         await load();
-      } catch (e) {
-        setError(getApiErrorMessage(e, 'Stub sync could not be recorded.'));
+      } catch (syncError) {
+        toast.error(getApiErrorMessage(syncError, 'Sync could not be started.'));
       } finally {
         setSyncingAccountId(null);
       }
     },
+
     [load],
   );
 
   useEffect(() => {
     if (!canView) {
       setLoading(false);
+
       return;
     }
+
     void load();
   }, [canView, load]);
 
-  const handleThreadSegmentChange = (segment: MailThreadListSegment) => {
+  const selectAccount = (accountId: string | null) => {
     setThreadPage(1);
-    setThreadListSegment(segment);
+
+    setFilterAccountId(accountId);
+  };
+
+  const selectFolder = (folder: MailFolderKey) => {
+    setThreadPage(1);
+
+    setActiveFolder(folder);
+  };
+
+  const openThread = (threadId: string) => {
+    setActivePanel({ type: 'thread', threadId });
+  };
+
+  const handleThreadMarkedRead = useCallback((threadId: string, mailAccountId: string) => {
+    setThreads((prev) =>
+      prev.map((thread) =>
+        thread.id === threadId && thread.hasUnread ? { ...thread, hasUnread: false } : thread,
+      ),
+    );
+
+    setAccountHealth((prev) =>
+      prev.map((account) =>
+        account.id === mailAccountId && account.unreadThreadCount > 0
+          ? { ...account, unreadThreadCount: account.unreadThreadCount - 1 }
+          : account,
+      ),
+    );
+  }, []);
+
+  const handleThreadMarkedUnread = useCallback((threadId: string, mailAccountId: string) => {
+    setThreads((prev) =>
+      prev.map((thread) =>
+        thread.id === threadId && !thread.hasUnread ? { ...thread, hasUnread: true } : thread,
+      ),
+    );
+
+    setAccountHealth((prev) =>
+      prev.map((account) =>
+        account.id === mailAccountId
+          ? { ...account, unreadThreadCount: account.unreadThreadCount + 1 }
+          : account,
+      ),
+    );
+  }, []);
+
+  const toggleThreadSelected = (threadId: string, checked: boolean) => {
+    setSelectedThreadIds((prev) => {
+      const next = new Set(prev);
+
+      if (checked) {
+        next.add(threadId);
+      } else {
+        next.delete(threadId);
+      }
+
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = (checked: boolean) => {
+    if (!checked) {
+      clearThreadSelection(setSelectedThreadIds);
+
+      return;
+    }
+
+    setSelectedThreadIds(new Set(visibleThreadIds));
+  };
+
+  const runBulkMarkRead = async () => {
+    const targets = threads.filter(
+      (thread) => selectedThreadIds.has(thread.id) && thread.hasUnread,
+    );
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    setBulkBusy(true);
+
+    try {
+      for (const thread of targets) {
+        await mailApi.markThreadRead(thread.id);
+
+        handleThreadMarkedRead(thread.id, thread.mailAccountId);
+      }
+
+      clearThreadSelection(setSelectedThreadIds);
+
+      toast.success(`Marked ${targets.length} thread${targets.length === 1 ? '' : 's'} as read.`);
+    } catch (bulkError) {
+      toast.error(getApiErrorMessage(bulkError, 'Bulk mark read failed.'));
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const runBulkMarkUnread = async () => {
+    const targets = threads.filter(
+      (thread) => selectedThreadIds.has(thread.id) && !thread.hasUnread,
+    );
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    setBulkBusy(true);
+
+    try {
+      for (const thread of targets) {
+        await mailApi.markThreadUnread(thread.id);
+
+        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
+      }
+
+      clearThreadSelection(setSelectedThreadIds);
+
+      toast.success(`Marked ${targets.length} thread${targets.length === 1 ? '' : 's'} as unread.`);
+    } catch (bulkError) {
+      toast.error(getApiErrorMessage(bulkError, 'Bulk mark unread failed.'));
+    } finally {
+      setBulkBusy(false);
+    }
   };
 
   if (!canView) {
     return (
-      <div className="flex flex-col gap-6 p-6">
-        <PageHero title="Mail" />
+      <div className="flex h-full flex-col gap-5">
         <EmptyState
           icon={Mail}
           title="No access"
@@ -136,183 +341,128 @@ export default function MailInboxPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <PageHero
-        title="Mail"
-        tabs={
-          <PageHeroTabs
-            value={threadListSegment}
-            onChange={handleThreadSegmentChange}
-            options={MAIL_THREAD_SEGMENT_OPTIONS}
-            ariaLabel="Inbox segment"
-          />
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      <MailToolbarRow
+        accounts={accountHealth}
+        filterAccountId={filterAccountId}
+        activeFolder={activeFolder}
+        searchValue={threadSearchDraft}
+        canEdit={canEdit}
+        busy={loading || bulkBusy}
+        syncingAccountId={syncingAccountId}
+        onSelectAccount={selectAccount}
+        onSelectFolder={selectFolder}
+        onSearchChange={setThreadSearchDraft}
+        onRefresh={() => void load()}
+        onSyncAccount={(accountId) => void runSync(accountId)}
+        onShareAccount={(account) =>
+          setActivePanel({
+            type: 'share',
+
+            accountId: account.id,
+
+            accountEmail: account.emailAddress,
+          })
         }
-        search={
-          <PageHeroSearch
-            value={threadSearchDraft}
-            onChange={setThreadSearchDraft}
-            placeholder="Search by subject…"
-          />
-        }
-        trailing={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => void load()}
-            disabled={loading}
-          >
-            <RefreshCcw size={14} aria-hidden />
-            Refresh
-          </Button>
-        }
+        onConnectMailbox={() => setActivePanel({ type: 'connect' })}
       />
 
-      {loading ? <LoadingState /> : null}
-      {error ? <ErrorState description={error} onRetry={() => void load()} /> : null}
+      <div className="flex min-h-0 flex-1">
+        <MailFolderSidebar
+          accounts={accountHealth}
+          filterAccountId={filterAccountId}
+          activeFolder={activeFolder}
+          onSelectFolder={selectFolder}
+        />
 
-      {!loading && !error ? (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,240px)_1fr]">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Mailboxes</CardTitle>
-              <p className="text-muted-foreground text-xs">
-                Health summary: threads / unread / needs link (same scope as inbox).
-              </p>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setThreadPage(1);
-                  setFilterAccountId(null);
-                }}
-                className={cn(
-                  'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                  filterAccountId === null ? 'bg-muted font-medium' : 'hover:bg-muted/60',
-                )}
-              >
-                All accessible
-              </button>
-              {accountHealth.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No mailboxes yet.</p>
-              ) : (
-                accountHealth.map((a) => (
-                  <div
-                    key={a.id}
-                    className={cn(
-                      'flex items-start gap-0.5 rounded-md px-1 py-0.5',
-                      filterAccountId === a.id ? 'bg-muted' : '',
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setThreadPage(1);
-                        setFilterAccountId(a.id);
-                      }}
-                      className={cn(
-                        'min-w-0 flex-1 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                        filterAccountId === a.id ? 'font-medium' : 'hover:bg-muted/60',
-                      )}
-                    >
-                      <span className="block truncate">{a.emailAddress}</span>
-                      <span className="text-muted-foreground block truncate text-xs">
-                        {a.status}
-                        {a.lastSyncAt ? ` · synced ${new Date(a.lastSyncAt).toLocaleString()}` : ''}
-                      </span>
-                      <MailProviderConnectionBadge account={a} />
-                      <span className="text-muted-foreground block text-xs">
-                        {a.threadCount} threads · {a.unreadThreadCount} unread ·{' '}
-                        {a.needsLinkThreadCount} need link
-                      </span>
-                      {a.lastErrorAt ? (
-                        <span className="text-destructive block text-xs">
-                          Last error {new Date(a.lastErrorAt).toLocaleString()}
-                        </span>
-                      ) : null}
-                    </button>
-                    {canEdit ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground size-8 shrink-0"
-                        disabled={loading || syncingAccountId === a.id}
-                        title="Stub sync: updates last sync time only (no IMAP yet)"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          void runSyncStub(a.id);
-                        }}
-                      >
-                        <RefreshCcw
-                          size={14}
-                          className={syncingAccountId === a.id ? 'animate-spin' : ''}
-                        />
-                      </Button>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {loading ? <LoadingState /> : null}
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Threads</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {threads.length === 0 && (!threadListMeta || threadListMeta.totalCount === 0) ? (
+          {error ? <ErrorState description={error} onRetry={() => void load()} /> : null}
+
+          {!loading && !error ? (
+            <>
+              <MailBulkActionBar
+                visibleThreadCount={threads.length}
+                selectedCount={selectedCount}
+                allVisibleSelected={allVisibleSelected}
+                busy={bulkBusy}
+                canMarkUnread={canEdit}
+                onToggleSelectAll={toggleSelectAllVisible}
+                onMarkRead={() => void runBulkMarkRead()}
+                onMarkUnread={() => void runBulkMarkUnread()}
+                onClearSelection={() => clearThreadSelection(setSelectedThreadIds)}
+                className="border-border rounded-none border-x-0 border-t-0 bg-transparent px-3 py-2"
+              />
+
+              {threads.length === 0 ? (
                 <EmptyState
                   icon={Mail}
                   title="No threads"
                   description={
                     threadSearchQuery
-                      ? 'No threads match this search. Try another term or clear the filter.'
-                      : 'Connect a mailbox or wait for sync once the Mail pipeline is enabled.'
+                      ? 'No threads match this search.'
+                      : 'Connect a mailbox or wait for the next sync.'
                   }
                 />
-              ) : threads.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No threads on this page.</p>
               ) : (
-                <ul className="divide-y rounded-md border">
-                  {threads.map((t) => (
-                    <li key={t.id}>
-                      <Link
-                        href={`/mail/threads/${t.id}`}
-                        className="hover:bg-muted/50 flex flex-col gap-0.5 px-3 py-3 text-sm"
-                      >
-                        <span className="font-medium">
-                          {formatThreadTitle(t.subjectNormalized)}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          {new Date(t.lastMessageAt).toLocaleString()}
-                          {t.hasUnread ? ' · Unread' : ''}
-                          {t.needsBusinessLink ? ' · Needs link' : ''}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  <MailThreadList
+                    threads={threads}
+                    accountEmailById={accountEmailById}
+                    selectedThreadId={selectedThreadId}
+                    selectedThreadIds={selectedThreadIds}
+                    bulkBusy={bulkBusy}
+                    onOpenThread={openThread}
+                    onToggleThreadSelected={toggleThreadSelected}
+                  />
+                </div>
               )}
 
               {threadListMeta && threadListMeta.totalCount > 0 ? (
                 <ListPagination
-                  className="pt-4"
+                  className="border-border shrink-0 border-t px-3 py-2"
                   meta={{
                     total: threadListMeta.totalCount,
+
                     page: threadListMeta.page,
+
                     pageSize: threadListMeta.pageSize,
+
                     totalPages: threadListMeta.totalPages,
                   }}
                   onPageChange={setThreadPage}
                 />
               ) : null}
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+            </>
+          ) : null}
+        </section>
+      </div>
+
+      <MailActivePanelHost
+        activePanel={activePanel}
+        onActivePanelChange={setActivePanel}
+        accounts={accountHealth}
+        canEdit={canEdit}
+        onThreadMarkedRead={handleThreadMarkedRead}
+        onThreadMarkedUnread={handleThreadMarkedUnread}
+        onThreadMarkedSpam={(threadId) => {
+          setActivePanel(null);
+          setThreads((prev) => prev.filter((thread) => thread.id !== threadId));
+          clearThreadSelection(setSelectedThreadIds);
+        }}
+        onMailboxConnected={() => void load()}
+        onComposeSent={(threadId) => {
+          setActivePanel({ type: 'thread', threadId });
+          void load();
+        }}
+        onThreadDeleted={(threadId) => {
+          setActivePanel(null);
+          setThreads((prev) => prev.filter((thread) => thread.id !== threadId));
+          clearThreadSelection(setSelectedThreadIds);
+          toast.success('Email deleted.');
+        }}
+      />
     </div>
   );
 }

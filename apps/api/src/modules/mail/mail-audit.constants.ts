@@ -31,3 +31,30 @@ export const MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT =
 
 /** Manual sync stub: timestamps only (no provider fetch). */
 export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_SYNC_STUB = 'mail.mail_account_sync_stub';
+
+/** Thread manually assigned to (or reassigned to) a user. */
+export const MAIL_AUDIT_ACTION_THREAD_ASSIGNED = 'mail.thread_assigned';
+
+/** Thread assignment cleared. */
+export const MAIL_AUDIT_ACTION_THREAD_UNASSIGNED = 'mail.thread_unassigned';
+
+/** User marked NBOS thread unread. */
+export const MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD = 'mail.thread_marked_unread';
+
+/** Thread flagged as spam in NBOS (no provider spam folder in MVP). */
+export const MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM = 'mail.thread_marked_spam';
+
+/** Thread and its messages removed from NBOS (no provider delete in MVP). */
+export const MAIL_AUDIT_ACTION_THREAD_DELETED = 'mail.thread_deleted';
+
+/** Mailbox connected via provider (Gmail OAuth or corporate IMAP/SMTP). */
+export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_CONNECTED = 'mail.mail_account_connected';
+
+/** Mailbox disconnected. */
+export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_DISCONNECTED = 'mail.mail_account_disconnected';
+
+/** Real outbound send succeeded via provider. */
+export const MAIL_AUDIT_ACTION_OUTBOUND_SENT = 'mail.outbound_sent';
+
+/** Real outbound send failed at provider. */
+export const MAIL_AUDIT_ACTION_OUTBOUND_SEND_FAILED = 'mail.outbound_send_failed';

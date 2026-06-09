@@ -90,6 +90,10 @@ model Employee {
   mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
   mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
+  mailAccountAccesses              MailAccountAccess[]                 @relation("MailAccountAccessEmployee")
+  mailAccountAccessesGranted       MailAccountAccess[]                 @relation("MailAccountAccessGrantedBy")
+  mailThreadsAssigned              EmailThread[]                       @relation("EmailThreadAssignee")
+  mailThreadsAssignedBy            EmailThread[]                       @relation("EmailThreadAssignedBy")
   inAppNotificationsReceived       InAppNotification[]
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]

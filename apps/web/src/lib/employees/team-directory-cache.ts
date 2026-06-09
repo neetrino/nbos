@@ -131,8 +131,8 @@ export async function loadTeamFilterMeta(): Promise<TeamFilterMetaCache> {
   return filterMetaPromise;
 }
 
-/** Warm default team directory (no filters) after sign-in. */
+/** Warm default team directory (no filters) after sign-in. Best-effort — never throws. */
 export function prefetchTeamDirectoryDefaultPage(): void {
-  void loadTeamList({});
-  void loadTeamFilterMeta();
+  void loadTeamList({}).catch(() => undefined);
+  void loadTeamFilterMeta().catch(() => undefined);
 }

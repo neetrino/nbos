@@ -5,6 +5,7 @@ import {
   buildOutboundDraftRecipients,
   dedupeEmailsCaseInsensitive,
 } from './mail-outbound-draft.helpers';
+import { sanitizeEmailHtml } from './providers/mail-html-sanitize';
 
 function uniqueFileAssetIds(dto: CreateMailOutboundDraftDto): string[] {
   return [...new Set(dto.fileAssetIds?.map((id) => id.trim()).filter(Boolean) ?? [])];
@@ -59,6 +60,7 @@ export async function persistOutboundDraftMessage(
         direction: 'OUTBOUND',
         subject: dto.subject,
         bodyText: dto.bodyText,
+        bodyHtmlSanitized: sanitizeEmailHtml(dto.bodyHtml ?? null),
         readState: 'READ',
         deliveryStatus: 'DRAFT',
       },

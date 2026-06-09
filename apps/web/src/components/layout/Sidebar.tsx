@@ -128,7 +128,6 @@ function SidebarHeader({
             alt="NBOS"
             width={120}
             height={20}
-            fetchPriority="high"
             className={cn('h-5 w-auto', SIDEBAR_LOGO_MAX_WIDTH_CLASS)}
           />
         </Link>
