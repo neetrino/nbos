@@ -15,19 +15,19 @@ const V2_KEY_SALT = 'NBOS_CREDENTIALS_ENCRYPTION_V2';
 const SCRYPT_KEY_LENGTH = 32;
 const SCRYPT_DERIVATION_OPTIONS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
-/** Legacy decrypt-only: SHA-256 key derivation for pre-v2 ciphertext blobs. */
+/**
+ * Legacy decrypt-only AES key derivation for pre-v2 `iv:authTag:ciphertext` blobs.
+ * Not used for user password hashing; new encryptions use {@link deriveV2Key} (scrypt).
+ * Removal requires re-encrypting existing Credential and MailProviderSecret rows.
+ */
 export function deriveLegacyKey(masterKeyMaterial: string): Buffer {
+  // codeql[js/insufficient-password-hash]: Legacy AES key derivation for decrypting pre-v2 ciphertext only; not password hashing. New encryption uses v2 scrypt via deriveV2Key. Removing this requires a DB re-encryption migration.
   return createHash('sha256').update(masterKeyMaterial).digest();
 }
 
 /** scrypt-based key derivation for v2 encryptions (not used for password hashing). */
 export function deriveV2Key(masterKeyMaterial: string): Buffer {
   return scryptSync(masterKeyMaterial, V2_KEY_SALT, SCRYPT_KEY_LENGTH, SCRYPT_DERIVATION_OPTIONS);
-}
-
-/** @deprecated Prefer {@link deriveLegacyKey} or {@link deriveV2Key}. */
-export function deriveKey(masterKeyMaterial: string): Buffer {
-  return deriveLegacyKey(masterKeyMaterial);
 }
 
 function encryptWithDerivedKey(plaintext: string, derivedKey: Buffer): string {
@@ -62,7 +62,8 @@ export function encrypt(plaintext: string, masterKeyMaterial: string): string {
 }
 
 /**
- * Decrypts legacy `iv:authTag:ciphertext` or v2 `v2:iv:authTag:ciphertext` blobs.
+ * Decrypts v2 `v2:iv:authTag:ciphertext` blobs (preferred) or legacy unversioned
+ * `iv:authTag:ciphertext` blobs written before v2 scrypt key derivation.
  */
 export function decrypt(encrypted: string, masterKeyMaterial: string): string {
   if (encrypted.startsWith(`${V2_FORMAT_PREFIX}:`)) {

@@ -1,6 +1,6 @@
 import { createCipheriv, randomBytes } from 'crypto';
 import { describe, it, expect } from 'vitest';
-import { encrypt, decrypt, deriveKey, deriveLegacyKey, deriveV2Key } from './crypto';
+import { encrypt, decrypt, deriveLegacyKey, deriveV2Key } from './crypto';
 
 const TEST_KEY = 'test-encryption-key-for-unit-tests';
 
@@ -43,12 +43,6 @@ describe('crypto', () => {
 
     it('should differ from legacy derivation', () => {
       expect(deriveV2Key(TEST_KEY).equals(deriveLegacyKey(TEST_KEY))).toBe(false);
-    });
-  });
-
-  describe('deriveKey alias', () => {
-    it('should match deriveLegacyKey', () => {
-      expect(deriveKey(TEST_KEY).equals(deriveLegacyKey(TEST_KEY))).toBe(true);
     });
   });
 
