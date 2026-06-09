@@ -13,6 +13,24 @@ enum MailProviderConnectionStatus {
   PAUSED
 }
 
+/** Shared mailbox access role (owner is implicit via MailAccount.ownerEmployeeId). */
+enum MailAccountAccessRole {
+  ADMIN
+  READER
+  SENDER
+}
+
+/** Account-level sync/connection event log (provider-agnostic, no secrets). */
+enum MailSyncLogKind {
+  SYNC_STARTED
+  SYNC_COMPLETED
+  SYNC_FAILED
+  WATCH_RENEWED
+  CONNECTION_VALIDATED
+  CONNECTION_FAILED
+  RECONNECT_REQUIRED
+}
+
 enum MailAccountStatus {
   ACTIVE
   NEEDS_RECONNECT
@@ -41,9 +59,64 @@ model MailAccount {
   threads            EmailThread[]
   messages           EmailMessage[]
   deliveryLogs       MailDeliveryLog[]
+  accesses           MailAccountAccess[]
+  syncLogs           MailSyncLog[]
+  providerSecret     MailProviderSecret?
 
   @@index([ownerEmployeeId])
   @@map("mail_accounts")
+}
+
+/**
+ * Mailbox sharing grant. Owner access is implicit (MailAccount.ownerEmployeeId);
+ * this table holds delegated ADMIN/READER/SENDER access for other NBOS users.
+ */
+model MailAccountAccess {
+  id                  String                @id @default(uuid())
+  mailAccountId       String                @map("mail_account_id")
+  employeeId          String                @map("employee_id")
+  role                MailAccountAccessRole
+  grantedByEmployeeId String?               @map("granted_by_employee_id")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+
+  mailAccount MailAccount @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  employee    Employee    @relation("MailAccountAccessEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  grantedBy   Employee?   @relation("MailAccountAccessGrantedBy", fields: [grantedByEmployeeId], references: [id], onDelete: SetNull)
+
+  @@unique([mailAccountId, employeeId])
+  @@index([employeeId])
+  @@map("mail_account_accesses")
+}
+
+/**
+ * Encrypted provider secret store (AES-256-GCM via CREDENTIALS_ENCRYPTION_KEY).
+ * Holds Gmail OAuth refresh token or corporate IMAP/SMTP password as a single
+ * encrypted JSON blob — never plaintext, never on MailAccount/connection rows.
+ */
+model MailProviderSecret {
+  id              String   @id @default(uuid())
+  mailAccountId   String   @unique @map("mail_account_id")
+  encryptedSecret String   @map("encrypted_secret") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  mailAccount MailAccount @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+
+  @@map("mail_provider_secrets")
+}
+
+model MailSyncLog {
+  id            String          @id @default(uuid())
+  mailAccountId String          @map("mail_account_id")
+  kind          MailSyncLogKind
+  detail        String?         @db.Text
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  mailAccount MailAccount @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+
+  @@index([mailAccountId, createdAt])
+  @@map("mail_sync_logs")
 }
 
 model MailProviderConnection {
@@ -59,8 +132,13 @@ model MailProviderConnection {
   smtpHost          String?                      @map("smtp_host")
   smtpPort          Int?                         @map("smtp_port")
   secureMode        String?                      @map("secure_mode")
+  smtpSecureMode    String?                      @map("smtp_secure_mode")
   grantedScopes     Json?                        @map("granted_scopes")
   syncCursor        String?                      @map("sync_cursor")
+  gmailHistoryId    String?                      @map("gmail_history_id")
+  gmailWatchExpiresAt DateTime?                  @map("gmail_watch_expires_at")
+  imapUidValidity   String?                      @map("imap_uid_validity")
+  imapLastUid       String?                      @map("imap_last_uid")
   lastValidatedAt   DateTime?                    @map("last_validated_at")
   lastErrorAt       DateTime?                    @map("last_error_at")
   lastErrorMessage  String?                      @map("last_error_message") @db.Text
@@ -92,13 +170,22 @@ model EmailThread {
   status            EmailThreadStatus @default(OPEN)
   hasUnread         Boolean           @default(true) @map("has_unread")
   needsBusinessLink Boolean           @default(false) @map("needs_business_link")
+  isSpam            Boolean           @default(false) @map("is_spam")
+  providerThreadId  String?           @map("provider_thread_id")
+  assignedToEmployeeId String?        @map("assigned_to_employee_id")
+  assignedByEmployeeId String?        @map("assigned_by_employee_id")
+  assignedAt        DateTime?         @map("assigned_at")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
   mailAccount MailAccount    @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
   messages    EmailMessage[]
+  assignedTo  Employee?      @relation("EmailThreadAssignee", fields: [assignedToEmployeeId], references: [id], onDelete: SetNull)
+  assignedBy  Employee?      @relation("EmailThreadAssignedBy", fields: [assignedByEmployeeId], references: [id], onDelete: SetNull)
 
   @@index([mailAccountId, lastMessageAt])
+  @@index([mailAccountId, isSpam])
+  @@index([assignedToEmployeeId])
   @@map("email_threads")
 }
 
@@ -126,6 +213,8 @@ enum MailDeliveryLogKind {
   OUTBOUND_SEND_STUB_FAILED
   OUTBOUND_SEND_CANCELLED
   OUTBOUND_FAILED_RESET_TO_DRAFT
+  OUTBOUND_SENT
+  OUTBOUND_SEND_FAILED
 }
 
 enum EmailAttachmentDownloadStatus {

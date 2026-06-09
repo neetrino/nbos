@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MyAccountSheetProvider } from '@/features/account/components/my-account-sheet-provider';
 import { MyWalletSheetProvider } from '@/features/account/components/my-wallet-sheet-provider';
@@ -19,6 +19,13 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mainOffsetPx = sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX;
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--app-sidebar-width', `${mainOffsetPx}px`);
+    return () => {
+      document.documentElement.style.removeProperty('--app-sidebar-width');
+    };
+  }, [mainOffsetPx]);
 
   return (
     <HeaderContextProvider>

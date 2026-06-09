@@ -34,6 +34,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent-foreground: #1f2268;
   --sidebar-ring: #2e3192;
+  --app-sidebar-width: 260px;
   --success: oklch(0.648 0.15 145);
   --warning: #2e3192;
   --info: oklch(0.631 0.098 240);
@@ -357,4 +358,60 @@ body {
 .nbos-entity-notes-editor .ProseMirror a {
   color: var(--primary);
   text-decoration: underline;
+}
+
+/* TipTap — mail compose rich editor */
+.nbos-mail-compose-editor .ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+.nbos-mail-compose-editor .ProseMirror table td,
+.nbos-mail-compose-editor .ProseMirror table th {
+  border: 1px solid #d0d5dd;
+  padding: 6px 8px;
+  vertical-align: top;
+}
+.nbos-mail-compose-editor .ProseMirror table th {
+  background-color: #f9fafb;
+}
+.nbos-mail-compose-editor .ProseMirror pre,
+.nbos-mail-compose-editor .ProseMirror pre.bxhtmled-code {
+  background-color: color-mix(in oklab, var(--muted) 55%, transparent);
+  border-radius: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  margin: 0.35rem 0;
+  overflow-x: auto;
+  padding: 0.5rem 0.75rem;
+}
+.nbos-mail-compose-editor .ProseMirror mark {
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
+}
+.mail-html-body table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.mail-html-body table td,
+.mail-html-body table th {
+  border: 1px solid #d0d5dd;
+  padding: 6px 8px;
+  vertical-align: top;
+}
+.mail-html-body table th {
+  background-color: #f9fafb;
+}
+.mail-html-body pre,
+.mail-html-body pre.bxhtmled-code {
+  background-color: color-mix(in oklab, var(--muted) 55%, transparent);
+  border-radius: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.75rem;
+}
+.mail-html-body mark {
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
 }

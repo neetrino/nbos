@@ -61,7 +61,20 @@ export async function proxyToBackend(
     init.body = await req.arrayBuffer();
   }
 
-  const backendResponse = await fetch(targetUrl, init);
+  let backendResponse: Response;
+  try {
+    backendResponse = await fetch(targetUrl, init);
+  } catch {
+    return NextResponse.json(
+      {
+        statusCode: 503,
+        message: 'Backend is temporarily unavailable. Try again shortly.',
+        error: 'Service Unavailable',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 503 },
+    );
+  }
 
   const responseHeaders = new Headers();
   backendResponse.headers.forEach((value, key) => {

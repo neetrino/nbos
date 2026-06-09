@@ -1,26 +1,14 @@
 'use client';
 
 import { Mail, Paperclip } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/shared';
+import { formatFileSize } from '@/features/drive/drive-format';
 import type { MailMessageRow } from '@/lib/api/mail';
+import { MailMessageBody } from './MailMessageBody';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
-
-const BYTES_PER_KIB = 1024;
-
-function formatAttachmentSize(sizeBytes: string | null): string | null {
-  if (!sizeBytes) {
-    return null;
-  }
-  const bytes = Number(sizeBytes);
-  if (!Number.isFinite(bytes)) {
-    return null;
-  }
-  if (bytes < BYTES_PER_KIB) {
-    return `${bytes} B`;
-  }
-  return `${(bytes / BYTES_PER_KIB).toFixed(1)} KiB`;
-}
 
 export interface MailThreadMessagesProps {
   threadId: string;
@@ -50,7 +38,7 @@ export function MailThreadMessages({
   onResetFailedToDraft,
 }: MailThreadMessagesProps) {
   if (messages.length === 0) {
-    return <EmptyThreadPlaceholder />;
+    return <EmptyState icon={Mail} title="No messages in this thread." />;
   }
   const outboundBusy =
     queueingMessageId !== null ||
@@ -71,20 +59,20 @@ export function MailThreadMessages({
             <p className="text-muted-foreground text-xs">
               {m.recipients.map((r) => `${r.kind}: ${r.displayName ?? r.email}`).join(' · ')}
             </p>
-            <pre className="font-sans text-sm whitespace-pre-wrap">{m.bodyText ?? '—'}</pre>
+            <MailMessageBody bodyHtmlSanitized={m.bodyHtmlSanitized} bodyText={m.bodyText} />
             {m.attachments.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {m.attachments.map((attachment) => {
-                  const size = formatAttachmentSize(attachment.sizeBytes);
+                  const formattedSize = attachment.sizeBytes
+                    ? formatFileSize(attachment.sizeBytes)
+                    : null;
+                  const size = formattedSize && formattedSize !== '-' ? formattedSize : null;
                   return (
-                    <span
-                      key={attachment.id}
-                      className="bg-muted inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs"
-                    >
-                      <Paperclip size={12} />
+                    <Badge key={attachment.id} variant="secondary" className="gap-1">
+                      <Paperclip size={12} aria-hidden />
                       {attachment.fileName}
                       {size ? ` · ${size}` : ''}
-                    </span>
+                    </Badge>
                   );
                 })}
               </div>
@@ -154,15 +142,6 @@ export function MailThreadMessages({
           </CardContent>
         </Card>
       ))}
-    </div>
-  );
-}
-
-function EmptyThreadPlaceholder() {
-  return (
-    <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center">
-      <Mail className="h-8 w-8" />
-      <p className="text-sm">No messages in this thread.</p>
     </div>
   );
 }
