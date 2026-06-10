@@ -7,16 +7,18 @@
 
 ## Резюме
 
-| Область                                      | Статус         |
-| -------------------------------------------- | -------------- |
-| Секреты провайдера (AES-256-GCM + scrypt v2) | ✅ Сделано     |
-| HTML/XSS санитизация (server + client)       | ✅ Сделано     |
-| RBAC send на compose/reply                   | ✅ Сделано     |
-| RBAC send на draft/queue                     | ✅ Сделано     |
-| Rate limit на все send-пути                  | ✅ Сделано     |
-| Legacy SHA-256 KDF → полная миграция v2      | ⬜ Нужно       |
-| Key management (KMS / per-item DEK)          | ⬜ Долгий срок |
-| Encryption at rest для тел писем             | ⬜ Долгий срок |
+| Область                                      | Статус          |
+| -------------------------------------------- | --------------- |
+| Секреты провайдера (AES-256-GCM + scrypt v2) | ✅ Сделано      |
+| HTML/XSS санитизация (server + client)       | ✅ Сделано      |
+| RBAC send на compose/reply                   | ✅ Сделано      |
+| RBAC send на draft/queue                     | ✅ Сделано      |
+| Rate limit на все send-пути                  | ✅ Сделано      |
+| Legacy SHA-256 KDF → полная миграция v2      | 🟡 Скрипт готов |
+| Gmail blob: только refreshToken              | ✅ Сделано      |
+| Wide RBAC scope документация                 | ✅ Сделано      |
+| Key management (KMS / per-item DEK)          | ⬜ Долгий срок  |
+| Encryption at rest для тел писем             | ⬜ Долгий срок  |
 
 **SHA-256 не менять как «модель защиты»** — он используется только в legacy KDF для расшифровки старых blob. Секреты Mail шифруются (AES-256-GCM), не хешируются.
 
@@ -110,8 +112,8 @@
 
 **Задачи:**
 
-- [ ] Скрипт: прочитать все `MailProviderSecret`, если blob без префикса `v2:` — decrypt legacy → re-encrypt v2 → update row
-- [ ] Аналогично для `Credential` secret fields (если есть legacy blob) — единый crypto stack
+- [x] Скрипт `pnpm --filter @nbos/api reencrypt-secrets-v2` (`reencrypt-secrets-v2.ops.ts`)
+- [x] Credential secret fields + `CredentialSecretVersion` в том же скрипте
 - [ ] После 100% миграции в prod: удалить `deriveLegacyKey` и legacy decrypt branch
 - [ ] Обновить `crypto.test.ts` — legacy тесты оставить до удаления или пометить deprecated
 
@@ -131,9 +133,9 @@
 
 **Задачи:**
 
-- [ ] Хранить в blob только `refreshToken` (минимальный набор)
-- [ ] Access token получать on-demand через refresh при каждом adapter call
-- [ ] Миграция существующих blob: при следующем OAuth reconnect или lazy cleanup при read
+- [x] Хранить в blob только `refreshToken` (минимальный набор)
+- [x] Access token on-demand через OAuth2 client refresh (`gmail.adapter.ts` уже так)
+- [x] Lazy cleanup при read + normalize на store (`mail-provider-secret.normalize.ts`)
 
 **Критерий готовности:** encrypted blob содержит только refresh token; access не персистится.
 
@@ -145,8 +147,8 @@
 
 **Задачи:**
 
-- [ ] Зафиксировать в `docs/NBOS/02-Modules/17-Mail/05-Mail-Permissions-and-UX.md` поведение wide scope
-- [ ] Решение: оставить как есть / ограничить send для wide scope — согласовать с owner
+- [x] Зафиксировано в `05-Mail-Permissions-and-UX.md` (wide scope = ADMIN + send)
+- [x] Решение: оставить как есть (документировано для mail-админов)
 
 ---
 
