@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, randomBytes, scryptSync } from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
 import { resolveCredentialProviderId, seedCredentialProviders } from './seed-credential-providers';
 import type {
@@ -60,15 +60,18 @@ interface ProductSlotBinding {
   credentialName: string;
 }
 
-function deriveKey(secret: string): Buffer {
-  return createHash('sha256').update(secret).digest();
+const V2_KEY_SALT = 'NBOS_CREDENTIALS_ENCRYPTION_V2';
+
+function deriveV2Key(secret: string): Buffer {
+  return scryptSync(secret, V2_KEY_SALT, 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
 }
 
 function encryptField(plaintext: string, key: string): string {
   const iv = randomBytes(16);
-  const cipher = createCipheriv('aes-256-gcm', deriveKey(key), iv, { authTagLength: 16 });
+  const cipher = createCipheriv('aes-256-gcm', deriveV2Key(key), iv, { authTagLength: 16 });
   const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-  return `${iv.toString('hex')}:${cipher.getAuthTag().toString('hex')}:${encrypted.toString('hex')}`;
+  const body = `${iv.toString('hex')}:${cipher.getAuthTag().toString('hex')}:${encrypted.toString('hex')}`;
+  return `v2:${body}`;
 }
 
 function resolveEncryptionKey(): string {

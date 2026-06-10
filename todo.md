@@ -7,18 +7,18 @@
 
 ## Резюме
 
-| Область                                      | Статус          |
-| -------------------------------------------- | --------------- |
-| Секреты провайдера (AES-256-GCM + scrypt v2) | ✅ Сделано      |
-| HTML/XSS санитизация (server + client)       | ✅ Сделано      |
-| RBAC send на compose/reply                   | ✅ Сделано      |
-| RBAC send на draft/queue                     | ✅ Сделано      |
-| Rate limit на все send-пути                  | ✅ Сделано      |
-| Legacy SHA-256 KDF → полная миграция v2      | 🟡 Скрипт готов |
-| Gmail blob: только refreshToken              | ✅ Сделано      |
-| Wide RBAC scope документация                 | ✅ Сделано      |
-| Key management (KMS / per-item DEK)          | ⬜ Долгий срок  |
-| Encryption at rest для тел писем             | ⬜ Долгий срок  |
+| Область                                      | Статус         |
+| -------------------------------------------- | -------------- |
+| Секреты провайдера (AES-256-GCM + scrypt v2) | ✅ Сделано     |
+| HTML/XSS санитизация (server + client)       | ✅ Сделано     |
+| RBAC send на compose/reply                   | ✅ Сделано     |
+| RBAC send на draft/queue                     | ✅ Сделано     |
+| Rate limit на все send-пути                  | ✅ Сделано     |
+| Legacy SHA-256 KDF → полная миграция v2      | ✅ Локально    |
+| Gmail blob: только refreshToken              | ✅ Сделано     |
+| Wide RBAC scope документация                 | ✅ Сделано     |
+| Key management (KMS / per-item DEK)          | ⬜ Долгий срок |
+| Encryption at rest для тел писем             | ⬜ Долгий срок |
 
 **SHA-256 не менять как «модель защиты»** — он используется только в legacy KDF для расшифровки старых blob. Секреты Mail шифруются (AES-256-GCM), не хешируются.
 
@@ -114,8 +114,10 @@
 
 - [x] Скрипт `pnpm --filter @nbos/api reencrypt-secrets-v2` (`reencrypt-secrets-v2.ops.ts`)
 - [x] Credential secret fields + `CredentialSecretVersion` в том же скрипте
-- [ ] После 100% миграции в prod: удалить `deriveLegacyKey` и legacy decrypt branch
-- [ ] Обновить `crypto.test.ts` — legacy тесты оставить до удаления или пометить deprecated
+- [x] Локальная БД: 1 mail secret, 115 credential fields, 56 versions мигрированы
+- [x] `deriveLegacyKey` удалён из `crypto.ts`; legacy decrypt только в migration tool
+- [x] `crypto.test.ts` обновлён (v2-only decrypt)
+- [ ] Запустить `reencrypt-secrets-v2` на **production** перед деплоем
 
 **Критерий готовности:** в БД нет unversioned blob; `decrypt()` не использует SHA-256 KDF.
 
@@ -230,7 +232,8 @@
 
 - [x] P0 RBAC: тесты зелёные, READER не может draft/queue
 - [x] P1 Throttle: все send endpoints под rate limit
-- [ ] P1 Legacy migration: 0 legacy blob в prod
+- [x] P1 Legacy migration: 0 legacy blob в local DB
+- [ ] P1 Legacy migration: 0 legacy blob в prod (запустить скрипт)
 - [ ] P1 Gmail blob: только refresh token
 - [ ] `docs/security.todo.md` обновлён (если менялось поведение)
 - [ ] Канон Mail permissions синхронизирован с кодом
