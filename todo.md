@@ -12,8 +12,8 @@
 | Секреты провайдера (AES-256-GCM + scrypt v2) | ✅ Сделано     |
 | HTML/XSS санитизация (server + client)       | ✅ Сделано     |
 | RBAC send на compose/reply                   | ✅ Сделано     |
-| RBAC send на draft/queue                     | ⬜ Нужно       |
-| Rate limit на все send-пути                  | ⬜ Частично    |
+| RBAC send на draft/queue                     | ✅ Сделано     |
+| Rate limit на все send-пути                  | ✅ Сделано     |
 | Legacy SHA-256 KDF → полная миграция v2      | ⬜ Нужно       |
 | Key management (KMS / per-item DEK)          | ⬜ Долгий срок |
 | Encryption at rest для тел писем             | ⬜ Долгий срок |
@@ -72,10 +72,10 @@
 
 **Задачи:**
 
-- [ ] В `createOutboundDraft`: после `getMailThreadWithMailboxAccess` загрузить роль через `loadMailAccountWithViewerRole` и проверить `mailRoleCanSend`; иначе `403 Forbidden`
-- [ ] В `queueOutboundDraft`: аналогичная проверка до `queueOutboundDraftMessage`
-- [ ] Убедиться, что worker/async send не обходит RBAC (если queue станет фоновым — проверка при enqueue, не только при compose)
-- [ ] Тесты: READER → 403 на draft create и queue; SENDER/OWNER/ADMIN → 200
+- [x] В `createOutboundDraft`: `requireMailAccountSendRole` после `getMailThreadWithMailboxAccess`
+- [x] В `queueOutboundDraft`: `requireMailAccountSendRole` до `queueOutboundDraftMessage`
+- [x] Worker send: RBAC на enqueue (queue endpoint) — async worker грузит уже QUEUED сообщение
+- [x] Тесты: `mail-send-access.ops.test.ts`, `mail-access.policy.test.ts`
 
 **Критерий готовности:** пользователь с ролью READER не может ни создать outbound draft, ни поставить draft в очередь.
 
@@ -91,10 +91,8 @@
 
 **Задачи:**
 
-- [ ] Добавить `@Throttle({ default: { limit: 20, ttl: 60_000 } })` на:
-  - `POST threads/:threadId/drafts`
-  - `POST threads/:threadId/messages/:messageId/queue`
-- [ ] Сверить с каноном: rate limit на send endpoints (`17-Mail/03-Mail-Architecture.md`)
+- [x] `@Throttle({ default: { limit: 20, ttl: 60_000 } })` на draft и queue (`mail.controller.ts`)
+- [x] Сверено с каноном: rate limit на send endpoints
 
 **Критерий готовности:** все публичные send-related endpoints имеют throttle 20/min.
 
@@ -228,8 +226,8 @@
 
 ## Чеклист перед закрытием всего плана
 
-- [ ] P0 RBAC: тесты зелёные, READER не может draft/queue
-- [ ] P1 Throttle: все send endpoints под rate limit
+- [x] P0 RBAC: тесты зелёные, READER не может draft/queue
+- [x] P1 Throttle: все send endpoints под rate limit
 - [ ] P1 Legacy migration: 0 legacy blob в prod
 - [ ] P1 Gmail blob: только refresh token
 - [ ] `docs/security.todo.md` обновлён (если менялось поведение)
