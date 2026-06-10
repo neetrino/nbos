@@ -9,8 +9,7 @@
     "start": "node --import tsx dist/main",
     "start:prod": "node --import tsx dist/main",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit",
-    "reencrypt-secrets-v2": "node --import tsx src/scripts/reencrypt-secrets-v2.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nbos/database": "workspace:*",
