@@ -50,21 +50,22 @@ Neon Postgres / R2 / Resend — внешние SaaS
 
 ## 1. Security preflight (до первого деплоя)
 
-| Шаг                                                                                              | Где                     | Проверка                                     |
-| ------------------------------------------------------------------------------------------------ | ----------------------- | -------------------------------------------- |
-| Сильные секреты (`AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`, `SCHEDULER_API_KEY`) | Coolify env (web + api) | ≥32 символов; `openssl rand -base64 32`      |
-| `NODE_ENV=production` на API                                                                     | Coolify `nbos-api`      | Логи старта, без Swagger                     |
-| `CORS_ORIGIN` = точный origin web                                                                | Coolify `nbos-api`      | `https://app.example.com`                    |
-| `BACKEND_URL` доступен из web-контейнера                                                         | Coolify `nbos-web`      | `http://nbos-api:4000` или публичный API URL |
-| `NEXT_PUBLIC_BACKEND_URL` = публичный API URL                                                    | Coolify `nbos-web`      | `https://api.example.com`                    |
-| `DATABASE_URL` с `sslmode=require`                                                               | Neon → api              | TLS включён                                  |
-| DB role с минимальными правами                                                                   | Neon                    | Миграции — отдельной job, не owner в runtime |
-| Redis `rediss://` в prod                                                                         | Coolify / Upstash → api | Лог: `JWT denylist backed by Redis`          |
-| R2 bucket private                                                                                | Cloudflare R2           | Ключи только на api service                  |
-| `REPORT_EXPORT_SYNC_FALLBACK` unset/false                                                        | Coolify api             | Экспорт только через worker                  |
-| Cloudflare `app` + `api` proxied, SSL Full (strict)                                              | Cloudflare → Hetzner    | §2 ниже; заголовок `cf-ray` в ответах        |
-| Firewall Hetzner                                                                                 | VPS                     | 80/443 (+22 SSH); без публичных 3000/4000    |
-| Branch protection + зелёный CI на release commit                                                 | GitHub                  | lint, typecheck, test, audit, gitleaks       |
+| Шаг                                                                                              | Где                      | Проверка                                          |
+| ------------------------------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------- |
+| Сильные секреты (`AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`, `SCHEDULER_API_KEY`) | Coolify env (web + api)  | ≥32 символов; `openssl rand -base64 32`           |
+| Backup `CREDENTIALS_ENCRYPTION_KEY` (отдельно от БД)                                             | Owner / password manager | Потеря ключа = Mail + Credentials secrets мёртвые |
+| `NODE_ENV=production` на API                                                                     | Coolify `nbos-api`       | Логи старта, без Swagger                          |
+| `CORS_ORIGIN` = точный origin web                                                                | Coolify `nbos-api`       | `https://app.example.com`                         |
+| `BACKEND_URL` доступен из web-контейнера                                                         | Coolify `nbos-web`       | `http://nbos-api:4000` или публичный API URL      |
+| `NEXT_PUBLIC_BACKEND_URL` = публичный API URL                                                    | Coolify `nbos-web`       | `https://api.example.com`                         |
+| `DATABASE_URL` с `sslmode=require`                                                               | Neon → api               | TLS включён                                       |
+| DB role с минимальными правами                                                                   | Neon                     | Миграции — отдельной job, не owner в runtime      |
+| Redis `rediss://` в prod                                                                         | Coolify / Upstash → api  | Лог: `JWT denylist backed by Redis`               |
+| R2 bucket private                                                                                | Cloudflare R2            | Ключи только на api service                       |
+| `REPORT_EXPORT_SYNC_FALLBACK` unset/false                                                        | Coolify api              | Экспорт только через worker                       |
+| Cloudflare `app` + `api` proxied, SSL Full (strict)                                              | Cloudflare → Hetzner     | §2 ниже; заголовок `cf-ray` в ответах             |
+| Firewall Hetzner                                                                                 | VPS                      | 80/443 (+22 SSH); без публичных 3000/4000         |
+| Branch protection + зелёный CI на release commit                                                 | GitHub                   | lint, typecheck, test, audit, gitleaks            |
 
 Полный чеклист: [`security.todo.md` §0](../security.todo.md).
 

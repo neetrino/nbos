@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { decrypt, encrypt } from '../../../common/utils/crypto';
+import {
+  mailProviderSecretNeedsNormalization,
+  normalizeMailProviderSecret,
+} from './mail-provider-secret.normalize';
 
 export interface CorporateMailSecret {
   kind: 'corporate';
@@ -12,8 +16,6 @@ export interface CorporateMailSecret {
 export interface GmailMailSecret {
   kind: 'gmail';
   refreshToken: string;
-  accessToken?: string;
-  expiryDate?: number;
 }
 
 export type MailProviderSecret = CorporateMailSecret | GmailMailSecret;
@@ -35,7 +37,8 @@ export class MailProviderSecretStore {
   }
 
   async store(mailAccountId: string, secret: MailProviderSecret): Promise<void> {
-    const encryptedSecret = encrypt(JSON.stringify(secret), this.encryptionKey);
+    const normalized = normalizeMailProviderSecret(secret);
+    const encryptedSecret = encrypt(JSON.stringify(normalized), this.encryptionKey);
     await this.prisma.mailProviderSecret.upsert({
       where: { mailAccountId },
       create: { mailAccountId, encryptedSecret },
@@ -49,7 +52,12 @@ export class MailProviderSecretStore {
       return null;
     }
     const json = decrypt(row.encryptedSecret, this.encryptionKey);
-    return JSON.parse(json) as MailProviderSecret;
+    const parsed = JSON.parse(json) as MailProviderSecret;
+    const normalized = normalizeMailProviderSecret(parsed);
+    if (mailProviderSecretNeedsNormalization(parsed)) {
+      await this.store(mailAccountId, normalized);
+    }
+    return normalized;
   }
 
   async delete(mailAccountId: string): Promise<void> {

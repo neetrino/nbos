@@ -142,13 +142,16 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Mail
 
-| Area                | Decision                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Architecture        | Use provider adapters for Gmail OAuth and IMAP/SMTP.                                  |
-| Sync/send           | Mail sync, send, attachments and retries go through BullMQ.                           |
-| Transactional email | Use the provider selected in `docs/TECH_CARD.md` unless a formal decision changes it. |
-| Attachments         | Store attachments through Drive.                                                      |
-| Import              | Initial import limits must be approved before implementation.                         |
+| Area                | Decision                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Architecture        | Use provider adapters for Gmail OAuth and IMAP/SMTP.                                                                |
+| Sync/send           | Mail sync, send, attachments and retries go through BullMQ.                                                         |
+| Transactional email | Use the provider selected in `docs/TECH_CARD.md` unless a formal decision changes it.                               |
+| Attachments         | Store attachments through Drive.                                                                                    |
+| Import              | Initial import limits must be approved before implementation.                                                       |
+| Provider secrets    | AES-256-GCM v2 via shared `CREDENTIALS_ENCRYPTION_KEY`; `MailProviderSecret` table. Gmail blob: refresh token only. |
+| Mail body at rest   | Plaintext in PostgreSQL + RBAC (inbox UX); **not** field-encrypted for MVP.                                         |
+| Security posture    | SMB-pragmatic: no KMS/per-item DEK unless compliance requires it. See `17-Mail/06-Mail-Security-Stance.md`.         |
 
 ### Notifications
 

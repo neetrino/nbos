@@ -1,11 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-  scryptSync,
-  timingSafeEqual,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
@@ -14,16 +7,6 @@ const V2_FORMAT_PREFIX = 'v2';
 const V2_KEY_SALT = 'NBOS_CREDENTIALS_ENCRYPTION_V2';
 const SCRYPT_KEY_LENGTH = 32;
 const SCRYPT_DERIVATION_OPTIONS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
-
-/**
- * Legacy decrypt-only AES key derivation for pre-v2 `iv:authTag:ciphertext` blobs.
- * Not used for user password hashing; new encryptions use {@link deriveV2Key} (scrypt).
- * Removal requires re-encrypting existing Credential and MailProviderSecret rows.
- */
-export function deriveLegacyKey(masterKeyMaterial: string): Buffer {
-  // codeql[js/insufficient-password-hash]: Legacy AES key derivation for decrypting pre-v2 ciphertext only; not password hashing. New encryption uses v2 scrypt via deriveV2Key. Removing this requires a DB re-encryption migration.
-  return createHash('sha256').update(masterKeyMaterial).digest();
-}
 
 /** scrypt-based key derivation for v2 encryptions (not used for password hashing). */
 export function deriveV2Key(masterKeyMaterial: string): Buffer {
@@ -61,16 +44,13 @@ export function encrypt(plaintext: string, masterKeyMaterial: string): string {
   return `${V2_FORMAT_PREFIX}:${body}`;
 }
 
-/**
- * Decrypts v2 `v2:iv:authTag:ciphertext` blobs (preferred) or legacy unversioned
- * `iv:authTag:ciphertext` blobs written before v2 scrypt key derivation.
- */
+/** Decrypts v2 `v2:iv:authTag:ciphertext` blobs only. */
 export function decrypt(encrypted: string, masterKeyMaterial: string): string {
-  if (encrypted.startsWith(`${V2_FORMAT_PREFIX}:`)) {
-    const payload = encrypted.slice(V2_FORMAT_PREFIX.length + 1);
-    return decryptWithDerivedKey(payload, deriveV2Key(masterKeyMaterial));
+  if (!encrypted.startsWith(`${V2_FORMAT_PREFIX}:`)) {
+    throw new Error('Invalid encrypted format: expected v2:iv:authTag:ciphertext');
   }
-  return decryptWithDerivedKey(encrypted, deriveLegacyKey(masterKeyMaterial));
+  const payload = encrypted.slice(V2_FORMAT_PREFIX.length + 1);
+  return decryptWithDerivedKey(payload, deriveV2Key(masterKeyMaterial));
 }
 
 /**

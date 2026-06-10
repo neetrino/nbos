@@ -154,6 +154,16 @@ Mail должен соблюдать:
 - secure token/credential reference;
 - rate limit на send endpoints.
 
+**Реализация (2026-06):** см. [`06-Mail-Security-Stance.md`](./06-Mail-Security-Stance.md).
+
+| Требование                                     | Статус                                               |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| Mailbox RBAC + send отдельно от read           | ✅ `mail-access.policy`, `mail-send-access.ops`      |
+| Provider secrets encrypted (не plaintext в БД) | ✅ `MailProviderSecret`, AES-256-GCM v2              |
+| HTML sanitize                                  | ✅ `mail-html-sanitize.ts`                           |
+| Rate limit send                                | ✅ compose/reply/draft/queue                         |
+| Опционально позже (KMS, body encryption)       | Зафиксировано в `06-Mail-Security-Stance.md` §Future |
+
 ## Failure model
 
 Mail должен корректно переживать:

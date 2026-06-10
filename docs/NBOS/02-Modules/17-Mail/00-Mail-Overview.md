@@ -167,4 +167,5 @@ Health подключённых ящиков (ошибки sync/send, квоты
 - `03-Mail-Architecture.md`
 - `04-Mail-Integrations.md`
 - `05-Mail-Permissions-and-UX.md`
+- `06-Mail-Security-Stance.md` — реализованная защита MVP + опционально KMS/body encryption на будущее
 - `99-Mail-Cleanup-Register.md`

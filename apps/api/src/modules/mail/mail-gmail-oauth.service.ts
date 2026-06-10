@@ -86,12 +86,7 @@ export class MailGmailOAuthService {
     if (!refreshToken) {
       throw new BadRequestException('Google did not return a refresh token; retry with consent');
     }
-    await this.secretStore.store(accountId, {
-      kind: 'gmail',
-      refreshToken,
-      accessToken: tokens.access_token ?? undefined,
-      expiryDate: tokens.expiry_date ?? undefined,
-    });
+    await this.secretStore.store(accountId, { kind: 'gmail', refreshToken });
     await this.connectService.afterConnect(accountId, employeeId, emailAddress, 'GMAIL');
     return { redirectUrl: `${this.config.appUrl}/mail?connected=gmail` };
   }

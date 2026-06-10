@@ -11,6 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
@@ -254,6 +255,7 @@ export class MailController {
 
   @Post('threads/:threadId/messages/:messageId/queue')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({
     summary: 'Queue outbound draft for send (DRAFT → QUEUED; no SMTP or worker yet)',
@@ -274,6 +276,7 @@ export class MailController {
 
   @Post('threads/:threadId/drafts')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({ summary: 'Create outbound draft message in thread (no SMTP send)' })
   async createOutboundDraft(
