@@ -134,3 +134,16 @@ export interface MailSyncLogRow {
   detail: string | null;
   createdAt: string;
 }
+
+export interface MailBulkThreadActionFailedItem {
+  threadId: string;
+  error: string;
+}
+
+export interface MailBulkThreadActionResultDto {
+  total: number;
+  succeeded: number;
+  failed: number;
+  succeededThreadIds: string[];
+  failedItems: MailBulkThreadActionFailedItem[];
+}

@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Post,
   Query,
@@ -20,7 +22,7 @@ import {
 } from '../../common/decorators';
 import { ConnectCorporateMailboxDto } from './dto/connect-corporate-mailbox.dto';
 import { MailConnectService } from './mail-connect.service';
-import { MailGmailOAuthService } from './mail-gmail-oauth.service';
+import { MailGmailOAuthService, type GmailOAuthErrorReason } from './mail-gmail-oauth.service';
 import { MailPubSubService } from './mail-pubsub.service';
 import { MailService } from './mail.service';
 
@@ -95,11 +97,26 @@ export class MailProviderController {
   @ApiOperation({ summary: 'Gmail OAuth callback (Google redirect); exchanges code and connects' })
   async gmailOAuthCallback(
     @Query('code') code: string,
+    @Query('error') oauthError: string | undefined,
     @Query('state') state: string,
     @Res() res: Response,
   ) {
-    const { redirectUrl } = await this.gmailOAuthService.handleCallback(code, state);
-    res.redirect(redirectUrl);
+    const reasonFromQuery = this.mapGoogleOAuthError(oauthError);
+    if (reasonFromQuery !== null) {
+      res.redirect(this.gmailOAuthService.buildErrorRedirectUrl(reasonFromQuery));
+      return;
+    }
+    if (!code) {
+      res.redirect(this.gmailOAuthService.buildErrorRedirectUrl('missing_code'));
+      return;
+    }
+    try {
+      const { redirectUrl } = await this.gmailOAuthService.handleCallback(code, state);
+      res.redirect(redirectUrl);
+    } catch (error) {
+      const reason = this.mapCallbackErrorToReason(error);
+      res.redirect(this.gmailOAuthService.buildErrorRedirectUrl(reason));
+    }
   }
 
   @Public()
@@ -111,5 +128,53 @@ export class MailProviderController {
     @Body() body: { message?: { data?: string } },
   ) {
     await this.pubSubService.handlePush(token, body);
+  }
+
+  private mapGoogleOAuthError(error: string | undefined): GmailOAuthErrorReason | null {
+    if (!error) {
+      return null;
+    }
+    if (error === 'access_denied') {
+      return 'access_denied';
+    }
+    return 'unknown';
+  }
+
+  private mapCallbackErrorToReason(error: unknown): GmailOAuthErrorReason {
+    if (error instanceof BadRequestException) {
+      const response = error.getResponse();
+      const message = this.extractErrorMessage(response).toLowerCase();
+      if (message.includes('state')) {
+        return 'invalid_state';
+      }
+      if (message.includes('modify permission')) {
+        return 'insufficient_scope';
+      }
+      if (message.includes('refresh token')) {
+        return 'missing_refresh_token';
+      }
+      if (message.includes('token exchange')) {
+        return 'token_exchange_failed';
+      }
+      return 'unknown';
+    }
+    if (error instanceof InternalServerErrorException) {
+      return 'unknown';
+    }
+    return 'unknown';
+  }
+
+  private extractErrorMessage(response: string | object): string {
+    if (typeof response === 'string') {
+      return response;
+    }
+    if (!response || typeof response !== 'object') {
+      return '';
+    }
+    const maybeMessage = (response as { message?: unknown }).message;
+    if (Array.isArray(maybeMessage)) {
+      return maybeMessage.filter((item): item is string => typeof item === 'string').join(' ');
+    }
+    return typeof maybeMessage === 'string' ? maybeMessage : '';
   }
 }

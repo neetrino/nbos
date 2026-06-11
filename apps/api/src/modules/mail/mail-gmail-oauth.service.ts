@@ -19,6 +19,15 @@ interface GmailOAuthState {
   employeeId: string;
 }
 
+export type GmailOAuthErrorReason =
+  | 'missing_code'
+  | 'access_denied'
+  | 'invalid_state'
+  | 'token_exchange_failed'
+  | 'missing_refresh_token'
+  | 'insufficient_scope'
+  | 'unknown';
+
 @Injectable()
 export class MailGmailOAuthService {
   private readonly jwtSecret: string;
@@ -63,11 +72,39 @@ export class MailGmailOAuthService {
     });
   }
 
-  async handleCallback(code: string, state: string): Promise<{ redirectUrl: string }> {
+  buildSuccessRedirectUrl(accountId: string): string {
+    return this.buildMailRedirectUrl({
+      connected: 'gmail',
+      accountId,
+    });
+  }
+
+  buildErrorRedirectUrl(reason: GmailOAuthErrorReason): string {
+    return this.buildMailRedirectUrl({
+      connected: 'gmail',
+      oauth: 'error',
+      reason,
+    });
+  }
+
+  private buildMailRedirectUrl(params: Record<string, string>): string {
+    const url = new URL('/mail', this.config.appUrl);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value.trim().length > 0) {
+        url.searchParams.set(key, value);
+      }
+    });
+    return url.toString();
+  }
+
+  async handleCallback(
+    code: string,
+    state: string,
+  ): Promise<{ redirectUrl: string; accountId: string }> {
     this.requireConfigured();
     const employeeId = this.verifyState(state);
     const client = this.createOAuthClient();
-    const { tokens } = await client.getToken(code);
+    const tokens = await this.exchangeCodeForTokens(client, code);
     client.setCredentials(tokens);
     const grantedScopes = parseOAuthGrantedScopes(tokens.scope, GMAIL_SCOPES);
     if (!hasGmailModifyScope(grantedScopes)) {
@@ -93,7 +130,10 @@ export class MailGmailOAuthService {
       expiryDate: tokens.expiry_date ?? undefined,
     });
     await this.connectService.afterConnect(accountId, employeeId, emailAddress, 'GMAIL');
-    return { redirectUrl: `${this.config.appUrl}/mail?connected=gmail` };
+    return {
+      accountId,
+      redirectUrl: this.buildSuccessRedirectUrl(accountId),
+    };
   }
 
   private verifyState(state: string): string {
@@ -152,5 +192,17 @@ export class MailGmailOAuthService {
       select: { id: true },
     });
     return created.id;
+  }
+
+  private async exchangeCodeForTokens(
+    client: ReturnType<MailGmailOAuthService['createOAuthClient']>,
+    code: string,
+  ) {
+    try {
+      const { tokens } = await client.getToken(code);
+      return tokens;
+    } catch {
+      throw new BadRequestException('OAuth token exchange failed');
+    }
   }
 }

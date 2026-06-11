@@ -21,7 +21,7 @@ import {
 } from './mail-thread-mark-read-provider.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
-import type { MailThreadDetailDto } from './mail.types';
+import type { MailBulkThreadActionResultDto, MailThreadDetailDto } from './mail.types';
 
 @Injectable()
 export class MailThreadCommandService {
@@ -128,6 +128,66 @@ export class MailThreadCommandService {
       viewScope: accessScope,
       threadId,
     });
+  }
+
+  async bulkMarkThreadsRead(
+    employeeId: string,
+    accessScope: string,
+    threadIds: string[],
+  ): Promise<MailBulkThreadActionResultDto> {
+    return this.runBulkThreadAction(threadIds, async (threadId) => {
+      await this.markThreadRead(employeeId, accessScope, threadId);
+    });
+  }
+
+  async bulkMarkThreadsUnread(
+    employeeId: string,
+    accessScope: string,
+    threadIds: string[],
+  ): Promise<MailBulkThreadActionResultDto> {
+    return this.runBulkThreadAction(threadIds, async (threadId) => {
+      await this.markThreadUnread(employeeId, accessScope, threadId);
+    });
+  }
+
+  private async runBulkThreadAction(
+    threadIds: string[],
+    runForThread: (threadId: string) => Promise<void>,
+  ): Promise<MailBulkThreadActionResultDto> {
+    const uniqueThreadIds = [...new Set(threadIds)];
+    const settled = await Promise.allSettled(
+      uniqueThreadIds.map(async (threadId) => {
+        await runForThread(threadId);
+        return threadId;
+      }),
+    );
+    const succeededThreadIds: string[] = [];
+    const failedItems: MailBulkThreadActionResultDto['failedItems'] = [];
+    settled.forEach((result, index) => {
+      const threadId = uniqueThreadIds[index];
+      if (result.status === 'fulfilled') {
+        succeededThreadIds.push(threadId);
+        return;
+      }
+      failedItems.push({
+        threadId,
+        error: this.resolveBulkFailureMessage(result.reason),
+      });
+    });
+    return {
+      total: uniqueThreadIds.length,
+      succeeded: succeededThreadIds.length,
+      failed: failedItems.length,
+      succeededThreadIds,
+      failedItems,
+    };
+  }
+
+  private resolveBulkFailureMessage(error: unknown): string {
+    if (error instanceof Error && error.message.trim().length > 0) {
+      return error.message;
+    }
+    return 'Unknown error';
   }
 
   /**
