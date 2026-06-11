@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from 'react';
 import { FolderOpen, KeyRound, Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared';
@@ -117,11 +116,7 @@ export function CredentialVaultFoldersView({
           const raw = event.dataTransfer.getData(CREDENTIAL_VAULT_DRAG_MIME);
           const parsed = parseCredentialVaultDragPayload(raw);
           if (!parsed?.credentialIds.length) return;
-          void Promise.resolve(
-            onMoveCredentialsToFolder([...parsed.credentialIds], folderId),
-          ).catch((error: unknown) => {
-            toast.error(error instanceof Error ? error.message : 'Move to folder failed');
-          });
+          void onMoveCredentialsToFolder([...parsed.credentialIds], folderId);
         },
       };
     },

@@ -18,7 +18,9 @@ import {
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 import {
+  attachCredentialVaultDragCount,
   CREDENTIAL_VAULT_DRAG_MIME,
+  detachCredentialVaultDragCount,
   stringifyCredentialVaultDragPayload,
   type CredentialVaultCardDragConfig,
 } from '@/features/credentials/utils/credential-vault-drag';
@@ -29,24 +31,6 @@ const VAULT_CARD_WRAPPER_CLASS =
   'group/card relative z-0 hover:z-30 focus-within:z-30 has-[[data-credential-vault-action]:hover]:z-30';
 const VAULT_CARD_BODY_CLASS = 'flex h-full min-h-0 flex-1 flex-col gap-1.5 p-2.5 pl-3';
 const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
-const VAULT_DRAG_COUNT_MARKER = 'data-credential-vault-drag-count';
-
-function attachCredentialVaultDragCount(source: HTMLElement, count: number): void {
-  source.classList.remove('overflow-hidden');
-  source.classList.add('overflow-visible');
-  const badge = document.createElement('span');
-  badge.setAttribute(VAULT_DRAG_COUNT_MARKER, 'true');
-  badge.className =
-    'bg-primary text-primary-foreground ring-background pointer-events-none absolute -top-3 -right-3 z-30 flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-sm font-bold tabular-nums shadow-md ring-2';
-  badge.textContent = String(count);
-  source.appendChild(badge);
-}
-
-function detachCredentialVaultDragCount(source: HTMLElement): void {
-  source.querySelector(`[${VAULT_DRAG_COUNT_MARKER}]`)?.remove();
-  source.classList.add('overflow-hidden');
-  source.classList.remove('overflow-visible');
-}
 
 export interface CredentialVaultCardProps {
   credential: CredentialListItem;
@@ -88,9 +72,7 @@ export function CredentialVaultCard({
   });
 
   return (
-    <div
-      className={cn(VAULT_CARD_WRAPPER_CLASS, draggable && 'cursor-grab active:cursor-grabbing')}
-    >
+    <div className={VAULT_CARD_WRAPPER_CLASS}>
       <CredentialVaultCardHoverActions
         credentialId={credential.id}
         url={credential.url}

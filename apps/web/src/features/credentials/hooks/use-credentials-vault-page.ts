@@ -227,7 +227,6 @@ export function useCredentialsVaultPage() {
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Move to folder failed');
-        throw error;
       } finally {
         setFolderDropBusy(false);
       }

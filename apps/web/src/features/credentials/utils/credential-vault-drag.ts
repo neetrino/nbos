@@ -33,3 +33,23 @@ export type CredentialFolderDropHandlers = {
   onDragLeave: (event: DragEvent) => void;
   onDrop: (event: DragEvent) => void;
 };
+
+const VAULT_DRAG_COUNT_MARKER = 'data-credential-vault-drag-count';
+
+/** Temporary count badge on the draggable card surface (native drag ghost). */
+export function attachCredentialVaultDragCount(source: HTMLElement, count: number): void {
+  source.classList.remove('overflow-hidden');
+  source.classList.add('overflow-visible');
+  const badge = document.createElement('span');
+  badge.setAttribute(VAULT_DRAG_COUNT_MARKER, 'true');
+  badge.className =
+    'bg-primary text-primary-foreground ring-background pointer-events-none absolute -top-3 -right-3 z-30 flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-sm font-bold tabular-nums shadow-md ring-2';
+  badge.textContent = String(count);
+  source.appendChild(badge);
+}
+
+export function detachCredentialVaultDragCount(source: HTMLElement): void {
+  source.querySelector(`[${VAULT_DRAG_COUNT_MARKER}]`)?.remove();
+  source.classList.add('overflow-hidden');
+  source.classList.remove('overflow-visible');
+}
