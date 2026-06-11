@@ -18,6 +18,7 @@ export interface CredentialsVaultPageOverlaysProps {
   sheetInitialItem: CredentialListItem | null;
   createPresetCategory: string | undefined;
   initialFolderId?: string | null;
+  projectId?: string | null;
   folderOptions: CredentialFolder[];
   deleteTarget: CredentialDeleteTarget | null;
   purgeTarget: CredentialDeleteTarget | null;
@@ -39,6 +40,7 @@ export function CredentialsVaultPageOverlays({
   sheetInitialItem,
   createPresetCategory,
   initialFolderId,
+  projectId,
   folderOptions,
   deleteTarget,
   purgeTarget,
@@ -60,6 +62,7 @@ export function CredentialsVaultPageOverlays({
         credentialId={sheetCredentialId}
         initialItem={sheetInitialItem}
         vaultScope={activeTab}
+        projectId={projectId ?? undefined}
         initialCategory={createPresetCategory}
         initialFolderId={sheetCredentialId ? undefined : initialFolderId}
         folderOptions={folderOptions}

@@ -53,6 +53,7 @@ function CredentialsVaultPageContent() {
     void vault.fetchCredentials({ silent: true });
     void vault.fetchFolders();
     void vault.fetchProjectShells();
+    void vault.fetchSheetFolderOptions();
   };
 
   return (
@@ -236,7 +237,8 @@ function CredentialsVaultPageContent() {
         sheetInitialItem={vault.sheetInitialItem}
         createPresetCategory={vault.createPresetCategory}
         initialFolderId={vault.activeFolderId}
-        folderOptions={vault.folders}
+        projectId={vault.isProjectFoldersMode ? vault.activeProjectId : null}
+        folderOptions={vault.sheetFolderOptions}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
         tileCopyTarget={vault.tileCopyTarget}

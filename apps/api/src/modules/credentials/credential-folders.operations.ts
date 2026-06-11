@@ -198,6 +198,43 @@ export function normalizeCredentialFolderIds(input: {
   return undefined;
 }
 
+function folderScopeForAccessLevel(accessLevel: string): string | null {
+  switch (accessLevel) {
+    case 'PERSONAL':
+      return 'MY';
+    case 'DEPARTMENT':
+      return 'TEAM';
+    case 'PROJECT_TEAM':
+      return 'PROJECT';
+    case 'SECRET':
+      return 'SECRET';
+    default:
+      return null;
+  }
+}
+
+function assertFoldersMatchCredentialScope(
+  credential: { accessLevel: string; projectId: string | null },
+  folders: { id: string; scope: string; projectId: string | null }[],
+) {
+  const expectedScope = folderScopeForAccessLevel(credential.accessLevel);
+  if (!expectedScope) {
+    throw new BadRequestException('Credentials of this access level cannot use folders');
+  }
+  for (const folder of folders) {
+    if (folder.scope !== expectedScope) {
+      throw new BadRequestException('Folder scope does not match credential section');
+    }
+    if (
+      expectedScope === 'PROJECT' &&
+      credential.projectId &&
+      folder.projectId !== credential.projectId
+    ) {
+      throw new BadRequestException('Folder belongs to a different project');
+    }
+  }
+}
+
 export async function replaceCredentialFolderMemberships(
   runtime: CredentialsRuntime,
   credentialId: string,
@@ -215,18 +252,19 @@ export async function replaceCredentialFolderMemberships(
         'edit',
       )),
     },
-    select: { id: true, projectId: true },
+    select: { id: true, projectId: true, accessLevel: true },
   });
   if (!visible) throw new NotFoundException(`Credential ${credentialId} not found`);
 
   if (folderIds.length > 0) {
     const folders = await runtime.prisma.credentialFolder.findMany({
       where: { id: { in: folderIds }, archivedAt: null },
-      select: { id: true },
+      select: { id: true, scope: true, projectId: true },
     });
     if (folders.length !== folderIds.length) {
       throw new BadRequestException('One or more folders are invalid');
     }
+    assertFoldersMatchCredentialScope(visible, folders);
   }
 
   await runtime.prisma.$transaction([

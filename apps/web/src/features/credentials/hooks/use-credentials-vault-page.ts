@@ -60,6 +60,7 @@ export function useCredentialsVaultPage() {
   const [foldersLoading, setFoldersLoading] = useState(false);
   const [projectShells, setProjectShells] = useState<CredentialProjectShell[]>([]);
   const [projectShellsLoading, setProjectShellsLoading] = useState(false);
+  const [sheetFolderOptions, setSheetFolderOptions] = useState<CredentialFolder[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
@@ -176,6 +177,20 @@ export function useCredentialsVaultPage() {
   useEffect(() => {
     void fetchProjectShells();
   }, [fetchProjectShells]);
+
+  const fetchSheetFolderOptions = useCallback(async () => {
+    try {
+      const data = await credentialsApi.listFolders({ scope: 'ALL' });
+      setSheetFolderOptions(data.folders);
+    } catch {
+      setSheetFolderOptions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+    void fetchSheetFolderOptions();
+  }, [fetchSheetFolderOptions, sheetOpen]);
 
   const openCreate = useCallback(
     (category?: string) => {
@@ -438,6 +453,8 @@ export function useCredentialsVaultPage() {
     archiveFolder,
     fetchFolders,
     fetchProjectShells,
+    fetchSheetFolderOptions,
+    sheetFolderOptions,
     search,
     setSearch,
     filters,

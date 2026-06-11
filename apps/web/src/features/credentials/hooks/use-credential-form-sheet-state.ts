@@ -30,6 +30,7 @@ import {
   type CredentialFormRollbackState,
 } from '@/features/credentials/utils/credential-form-sheet-snapshot';
 import { toast } from 'sonner';
+import { filterCredentialFoldersForContext } from '@/features/credentials/utils/credential-folder-scope';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
 export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
@@ -94,7 +95,38 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const categoryLocked = categoryOptions.length === 1;
   const categoryLabel = CREDENTIAL_CATEGORIES.find((c) => c.value === category)?.label ?? category;
-  const folderEditable = (props.folderOptions?.length ?? 0) > 0 || initialFolderId !== undefined;
+
+  const scopedFolderOptions = useMemo(
+    () =>
+      filterCredentialFoldersForContext(props.folderOptions ?? [], {
+        isCreate,
+        vaultScope: props.vaultScope,
+        accessLevel,
+        projectId: detail?.projectId ?? props.projectId ?? initialItem?.project?.id ?? null,
+      }),
+    [
+      props.folderOptions,
+      props.vaultScope,
+      props.projectId,
+      isCreate,
+      accessLevel,
+      detail?.projectId,
+      initialItem?.project?.id,
+    ],
+  );
+
+  const folderEditable = scopedFolderOptions.length > 0 || initialFolderId !== undefined;
+
+  useEffect(() => {
+    if (isCreate || !open) return;
+    if (
+      folderId &&
+      scopedFolderOptions.length > 0 &&
+      !scopedFolderOptions.some((folder) => folder.id === folderId)
+    ) {
+      setFolderId(null);
+    }
+  }, [folderId, isCreate, open, scopedFolderOptions]);
 
   const resetCreate = useCallback(() => {
     setName(initialName ?? '');
@@ -573,6 +605,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     folderId,
     setFolderId,
     folderEditable,
+    scopedFolderOptions,
     isFavorite,
     toggleFavorite,
     open,
