@@ -55,10 +55,10 @@ export function CredentialFolderCreateButton({
         type="button"
         size="sm"
         variant="outline"
-        className="h-7 rounded-full px-3 text-xs"
+        className="h-8 rounded-full border-amber-500/45 bg-amber-500/12 px-4 text-sm text-amber-800 hover:bg-amber-500/20 dark:text-amber-300"
         onClick={() => setOpen(true)}
       >
-        <FolderPlus className="size-3.5" aria-hidden />
+        <FolderPlus className="size-4" aria-hidden />
         Folder
       </Button>
 
