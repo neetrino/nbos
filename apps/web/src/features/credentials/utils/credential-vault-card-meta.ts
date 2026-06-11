@@ -59,6 +59,13 @@ const CRITICALITY_ICONS: Record<string, LucideIcon> = {
   CRITICAL: OctagonAlert,
 };
 
+const CRITICALITY_ACCENT_BAR: Record<string, string> = {
+  LOW: 'bg-gray-400',
+  MEDIUM: 'bg-blue-500',
+  HIGH: 'bg-amber-500',
+  CRITICAL: 'bg-red-600',
+};
+
 const ACCESS_ICONS: Record<string, LucideIcon> = {
   SECRET: Lock,
   PROJECT_TEAM: FolderKanban,
@@ -81,6 +88,11 @@ export function credentialAccessIcon(accessLevel: string): LucideIcon {
 
 export function credentialCriticalityIcon(criticality: string): LucideIcon {
   return CRITICALITY_ICONS[criticality] ?? AlertTriangle;
+}
+
+/** Left card stripe — criticality indicator on vault cards. */
+export function credentialCriticalityAccentBarClass(criticality: string): string {
+  return CRITICALITY_ACCENT_BAR[criticality] ?? CRITICALITY_ACCENT_BAR.LOW;
 }
 
 const CREDENTIAL_TYPE_ICONS: Record<string, LucideIcon> = {
@@ -124,7 +136,9 @@ export function resolvePrimaryCredentialFolder(credential: CredentialListItem) {
 
 export function buildCredentialVaultCardMetaBadges(
   credential: CredentialListItem,
+  options?: { includeCriticality?: boolean },
 ): CredentialVaultMetaBadge[] {
+  const includeCriticality = options?.includeCriticality ?? true;
   const category = getCredentialCategoryMeta(credential.category);
   const criticality = getCredentialCriticality(credential.criticality);
   const access = getAccessLevel(credential.accessLevel);
@@ -139,7 +153,7 @@ export function buildCredentialVaultCardMetaBadges(
     },
   ];
 
-  if (criticality) {
+  if (includeCriticality && criticality) {
     items.push({
       key: 'criticality',
       label: criticality.label,

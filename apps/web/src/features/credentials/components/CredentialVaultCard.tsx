@@ -5,13 +5,16 @@ import { cn } from '@/lib/utils';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
 import { CredentialVaultCardMetaRow } from '@/features/credentials/components/credential-vault-card-meta-row';
 import { CredentialVaultCardActionMenu } from '@/features/credentials/components/credential-vault-card-action-menu';
-import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
+import { getCredentialCriticality } from '@/features/credentials/constants/credentials';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
-import { buildCredentialVaultCardMetaBadges } from '@/features/credentials/utils/credential-vault-card-meta';
+import {
+  buildCredentialVaultCardMetaBadges,
+  credentialCriticalityAccentBarClass,
+} from '@/features/credentials/utils/credential-vault-card-meta';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
@@ -52,8 +55,10 @@ export function CredentialVaultCard({
   onRequestArchive,
   canArchive = false,
 }: CredentialVaultCardProps) {
-  const category = getCredentialCategoryMeta(credential.category);
-  const metaItems = buildCredentialVaultCardMetaBadges(credential);
+  const criticalityMeta = getCredentialCriticality(credential.criticality);
+  const metaItems = buildCredentialVaultCardMetaBadges(credential, {
+    includeCriticality: false,
+  });
 
   return (
     <KanbanCardShell
@@ -78,8 +83,12 @@ export function CredentialVaultCard({
       }}
     >
       <span
-        className={cn('absolute top-0 bottom-0 left-0 w-0.5', category.accentBarClass)}
-        aria-hidden
+        className={cn(
+          'absolute top-0 bottom-0 left-0 w-0.5',
+          credentialCriticalityAccentBarClass(credential.criticality),
+        )}
+        title={criticalityMeta?.label}
+        aria-label={criticalityMeta ? `Criticality: ${criticalityMeta.label}` : 'Criticality'}
       />
       {selectionEnabled && onToggleSelected ? (
         <div
