@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
 import {
@@ -165,7 +166,23 @@ export function CredentialFormSheetHeader({
             ) : null}
           </div>
 
-          <div className="ml-auto shrink-0">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            {!isCreate && onToggleFavorite ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'text-muted-foreground size-8 shrink-0',
+                  isFavorite && 'text-amber-500 hover:text-amber-600',
+                )}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                onClick={onToggleFavorite}
+              >
+                <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
+              </Button>
+            ) : null}
             <CredentialFormCategoryMenu
               category={category}
               categoryLabel={categoryLabel}
@@ -179,15 +196,6 @@ export function CredentialFormSheetHeader({
 
       {!isCreate && credentialId ? (
         <DetailSheetSettingsMenu>
-          {onToggleFavorite ? (
-            <DropdownMenuItem className="gap-2" onClick={onToggleFavorite}>
-              <Star
-                className={cn('size-4', isFavorite ? 'fill-current text-amber-500' : null)}
-                aria-hidden
-              />
-              {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-            </DropdownMenuItem>
-          ) : null}
           <DropdownMenuItem onClick={onToggleSettings}>
             {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
           </DropdownMenuItem>
