@@ -47,6 +47,8 @@ export interface CredentialVaultFoldersViewProps {
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   onSetFavorite?: (id: string, favorite: boolean) => void;
+  onRequestArchive?: (id: string, name: string) => void;
+  canArchive?: boolean;
   onCopyText: (text: string) => void;
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   secretFlashCredentialId?: string | null;
@@ -67,6 +69,8 @@ export function CredentialVaultFoldersView({
   onCreateOpen,
   onOpenCredential,
   onSetFavorite,
+  onRequestArchive,
+  canArchive = false,
   onCopyText,
   onCopySecret,
   secretFlashCredentialId,
@@ -146,6 +150,8 @@ export function CredentialVaultFoldersView({
                     variant="grid"
                     onOpen={onOpenCredential}
                     onSetFavorite={onSetFavorite}
+                    onRequestArchive={onRequestArchive}
+                    canArchive={canArchive}
                     onCopyText={onCopyText}
                     onCopySecret={onCopySecret}
                     secretFlashCredentialId={secretFlashCredentialId}

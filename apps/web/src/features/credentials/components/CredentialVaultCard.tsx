@@ -33,6 +33,8 @@ export interface CredentialVaultCardProps {
   selected?: boolean;
   onToggleSelected?: () => void;
   onSetFavorite?: (id: string, favorite: boolean) => void;
+  onRequestArchive?: (id: string, name: string) => void;
+  canArchive?: boolean;
 }
 
 export function CredentialVaultCard({
@@ -47,6 +49,8 @@ export function CredentialVaultCard({
   selected = false,
   onToggleSelected,
   onSetFavorite,
+  onRequestArchive,
+  canArchive = false,
 }: CredentialVaultCardProps) {
   const category = getCredentialCategoryMeta(credential.category);
   const metaItems = buildCredentialVaultCardMetaBadges(credential);
@@ -97,19 +101,23 @@ export function CredentialVaultCard({
           />
         </div>
       ) : null}
-      {onSetFavorite ? (
-        <CredentialVaultCardActionMenu
-          isFavorite={Boolean(credential.isFavorite)}
-          credentialName={credential.name}
-          selectionEnabled={selectionEnabled}
-          onSetFavorite={(favorite) => onSetFavorite(credential.id, favorite)}
-        />
-      ) : null}
+      <CredentialVaultCardActionMenu
+        credentialId={credential.id}
+        credentialName={credential.name}
+        url={credential.url}
+        isFavorite={Boolean(credential.isFavorite)}
+        selectionEnabled={selectionEnabled}
+        canArchive={canArchive}
+        onSetFavorite={
+          onSetFavorite ? (favorite) => onSetFavorite(credential.id, favorite) : undefined
+        }
+        onRequestArchive={
+          onRequestArchive ? () => onRequestArchive(credential.id, credential.name) : undefined
+        }
+      />
       <div className={VAULT_CARD_BODY_CLASS}>
         <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-          <p className={cn(VAULT_CARD_TITLE_CLASS, onSetFavorite ? 'pr-8' : null)}>
-            {credential.name}
-          </p>
+          <p className={cn(VAULT_CARD_TITLE_CLASS, 'pr-8')}>{credential.name}</p>
           <CredentialVaultPreviewStrip
             className="min-h-0 flex-1"
             credential={credential}

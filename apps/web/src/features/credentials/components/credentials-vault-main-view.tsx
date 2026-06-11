@@ -78,6 +78,7 @@ export function CredentialsVaultMainView({
   onSetFavorite,
   onCopyText,
   onCopySecret,
+  onRequestDelete,
   folders = [],
   foldersLoading = false,
   activeFolderId = null,
@@ -95,6 +96,8 @@ export function CredentialsVaultMainView({
     [credentials, activeCategory, quickCategoryChips],
   );
 
+  const canArchiveCredential = showCreate && vaultListScope === 'active';
+
   if (viewMode === 'tiles') {
     return (
       <CredentialVaultTiles
@@ -104,6 +107,8 @@ export function CredentialsVaultMainView({
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
+        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
+        canArchive={canArchiveCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -128,6 +133,8 @@ export function CredentialsVaultMainView({
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
+        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
+        canArchive={canArchiveCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -149,6 +156,8 @@ export function CredentialsVaultMainView({
         onCreateInCategory={onCreateInCategory}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
+        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
+        canArchive={canArchiveCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
