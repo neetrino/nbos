@@ -1,14 +1,17 @@
 'use client';
 
-import { Folder, FolderKanban, KeyRound, Shield, Star } from 'lucide-react';
+import { FolderKanban, KeyRound, Star } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getAccessLevel } from '@/features/credentials/constants/credentials';
 import {
-  getAccessLevel,
-  getCredentialCriticality,
-} from '@/features/credentials/constants/credentials';
+  buildCredentialVaultCardMetaBadges,
+  resolvePrimaryCredentialFolder,
+} from '@/features/credentials/utils/credential-vault-card-meta';
+import { CredentialVaultMetaBadge } from '@/features/credentials/components/credential-vault-card-meta-row';
+import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
 import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
@@ -40,11 +43,15 @@ export function CredentialVaultTableRowCells({
   onSetFavorite,
 }: CredentialVaultTableRowCellsProps) {
   const access = getAccessLevel(cred.accessLevel);
-  const criticality = getCredentialCriticality(cred.criticality);
+  const category = getCredentialCategoryMeta(cred.category);
+  const metaBadges = buildCredentialVaultCardMetaBadges(cred);
+  const categoryBadge = metaBadges.find((item) => item.key === 'category');
+  const criticalityBadge = metaBadges.find((item) => item.key === 'criticality');
+  const accessBadge = metaBadges.find((item) => item.key === 'access');
+  const folderBadge = metaBadges.find((item) => item.key === 'folder');
   const healthBadge = credentialHealthBadge(cred.health);
   const preview = buildCredentialVaultPreview(cred);
-  const primaryFolder =
-    cred.folders?.find((folder) => folder.isPrimary) ?? cred.folders?.[0] ?? null;
+  const primaryFolder = resolvePrimaryCredentialFolder(cred);
 
   const renderPreviewCell = (itemIndex: number) => {
     const item = preview.items[itemIndex];
@@ -102,15 +109,9 @@ export function CredentialVaultTableRowCells({
           <KeyRound size={14} className="text-muted-foreground" />
           <span className="font-medium">{cred.name}</span>
         </div>
-        {primaryFolder ? (
-          <div
-            className={cn(
-              'text-muted-foreground mt-1 flex min-w-0 items-center gap-1 text-[11px]',
-              onSetFavorite ? 'pl-16' : 'pl-6',
-            )}
-          >
-            <Folder className="size-3 shrink-0" aria-hidden />
-            <span className="truncate">{primaryFolder.name}</span>
+        {primaryFolder && folderBadge ? (
+          <div className={cn('mt-1', onSetFavorite ? 'pl-16' : 'pl-6')}>
+            <CredentialVaultMetaBadge item={folderBadge} />
           </div>
         ) : null}
       </TableCell>
@@ -120,20 +121,21 @@ export function CredentialVaultTableRowCells({
       <TableCell className="max-w-[140px]" onClick={(e) => e.stopPropagation()}>
         {renderPreviewCell(1)}
       </TableCell>
-      <TableCell className="text-xs">{cred.category}</TableCell>
+      <TableCell>
+        {categoryBadge ? (
+          <CredentialVaultMetaBadge item={categoryBadge} className="text-xs" />
+        ) : (
+          <span className="text-xs">{category.label}</span>
+        )}
+      </TableCell>
       <TableCell className="text-muted-foreground text-xs">
         {formatCredentialTypeLabel(cred.credentialType)}
       </TableCell>
       <TableCell>
-        {criticality && <StatusBadge label={criticality.label} variant={criticality.variant} />}
+        {criticalityBadge ? <CredentialVaultMetaBadge item={criticalityBadge} /> : null}
       </TableCell>
       <TableCell>
-        {access && (
-          <div className="flex items-center gap-1">
-            <Shield size={11} className="text-muted-foreground" />
-            <StatusBadge label={access.label} variant={access.variant} />
-          </div>
-        )}
+        {access && accessBadge ? <CredentialVaultMetaBadge item={accessBadge} /> : null}
       </TableCell>
       <TableCell>
         {cred.project ? (

@@ -1,62 +1,26 @@
 'use client';
 
-import { Fragment } from 'react';
-import { Folder, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
-import { StatusBadge, type StatusVariant } from '@/components/shared/StatusBadge';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
+import { CredentialVaultCardMetaRow } from '@/features/credentials/components/credential-vault-card-meta-row';
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
-import {
-  formatCredentialAccessLabel,
-  getCredentialCriticality,
-} from '@/features/credentials/constants/credentials';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
+import { buildCredentialVaultCardMetaBadges } from '@/features/credentials/utils/credential-vault-card-meta';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
 
-const VAULT_CARD_BADGE_CLASS = 'h-4 shrink-0 px-1.5 py-0 text-[10px] leading-none';
-
 const VAULT_CARD_BODY_CLASS = 'flex h-full min-h-0 flex-1 flex-col gap-1.5 p-2.5 pl-3';
 
 const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
-
-interface VaultCardMetaItem {
-  key: string;
-  label: string;
-  variant: StatusVariant;
-}
-
-function CredentialVaultCardMetaRow({ items }: { items: VaultCardMetaItem[] }) {
-  return (
-    <div className="mt-auto flex min-w-0 shrink-0 flex-wrap items-center gap-1 pt-0.5">
-      {items.map((item, index) => (
-        <Fragment key={item.key}>
-          {index > 0 ? (
-            <span
-              className="text-muted-foreground/45 shrink-0 text-[10px] leading-none select-none"
-              aria-hidden
-            >
-              |
-            </span>
-          ) : null}
-          <StatusBadge
-            label={item.label}
-            variant={item.variant}
-            className={VAULT_CARD_BADGE_CLASS}
-          />
-        </Fragment>
-      ))}
-    </div>
-  );
-}
 
 export interface CredentialVaultCardProps {
   credential: CredentialListItem;
@@ -86,22 +50,7 @@ export function CredentialVaultCard({
   onSetFavorite,
 }: CredentialVaultCardProps) {
   const category = getCredentialCategoryMeta(credential.category);
-  const criticality = getCredentialCriticality(credential.criticality);
-  const accessLabel = formatCredentialAccessLabel(credential.accessLevel);
-
-  const metaItems: VaultCardMetaItem[] = [
-    { key: 'category', label: category.label, variant: category.badgeVariant },
-  ];
-  if (criticality) {
-    metaItems.push({
-      key: 'criticality',
-      label: criticality.label,
-      variant: criticality.variant,
-    });
-  }
-  metaItems.push({ key: 'access', label: accessLabel, variant: 'gray' });
-  const primaryFolder =
-    credential.folders?.find((folder) => folder.isPrimary) ?? credential.folders?.[0] ?? null;
+  const metaItems = buildCredentialVaultCardMetaBadges(credential);
 
   return (
     <KanbanCardShell
@@ -187,12 +136,6 @@ export function CredentialVaultCard({
             onCopySecret={onCopySecret}
           />
         </div>
-        {primaryFolder ? (
-          <div className="text-muted-foreground flex min-w-0 items-center gap-1 text-[10px] leading-none">
-            <Folder className="size-3 shrink-0" aria-hidden />
-            <span className="truncate">{primaryFolder.name}</span>
-          </div>
-        ) : null}
         <CredentialVaultCardMetaRow items={metaItems} />
       </div>
     </KanbanCardShell>
