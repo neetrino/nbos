@@ -20,7 +20,8 @@ import type { CredentialSecretField } from '@/lib/api/credentials';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
 
-const VAULT_CARD_WRAPPER_CLASS = 'group/card relative z-0 hover:z-30 focus-within:z-30';
+const VAULT_CARD_WRAPPER_CLASS =
+  'group/card relative z-0 hover:z-30 focus-within:z-30 has-[[data-credential-vault-action]:hover]:z-30';
 const VAULT_CARD_BODY_CLASS = 'flex h-full min-h-0 flex-1 flex-col gap-1.5 p-2.5 pl-3';
 const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
 
