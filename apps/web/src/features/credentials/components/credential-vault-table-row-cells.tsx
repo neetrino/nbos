@@ -93,10 +93,10 @@ export function CredentialVaultTableRowCells({
               data-credential-vault-action
               aria-label={cred.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               className={cn(
-                'size-7 shrink-0',
+                'size-7 shrink-0 transition-opacity',
                 cred.isFavorite
-                  ? 'text-amber-500 hover:text-amber-600'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'text-amber-500 opacity-100 hover:text-amber-600'
+                  : 'text-muted-foreground opacity-0 group-hover:opacity-100',
               )}
               onClick={(event) => {
                 event.stopPropagation();

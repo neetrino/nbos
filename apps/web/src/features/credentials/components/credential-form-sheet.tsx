@@ -68,6 +68,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     confirmPendingTypeChange,
     showSettings,
     setShowSettings,
+    isFavorite,
+    toggleFavorite,
     dirty,
     handleSave,
     loadDetail,
@@ -122,6 +124,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               criticality={criticality}
               showSettings={showSettings}
               onToggleSettings={() => setShowSettings((v) => !v)}
+              isFavorite={isFavorite}
+              onToggleFavorite={() => void toggleFavorite()}
               onRequestArchive={onRequestArchive}
               resetKey={headerResetKey}
             />

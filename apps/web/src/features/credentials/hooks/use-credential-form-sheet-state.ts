@@ -69,6 +69,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [nextRotationAt, setNextRotationAt] = useState('');
   const [manualGrants, setManualGrants] = useState<CredentialManualGrant[]>([]);
   const [folderId, setFolderId] = useState<string | null>(initialFolderId ?? null);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
   const [stepUpField, setStepUpField] = useState<CredentialSecretField | null>(null);
@@ -114,6 +115,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setNextRotationAt('');
     setManualGrants([]);
     setFolderId(initialFolderId ?? null);
+    setIsFavorite(false);
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
@@ -354,6 +356,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setManualGrants(grants);
       const primaryFolder = d.folders?.find((folder) => folder.isPrimary) ?? d.folders?.[0];
       setFolderId(primaryFolder?.id ?? null);
+      setIsFavorite(d.isFavorite ?? false);
       setRevealed({});
       setOrphanedSecretsAcknowledged(false);
       applyFormSnapshot({
@@ -503,6 +506,22 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   dirtyRef.current = dirty;
 
+  const toggleFavorite = useCallback(async () => {
+    if (!credentialId) return;
+    const next = !isFavorite;
+    setIsFavorite(next);
+    setDetail((current) => (current ? { ...current, isFavorite: next } : current));
+    try {
+      await credentialsApi.setFavorite(credentialId, next);
+      toast.success(next ? 'Added to favorites' : 'Removed from favorites');
+      props.onSaved?.();
+    } catch {
+      setIsFavorite(!next);
+      setDetail((current) => (current ? { ...current, isFavorite: !next } : current));
+      toast.error('Favorite could not be updated');
+    }
+  }, [credentialId, isFavorite, props]);
+
   return {
     isCreate,
     credentialId,
@@ -554,6 +573,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     folderId,
     setFolderId,
     folderEditable,
+    isFavorite,
+    toggleFavorite,
     open,
     detail,
     revealed,

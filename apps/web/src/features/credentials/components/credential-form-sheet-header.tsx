@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
@@ -42,6 +42,8 @@ export interface CredentialFormSheetHeaderProps {
   criticality: string;
   showSettings: boolean;
   onToggleSettings: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
   onRequestArchive?: (id: string, name: string) => void;
   resetKey: string;
 }
@@ -60,6 +62,8 @@ export function CredentialFormSheetHeader({
   criticality,
   showSettings,
   onToggleSettings,
+  isFavorite = false,
+  onToggleFavorite,
   onRequestArchive,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
@@ -173,18 +177,29 @@ export function CredentialFormSheetHeader({
         </div>
       </div>
 
-      {!isCreate && credentialId && onRequestArchive ? (
+      {!isCreate && credentialId ? (
         <DetailSheetSettingsMenu>
+          {onToggleFavorite ? (
+            <DropdownMenuItem className="gap-2" onClick={onToggleFavorite}>
+              <Star
+                className={cn('size-4', isFavorite ? 'fill-current text-amber-500' : null)}
+                aria-hidden
+              />
+              {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuItem onClick={onToggleSettings}>
             {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={() => onRequestArchive(credentialId, name)}
-          >
-            <Trash2 className="mr-2 size-4" />
-            Archive
-          </DropdownMenuItem>
+          {onRequestArchive ? (
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => onRequestArchive(credentialId, name)}
+            >
+              <Trash2 className="mr-2 size-4" />
+              Archive
+            </DropdownMenuItem>
+          ) : null}
         </DetailSheetSettingsMenu>
       ) : null}
     </div>

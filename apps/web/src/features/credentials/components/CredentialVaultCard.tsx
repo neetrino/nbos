@@ -1,11 +1,10 @@
 'use client';
 
-import { Star } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
 import { CredentialVaultCardMetaRow } from '@/features/credentials/components/credential-vault-card-meta-row';
+import { CredentialVaultCardActionMenu } from '@/features/credentials/components/credential-vault-card-action-menu';
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
@@ -99,29 +98,12 @@ export function CredentialVaultCard({
         </div>
       ) : null}
       {onSetFavorite ? (
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          data-credential-vault-action
-          aria-label={credential.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          className={cn(
-            'absolute top-1.5 z-10 size-7',
-            selectionEnabled ? 'right-9' : 'right-1.5',
-            credential.isFavorite
-              ? 'text-amber-500 hover:text-amber-600'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-          onClick={(event) => {
-            event.stopPropagation();
-            onSetFavorite(credential.id, !credential.isFavorite);
-          }}
-        >
-          <Star
-            className={cn('size-4', credential.isFavorite ? 'fill-current' : null)}
-            aria-hidden
-          />
-        </Button>
+        <CredentialVaultCardActionMenu
+          isFavorite={Boolean(credential.isFavorite)}
+          credentialName={credential.name}
+          selectionEnabled={selectionEnabled}
+          onSetFavorite={(favorite) => onSetFavorite(credential.id, favorite)}
+        />
       ) : null}
       <div className={VAULT_CARD_BODY_CLASS}>
         <div className="flex min-h-0 flex-1 flex-col gap-1.5">
