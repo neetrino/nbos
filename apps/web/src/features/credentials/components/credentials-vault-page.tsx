@@ -135,7 +135,7 @@ function CredentialsVaultPageContent() {
           busy={vault.loading}
           showSelectAll={vault.pageCredentialIds.length > 0}
           selectedIds={vault.selection.selectedIdList}
-          folders={vault.folders}
+          folders={vault.bulkFolderOptions}
           activeFolderId={vault.activeFolderId}
           onSelectAll={vault.selection.selectAllOnPage}
           onClear={vault.selection.clearSelection}

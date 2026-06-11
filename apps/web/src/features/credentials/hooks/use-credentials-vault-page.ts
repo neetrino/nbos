@@ -30,6 +30,11 @@ import {
   type CredentialFolder,
   type CredentialProjectShell,
 } from '@/lib/api/credentials';
+import {
+  canMoveCredentialsToFolder,
+  filterFoldersForCredentials,
+  type CredentialFolderMatchInput,
+} from '@/features/credentials/utils/credential-folder-scope';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -126,6 +131,7 @@ export function useCredentialsVaultPage() {
   );
 
   const [folderDropBusy, setFolderDropBusy] = useState(false);
+  const [draggingCredentialIds, setDraggingCredentialIds] = useState<string[]>([]);
 
   const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${activeProjectId}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
   const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
@@ -279,8 +285,32 @@ export function useCredentialsVaultPage() {
     [activeFolderId, refetch],
   );
 
+  const resolveCredentialForFolder = useCallback(
+    (credentialId: string): CredentialFolderMatchInput | null => {
+      const credential = credentials.find((item) => item.id === credentialId);
+      if (!credential) return null;
+      return {
+        accessLevel: credential.accessLevel,
+        projectId: credential.project?.id ?? null,
+      };
+    },
+    [credentials],
+  );
+
   const moveCredentialsToFolder = useCallback(
     async (credentialIds: string[], folderId: string) => {
+      const folder =
+        sheetFolderOptions.find((item) => item.id === folderId) ??
+        folders.find((item) => item.id === folderId);
+      if (!folder) {
+        toast.error('Folder not found');
+        return;
+      }
+      if (!canMoveCredentialsToFolder(credentialIds, folder, resolveCredentialForFolder)) {
+        toast.error('Credential and folder must be in the same section');
+        return;
+      }
+
       setFolderDropBusy(true);
       try {
         const result = await credentialsApi.bulkAddToFolder({ credentialIds, folderId });
@@ -300,7 +330,15 @@ export function useCredentialsVaultPage() {
         setFolderDropBusy(false);
       }
     },
-    [fetchFolders, fetchProjectShells, refetch, selection],
+    [
+      fetchFolders,
+      fetchProjectShells,
+      folders,
+      refetch,
+      resolveCredentialForFolder,
+      selection,
+      sheetFolderOptions,
+    ],
   );
 
   const credentialFolderDragConfig = useMemo(() => {
@@ -310,16 +348,39 @@ export function useCredentialsVaultPage() {
         selection.selectionActive && selection.isSelected(credentialId)
           ? selection.selectedIdList
           : [credentialId],
+      onDragStart: (credentialIds: readonly string[]) =>
+        setDraggingCredentialIds([...credentialIds]),
+      onDragEnd: () => setDraggingCredentialIds([]),
     };
   }, [viewMode, vaultListScope, selection]);
+
+  const bulkFolderOptions = useMemo(() => {
+    const selected = selection.selectedIdList
+      .map((id) => credentials.find((item) => item.id === id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .map((item) => ({
+        accessLevel: item.accessLevel,
+        projectId: item.project?.id ?? null,
+      }));
+    return filterFoldersForCredentials(sheetFolderOptions, selected);
+  }, [credentials, selection.selectedIdList, sheetFolderOptions]);
 
   const credentialFolderDropConfig = useMemo(() => {
     if (viewMode !== 'folders' || vaultListScope !== 'active') return undefined;
     return {
       busy: folderDropBusy,
+      draggingCredentialIds,
+      resolveCredential: resolveCredentialForFolder,
       onMoveCredentialsToFolder: moveCredentialsToFolder,
     };
-  }, [folderDropBusy, moveCredentialsToFolder, vaultListScope, viewMode]);
+  }, [
+    draggingCredentialIds,
+    folderDropBusy,
+    moveCredentialsToFolder,
+    resolveCredentialForFolder,
+    vaultListScope,
+    viewMode,
+  ]);
 
   const setCredentialFavorite = useCallback(
     async (id: string, favorite: boolean) => {
@@ -498,5 +559,6 @@ export function useCredentialsVaultPage() {
     pageCredentialIds,
     credentialFolderDragConfig,
     credentialFolderDropConfig,
+    bulkFolderOptions,
   };
 }

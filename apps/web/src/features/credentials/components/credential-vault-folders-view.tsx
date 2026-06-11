@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { FolderKanban, FolderOpen, KeyRound, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared';
@@ -23,6 +24,10 @@ import type {
   CredentialSecretField,
 } from '@/lib/api/credentials';
 import { PermissionGate } from '@/lib/permissions';
+import {
+  canMoveCredentialsToFolder,
+  type CredentialFolderMatchInput,
+} from '@/features/credentials/utils/credential-folder-scope';
 import {
   CREDENTIAL_VAULT_DRAG_MIME,
   dataTransferHasCredentialVaultDrag,
@@ -68,6 +73,8 @@ export interface CredentialVaultFoldersViewProps {
   credentialDrag?: CredentialVaultCardDragConfig;
   credentialFolderDrop?: {
     busy?: boolean;
+    draggingCredentialIds: readonly string[];
+    resolveCredential: (credentialId: string) => CredentialFolderMatchInput | null | undefined;
     onMoveCredentialsToFolder: (credentialIds: string[], folderId: string) => void | Promise<void>;
   };
   projectShellsMode?: boolean;
@@ -112,12 +119,25 @@ export function CredentialVaultFoldersView({
   const buildFolderDropHandlers = useCallback(
     (folderId: string): CredentialFolderDropHandlers | undefined => {
       if (!credentialFolderDrop) return undefined;
-      const { busy, onMoveCredentialsToFolder } = credentialFolderDrop;
+      const { busy, draggingCredentialIds, resolveCredential, onMoveCredentialsToFolder } =
+        credentialFolderDrop;
+      const folder = folders.find((item) => item.id === folderId);
+      if (!folder) return undefined;
+
+      const canDropIds = (credentialIds: readonly string[]) =>
+        canMoveCredentialsToFolder(credentialIds, folder, resolveCredential);
 
       return {
         onDragOver: (event) => {
           if (busy || !dataTransferHasCredentialVaultDrag(event.dataTransfer)) return;
+          if (draggingCredentialIds.length === 0) return;
+
           event.preventDefault();
+          if (!canDropIds(draggingCredentialIds)) {
+            event.dataTransfer.dropEffect = 'none';
+            setDropTargetFolderId((current) => (current === folderId ? null : current));
+            return;
+          }
           event.dataTransfer.dropEffect = 'move';
           setDropTargetFolderId(folderId);
         },
@@ -133,11 +153,15 @@ export function CredentialVaultFoldersView({
           const raw = event.dataTransfer.getData(CREDENTIAL_VAULT_DRAG_MIME);
           const parsed = parseCredentialVaultDragPayload(raw);
           if (!parsed?.credentialIds.length) return;
+          if (!canDropIds(parsed.credentialIds)) {
+            toast.error('Credential and folder must be in the same section');
+            return;
+          }
           void onMoveCredentialsToFolder([...parsed.credentialIds], folderId);
         },
       };
     },
-    [credentialFolderDrop],
+    [credentialFolderDrop, folders],
   );
 
   const levelFolders = credentialFoldersAtLevel(folders, activeFolderId);

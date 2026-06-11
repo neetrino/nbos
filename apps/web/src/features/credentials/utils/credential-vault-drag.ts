@@ -26,6 +26,8 @@ export function dataTransferHasCredentialVaultDrag(dataTransfer: DataTransfer): 
 /** When set, credential cards can be dragged onto folder drop targets. */
 export type CredentialVaultCardDragConfig = {
   resolveDragCredentialIds: (credentialId: string) => string[];
+  onDragStart?: (credentialIds: readonly string[]) => void;
+  onDragEnd?: () => void;
 };
 
 export type CredentialFolderDropHandlers = {

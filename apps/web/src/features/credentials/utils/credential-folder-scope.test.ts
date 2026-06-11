@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { CredentialFolder } from '@/lib/api/credentials';
-import { filterCredentialFoldersForContext } from '@/features/credentials/utils/credential-folder-scope';
+import {
+  credentialMatchesFolder,
+  filterCredentialFoldersForContext,
+} from '@/features/credentials/utils/credential-folder-scope';
 
 const folder = (
   id: string,
@@ -49,5 +52,11 @@ describe('filterCredentialFoldersForContext', () => {
       vaultScope: 'secret',
     });
     expect(result.map((f) => f.id)).toEqual(['secret-1']);
+  });
+
+  it('rejects cross-section drag targets', () => {
+    const teamCred = { accessLevel: 'DEPARTMENT', projectId: null };
+    expect(credentialMatchesFolder(teamCred, folder('team-1', 'TEAM'))).toBe(true);
+    expect(credentialMatchesFolder(teamCred, folder('secret-1', 'SECRET'))).toBe(false);
   });
 });

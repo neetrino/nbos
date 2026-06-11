@@ -19,6 +19,7 @@ import type {
   CredentialProjectShell,
   CredentialSecretField,
 } from '@/lib/api/credentials';
+import type { CredentialFolderMatchInput } from '@/features/credentials/utils/credential-folder-scope';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialVaultTableSelectionProps } from '@/features/credentials/components/credential-vault-table';
@@ -66,6 +67,8 @@ export interface CredentialsVaultMainViewProps {
   credentialFolderDrag?: CredentialVaultCardDragConfig;
   credentialFolderDrop?: {
     busy?: boolean;
+    draggingCredentialIds: readonly string[];
+    resolveCredential: (credentialId: string) => CredentialFolderMatchInput | null | undefined;
     onMoveCredentialsToFolder: (credentialIds: string[], folderId: string) => void | Promise<void>;
   };
 }

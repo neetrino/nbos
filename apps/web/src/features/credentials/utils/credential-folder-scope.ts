@@ -69,3 +69,49 @@ export function filterCredentialFoldersForContext(
 
   return scoped.sort((a, b) => a.name.localeCompare(b.name));
 }
+
+export interface CredentialFolderMatchInput {
+  accessLevel: string;
+  projectId?: string | null;
+}
+
+/** Whether a credential may be placed in the given folder (same vault section). */
+export function credentialMatchesFolder(
+  credential: CredentialFolderMatchInput,
+  folder: CredentialFolder,
+): boolean {
+  const expectedScope = accessLevelToFolderScope(credential.accessLevel);
+  if (!expectedScope || folder.scope !== expectedScope) return false;
+  if (
+    expectedScope === 'PROJECT' &&
+    credential.projectId &&
+    folder.projectId !== credential.projectId
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function canMoveCredentialsToFolder(
+  credentialIds: readonly string[],
+  folder: CredentialFolder,
+  lookup: (credentialId: string) => CredentialFolderMatchInput | null | undefined,
+): boolean {
+  if (credentialIds.length === 0) return false;
+  return credentialIds.every((id) => {
+    const credential = lookup(id);
+    return credential ? credentialMatchesFolder(credential, folder) : false;
+  });
+}
+
+export function filterFoldersForCredentials(
+  folders: CredentialFolder[],
+  credentials: readonly CredentialFolderMatchInput[],
+): CredentialFolder[] {
+  if (credentials.length === 0) return [];
+  return folders
+    .filter((folder) =>
+      credentials.every((credential) => credentialMatchesFolder(credential, folder)),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
+}

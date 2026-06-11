@@ -111,12 +111,16 @@ export function CredentialVaultCard({
                   stringifyCredentialVaultDragPayload({ credentialIds }),
                 );
                 event.dataTransfer.effectAllowed = 'move';
+                credentialDrag.onDragStart?.(credentialIds);
               }
             : undefined
         }
         onDragEnd={
           credentialDrag
-            ? (event) => detachCredentialVaultDragCount(event.currentTarget as HTMLElement)
+            ? (event) => {
+                detachCredentialVaultDragCount(event.currentTarget as HTMLElement);
+                credentialDrag.onDragEnd?.();
+              }
             : undefined
         }
         onClick={(event) => {
