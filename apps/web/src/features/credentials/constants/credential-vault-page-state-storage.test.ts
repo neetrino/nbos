@@ -48,6 +48,11 @@ describe('credential-vault-page-state-storage', () => {
     });
   });
 
+  it('persists folders view mode', () => {
+    writeCredentialVaultPagePreferences({ viewMode: 'folders' });
+    expect(readCredentialVaultPagePreferences().viewMode).toBe('folders');
+  });
+
   it('persists archived list scope', () => {
     writeCredentialVaultPagePreferences({ vaultListScope: 'archived' });
     expect(readCredentialVaultPagePreferences().vaultListScope).toBe('archived');

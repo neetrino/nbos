@@ -18,7 +18,12 @@ export type CredentialVaultPagePreferences = {
   pageSize: CredentialVaultPageSizeOption;
 };
 
-const VALID_VIEW_MODES = new Set<CredentialVaultViewMode>(['list', 'tiles', 'category-board']);
+const VALID_VIEW_MODES = new Set<CredentialVaultViewMode>([
+  'list',
+  'tiles',
+  'category-board',
+  'folders',
+]);
 const VALID_TABS = new Set<CredentialVaultScope>(['all', 'my', 'team', 'project', 'secret']);
 const VALID_LIST_SCOPES = new Set<CredentialVaultListScope>(['active', 'archived']);
 
