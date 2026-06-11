@@ -18,8 +18,8 @@ import type { CredentialListItem } from '@/features/credentials/types/credential
 import type { CredentialFolder, CredentialSecretField } from '@/lib/api/credentials';
 import { PermissionGate } from '@/lib/permissions';
 
-const FOLDER_SKELETON_COUNT = 4;
-const TILE_SKELETON_COUNT = 8;
+const GRID_SKELETON_COUNT = 8;
+const GRID_CARD_SKELETON_CLASS = 'h-[104px] w-full rounded-lg';
 
 export interface CredentialVaultFoldersViewProps {
   folders: CredentialFolder[];
@@ -98,15 +98,14 @@ export function CredentialVaultFoldersView({
     <div className="space-y-4">
       <CredentialFolderBreadcrumb path={breadcrumb} onNavigate={onNavigateFolder} />
 
-      {foldersLoading ? (
-        <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-          {Array.from({ length: FOLDER_SKELETON_COUNT }).map((_, index) => (
-            <Skeleton key={`folder-skel-${index}`} className="h-[72px] w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : hasFolders ? (
-        <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-          {levelFolders.map((folder) => (
+      <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
+        {loading
+          ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
+              <Skeleton key={`grid-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
+            ))
+          : null}
+        {!loading &&
+          levelFolders.map((folder) => (
             <CredentialFolderCard
               key={folder.id}
               folder={folder}
@@ -117,18 +116,8 @@ export function CredentialVaultFoldersView({
               onArchive={onArchiveFolder}
             />
           ))}
-        </div>
-      ) : null}
-
-      {credentialsLoading ? (
-        <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-          {Array.from({ length: TILE_SKELETON_COUNT }).map((_, index) => (
-            <Skeleton key={`cred-skel-${index}`} className="h-[92px] w-full rounded-lg" />
-          ))}
-        </div>
-      ) : hasCredentials ? (
-        <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-          {credentials.map((credential) => (
+        {!loading &&
+          credentials.map((credential) => (
             <CredentialVaultCard
               key={credential.id}
               credential={credential}
@@ -144,8 +133,7 @@ export function CredentialVaultFoldersView({
               onToggleSelected={() => selection?.onToggle(credential.id)}
             />
           ))}
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }

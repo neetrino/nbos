@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Folder, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { DriveTileShell } from '@/features/drive/DriveTileShell';
+import { KanbanCardShell } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import { CredentialFolderNameDialog } from '@/features/credentials/components/cr
 import type { CredentialFolder } from '@/lib/api/credentials';
 
 const FOLDER_MENU_HOVER =
-  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100';
+  'opacity-0 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100';
 
 interface CredentialFolderCardProps {
   folder: CredentialFolder;
@@ -27,7 +27,7 @@ interface CredentialFolderCardProps {
   onArchive: (folderId: string) => Promise<void>;
 }
 
-function formatFolderSubtitle(credentialCount: number, childFolderCount: number): string {
+function formatFolderCounts(credentialCount: number, childFolderCount: number): string {
   const parts: string[] = [];
   if (childFolderCount > 0) {
     parts.push(`${childFolderCount} folder${childFolderCount === 1 ? '' : 's'}`);
@@ -78,24 +78,36 @@ export function CredentialFolderCard({
 
   return (
     <>
-      <div className="group relative">
-        <DriveTileShell
-          title={folder.name}
-          subtitle={formatFolderSubtitle(folder.credentialCount, childFolderCount)}
-          icon={<Folder className="size-5" strokeWidth={2} aria-hidden />}
-          onClick={() => onOpen(folder.id)}
-        />
+      <KanbanCardShell
+        role="button"
+        tabIndex={0}
+        radius="lg"
+        padding="none"
+        hoverShadow="md"
+        className={cn(
+          'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        )}
+        onClick={() => onOpen(folder.id)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onOpen(folder.id);
+          }
+        }}
+      >
+        <span className="absolute top-0 bottom-0 left-0 w-0.5 bg-amber-500/70" aria-hidden />
         {canManage ? (
-          <div className={cn('absolute top-2 right-2 z-10', FOLDER_MENU_HOVER)}>
+          <div className={cn('absolute top-1.5 right-1.5 z-10', FOLDER_MENU_HOVER)}>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={(props) => (
                   <Button
                     {...props}
                     type="button"
-                    size="icon-sm"
+                    size="icon"
                     variant="ghost"
-                    className="bg-background/80 size-7"
+                    className="text-muted-foreground size-7"
                     aria-label={`Folder actions for ${folder.name}`}
                     onClick={(event) => {
                       event.stopPropagation();
@@ -123,7 +135,18 @@ export function CredentialFolderCard({
             </DropdownMenu>
           </div>
         ) : null}
-      </div>
+        <div className="flex h-full min-h-0 flex-1 flex-col p-2.5 pl-3">
+          <p className="text-foreground line-clamp-1 pr-8 text-sm leading-snug font-medium">
+            {folder.name}
+          </p>
+          <div className="flex min-h-0 flex-1 items-center justify-center py-0.5">
+            <Folder className="size-11 shrink-0 text-amber-500/75" strokeWidth={1.5} aria-hidden />
+          </div>
+          <p className="text-muted-foreground truncate text-center text-[10px] leading-none">
+            {formatFolderCounts(folder.credentialCount, childFolderCount)}
+          </p>
+        </div>
+      </KanbanCardShell>
 
       <CredentialFolderNameDialog
         open={renameOpen}
