@@ -194,6 +194,13 @@ function CredentialsVaultPageContent() {
             vault.setPurgeTarget({ id, name, criticality })
           }
           onRestored={handleSaved}
+          folders={vault.folders}
+          foldersLoading={vault.foldersLoading}
+          activeFolderId={vault.activeFolderId}
+          onNavigateFolder={vault.navigateFolder}
+          onOpenFolder={vault.openFolder}
+          onRenameFolder={vault.renameFolder}
+          onArchiveFolder={vault.archiveFolder}
         />
       </div>
 

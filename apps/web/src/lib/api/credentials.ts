@@ -169,13 +169,28 @@ export const credentialsApi = {
     const resp = await api.put<CredentialDetail>(`/api/credentials/${id}`, data);
     return resp.data;
   },
-  async listFolders(scope?: string): Promise<{ folders: CredentialFolder[] }> {
+  async listFolders(params?: {
+    scope?: string;
+    parentId?: string | null;
+  }): Promise<{ folders: CredentialFolder[] }> {
     const resp = await api.get<{ folders: CredentialFolder[] }>('/api/credentials/folders', {
-      params: { scope },
+      params: {
+        scope: params?.scope,
+        parentId:
+          params?.parentId === null
+            ? 'root'
+            : params?.parentId !== undefined
+              ? params.parentId
+              : undefined,
+      },
     });
     return resp.data;
   },
-  async createFolder(body: { name: string; scope: string }): Promise<CredentialFolder> {
+  async createFolder(body: {
+    name: string;
+    scope: string;
+    parentId?: string | null;
+  }): Promise<CredentialFolder> {
     const resp = await api.post<CredentialFolder>('/api/credentials/folders', body);
     return resp.data;
   },

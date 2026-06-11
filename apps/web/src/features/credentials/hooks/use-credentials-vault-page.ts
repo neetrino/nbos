@@ -51,7 +51,6 @@ export function useCredentialsVaultPage() {
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
-  const [showWithoutFolder, setShowWithoutFolder] = useState(false);
   const [folders, setFolders] = useState<CredentialFolder[]>([]);
   const [foldersLoading, setFoldersLoading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -88,7 +87,7 @@ export function useCredentialsVaultPage() {
     listSort,
     meId: me?.id,
     folderId: activeFolderId,
-    withoutFolder: showWithoutFolder,
+    withoutFolder: viewMode === 'folders' && activeFolderId === null,
   });
 
   const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
@@ -115,7 +114,7 @@ export function useCredentialsVaultPage() {
     selectionResetKey,
   );
 
-  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${showWithoutFolder}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
+  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
   const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
 
   if (trackedPageResetKey !== pageResetKey) {
@@ -126,7 +125,7 @@ export function useCredentialsVaultPage() {
   const fetchFolders = useCallback(async () => {
     setFoldersLoading(true);
     try {
-      const data = await credentialsApi.listFolders(activeTab.toUpperCase());
+      const data = await credentialsApi.listFolders({ scope: activeTab.toUpperCase() });
       setFolders(data.folders);
     } catch {
       setFolders([]);
@@ -172,9 +171,12 @@ export function useCredentialsVaultPage() {
     });
   }, []);
 
-  const selectFolder = useCallback((folderId: string | null, withoutFolder = false) => {
+  const navigateFolder = useCallback((folderId: string | null) => {
     setActiveFolderId(folderId);
-    setShowWithoutFolder(withoutFolder);
+  }, []);
+
+  const openFolder = useCallback((folderId: string) => {
+    setActiveFolderId(folderId);
   }, []);
 
   const createFolder = useCallback(
@@ -182,13 +184,12 @@ export function useCredentialsVaultPage() {
       const folder = await credentialsApi.createFolder({
         name,
         scope: activeTab.toUpperCase(),
+        parentId: activeFolderId,
       });
       setFolders((prev) => [...prev, folder].sort((a, b) => a.name.localeCompare(b.name)));
-      setActiveFolderId(folder.id);
-      setShowWithoutFolder(false);
       return folder;
     },
-    [activeTab],
+    [activeTab, activeFolderId],
   );
 
   const renameFolder = useCallback(async (folderId: string, name: string) => {
@@ -202,7 +203,6 @@ export function useCredentialsVaultPage() {
       setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
       if (activeFolderId === folderId) {
         setActiveFolderId(null);
-        setShowWithoutFolder(false);
       }
       void refetch({ silent: true });
     },
@@ -234,7 +234,6 @@ export function useCredentialsVaultPage() {
       setPreferences({ activeTab: tab });
       setQuickCategory(null);
       setActiveFolderId(null);
-      setShowWithoutFolder(false);
       if (tab !== 'all') {
         setFilters((prev) => {
           const next = { ...prev };
@@ -292,6 +291,7 @@ export function useCredentialsVaultPage() {
 
   const setViewMode = useCallback(
     (mode: CredentialVaultViewMode) => {
+      if (mode !== 'folders') setActiveFolderId(null);
       setPreferences({ viewMode: mode });
     },
     [setPreferences],
@@ -323,8 +323,8 @@ export function useCredentialsVaultPage() {
     folders,
     foldersLoading,
     activeFolderId,
-    showWithoutFolder,
-    selectFolder,
+    navigateFolder,
+    openFolder,
     createFolder,
     renameFolder,
     archiveFolder,

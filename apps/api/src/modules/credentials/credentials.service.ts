@@ -201,11 +201,18 @@ export class CredentialsService {
     return setCredentialFavorite(this.runtime, id, favorite, access);
   }
 
-  listFolders(scope: string | undefined, access: CredentialsAccessContext) {
-    return listCredentialFolders(this.runtime, access, scope);
+  listFolders(
+    scope: string | undefined,
+    parentId: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
+    return listCredentialFolders(this.runtime, access, scope, parentId);
   }
 
-  createFolder(body: { name?: string; scope?: string }, access: CredentialsAccessContext) {
+  createFolder(
+    body: { name?: string; scope?: string; parentId?: string | null },
+    access: CredentialsAccessContext,
+  ) {
     return createCredentialFolder(this.runtime, body, access);
   }
 

@@ -12,7 +12,9 @@ import {
   type VaultListScope,
 } from '@/features/credentials/components/credential-vault-table';
 import { CredentialVaultTiles } from '@/features/credentials/components/credential-vault-tiles';
+import { CredentialVaultFoldersView } from '@/features/credentials/components/credential-vault-folders-view';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
+import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialVaultTableSelectionProps } from '@/features/credentials/components/credential-vault-table';
@@ -45,6 +47,13 @@ export interface CredentialsVaultMainViewProps {
   onRequestDelete: (id: string, name: string) => void;
   onRequestPurge: (id: string, name: string, criticality: string) => void;
   onRestored: () => void;
+  folders?: CredentialFolder[];
+  foldersLoading?: boolean;
+  activeFolderId?: string | null;
+  onNavigateFolder?: (folderId: string | null) => void;
+  onOpenFolder?: (folderId: string) => void;
+  onRenameFolder?: (folderId: string, name: string) => Promise<void>;
+  onArchiveFolder?: (folderId: string) => Promise<void>;
 }
 
 export function CredentialsVaultMainView({
@@ -69,6 +78,13 @@ export function CredentialsVaultMainView({
   onSetFavorite,
   onCopyText,
   onCopySecret,
+  folders = [],
+  foldersLoading = false,
+  activeFolderId = null,
+  onNavigateFolder,
+  onOpenFolder,
+  onRenameFolder,
+  onArchiveFolder,
 }: CredentialsVaultMainViewProps) {
   const boardCategoryColumns = useMemo(
     () => categoryBoardColumnsForQuickFilter(quickCategoryChips, activeCategory),
@@ -97,17 +113,24 @@ export function CredentialsVaultMainView({
   }
   if (viewMode === 'folders') {
     return (
-      <CredentialVaultTiles
+      <CredentialVaultFoldersView
+        folders={folders}
+        foldersLoading={foldersLoading}
+        activeFolderId={activeFolderId}
         credentials={credentials}
-        loading={loading}
+        credentialsLoading={loading}
         showCreate={showCreate}
+        selection={tilesSelection}
+        onNavigateFolder={onNavigateFolder ?? (() => undefined)}
+        onOpenFolder={onOpenFolder ?? (() => undefined)}
+        onRenameFolder={onRenameFolder ?? (async () => undefined)}
+        onArchiveFolder={onArchiveFolder ?? (async () => undefined)}
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
-        selection={tilesSelection}
       />
     );
   }

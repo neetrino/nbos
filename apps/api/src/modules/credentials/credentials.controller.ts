@@ -109,18 +109,20 @@ export class CredentialsController {
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'List credential folders' })
   @ApiQuery({ name: 'scope', required: false })
+  @ApiQuery({ name: 'parentId', required: false, description: 'Omit for all; root for top level' })
   async listFolders(
     @Query('scope') scope: string | undefined,
+    @Query('parentId') parentId: string | undefined,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.listFolders(scope, credentialsAccessFromUser(user));
+    return this.credentialsService.listFolders(scope, parentId, credentialsAccessFromUser(user));
   }
 
   @Post('folders')
   @RequirePermission('CREDENTIALS', 'ADD')
   @ApiOperation({ summary: 'Create credential folder' })
   async createFolder(
-    @Body() body: { name?: string; scope?: string },
+    @Body() body: { name?: string; scope?: string; parentId?: string | null },
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.credentialsService.createFolder(body, credentialsAccessFromUser(user));

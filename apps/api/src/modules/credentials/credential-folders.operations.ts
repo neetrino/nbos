@@ -27,20 +27,34 @@ function normalizeFolderName(name?: string): string {
   return trimmed;
 }
 
-function folderWhereForAccess(access: CredentialsAccessContext, scope?: string) {
+function folderWhereForAccess(
+  access: CredentialsAccessContext,
+  scope?: string,
+  parentId?: string | null,
+) {
   const normalizedScope = scope ? normalizeFolderScope(scope) : undefined;
   const where: Prisma.CredentialFolderWhereInput = { archivedAt: null };
   if (normalizedScope && normalizedScope !== 'ALL') where.scope = normalizedScope;
+  if (parentId !== undefined) where.parentId = parentId;
   return where;
+}
+
+/** `undefined` = all folders; `null` = root level only. */
+function parseFolderParentIdFilter(parentId?: string): string | null | undefined {
+  if (parentId === undefined) return undefined;
+  const trimmed = parentId.trim();
+  if (!trimmed || trimmed.toLowerCase() === 'root') return null;
+  return trimmed;
 }
 
 export async function listCredentialFolders(
   runtime: CredentialsRuntime,
   access: CredentialsAccessContext,
   scope?: string,
+  parentId?: string,
 ): Promise<{ folders: CredentialFolderApiRow[] }> {
   const folders = await runtime.prisma.credentialFolder.findMany({
-    where: folderWhereForAccess(access, scope),
+    where: folderWhereForAccess(access, scope, parseFolderParentIdFilter(parentId)),
     include: { _count: { select: { memberships: true } } },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
   });
@@ -63,10 +77,19 @@ export async function createCredentialFolder(
   input: { name?: string; scope?: string; projectId?: string | null; parentId?: string | null },
   access: CredentialsAccessContext,
 ): Promise<CredentialFolderApiRow> {
+  const scope = normalizeFolderScope(input.scope);
+  if (input.parentId) {
+    const parent = await runtime.prisma.credentialFolder.findFirst({
+      where: { id: input.parentId, archivedAt: null, scope },
+      select: { id: true },
+    });
+    if (!parent) throw new BadRequestException('Parent folder is invalid');
+  }
+
   const folder = await runtime.prisma.credentialFolder.create({
     data: {
       name: normalizeFolderName(input.name),
-      scope: normalizeFolderScope(input.scope),
+      scope,
       projectId: input.projectId ?? undefined,
       parentId: input.parentId ?? undefined,
       ownerId: access.employeeId,

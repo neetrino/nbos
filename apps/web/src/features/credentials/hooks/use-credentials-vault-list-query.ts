@@ -124,8 +124,9 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
             p.activeTab === 'all' && p.quickFilters.has('mine') && p.meId ? p.meId : undefined,
           needsRotation: p.quickFilters.has('needsRotation') ? true : undefined,
           favoritesOnly: p.quickFilters.has('favorites') ? true : undefined,
-          folderId: p.folderId || undefined,
-          withoutFolder: p.withoutFolder || undefined,
+          folderId: p.viewMode === 'folders' && p.folderId ? p.folderId : undefined,
+          withoutFolder:
+            p.viewMode === 'folders' && !p.folderId && p.withoutFolder ? true : undefined,
           tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
           includeArchived: p.vaultListScope === 'archived',
           sort: p.listSort,
