@@ -1,6 +1,5 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -9,8 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Folder } from 'lucide-react';
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
+import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import {
+  CREDENTIAL_COMMENT_ICON,
+  CREDENTIAL_FOLDER_ICON,
+  credentialTypeIcon,
+} from '@/features/credentials/utils/credential-vault-card-meta';
 import {
   CREDENTIAL_TYPES_FOR_CREATE,
   commentLabelForType,
@@ -39,10 +43,11 @@ function TypeSelect({
   isCreate: boolean;
 }) {
   const types = isCreate ? CREDENTIAL_TYPES_FOR_CREATE : CREDENTIAL_TYPES;
+  const TypeIcon = credentialTypeIcon(credentialType);
 
   return (
     <div className="grid gap-2">
-      <Label>What is stored?</Label>
+      <CredentialFormFieldLabel label="What is stored?" icon={TypeIcon} />
       <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
         <SelectTrigger>
           <SelectValue placeholder="Select type">
@@ -140,7 +145,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
       {folderOptions.length > 0 ? (
         <div className="grid gap-2">
-          <Label>Folder</Label>
+          <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
           <Select
             value={folderId ?? 'none'}
             onValueChange={(value) => setFolderId(value && value !== 'none' ? value : null)}
@@ -155,12 +160,15 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No folder</SelectItem>
-              {folderOptions.map((folder) => (
-                <SelectItem key={folder.id} value={folder.id}>
-                  <Folder className="size-3.5" aria-hidden />
-                  {folder.name}
-                </SelectItem>
-              ))}
+              {folderOptions.map((folder) => {
+                const FolderIcon = CREDENTIAL_FOLDER_ICON;
+                return (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    <FolderIcon className="size-3.5" aria-hidden />
+                    {folder.name}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -193,7 +201,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
       {credentialType === 'RECOVERY_CODES' ? (
         <div className="grid gap-2">
-          <Label htmlFor="cred-comment">{commentLabelForType(credentialType)}</Label>
+          <CredentialFormFieldLabel
+            htmlFor="cred-comment"
+            label={commentLabelForType(credentialType)}
+            icon={CREDENTIAL_COMMENT_ICON}
+          />
           <Textarea
             id="cred-comment"
             value={comment}
@@ -204,7 +216,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         </div>
       ) : (
         <div className="grid gap-2">
-          <Label htmlFor="cred-comment">{commentLabelForType(credentialType)}</Label>
+          <CredentialFormFieldLabel
+            htmlFor="cred-comment"
+            label={commentLabelForType(credentialType)}
+            icon={CREDENTIAL_COMMENT_ICON}
+          />
           <Textarea
             id="cred-comment"
             value={comment}
