@@ -21,6 +21,17 @@ import { PermissionGate } from '@/lib/permissions';
 const GRID_SKELETON_COUNT = 8;
 const GRID_CARD_SKELETON_CLASS = 'h-[104px] w-full rounded-lg';
 
+function VaultFoldersSectionLabel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-muted-foreground shrink-0 text-xs font-medium tracking-wide">
+        {label}
+      </span>
+      <div className="bg-border/70 h-px flex-1" />
+    </div>
+  );
+}
+
 export interface CredentialVaultFoldersViewProps {
   folders: CredentialFolder[];
   foldersLoading: boolean;
@@ -62,10 +73,9 @@ export function CredentialVaultFoldersView({
 }: CredentialVaultFoldersViewProps) {
   const levelFolders = credentialFoldersAtLevel(folders, activeFolderId);
   const breadcrumb = buildCredentialFolderBreadcrumb(folders, activeFolderId);
-  const loading = foldersLoading || credentialsLoading;
   const hasFolders = levelFolders.length > 0;
   const hasCredentials = credentials.length > 0;
-  const isEmpty = !loading && !hasFolders && !hasCredentials;
+  const isEmpty = !foldersLoading && !credentialsLoading && !hasFolders && !hasCredentials;
 
   if (isEmpty) {
     return (
@@ -98,42 +108,56 @@ export function CredentialVaultFoldersView({
     <div className="space-y-4">
       <CredentialFolderBreadcrumb path={breadcrumb} onNavigate={onNavigateFolder} />
 
-      <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-        {loading
-          ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
-              <Skeleton key={`grid-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
-            ))
-          : null}
-        {!loading &&
-          levelFolders.map((folder) => (
-            <CredentialFolderCard
-              key={folder.id}
-              folder={folder}
-              childFolderCount={credentialFolderChildCount(folders, folder.id)}
-              canManage={showCreate}
-              onOpen={onOpenFolder}
-              onRename={onRenameFolder}
-              onArchive={onArchiveFolder}
-            />
-          ))}
-        {!loading &&
-          credentials.map((credential) => (
-            <CredentialVaultCard
-              key={credential.id}
-              credential={credential}
-              variant="grid"
-              onOpen={onOpenCredential}
-              onSetFavorite={onSetFavorite}
-              onCopyText={onCopyText}
-              onCopySecret={onCopySecret}
-              secretFlashCredentialId={secretFlashCredentialId}
-              selectionEnabled={selection?.enabled}
-              selectionActive={selection?.selectionActive ?? false}
-              selected={selection?.isSelected(credential.id)}
-              onToggleSelected={() => selection?.onToggle(credential.id)}
-            />
-          ))}
-      </div>
+      {foldersLoading || hasFolders ? (
+        <div className="space-y-2">
+          <VaultFoldersSectionLabel label="Folders" />
+          <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
+            {foldersLoading
+              ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
+                  <Skeleton key={`folder-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
+                ))
+              : levelFolders.map((folder) => (
+                  <CredentialFolderCard
+                    key={folder.id}
+                    folder={folder}
+                    childFolderCount={credentialFolderChildCount(folders, folder.id)}
+                    canManage={showCreate}
+                    onOpen={onOpenFolder}
+                    onRename={onRenameFolder}
+                    onArchive={onArchiveFolder}
+                  />
+                ))}
+          </div>
+        </div>
+      ) : null}
+
+      {credentialsLoading || hasCredentials ? (
+        <div className="space-y-2">
+          <VaultFoldersSectionLabel label="Credentials" />
+          <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
+            {credentialsLoading
+              ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
+                  <Skeleton key={`cred-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
+                ))
+              : credentials.map((credential) => (
+                  <CredentialVaultCard
+                    key={credential.id}
+                    credential={credential}
+                    variant="grid"
+                    onOpen={onOpenCredential}
+                    onSetFavorite={onSetFavorite}
+                    onCopyText={onCopyText}
+                    onCopySecret={onCopySecret}
+                    secretFlashCredentialId={secretFlashCredentialId}
+                    selectionEnabled={selection?.enabled}
+                    selectionActive={selection?.selectionActive ?? false}
+                    selected={selection?.isSelected(credential.id)}
+                    onToggleSelected={() => selection?.onToggle(credential.id)}
+                  />
+                ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
