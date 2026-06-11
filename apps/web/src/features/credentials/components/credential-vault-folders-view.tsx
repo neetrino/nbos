@@ -164,6 +164,24 @@ export function CredentialVaultFoldersView({
     [credentialFolderDrop, folders],
   );
 
+  const isCredentialDragActive = (credentialFolderDrop?.draggingCredentialIds.length ?? 0) > 0;
+
+  const folderDropState = useCallback(
+    (folderId: string): 'idle' | 'valid' | 'invalid' => {
+      if (!isCredentialDragActive || !credentialFolderDrop) return 'idle';
+      const folder = folders.find((item) => item.id === folderId);
+      if (!folder) return 'idle';
+      return canMoveCredentialsToFolder(
+        credentialFolderDrop.draggingCredentialIds,
+        folder,
+        credentialFolderDrop.resolveCredential,
+      )
+        ? 'valid'
+        : 'invalid';
+    },
+    [credentialFolderDrop, folders, isCredentialDragActive],
+  );
+
   const levelFolders = credentialFoldersAtLevel(folders, activeFolderId);
   const folderPath = buildCredentialFolderBreadcrumb(folders, activeFolderId);
   const atProjectRoot = projectShellsMode && !activeProject;
@@ -265,19 +283,25 @@ export function CredentialVaultFoldersView({
               ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
                   <Skeleton key={`folder-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
                 ))
-              : levelFolders.map((folder) => (
-                  <CredentialFolderCard
-                    key={folder.id}
-                    folder={folder}
-                    childFolderCount={credentialFolderChildCount(folders, folder.id)}
-                    canManage={showCreate}
-                    onOpen={onOpenFolder}
-                    onRename={onRenameFolder}
-                    onArchive={onArchiveFolder}
-                    dropHighlight={dropTargetFolderId === folder.id}
-                    dropHandlers={buildFolderDropHandlers(folder.id)}
-                  />
-                ))}
+              : levelFolders.map((folder) => {
+                  const dropState = folderDropState(folder.id);
+                  return (
+                    <CredentialFolderCard
+                      key={folder.id}
+                      folder={folder}
+                      childFolderCount={credentialFolderChildCount(folders, folder.id)}
+                      canManage={showCreate}
+                      onOpen={onOpenFolder}
+                      onRename={onRenameFolder}
+                      onArchive={onArchiveFolder}
+                      dropState={dropState}
+                      dropHighlight={dropState === 'valid' && dropTargetFolderId === folder.id}
+                      dropHandlers={
+                        dropState === 'invalid' ? undefined : buildFolderDropHandlers(folder.id)
+                      }
+                    />
+                  );
+                })}
           </div>
         </div>
       ) : null}

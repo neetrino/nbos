@@ -27,6 +27,8 @@ interface CredentialFolderCardProps {
   onRename: (folderId: string, name: string) => Promise<void>;
   onArchive: (folderId: string) => Promise<void>;
   dropHighlight?: boolean;
+  /** Visual hint while a credential card is dragged over the folders grid. */
+  dropState?: 'idle' | 'valid' | 'invalid';
   dropHandlers?: CredentialFolderDropHandlers;
 }
 
@@ -47,6 +49,7 @@ export function CredentialFolderCard({
   onRename,
   onArchive,
   dropHighlight = false,
+  dropState = 'idle',
   dropHandlers,
 }: CredentialFolderCardProps) {
   const [renameOpen, setRenameOpen] = useState(false);
@@ -81,25 +84,37 @@ export function CredentialFolderCard({
     }
   };
 
+  const dropInvalid = dropState === 'invalid';
+  const dropValid = dropState === 'valid';
+
   return (
     <>
       <div
-        className={cn(dropHighlight && 'ring-primary rounded-lg ring-2 ring-offset-2')}
+        className={cn(
+          'transition-[opacity,filter] duration-150',
+          dropInvalid && 'cursor-not-allowed opacity-40 grayscale',
+          dropValid && dropHighlight && 'ring-primary rounded-lg ring-2 ring-offset-2',
+        )}
         onDragOver={dropHandlers?.onDragOver}
         onDragLeave={dropHandlers?.onDragLeave}
         onDrop={dropHandlers?.onDrop}
+        aria-disabled={dropInvalid || undefined}
       >
         <KanbanCardShell
           role="button"
-          tabIndex={0}
+          tabIndex={dropInvalid ? -1 : 0}
           radius="lg"
           padding="none"
-          hoverShadow="md"
+          hoverShadow={dropInvalid ? 'none' : 'md'}
           className={cn(
-            'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
+            'group/card relative flex h-full min-h-[104px] w-full flex-col overflow-hidden',
             'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+            dropInvalid ? 'cursor-not-allowed' : 'w-full cursor-pointer',
           )}
-          onClick={() => onOpen(folder.id)}
+          onClick={() => {
+            if (dropInvalid) return;
+            onOpen(folder.id);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault();
@@ -107,8 +122,14 @@ export function CredentialFolderCard({
             }
           }}
         >
-          <span className="absolute top-0 bottom-0 left-0 w-0.5 bg-amber-500/70" aria-hidden />
-          {canManage ? (
+          <span
+            className={cn(
+              'absolute top-0 bottom-0 left-0 w-0.5',
+              dropInvalid ? 'bg-muted-foreground/35' : 'bg-amber-500/70',
+            )}
+            aria-hidden
+          />
+          {canManage && !dropInvalid ? (
             <div className={cn('absolute top-1.5 right-1.5 z-10', FOLDER_MENU_HOVER)}>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -147,12 +168,20 @@ export function CredentialFolderCard({
             </div>
           ) : null}
           <div className="flex h-full min-h-0 flex-1 flex-col p-2.5 pl-3">
-            <p className="text-foreground line-clamp-1 pr-8 text-sm leading-snug font-medium">
+            <p
+              className={cn(
+                'line-clamp-1 pr-8 text-sm leading-snug font-medium',
+                dropInvalid ? 'text-muted-foreground' : 'text-foreground',
+              )}
+            >
               {folder.name}
             </p>
             <div className="flex min-h-0 flex-1 items-center justify-center py-0.5">
               <Folder
-                className="size-11 shrink-0 text-amber-500/75"
+                className={cn(
+                  'size-11 shrink-0',
+                  dropInvalid ? 'text-muted-foreground/45' : 'text-amber-500/75',
+                )}
                 strokeWidth={1.5}
                 aria-hidden
               />
