@@ -40,6 +40,5 @@ export const CREDENTIAL_LIST_SELECT = {
       isPrimary: true,
       folder: { select: { id: true, name: true } },
     },
-    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
   },
 } as const;

@@ -34,7 +34,6 @@ const CREDENTIAL_DETAIL_INCLUDE = {
       isPrimary: true,
       folder: { select: { id: true, name: true } },
     },
-    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
   },
 } as const;
 
@@ -62,6 +61,13 @@ async function loadFavoriteRows(
   return favoriteDelegate.findMany({
     where: { credentialId, employeeId },
     select: { employeeId: true },
+  });
+}
+
+async function loadCredentialAfterFolderChange(runtime: CredentialsRuntime, credentialId: string) {
+  return runtime.prisma.credential.findUnique({
+    where: { id: credentialId },
+    include: CREDENTIAL_DETAIL_INCLUDE,
   });
 }
 
@@ -178,6 +184,8 @@ export async function createCredential(
       editScope: 'ALL',
       deleteScope: 'ALL',
     });
+    const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
+    if (updated) return mapCredentialForApi({ ...updated, favorites: [] });
   }
 
   return mapCredentialForApi({ ...credential, favorites: [] });
@@ -251,6 +259,11 @@ export async function updateCredential(
   const folderIds = normalizeCredentialFolderIds(data);
   if (folderIds !== undefined) {
     await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, access);
+    const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
+    if (updated) {
+      const favorites = await loadFavoriteRows(runtime, updated.id, access.employeeId);
+      return mapCredentialForApi({ ...updated, favorites });
+    }
   }
 
   const favorites = await loadFavoriteRows(runtime, credential.id, access.employeeId);

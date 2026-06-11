@@ -93,6 +93,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const categoryLocked = categoryOptions.length === 1;
   const categoryLabel = CREDENTIAL_CATEGORIES.find((c) => c.value === category)?.label ?? category;
+  const folderEditable = (props.folderOptions?.length ?? 0) > 0 || initialFolderId !== undefined;
 
   const resetCreate = useCallback(() => {
     setName(initialName ?? '');
@@ -205,6 +206,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       comment: string;
       nextRotationAt: string;
       manualGrants: CredentialManualGrant[];
+      folderId?: string | null;
     }) => {
       setSnap(buildCredentialFormSnap(fields));
     },
@@ -551,6 +553,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setManualGrants,
     folderId,
     setFolderId,
+    folderEditable,
     open,
     detail,
     revealed,

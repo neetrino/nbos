@@ -42,6 +42,7 @@ export interface CredentialFormSheetStateSlice {
   nextRotationAt: string;
   manualGrants: { employeeId: string; level: 'VIEW' | 'EDIT'; expiresAt: string | null }[];
   folderId: string | null;
+  folderEditable: boolean;
   stepUpField: CredentialSecretField | null;
   stepUpMode: 'reveal' | 'copy';
   setStepUpField: Dispatch<SetStateAction<CredentialSecretField | null>>;
@@ -82,7 +83,7 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     secureNotes: state.comment.trim() === '' ? null : state.comment.trim(),
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
-    folderId: state.folderId,
+    folderId: state.folderEditable ? state.folderId : undefined,
     acknowledgeOrphanedSecrets:
       state.orphanedSecretsAcknowledged &&
       state.detailCredentialType !== null &&

@@ -33,6 +33,8 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       accessLevel: state.accessLevel,
       nextRotationAt: state.nextRotationAt,
       manualGrants: state.manualGrants,
+      folderId: state.folderId,
+      folderEditable: state.folderEditable,
       stepUpField: state.stepUpField,
       stepUpMode: state.stepUpMode,
       setStepUpField: state.setStepUpField,
