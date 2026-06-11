@@ -24,7 +24,42 @@ import type { CredentialsRuntime } from './credentials-runtime';
 const CREDENTIAL_DETAIL_INCLUDE = {
   project: { select: { id: true, name: true } },
   provider: { select: { id: true, name: true, slug: true, website: true } },
+  folderMemberships: {
+    select: {
+      folderId: true,
+      isPrimary: true,
+      folder: { select: { id: true, name: true } },
+    },
+    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
+  },
 } as const;
+
+type FavoriteDelegate = {
+  findMany: (args: unknown) => Promise<Array<{ employeeId: string }>>;
+};
+
+function credentialFavoriteDelegate(runtime: CredentialsRuntime): FavoriteDelegate | null {
+  return (
+    (
+      runtime.prisma as unknown as {
+        credentialFavorite?: FavoriteDelegate;
+      }
+    ).credentialFavorite ?? null
+  );
+}
+
+async function loadFavoriteRows(
+  runtime: CredentialsRuntime,
+  credentialId: string,
+  employeeId: string,
+): Promise<Array<{ employeeId: string }>> {
+  const favoriteDelegate = credentialFavoriteDelegate(runtime);
+  if (!favoriteDelegate) return [];
+  return favoriteDelegate.findMany({
+    where: { credentialId, employeeId },
+    select: { employeeId: true },
+  });
+}
 
 export async function findCredentialById(
   runtime: CredentialsRuntime,
@@ -47,8 +82,9 @@ export async function findCredentialById(
   if (!credential) throw new NotFoundException(`Credential ${id} not found`);
 
   const comment = decryptComment(runtime, credential.secureNotes);
-  const [manualGrants] = await Promise.all([
+  const [manualGrants, favorites] = await Promise.all([
     loadCredentialManualGrants(runtime.prisma, id),
+    loadFavoriteRows(runtime, id, access.employeeId),
     runtime.auditService.log({
       entityType: 'credential',
       entityId: id,
@@ -57,7 +93,7 @@ export async function findCredentialById(
       projectId: credential.projectId ?? undefined,
     }),
   ]);
-  return { ...mapCredentialForApi(credential), comment, manualGrants };
+  return { ...mapCredentialForApi({ ...credential, favorites }), comment, manualGrants };
 }
 
 function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | null {
@@ -130,7 +166,7 @@ export async function createCredential(
     await syncCredentialManualGrants(runtime.prisma, credential.id, createGrants, userId);
   }
 
-  return mapCredentialForApi(credential);
+  return mapCredentialForApi({ ...credential, favorites: [] });
 }
 
 export async function updateCredential(
@@ -199,7 +235,8 @@ export async function updateCredential(
     );
   }
 
-  return mapCredentialForApi(credential);
+  const favorites = await loadFavoriteRows(runtime, credential.id, access.employeeId);
+  return mapCredentialForApi({ ...credential, favorites });
 }
 
 export async function archiveCredential(

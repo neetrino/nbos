@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Star } from 'lucide-react';
 import type { CredentialQuickFilterKey } from '@/features/credentials/constants/credential-vault';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
@@ -53,6 +54,16 @@ export function CredentialQuickFilterChips({
           Mine
         </Button>
       )}
+      <Button
+        type="button"
+        size="sm"
+        variant={activeQuick.has('favorites') ? 'default' : 'outline'}
+        className="h-7 rounded-full px-3 text-xs"
+        onClick={() => onToggleQuick('favorites')}
+      >
+        <Star size={12} className={activeQuick.has('favorites') ? 'fill-current' : undefined} />
+        Favorites
+      </Button>
       <Button
         type="button"
         size="sm"

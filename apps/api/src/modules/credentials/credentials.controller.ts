@@ -35,6 +35,7 @@ export class CredentialsController {
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'ownerId', required: false })
   @ApiQuery({ name: 'needsRotation', required: false })
+  @ApiQuery({ name: 'favoritesOnly', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({
     name: 'tab',
@@ -62,6 +63,7 @@ export class CredentialsController {
     @Query('accessLevel') accessLevel?: string,
     @Query('ownerId') ownerId?: string,
     @Query('needsRotation') needsRotation?: string,
+    @Query('favoritesOnly') favoritesOnly?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
     @Query('includeArchived') includeArchived?: string,
@@ -71,6 +73,8 @@ export class CredentialsController {
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
     const rotationFlag =
       needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
+    const favoritesFlag =
+      favoritesOnly === '1' || favoritesOnly === 'true' || favoritesOnly === 'yes';
     const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll(
       {
@@ -82,6 +86,7 @@ export class CredentialsController {
         accessLevel,
         ownerId,
         needsRotation: rotationFlag,
+        favoritesOnly: favoritesFlag,
         search,
         tab: normalizeCredentialTab(tab),
         employeeId: access.employeeId,
@@ -91,6 +96,21 @@ export class CredentialsController {
         sort: normalizeCredentialListSort(sort, archivedFlag),
       },
       access,
+    );
+  }
+
+  @Put(':id/favorite')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Set personal favorite state for a credential' })
+  async setFavorite(
+    @Param('id') id: string,
+    @Body() body: { favorite?: boolean },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.setFavorite(
+      id,
+      Boolean(body.favorite),
+      credentialsAccessFromUser(user),
     );
   }
 

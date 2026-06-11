@@ -1,8 +1,10 @@
 'use client';
 
-import { FolderKanban, KeyRound, Shield } from 'lucide-react';
+import { Folder, FolderKanban, KeyRound, Shield, Star } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   getAccessLevel,
   getCredentialCriticality,
@@ -19,6 +21,7 @@ export interface CredentialVaultTableRowCellsProps {
   secretFlashCredentialId: string | null;
   onCopyText: (text: string) => void;
   onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
+  onSetFavorite?: (credentialId: string, favorite: boolean) => void;
 }
 
 function previewCellFallback(cred: CredentialListItem, itemIndex: number) {
@@ -34,11 +37,14 @@ export function CredentialVaultTableRowCells({
   secretFlashCredentialId,
   onCopyText,
   onCopySecret,
+  onSetFavorite,
 }: CredentialVaultTableRowCellsProps) {
   const access = getAccessLevel(cred.accessLevel);
   const criticality = getCredentialCriticality(cred.criticality);
   const healthBadge = credentialHealthBadge(cred.health);
   const preview = buildCredentialVaultPreview(cred);
+  const primaryFolder =
+    cred.folders?.find((folder) => folder.isPrimary) ?? cred.folders?.[0] ?? null;
 
   const renderPreviewCell = (itemIndex: number) => {
     const item = preview.items[itemIndex];
@@ -72,9 +78,41 @@ export function CredentialVaultTableRowCells({
     <>
       <TableCell>
         <div className="flex items-center gap-2">
+          {onSetFavorite ? (
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              data-credential-vault-action
+              aria-label={cred.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              className={cn(
+                'size-7 shrink-0',
+                cred.isFavorite
+                  ? 'text-amber-500 hover:text-amber-600'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSetFavorite(cred.id, !cred.isFavorite);
+              }}
+            >
+              <Star className={cn('size-4', cred.isFavorite ? 'fill-current' : null)} />
+            </Button>
+          ) : null}
           <KeyRound size={14} className="text-muted-foreground" />
           <span className="font-medium">{cred.name}</span>
         </div>
+        {primaryFolder ? (
+          <div
+            className={cn(
+              'text-muted-foreground mt-1 flex min-w-0 items-center gap-1 text-[11px]',
+              onSetFavorite ? 'pl-16' : 'pl-6',
+            )}
+          >
+            <Folder className="size-3 shrink-0" aria-hidden />
+            <span className="truncate">{primaryFolder.name}</span>
+          </div>
+        ) : null}
       </TableCell>
       <TableCell className="max-w-[180px]" onClick={(e) => e.stopPropagation()}>
         {renderPreviewCell(0)}

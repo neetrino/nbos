@@ -117,6 +117,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
           ownerId:
             p.activeTab === 'all' && p.quickFilters.has('mine') && p.meId ? p.meId : undefined,
           needsRotation: p.quickFilters.has('needsRotation') ? true : undefined,
+          favoritesOnly: p.quickFilters.has('favorites') ? true : undefined,
           tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
           includeArchived: p.vaultListScope === 'archived',
           sort: p.listSort,
@@ -143,7 +144,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         }
       }
     },
-    [filterKey, requestPageSize],
+    [requestPageSize],
   );
 
   useEffect(() => {
@@ -174,6 +175,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
 
   return {
     credentials,
+    setCredentials,
     loading,
     loadingMore,
     total,

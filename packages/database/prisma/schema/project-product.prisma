@@ -19,6 +19,7 @@ model Project {
   subscriptions             Subscription[]
   workSpaces                WorkSpace[]
   credentials               Credential[]
+  credentialFolders         CredentialFolder[]
   domains                   Domain[]
   tickets                   SupportTicket[]
   expenses                  Expense[]

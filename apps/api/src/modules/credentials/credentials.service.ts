@@ -47,6 +47,7 @@ import {
   createCredentialProvider,
   searchCredentialProviders,
 } from './credential-providers.operations';
+import { setCredentialFavorite } from './credential-favorites.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -187,6 +188,10 @@ export class CredentialsService {
 
   recordUrlOpened(id: string, access: CredentialsAccessContext) {
     return recordCredentialUrlOpened(this.runtime, id, access);
+  }
+
+  setFavorite(id: string, favorite: boolean, access: CredentialsAccessContext) {
+    return setCredentialFavorite(this.runtime, id, favorite, access);
   }
 
   create(data: CreateCredentialDto, userId: string) {

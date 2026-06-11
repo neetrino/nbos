@@ -23,6 +23,7 @@ export interface CredentialVaultTableRowProps {
   onCopyText: (text: string) => void;
   onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onOpenCredential: (id: string) => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
 }
 
 export function CredentialVaultTableRow({
@@ -36,6 +37,7 @@ export function CredentialVaultTableRow({
   onCopyText,
   onCopySecret,
   onOpenCredential,
+  onSetFavorite,
 }: CredentialVaultTableRowProps) {
   return (
     <TableRow
@@ -71,6 +73,7 @@ export function CredentialVaultTableRow({
         secretFlashCredentialId={secretFlashCredentialId}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
+        onSetFavorite={onSetFavorite}
       />
       <TableCell onClick={(e) => e.stopPropagation()}>
         <CredentialVaultTableUrlCell cred={cred} isArchivedList={isArchivedList} />

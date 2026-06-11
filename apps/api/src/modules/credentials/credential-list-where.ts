@@ -22,6 +22,7 @@ export async function buildCredentialListWhere(
     ownerId,
     departmentIds = [],
     needsRotation = false,
+    favoritesOnly = false,
     viewScope,
     includeArchived = false,
   } = params;
@@ -37,6 +38,11 @@ export async function buildCredentialListWhere(
   }
   if (accessLevel) where.accessLevel = accessLevel as Prisma.CredentialWhereInput['accessLevel'];
   if (ownerId) where.ownerId = ownerId;
+  if (favoritesOnly && employeeId) {
+    (where as Prisma.CredentialWhereInput & { favorites?: unknown }).favorites = {
+      some: { employeeId },
+    };
+  }
   if (needsRotation) {
     const dueSoonLimit = new Date();
     dueSoonLimit.setUTCDate(dueSoonLimit.getUTCDate() + 14);

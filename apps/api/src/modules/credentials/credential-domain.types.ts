@@ -41,6 +41,7 @@ export interface CredentialQueryParams {
   ownerId?: string;
   departmentIds?: string[];
   needsRotation?: boolean;
+  favoritesOnly?: boolean;
   viewScope?: string;
   includeArchived?: boolean;
   sort?: CredentialListSort;

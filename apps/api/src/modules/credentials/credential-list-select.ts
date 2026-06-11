@@ -34,4 +34,12 @@ export const CREDENTIAL_LIST_SELECT = {
   project: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
   owner: { select: { id: true, firstName: true, lastName: true } },
+  folderMemberships: {
+    select: {
+      folderId: true,
+      isPrimary: true,
+      folder: { select: { id: true, name: true } },
+    },
+    orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
+  },
 } as const;

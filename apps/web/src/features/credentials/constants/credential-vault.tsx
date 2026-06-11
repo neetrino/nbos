@@ -24,4 +24,4 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
   },
 ];
 
-export type CredentialQuickFilterKey = 'mine' | 'needsRotation';
+export type CredentialQuickFilterKey = 'mine' | 'needsRotation' | 'favorites';

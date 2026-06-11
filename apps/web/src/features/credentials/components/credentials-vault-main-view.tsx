@@ -39,6 +39,7 @@ export interface CredentialsVaultMainViewProps {
   onCreateOpen: () => void;
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
   onCopyText: (text: string) => void;
   onCopySecret: (id: string, criticality: string, field: CredentialSecretField) => void;
   onRequestDelete: (id: string, name: string) => void;
@@ -65,11 +66,9 @@ export function CredentialsVaultMainView({
   onCreateOpen,
   onCreateInCategory,
   onOpenCredential,
+  onSetFavorite,
   onCopyText,
   onCopySecret,
-  onRequestDelete,
-  onRequestPurge,
-  onRestored,
 }: CredentialsVaultMainViewProps) {
   const boardCategoryColumns = useMemo(
     () => categoryBoardColumnsForQuickFilter(quickCategoryChips, activeCategory),
@@ -88,6 +87,7 @@ export function CredentialsVaultMainView({
         showCreate={showCreate}
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
+        onSetFavorite={onSetFavorite}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -109,6 +109,7 @@ export function CredentialsVaultMainView({
         categoryColumns={boardCategoryColumns}
         onCreateInCategory={onCreateInCategory}
         onOpenCredential={onOpenCredential}
+        onSetFavorite={onSetFavorite}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -125,6 +126,7 @@ export function CredentialsVaultMainView({
       onCopySecret={onCopySecret}
       onCreateOpen={onCreateOpen}
       onOpenCredential={onOpenCredential}
+      onSetFavorite={onSetFavorite}
       showCreate={showCreate}
       selection={tableSelection}
     />

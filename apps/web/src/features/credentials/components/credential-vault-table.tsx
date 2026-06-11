@@ -34,6 +34,7 @@ export interface CredentialVaultTableProps {
   onCopySecret: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
   showCreate: boolean;
 }
 
@@ -46,6 +47,7 @@ export function CredentialVaultTable({
   onCopySecret,
   onCreateOpen,
   onOpenCredential,
+  onSetFavorite,
   showCreate,
   selection,
 }: CredentialVaultTableProps) {
@@ -136,6 +138,7 @@ export function CredentialVaultTable({
               onCopyText={onCopyText}
               onCopySecret={onCopySecret}
               onOpenCredential={onOpenCredential}
+              onSetFavorite={onSetFavorite}
             />
           ))}
         </TableBody>

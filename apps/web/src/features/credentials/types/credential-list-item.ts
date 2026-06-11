@@ -16,6 +16,8 @@ export interface CredentialListItem {
   department: { id: string; name: string } | null;
   owner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
+  isFavorite?: boolean;
+  folders?: { id: string; name: string; isPrimary: boolean }[];
   nextRotationAt?: string | null;
   health?: {
     status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';

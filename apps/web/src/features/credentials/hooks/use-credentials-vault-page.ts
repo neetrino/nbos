@@ -25,6 +25,7 @@ import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
 import type { CredentialDetail, CredentialSecretField } from '@/lib/api/credentials';
+import { credentialsApi } from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -149,6 +150,26 @@ export function useCredentialsVaultPage() {
     });
   }, []);
 
+  const setCredentialFavorite = useCallback(
+    async (id: string, favorite: boolean) => {
+      const previous = credentials.find((credential) => credential.id === id)?.isFavorite ?? false;
+      listQuery.setCredentials((items) =>
+        items.map((item) => (item.id === id ? { ...item, isFavorite: favorite } : item)),
+      );
+      try {
+        await credentialsApi.setFavorite(id, favorite);
+        toast.success(favorite ? 'Added to favorites' : 'Removed from favorites');
+        void refetch({ silent: true });
+      } catch {
+        listQuery.setCredentials((items) =>
+          items.map((item) => (item.id === id ? { ...item, isFavorite: previous } : item)),
+        );
+        toast.error('Favorite could not be updated');
+      }
+    },
+    [credentials, listQuery, refetch],
+  );
+
   const handleTabChange = useCallback(
     (tab: CredentialVaultScope) => {
       setPreferences({ activeTab: tab });
@@ -267,6 +288,7 @@ export function useCredentialsVaultPage() {
     openCreate,
     openCredential,
     copyToClipboard,
+    setCredentialFavorite,
     toggleQuickFilter,
     handleTabChange,
     clearFilters,

@@ -177,6 +177,7 @@ function CredentialsVaultPageContent() {
           onCreateOpen={() => vault.openCreate()}
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}
+          onSetFavorite={(id, favorite) => void vault.setCredentialFavorite(id, favorite)}
           onCopyText={vault.copyToClipboard}
           onCopySecret={(id, criticality, field) =>
             void copyVaultSecret({ id, criticality, field })

@@ -74,6 +74,8 @@ export interface CredentialDetail {
   allowedEmployees: string[];
   createdAt: string;
   updatedAt?: string;
+  isFavorite?: boolean;
+  folders?: { id: string; name: string; isPrimary: boolean }[];
   secretsPresent: CredentialSecretsPresent;
   /** Manual access grants, returned inline with detail to avoid a second round-trip. */
   manualGrants?: CredentialManualGrant[];
@@ -155,6 +157,16 @@ export const credentialsApi = {
   },
   async update(id: string, data: Record<string, unknown>): Promise<CredentialDetail> {
     const resp = await api.put<CredentialDetail>(`/api/credentials/${id}`, data);
+    return resp.data;
+  },
+  async setFavorite(
+    id: string,
+    favorite: boolean,
+  ): Promise<{ credentialId: string; isFavorite: boolean }> {
+    const resp = await api.put<{ credentialId: string; isFavorite: boolean }>(
+      `/api/credentials/${id}/favorite`,
+      { favorite },
+    );
     return resp.data;
   },
   async delete(id: string): Promise<void> {
