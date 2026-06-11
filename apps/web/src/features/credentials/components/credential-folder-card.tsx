@@ -88,18 +88,24 @@ export function CredentialFolderCard({
         {canManage ? (
           <div className={cn('absolute top-2 right-2 z-10', FOLDER_MENU_HOVER)}>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  className="bg-background/80 size-7"
-                  aria-label={`Folder actions for ${folder.name}`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <MoreHorizontal className="size-4" aria-hidden />
-                </Button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={(props) => (
+                  <Button
+                    {...props}
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    className="bg-background/80 size-7"
+                    aria-label={`Folder actions for ${folder.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      props.onClick?.(event);
+                    }}
+                  >
+                    <MoreHorizontal className="size-4" aria-hidden />
+                  </Button>
+                )}
+              />
               <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
                 <DropdownMenuItem onClick={() => setRenameOpen(true)}>
                   <Pencil className="size-4" aria-hidden />
