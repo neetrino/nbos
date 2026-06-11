@@ -31,11 +31,13 @@ function folderWhereForAccess(
   access: CredentialsAccessContext,
   scope?: string,
   parentId?: string | null,
+  projectId?: string,
 ) {
   const normalizedScope = scope ? normalizeFolderScope(scope) : undefined;
   const where: Prisma.CredentialFolderWhereInput = { archivedAt: null };
   if (normalizedScope && normalizedScope !== 'ALL') where.scope = normalizedScope;
   if (parentId !== undefined) where.parentId = parentId;
+  if (projectId) where.projectId = projectId;
   return where;
 }
 
@@ -52,9 +54,15 @@ export async function listCredentialFolders(
   access: CredentialsAccessContext,
   scope?: string,
   parentId?: string,
+  projectId?: string,
 ): Promise<{ folders: CredentialFolderApiRow[] }> {
   const folders = await runtime.prisma.credentialFolder.findMany({
-    where: folderWhereForAccess(access, scope, parseFolderParentIdFilter(parentId)),
+    where: folderWhereForAccess(
+      access,
+      scope,
+      parseFolderParentIdFilter(parentId),
+      projectId?.trim() || undefined,
+    ),
     include: { _count: { select: { memberships: true } } },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
   });
@@ -81,9 +89,12 @@ export async function createCredentialFolder(
   if (input.parentId) {
     const parent = await runtime.prisma.credentialFolder.findFirst({
       where: { id: input.parentId, archivedAt: null, scope },
-      select: { id: true },
+      select: { id: true, projectId: true },
     });
     if (!parent) throw new BadRequestException('Parent folder is invalid');
+    if (input.projectId && parent.projectId && parent.projectId !== input.projectId) {
+      throw new BadRequestException('Parent folder belongs to a different project');
+    }
   }
 
   const folder = await runtime.prisma.credentialFolder.create({

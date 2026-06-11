@@ -59,6 +59,7 @@ import {
   bulkAddCredentialsToFolder,
   bulkRemoveCredentialsFromFolder,
 } from './credential-folders-bulk.operations';
+import { listCredentialProjectShells } from './credential-project-shells.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -208,13 +209,23 @@ export class CredentialsService {
   listFolders(
     scope: string | undefined,
     parentId: string | undefined,
+    projectId: string | undefined,
     access: CredentialsAccessContext,
   ) {
-    return listCredentialFolders(this.runtime, access, scope, parentId);
+    return listCredentialFolders(this.runtime, access, scope, parentId, projectId);
+  }
+
+  listProjectShells(access: CredentialsAccessContext) {
+    return listCredentialProjectShells(this.runtime, access);
   }
 
   createFolder(
-    body: { name?: string; scope?: string; parentId?: string | null },
+    body: {
+      name?: string;
+      scope?: string;
+      parentId?: string | null;
+      projectId?: string | null;
+    },
     access: CredentialsAccessContext,
   ) {
     return createCredentialFolder(this.runtime, body, access);

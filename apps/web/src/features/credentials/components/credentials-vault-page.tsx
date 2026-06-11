@@ -52,6 +52,7 @@ function CredentialsVaultPageContent() {
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
     void vault.fetchFolders();
+    void vault.fetchProjectShells();
   };
 
   return (
@@ -118,7 +119,9 @@ function CredentialsVaultPageContent() {
         activeQuick={vault.quickFilters}
         onToggleQuick={vault.toggleQuickFilter}
         trailing={
-          vault.viewMode === 'folders' && vault.showCreate ? (
+          vault.viewMode === 'folders' &&
+          vault.showCreate &&
+          (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
             <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
           ) : undefined
         }
@@ -203,6 +206,12 @@ function CredentialsVaultPageContent() {
           onOpenFolder={vault.openFolder}
           onRenameFolder={vault.renameFolder}
           onArchiveFolder={vault.archiveFolder}
+          projectShellsMode={vault.isProjectFoldersMode}
+          projectShells={vault.projectShells}
+          projectShellsLoading={vault.projectShellsLoading}
+          activeProject={vault.activeProject}
+          onOpenProject={vault.openProject}
+          onNavigateProject={vault.navigateProject}
           credentialFolderDrag={vault.credentialFolderDragConfig}
           credentialFolderDrop={vault.credentialFolderDropConfig}
         />

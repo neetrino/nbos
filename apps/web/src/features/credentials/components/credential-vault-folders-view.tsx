@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { FolderOpen, KeyRound, Plus } from 'lucide-react';
+import { FolderKanban, FolderOpen, KeyRound, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared';
-import { CredentialFolderBreadcrumb } from '@/features/credentials/components/credential-folder-breadcrumb';
+import { CredentialVaultFoldersNav } from '@/features/credentials/components/credential-vault-folders-nav';
+import { CredentialProjectShellCard } from '@/features/credentials/components/credential-project-shell-card';
 import { CredentialFolderCard } from '@/features/credentials/components/credential-folder-card';
 import { CredentialVaultCard } from '@/features/credentials/components/CredentialVaultCard';
 import { CREDENTIAL_VAULT_TILE_GRID_CLASS } from '@/features/credentials/constants/credential-vault-tile-grid';
@@ -16,7 +17,11 @@ import {
   credentialFoldersAtLevel,
 } from '@/features/credentials/utils/credential-folder-tree';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import type { CredentialFolder, CredentialSecretField } from '@/lib/api/credentials';
+import type {
+  CredentialFolder,
+  CredentialProjectShell,
+  CredentialSecretField,
+} from '@/lib/api/credentials';
 import { PermissionGate } from '@/lib/permissions';
 import {
   CREDENTIAL_VAULT_DRAG_MIME,
@@ -65,6 +70,12 @@ export interface CredentialVaultFoldersViewProps {
     busy?: boolean;
     onMoveCredentialsToFolder: (credentialIds: string[], folderId: string) => void | Promise<void>;
   };
+  projectShellsMode?: boolean;
+  projectShells?: CredentialProjectShell[];
+  projectShellsLoading?: boolean;
+  activeProject?: { id: string; name: string } | null;
+  onOpenProject?: (projectId: string) => void;
+  onNavigateProject?: (projectId: string | null) => void;
 }
 
 export function CredentialVaultFoldersView({
@@ -89,6 +100,12 @@ export function CredentialVaultFoldersView({
   secretFlashCredentialId,
   credentialDrag,
   credentialFolderDrop,
+  projectShellsMode = false,
+  projectShells = [],
+  projectShellsLoading = false,
+  activeProject = null,
+  onOpenProject,
+  onNavigateProject,
 }: CredentialVaultFoldersViewProps) {
   const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
 
@@ -124,22 +141,59 @@ export function CredentialVaultFoldersView({
   );
 
   const levelFolders = credentialFoldersAtLevel(folders, activeFolderId);
-  const breadcrumb = buildCredentialFolderBreadcrumb(folders, activeFolderId);
+  const folderPath = buildCredentialFolderBreadcrumb(folders, activeFolderId);
+  const atProjectRoot = projectShellsMode && !activeProject;
+  const insideProject = projectShellsMode && Boolean(activeProject);
+  const hasProjectShells = projectShells.length > 0;
   const hasFolders = levelFolders.length > 0;
   const hasCredentials = credentials.length > 0;
-  const isEmpty = !foldersLoading && !credentialsLoading && !hasFolders && !hasCredentials;
+  const isEmpty =
+    !foldersLoading &&
+    !credentialsLoading &&
+    !projectShellsLoading &&
+    !hasFolders &&
+    !hasCredentials &&
+    !(atProjectRoot && hasProjectShells);
+
+  const nav = (
+    <CredentialVaultFoldersNav
+      rootLabel={projectShellsMode ? 'Projects' : 'Folders'}
+      project={insideProject ? activeProject : null}
+      folderPath={folderPath}
+      onNavigateRoot={() => {
+        if (projectShellsMode) onNavigateProject?.(null);
+        else onNavigateFolder(null);
+      }}
+      onNavigateProject={onNavigateProject}
+      onNavigateFolder={onOpenFolder}
+    />
+  );
+
+  if (atProjectRoot && !projectShellsLoading && !hasProjectShells) {
+    return (
+      <div className="space-y-3">
+        <EmptyState
+          icon={FolderKanban}
+          title="No project credentials"
+          description="Project credentials appear here once they are linked to a project"
+        />
+      </div>
+    );
+  }
 
   if (isEmpty) {
     return (
       <div className="space-y-3">
-        <CredentialFolderBreadcrumb path={breadcrumb} onNavigate={onNavigateFolder} />
+        {nav}
         <EmptyState
           icon={activeFolderId ? FolderOpen : KeyRound}
           title={activeFolderId ? 'Folder is empty' : 'No folders or credentials'}
           description={
             activeFolderId
               ? 'Create a subfolder or add a credential to this folder'
-              : 'Create a folder or add a credential without a folder'
+              : insideProject
+                ? 'Add a subfolder or credential to this project'
+                : 'Create a folder or add a credential without a folder'
           }
           action={
             showCreate ? (
@@ -158,9 +212,28 @@ export function CredentialVaultFoldersView({
 
   return (
     <div className="space-y-4">
-      <CredentialFolderBreadcrumb path={breadcrumb} onNavigate={onNavigateFolder} />
+      {!atProjectRoot ? nav : null}
 
-      {foldersLoading || hasFolders ? (
+      {atProjectRoot && (projectShellsLoading || hasProjectShells) ? (
+        <div className="space-y-2">
+          <VaultFoldersSectionLabel label="Projects" />
+          <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
+            {projectShellsLoading
+              ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (
+                  <Skeleton key={`project-skel-${index}`} className={GRID_CARD_SKELETON_CLASS} />
+                ))
+              : projectShells.map((shell) => (
+                  <CredentialProjectShellCard
+                    key={shell.id}
+                    shell={shell}
+                    onOpen={(projectId) => onOpenProject?.(projectId)}
+                  />
+                ))}
+          </div>
+        </div>
+      ) : null}
+
+      {!atProjectRoot && (foldersLoading || hasFolders) ? (
         <div className="space-y-2">
           <VaultFoldersSectionLabel label="Folders" />
           <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
@@ -185,7 +258,7 @@ export function CredentialVaultFoldersView({
         </div>
       ) : null}
 
-      {credentialsLoading || hasCredentials ? (
+      {!atProjectRoot && (credentialsLoading || hasCredentials) ? (
         <div className="space-y-2">
           <VaultFoldersSectionLabel label="Credentials" />
           <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>

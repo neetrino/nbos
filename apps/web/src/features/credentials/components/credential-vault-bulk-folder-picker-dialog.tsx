@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Folder } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,13 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
 import type { CredentialFolder } from '@/lib/api/credentials';
 
 export interface CredentialVaultBulkFolderPickerDialogProps {
@@ -35,17 +28,16 @@ export function CredentialVaultBulkFolderPickerDialog({
   onOpenChange,
   onConfirm,
 }: CredentialVaultBulkFolderPickerDialogProps) {
-  const [folderId, setFolderId] = useState<string>('');
-
-  useEffect(() => {
-    if (!open) return;
-    setFolderId(folders[0]?.id ?? '');
-  }, [open, folders]);
-
-  const sortedFolders = [...folders].sort((a, b) => a.name.localeCompare(b.name));
+  const [folderId, setFolderId] = useState<string | null>(null);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) setFolderId(null);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Move to folder</DialogTitle>
@@ -53,21 +45,7 @@ export function CredentialVaultBulkFolderPickerDialog({
             Credentials will be placed in the selected folder (one folder per credential).
           </DialogDescription>
         </DialogHeader>
-        <Select value={folderId || undefined} onValueChange={setFolderId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select folder">
-              {(value) => sortedFolders.find((folder) => folder.id === value)?.name ?? 'Folder'}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {sortedFolders.map((folder) => (
-              <SelectItem key={folder.id} value={folder.id}>
-                <Folder className="size-4 text-amber-500/80" aria-hidden />
-                {folder.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CredentialFolderTreePicker folders={folders} value={folderId} onChange={setFolderId} />
         <DialogFooter>
           <Button
             type="button"
@@ -77,7 +55,11 @@ export function CredentialVaultBulkFolderPickerDialog({
           >
             Cancel
           </Button>
-          <Button type="button" disabled={busy || !folderId} onClick={() => onConfirm(folderId)}>
+          <Button
+            type="button"
+            disabled={busy || !folderId}
+            onClick={() => folderId && onConfirm(folderId)}
+          >
             Move
           </Button>
         </DialogFooter>

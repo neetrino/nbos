@@ -25,7 +25,11 @@ import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
 import type { CredentialDetail, CredentialSecretField } from '@/lib/api/credentials';
-import { credentialsApi, type CredentialFolder } from '@/lib/api/credentials';
+import {
+  credentialsApi,
+  type CredentialFolder,
+  type CredentialProjectShell,
+} from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -51,8 +55,11 @@ export function useCredentialsVaultPage() {
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [folders, setFolders] = useState<CredentialFolder[]>([]);
   const [foldersLoading, setFoldersLoading] = useState(false);
+  const [projectShells, setProjectShells] = useState<CredentialProjectShell[]>([]);
+  const [projectShellsLoading, setProjectShellsLoading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
@@ -74,6 +81,8 @@ export function useCredentialsVaultPage() {
     [filters, vaultListScope],
   );
 
+  const isProjectFoldersMode = activeTab === 'project' && viewMode === 'folders';
+
   const listQuery = useCredentialsVaultListQuery({
     viewMode,
     page,
@@ -87,7 +96,8 @@ export function useCredentialsVaultPage() {
     listSort,
     meId: me?.id,
     folderId: activeFolderId,
-    withoutFolder: viewMode === 'folders' && activeFolderId === null,
+    withoutFolder: viewMode === 'folders' && !activeFolderId && !isProjectFoldersMode,
+    projectId: isProjectFoldersMode ? activeProjectId : null,
   });
 
   const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
@@ -116,7 +126,7 @@ export function useCredentialsVaultPage() {
 
   const [folderDropBusy, setFolderDropBusy] = useState(false);
 
-  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
+  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${activeProjectId}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
   const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
 
   if (trackedPageResetKey !== pageResetKey) {
@@ -125,20 +135,47 @@ export function useCredentialsVaultPage() {
   }
 
   const fetchFolders = useCallback(async () => {
+    if (isProjectFoldersMode && !activeProjectId) {
+      setFolders([]);
+      return;
+    }
     setFoldersLoading(true);
     try {
-      const data = await credentialsApi.listFolders({ scope: activeTab.toUpperCase() });
+      const data = await credentialsApi.listFolders({
+        scope: activeTab.toUpperCase(),
+        projectId: isProjectFoldersMode && activeProjectId ? activeProjectId : undefined,
+      });
       setFolders(data.folders);
     } catch {
       setFolders([]);
     } finally {
       setFoldersLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, activeProjectId, isProjectFoldersMode]);
+
+  const fetchProjectShells = useCallback(async () => {
+    if (!isProjectFoldersMode) {
+      setProjectShells([]);
+      return;
+    }
+    setProjectShellsLoading(true);
+    try {
+      const data = await credentialsApi.listProjectShells();
+      setProjectShells(data.shells);
+    } catch {
+      setProjectShells([]);
+    } finally {
+      setProjectShellsLoading(false);
+    }
+  }, [isProjectFoldersMode]);
 
   useEffect(() => {
     void fetchFolders();
   }, [fetchFolders]);
+
+  useEffect(() => {
+    void fetchProjectShells();
+  }, [fetchProjectShells]);
 
   const openCreate = useCallback(
     (category?: string) => {
@@ -181,17 +218,33 @@ export function useCredentialsVaultPage() {
     setActiveFolderId(folderId);
   }, []);
 
+  const navigateProject = useCallback((projectId: string | null) => {
+    setActiveProjectId(projectId);
+    setActiveFolderId(null);
+  }, []);
+
+  const openProject = useCallback((projectId: string) => {
+    setActiveProjectId(projectId);
+    setActiveFolderId(null);
+  }, []);
+
+  const activeProject = useMemo(
+    () => projectShells.find((shell) => shell.id === activeProjectId) ?? null,
+    [activeProjectId, projectShells],
+  );
+
   const createFolder = useCallback(
     async (name: string) => {
       const folder = await credentialsApi.createFolder({
         name,
         scope: activeTab.toUpperCase(),
         parentId: activeFolderId,
+        projectId: isProjectFoldersMode ? activeProjectId : undefined,
       });
       setFolders((prev) => [...prev, folder].sort((a, b) => a.name.localeCompare(b.name)));
       return folder;
     },
-    [activeTab, activeFolderId],
+    [activeTab, activeFolderId, activeProjectId, isProjectFoldersMode],
   );
 
   const renameFolder = useCallback(async (folderId: string, name: string) => {
@@ -224,6 +277,7 @@ export function useCredentialsVaultPage() {
           selection.clearSelection();
           void refetch({ silent: true });
           void fetchFolders();
+          void fetchProjectShells();
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Move to folder failed');
@@ -231,7 +285,7 @@ export function useCredentialsVaultPage() {
         setFolderDropBusy(false);
       }
     },
-    [fetchFolders, refetch, selection],
+    [fetchFolders, fetchProjectShells, refetch, selection],
   );
 
   const credentialFolderDragConfig = useMemo(() => {
@@ -277,6 +331,7 @@ export function useCredentialsVaultPage() {
       setPreferences({ activeTab: tab });
       setQuickCategory(null);
       setActiveFolderId(null);
+      setActiveProjectId(null);
       if (tab !== 'all') {
         setFilters((prev) => {
           const next = { ...prev };
@@ -334,7 +389,10 @@ export function useCredentialsVaultPage() {
 
   const setViewMode = useCallback(
     (mode: CredentialVaultViewMode) => {
-      if (mode !== 'folders') setActiveFolderId(null);
+      if (mode !== 'folders') {
+        setActiveFolderId(null);
+        setActiveProjectId(null);
+      }
       setPreferences({ viewMode: mode });
     },
     [setPreferences],
@@ -366,12 +424,20 @@ export function useCredentialsVaultPage() {
     folders,
     foldersLoading,
     activeFolderId,
+    activeProjectId,
+    activeProject,
+    isProjectFoldersMode,
+    projectShells,
+    projectShellsLoading,
     navigateFolder,
     openFolder,
+    navigateProject,
+    openProject,
     createFolder,
     renameFolder,
     archiveFolder,
     fetchFolders,
+    fetchProjectShells,
     search,
     setSearch,
     filters,

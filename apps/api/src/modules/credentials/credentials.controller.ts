@@ -111,19 +111,34 @@ export class CredentialsController {
   @ApiOperation({ summary: 'List credential folders' })
   @ApiQuery({ name: 'scope', required: false })
   @ApiQuery({ name: 'parentId', required: false, description: 'Omit for all; root for top level' })
+  @ApiQuery({ name: 'projectId', required: false })
   async listFolders(
     @Query('scope') scope: string | undefined,
     @Query('parentId') parentId: string | undefined,
+    @Query('projectId') projectId: string | undefined,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.listFolders(scope, parentId, credentialsAccessFromUser(user));
+    return this.credentialsService.listFolders(
+      scope,
+      parentId,
+      projectId,
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Get('project-shells')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Virtual project folders with credential counts (Project tab)' })
+  async listProjectShells(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.listProjectShells(credentialsAccessFromUser(user));
   }
 
   @Post('folders')
   @RequirePermission('CREDENTIALS', 'ADD')
   @ApiOperation({ summary: 'Create credential folder' })
   async createFolder(
-    @Body() body: { name?: string; scope?: string; parentId?: string | null },
+    @Body()
+    body: { name?: string; scope?: string; parentId?: string | null; projectId?: string | null },
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.credentialsService.createFolder(body, credentialsAccessFromUser(user));

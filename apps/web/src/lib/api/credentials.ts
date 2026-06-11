@@ -111,6 +111,13 @@ export interface CredentialFolder {
   credentialCount: number;
 }
 
+export interface CredentialProjectShell {
+  id: string;
+  name: string;
+  code: string;
+  credentialCount: number;
+}
+
 export const credentialsApi = {
   async searchProviders(query = '', limit = 20): Promise<CredentialProviderOption[]> {
     const resp = await api.get<CredentialProviderOption[]>('/api/credentials/providers', {
@@ -194,10 +201,12 @@ export const credentialsApi = {
   async listFolders(params?: {
     scope?: string;
     parentId?: string | null;
+    projectId?: string;
   }): Promise<{ folders: CredentialFolder[] }> {
     const resp = await api.get<{ folders: CredentialFolder[] }>('/api/credentials/folders', {
       params: {
         scope: params?.scope,
+        projectId: params?.projectId,
         parentId:
           params?.parentId === null
             ? 'root'
@@ -208,10 +217,17 @@ export const credentialsApi = {
     });
     return resp.data;
   },
+  async listProjectShells(): Promise<{ shells: CredentialProjectShell[] }> {
+    const resp = await api.get<{ shells: CredentialProjectShell[] }>(
+      '/api/credentials/project-shells',
+    );
+    return resp.data;
+  },
   async createFolder(body: {
     name: string;
     scope: string;
     parentId?: string | null;
+    projectId?: string | null;
   }): Promise<CredentialFolder> {
     const resp = await api.post<CredentialFolder>('/api/credentials/folders', body);
     return resp.data;

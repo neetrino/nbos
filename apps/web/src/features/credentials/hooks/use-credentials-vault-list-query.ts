@@ -28,6 +28,7 @@ export interface CredentialsVaultListQueryParams {
   meId?: string;
   folderId?: string | null;
   withoutFolder?: boolean;
+  projectId?: string | null;
 }
 
 export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryParams) {
@@ -68,6 +69,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         ownerIdKey,
         params.folderId ?? '',
         params.withoutFolder ? 'without-folder' : '',
+        params.projectId ?? '',
         params.viewMode,
         isBoard ? 'board' : `${params.page}|${params.pageSize}`,
       ].join('|'),
@@ -85,6 +87,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       ownerIdKey,
       params.folderId,
       params.withoutFolder,
+      params.projectId,
       params.viewMode,
       isBoard,
       params.page,
@@ -100,6 +103,17 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       else if (mode === 'append') setLoadingMore(true);
 
       try {
+        const skipProjectRoot =
+          p.viewMode === 'folders' && p.activeTab === 'project' && !p.projectId;
+        if (skipProjectRoot) {
+          if (generation !== fetchGenerationRef.current) return;
+          setCredentials([]);
+          setTotal(0);
+          setTotalPages(1);
+          setLoadedBoardPage(1);
+          return;
+        }
+
         const isBoardView = p.viewMode === 'category-board';
         const category = isBoardView
           ? p.filters.category && p.filters.category !== 'all'
@@ -126,7 +140,13 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
           favoritesOnly: p.quickFilters.has('favorites') ? true : undefined,
           folderId: p.viewMode === 'folders' && p.folderId ? p.folderId : undefined,
           withoutFolder:
-            p.viewMode === 'folders' && !p.folderId && p.withoutFolder ? true : undefined,
+            p.viewMode === 'folders' && p.activeTab !== 'project' && !p.folderId && p.withoutFolder
+              ? true
+              : undefined,
+          projectId:
+            p.viewMode === 'folders' && p.activeTab === 'project' && p.projectId
+              ? p.projectId
+              : undefined,
           tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
           includeArchived: p.vaultListScope === 'archived',
           sort: p.listSort,

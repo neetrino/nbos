@@ -14,14 +14,16 @@ import {
 import { CredentialVaultTiles } from '@/features/credentials/components/credential-vault-tiles';
 import { CredentialVaultFoldersView } from '@/features/credentials/components/credential-vault-folders-view';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import type { CredentialFolder } from '@/lib/api/credentials';
+import type {
+  CredentialFolder,
+  CredentialProjectShell,
+  CredentialSecretField,
+} from '@/lib/api/credentials';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialVaultTableSelectionProps } from '@/features/credentials/components/credential-vault-table';
 import type { CredentialVaultTilesSelectionProps } from '@/features/credentials/components/credential-vault-tiles';
 import type { CredentialVaultCardDragConfig } from '@/features/credentials/utils/credential-vault-drag';
-
-import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialsVaultMainViewProps {
   viewMode: CredentialVaultViewMode;
@@ -55,6 +57,12 @@ export interface CredentialsVaultMainViewProps {
   onOpenFolder?: (folderId: string) => void;
   onRenameFolder?: (folderId: string, name: string) => Promise<void>;
   onArchiveFolder?: (folderId: string) => Promise<void>;
+  projectShellsMode?: boolean;
+  projectShells?: CredentialProjectShell[];
+  projectShellsLoading?: boolean;
+  activeProject?: { id: string; name: string } | null;
+  onOpenProject?: (projectId: string) => void;
+  onNavigateProject?: (projectId: string | null) => void;
   credentialFolderDrag?: CredentialVaultCardDragConfig;
   credentialFolderDrop?: {
     busy?: boolean;
@@ -92,6 +100,12 @@ export function CredentialsVaultMainView({
   onOpenFolder,
   onRenameFolder,
   onArchiveFolder,
+  projectShellsMode,
+  projectShells,
+  projectShellsLoading,
+  activeProject,
+  onOpenProject,
+  onNavigateProject,
   credentialFolderDrag,
   credentialFolderDrop,
 }: CredentialsVaultMainViewProps) {
@@ -138,6 +152,12 @@ export function CredentialsVaultMainView({
         onOpenFolder={onOpenFolder ?? (() => undefined)}
         onRenameFolder={onRenameFolder ?? (async () => undefined)}
         onArchiveFolder={onArchiveFolder ?? (async () => undefined)}
+        projectShellsMode={projectShellsMode}
+        projectShells={projectShells}
+        projectShellsLoading={projectShellsLoading}
+        activeProject={activeProject}
+        onOpenProject={onOpenProject}
+        onNavigateProject={onNavigateProject}
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}

@@ -25,6 +25,7 @@ import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
 import { CredentialAppStoreFields } from './credential-app-store-fields';
+import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -140,41 +141,20 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
   return (
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
-      {typeBlock}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {typeBlock}
+        {folderOptions.length > 0 ? (
+          <div className="grid gap-2">
+            <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
+            <CredentialFolderTreePicker
+              folders={folderOptions}
+              value={folderId}
+              onChange={setFolderId}
+            />
+          </div>
+        ) : null}
+      </div>
       {providerBlock}
-
-      {folderOptions.length > 0 ? (
-        <div className="grid gap-2">
-          <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
-          <Select
-            value={folderId ?? 'none'}
-            onValueChange={(value) => setFolderId(value && value !== 'none' ? value : null)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="No folder">
-                {(value: string | null) => {
-                  if (!value || value === 'none') return 'No folder';
-                  return folderOptions.find((folder) => folder.id === value)?.name ?? 'Folder';
-                }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No folder</SelectItem>
-              {folderOptions.map((folder) => {
-                const FolderIcon = CREDENTIAL_FOLDER_ICON;
-                return (
-                  <SelectItem key={folder.id} value={folder.id}>
-                    <FolderIcon className="size-3.5" aria-hidden />
-                    {folder.name}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-      ) : null}
-
-      {appStoreBlock}
 
       <CredentialFormDynamicFields
         credentialType={credentialType}
