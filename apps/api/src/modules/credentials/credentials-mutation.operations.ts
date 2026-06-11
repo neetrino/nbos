@@ -19,6 +19,10 @@ import {
   manualGrantsFromEmployeeIds,
   syncCredentialManualGrants,
 } from './credential-manual-grants';
+import {
+  normalizeCredentialFolderIds,
+  replaceCredentialFolderMemberships,
+} from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
 
 const CREDENTIAL_DETAIL_INCLUDE = {
@@ -165,6 +169,16 @@ export async function createCredential(
   if (createGrants.length > 0) {
     await syncCredentialManualGrants(runtime.prisma, credential.id, createGrants, userId);
   }
+  const folderIds = normalizeCredentialFolderIds(data);
+  if (folderIds !== undefined && folderIds.length > 0) {
+    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, {
+      employeeId: userId,
+      departmentIds: [],
+      viewScope: 'ALL',
+      editScope: 'ALL',
+      deleteScope: 'ALL',
+    });
+  }
 
   return mapCredentialForApi({ ...credential, favorites: [] });
 }
@@ -233,6 +247,10 @@ export async function updateCredential(
       manualGrantsFromEmployeeIds(credential.allowedEmployees),
       access.employeeId,
     );
+  }
+  const folderIds = normalizeCredentialFolderIds(data);
+  if (folderIds !== undefined) {
+    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, access);
   }
 
   const favorites = await loadFavoriteRows(runtime, credential.id, access.employeeId);

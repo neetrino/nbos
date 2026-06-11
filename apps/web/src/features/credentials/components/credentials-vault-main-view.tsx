@@ -95,6 +95,22 @@ export function CredentialsVaultMainView({
       />
     );
   }
+  if (viewMode === 'folders') {
+    return (
+      <CredentialVaultTiles
+        credentials={credentials}
+        loading={loading}
+        showCreate={showCreate}
+        onCreateOpen={onCreateOpen}
+        onOpenCredential={onOpenCredential}
+        onSetFavorite={onSetFavorite}
+        onCopyText={onCopyText}
+        onCopySecret={onCopySecret}
+        secretFlashCredentialId={secretFlashCredentialId}
+        selection={tilesSelection}
+      />
+    );
+  }
   if (viewMode === 'category-board') {
     return (
       <CredentialVaultCategoryBoard

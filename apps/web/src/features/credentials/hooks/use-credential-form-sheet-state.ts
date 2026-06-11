@@ -42,6 +42,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     initialCategory,
     allowedCategories,
     initialCredentialType,
+    initialFolderId,
     presetKey = '',
   } = props;
 
@@ -67,6 +68,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [nextRotationAt, setNextRotationAt] = useState('');
   const [manualGrants, setManualGrants] = useState<CredentialManualGrant[]>([]);
+  const [folderId, setFolderId] = useState<string | null>(initialFolderId ?? null);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
   const [stepUpField, setStepUpField] = useState<CredentialSecretField | null>(null);
@@ -110,6 +112,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setComment('');
     setNextRotationAt('');
     setManualGrants([]);
+    setFolderId(initialFolderId ?? null);
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
@@ -118,7 +121,14 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setOrphanedSecretsAcknowledged(false);
     setDetailHydrated(false);
     setSnap('');
-  }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
+  }, [
+    allowedCategories,
+    initialCategory,
+    initialCredentialType,
+    initialFolderId,
+    initialName,
+    vaultScope,
+  ]);
 
   const draftClearHandlers = useMemo(
     () => ({
@@ -215,6 +225,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       comment,
       nextRotationAt,
       manualGrants,
+      folderId,
     });
     setEnvSnap(envData.trim());
   }, [
@@ -232,6 +243,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     comment,
     nextRotationAt,
     manualGrants,
+    folderId,
   ]);
 
   const captureFormRollback = useCallback((): (() => void) => {
@@ -259,6 +271,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         ...g,
         employee: { ...g.employee },
       })),
+      folderId,
     };
     return () => {
       setName(saved.name);
@@ -281,6 +294,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setEnvSnap(saved.envSnap);
       setManualGrants(saved.manualGrants);
       setSnap(saved.snap);
+      setFolderId(saved.folderId);
     };
   }, [
     accessLevel,
@@ -293,6 +307,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     envSnap,
     login,
     manualGrants,
+    folderId,
     name,
     nextRotationAt,
     password,
@@ -335,6 +350,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       const rotationDate = d.nextRotationAt?.slice(0, 10) ?? '';
       setNextRotationAt(rotationDate);
       setManualGrants(grants);
+      const primaryFolder = d.folders?.find((folder) => folder.isPrimary) ?? d.folders?.[0];
+      setFolderId(primaryFolder?.id ?? null);
       setRevealed({});
       setOrphanedSecretsAcknowledged(false);
       applyFormSnapshot({
@@ -350,6 +367,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         comment: d.comment ?? '',
         nextRotationAt: rotationDate,
         manualGrants: grants,
+        folderId: primaryFolder?.id ?? null,
       });
     },
     [applyFormSnapshot],
@@ -476,6 +494,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
           criticality,
           nextRotationAt,
           manualGrants,
+          folderId,
         }) !== snap ||
         Boolean(password || passphrase || apiKey) ||
         (credentialType === 'ENV_BUNDLE' && envData.trim() !== envSnap);
@@ -530,6 +549,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setNextRotationAt,
     manualGrants,
     setManualGrants,
+    folderId,
+    setFolderId,
     open,
     detail,
     revealed,

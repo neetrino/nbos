@@ -70,6 +70,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     copySecretField: actions.copySecretField,
     downloadEnvBundle: actions.downloadEnvBundle,
     submitLabel: props.submitLabel ?? 'Save',
+    folderOptions: props.folderOptions ?? [],
     onOpenChange: props.onOpenChange,
   };
 }

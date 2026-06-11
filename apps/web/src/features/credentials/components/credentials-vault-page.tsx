@@ -15,6 +15,7 @@ import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/consta
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
+import { CredentialFolderStrip } from '@/features/credentials/components/credential-folder-strip';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
@@ -50,6 +51,7 @@ function CredentialsVaultPageContent() {
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
+    void vault.fetchFolders();
   };
 
   return (
@@ -116,6 +118,20 @@ function CredentialsVaultPageContent() {
         activeQuick={vault.quickFilters}
         onToggleQuick={vault.toggleQuickFilter}
       />
+
+      {vault.viewMode === 'folders' ? (
+        <CredentialFolderStrip
+          folders={vault.folders}
+          loading={vault.foldersLoading}
+          activeFolderId={vault.activeFolderId}
+          showWithoutFolder={vault.showWithoutFolder}
+          canManage={vault.showCreate}
+          onSelectFolder={vault.selectFolder}
+          onCreateFolder={vault.createFolder}
+          onRenameFolder={vault.renameFolder}
+          onArchiveFolder={vault.archiveFolder}
+        />
+      ) : null}
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
@@ -208,6 +224,8 @@ function CredentialsVaultPageContent() {
         sheetCredentialId={vault.sheetCredentialId}
         sheetInitialItem={vault.sheetInitialItem}
         createPresetCategory={vault.createPresetCategory}
+        initialFolderId={vault.activeFolderId}
+        folderOptions={vault.folders}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
         tileCopyTarget={vault.tileCopyTarget}

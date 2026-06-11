@@ -101,6 +101,16 @@ export interface CredentialProviderOption {
   website: string | null;
 }
 
+export interface CredentialFolder {
+  id: string;
+  name: string;
+  scope: string;
+  projectId: string | null;
+  parentId: string | null;
+  sortOrder: number;
+  credentialCount: number;
+}
+
 export const credentialsApi = {
   async searchProviders(query = '', limit = 20): Promise<CredentialProviderOption[]> {
     const resp = await api.get<CredentialProviderOption[]>('/api/credentials/providers', {
@@ -157,6 +167,33 @@ export const credentialsApi = {
   },
   async update(id: string, data: Record<string, unknown>): Promise<CredentialDetail> {
     const resp = await api.put<CredentialDetail>(`/api/credentials/${id}`, data);
+    return resp.data;
+  },
+  async listFolders(scope?: string): Promise<{ folders: CredentialFolder[] }> {
+    const resp = await api.get<{ folders: CredentialFolder[] }>('/api/credentials/folders', {
+      params: { scope },
+    });
+    return resp.data;
+  },
+  async createFolder(body: { name: string; scope: string }): Promise<CredentialFolder> {
+    const resp = await api.post<CredentialFolder>('/api/credentials/folders', body);
+    return resp.data;
+  },
+  async updateFolder(id: string, body: { name: string }): Promise<CredentialFolder> {
+    const resp = await api.put<CredentialFolder>(`/api/credentials/folders/${id}`, body);
+    return resp.data;
+  },
+  async archiveFolder(id: string): Promise<void> {
+    await api.delete(`/api/credentials/folders/${id}`);
+  },
+  async replaceFolders(
+    id: string,
+    body: { folderIds?: string[]; folderId?: string | null },
+  ): Promise<{ credentialId: string; folderIds: string[] }> {
+    const resp = await api.put<{ credentialId: string; folderIds: string[] }>(
+      `/api/credentials/${id}/folders`,
+      body,
+    );
     return resp.data;
   },
   async setFavorite(

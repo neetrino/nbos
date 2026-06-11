@@ -42,6 +42,8 @@ export interface CredentialQueryParams {
   departmentIds?: string[];
   needsRotation?: boolean;
   favoritesOnly?: boolean;
+  folderId?: string;
+  withoutFolder?: boolean;
   viewScope?: string;
   includeArchived?: boolean;
   sort?: CredentialListSort;
@@ -89,6 +91,8 @@ export interface CreateCredentialDto {
   accessLevel?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
+  folderIds?: string[];
+  folderId?: string | null;
 }
 
 export interface UpdateCredentialDto {
@@ -120,6 +124,8 @@ export interface UpdateCredentialDto {
   accessLevel?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
+  folderIds?: string[];
+  folderId?: string | null;
   rotationReason?: string;
   /** Required when a type change would orphan stored secrets (sheet R1 checkbox). */
   acknowledgeOrphanedSecrets?: boolean;

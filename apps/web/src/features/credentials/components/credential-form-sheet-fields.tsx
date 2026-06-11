@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Folder } from 'lucide-react';
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 import {
   CREDENTIAL_TYPES_FOR_CREATE,
@@ -98,6 +99,9 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setNextRotationAt,
     appStorePlatform,
     setAppStorePlatform,
+    folderId,
+    setFolderId,
+    folderOptions,
   } = form;
 
   const providerBlock = showsProviderPicker(credentialType) ? (
@@ -133,6 +137,34 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
       {typeBlock}
       {providerBlock}
+
+      {folderOptions.length > 0 ? (
+        <div className="grid gap-2">
+          <Label>Folder</Label>
+          <Select
+            value={folderId ?? 'none'}
+            onValueChange={(value) => setFolderId(value && value !== 'none' ? value : null)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="No folder">
+                {(value: string | null) => {
+                  if (!value || value === 'none') return 'No folder';
+                  return folderOptions.find((folder) => folder.id === value)?.name ?? 'Folder';
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No folder</SelectItem>
+              {folderOptions.map((folder) => (
+                <SelectItem key={folder.id} value={folder.id}>
+                  <Folder className="size-3.5" aria-hidden />
+                  {folder.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
 
       {appStoreBlock}
 

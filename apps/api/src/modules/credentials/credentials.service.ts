@@ -48,6 +48,13 @@ import {
   searchCredentialProviders,
 } from './credential-providers.operations';
 import { setCredentialFavorite } from './credential-favorites.operations';
+import {
+  archiveCredentialFolder,
+  createCredentialFolder,
+  listCredentialFolders,
+  replaceCredentialFolderMemberships,
+  updateCredentialFolder,
+} from './credential-folders.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -192,6 +199,26 @@ export class CredentialsService {
 
   setFavorite(id: string, favorite: boolean, access: CredentialsAccessContext) {
     return setCredentialFavorite(this.runtime, id, favorite, access);
+  }
+
+  listFolders(scope: string | undefined, access: CredentialsAccessContext) {
+    return listCredentialFolders(this.runtime, access, scope);
+  }
+
+  createFolder(body: { name?: string; scope?: string }, access: CredentialsAccessContext) {
+    return createCredentialFolder(this.runtime, body, access);
+  }
+
+  updateFolder(id: string, body: { name?: string }, access: CredentialsAccessContext) {
+    return updateCredentialFolder(this.runtime, id, body, access);
+  }
+
+  archiveFolder(id: string, access: CredentialsAccessContext) {
+    return archiveCredentialFolder(this.runtime, id, access);
+  }
+
+  replaceFolders(id: string, folderIds: string[], access: CredentialsAccessContext) {
+    return replaceCredentialFolderMemberships(this.runtime, id, folderIds, access);
   }
 
   create(data: CreateCredentialDto, userId: string) {

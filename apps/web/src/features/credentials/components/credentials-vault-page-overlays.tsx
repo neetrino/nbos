@@ -7,6 +7,7 @@ import { PermanentDeleteCredentialDialog } from '@/features/credentials/componen
 import type { CredentialDeleteTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
 import type { CredentialTileCopyTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
 import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
@@ -16,6 +17,8 @@ export interface CredentialsVaultPageOverlaysProps {
   sheetCredentialId: string | null;
   sheetInitialItem: CredentialListItem | null;
   createPresetCategory: string | undefined;
+  initialFolderId?: string | null;
+  folderOptions: CredentialFolder[];
   deleteTarget: CredentialDeleteTarget | null;
   purgeTarget: CredentialDeleteTarget | null;
   tileCopyTarget: CredentialTileCopyTarget | null;
@@ -35,6 +38,8 @@ export function CredentialsVaultPageOverlays({
   sheetCredentialId,
   sheetInitialItem,
   createPresetCategory,
+  initialFolderId,
+  folderOptions,
   deleteTarget,
   purgeTarget,
   tileCopyTarget,
@@ -56,7 +61,12 @@ export function CredentialsVaultPageOverlays({
         initialItem={sheetInitialItem}
         vaultScope={activeTab}
         initialCategory={createPresetCategory}
-        presetKey={sheetCredentialId ?? `create-${createPresetCategory ?? ''}-${activeTab}`}
+        initialFolderId={sheetCredentialId ? undefined : initialFolderId}
+        folderOptions={folderOptions}
+        presetKey={
+          sheetCredentialId ??
+          `create-${createPresetCategory ?? ''}-${initialFolderId ?? ''}-${activeTab}`
+        }
         continueAfterCreate
         onCreated={onCredentialCreated}
         onSaved={onSaved}

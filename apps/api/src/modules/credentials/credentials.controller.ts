@@ -64,6 +64,8 @@ export class CredentialsController {
     @Query('ownerId') ownerId?: string,
     @Query('needsRotation') needsRotation?: string,
     @Query('favoritesOnly') favoritesOnly?: string,
+    @Query('folderId') folderId?: string,
+    @Query('withoutFolder') withoutFolder?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
     @Query('includeArchived') includeArchived?: string,
@@ -75,6 +77,8 @@ export class CredentialsController {
       needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
     const favoritesFlag =
       favoritesOnly === '1' || favoritesOnly === 'true' || favoritesOnly === 'yes';
+    const withoutFolderFlag =
+      withoutFolder === '1' || withoutFolder === 'true' || withoutFolder === 'yes';
     const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll(
       {
@@ -87,6 +91,8 @@ export class CredentialsController {
         ownerId,
         needsRotation: rotationFlag,
         favoritesOnly: favoritesFlag,
+        folderId,
+        withoutFolder: withoutFolderFlag,
         search,
         tab: normalizeCredentialTab(tab),
         employeeId: access.employeeId,
@@ -97,6 +103,49 @@ export class CredentialsController {
       },
       access,
     );
+  }
+
+  @Get('folders')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List credential folders' })
+  @ApiQuery({ name: 'scope', required: false })
+  async listFolders(
+    @Query('scope') scope: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.listFolders(scope, credentialsAccessFromUser(user));
+  }
+
+  @Post('folders')
+  @RequirePermission('CREDENTIALS', 'ADD')
+  @ApiOperation({ summary: 'Create credential folder' })
+  async createFolder(
+    @Body() body: { name?: string; scope?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.createFolder(body, credentialsAccessFromUser(user));
+  }
+
+  @Put('folders/:folderId')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @ApiOperation({ summary: 'Rename credential folder' })
+  async updateFolder(
+    @Param('folderId') folderId: string,
+    @Body() body: { name?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.updateFolder(folderId, body, credentialsAccessFromUser(user));
+  }
+
+  @Delete('folders/:folderId')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Archive credential folder' })
+  async archiveFolder(
+    @Param('folderId') folderId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    await this.credentialsService.archiveFolder(folderId, credentialsAccessFromUser(user));
   }
 
   @Put(':id/favorite')
@@ -112,6 +161,22 @@ export class CredentialsController {
       Boolean(body.favorite),
       credentialsAccessFromUser(user),
     );
+  }
+
+  @Put(':id/folders')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @ApiOperation({ summary: 'Replace ordinary folder memberships for a credential' })
+  async replaceFolders(
+    @Param('id') id: string,
+    @Body() body: { folderIds?: string[]; folderId?: string | null },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const folderIds = Array.isArray(body.folderIds)
+      ? body.folderIds
+      : body.folderId
+        ? [body.folderId]
+        : [];
+    return this.credentialsService.replaceFolders(id, folderIds, credentialsAccessFromUser(user));
   }
 
   @Post('export/file')

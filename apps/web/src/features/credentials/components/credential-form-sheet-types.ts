@@ -1,4 +1,5 @@
 import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
@@ -16,6 +17,8 @@ export interface CredentialFormSheetProps {
   initialCategory?: string;
   allowedCategories?: string[];
   initialCredentialType?: string;
+  initialFolderId?: string | null;
+  folderOptions?: CredentialFolder[];
   submitLabel?: string;
   successToast?: string | false;
   presetKey?: string;

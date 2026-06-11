@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import type {
   CredentialQuickFilterKey,
@@ -25,7 +25,7 @@ import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
 import { usePermission } from '@/lib/permissions';
 import type { CredentialDetail, CredentialSecretField } from '@/lib/api/credentials';
-import { credentialsApi } from '@/lib/api/credentials';
+import { credentialsApi, type CredentialFolder } from '@/lib/api/credentials';
 
 export interface CredentialDeleteTarget {
   id: string;
@@ -50,6 +50,10 @@ export function useCredentialsVaultPage() {
   }));
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [showWithoutFolder, setShowWithoutFolder] = useState(false);
+  const [folders, setFolders] = useState<CredentialFolder[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [createPresetCategory, setCreatePresetCategory] = useState<string | undefined>();
@@ -83,6 +87,8 @@ export function useCredentialsVaultPage() {
     vaultListScope,
     listSort,
     meId: me?.id,
+    folderId: activeFolderId,
+    withoutFolder: showWithoutFolder,
   });
 
   const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
@@ -109,13 +115,29 @@ export function useCredentialsVaultPage() {
     selectionResetKey,
   );
 
-  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
+  const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${showWithoutFolder}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
   const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
 
   if (trackedPageResetKey !== pageResetKey) {
     setTrackedPageResetKey(pageResetKey);
     setPage(1);
   }
+
+  const fetchFolders = useCallback(async () => {
+    setFoldersLoading(true);
+    try {
+      const data = await credentialsApi.listFolders(activeTab.toUpperCase());
+      setFolders(data.folders);
+    } catch {
+      setFolders([]);
+    } finally {
+      setFoldersLoading(false);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    void fetchFolders();
+  }, [fetchFolders]);
 
   const openCreate = useCallback(
     (category?: string) => {
@@ -150,6 +172,43 @@ export function useCredentialsVaultPage() {
     });
   }, []);
 
+  const selectFolder = useCallback((folderId: string | null, withoutFolder = false) => {
+    setActiveFolderId(folderId);
+    setShowWithoutFolder(withoutFolder);
+  }, []);
+
+  const createFolder = useCallback(
+    async (name: string) => {
+      const folder = await credentialsApi.createFolder({
+        name,
+        scope: activeTab.toUpperCase(),
+      });
+      setFolders((prev) => [...prev, folder].sort((a, b) => a.name.localeCompare(b.name)));
+      setActiveFolderId(folder.id);
+      setShowWithoutFolder(false);
+      return folder;
+    },
+    [activeTab],
+  );
+
+  const renameFolder = useCallback(async (folderId: string, name: string) => {
+    const folder = await credentialsApi.updateFolder(folderId, { name });
+    setFolders((prev) => prev.map((item) => (item.id === folderId ? folder : item)));
+  }, []);
+
+  const archiveFolder = useCallback(
+    async (folderId: string) => {
+      await credentialsApi.archiveFolder(folderId);
+      setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
+      if (activeFolderId === folderId) {
+        setActiveFolderId(null);
+        setShowWithoutFolder(false);
+      }
+      void refetch({ silent: true });
+    },
+    [activeFolderId, refetch],
+  );
+
   const setCredentialFavorite = useCallback(
     async (id: string, favorite: boolean) => {
       const previous = credentials.find((credential) => credential.id === id)?.isFavorite ?? false;
@@ -174,6 +233,8 @@ export function useCredentialsVaultPage() {
     (tab: CredentialVaultScope) => {
       setPreferences({ activeTab: tab });
       setQuickCategory(null);
+      setActiveFolderId(null);
+      setShowWithoutFolder(false);
       if (tab !== 'all') {
         setFilters((prev) => {
           const next = { ...prev };
@@ -227,7 +288,7 @@ export function useCredentialsVaultPage() {
     [activeTab, vaultListScope],
   );
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
-  const showPagedFooter = viewMode === 'list' || viewMode === 'tiles';
+  const showPagedFooter = viewMode === 'list' || viewMode === 'tiles' || viewMode === 'folders';
 
   const setViewMode = useCallback(
     (mode: CredentialVaultViewMode) => {
@@ -259,6 +320,15 @@ export function useCredentialsVaultPage() {
     totalPages,
     total,
     showPagedFooter,
+    folders,
+    foldersLoading,
+    activeFolderId,
+    showWithoutFolder,
+    selectFolder,
+    createFolder,
+    renameFolder,
+    archiveFolder,
+    fetchFolders,
     search,
     setSearch,
     filters,

@@ -23,6 +23,8 @@ export async function buildCredentialListWhere(
     departmentIds = [],
     needsRotation = false,
     favoritesOnly = false,
+    folderId,
+    withoutFolder = false,
     viewScope,
     includeArchived = false,
   } = params;
@@ -41,6 +43,15 @@ export async function buildCredentialListWhere(
   if (favoritesOnly && employeeId) {
     (where as Prisma.CredentialWhereInput & { favorites?: unknown }).favorites = {
       some: { employeeId },
+    };
+  }
+  if (folderId) {
+    (where as Prisma.CredentialWhereInput & { folderMemberships?: unknown }).folderMemberships = {
+      some: { folderId },
+    };
+  } else if (withoutFolder) {
+    (where as Prisma.CredentialWhereInput & { folderMemberships?: unknown }).folderMemberships = {
+      none: {},
     };
   }
   if (needsRotation) {

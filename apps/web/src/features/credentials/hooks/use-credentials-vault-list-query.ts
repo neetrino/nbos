@@ -26,6 +26,8 @@ export interface CredentialsVaultListQueryParams {
   vaultListScope: VaultListScope;
   listSort: CredentialVaultListSort;
   meId?: string;
+  folderId?: string | null;
+  withoutFolder?: boolean;
 }
 
 export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryParams) {
@@ -64,6 +66,8 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.vaultListScope,
         params.listSort,
         ownerIdKey,
+        params.folderId ?? '',
+        params.withoutFolder ? 'without-folder' : '',
         params.viewMode,
         isBoard ? 'board' : `${params.page}|${params.pageSize}`,
       ].join('|'),
@@ -79,6 +83,8 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       params.vaultListScope,
       params.listSort,
       ownerIdKey,
+      params.folderId,
+      params.withoutFolder,
       params.viewMode,
       isBoard,
       params.page,
@@ -118,6 +124,8 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
             p.activeTab === 'all' && p.quickFilters.has('mine') && p.meId ? p.meId : undefined,
           needsRotation: p.quickFilters.has('needsRotation') ? true : undefined,
           favoritesOnly: p.quickFilters.has('favorites') ? true : undefined,
+          folderId: p.folderId || undefined,
+          withoutFolder: p.withoutFolder || undefined,
           tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
           includeArchived: p.vaultListScope === 'archived',
           sort: p.listSort,
