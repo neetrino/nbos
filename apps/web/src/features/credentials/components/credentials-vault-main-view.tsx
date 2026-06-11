@@ -19,6 +19,7 @@ import type { CredentialCategoryOption } from '@/features/credentials/constants/
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 import type { CredentialVaultTableSelectionProps } from '@/features/credentials/components/credential-vault-table';
 import type { CredentialVaultTilesSelectionProps } from '@/features/credentials/components/credential-vault-tiles';
+import type { CredentialVaultCardDragConfig } from '@/features/credentials/utils/credential-vault-drag';
 
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
@@ -54,6 +55,11 @@ export interface CredentialsVaultMainViewProps {
   onOpenFolder?: (folderId: string) => void;
   onRenameFolder?: (folderId: string, name: string) => Promise<void>;
   onArchiveFolder?: (folderId: string) => Promise<void>;
+  credentialFolderDrag?: CredentialVaultCardDragConfig;
+  credentialFolderDrop?: {
+    busy?: boolean;
+    onMoveCredentialsToFolder: (credentialIds: string[], folderId: string) => void | Promise<void>;
+  };
 }
 
 export function CredentialsVaultMainView({
@@ -86,6 +92,8 @@ export function CredentialsVaultMainView({
   onOpenFolder,
   onRenameFolder,
   onArchiveFolder,
+  credentialFolderDrag,
+  credentialFolderDrop,
 }: CredentialsVaultMainViewProps) {
   const boardCategoryColumns = useMemo(
     () => categoryBoardColumnsForQuickFilter(quickCategoryChips, activeCategory),
@@ -138,6 +146,8 @@ export function CredentialsVaultMainView({
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
+        credentialDrag={credentialFolderDrag}
+        credentialFolderDrop={credentialFolderDrop}
       />
     );
   }

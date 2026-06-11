@@ -17,6 +17,11 @@ import {
 } from '@/features/credentials/utils/credential-vault-card-meta';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
+import {
+  CREDENTIAL_VAULT_DRAG_MIME,
+  stringifyCredentialVaultDragPayload,
+  type CredentialVaultCardDragConfig,
+} from '@/features/credentials/utils/credential-vault-drag';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
 
@@ -39,6 +44,7 @@ export interface CredentialVaultCardProps {
   onSetFavorite?: (id: string, favorite: boolean) => void;
   onRequestArchive?: (id: string, name: string) => void;
   canArchive?: boolean;
+  credentialDrag?: CredentialVaultCardDragConfig;
 }
 
 export function CredentialVaultCard({
@@ -55,14 +61,31 @@ export function CredentialVaultCard({
   onSetFavorite,
   onRequestArchive,
   canArchive = false,
+  credentialDrag,
 }: CredentialVaultCardProps) {
+  const draggable = Boolean(credentialDrag);
   const criticalityMeta = getCredentialCriticality(credential.criticality);
   const metaItems = buildCredentialVaultCardMetaBadges(credential, {
     includeCriticality: false,
   });
 
   return (
-    <div className={VAULT_CARD_WRAPPER_CLASS}>
+    <div
+      className={cn(VAULT_CARD_WRAPPER_CLASS, draggable && 'cursor-grab active:cursor-grabbing')}
+      draggable={draggable}
+      onDragStart={
+        credentialDrag
+          ? (event) => {
+              const credentialIds = credentialDrag.resolveDragCredentialIds(credential.id);
+              event.dataTransfer.setData(
+                CREDENTIAL_VAULT_DRAG_MIME,
+                stringifyCredentialVaultDragPayload({ credentialIds }),
+              );
+              event.dataTransfer.effectAllowed = 'move';
+            }
+          : undefined
+      }
+    >
       <CredentialVaultCardHoverActions
         credentialId={credential.id}
         url={credential.url}

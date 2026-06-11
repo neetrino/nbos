@@ -105,7 +105,7 @@ export function useCredentialsVaultPage() {
     [credentials, sheetCredentialId],
   );
 
-  const selectionEnabled = viewMode === 'list' || viewMode === 'tiles';
+  const selectionEnabled = viewMode === 'list' || viewMode === 'tiles' || viewMode === 'folders';
   const pageCredentialIds = useMemo(() => credentials.map((c) => c.id), [credentials]);
   const selectionResetKey = `${activeTab}|${vaultListScope}|${page}|${pageSize}|${search}|${viewMode}`;
   const selection = useCredentialVaultSelection(
@@ -113,6 +113,8 @@ export function useCredentialsVaultPage() {
     pageCredentialIds,
     selectionResetKey,
   );
+
+  const [folderDropBusy, setFolderDropBusy] = useState(false);
 
   const pageResetKey = `${search}|${JSON.stringify(filters)}|${quickCategory}|${[...quickFilters].sort().join(',')}|${activeFolderId}|${activeTab}|${vaultListScope}|${viewMode}|${pageSize}`;
   const [trackedPageResetKey, setTrackedPageResetKey] = useState(pageResetKey);
@@ -208,6 +210,48 @@ export function useCredentialsVaultPage() {
     },
     [activeFolderId, refetch],
   );
+
+  const moveCredentialsToFolder = useCallback(
+    async (credentialIds: string[], folderId: string) => {
+      setFolderDropBusy(true);
+      try {
+        const result = await credentialsApi.bulkAddToFolder({ credentialIds, folderId });
+        const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
+        toast.success(
+          `Moved ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'}${skipped}`,
+        );
+        if (result.succeeded > 0) {
+          selection.clearSelection();
+          void refetch({ silent: true });
+          void fetchFolders();
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Move to folder failed');
+        throw error;
+      } finally {
+        setFolderDropBusy(false);
+      }
+    },
+    [fetchFolders, refetch, selection],
+  );
+
+  const credentialFolderDragConfig = useMemo(() => {
+    if (viewMode !== 'folders' || vaultListScope !== 'active') return undefined;
+    return {
+      resolveDragCredentialIds: (credentialId: string) =>
+        selection.selectionActive && selection.isSelected(credentialId)
+          ? selection.selectedIdList
+          : [credentialId],
+    };
+  }, [viewMode, vaultListScope, selection]);
+
+  const credentialFolderDropConfig = useMemo(() => {
+    if (viewMode !== 'folders' || vaultListScope !== 'active') return undefined;
+    return {
+      busy: folderDropBusy,
+      onMoveCredentialsToFolder: moveCredentialsToFolder,
+    };
+  }, [folderDropBusy, moveCredentialsToFolder, vaultListScope, viewMode]);
 
   const setCredentialFavorite = useCallback(
     async (id: string, favorite: boolean) => {
@@ -370,5 +414,7 @@ export function useCredentialsVaultPage() {
     selectionEnabled,
     selection,
     pageCredentialIds,
+    credentialFolderDragConfig,
+    credentialFolderDropConfig,
   };
 }

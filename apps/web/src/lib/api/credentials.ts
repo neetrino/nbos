@@ -157,6 +157,28 @@ export const credentialsApi = {
     }>('/api/credentials/bulk/restore', { credentialIds });
     return resp.data;
   },
+  async bulkAddToFolder(body: {
+    credentialIds: string[];
+    folderId: string;
+  }): Promise<{ succeeded: number; skipped: number; credentialIds: string[] }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/folders/add', body);
+    return resp.data;
+  },
+  async bulkRemoveFromFolder(body: {
+    credentialIds: string[];
+    folderId?: string;
+  }): Promise<{ succeeded: number; skipped: number; credentialIds: string[] }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/folders/remove', body);
+    return resp.data;
+  },
   async getById(id: string): Promise<CredentialDetail> {
     const resp = await api.get<CredentialDetail>(`/api/credentials/${id}`);
     return resp.data;

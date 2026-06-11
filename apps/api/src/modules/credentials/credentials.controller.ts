@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -226,6 +227,41 @@ export class CredentialsController {
   ) {
     const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
     return this.credentialsService.bulkRestore(credentialIds, credentialsAccessFromUser(user));
+  }
+
+  @Post('bulk/folders/add')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Move credentials into a folder (v1: single folder membership)' })
+  async bulkAddToFolder(
+    @Body() body: { credentialIds?: string[]; folderId?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    const folderId = body.folderId?.trim();
+    if (!folderId) throw new BadRequestException('folderId is required');
+    return this.credentialsService.bulkAddToFolder(
+      credentialIds,
+      folderId,
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Post('bulk/folders/remove')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remove credentials from a folder or all folders' })
+  async bulkRemoveFromFolder(
+    @Body() body: { credentialIds?: string[]; folderId?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    const folderId = body.folderId?.trim() || undefined;
+    return this.credentialsService.bulkRemoveFromFolder(
+      credentialIds,
+      folderId,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Get('vault-session')

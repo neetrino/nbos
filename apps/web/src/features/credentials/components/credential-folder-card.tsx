@@ -14,6 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import { CredentialFolderNameDialog } from '@/features/credentials/components/credential-folder-name-dialog';
 import type { CredentialFolder } from '@/lib/api/credentials';
+import type { CredentialFolderDropHandlers } from '@/features/credentials/utils/credential-vault-drag';
 
 const FOLDER_MENU_HOVER =
   'opacity-0 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100';
@@ -25,6 +26,8 @@ interface CredentialFolderCardProps {
   onOpen: (folderId: string) => void;
   onRename: (folderId: string, name: string) => Promise<void>;
   onArchive: (folderId: string) => Promise<void>;
+  dropHighlight?: boolean;
+  dropHandlers?: CredentialFolderDropHandlers;
 }
 
 function formatFolderCounts(credentialCount: number, childFolderCount: number): string {
@@ -43,6 +46,8 @@ export function CredentialFolderCard({
   onOpen,
   onRename,
   onArchive,
+  dropHighlight = false,
+  dropHandlers,
 }: CredentialFolderCardProps) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -78,75 +83,86 @@ export function CredentialFolderCard({
 
   return (
     <>
-      <KanbanCardShell
-        role="button"
-        tabIndex={0}
-        radius="lg"
-        padding="none"
-        hoverShadow="md"
-        className={cn(
-          'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
-          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-        )}
-        onClick={() => onOpen(folder.id)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onOpen(folder.id);
-          }
-        }}
+      <div
+        className={cn(dropHighlight && 'ring-primary rounded-lg ring-2 ring-offset-2')}
+        onDragOver={dropHandlers?.onDragOver}
+        onDragLeave={dropHandlers?.onDragLeave}
+        onDrop={dropHandlers?.onDrop}
       >
-        <span className="absolute top-0 bottom-0 left-0 w-0.5 bg-amber-500/70" aria-hidden />
-        {canManage ? (
-          <div className={cn('absolute top-1.5 right-1.5 z-10', FOLDER_MENU_HOVER)}>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={(props) => (
-                  <Button
-                    {...props}
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground size-7"
-                    aria-label={`Folder actions for ${folder.name}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onClick?.(event);
-                    }}
+        <KanbanCardShell
+          role="button"
+          tabIndex={0}
+          radius="lg"
+          padding="none"
+          hoverShadow="md"
+          className={cn(
+            'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
+            'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+          )}
+          onClick={() => onOpen(folder.id)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onOpen(folder.id);
+            }
+          }}
+        >
+          <span className="absolute top-0 bottom-0 left-0 w-0.5 bg-amber-500/70" aria-hidden />
+          {canManage ? (
+            <div className={cn('absolute top-1.5 right-1.5 z-10', FOLDER_MENU_HOVER)}>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={(props) => (
+                    <Button
+                      {...props}
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground size-7"
+                      aria-label={`Folder actions for ${folder.name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        props.onClick?.(event);
+                      }}
+                    >
+                      <MoreHorizontal className="size-4" aria-hidden />
+                    </Button>
+                  )}
+                />
+                <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+                  <DropdownMenuItem onClick={() => setRenameOpen(true)}>
+                    <Pencil className="size-4" aria-hidden />
+                    Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => void handleArchive()}
+                    disabled={busy}
                   >
-                    <MoreHorizontal className="size-4" aria-hidden />
-                  </Button>
-                )}
+                    <Trash2 className="size-4" aria-hidden />
+                    Archive
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : null}
+          <div className="flex h-full min-h-0 flex-1 flex-col p-2.5 pl-3">
+            <p className="text-foreground line-clamp-1 pr-8 text-sm leading-snug font-medium">
+              {folder.name}
+            </p>
+            <div className="flex min-h-0 flex-1 items-center justify-center py-0.5">
+              <Folder
+                className="size-11 shrink-0 text-amber-500/75"
+                strokeWidth={1.5}
+                aria-hidden
               />
-              <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
-                <DropdownMenuItem onClick={() => setRenameOpen(true)}>
-                  <Pencil className="size-4" aria-hidden />
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => void handleArchive()}
-                  disabled={busy}
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                  Archive
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            </div>
+            <p className="text-muted-foreground truncate text-center text-[10px] leading-none">
+              {formatFolderCounts(folder.credentialCount, childFolderCount)}
+            </p>
           </div>
-        ) : null}
-        <div className="flex h-full min-h-0 flex-1 flex-col p-2.5 pl-3">
-          <p className="text-foreground line-clamp-1 pr-8 text-sm leading-snug font-medium">
-            {folder.name}
-          </p>
-          <div className="flex min-h-0 flex-1 items-center justify-center py-0.5">
-            <Folder className="size-11 shrink-0 text-amber-500/75" strokeWidth={1.5} aria-hidden />
-          </div>
-          <p className="text-muted-foreground truncate text-center text-[10px] leading-none">
-            {formatFolderCounts(folder.credentialCount, childFolderCount)}
-          </p>
-        </div>
-      </KanbanCardShell>
+        </KanbanCardShell>
+      </div>
 
       <CredentialFolderNameDialog
         open={renameOpen}

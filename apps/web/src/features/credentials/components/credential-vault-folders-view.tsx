@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { FolderOpen, KeyRound, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared';
@@ -17,6 +19,13 @@ import {
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialFolder, CredentialSecretField } from '@/lib/api/credentials';
 import { PermissionGate } from '@/lib/permissions';
+import {
+  CREDENTIAL_VAULT_DRAG_MIME,
+  dataTransferHasCredentialVaultDrag,
+  parseCredentialVaultDragPayload,
+  type CredentialFolderDropHandlers,
+  type CredentialVaultCardDragConfig,
+} from '@/features/credentials/utils/credential-vault-drag';
 
 const GRID_SKELETON_COUNT = 8;
 const GRID_CARD_SKELETON_CLASS = 'h-[104px] w-full rounded-lg';
@@ -52,6 +61,11 @@ export interface CredentialVaultFoldersViewProps {
   onCopyText: (text: string) => void;
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   secretFlashCredentialId?: string | null;
+  credentialDrag?: CredentialVaultCardDragConfig;
+  credentialFolderDrop?: {
+    busy?: boolean;
+    onMoveCredentialsToFolder: (credentialIds: string[], folderId: string) => void | Promise<void>;
+  };
 }
 
 export function CredentialVaultFoldersView({
@@ -74,7 +88,46 @@ export function CredentialVaultFoldersView({
   onCopyText,
   onCopySecret,
   secretFlashCredentialId,
+  credentialDrag,
+  credentialFolderDrop,
 }: CredentialVaultFoldersViewProps) {
+  const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
+
+  const buildFolderDropHandlers = useCallback(
+    (folderId: string): CredentialFolderDropHandlers | undefined => {
+      if (!credentialFolderDrop) return undefined;
+      const { busy, onMoveCredentialsToFolder } = credentialFolderDrop;
+
+      return {
+        onDragOver: (event) => {
+          if (busy || !dataTransferHasCredentialVaultDrag(event.dataTransfer)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          setDropTargetFolderId(folderId);
+        },
+        onDragLeave: (event) => {
+          const next = event.relatedTarget as Node | null;
+          if (next && event.currentTarget.contains(next)) return;
+          setDropTargetFolderId((current) => (current === folderId ? null : current));
+        },
+        onDrop: (event) => {
+          event.preventDefault();
+          setDropTargetFolderId(null);
+          if (busy) return;
+          const raw = event.dataTransfer.getData(CREDENTIAL_VAULT_DRAG_MIME);
+          const parsed = parseCredentialVaultDragPayload(raw);
+          if (!parsed?.credentialIds.length) return;
+          void Promise.resolve(
+            onMoveCredentialsToFolder([...parsed.credentialIds], folderId),
+          ).catch((error: unknown) => {
+            toast.error(error instanceof Error ? error.message : 'Move to folder failed');
+          });
+        },
+      };
+    },
+    [credentialFolderDrop],
+  );
+
   const levelFolders = credentialFoldersAtLevel(folders, activeFolderId);
   const breadcrumb = buildCredentialFolderBreadcrumb(folders, activeFolderId);
   const hasFolders = levelFolders.length > 0;
@@ -129,6 +182,8 @@ export function CredentialVaultFoldersView({
                     onOpen={onOpenFolder}
                     onRename={onRenameFolder}
                     onArchive={onArchiveFolder}
+                    dropHighlight={dropTargetFolderId === folder.id}
+                    dropHandlers={buildFolderDropHandlers(folder.id)}
                   />
                 ))}
           </div>
@@ -159,6 +214,7 @@ export function CredentialVaultFoldersView({
                     selectionActive={selection?.selectionActive ?? false}
                     selected={selection?.isSelected(credential.id)}
                     onToggleSelected={() => selection?.onToggle(credential.id)}
+                    credentialDrag={credentialDrag}
                   />
                 ))}
           </div>

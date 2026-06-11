@@ -45,7 +45,7 @@ Favorites and folders never grant access. Existing credential visibility remains
 
 - Folder view mode.
 - Create credential inside an active folder.
-- Bulk add/remove from folder.
-- Drag cards into folders.
+- ~~Bulk add/remove from folder.~~ ✅
+- ~~Drag cards into folders.~~ ✅
 - Folder picker in the credential sheet.
 - Folder sharing/visibility if needed.

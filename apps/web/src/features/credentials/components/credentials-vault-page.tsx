@@ -131,6 +131,8 @@ function CredentialsVaultPageContent() {
           busy={vault.loading}
           showSelectAll={vault.pageCredentialIds.length > 0}
           selectedIds={vault.selection.selectedIdList}
+          folders={vault.folders}
+          activeFolderId={vault.activeFolderId}
           onSelectAll={vault.selection.selectAllOnPage}
           onClear={vault.selection.clearSelection}
           onCompleted={handleSaved}
@@ -201,6 +203,8 @@ function CredentialsVaultPageContent() {
           onOpenFolder={vault.openFolder}
           onRenameFolder={vault.renameFolder}
           onArchiveFolder={vault.archiveFolder}
+          credentialFolderDrag={vault.credentialFolderDragConfig}
+          credentialFolderDrop={vault.credentialFolderDropConfig}
         />
       </div>
 

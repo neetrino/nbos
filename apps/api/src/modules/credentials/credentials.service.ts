@@ -55,6 +55,10 @@ import {
   replaceCredentialFolderMemberships,
   updateCredentialFolder,
 } from './credential-folders.operations';
+import {
+  bulkAddCredentialsToFolder,
+  bulkRemoveCredentialsFromFolder,
+} from './credential-folders-bulk.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -250,6 +254,18 @@ export class CredentialsService {
 
   bulkRestore(credentialIds: string[], access: CredentialsAccessContext) {
     return bulkRestoreCredentials(this.runtime, access, credentialIds);
+  }
+
+  bulkAddToFolder(credentialIds: string[], folderId: string, access: CredentialsAccessContext) {
+    return bulkAddCredentialsToFolder(this.runtime, access, credentialIds, folderId);
+  }
+
+  bulkRemoveFromFolder(
+    credentialIds: string[],
+    folderId: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
+    return bulkRemoveCredentialsFromFolder(this.runtime, access, credentialIds, folderId);
   }
 
   permanentlyDelete(id: string, access: CredentialsAccessContext, stepUpPassword?: string) {
