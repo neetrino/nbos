@@ -99,7 +99,11 @@ export function DealGeneralTab({
   );
 
   const searchPartners = useCallback(async (query: string) => {
-    const data = await partnersApi.getAll({ pageSize: 5, search: query || undefined });
+    const data = await partnersApi.getAll({
+      pageSize: 5,
+      search: query || undefined,
+      scope: 'active',
+    });
     return data.items.map((partner) => ({ value: partner.id, label: partner.name }));
   }, []);
 

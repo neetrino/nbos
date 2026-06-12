@@ -304,12 +304,12 @@ purgedAt    DateTime?   -- шаг 2: job/admin/policy; окончательно�
 
 ### Phase 5 — Tasks, Support, Partners, Client Services — P2
 
-| #   | Задача                                 | Profile | Статус                                                   |
-| --- | -------------------------------------- | ------- | -------------------------------------------------------- |
-| 5.1 | Tasks                                  | A? (O1) | ⬜ TODO                                                  |
-| 5.2 | Support — close status, no hard delete | A-lite  | 🟡 PARTIAL — API hard delete blocked; UI cleanup backlog |
-| 5.3 | Partners — `trashedAt`                 | A       | ⬜ TODO                                                  |
-| 5.4 | Client Services — cancel / trash       | A-lite  | ⬜ TODO                                                  |
+| #   | Задача                                 | Profile | Статус                                                                        |
+| --- | -------------------------------------- | ------- | ----------------------------------------------------------------------------- |
+| 5.1 | Tasks                                  | A? (O1) | ⬜ TODO                                                                       |
+| 5.2 | Support — close status, no hard delete | A-lite  | 🟡 PARTIAL — API hard delete blocked; UI cleanup backlog                      |
+| 5.3 | Partners — `trashedAt`                 | A       | ✅ DONE — migration `20260612150000`; API scope/trash/restore; web Trash view |
+| 5.4 | Client Services — cancel / trash       | A-lite  | ⬜ TODO                                                                       |
 
 ---
 

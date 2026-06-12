@@ -1,12 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ExternalLink, Handshake, Pencil } from 'lucide-react';
+import { ExternalLink, Handshake, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { DetailSheetSettingsMenu, EntityDetailSheetContent } from '@/components/shared';
+import {
+  DeleteConfirmDialog,
+  DetailSheetSettingsMenu,
+  EntityDetailSheetContent,
+  useDeleteConfirm,
+} from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
 import { PartnerDetailTabs } from '@/features/partners/components/PartnerDetailTabs';
 import { PartnerLifecycleStages } from '@/features/partners/components/PartnerLifecycleStages';
@@ -25,6 +30,9 @@ interface PartnerDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPartnerUpdated?: (partner: Partner) => void;
+  isTrashView?: boolean;
+  onMoveToTrash?: (id: string) => void | Promise<void>;
+  onRestore?: (id: string) => void | Promise<void>;
 }
 
 export function PartnerDetailSheet({
@@ -33,6 +41,9 @@ export function PartnerDetailSheet({
   open,
   onOpenChange,
   onPartnerUpdated,
+  isTrashView = false,
+  onMoveToTrash,
+  onRestore,
 }: PartnerDetailSheetProps) {
   const {
     entity: partner,
@@ -48,6 +59,8 @@ export function PartnerDetailSheet({
   const [statusBusy, setStatusBusy] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [accrualsReloadKey, setAccrualsReloadKey] = useState(0);
+  const deleteConfirm = useDeleteConfirm();
+  const inTrash = Boolean(partner?.trashedAt) || isTrashView;
 
   useEffect(() => {
     if (partner?.id) setAccrualsReloadKey((k) => k + 1);
@@ -123,13 +136,35 @@ export function PartnerDetailSheet({
                   </div>
                   <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
                     <DetailSheetSettingsMenu>
-                      <DropdownMenuItem
-                        onClick={() => setEditOpen(true)}
-                        disabled={!partner || loading}
-                      >
-                        <Pencil />
-                        Edit partner
-                      </DropdownMenuItem>
+                      {!inTrash ? (
+                        <DropdownMenuItem
+                          onClick={() => setEditOpen(true)}
+                          disabled={!partner || loading}
+                        >
+                          <Pencil />
+                          Edit partner
+                        </DropdownMenuItem>
+                      ) : null}
+                      {inTrash && onRestore ? (
+                        <DropdownMenuItem
+                          disabled={!partner || loading}
+                          onClick={() => partner && void onRestore(partner.id)}
+                        >
+                          <RotateCcw />
+                          Restore
+                        </DropdownMenuItem>
+                      ) : onMoveToTrash ? (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          disabled={!partner || loading}
+                          onClick={() =>
+                            partner && deleteConfirm.request({ id: partner.id, name: partner.name })
+                          }
+                        >
+                          <Trash2 />
+                          Move to Trash
+                        </DropdownMenuItem>
+                      ) : null}
                       <DropdownMenuItem
                         onClick={() =>
                           window.open(
@@ -152,7 +187,7 @@ export function PartnerDetailSheet({
                 {partner ? (
                   <PartnerLifecycleStages
                     currentStatus={partner.status}
-                    disabled={loading || statusBusy}
+                    disabled={loading || statusBusy || inTrash}
                     onStatusSelect={handleStatusSelect}
                   />
                 ) : (
@@ -184,7 +219,7 @@ export function PartnerDetailSheet({
         </EntityDetailSheetContent>
       </Sheet>
 
-      {partner ? (
+      {partner && !inTrash ? (
         <EditPartnerDialog
           partner={partner}
           open={editOpen}
@@ -195,6 +230,20 @@ export function PartnerDetailSheet({
           }}
         />
       ) : null}
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        title="Move partner to Trash?"
+        description="The partner will be removed from active lists. Linked orders and accruals stay intact; restore from Trash later."
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          deleteConfirm.clear();
+          if (id && onMoveToTrash) void onMoveToTrash(id);
+        }}
+      />
     </>
   );
 }

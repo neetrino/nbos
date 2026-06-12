@@ -83,7 +83,7 @@ export function SubscriptionFormDialog({
     setOptionsLoading(true);
     Promise.all([
       projectsApi.getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE }),
-      partnersApi.getAll({ page: 1, pageSize: PARTNERS_PAGE_SIZE }),
+      partnersApi.getAll({ page: 1, pageSize: PARTNERS_PAGE_SIZE, scope: 'active' }),
     ])
       .then(([projectRes, partnerRes]) => {
         if (!cancelled) {
