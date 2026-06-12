@@ -37,18 +37,14 @@ export function buildScopeWhere(
   return buildTimestampScopeWhere(scope, options?.field ?? 'trashedAt');
 }
 
-/**
- * Drive transitional trash: recoverable rows = legacy ARCHIVED or DELETED+deletedAt.
- * Use only for Drive FileAsset until ARCHIVED rows are migrated.
- */
+/** Drive recoverable Trash rows (Profile B): soft-deleted with a trash timestamp. */
 export function buildDriveRecoverableTrashWhere(): {
-  OR: Array<Record<string, unknown>>;
+  status: 'DELETED';
+  deletedAt: { not: null };
 } {
   return {
-    OR: [
-      { deletedAt: null, status: 'ARCHIVED' },
-      { status: 'DELETED', deletedAt: { not: null } },
-    ],
+    status: 'DELETED',
+    deletedAt: { not: null },
   };
 }
 

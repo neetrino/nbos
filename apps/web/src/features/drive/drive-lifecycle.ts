@@ -12,9 +12,9 @@ export const DRIVE_LIFECYCLE_HINTS: Record<Exclude<DriveLifecycleView, 'browse'>
     'Recoverable deletions. Restore to make active again, or purge permanently from the danger zone.',
 };
 
-/** Transitional: Trash includes legacy ARCHIVED rows until DB migration. */
+/** Recoverable Trash rows use DELETED status with a trash timestamp. */
 export function isDriveFileInTrash(file: FileAsset): boolean {
-  return file.status === 'ARCHIVED' || file.status === 'DELETED';
+  return file.status === 'DELETED' && file.deletedAt != null;
 }
 
 /** Client guard when list response may be stale. */

@@ -35,8 +35,10 @@ describe('parseLifecycleScopeFromQuery', () => {
 });
 
 describe('buildDriveRecoverableTrashWhere', () => {
-  it('includes archived and deleted transitional states', () => {
-    const where = buildDriveRecoverableTrashWhere();
-    expect(where.OR).toHaveLength(2);
+  it('targets soft-deleted file assets in Trash', () => {
+    expect(buildDriveRecoverableTrashWhere()).toEqual({
+      status: 'DELETED',
+      deletedAt: { not: null },
+    });
   });
 });

@@ -14,6 +14,7 @@ export const DRIVE_FILE_ACTIONS = [
   'COPY',
   'ARCHIVE',
   'TRASH',
+  'RESTORE',
   'PERMANENT_DELETE',
 ] as const;
 
@@ -182,6 +183,18 @@ export function evaluateDriveFileAction(
       return {
         allowed: false,
         reason: 'You do not have permission to move this file to Trash.',
+      };
+
+    case 'RESTORE':
+      if (file.status !== 'DELETED') {
+        return { allowed: false, reason: 'Only Trash files can be restored.' };
+      }
+      if (cap.isOrigin) return { allowed: true };
+      if (hasAnyGrant(cap, ['DELETE'])) return { allowed: true };
+      if (cap.hasBaseAccess) return { allowed: true };
+      return {
+        allowed: false,
+        reason: 'You do not have permission to restore this file.',
       };
 
     case 'PERMANENT_DELETE':

@@ -42,9 +42,11 @@ describe('buildDriveFileActionGates', () => {
   });
 
   it('enables restore for recoverable trash rows', () => {
-    const gates = buildDriveFileActionGates(layoutCaps, { ...activeFile, status: 'ARCHIVED' }, [
-      'PERMANENT_DELETE',
-    ]);
+    const gates = buildDriveFileActionGates(
+      layoutCaps,
+      { ...activeFile, status: 'DELETED', deletedAt: '2026-01-01T00:00:00.000Z' },
+      ['PERMANENT_DELETE'],
+    );
     expect(gates.canRestore).toBe(true);
     expect(gates.canMoveToTrash).toBe(false);
   });

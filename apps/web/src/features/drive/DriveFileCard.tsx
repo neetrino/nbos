@@ -442,7 +442,7 @@ function FileCardActionsMenu({
   busy: boolean;
   align: 'end' | 'start';
 }) {
-  const inRecoverableTrash = file.status === 'ARCHIVED' || file.status === 'DELETED';
+  const inRecoverableTrash = file.status === 'DELETED' && file.deletedAt != null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

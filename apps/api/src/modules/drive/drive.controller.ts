@@ -363,7 +363,7 @@ export class DriveController {
     name: 'scope',
     required: false,
     enum: ['active', 'trash'],
-    description: 'List scope (default active). Trash includes transitional ARCHIVED rows.',
+    description: 'List scope (default active). Trash lists soft-deleted file assets.',
   })
   @ApiQuery({
     name: 'trash',
@@ -556,7 +556,7 @@ export class DriveController {
   @Get('lifecycle-counts')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({
-    summary: 'Count for unified Trash lifecycle view (includes transitional ARCHIVED rows)',
+    summary: 'Count for unified Trash lifecycle view',
   })
   async getLifecycleCounts(
     @CurrentUser() user: CurrentUserPayload,
@@ -823,7 +823,7 @@ export class DriveController {
 
   @Post('files/:id/archive')
   @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({ summary: 'Transitional: archive metadata (prefer move-to-trash)' })
+  @ApiOperation({ summary: 'Transitional alias for move-to-trash' })
   async archiveFileAsset(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -839,7 +839,7 @@ export class DriveController {
   @Post('files/:id/restore')
   @RequirePermission('DRIVE', 'DELETE')
   @ApiOperation({
-    summary: 'Transitional: restore legacy ARCHIVED row (prefer restore-from-trash)',
+    summary: 'Transitional alias for restore-from-trash',
   })
   async restoreFileAsset(
     @CurrentUser() user: CurrentUserPayload,
@@ -886,7 +886,7 @@ export class DriveController {
   @Post('files/:id/restore-from-trash')
   @RequirePermission('DRIVE', 'DELETE')
   @ApiOperation({
-    summary: 'Restore a Trash file back to Active (unified ARCHIVED + DELETED rows)',
+    summary: 'Restore a Trash file back to Active',
   })
   async restoreTrashFileAsset(
     @CurrentUser() user: CurrentUserPayload,

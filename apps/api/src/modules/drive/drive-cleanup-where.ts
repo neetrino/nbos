@@ -8,7 +8,7 @@ import {
 export function orphanFileWhere(): Prisma.FileAssetWhereInput {
   return {
     deletedAt: null,
-    status: { in: ['ACTIVE', 'ARCHIVED'] },
+    status: { in: ['ACTIVE', 'APPROVED', 'DRAFT'] },
     links: { none: { unlinkedAt: null } },
     folderPlacements: { none: { removedAt: null } },
   };

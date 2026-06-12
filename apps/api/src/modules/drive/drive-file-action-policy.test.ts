@@ -110,4 +110,12 @@ describe('evaluateDriveFileAction', () => {
     });
     expect(decision.allowed).toBe(false);
   });
+
+  it('allows owner to restore deleted trash file', () => {
+    const decision = evaluateDriveFileAction(cap({ employeeId: 'e1', isOrigin: true }), 'RESTORE', {
+      ...baseFile,
+      status: 'DELETED',
+    });
+    expect(decision.allowed).toBe(true);
+  });
 });

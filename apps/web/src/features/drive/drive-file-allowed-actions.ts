@@ -16,6 +16,7 @@ export const DRIVE_FILE_ACTION_KEYS = [
   'COPY',
   'ARCHIVE',
   'TRASH',
+  'RESTORE',
   'PERMANENT_DELETE',
 ] as const;
 

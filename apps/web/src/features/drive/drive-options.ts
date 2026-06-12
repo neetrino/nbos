@@ -33,7 +33,7 @@ export type DriveLibraryKey =
 
 export type DriveViewMode = 'cards' | 'tiles' | 'list' | 'table';
 
-export type DriveStatusFilter = 'ACTIVE' | 'APPROVED' | 'ARCHIVED';
+export type DriveStatusFilter = 'ACTIVE' | 'APPROVED';
 
 export interface DriveLibraryOption {
   key: DriveLibraryKey;
@@ -57,7 +57,7 @@ export interface DriveSpaceOption {
   defaultLibraryKey: DriveLibraryKey;
 }
 
-export const STATUS_FILTERS: DriveStatusFilter[] = ['ACTIVE', 'APPROVED', 'ARCHIVED'];
+export const STATUS_FILTERS: DriveStatusFilter[] = ['ACTIVE', 'APPROVED'];
 
 export const PURPOSE_OPTIONS = [
   'OFFER',
