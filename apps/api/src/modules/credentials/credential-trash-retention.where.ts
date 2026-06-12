@@ -9,5 +9,5 @@ export function trashedCredentialRetentionWhere(
   const ms =
     retentionMs ?? resolveRetentionMsForEntity('credential') ?? CREDENTIAL_TRASH_RETENTION_MS;
   const cutoff = new Date(now.getTime() - ms);
-  return { archivedAt: { lt: cutoff } };
+  return { trashedAt: { not: null, lt: cutoff } };
 }

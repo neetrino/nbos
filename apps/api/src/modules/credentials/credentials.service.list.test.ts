@@ -58,18 +58,18 @@ describe('CredentialsService findAll', () => {
     await service.findAll({ includeArchived: true, sort: 'created_desc' }, accessUser1);
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ archivedAt: { not: null } }),
-        orderBy: { archivedAt: 'desc' },
+        where: expect.objectContaining({ trashedAt: { not: null } }),
+        orderBy: { trashedAt: 'desc' },
       }),
     );
   });
 
-  it('orders trash list by archivedAt desc', async () => {
+  it('orders trash list by trashedAt desc', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
     await service.findAll({ scope: 'trash', sort: 'created_desc' }, accessUser1);
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ orderBy: { archivedAt: 'desc' } }),
+      expect.objectContaining({ orderBy: { trashedAt: 'desc' } }),
     );
   });
 

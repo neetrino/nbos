@@ -51,7 +51,7 @@ interface CredentialSeedRow {
   allowedEmployees?: string[];
   lastRotatedAt?: Date;
   nextRotationAt?: Date | null;
-  archivedAt?: Date;
+  trashedAt?: Date;
 }
 
 interface ProductSlotBinding {
@@ -435,7 +435,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       provider: 'Beget',
       login: 'legacy_host',
       password: 'Old-Host-Archived',
-      archivedAt: addUtcDays(now, -14),
+      trashedAt: addUtcDays(now, -14),
     },
     {
       name: 'Legacy — Expired API Key (archived)',
@@ -450,7 +450,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       password: 'Legacy-Maps-Portal-Demo',
       apiKey: 'legacy-maps-key-revoked',
       allowedEmployees: [dev.id],
-      archivedAt: addUtcDays(now, -45),
+      trashedAt: addUtcDays(now, -45),
     },
   ];
 }
@@ -592,7 +592,7 @@ async function createCredentialRows(
         allowedEmployees: encrypted.allowedEmployees ?? [],
         lastRotatedAt: encrypted.lastRotatedAt,
         nextRotationAt: encrypted.nextRotationAt,
-        archivedAt: encrypted.archivedAt,
+        trashedAt: encrypted.trashedAt,
       },
     });
     nameToId.set(row.name, created.id);
@@ -722,7 +722,7 @@ export async function seedCredentialsDemo(
   await linkDomainsAndClientServices(prisma, nameToId);
   const bindingCount = await seedProductAccessSlotBindings(prisma, ctx, nameToId);
 
-  const archivedCount = allRows.filter((r) => r.archivedAt).length;
+  const archivedCount = allRows.filter((r) => r.trashedAt).length;
   console.log(
     `  ✓ Credentials demo (${allRows.length} total, ${archivedCount} archived, ${bindingCount} product slot bindings)`,
   );

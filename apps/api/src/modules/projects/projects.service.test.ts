@@ -211,7 +211,7 @@ describe('ProjectsService', () => {
       expect(prisma.project.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: '1' },
-          data: expect.objectContaining({ trashedAt: expect.any(Date), isArchived: true }),
+          data: expect.objectContaining({ trashedAt: expect.any(Date) }),
         }),
       );
     });

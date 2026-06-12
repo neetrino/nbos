@@ -7,7 +7,6 @@ model Project {
   contactId   String   @map("contact_id")
   companyId   String?  @map("company_id")
   description String?
-  isArchived  Boolean  @default(false) @map("is_archived")
   trashedAt   DateTime? @map("trashed_at")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

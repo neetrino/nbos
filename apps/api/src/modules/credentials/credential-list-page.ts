@@ -83,7 +83,7 @@ async function fetchCredentialsByOrderedIds(
 
 function resolveCredentialListOrderBy(sort: CredentialListSort, trashList: boolean) {
   if (sort === 'name_asc') return { name: 'asc' as const };
-  if (trashList) return { archivedAt: 'desc' as const };
+  if (trashList) return { trashedAt: 'desc' as const };
   return { createdAt: 'desc' as const };
 }
 

@@ -17,7 +17,7 @@ async function findBulkFolderEditableRows(
     'edit',
   );
   return runtime.prisma.credential.findMany({
-    where: { id: { in: credentialIds }, archivedAt: null, ...visibility },
+    where: { id: { in: credentialIds }, trashedAt: null, ...visibility },
     select: { id: true, projectId: true },
   });
 }

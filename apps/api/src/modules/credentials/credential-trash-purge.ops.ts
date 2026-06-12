@@ -19,7 +19,7 @@ export async function purgeTrashedCredentialsPastRetention(
   const candidates = await prisma.credential.findMany({
     where,
     select: { id: true, projectId: true },
-    orderBy: { archivedAt: 'asc' },
+    orderBy: { trashedAt: 'asc' },
     take: CREDENTIAL_TRASH_PURGE_BATCH_CAP,
   });
 

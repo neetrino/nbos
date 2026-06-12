@@ -8,7 +8,7 @@ import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document
 import type { FullProject } from '@/lib/api/projects';
 
 function isProjectInTrash(project: FullProject): boolean {
-  return project.trashedAt != null || project.isArchived;
+  return project.trashedAt != null;
 }
 
 /** Project name in app top bar; Trash badge in the context zone when applicable. */

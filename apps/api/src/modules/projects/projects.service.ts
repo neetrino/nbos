@@ -169,8 +169,8 @@ export class ProjectsService {
       data.isArchived === undefined
         ? {}
         : data.isArchived
-          ? { trashedAt: new Date(), isArchived: true }
-          : { trashedAt: null, isArchived: false };
+          ? { trashedAt: new Date() }
+          : { trashedAt: null };
 
     await this.prisma.project.update({
       where: { id },
@@ -197,7 +197,7 @@ export class ProjectsService {
     assertEntityIsActive(project, 'trashedAt', 'Project');
     return this.prisma.project.update({
       where: { id },
-      data: { trashedAt: new Date(), isArchived: true },
+      data: { trashedAt: new Date() },
     });
   }
 
@@ -210,7 +210,7 @@ export class ProjectsService {
     assertEntityIsTrashed(project, 'trashedAt', 'Project');
     return this.prisma.project.update({
       where: { id },
-      data: { trashedAt: null, isArchived: false },
+      data: { trashedAt: null },
     });
   }
 

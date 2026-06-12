@@ -65,7 +65,7 @@ export async function listCredentialFolders(
     ),
     include: {
       memberships: {
-        where: { credential: { archivedAt: null } },
+        where: { credential: { trashedAt: null } },
         select: { credentialId: true },
       },
     },
@@ -183,7 +183,7 @@ export async function deleteCredentialFolder(
 
   const [activeMemberships, childFolders] = await Promise.all([
     runtime.prisma.credentialFolderMembership.count({
-      where: { folderId, credential: { archivedAt: null } },
+      where: { folderId, credential: { trashedAt: null } },
     }),
     runtime.prisma.credentialFolder.count({
       where: { parentId: folderId },
@@ -222,7 +222,7 @@ export async function removeCredentialFolderGrouping(
   if (childFolders > 0) throw new ConflictException(NESTED_FOLDER_MESSAGE);
 
   const memberships = await runtime.prisma.credentialFolderMembership.findMany({
-    where: { folderId, credential: { archivedAt: null } },
+    where: { folderId, credential: { trashedAt: null } },
     select: { credentialId: true },
   });
 
@@ -298,7 +298,7 @@ export async function replaceCredentialFolderMemberships(
   const visible = await runtime.prisma.credential.findFirst({
     where: {
       id: credentialId,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,

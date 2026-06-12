@@ -115,7 +115,7 @@ describe('CredentialsService mutations', () => {
     expect(prisma.credential.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: '1' },
-        data: expect.objectContaining({ archivedAt: expect.any(Date) }),
+        data: expect.objectContaining({ trashedAt: expect.any(Date) }),
       }),
     );
     expect(auditService.log).toHaveBeenCalledWith(
@@ -127,13 +127,13 @@ describe('CredentialsService mutations', () => {
     prisma.credential.findFirst.mockResolvedValue({
       id: '1',
       projectId: 'proj-1',
-      archivedAt: new Date(),
+      trashedAt: new Date(),
     });
     prisma.credential.update.mockResolvedValue({ id: '1' });
     await service.restore('1', accessUser1);
     expect(prisma.credential.update).toHaveBeenCalledWith({
       where: { id: '1' },
-      data: { archivedAt: null },
+      data: { trashedAt: null },
     });
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'credential.restored', entityId: '1' }),
@@ -145,7 +145,7 @@ describe('CredentialsService mutations', () => {
       id: '1',
       projectId: 'p1',
       criticality: 'LOW',
-      archivedAt: new Date(),
+      trashedAt: new Date(),
     });
     prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
     await service.permanentlyDelete('1', accessUser1, 'step-up');

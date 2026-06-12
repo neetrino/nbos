@@ -101,7 +101,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     moduleLabel: 'Credentials',
     entityLabel: 'Credentials',
     profile: 'C',
-    timestampField: 'archivedAt',
+    timestampField: 'trashedAt',
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'credential',
     webHref: '/credentials',

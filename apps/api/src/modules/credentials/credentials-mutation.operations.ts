@@ -79,7 +79,7 @@ export async function findCredentialById(
   const credential = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -200,7 +200,7 @@ export async function updateCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -276,11 +276,11 @@ export async function archiveCredential(
   access: CredentialsAccessContext,
 ) {
   const existing = await findMutableCredential(runtime, id, access, 'delete');
-  const archivedAt = new Date();
+  const trashedAt = new Date();
   await runtime.prisma.$transaction([
     runtime.prisma.credential.update({
       where: { id },
-      data: { archivedAt },
+      data: { trashedAt },
     }),
     runtime.prisma.credentialFolderMembership.deleteMany({ where: { credentialId: id } }),
     runtime.prisma.credentialFavorite.deleteMany({ where: { credentialId: id } }),
@@ -302,7 +302,7 @@ export async function restoreCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: { not: null },
+      trashedAt: { not: null },
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -313,7 +313,7 @@ export async function restoreCredential(
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
-  await runtime.prisma.credential.update({ where: { id }, data: { archivedAt: null } });
+  await runtime.prisma.credential.update({ where: { id }, data: { trashedAt: null } });
   await runtime.auditService.log({
     entityType: 'credential',
     entityId: id,
@@ -332,7 +332,7 @@ export async function permanentlyDeleteCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: { not: null },
+      trashedAt: { not: null },
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -365,7 +365,7 @@ async function findMutableCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,

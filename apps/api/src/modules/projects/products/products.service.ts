@@ -293,13 +293,13 @@ export class ProductsService {
             company: { select: { id: true, name: true } },
             contact: { select: { id: true, firstName: true, lastName: true } },
             credentials: {
-              where: { archivedAt: null },
+              where: { trashedAt: null },
               select: { category: true },
             },
             domains: { select: { status: true } },
             _count: {
               select: {
-                credentials: { where: { archivedAt: null } },
+                credentials: { where: { trashedAt: null } },
                 domains: true,
               },
             },

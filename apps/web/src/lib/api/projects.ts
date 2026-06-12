@@ -28,7 +28,6 @@ export interface Project {
   code: string;
   name: string;
   description: string | null;
-  isArchived: boolean;
   trashedAt?: string | null;
   createdAt: string;
   updatedAt: string;

@@ -5,7 +5,7 @@ export function buildProjectsHubCsvRows(projects: Project[]): string[][] {
   const rows = projects.map((p) => [
     p.code,
     p.name,
-    p.trashedAt != null || p.isArchived ? 'yes' : 'no',
+    p.trashedAt != null ? 'yes' : 'no',
     `${p.contact?.firstName ?? ''} ${p.contact?.lastName ?? ''}`.trim(),
     p.company?.name ?? '',
     String(p._count.orders),

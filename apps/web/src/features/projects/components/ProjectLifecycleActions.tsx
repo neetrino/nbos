@@ -13,7 +13,7 @@ import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { toast } from 'sonner';
 
 function isProjectInTrash(project: FullProject): boolean {
-  return project.trashedAt != null || project.isArchived;
+  return project.trashedAt != null;
 }
 
 export interface ProjectLifecycleActionsProps {

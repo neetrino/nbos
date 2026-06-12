@@ -21,7 +21,7 @@ export async function setCredentialFavorite(
   const visible = await runtime.prisma.credential.findFirst({
     where: {
       id: credentialId,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,

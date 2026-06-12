@@ -401,7 +401,7 @@ export class ClientServicesService {
     const id = credentialId?.trim();
     if (!id) return;
     const credential = await this.prisma.credential.findFirst({
-      where: { id, archivedAt: null },
+      where: { id, trashedAt: null },
       select: { id: true },
     });
     if (!credential) throw new BadRequestException('Provider account credential was not found');

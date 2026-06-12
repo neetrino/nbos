@@ -132,7 +132,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 | Модуль              | Механизм                                                       | Статус                                                                                       |
 | ------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Credentials         | `scope=active\|trash`, trash side-effects, folders Model 5/6   | 🟡 PARTIAL — naming `archivedAt` → `trashedAt` transitional only                             |
+| Credentials         | `scope=active\|trash`, trash side-effects, folders Model 5/6   | ✅ DONE — `trashed_at` column; offboarding ↔ trash audit backlog only                        |
 | Credential folders  | empty-only delete (Model 6)                                    | ✅ DONE (C1.4–C1.6, C-O2 drop `archived_at`)                                                 |
 | Drive FileAsset     | unified Trash lifecycle + retention purge + cleanup dashboard  | ✅ DONE (6.1–6.5)                                                                            |
 | Drive folders       | `deletedAt` soft delete пустых папок                           | ✅ DONE                                                                                      |
@@ -146,29 +146,29 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ❌ Неправильно vs канон (hard delete)
 
-| Модуль          | Сущности                | Schema lifecycle                   | API                            | Web UI                                 |
-| --------------- | ----------------------- | ---------------------------------- | ------------------------------ | -------------------------------------- |
-| Clients         | Contact, Company        | ✅ `trashedAt`                     | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| CRM             | Lead, Deal              | ✅ `trashedAt`                     | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Projects Hub    | Product, Extension      | ✅ terminal status                 | cancel/complete only           | hard DELETE removed                    |
-| Projects        | Project                 | ✅ `trashedAt` + `isArchived` sync | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Tasks           | Task                    | ✅ draft-only guards               | guarded DELETE (empty OPEN)    | Delete draft в task sheet              |
-| Support         | Ticket                  | ✅ close workflow                  | DELETE → 409                   | no delete UI                           |
-| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                | cancel / draft-delete          | Invoice cancel API; Order draft-only   |
-| Finance         | Expense                 | ✅ cancel + draft guards           | `POST cancel` / guarded DELETE | Expense UI delete vs cancel            |
-| Finance         | Expense Plan            | ✅ empty-only delete               | guarded DELETE                 | non-empty plan → 409                   |
-| Partners        | Partner                 | ✅ `trashedAt`                     | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Client Services | Record                  | ✅ terminal `CANCELLED`            | `POST cancel`; DELETE → 409    | Cancel service UI (Profile A-lite)     |
-| Mail            | EmailThread             | ✅ `trashedAt`                     | trash + restore API            | Trash folder + Move to Trash / Restore |
+| Модуль          | Сущности                | Schema lifecycle                       | API                            | Web UI                                 |
+| --------------- | ----------------------- | -------------------------------------- | ------------------------------ | -------------------------------------- |
+| Clients         | Contact, Company        | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
+| CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
+| Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only           | hard DELETE removed                    |
+| Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore API            | Move to Trash / Restore (Profile A)    |
+| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)    | Delete draft в task sheet              |
+| Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                   | no delete UI                           |
+| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete          | Invoice cancel API; Order draft-only   |
+| Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE | Expense UI delete vs cancel            |
+| Finance         | Expense Plan            | ✅ empty-only delete                   | guarded DELETE                 | non-empty plan → 409                   |
+| Partners        | Partner                 | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
+| Client Services | Record                  | ✅ terminal `CANCELLED`                | `POST cancel`; DELETE → 409    | Cancel service UI (Profile A-lite)     |
+| Mail            | EmailThread             | ✅ `trashedAt`                         | trash + restore API            | Trash folder + Move to Trash / Restore |
 
 ### ⚠️ Partial / backlog
 
-| Область     | Что не доделано                                                                           |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| Drive       | ✅ DONE (6.1–6.5); optional polish only                                                   |
-| Credentials | **Transitional rename** `archivedAt` → `trashedAt`; offboarding ↔ trash audit             |
-| Documents   | Проверить `ARCHIVED`: это historical archive или delete UX; delete UX переводить на Trash |
-| Global      | Rename `archivedAt`/`isArchived` после Mail; Module Implementation-Status doc sync        |
+| Область     | Что не доделано                                                               |
+| ----------- | ----------------------------------------------------------------------------- |
+| Drive       | ✅ DONE (6.1–6.5); optional polish only                                       |
+| Credentials | offboarding ↔ trash audit                                                     |
+| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                      |
+| Global      | Module Implementation-Status doc sync; Profile A `DELETE …/permanent` backlog |
 
 ---
 
@@ -457,3 +457,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Phase 7.3–7.4:** retention resolver (env overrides), unified purge (`POST /platform/lifecycle/purge/run`, `POST /scheduler/platform-trash-purge`), admin Run retention purge UI                                |
 | 2026-06-12 | **Решения O2/O5/C-O1/C-O2** + Profile A auto-purge (Lead/Deal/Partner/Contact/Company/Project с relation guards)                                                                                                 |
 | 2026-06-12 | **Phase 7.1 Mail:** `trashed_at` migration, trash/restore API, Trash folder UI, unified purge + inventory (`mail_thread`, 30d TTL)                                                                               |
+| 2026-06-12 | **Rename slice:** `credentials.archived_at` → `trashed_at`; DROP `projects.is_archived`; registry, seeds, cross-module queries                                                                                   |

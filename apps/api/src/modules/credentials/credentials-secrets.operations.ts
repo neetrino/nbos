@@ -28,7 +28,7 @@ export async function getAccessibleCredentialRow(
   const row = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -114,7 +114,7 @@ export async function exportCredentialsBundle(
   const fields = requestedFields.map((f) => parseSecretField(f));
 
   const where: Prisma.CredentialWhereInput = {
-    archivedAt: null,
+    trashedAt: null,
     ...(await buildCredentialRowVisibilityWhere(
       runtime.prisma,
       runtime.platformAccessResolver,

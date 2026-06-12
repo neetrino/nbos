@@ -54,7 +54,7 @@ describe('bulkArchiveCredentials', () => {
     expect(prisma.credential.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: { in: ['cred-1', 'cred-2'] } },
-        data: expect.objectContaining({ archivedAt: expect.any(Date) }),
+        data: expect.objectContaining({ trashedAt: expect.any(Date) }),
       }),
     );
   });

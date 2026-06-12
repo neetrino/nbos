@@ -36,7 +36,7 @@ export async function buildCredentialListWhere(
 
   const where: Prisma.CredentialWhereInput = {};
   const listScope = scope ?? parseLifecycleScopeFromQuery(undefined, includeArchived);
-  Object.assign(where, buildScopeWhere(listScope, { field: 'archivedAt' }));
+  Object.assign(where, buildScopeWhere(listScope));
 
   if (projectId) where.projectId = projectId;
   if (category) where.category = category as Prisma.CredentialWhereInput['category'];

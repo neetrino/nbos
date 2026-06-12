@@ -29,7 +29,7 @@
 | Drive/Messenger incident flow | MISSING | Есть канон в docs                                                                                                                                                                             | Реализовать detection/manual incident flow позже                                                                   |
 | Hard delete                   | PARTIAL | Архив + restore; `DELETE …/permanent` только для archived, audit `permanently_deleted`; UI — подтверждение по имени; scheduled retention purge (`credential.retention_purged`, 30d TTL)       | Admin cleanup dashboard; step-up policy refinements                                                                |
 | Folders lifecycle             | DONE    | Model 6 empty-only delete; Model 5 `POST …/folders/:id/remove-grouping` (unfile + delete); trash clears memberships (C1.2); `archived_at` column dropped (`20260612180000`)                   | —                                                                                                                  |
-| Trash list / scope            | DONE    | `scope=active\|trash`; flat Trash UI (C0); filters + restore toast unfiled (C2); trash clears favorites (C-O1)                                                                                | Transitional rename `archivedAt` → `trashedAt`                                                                     |
+| Trash list / scope            | DONE    | `scope=active\|trash`; flat Trash UI (C0); filters + restore toast unfiled (C2); trash clears favorites (C-O1); DB column `trashed_at`                                                        | —                                                                                                                  |
 
 ---
 
