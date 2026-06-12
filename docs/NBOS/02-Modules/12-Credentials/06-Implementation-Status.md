@@ -15,10 +15,11 @@ Tracks **shipped runtime** vs `01-Credentials-Vault.md` and UX canon. Full clean
 ## Shipped (security — partial)
 
 - Tiered reveal/copy, vault session, export step-up, RBAC visibility — see Cleanup Register §Runtime.
+- **Offboarding access revoke:** on `POST /employees/:id/offboard` — revokes credential `ResourceAccessGrant`, clears `allowedEmployees` (SECRET), removes vault favorites; audit `credential.access_revoked` per affected credential (`credential-offboarding-revoke.ops.ts`).
 
 ## Intentional placeholders / next slices
 
-- Emergency access, access requests, offboarding ↔ trash — Cleanup Register `MISSING`.
+- Emergency access, access requests; offboarding rotation task automation — Cleanup Register.
 - Admin cleanup dashboard for credentials — optional; platform trash inventory covers counts.
 
 ## MVP assumptions (Trash)

@@ -132,7 +132,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 | Модуль              | Механизм                                                       | Статус                                                                                       |
 | ------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Credentials         | `scope=active\|trash`, trash side-effects, folders Model 5/6   | ✅ DONE — `trashed_at` column; offboarding ↔ trash audit backlog only                        |
+| Credentials         | `scope=active\|trash`, trash side-effects, folders Model 5/6   | ✅ DONE — `trashed_at`; offboarding grant/allow-list revoke + audit shipped                  |
 | Credential folders  | empty-only delete (Model 6)                                    | ✅ DONE (C1.4–C1.6, C-O2 drop `archived_at`)                                                 |
 | Drive FileAsset     | unified Trash lifecycle + retention purge + cleanup dashboard  | ✅ DONE (6.1–6.5)                                                                            |
 | Drive folders       | `deletedAt` soft delete пустых папок                           | ✅ DONE                                                                                      |
@@ -163,12 +163,12 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ⚠️ Partial / backlog
 
-| Область     | Что не доделано                                                                  |
-| ----------- | -------------------------------------------------------------------------------- |
-| Drive       | ✅ DONE (6.1–6.5); optional polish only                                          |
-| Credentials | offboarding ↔ trash audit                                                        |
-| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                         |
-| Global      | Tasks `trashedAt`; credentials offboarding ↔ trash; Mail manual permanent delete |
+| Область     | Что не доделано                                                              |
+| ----------- | ---------------------------------------------------------------------------- |
+| Drive       | ✅ DONE (6.1–6.5); optional polish only                                      |
+| Credentials | offboarding rotation tasks + revealed-history inventory (canon §Offboarding) |
+| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                     |
+| Global      | Tasks `trashedAt`; Mail manual permanent delete                              |
 
 ---
 
@@ -461,3 +461,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Docs:** `10-Platform-Lifecycle-Implementation-Status.md` + per-module `06-Implementation-Status.md` (CRM, Hub, Partners, Credentials, Drive, Mail, Settings); Clients status synced                            |
 | 2026-06-12 | **Profile A permanent delete API:** `DELETE …/permanent` для Contact, Company, Lead, Deal, Partner, Project — shared ops + relation guards + audit `*.permanently_deleted`                                       |
 | 2026-06-12 | **Profile A permanent delete web:** trash detail sheets — Restore + Delete permanently (`ProfileAPermanentDeleteDialog`, strong name-match) для Clients, CRM, Partners, Projects                                 |
+| 2026-06-12 | **Credentials offboarding:** revoke grants + SECRET `allowedEmployees` + favorites on offboard; audit `credential.access_revoked` per credential; HR preview shows unified credential access footprint           |
