@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Folder, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { KanbanCardShell } from '@/components/shared';
+import { DeleteConfirmDialog, KanbanCardShell } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,6 +53,8 @@ export function CredentialFolderCard({
   dropHandlers,
 }: CredentialFolderCardProps) {
   const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const isEmptyFolder = folder.credentialCount === 0 && childFolderCount === 0;
   const [busy, setBusy] = useState(false);
 
   const handleRename = async (name: string) => {
@@ -73,10 +75,15 @@ export function CredentialFolderCard({
   };
 
   const handleDelete = async () => {
+    if (!isEmptyFolder) {
+      toast.error('Move credentials to Trash or remove them first.');
+      return;
+    }
     setBusy(true);
     try {
       await onDelete(folder.id);
       toast.success('Folder deleted');
+      setDeleteOpen(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Folder could not be deleted');
     } finally {
@@ -157,7 +164,13 @@ export function CredentialFolderCard({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => void handleDelete()}
+                    onClick={() => {
+                      if (!isEmptyFolder) {
+                        toast.error('Move credentials to Trash or remove them first.');
+                        return;
+                      }
+                      setDeleteOpen(true);
+                    }}
                     disabled={busy}
                   >
                     <Trash2 className="size-4" aria-hidden />
@@ -200,6 +213,18 @@ export function CredentialFolderCard({
         busy={busy}
         onOpenChange={setRenameOpen}
         onSubmit={handleRename}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        itemName={folder.name}
+        title="Delete empty folder?"
+        description="Only empty folders can be deleted. Credentials are not affected."
+        confirmLabel="Delete folder"
+        isSubmitting={busy}
+        onConfirm={() => void handleDelete()}
       />
     </>
   );

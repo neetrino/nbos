@@ -98,10 +98,17 @@ describe('CredentialsService mutations', () => {
     );
   });
 
-  it('should archive credential', async () => {
+  it('should archive credential and clear folder memberships in one transaction', async () => {
     prisma.credential.findFirst.mockResolvedValue({ id: '1', projectId: 'proj-1' });
     prisma.credential.update.mockResolvedValue({ id: '1' });
+    prisma.credentialFolderMembership.deleteMany.mockResolvedValue({ count: 2 });
+
     await service.archive('1', accessUser1);
+
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(prisma.credentialFolderMembership.deleteMany).toHaveBeenCalledWith({
+      where: { credentialId: '1' },
+    });
     expect(prisma.credential.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: '1' },

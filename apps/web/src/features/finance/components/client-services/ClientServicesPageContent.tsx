@@ -131,16 +131,17 @@ function ClientServicesPageInner() {
     [pathname, router, searchParams],
   );
 
-  const handleDelete = useCallback(
+  const handleCancelService = useCallback(
     async (id: string) => {
       try {
-        await clientServicesApi.delete(id);
+        await clientServicesApi.cancel(id);
+        toast.success('Client service cancelled');
         if (openServiceIdFromUrl === id) {
           handleServiceSheetOpenChange(false);
         }
         refreshAll();
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Client service could not be deleted.'));
+        toast.error(getApiErrorMessage(caught, 'Client service could not be cancelled.'));
       }
     },
     [handleServiceSheetOpenChange, openServiceIdFromUrl, refreshAll],
@@ -231,7 +232,7 @@ function ClientServicesPageInner() {
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={refreshAll}
-        onRequestDelete={(target) => deleteConfirm.request(target)}
+        onRequestCancel={(target) => deleteConfirm.request(target)}
       />
 
       <DeleteConfirmDialog
@@ -239,13 +240,13 @@ function ClientServicesPageInner() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Delete client service?"
-        description="Linked finance records and history stay in the system."
+        title="Cancel client service?"
+        description="The service will be marked cancelled and hidden from active lists. Linked finance records and history stay intact."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
           deleteConfirm.clear();
-          void handleDelete(id);
+          void handleCancelService(id);
         }}
       />
     </div>

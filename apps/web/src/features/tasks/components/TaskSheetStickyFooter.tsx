@@ -24,6 +24,7 @@ interface TaskSheetStickyFooterProps {
   onSave: () => void;
   onCancel: () => void;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
+  canDeleteDraft: boolean;
   onDelete: () => void;
 }
 
@@ -39,6 +40,7 @@ export function TaskSheetStickyFooter({
   onSave,
   onCancel,
   onTaskAction,
+  canDeleteDraft,
   onDelete,
 }: TaskSheetStickyFooterProps) {
   const effectiveStatus = workflowFooterStatus ?? taskStatus;
@@ -82,6 +84,7 @@ export function TaskSheetStickyFooter({
         taskStatus={effectiveStatus}
         workflowSaving={workflowSaving}
         onTaskAction={onTaskAction}
+        canDeleteDraft={canDeleteDraft}
         onDelete={onDelete}
       />
     </div>
@@ -92,6 +95,7 @@ interface TaskSheetWorkflowActionsProps {
   taskStatus: string;
   workflowSaving: boolean;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
+  canDeleteDraft: boolean;
   onDelete: () => void;
 }
 
@@ -99,6 +103,7 @@ function TaskSheetWorkflowActions({
   taskStatus,
   workflowSaving,
   onTaskAction,
+  canDeleteDraft,
   onDelete,
 }: TaskSheetWorkflowActionsProps) {
   const mode = resolveTaskWorkflowFooterMode(taskStatus);
@@ -179,10 +184,14 @@ function TaskSheetWorkflowActions({
           >
             <RotateCcw size={14} /> Reopen
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
-            <Trash2 size={14} /> Delete Task
-          </DropdownMenuItem>
+          {canDeleteDraft ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
+                <Trash2 size={14} /> Delete draft
+              </DropdownMenuItem>
+            </>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -27,6 +27,7 @@ import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
 import { resolveTaskSprintAssignment } from './task-sprint-assign.op';
+import { assertTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
 
 interface CreateTaskDto {
   title: string;
@@ -371,7 +372,15 @@ export class TasksService {
   }
 
   async delete(id: string, access?: TasksAccessContext) {
-    await this.findById(id, access);
+    const task = await this.findById(id, access);
+    assertTaskDraftDeletable({
+      status: task.status,
+      linkCount: task.links.length,
+      checklistCount: task._count.checklists,
+      subtaskCount: task._count.subtasks,
+      completedAt: task.completedAt,
+      reviewRequestedAt: task.reviewRequestedAt,
+    });
     return this.prisma.task.delete({ where: { id } });
   }
 

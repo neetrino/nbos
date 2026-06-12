@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type ClientServiceBillingModel,
@@ -160,7 +166,7 @@ export class ClientServicesService {
   }
 
   async update(id: string, body: UpdateClientServiceRecordBody) {
-    await this.ensureExists(id);
+    await this.assertServiceIsActiveForMutation(id);
     const data = await this.buildUpdateData(body);
     const row = await this.prisma.clientServiceRecord.update({
       where: { id },
@@ -175,9 +181,22 @@ export class ClientServicesService {
     return serializeClientServiceDetail(row, tasks);
   }
 
-  async delete(id: string) {
+  async cancel(id: string) {
+    await this.assertServiceIsActiveForMutation(id);
+    const row = await this.prisma.clientServiceRecord.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+      include: buildClientServiceDetailInclude(),
+    });
+    return this.toDetailResponse(row);
+  }
+
+  /** @deprecated Hard delete removed — cancel the service (Profile A-lite). */
+  async delete(id: string): Promise<never> {
     await this.ensureExists(id);
-    await this.prisma.clientServiceRecord.delete({ where: { id } });
+    throw new ConflictException(
+      'Client service records cannot be deleted. Cancel the service (POST /client-services/:id/cancel) instead.',
+    );
   }
 
   private buildWhere(
@@ -190,9 +209,7 @@ export class ClientServicesService {
       ...(params.type?.trim()
         ? { type: requireClientServiceType(params.type) as ClientServiceType }
         : {}),
-      ...(params.status?.trim()
-        ? { status: resolveClientServiceStatus(params.status) as ClientServiceStatus }
-        : {}),
+      ...this.buildStatusWhere(params.status),
       ...(params.billingModel?.trim()
         ? {
             billingModel: resolveClientServiceBillingModel(
@@ -333,9 +350,28 @@ export class ClientServicesService {
     return value;
   }
 
+  private buildStatusWhere(status: string | undefined): Prisma.ClientServiceRecordWhereInput {
+    const raw = status?.trim();
+    if (raw) {
+      return { status: resolveClientServiceStatus(raw) as ClientServiceStatus };
+    }
+    return { status: { not: 'CANCELLED' } };
+  }
+
   private async ensureExists(id: string) {
     const row = await this.prisma.clientServiceRecord.findUnique({ where: { id } });
     if (!row) throw new NotFoundException('Client service record not found');
+  }
+
+  private async assertServiceIsActiveForMutation(id: string) {
+    const row = await this.prisma.clientServiceRecord.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+    if (!row) throw new NotFoundException('Client service record not found');
+    if (row.status === 'CANCELLED') {
+      throw new BadRequestException('Cancelled client service records cannot be modified');
+    }
   }
 
   private async resolveProjectOrThrow(projectId: string | null | undefined) {

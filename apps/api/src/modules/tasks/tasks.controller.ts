@@ -224,7 +224,11 @@ export class TasksController {
   @Delete(':id')
   @RequirePermission('TASKS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete task' })
+  @ApiOperation({
+    summary: 'Delete empty draft task',
+    description:
+      'Allowed only for OPEN tasks with no links, checklists, or subtasks. Otherwise use workflow actions.',
+  })
   async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     await this.tasksService.delete(id, tasksAccessFromUser(user));
   }

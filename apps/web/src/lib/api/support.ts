@@ -157,9 +157,6 @@ export const supportApi = {
     const resp = await api.post<Deal>(`/api/support/${id}/actions/create-extension-deal`, data);
     return resp.data;
   },
-  async delete(id: string): Promise<void> {
-    await api.delete(`/api/support/${id}`);
-  },
   async getStats(): Promise<SupportStats> {
     const resp = await api.get<SupportStats>('/api/support/stats');
     return resp.data;

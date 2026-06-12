@@ -23,6 +23,7 @@ import { TaskSheetHeader } from './TaskSheetHeader';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
+import { canDeleteTaskDraft } from '../utils/task-draft-delete';
 
 interface TaskSheetProps {
   taskId: string | null;
@@ -52,6 +53,8 @@ export function TaskSheet({
   const state = useTaskSheetState({ taskId, open, initialTask, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const canDeleteDraft = state.task ? canDeleteTaskDraft(state.task) : false;
 
   async function handleDelete() {
     const deleted = await state.handleDeleteTask();
@@ -189,6 +192,7 @@ export function TaskSheet({
                     onSave={() => void state.handleGeneralSave()}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}
+                    canDeleteDraft={canDeleteDraft}
                     onDelete={() => setDeleteOpen(true)}
                   />
                 </>
@@ -212,8 +216,8 @@ export function TaskSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         itemName={state.task?.title ?? ''}
-        title="Delete task?"
-        description="The task and its checklists, subtasks, and comments will be removed."
+        title="Delete draft task?"
+        description="Only empty OPEN tasks can be deleted. This removes the task permanently."
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDelete();

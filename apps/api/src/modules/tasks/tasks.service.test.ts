@@ -305,10 +305,38 @@ describe('TasksService', () => {
   });
 
   describe('delete', () => {
-    it('deletes when found', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1' });
+    it('deletes empty OPEN draft', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'OPEN',
+        links: [],
+        checklists: [],
+        subtasks: [],
+        completedAt: null,
+        reviewRequestedAt: null,
+        _count: { subtasks: 0, checklists: 0 },
+      });
       await service.delete('1');
-      expect(prisma.task.delete).toHaveBeenCalled();
+      expect(prisma.task.delete).toHaveBeenCalledWith({ where: { id: '1' } });
+    });
+
+    it('blocks delete when task has links', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'OPEN',
+        links: [{ id: 'l1', entityType: 'PROJECT', entityId: 'p1' }],
+        checklists: [],
+        subtasks: [],
+        completedAt: null,
+        reviewRequestedAt: null,
+        _count: { subtasks: 0, checklists: 0 },
+      });
+      await expect(service.delete('1')).rejects.toMatchObject({
+        response: expect.objectContaining({
+          message: expect.stringContaining('links'),
+        }),
+      });
+      expect(prisma.task.delete).not.toHaveBeenCalled();
     });
   });
 

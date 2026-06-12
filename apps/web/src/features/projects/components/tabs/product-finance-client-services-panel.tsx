@@ -31,7 +31,7 @@ export function ProductFinanceClientServicesPanel({
   const serviceSheet = useProductEntityDetailSheet<ClientServiceRecord>();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; name: string } | null>(null);
 
   const baseParams = useMemo(
     () => buildProductClientServiceListParams(projectId, search, filters),
@@ -53,16 +53,17 @@ export function ProductFinanceClientServicesPanel({
     router.push('/finance/client-services');
   }, [router]);
 
-  const handleDelete = useCallback(
+  const handleCancelService = useCallback(
     async (id: string) => {
       try {
-        await clientServicesApi.delete(id);
+        await clientServicesApi.cancel(id);
+        toast.success('Client service cancelled');
         if (serviceSheet.entityId === id) {
           serviceSheet.handleOpenChange(false);
         }
         refreshAll();
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Client service could not be deleted.'));
+        toast.error(getApiErrorMessage(caught, 'Client service could not be cancelled.'));
       }
     },
     [refreshAll, serviceSheet],
@@ -105,23 +106,23 @@ export function ProductFinanceClientServicesPanel({
         open={serviceSheet.isOpen}
         onOpenChange={serviceSheet.handleOpenChange}
         onSaved={refreshAll}
-        onRequestDelete={(target) => setDeleteTarget(target)}
+        onRequestCancel={(target) => setCancelTarget(target)}
       />
 
       <DeleteConfirmDialog
         level="simple"
-        open={deleteTarget !== null}
+        open={cancelTarget !== null}
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
+          if (!open) setCancelTarget(null);
         }}
-        itemName={deleteTarget?.name ?? ''}
-        title="Delete client service?"
-        description="Linked finance records and history stay in the system."
+        itemName={cancelTarget?.name ?? ''}
+        title="Cancel client service?"
+        description="The service will be marked cancelled and hidden from active lists. Linked finance records and history stay intact."
         onConfirm={() => {
-          const id = deleteTarget?.id;
+          const id = cancelTarget?.id;
           if (!id) return;
-          setDeleteTarget(null);
-          void handleDelete(id);
+          setCancelTarget(null);
+          void handleCancelService(id);
         }}
       />
     </>

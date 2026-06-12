@@ -17,6 +17,7 @@ interface ClientServiceDetailSheetBodyProps {
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   projects: Project[];
   saving: boolean;
+  readOnly?: boolean;
   canCreateTask: boolean;
   onCreateInvoice: () => void;
   onCreateExpense: () => void;
@@ -31,6 +32,7 @@ export function ClientServiceDetailSheetBody({
   patchDraft,
   projects,
   saving,
+  readOnly = false,
   canCreateTask,
   onCreateInvoice,
   onCreateExpense,
@@ -44,7 +46,7 @@ export function ClientServiceDetailSheetBody({
         draft={draft}
         patchDraft={patchDraft}
         projects={projects}
-        formDisabled={saving}
+        formDisabled={saving || readOnly}
       />
     );
   }
@@ -53,7 +55,7 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceInvoicesTab
         links={service.financeLinks}
-        canCreateInvoice={service.billingModel === 'WE_PAY'}
+        canCreateInvoice={!readOnly && service.billingModel === 'WE_PAY'}
         onCreate={onCreateInvoice}
       />
     );
@@ -63,7 +65,7 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceExpensesTab
         links={service.financeLinks}
-        canCreate={service.billingModel === 'WE_PAY'}
+        canCreate={!readOnly && service.billingModel === 'WE_PAY'}
         onCreateExpense={onCreateExpense}
       />
     );
