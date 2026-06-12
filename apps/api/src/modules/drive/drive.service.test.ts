@@ -610,6 +610,80 @@ describe('DriveService', () => {
       expect(result).toHaveProperty('updated');
     });
 
+    it('moves active file to trash with TRASH policy', async () => {
+      prisma.fileAsset.findFirst.mockImplementation(async (args) => {
+        if (args?.include) {
+          return {
+            id: 'f1',
+            status: 'ACTIVE',
+            links: [],
+            versions: [],
+          };
+        }
+        return policyFileRow();
+      });
+      prisma.fileLink.count.mockResolvedValue(0);
+      prisma.fileAssetGrant.findMany.mockResolvedValue([]);
+      prisma.fileAsset.update.mockResolvedValueOnce({
+        id: 'f1',
+        status: 'DELETED',
+        deletedAt: new Date(),
+        links: [],
+        versions: [],
+      });
+
+      await service.moveFileAssetToTrash('f1', 'emp-1', {
+        employeeId: 'emp-1',
+        departmentIds: [],
+        driveScope: 'OWN',
+      });
+
+      expect(prisma.fileAsset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DELETED',
+            archivedAt: null,
+            deletedAt: expect.any(Date),
+          }),
+        }),
+      );
+      expect(prisma.fileAuditEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ action: 'moved_to_trash', fileAssetId: 'f1' }),
+        }),
+      );
+    });
+
+    it('restores unified trash batch for archived and deleted rows', async () => {
+      prisma.fileAsset.findMany
+        .mockResolvedValueOnce([{ id: 'arch-1' }, { id: 'del-1' }])
+        .mockResolvedValueOnce([
+          { id: 'arch-1', status: 'ACTIVE', links: [], versions: [] },
+          { id: 'del-1', status: 'ACTIVE', links: [], versions: [] },
+        ]);
+
+      const result = await service.restoreTrashFileAssets(['arch-1', 'del-1'], 'emp-1', {
+        employeeId: 'emp-1',
+        departmentIds: [],
+        driveScope: 'OWN',
+      });
+
+      expect(result.updated).toHaveLength(2);
+      expect(prisma.fileAsset.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'ACTIVE', archivedAt: null, deletedAt: null },
+        }),
+      );
+    });
+
+    it('orders trash list by updatedAt desc', async () => {
+      prisma.fileAsset.findMany.mockResolvedValue([]);
+      await service.listFileAssets({ trash: true });
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ orderBy: { updatedAt: 'desc' } }),
+      );
+    });
+
     it('creates batch archive audit only for matched files', async () => {
       prisma.$transaction.mockImplementationOnce(async (cb: unknown) => {
         if (typeof cb !== 'function') return undefined;

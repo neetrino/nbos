@@ -81,8 +81,7 @@ export function buildDriveFileActionGates(
     serverAllows(serverActions, 'ARCHIVE') ||
     serverAllows(serverActions, 'TRASH') ||
     serverAllows(serverActions, 'PERMANENT_DELETE');
-  const canTrash =
-    serverAllows(serverActions, 'TRASH') || serverAllows(serverActions, 'PERMANENT_DELETE');
+  const canTrash = serverAllows(serverActions, 'TRASH');
 
   return {
     canShare: caps.canShareFile && serverAllows(serverActions, 'SHARE'),

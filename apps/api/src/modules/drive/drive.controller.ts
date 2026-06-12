@@ -14,6 +14,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { parseLifecycleScopeFromQuery } from '../../common/lifecycle/entity-lifecycle-scope';
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
@@ -359,9 +360,15 @@ export class DriveController {
       'When true, list files shared with the viewer (not originated as sole owner/uploader).',
   })
   @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: ['active', 'trash'],
+    description: 'List scope (default active). Trash includes transitional ARCHIVED rows.',
+  })
+  @ApiQuery({
     name: 'trash',
     required: false,
-    description: 'When true, list soft-deleted files in Trash.',
+    description: 'Deprecated — use scope=trash',
   })
   async listFileAssets(
     @CurrentUser() user: CurrentUserPayload,
@@ -375,8 +382,11 @@ export class DriveController {
     @Query('projectHubProjectFiles') projectHubProjectFiles?: string,
     @Query('projectId') projectId?: string,
     @Query('sharedWithMe') sharedWithMe?: string,
+    @Query('scope') scope?: string,
     @Query('trash') trash?: string,
   ) {
+    const legacyTrash = trash === 'true' || trash === '1';
+    const listScope = parseLifecycleScopeFromQuery(scope, legacyTrash);
     return this.driveService.listFileAssets(
       {
         entityType,
@@ -388,7 +398,7 @@ export class DriveController {
         projectHubProjectFiles: projectHubProjectFiles === 'true',
         projectId: projectId?.trim() || undefined,
         sharedWithMe: sharedWithMe === 'true',
-        trash: trash === 'true' || trash === '1',
+        trash: listScope === 'trash',
       },
       await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
@@ -557,17 +567,34 @@ export class DriveController {
     );
   }
 
+  @Post('files/:id/move-to-trash')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({
+    summary: 'Move a Drive file to Trash (recoverable; requires no active business links)',
+  })
+  async moveFileAssetToTrash(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.moveFileAssetToTrash(
+      id,
+      user.id,
+      await this.driveAccessContext.fromRequest(user, request.permissionScope),
+    );
+  }
+
   @Post('files/:id/permanent-delete')
   @RequirePermission('DRIVE', 'DELETE')
   @ApiOperation({
-    summary: 'Move an archived file to Trash (soft delete; requires no active business links)',
+    summary: 'Deprecated alias for move-to-trash (transitional)',
   })
   async permanentlyDeleteFileAsset(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
   ) {
-    return this.driveService.permanentlyDeleteFileAsset(
+    return this.driveService.moveFileAssetToTrash(
       id,
       user.id,
       await this.driveAccessContext.fromRequest(user, request.permissionScope),
@@ -796,7 +823,7 @@ export class DriveController {
 
   @Post('files/:id/archive')
   @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({ summary: 'Archive Drive file asset metadata' })
+  @ApiOperation({ summary: 'Transitional: archive metadata (prefer move-to-trash)' })
   async archiveFileAsset(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -811,7 +838,9 @@ export class DriveController {
 
   @Post('files/:id/restore')
   @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({ summary: 'Restore archived Drive file asset metadata' })
+  @ApiOperation({
+    summary: 'Transitional: restore legacy ARCHIVED row (prefer restore-from-trash)',
+  })
   async restoreFileAsset(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -856,7 +885,9 @@ export class DriveController {
 
   @Post('files/:id/restore-from-trash')
   @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({ summary: 'Restore a Trash file back to Active' })
+  @ApiOperation({
+    summary: 'Restore a Trash file back to Active (unified ARCHIVED + DELETED rows)',
+  })
   async restoreTrashFileAsset(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -886,7 +917,7 @@ export class DriveController {
 
   @Post('files/move-to-trash-batch')
   @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({ summary: 'Move multiple archived files to Trash' })
+  @ApiOperation({ summary: 'Move multiple files to Trash' })
   async moveFileAssetsToTrash(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },

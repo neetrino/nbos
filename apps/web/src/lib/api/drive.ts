@@ -203,13 +203,14 @@ export const driveApi = {
     projectHubProjectFiles?: boolean;
     projectId?: string;
     trash?: boolean;
+    scope?: 'active' | 'trash';
   }): Promise<FileAsset[]> {
-    if (params?.trash === true) {
+    if (params?.scope === 'trash' || params?.trash === true) {
       const resp = await api.get<FileAsset[]>('/api/drive/files', {
         params: {
           search: params.search,
           purpose: params.purpose,
-          trash: 'true',
+          scope: 'trash',
         },
       });
       return resp.data;
@@ -644,9 +645,19 @@ export const driveApi = {
     return resp.data;
   },
 
+  async moveFileToTrash(id: string): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/move-to-trash',
+      {},
+    );
+    return resp.data;
+  },
+
+  /** @deprecated Prefer moveFileToTrash */
   async permanentlyDeleteFileAsset(id: string): Promise<FileAsset> {
     const resp = await api.post<FileAsset>(
-      '/api/drive/files/' + encodeURIComponent(id) + '/permanent-delete',
+      '/api/drive/files/' + encodeURIComponent(id) + '/move-to-trash',
+      {},
     );
     return resp.data;
   },

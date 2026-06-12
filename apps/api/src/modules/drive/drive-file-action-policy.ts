@@ -158,7 +158,6 @@ export function evaluateDriveFileAction(
       return { allowed: false, reason: 'You do not have permission to unlink this file.' };
 
     case 'ARCHIVE':
-    case 'TRASH':
       if (cap.isOrigin) return { allowed: true };
       if (hasAnyGrant(cap, ['DELETE'])) return { allowed: true };
       if (cap.hasBaseAccess) return { allowed: true };
@@ -167,9 +166,27 @@ export function evaluateDriveFileAction(
         reason: 'You do not have permission to archive or delete this file.',
       };
 
+    case 'TRASH':
+      if (file.status === 'DELETED') {
+        return { allowed: false, reason: 'File is already in Trash.' };
+      }
+      if (file.activeBusinessLinkCount > 0) {
+        return {
+          allowed: false,
+          reason: 'Remove active business links before moving to Trash.',
+        };
+      }
+      if (cap.isOrigin) return { allowed: true };
+      if (hasAnyGrant(cap, ['DELETE'])) return { allowed: true };
+      if (cap.hasBaseAccess) return { allowed: true };
+      return {
+        allowed: false,
+        reason: 'You do not have permission to move this file to Trash.',
+      };
+
     case 'PERMANENT_DELETE':
-      if (file.status !== 'ARCHIVED') {
-        return { allowed: false, reason: 'Only archived files can be permanently deleted.' };
+      if (file.status !== 'DELETED') {
+        return { allowed: false, reason: 'Only Trash files can be permanently purged.' };
       }
       if (file.activeBusinessLinkCount > 0) {
         return {

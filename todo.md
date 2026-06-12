@@ -134,7 +134,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | ------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Credentials         | `scope=active\|trash`, trash side-effects, flat Trash UI (C0–C2) | 🟡 PARTIAL — naming `archivedAt` transitional; C3 retention/purge backlog                    |
 | Credential folders  | empty-only delete (Model 6)                                      | ✅ DONE (C1.4–C1.6); `archived_at` колонка — backlog C-O2                                    |
-| Drive FileAsset     | unified Trash UI (6.1); transitional ARCHIVED+DELETED in list    | 🟡 PARTIAL — 6.2 API naming, 6.3 DB migration, 6.4 R2 purge backlog                          |
+| Drive FileAsset     | unified Trash UI + API (6.1–6.2); transitional ARCHIVED in trash | 🟡 PARTIAL — 6.3 DB migration, 6.4 R2 purge backlog                                          |
 | Drive folders       | `deletedAt` soft delete пустых папок                             | ✅ DONE                                                                                      |
 | Documents           | `status ARCHIVED` + `archivedAt`, restore, **нет hard delete**   | ⚠️ проверить: если это delete UX — переименовать в Trash; если historical archive — оставить |
 | Notifications       | `archivedAt`, hide from inbox                                    | ⚠️ low-risk; можно оставить hide или перевести UX на Trash позже                             |
@@ -384,13 +384,13 @@ purgedAt    DateTime?   -- шаг 2: job/admin/policy; окончательно�
 
 **Profile B** — один Trash + Purge; folder = container (Model 3), **не** как Credentials folders.
 
-| #   | Задача                                                                                           | Статус     |
-| --- | ------------------------------------------------------------------------------------------------ | ---------- |
-| 6.1 | Drive: схлопнуть Archive + Trash UI в один Trash view                                            | ✅ DONE    |
-| 6.2 | Drive API: unified trash list/counts; archive endpoints transitional; UI Move to Trash / Restore | 🟡 PARTIAL |
-| 6.3 | Drive DB: миграция `ARCHIVED` → trash (transitional OR в trash query до отдельной миграции)      | ⬜ TODO    |
-| 6.4 | Drive: R2 physical purge после retention (`markRetentionPurged` → real delete)                   | ⬜ TODO    |
-| 6.5 | Drive: admin cleanup dashboard (confirmed apply)                                                 | ⬜ TODO    |
+| #   | Задача                                                                                           | Статус  |
+| --- | ------------------------------------------------------------------------------------------------ | ------- |
+| 6.1 | Drive: схлопнуть Archive + Trash UI в один Trash view                                            | ✅ DONE |
+| 6.2 | Drive API: unified trash list/counts; archive endpoints transitional; UI Move to Trash / Restore | ✅ DONE |
+| 6.3 | Drive DB: миграция `ARCHIVED` → trash (transitional OR в trash query до отдельной миграции)      | ⬜ TODO |
+| 6.4 | Drive: R2 physical purge после retention (`markRetentionPurged` → real delete)                   | ⬜ TODO |
+| 6.5 | Drive: admin cleanup dashboard (confirmed apply)                                                 | ⬜ TODO |
 
 ---
 

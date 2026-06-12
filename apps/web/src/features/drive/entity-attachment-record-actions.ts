@@ -24,5 +24,5 @@ export async function moveToTrashAndUnlinkFileFromEntityRecord(
   if (link) {
     await driveApi.unlinkFileAsset(file.id, link.id);
   }
-  await driveApi.permanentlyDeleteFileAsset(file.id);
+  await driveApi.moveFileToTrash(file.id);
 }

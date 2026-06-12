@@ -785,7 +785,7 @@ export function DriveWorkspace() {
       }
       if (inLifecycleView) {
         const list = await driveApi.listFileAssets({
-          trash: true,
+          scope: 'trash',
           purpose: purpose === ALL_PURPOSES ? undefined : purpose,
           search: search || undefined,
         });
@@ -1549,11 +1549,7 @@ export function DriveWorkspace() {
   }, [rawFiles]);
 
   async function restoreDriveFile(file: FileAsset) {
-    if (file.status === 'DELETED') {
-      await mutateFile(() => driveApi.restoreTrashFileAsset(file.id), 'File restored');
-      return;
-    }
-    await mutateFile(() => driveApi.restoreFileAsset(file.id), 'File restored');
+    await mutateFile(() => driveApi.restoreTrashFileAsset(file.id), 'File restored');
   }
 
   async function onRestore(file: FileAsset) {
@@ -1569,7 +1565,7 @@ export function DriveWorkspace() {
     if (!window.confirm(msg)) return;
     setBusy(true);
     try {
-      await driveApi.permanentlyDeleteFileAsset(file.id);
+      await driveApi.moveFileToTrash(file.id);
       toast.success('File moved to Trash');
       setSelected(null);
       await load();
@@ -1685,18 +1681,8 @@ export function DriveWorkspace() {
     const ids = await resolveBulkFileAssetIds();
     if (ids.length === 0) return;
     const selected = rawFiles.filter((file) => ids.includes(file.id));
-    const deletedIds = selected.filter((file) => file.status === 'DELETED').map((file) => file.id);
-    const archivedIds = selected
-      .filter((file) => file.status === 'ARCHIVED')
-      .map((file) => file.id);
-
     await mutateFiles(async () => {
-      if (deletedIds.length > 0) {
-        await driveApi.restoreTrashFileAssets(deletedIds);
-      }
-      if (archivedIds.length > 0) {
-        await driveApi.restoreFileAssets(archivedIds);
-      }
+      await driveApi.restoreTrashFileAssets(ids);
     }, 'Selected files restored');
   }
 

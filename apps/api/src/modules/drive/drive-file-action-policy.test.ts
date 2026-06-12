@@ -85,4 +85,29 @@ describe('evaluateDriveFileAction', () => {
     );
     expect(decision.allowed).toBe(true);
   });
+
+  it('blocks trash when active business links remain', () => {
+    const decision = evaluateDriveFileAction(cap({ employeeId: 'e1', isOrigin: true }), 'TRASH', {
+      ...baseFile,
+      activeBusinessLinkCount: 2,
+    });
+    expect(decision.allowed).toBe(false);
+  });
+
+  it('allows owner to move active file to trash', () => {
+    const decision = evaluateDriveFileAction(
+      cap({ employeeId: 'e1', isOrigin: true }),
+      'TRASH',
+      baseFile,
+    );
+    expect(decision.allowed).toBe(true);
+  });
+
+  it('blocks trash when file is already deleted', () => {
+    const decision = evaluateDriveFileAction(cap({ employeeId: 'e1', isOrigin: true }), 'TRASH', {
+      ...baseFile,
+      status: 'DELETED',
+    });
+    expect(decision.allowed).toBe(false);
+  });
 });

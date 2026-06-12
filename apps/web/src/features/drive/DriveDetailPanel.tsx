@@ -138,7 +138,7 @@ function DriveFileRailTrailing({
         : 'Move this file to Trash? You can restore it from Trash later.';
     if (!window.confirm(msg)) return;
     try {
-      await driveApi.permanentlyDeleteFileAsset(file.id);
+      await driveApi.moveFileToTrash(file.id);
       toast.success('File moved to Trash');
       onPermanentDeleteSuccess?.();
     } catch (err) {
