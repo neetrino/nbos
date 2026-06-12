@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
+import { assertEntityIsActive } from '../../common/lifecycle/entity-lifecycle-guards';
 import { assertTaskAccessible } from './task-access.op';
 import type { TasksAccessContext } from './tasks-scoped-access';
 
@@ -31,8 +32,16 @@ export async function reorderTasks(
     throw new BadRequestException('scope must be workspace or my-plan');
   }
 
-  for (const taskId of taskIds) {
-    await assertTaskAccessible(prisma, taskId, access);
+  const rows = await prisma.task.findMany({
+    where: { id: { in: taskIds } },
+    select: { id: true, trashedAt: true },
+  });
+  if (rows.length !== taskIds.length) {
+    throw new BadRequestException('One or more tasks were not found');
+  }
+  for (const row of rows) {
+    assertEntityIsActive(row, 'trashedAt', 'Task');
+    await assertTaskAccessible(prisma, row.id, access);
   }
 
   const sortField = resolveSortField(scope);

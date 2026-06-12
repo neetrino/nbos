@@ -2,7 +2,7 @@
 
 Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standard.md` and `todo.md` (Trash / Purge Lifecycle plan). Product rules stay in module canon; each `06-Implementation-Status.md` lists code surfaces and gaps only.
 
-**Last synced:** 2026-06-12 (Profile A `DELETE …/permanent` API, Mail 7.1, credential `trashed_at` rename).
+**Last synced:** 2026-06-12 (Tasks O1 `trashed_at` + hybrid DELETE, Profile A permanent delete, Mail 7.1).
 
 ## Profile A — business entities (`trashedAt`)
 
@@ -30,12 +30,19 @@ Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standa
 | ----------- | ----------------------------------------------------------------------------- | ------------------------ | -------------- | --------------- |
 | Credentials | [12-Credentials/06](../02-Modules/12-Credentials/06-Implementation-Status.md) | ✅ `scope=active\|trash` | ✅             | ✅ scheduler    |
 
+## Profile O1 — Tasks (hybrid delete)
+
+| Module | Entity | Trash list   | Restore | Hard delete              | Web                                    |
+| ------ | ------ | ------------ | ------- | ------------------------ | -------------------------------------- |
+| Tasks  | Task   | ✅ `?scope=` | ✅      | ✅ empty OPEN draft only | ✅ settings Trash view + sheet actions |
+
+Migration `20260612210000_tasks_trash_lifecycle`. `DELETE /tasks/:id` — draft hard-delete or `trashedAt`; `POST /tasks/:id/restore`. Mutations blocked while trashed. Platform purge / permanent delete — backlog.
+
 ## Profile D / draft-only (not Trash-first)
 
 | Module                | Mechanism                                | Status                             |
 | --------------------- | ---------------------------------------- | ---------------------------------- |
 | Finance               | void / cancel / draft-delete             | ✅ Phase 4 — see `todo.md` Phase 4 |
-| Tasks                 | empty OPEN draft hard delete only        | ✅ O1 — `trashedAt` deferred       |
 | Support               | close workflow, DELETE → 409             | ✅                                 |
 | Client Services       | `POST cancel`, terminal `CANCELLED`      | ✅                                 |
 | Products / Extensions | terminal delivery status, no hard DELETE | ✅ Phase 3                         |

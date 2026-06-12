@@ -1,3 +1,4 @@
+import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
 export interface TaskLink {
@@ -65,6 +66,7 @@ export interface Task {
   isRecurring: boolean;
   coAssignees: string[];
   observers: string[];
+  trashedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   creator: { id: string; firstName: string; lastName: string };
@@ -192,6 +194,7 @@ interface TaskQueryParams {
   sortOrder?: 'asc' | 'desc';
   /** Only tasks where this employee is assignee, creator, co-assignee, or observer. */
   involvesEmployeeId?: string;
+  scope?: EntityLifecycleScope;
 }
 
 /** Workspace aggregates from `GET /api/tasks/stats` (Prisma `groupBy`). */
@@ -266,6 +269,10 @@ export const tasksApi = {
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
+  },
+  async restore(id: string): Promise<Task> {
+    const resp = await api.post<Task>(`/api/tasks/${id}/restore`);
+    return resp.data;
   },
   async reorder(taskIds: string[], scope: 'workspace' | 'my-plan'): Promise<{ success: true }> {
     const resp = await api.patch<{ success: true }>('/api/tasks/reorder', { taskIds, scope });

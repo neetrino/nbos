@@ -78,21 +78,21 @@
 
 ### Матрица: модуль → профиль
 
-| Модуль                | Profile    | Trash / Archive UI                                                                  | Organization layer               | Permanent delete    |
-| --------------------- | ---------- | ----------------------------------------------------------------------------------- | -------------------------------- | ------------------- |
-| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | ✅ API + trash UI   |
-| CRM                   | **A**      | То же                                                                               | —                                | ✅ API + trash UI   |
-| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | ✅ API + trash UI   |
-| Products / Extensions | **A-lite** | Terminal **status** (Closed/Cancelled), не delete                                   | —                                | —                   |
-| Drive files           | **B**      | **Один Trash view**; старые Archive+Trash схлопнуть                                 | Folders = container (Model 3)    | Cleanup job         |
-| Credentials           | **C**      | **Отдельный flat secure Trash**                                                     | Folders = collection (Model 4+6) | Step-up из trash    |
-| Documents             | **G/A**    | `ARCHIVED` оставить только если это historical archive; delete UX должен быть Trash | Sections (TBD)                   | Нет в MVP           |
-| Finance               | **D**      | Void/cancel, не trash для posted                                                    | —                                | Draft-only delete   |
-| Tasks                 | **draft**  | OPEN empty-only hard delete (O1)                                                    | Board columns ≠ archive          | Trash — later phase |
-| Support               | **A-lite** | Close status                                                                        | —                                | Убрать hard delete  |
-| Partners              | **A**      | `trashedAt`                                                                         | —                                | Policy              |
-| System / RBAC         | **E**      | deactivate                                                                          | —                                | Empty-only guards   |
-| Notifications         | **F**      | hide/trash depending on UX                                                          | —                                | —                   |
+| Модуль                | Profile    | Trash / Archive UI                                                                  | Organization layer               | Permanent delete   |
+| --------------------- | ---------- | ----------------------------------------------------------------------------------- | -------------------------------- | ------------------ |
+| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | ✅ API + trash UI  |
+| CRM                   | **A**      | То же                                                                               | —                                | ✅ API + trash UI  |
+| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | ✅ API + trash UI  |
+| Products / Extensions | **A-lite** | Terminal **status** (Closed/Cancelled), не delete                                   | —                                | —                  |
+| Drive files           | **B**      | **Один Trash view**; старые Archive+Trash схлопнуть                                 | Folders = container (Model 3)    | Cleanup job        |
+| Credentials           | **C**      | **Отдельный flat secure Trash**                                                     | Folders = collection (Model 4+6) | Step-up из trash   |
+| Documents             | **G/A**    | `ARCHIVED` оставить только если это historical archive; delete UX должен быть Trash | Sections (TBD)                   | Нет в MVP          |
+| Finance               | **D**      | Void/cancel, не trash для posted                                                    | —                                | Draft-only delete  |
+| Tasks                 | **O1**     | Hybrid: empty OPEN draft hard delete; else `trashedAt`                              | Board columns ≠ archive          | ✅ Trash + restore |
+| Support               | **A-lite** | Close status                                                                        | —                                | Убрать hard delete |
+| Partners              | **A**      | `trashedAt`                                                                         | —                                | Policy             |
+| System / RBAC         | **E**      | deactivate                                                                          | —                                | Empty-only guards  |
+| Notifications         | **F**      | hide/trash depending on UX                                                          | —                                | —                  |
 
 ### Правила против split-brain (все профили)
 
@@ -118,7 +118,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 **Открыто на обсуждение** (обновить после чата):
 
-- [x] **O1:** Tasks — hard delete только для empty draft или move to Trash? → **Решение:** draft-only hard delete (OPEN, no links/checklists/subtasks); `trashedAt` — отдельная фаза.
+- [x] **O1:** Tasks — hard delete только для empty draft или move to Trash? → **Решение:** hybrid (draft hard-delete; иначе `trashedAt`). ✅ Shipped `20260612210000` + web Trash view.
 - [x] **O2:** Mail threads — trash-first (`trashedAt` + restore); hard delete только admin/purge позже → **Phase 7.1 backlog**
 - [x] **O3:** Project — `isArchived` boolean vs `trashedAt` timestamp (выровнять с Core Entities)? → **Решение:** `trashedAt` target; `isArchived` transitional sync до удаления колонки.
 - [x] **O4:** Нужен ли общий `deletedAt`/`trashedAt` для business entities или достаточно `archivedAt`? → **Решение:** target `trashedAt`; `Archive` не использовать для delete semantics.
@@ -152,7 +152,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
 | Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only            | hard DELETE removed                                         |
 | Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
-| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)     | Delete draft в task sheet                                   |
+| Tasks           | Task                    | ✅ `trashedAt` + draft guards          | hybrid DELETE + restore         | Trash view + Move to Trash / Restore / Delete draft         |
 | Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                    | no delete UI                                                |
 | Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete           | Invoice cancel API; Order draft-only                        |
 | Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE  | Expense UI delete vs cancel                                 |
@@ -168,7 +168,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | Drive       | ✅ DONE (6.1–6.5); optional polish only                                      |
 | Credentials | offboarding rotation tasks + revealed-history inventory (canon §Offboarding) |
 | Documents   | ✅ historical archive (решено) — не трогать в этом цикле                     |
-| Global      | Tasks `trashedAt` (O1 deferred)                                              |
+| Global      | Tasks platform purge / permanent delete (post-O1)                            |
 
 ---
 

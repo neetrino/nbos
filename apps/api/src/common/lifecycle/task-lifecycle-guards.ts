@@ -1,7 +1,7 @@
 import { ConflictException } from '@nestjs/common';
 import type { TaskStatusEnum } from '@nbos/database';
 
-/** Profile draft-only delete for tasks (O1 — trash deferred). */
+/** Profile O1: empty OPEN draft hard-delete; other tasks move to Trash via trashedAt. */
 
 export interface TaskDraftDeleteInput {
   status: TaskStatusEnum;
@@ -10,6 +10,16 @@ export interface TaskDraftDeleteInput {
   subtaskCount: number;
   completedAt: Date | null;
   reviewRequestedAt?: Date | null;
+}
+
+export function isTaskDraftDeletable(input: TaskDraftDeleteInput): boolean {
+  if (input.status !== 'OPEN') return false;
+  if (input.completedAt != null) return false;
+  if (input.reviewRequestedAt != null) return false;
+  if (input.linkCount > 0) return false;
+  if (input.checklistCount > 0) return false;
+  if (input.subtaskCount > 0) return false;
+  return true;
 }
 
 export function assertTaskDraftDeletable(input: TaskDraftDeleteInput): void {
