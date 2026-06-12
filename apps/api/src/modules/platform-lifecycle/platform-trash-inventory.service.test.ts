@@ -17,13 +17,14 @@ describe('PlatformTrashInventoryService', () => {
     prisma.project.count.mockResolvedValue(1);
     prisma.credential.count.mockResolvedValue(4);
     prisma.fileAsset.count.mockResolvedValue(5);
+    prisma.emailThread.count.mockResolvedValue(0);
   });
 
   it('aggregates trash counts across modules', async () => {
     const result = await service.getInventory(new Date('2026-06-12T12:00:00.000Z'));
 
     expect(result.totalTrashed).toBe(16);
-    expect(result.categories).toHaveLength(8);
+    expect(result.categories).toHaveLength(9);
     expect(result.categories.find((row) => row.key === 'deal')?.count).toBe(3);
     expect(result.categories.find((row) => row.key === 'credential')?.profile).toBe('C');
   });

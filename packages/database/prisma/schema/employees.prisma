@@ -97,6 +97,7 @@ model Employee {
   mailAccountAccessesGranted       MailAccountAccess[]                 @relation("MailAccountAccessGrantedBy")
   mailThreadsAssigned              EmailThread[]                       @relation("EmailThreadAssignee")
   mailThreadsAssignedBy            EmailThread[]                       @relation("EmailThreadAssignedBy")
+  mailThreadsTrashedBy             EmailThread[]                       @relation("EmailThreadTrashedBy")
   inAppNotificationsReceived       InAppNotification[]
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]

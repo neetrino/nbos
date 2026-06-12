@@ -44,6 +44,7 @@ export interface PlatformTrashPurgeRunResult {
   completedAt: string;
   credentials: { purged: number; candidateIds: string[] };
   driveFiles: { purged: number; candidateIds: string[] };
+  mailThreads: { purged: number; candidateIds: string[] };
   profileA: PlatformTrashPurgeSliceResultWithKey[];
   totalPurged: number;
 }

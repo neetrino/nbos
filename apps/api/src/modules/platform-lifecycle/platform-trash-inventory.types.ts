@@ -46,6 +46,7 @@ export interface PlatformTrashPurgeRunResult {
   completedAt: string;
   credentials: PlatformTrashPurgeSliceResult;
   driveFiles: PlatformTrashPurgeSliceResult;
+  mailThreads: PlatformTrashPurgeSliceResult;
   profileA: PlatformTrashPurgeSliceResultWithKey[];
   totalPurged: number;
 }

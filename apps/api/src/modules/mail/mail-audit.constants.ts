@@ -44,8 +44,17 @@ export const MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD = 'mail.thread_marked_unread
 /** Thread flagged as spam in NBOS (no provider spam folder in MVP). */
 export const MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM = 'mail.thread_marked_spam';
 
-/** Thread and its messages removed from NBOS (no provider delete in MVP). */
+/** @deprecated Use THREAD_TRASHED — kept for transitional log readers. */
 export const MAIL_AUDIT_ACTION_THREAD_DELETED = 'mail.thread_deleted';
+
+/** Thread moved to Trash (recoverable; no provider delete in MVP). */
+export const MAIL_AUDIT_ACTION_THREAD_TRASHED = 'mail.thread_trashed';
+
+/** Thread restored from Trash. */
+export const MAIL_AUDIT_ACTION_THREAD_RESTORED = 'mail.thread_restored';
+
+/** Scheduled retention purge hard-deleted a trashed thread. */
+export const MAIL_AUDIT_ACTION_THREAD_RETENTION_PURGED = 'mail.thread_retention_purged';
 
 /** Mailbox connected via provider (Gmail OAuth or corporate IMAP/SMTP). */
 export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_CONNECTED = 'mail.mail_account_connected';

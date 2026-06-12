@@ -12,6 +12,7 @@ import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { requireMailAccountSendRole } from './mail-send-access.ops';
+import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import type { MailThreadDetailDto } from './mail.types';
@@ -38,6 +39,7 @@ export class MailOutboundMutationService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     await requireMailAccountSendRole(this.prisma, {
       mailAccountId: thread.mailAccountId,
       employeeId,

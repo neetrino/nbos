@@ -163,6 +163,8 @@ export class PlatformTrashInventoryService {
         return this.prisma.project.count({ where: trashFilter });
       case 'credential':
         return this.prisma.credential.count({ where: trashFilter });
+      case 'emailThread':
+        return this.prisma.emailThread.count({ where: trashFilter });
       default:
         return Promise.resolve(0);
     }

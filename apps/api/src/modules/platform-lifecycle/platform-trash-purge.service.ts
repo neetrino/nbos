@@ -7,6 +7,7 @@ import { purgeTrashedCredentialsPastRetention } from '../credentials/credential-
 import { DriveR2Client } from '../drive/drive-r2.client';
 import { purgeDriveTrashRetentionBatch } from '../drive/drive-trash-retention-purge.ops';
 import { purgeProfileATrashPastRetention } from '../../common/lifecycle/profile-a-trash-purge.ops';
+import { purgeTrashedMailThreadsPastRetention } from '../mail/mail-trash-purge.ops';
 import {
   PLATFORM_TRASH_PURGE_AUDIT_ACTION,
   PLATFORM_TRASH_PURGE_AUDIT_ENTITY,
@@ -28,8 +29,9 @@ export class PlatformTrashPurgeService {
     const startedAt = now.toISOString();
     const credentialRetentionMs = resolveRetentionMsForEntity('credential');
     const driveRetentionMs = resolveRetentionMsForEntity('drive_file');
+    const mailRetentionMs = resolveRetentionMsForEntity('mail_thread');
 
-    const [credentials, driveFiles, profileA] = await Promise.all([
+    const [credentials, driveFiles, mailThreads, profileA] = await Promise.all([
       purgeTrashedCredentialsPastRetention(
         this.prisma,
         this.auditService,
@@ -43,6 +45,12 @@ export class PlatformTrashPurgeService {
         now,
         driveRetentionMs ?? undefined,
       ),
+      purgeTrashedMailThreadsPastRetention(
+        this.prisma,
+        this.auditService,
+        now,
+        mailRetentionMs ?? undefined,
+      ),
       purgeProfileATrashPastRetention(this.prisma, this.auditService, now),
     ]);
 
@@ -53,8 +61,9 @@ export class PlatformTrashPurgeService {
       completedAt,
       credentials,
       driveFiles,
+      mailThreads,
       profileA,
-      totalPurged: credentials.purged + driveFiles.purged + profileAPurged,
+      totalPurged: credentials.purged + driveFiles.purged + mailThreads.purged + profileAPurged,
     };
 
     await this.auditService.log({
@@ -65,7 +74,7 @@ export class PlatformTrashPurgeService {
     });
 
     this.logger.log(
-      `Platform trash retention purge: credentials=${credentials.purged}, driveFiles=${driveFiles.purged}, profileA=${profileAPurged}`,
+      `Platform trash retention purge: credentials=${credentials.purged}, driveFiles=${driveFiles.purged}, mailThreads=${mailThreads.purged}, profileA=${profileAPurged}`,
     );
     return result;
   }

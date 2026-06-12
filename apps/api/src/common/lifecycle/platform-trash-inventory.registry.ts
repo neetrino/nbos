@@ -11,7 +11,8 @@ export type TrashInventoryPrismaModel =
   | 'partner'
   | 'project'
   | 'credential'
-  | 'fileAsset';
+  | 'fileAsset'
+  | 'emailThread';
 
 export interface PlatformTrashInventoryEntryDefinition {
   key: string;
@@ -104,6 +105,17 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'credential',
     webHref: '/credentials',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
+  },
+  {
+    key: 'mail_thread',
+    moduleLabel: 'Mail',
+    entityLabel: 'Threads',
+    profile: 'A',
+    timestampField: 'trashedAt',
+    retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
+    prismaModel: 'emailThread',
+    webHref: '/mail?folder=trash',
     scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {

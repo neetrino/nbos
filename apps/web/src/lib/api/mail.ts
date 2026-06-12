@@ -47,6 +47,7 @@ export interface MailThreadListRow {
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
+  trashedAt: string | null;
 }
 
 export interface MailThreadListPageMeta {
@@ -188,6 +189,7 @@ export interface ListMailThreadsOptions {
   assignedToMe?: boolean;
   sentOnly?: boolean;
   spamOnly?: boolean;
+  scope?: 'active' | 'trash';
   search?: string;
   page?: number;
   pageSize?: number;
@@ -229,6 +231,9 @@ export const mailApi = {
     if (options.spamOnly) {
       params.spamOnly = 'true';
     }
+    if (options.scope) {
+      params.scope = options.scope;
+    }
     if (options.search !== undefined && options.search.trim() !== '') {
       params.q = options.search.trim();
     }
@@ -269,10 +274,15 @@ export const mailApi = {
     return resp.data;
   },
 
-  async deleteThread(threadId: string): Promise<{ deleted: true; threadId: string }> {
-    const resp = await api.post<{ deleted: true; threadId: string }>(
+  async deleteThread(threadId: string): Promise<{ trashed: true; threadId: string }> {
+    const resp = await api.post<{ trashed: true; threadId: string }>(
       `/api/mail/threads/${threadId}/delete`,
     );
+    return resp.data;
+  },
+
+  async restoreThread(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/restore`);
     return resp.data;
   },
 

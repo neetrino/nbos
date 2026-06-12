@@ -12,6 +12,7 @@ describe('PlatformTrashPurgeService', () => {
     auditService.log.mockReset();
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.fileAsset.findMany.mockResolvedValue([]);
+    prisma.emailThread.findMany.mockResolvedValue([]);
   });
 
   it('writes platform audit when purge completes', async () => {

@@ -29,6 +29,8 @@ export interface MailActivePanelHostProps {
   onMailboxConnected: () => void;
   onComposeSent: (threadId: string) => void;
   onThreadDeleted?: (threadId: string) => void;
+  onThreadRestored?: (threadId: string) => void;
+  trashView?: boolean;
 }
 
 export function MailActivePanelHost({
@@ -42,6 +44,8 @@ export function MailActivePanelHost({
   onMailboxConnected,
   onComposeSent,
   onThreadDeleted,
+  onThreadRestored,
+  trashView = false,
 }: MailActivePanelHostProps) {
   const open = isMailPanelOpen(activePanel);
   const threadId = activeMailThreadId(activePanel);
@@ -94,6 +98,8 @@ export function MailActivePanelHost({
                 })
               }
               onDeleted={onThreadDeleted}
+              onRestored={onThreadRestored}
+              trashView={trashView}
             />
           ) : null}
 

@@ -53,7 +53,7 @@ export function PlatformTrashInventoryPanel() {
   const handleRunPurge = async () => {
     if (
       !window.confirm(
-        'Run automated retention purge for Credentials and Drive?\n\nThis permanently deletes trashed rows past retention TTL. This cannot be undone.',
+        'Run automated retention purge?\n\nThis permanently deletes trashed rows past retention TTL (Credentials, Drive, Mail, Profile A). This cannot be undone.',
       )
     ) {
       return;
@@ -63,7 +63,7 @@ export function PlatformTrashInventoryPanel() {
       const result = await platformLifecycleApi.runRetentionPurge();
       const profileAPurged = result.profileA.reduce((sum, slice) => sum + slice.purged, 0);
       toast.success(
-        `Purged ${result.totalPurged} row(s) — credentials: ${result.credentials.purged}, drive: ${result.driveFiles.purged}, profile A: ${profileAPurged}`,
+        `Purged ${result.totalPurged} row(s) — credentials: ${result.credentials.purged}, drive: ${result.driveFiles.purged}, mail: ${result.mailThreads.purged}, profile A: ${profileAPurged}`,
       );
       await load();
     } catch (err) {
