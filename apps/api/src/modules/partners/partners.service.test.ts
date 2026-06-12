@@ -279,17 +279,6 @@ describe('PartnersService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('should move partner to Trash', async () => {
-      prisma.partner.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
-      await service.delete('1');
-      expect(prisma.partner.update).toHaveBeenCalledWith({
-        where: { id: '1' },
-        data: { trashedAt: expect.any(Date) },
-      });
-    });
-  });
-
   describe('getCommissionPolicy', () => {
     it('returns four deal types with fallback from partner default', async () => {
       prisma.partner.findUnique.mockResolvedValue({

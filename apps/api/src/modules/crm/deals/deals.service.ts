@@ -444,11 +444,6 @@ export class DealsService {
     });
   }
 
-  /** @deprecated Use moveToTrash — kept for transitional callers. */
-  async delete(id: string) {
-    return this.moveToTrash(id);
-  }
-
   async getStats() {
     const activeWhere = mergeProfileAListScope({}, 'active');
     const [total, byStatus, byType] = await Promise.all([

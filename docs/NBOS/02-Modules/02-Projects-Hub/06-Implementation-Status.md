@@ -5,7 +5,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 ## Shipped (web + API) — Project Trash (Profile A)
 
 - **Schema:** `projects.trashed_at`; legacy `is_archived` **dropped** (`20260612200000`).
-- **API:** `GET /projects?scope=active|trash`; deprecated `?isArchived=` maps to scope; `DELETE /projects/:id` → Trash; `POST /projects/:id/restore`; `DELETE /projects/:id/permanent`.
+- **API:** `GET /projects?scope=active|trash` (default active); `DELETE /projects/:id` → Trash; `POST /projects/:id/restore`; `DELETE /projects/:id/permanent`.
 - **Web:** Hub directory **Trash** tab; project detail — Move to Trash / Restore / **Delete permanently**; delivery board and portfolio/shells exclude trashed projects.
 - **Automated purge:** past retention via unified platform purge (relation guards on Project).
 

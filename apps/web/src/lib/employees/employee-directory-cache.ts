@@ -76,12 +76,6 @@ export function invalidateEmployeeDirectoryCaches(): void {
   invalidateTeamDirectoryCache();
 }
 
-/** @deprecated Use {@link invalidateEmployeePickerEmptyCache}. */
-export function refreshEmployeeDirectory(): Promise<void> {
-  invalidateEmployeePickerEmptyCache();
-  return loadEmptyPickerPage().then(() => undefined);
-}
-
 /** Warm first picker page (20 active employees) after sign-in. Best-effort — never throws. */
 export function prefetchEmployeePickerEmptyPage(): void {
   void loadEmptyPickerPage().catch(() => undefined);

@@ -308,11 +308,6 @@ export class LeadsService {
     });
   }
 
-  /** @deprecated Use moveToTrash — kept for transitional callers. */
-  async delete(id: string) {
-    return this.moveToTrash(id);
-  }
-
   async updateStatus(id: string, status: string) {
     const lead = await this.findById(id);
     this.assertStatusTransitionAllowed(lead.status, status);

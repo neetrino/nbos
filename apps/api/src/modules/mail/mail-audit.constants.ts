@@ -44,9 +44,6 @@ export const MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD = 'mail.thread_marked_unread
 /** Thread flagged as spam in NBOS (no provider spam folder in MVP). */
 export const MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM = 'mail.thread_marked_spam';
 
-/** @deprecated Use THREAD_TRASHED — kept for transitional log readers. */
-export const MAIL_AUDIT_ACTION_THREAD_DELETED = 'mail.thread_deleted';
-
 /** Thread moved to Trash (recoverable; no provider delete in MVP). */
 export const MAIL_AUDIT_ACTION_THREAD_TRASHED = 'mail.thread_trashed';
 

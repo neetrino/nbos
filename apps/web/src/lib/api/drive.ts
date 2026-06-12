@@ -653,15 +653,6 @@ export const driveApi = {
     return resp.data;
   },
 
-  /** @deprecated Prefer moveFileToTrash */
-  async permanentlyDeleteFileAsset(id: string): Promise<FileAsset> {
-    const resp = await api.post<FileAsset>(
-      '/api/drive/files/' + encodeURIComponent(id) + '/move-to-trash',
-      {},
-    );
-    return resp.data;
-  },
-
   async getDriveLifecycleCounts(): Promise<{ trash: number }> {
     const resp = await api.get<{ trash: number }>('/api/drive/lifecycle-counts');
     return resp.data;

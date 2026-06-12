@@ -179,9 +179,4 @@ export class ContactsService {
       userId,
     });
   }
-
-  /** @deprecated Use moveToTrash — kept for transitional callers. */
-  async delete(id: string) {
-    return this.moveToTrash(id);
-  }
 }

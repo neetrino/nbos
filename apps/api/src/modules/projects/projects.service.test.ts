@@ -111,8 +111,8 @@ describe('ProjectsService', () => {
   });
 
   describe('findAll (branch coverage)', () => {
-    it('applies active scope via legacy isArchived filter', async () => {
-      await service.findAll({ isArchived: false });
+    it('applies active scope by default', async () => {
+      await service.findAll({});
       expect(prisma.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ trashedAt: null }),
@@ -197,7 +197,6 @@ describe('ProjectsService', () => {
       const result = await service.update('1', {
         name: 'Updated',
         description: 'Desc',
-        isArchived: true,
         companyId: '',
       });
       expect(result.name).toBe('Updated');

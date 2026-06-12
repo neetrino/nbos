@@ -32,10 +32,7 @@ import {
   assertEntityIsActive,
   assertEntityIsTrashed,
 } from '../../common/lifecycle/entity-lifecycle-guards';
-import {
-  assertTaskDraftDeletable,
-  isTaskDraftDeletable,
-} from '../../common/lifecycle/task-lifecycle-guards';
+import { isTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
 import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
 
 interface CreateTaskDto {
@@ -403,7 +400,6 @@ export class TasksService {
       reviewRequestedAt: task.reviewRequestedAt,
     };
     if (isTaskDraftDeletable(draftInput)) {
-      assertTaskDraftDeletable(draftInput);
       return this.prisma.task.delete({ where: { id } });
     }
     assertEntityIsActive(task, 'trashedAt', 'Task');

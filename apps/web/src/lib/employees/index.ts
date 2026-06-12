@@ -8,7 +8,6 @@ export {
   invalidateEmployeeDirectoryCaches,
   invalidateEmployeePickerEmptyCache,
   prefetchEmployeePickerEmptyPage,
-  refreshEmployeeDirectory,
   searchEmployeesForPicker,
 } from './employee-directory-cache';
 export {

@@ -344,11 +344,6 @@ export class PartnersService {
     });
   }
 
-  /** @deprecated Use moveToTrash — kept for transitional callers. */
-  async delete(id: string) {
-    return this.moveToTrash(id);
-  }
-
   /** NBOS § Partner Commission Policy: percents by deal type; null row uses partner defaultPercent. */
   async getCommissionPolicy(partnerId: string): Promise<PartnerCommissionPolicyViewDto> {
     return loadPartnerCommissionPolicyView(this.prisma, partnerId);

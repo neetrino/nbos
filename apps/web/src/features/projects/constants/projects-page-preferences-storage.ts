@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
 import { createPersistedJsonStore } from '@/lib/persisted-client-state';
 import type { ProjectDetailViewMode } from '../components/project-detail-layout.constants';
 import { PRODUCT_STATUSES, PROJECT_HUB_TABS } from './projects';
@@ -165,17 +164,4 @@ export function projectDetailProductStatusFilterToTab(
   return isKnownStatus
     ? (filter as ProjectDetailProductStatusTab)
     : PROJECT_DETAIL_PRODUCT_STATUS_TAB_ALL;
-}
-
-/** @deprecated Use {@link useProjectDetailPagePreferences}. */
-export function useProjectDetailViewMode(): readonly [
-  ProjectDetailViewMode,
-  (viewMode: ProjectDetailViewMode) => void,
-] {
-  const [prefs, setPrefs] = useProjectDetailPagePreferences();
-  const setViewMode = useCallback(
-    (viewMode: ProjectDetailViewMode) => setPrefs({ viewMode }),
-    [setPrefs],
-  );
-  return [prefs.viewMode, setViewMode];
 }

@@ -36,29 +36,20 @@ interface UpdateProjectDto {
   description?: string;
   companyId?: string | null;
   contactId?: string;
-  /** @deprecated Use trash/restore endpoints — kept for transitional sync. */
-  isArchived?: boolean;
   contactIds?: string[];
 }
 
 interface ProjectQueryParams {
   page?: number;
   pageSize?: number;
-  /** @deprecated Use `scope` — maps true→trash, false→active. */
-  isArchived?: boolean;
   scope?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
 
-function resolveProjectListScope(params: ProjectQueryParams): EntityLifecycleScope | null {
-  if (params.scope != null && params.scope.trim() !== '') {
-    return parseLifecycleScopeFromQuery(params.scope);
-  }
-  if (params.isArchived === true) return 'trash';
-  if (params.isArchived === false) return 'active';
-  return null;
+function resolveProjectListScope(params: ProjectQueryParams): EntityLifecycleScope {
+  return parseLifecycleScopeFromQuery(params.scope);
 }
 
 @Injectable()
@@ -71,9 +62,10 @@ export class ProjectsService {
   async findAll(params: ProjectQueryParams) {
     const { page = 1, pageSize = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = params;
 
-    const lifecycleScope = resolveProjectListScope(params);
-    const where: Prisma.ProjectWhereInput =
-      lifecycleScope != null ? mergeProfileAListScope({}, lifecycleScope) : {};
+    const where: Prisma.ProjectWhereInput = mergeProfileAListScope(
+      {},
+      resolveProjectListScope(params),
+    );
 
     if (search) {
       const q = search.trim();
@@ -146,17 +138,7 @@ export class ProjectsService {
     });
     if (!existing) throw new NotFoundException(`Project ${id} not found`);
 
-    const isTrashOnlyUpdate =
-      data.isArchived !== undefined &&
-      data.name === undefined &&
-      data.description === undefined &&
-      data.companyId === undefined &&
-      data.contactId === undefined &&
-      data.contactIds === undefined;
-
-    if (!isTrashOnlyUpdate) {
-      assertEntityIsActive(existing, 'trashedAt', 'Project');
-    }
+    assertEntityIsActive(existing, 'trashedAt', 'Project');
 
     let resolvedContactId = data.contactId ?? existing.contactId;
 
@@ -170,13 +152,6 @@ export class ProjectsService {
       resolvedContactId = primaryContactId ?? existing.contactId;
     }
 
-    const trashSync =
-      data.isArchived === undefined
-        ? {}
-        : data.isArchived
-          ? { trashedAt: new Date() }
-          : { trashedAt: null };
-
     await this.prisma.project.update({
       where: { id },
       data: {
@@ -186,7 +161,6 @@ export class ProjectsService {
         ...(data.contactIds !== undefined || data.contactId !== undefined
           ? { contactId: resolvedContactId }
           : {}),
-        ...trashSync,
       },
     });
 
@@ -225,11 +199,6 @@ export class ProjectsService {
       id,
       userId,
     });
-  }
-
-  /** @deprecated Use moveToTrash — kept for transitional callers. */
-  async delete(id: string) {
-    return this.moveToTrash(id);
   }
 
   async getStats() {
