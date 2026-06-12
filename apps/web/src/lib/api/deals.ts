@@ -1,3 +1,4 @@
+import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
 export interface DealInvoice {
@@ -154,6 +155,7 @@ interface DealQueryParams {
   type?: string;
   sellerId?: string;
   search?: string;
+  scope?: EntityLifecycleScope;
 }
 
 interface DealStatusOptions {
@@ -262,8 +264,13 @@ export const dealsApi = {
     return resp.data;
   },
 
-  async delete(id: string): Promise<void> {
+  async moveToTrash(id: string): Promise<void> {
     await api.delete(`/api/crm/deals/${id}`);
+  },
+
+  async restore(id: string): Promise<Deal> {
+    const resp = await api.post<Deal>(`/api/crm/deals/${id}/restore`);
+    return resp.data;
   },
 
   async getStats(): Promise<DealStats> {

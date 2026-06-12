@@ -149,7 +149,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | Модуль          | Сущности                         | Schema lifecycle     | API                      | Web UI                                |
 | --------------- | -------------------------------- | -------------------- | ------------------------ | ------------------------------------- |
 | Clients         | Contact, Company                 | ✅ `trashedAt`       | Trash + restore API      | Move to Trash / Restore (Profile A)   |
-| CRM             | Lead, Deal                       | ❌                   | `prisma.delete`          | Delete на deals/leads                 |
+| CRM             | Lead, Deal                       | ✅ `trashedAt`       | Trash + restore API      | Move to Trash / Restore (Profile A)   |
 | Projects Hub    | Product, Extension               | ❌                   | `prisma.delete`          | частично (client services delete)     |
 | Projects        | Project                          | ⚠️ `isArchived` only | hard delete API (UI нет) | таб Archived legacy, action trash нет |
 | Tasks           | Task                             | ❌                   | `prisma.delete`          | delete в task sheet                   |
@@ -246,12 +246,12 @@ purgedAt    DateTime?   -- шаг 2: job/admin/policy; окончательно�
 
 | #   | Задача                                                                | Статус  |
 | --- | --------------------------------------------------------------------- | ------- |
-| 2.1 | Migration: `leads.trashed_at`, `deals.trashed_at`                     | ⬜ TODO |
-| 2.2 | API Profile A: `scope`, trash, restore (reuse helpers из 0.3)         | ⬜ TODO |
-| 2.3 | Guards: Deal WON — move to Trash ok, permanent never MVP              | ⬜ TODO |
-| 2.4 | Web: Delete → Move to Trash; scope switch; kanban `scope=active` only | ⬜ TODO |
-| 2.5 | Stats / pipeline: trashed excluded (R1)                               | ⬜ TODO |
-| 2.6 | Tests                                                                 | ⬜ TODO |
+| 2.1 | Migration: `leads.trashed_at`, `deals.trashed_at`                     | ✅ DONE |
+| 2.2 | API Profile A: `scope`, trash, restore (reuse helpers из 0.3)         | ✅ DONE |
+| 2.3 | Guards: Deal WON — move to Trash ok, permanent never MVP              | ✅ DONE |
+| 2.4 | Web: Delete → Move to Trash; scope switch; kanban `scope=active` only | ✅ DONE |
+| 2.5 | Stats / pipeline: trashed excluded (R1)                               | ✅ DONE |
+| 2.6 | Tests                                                                 | ✅ DONE |
 
 **Done when:** CRM = Profile A как Clients.
 
@@ -434,3 +434,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Drive 6.1** + **Credentials C0/C1** slice: unified Trash UI, scope param, folder empty-delete, trash side-effects                                                                    |
 | 2026-06-12 | **Cleanup:** мёртвый archive-код убран (Drive library, web archive API, entity attachments, credentials rename deleteFolder/trashList/onRequestMoveToTrash)                            |
 | 2026-06-12 | **Phase 1 Clients** shipped: `trashed_at` migration, Profile A API (`scope`, trash, restore), web scope switch + Move to Trash / Restore, portfolio active-only                        |
+| 2026-06-12 | **Phase 2 CRM** shipped: Lead/Deal `trashed_at`, Profile A API + stats active-only, web Trash view (list-only), Move to Trash / Restore on leads & deals sheets                        |

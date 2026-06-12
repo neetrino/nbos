@@ -28,6 +28,14 @@ import {
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../../common/lifecycle/entity-lifecycle-guards';
+import {
+  mergeProfileAListScope,
+  parseLifecycleScopeFromQuery,
+} from '../../../common/lifecycle/entity-lifecycle-scope';
 
 const DEAL_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code', 'status', 'amount']);
 
@@ -50,9 +58,11 @@ export class DealsService {
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
+      scope,
     } = params;
 
-    const where: Prisma.DealWhereInput = {};
+    const lifecycleScope = parseLifecycleScopeFromQuery(scope);
+    const where: Prisma.DealWhereInput = mergeProfileAListScope({}, lifecycleScope);
 
     if (status) {
       where.status = status as Prisma.EnumDealStatusEnumFilter['equals'];
@@ -210,6 +220,7 @@ export class DealsService {
 
   async update(id: string, data: UpdateDealDto, meta: { actorRoleLevel?: number } = {}) {
     const existing = await this.findById(id);
+    assertEntityIsActive(existing, 'trashedAt', 'Deal');
     const nextSource = data.source !== undefined ? data.source : existing.source;
     const nextPartnerId =
       data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId;
@@ -398,21 +409,50 @@ export class DealsService {
     }
   }
 
+  async moveToTrash(id: string) {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!deal) throw new NotFoundException(`Deal ${id} not found`);
+    assertEntityIsActive(deal, 'trashedAt', 'Deal');
+    return this.prisma.deal.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string) {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!deal) throw new NotFoundException(`Deal ${id} not found`);
+    assertEntityIsTrashed(deal, 'trashedAt', 'Deal');
+    return this.prisma.deal.update({
+      where: { id },
+      data: { trashedAt: null },
+    });
+  }
+
+  /** @deprecated Use moveToTrash — kept for transitional callers. */
   async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.deal.delete({ where: { id } });
+    return this.moveToTrash(id);
   }
 
   async getStats() {
+    const activeWhere = mergeProfileAListScope({}, 'active');
     const [total, byStatus, byType] = await Promise.all([
-      this.prisma.deal.count(),
+      this.prisma.deal.count({ where: activeWhere }),
       this.prisma.deal.groupBy({
         by: ['status'],
+        where: activeWhere,
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.deal.groupBy({
         by: ['type'],
+        where: activeWhere,
         _count: true,
         _sum: { amount: true },
       }),

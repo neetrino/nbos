@@ -39,6 +39,9 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
+import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
+import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
+import { useListScope } from '@/hooks/use-list-scope';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import {
   getApiErrorMessage,
@@ -122,6 +125,15 @@ function LeadsPipelinePageContent() {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
+  const { scope, setScope, isTrashView } = useListScope({
+    onScopeChange: () => {
+      setSheetOpen(false);
+      setSelectedLead(null);
+      setStageGateHighlight(null);
+      stripOpenLeadFromUrl();
+    },
+  });
+
   const pushOpenLeadToUrl = useCallback(
     (id: string) => {
       const p = new URLSearchParams(searchParams.toString());
@@ -136,6 +148,7 @@ function LeadsPipelinePageContent() {
     try {
       const data = await leadsApi.getAll({
         pageSize: 200,
+        scope,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         source: filters.source && filters.source !== 'all' ? filters.source : undefined,
@@ -147,11 +160,15 @@ function LeadsPipelinePageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, scope]);
 
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
+
+  useEffect(() => {
+    if (isTrashView && view === 'kanban') setView('list');
+  }, [isTrashView, view]);
 
   const openLeadId = searchParams.get(CRM_OPEN_LEAD_QUERY)?.trim() || null;
   const deepLinkLeadAttemptedRef = useRef<string | null>(null);
@@ -326,7 +343,7 @@ function LeadsPipelinePageContent() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleMoveToTrash = async (id: string) => {
     const previousLeads = leads;
 
     setSheetOpen(false);
@@ -335,9 +352,22 @@ function LeadsPipelinePageContent() {
     setLeads((prev) => prev.filter((l) => l.id !== id));
 
     try {
-      await leadsApi.delete(id);
+      await leadsApi.moveToTrash(id);
+      toast.success('Lead moved to Trash');
     } catch {
       setLeads(previousLeads);
+      toast.error('Could not move lead to Trash');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      const restored = await leadsApi.restore(id);
+      toast.success('Lead restored');
+      setSelectedLead(restored);
+      await fetchLeads();
+    } catch {
+      toast.error('Could not restore lead');
     }
   };
 
@@ -429,21 +459,38 @@ function LeadsPipelinePageContent() {
           onClearAll={() => setFilters({})}
         />
       ),
-      viewMode: <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />,
+      viewMode: isTrashView ? null : (
+        <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />
+      ),
       trailing: (
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} aria-hidden />
-          New Lead
-        </Button>
+        <div className="flex items-center gap-2">
+          <ClientsDirectorySettingsSheet
+            listScope={scope}
+            onListScopeChange={setScope}
+            entityLabel="leads"
+          />
+          {!isTrashView ? (
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus size={16} aria-hidden />
+              New Lead
+            </Button>
+          ) : null}
+        </div>
       ),
     }),
-    [filterConfigs, filters, search, view],
+    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
+      {isTrashView ? (
+        <ClientsDirectoryTrashBanner
+          entityLabel="leads"
+          onBackToActive={() => setScope('active')}
+        />
+      ) : null}
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
@@ -451,16 +498,22 @@ function LeadsPipelinePageContent() {
       ) : displayLeads.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No leads yet"
-          description="Add your first lead to start building your pipeline"
+          title={isTrashView ? 'Trash is empty' : 'No leads yet'}
+          description={
+            isTrashView
+              ? 'Removed leads will appear here until restored or purged.'
+              : 'Add your first lead to start building your pipeline'
+          }
           action={
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus size={16} />
-              Create First Lead
-            </Button>
+            isTrashView ? undefined : (
+              <Button onClick={() => setShowCreate(true)}>
+                <Plus size={16} />
+                Create First Lead
+              </Button>
+            )
           }
         />
-      ) : view === 'kanban' ? (
+      ) : !isTrashView && view === 'kanban' ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
@@ -569,12 +622,18 @@ function LeadsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onDelete={(id) => {
-          const lead =
-            selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
-          if (!lead) return;
-          deleteConfirm.request({ id, name: lead.name ?? 'Lead' });
-        }}
+        isTrashView={isTrashView}
+        onMoveToTrash={
+          isTrashView
+            ? undefined
+            : (id) => {
+                const lead =
+                  selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
+                if (!lead) return;
+                deleteConfirm.request({ id, name: lead.name ?? 'Lead' });
+              }
+        }
+        onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
         blockerNavigation={leadBlockerNav}
         onBlockerNavigationConsumed={clearLeadBlockerNav}
         stageGateHighlight={selectedLead && stageGateHighlight ? stageGateHighlight : null}
@@ -602,13 +661,13 @@ function LeadsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Delete lead?"
-        description="The lead will be removed from the pipeline and linked lists."
+        title="Move lead to Trash?"
+        description="The lead will be removed from the active pipeline. You can restore it from Trash later."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
           deleteConfirm.clear();
-          void handleDelete(id);
+          void handleMoveToTrash(id);
         }}
       />
     </div>

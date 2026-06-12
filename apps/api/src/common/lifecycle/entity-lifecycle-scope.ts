@@ -52,6 +52,14 @@ export function buildDriveRecoverableTrashWhere(): {
   };
 }
 
+/** Merges Profile A list scope into an existing Prisma where clause. */
+export function mergeProfileAListScope<T extends Record<string, unknown>>(
+  where: T,
+  scope: EntityLifecycleScope,
+): T & ReturnType<typeof buildScopeWhere> {
+  return { ...where, ...buildScopeWhere(scope) };
+}
+
 export function parseLifecycleScopeFromQuery(
   scopeParam?: string,
   legacyIncludeTrash?: boolean,

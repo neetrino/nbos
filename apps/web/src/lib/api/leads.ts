@@ -1,3 +1,4 @@
+import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
 export interface Lead {
@@ -55,6 +56,7 @@ interface LeadQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  scope?: EntityLifecycleScope;
 }
 
 export const leadsApi = {
@@ -95,8 +97,13 @@ export const leadsApi = {
     return resp.data;
   },
 
-  async delete(id: string): Promise<void> {
+  async moveToTrash(id: string): Promise<void> {
     await api.delete(`/api/crm/leads/${id}`);
+  },
+
+  async restore(id: string): Promise<Lead> {
+    const resp = await api.post<Lead>(`/api/crm/leads/${id}/restore`);
+    return resp.data;
   },
 
   async getStats(): Promise<LeadStats> {

@@ -50,6 +50,7 @@ export interface DealQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  scope?: string;
 }
 
 export interface DealHandoffReferences {
