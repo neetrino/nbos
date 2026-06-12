@@ -8,6 +8,7 @@ import { DetailInfoSubsection } from './detail-info-subsection';
 import { ProjectContactsSection } from './ProjectContactsSection';
 import { ProjectDetailsFields } from './ProjectInfoCard';
 import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
+import { ProjectLifecycleActions } from './ProjectLifecycleActions';
 
 interface ProjectInfoPanelProps {
   project: FullProject;
@@ -36,7 +37,10 @@ export function ProjectInfoPanel({
             {project.code}
           </p>
         </div>
-        <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} className="shrink-0" />
+        <div className="flex shrink-0 items-center gap-1">
+          <ProjectLifecycleActions project={project} onProjectUpdated={onProjectUpdated} />
+          <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} />
+        </div>
       </div>
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col">

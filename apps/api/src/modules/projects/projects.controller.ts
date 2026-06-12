@@ -29,12 +29,14 @@ export class ProjectsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'isArchived', required: false, type: Boolean })
+  @ApiQuery({ name: 'isArchived', required: false, type: Boolean, deprecated: true })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('isArchived') isArchived?: string,
+    @Query('scope') scope?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
@@ -43,6 +45,7 @@ export class ProjectsController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       search,
       isArchived: isArchived === 'true' ? true : isArchived === 'false' ? false : undefined,
+      scope,
       sortBy,
       sortOrder,
     });
@@ -132,10 +135,17 @@ export class ProjectsController {
     return this.projectsService.update(id, body);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore project from Trash' })
+  async restore(@Param('id') id: string) {
+    await this.projectsService.restoreFromTrash(id);
+    return this.projectsService.findById(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete project' })
+  @ApiOperation({ summary: 'Move project to Trash' })
   async remove(@Param('id') id: string) {
-    await this.projectsService.delete(id);
+    await this.projectsService.moveToTrash(id);
   }
 }

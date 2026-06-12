@@ -32,7 +32,7 @@ export class PortfolioService {
           },
         },
         projects: {
-          where: { isArchived: false },
+          where: { trashedAt: null },
           orderBy: { createdAt: 'desc' },
           take: 80,
           select: {
@@ -182,7 +182,7 @@ export class PortfolioService {
         contact: true,
         billingContact: true,
         projects: {
-          where: { isArchived: false },
+          where: { trashedAt: null },
           orderBy: { createdAt: 'desc' },
           take: 80,
           select: {

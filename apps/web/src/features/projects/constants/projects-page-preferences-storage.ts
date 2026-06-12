@@ -60,12 +60,13 @@ function parseHubPreferences(raw: string | null): ProjectsHubPagePreferences {
     try {
       const parsed: unknown = JSON.parse(raw);
       if (isRecord(parsed)) {
-        const activeTab = parsed.activeTab;
+        const rawTab = parsed.activeTab;
+        const migratedTab = rawTab === 'archived' ? 'trash' : rawTab;
         const viewMode = parsed.viewMode;
         return {
           activeTab:
-            typeof activeTab === 'string' && VALID_HUB_TABS.has(activeTab as ProjectsHubTab)
-              ? (activeTab as ProjectsHubTab)
+            typeof migratedTab === 'string' && VALID_HUB_TABS.has(migratedTab as ProjectsHubTab)
+              ? (migratedTab as ProjectsHubTab)
               : DEFAULT_PROJECTS_HUB_PAGE_PREFERENCES.activeTab,
           viewMode:
             viewMode === 'grid' || viewMode === 'list'
@@ -80,8 +81,9 @@ function parseHubPreferences(raw: string | null): ProjectsHubPagePreferences {
 
   const prefs = { ...DEFAULT_PROJECTS_HUB_PAGE_PREFERENCES };
   const legacyTab = readLegacyScalar('nbos.projectsHub.activeTab');
-  if (legacyTab && VALID_HUB_TABS.has(legacyTab as ProjectsHubTab)) {
-    prefs.activeTab = legacyTab as ProjectsHubTab;
+  const migratedLegacyTab = legacyTab === 'archived' ? 'trash' : legacyTab;
+  if (migratedLegacyTab && VALID_HUB_TABS.has(migratedLegacyTab as ProjectsHubTab)) {
+    prefs.activeTab = migratedLegacyTab as ProjectsHubTab;
   }
   const legacyView = readLegacyScalar('nbos.projectsHub.viewMode');
   if (legacyView === 'grid' || legacyView === 'list') {

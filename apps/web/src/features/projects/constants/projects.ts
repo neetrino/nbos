@@ -3,7 +3,7 @@ import type { StatusVariant } from '@/components/shared/StatusBadge';
 export const PROJECT_HUB_TABS = [
   { value: 'all', label: 'All' },
   { value: 'active', label: 'Active' },
-  { value: 'archived', label: 'Archived' },
+  { value: 'trash', label: 'Trash' },
 ] as const;
 
 export const PRODUCT_CATEGORIES = [

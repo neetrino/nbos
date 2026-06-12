@@ -58,7 +58,7 @@ describe('projects-page-preferences-storage', () => {
     window.localStorage.setItem('nbos.projectsHub.activeTab', 'archived');
     window.localStorage.setItem('nbos.projectsHub.viewMode', 'list');
     expect(readProjectsHubPagePreferences()).toEqual({
-      activeTab: 'archived',
+      activeTab: 'trash',
       viewMode: 'list',
     });
   });

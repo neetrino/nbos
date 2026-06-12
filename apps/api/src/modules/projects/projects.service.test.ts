@@ -111,11 +111,11 @@ describe('ProjectsService', () => {
   });
 
   describe('findAll (branch coverage)', () => {
-    it('applies isArchived filter', async () => {
+    it('applies active scope via legacy isArchived filter', async () => {
       await service.findAll({ isArchived: false });
       expect(prisma.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ isArchived: false }),
+          where: expect.objectContaining({ trashedAt: null }),
         }),
       );
     });
@@ -185,10 +185,14 @@ describe('ProjectsService', () => {
           expenses: 0,
         },
       };
-      prisma.project.findUnique.mockImplementation((args: { select?: { contactId?: boolean } }) => {
-        if (args?.select?.contactId) return Promise.resolve({ contactId: 'c1' });
-        return Promise.resolve(detailRow);
-      });
+      prisma.project.findUnique.mockImplementation(
+        (args: { select?: { contactId?: boolean; trashedAt?: boolean } }) => {
+          if (args?.select?.contactId != null || args?.select?.trashedAt != null) {
+            return Promise.resolve({ contactId: 'c1', trashedAt: null });
+          }
+          return Promise.resolve(detailRow);
+        },
+      );
       prisma.project.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
         name: 'Updated',
@@ -200,11 +204,16 @@ describe('ProjectsService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('deletes when found', async () => {
-      prisma.project.findUnique.mockResolvedValue({ id: '1' });
-      await service.delete('1');
-      expect(prisma.project.delete).toHaveBeenCalled();
+  describe('moveToTrash', () => {
+    it('sets trashedAt when active', async () => {
+      prisma.project.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await service.moveToTrash('1');
+      expect(prisma.project.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: expect.objectContaining({ trashedAt: expect.any(Date), isArchived: true }),
+        }),
+      );
     });
   });
 

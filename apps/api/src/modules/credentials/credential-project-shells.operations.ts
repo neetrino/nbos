@@ -39,7 +39,7 @@ export async function listCredentialProjectShells(
   if (projectIds.length === 0) return { shells: [] };
 
   const projects = await runtime.prisma.project.findMany({
-    where: { id: { in: projectIds }, isArchived: false },
+    where: { id: { in: projectIds }, trashedAt: null },
     select: { id: true, name: true, code: true },
   });
 
