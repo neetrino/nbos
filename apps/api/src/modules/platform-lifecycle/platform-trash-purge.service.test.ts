@@ -19,6 +19,7 @@ describe('PlatformTrashPurgeService', () => {
     const result = await service.runRetentionPurge(new Date('2026-06-12T03:30:00.000Z'));
 
     expect(result.totalPurged).toBe(0);
+    expect(result.profileA).toHaveLength(6);
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'platform.trash_retention_purge_run' }),
     );

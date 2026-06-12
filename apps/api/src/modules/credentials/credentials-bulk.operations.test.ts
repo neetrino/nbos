@@ -48,6 +48,9 @@ describe('bulkArchiveCredentials', () => {
     expect(prisma.credentialFolderMembership.deleteMany).toHaveBeenCalledWith({
       where: { credentialId: { in: ['cred-1', 'cred-2'] } },
     });
+    expect(prisma.credentialFavorite.deleteMany).toHaveBeenCalledWith({
+      where: { credentialId: { in: ['cred-1', 'cred-2'] } },
+    });
     expect(prisma.credential.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: { in: ['cred-1', 'cred-2'] } },

@@ -34,7 +34,7 @@ function folderWhereForAccess(
   projectId?: string,
 ) {
   const normalizedScope = scope ? normalizeFolderScope(scope) : undefined;
-  const where: Prisma.CredentialFolderWhereInput = { archivedAt: null };
+  const where: Prisma.CredentialFolderWhereInput = {};
   if (normalizedScope && normalizedScope !== 'ALL') where.scope = normalizedScope;
   if (parentId !== undefined) where.parentId = parentId;
   if (projectId) where.projectId = projectId;
@@ -93,7 +93,7 @@ export async function createCredentialFolder(
   const scope = normalizeFolderScope(input.scope);
   if (input.parentId) {
     const parent = await runtime.prisma.credentialFolder.findFirst({
-      where: { id: input.parentId, archivedAt: null, scope },
+      where: { id: input.parentId, scope },
       select: { id: true, projectId: true },
     });
     if (!parent) throw new BadRequestException('Parent folder is invalid');
@@ -139,7 +139,7 @@ export async function updateCredentialFolder(
   access: CredentialsAccessContext,
 ): Promise<CredentialFolderApiRow> {
   const existing = await runtime.prisma.credentialFolder.findFirst({
-    where: { id: folderId, archivedAt: null },
+    where: { id: folderId },
   });
   if (!existing) throw new NotFoundException(`Credential folder ${folderId} not found`);
 
@@ -177,7 +177,7 @@ export async function deleteCredentialFolder(
   access: CredentialsAccessContext,
 ) {
   const existing = await runtime.prisma.credentialFolder.findFirst({
-    where: { id: folderId, archivedAt: null },
+    where: { id: folderId },
   });
   if (!existing) throw new NotFoundException(`Credential folder ${folderId} not found`);
 
@@ -186,7 +186,7 @@ export async function deleteCredentialFolder(
       where: { folderId, credential: { archivedAt: null } },
     }),
     runtime.prisma.credentialFolder.count({
-      where: { parentId: folderId, archivedAt: null },
+      where: { parentId: folderId },
     }),
   ]);
 
@@ -212,12 +212,12 @@ export async function removeCredentialFolderGrouping(
   access: CredentialsAccessContext,
 ) {
   const existing = await runtime.prisma.credentialFolder.findFirst({
-    where: { id: folderId, archivedAt: null },
+    where: { id: folderId },
   });
   if (!existing) throw new NotFoundException(`Credential folder ${folderId} not found`);
 
   const childFolders = await runtime.prisma.credentialFolder.count({
-    where: { parentId: folderId, archivedAt: null },
+    where: { parentId: folderId },
   });
   if (childFolders > 0) throw new ConflictException(NESTED_FOLDER_MESSAGE);
 
@@ -312,7 +312,7 @@ export async function replaceCredentialFolderMemberships(
 
   if (folderIds.length > 0) {
     const folders = await runtime.prisma.credentialFolder.findMany({
-      where: { id: { in: folderIds }, archivedAt: null },
+      where: { id: { in: folderIds } },
       select: { id: true, scope: true, projectId: true },
     });
     if (folders.length !== folderIds.length) {

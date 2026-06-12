@@ -283,6 +283,7 @@ export async function archiveCredential(
       data: { archivedAt },
     }),
     runtime.prisma.credentialFolderMembership.deleteMany({ where: { credentialId: id } }),
+    runtime.prisma.credentialFavorite.deleteMany({ where: { credentialId: id } }),
   ]);
   await runtime.auditService.log({
     entityType: 'credential',

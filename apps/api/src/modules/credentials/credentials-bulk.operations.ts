@@ -63,6 +63,9 @@ export async function bulkArchiveCredentials(
     runtime.prisma.credentialFolderMembership.deleteMany({
       where: { credentialId: { in: result.credentialIds } },
     }),
+    runtime.prisma.credentialFavorite.deleteMany({
+      where: { credentialId: { in: result.credentialIds } },
+    }),
   ]);
 
   await Promise.all(

@@ -61,8 +61,9 @@ export function PlatformTrashInventoryPanel() {
     setPurging(true);
     try {
       const result = await platformLifecycleApi.runRetentionPurge();
+      const profileAPurged = result.profileA.reduce((sum, slice) => sum + slice.purged, 0);
       toast.success(
-        `Purged ${result.totalPurged} row(s) — credentials: ${result.credentials.purged}, drive: ${result.driveFiles.purged}`,
+        `Purged ${result.totalPurged} row(s) — credentials: ${result.credentials.purged}, drive: ${result.driveFiles.purged}, profile A: ${profileAPurged}`,
       );
       await load();
     } catch (err) {
@@ -125,9 +126,8 @@ export function PlatformTrashInventoryPanel() {
       {inventory.totalPurgeEligible > 0 ? (
         <p className="text-muted-foreground flex items-start gap-2 text-sm">
           <ShieldAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden />
-          Rows past retention are eligible for automated purge (Credentials + Drive). Profile A
-          entities are inventory-only until purge jobs ship. Override TTL via
-          PLATFORM_TRASH_RETENTION_DAYS_* env vars.
+          Rows past retention are eligible for automated purge (Credentials, Drive, Profile A with
+          relation guards). Override TTL via PLATFORM_TRASH_RETENTION_DAYS_* env vars.
         </p>
       ) : null}
 

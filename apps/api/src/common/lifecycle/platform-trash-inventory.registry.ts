@@ -38,6 +38,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'contact',
     webHref: '/clients/contacts?scope=trash',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'company',
@@ -48,6 +49,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'company',
     webHref: '/clients/companies?scope=trash',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'lead',
@@ -58,6 +60,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'lead',
     webHref: '/crm/leads?scope=trash',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'deal',
@@ -68,6 +71,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'deal',
     webHref: '/crm/deals?scope=trash',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'partner',
@@ -78,6 +82,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'partner',
     webHref: '/partners?scope=trash',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'project',
@@ -88,6 +93,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'project',
     webHref: '/projects',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'credential',

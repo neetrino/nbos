@@ -29,6 +29,6 @@ describe('platform-retention-rules.resolver', () => {
   it('lists resolved rules with automation flags', () => {
     const rules = listResolvedRetentionRules({});
     expect(rules.find((row) => row.key === 'credential')?.automatedPurge).toBe(true);
-    expect(rules.find((row) => row.key === 'contact')?.automatedPurge).toBe(false);
+    expect(rules.find((row) => row.key === 'contact')?.automatedPurge).toBe(true);
   });
 });

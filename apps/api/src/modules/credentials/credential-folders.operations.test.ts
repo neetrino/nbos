@@ -32,7 +32,6 @@ describe('deleteCredentialFolder', () => {
   it('hard-deletes empty folder and writes audit', async () => {
     prisma.credentialFolder.findFirst.mockResolvedValue({
       id: 'folder-1',
-      archivedAt: null,
       projectId: 'project-1',
     });
     prisma.credentialFolderMembership.count.mockResolvedValue(0);
@@ -53,7 +52,6 @@ describe('deleteCredentialFolder', () => {
   it('blocks folder with active credential memberships', async () => {
     prisma.credentialFolder.findFirst.mockResolvedValue({
       id: 'folder-1',
-      archivedAt: null,
       projectId: null,
     });
     prisma.credentialFolderMembership.count.mockResolvedValue(2);
@@ -68,7 +66,6 @@ describe('deleteCredentialFolder', () => {
   it('blocks folder with child folders', async () => {
     prisma.credentialFolder.findFirst.mockResolvedValue({
       id: 'folder-1',
-      archivedAt: null,
       projectId: null,
     });
     prisma.credentialFolderMembership.count.mockResolvedValue(0);
@@ -101,7 +98,6 @@ describe('removeCredentialFolderGrouping', () => {
   it('unfiles credentials and deletes folder', async () => {
     prisma.credentialFolder.findFirst.mockResolvedValue({
       id: 'folder-1',
-      archivedAt: null,
       projectId: 'project-1',
     });
     prisma.credentialFolder.count.mockResolvedValue(0);
@@ -128,7 +124,6 @@ describe('removeCredentialFolderGrouping', () => {
   it('blocks when nested child folders exist', async () => {
     prisma.credentialFolder.findFirst.mockResolvedValue({
       id: 'folder-1',
-      archivedAt: null,
       projectId: null,
     });
     prisma.credentialFolder.count.mockResolvedValue(1);

@@ -36,7 +36,7 @@ function buildBulkFolderResult(
 
 async function assertFolderExists(runtime: CredentialsRuntime, folderId: string) {
   const folder = await runtime.prisma.credentialFolder.findFirst({
-    where: { id: folderId, archivedAt: null },
+    where: { id: folderId },
     select: { id: true },
   });
   if (!folder) throw new NotFoundException(`Credential folder ${folderId} not found`);

@@ -33,11 +33,18 @@ export interface PlatformRetentionRuleRow {
   scheduledPurgeJob?: string;
 }
 
+export interface PlatformTrashPurgeSliceResultWithKey {
+  key: string;
+  purged: number;
+  candidateIds: string[];
+}
+
 export interface PlatformTrashPurgeRunResult {
   startedAt: string;
   completedAt: string;
   credentials: { purged: number; candidateIds: string[] };
   driveFiles: { purged: number; candidateIds: string[] };
+  profileA: PlatformTrashPurgeSliceResultWithKey[];
   totalPurged: number;
 }
 

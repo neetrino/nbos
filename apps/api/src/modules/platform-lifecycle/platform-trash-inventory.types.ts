@@ -37,10 +37,15 @@ export interface PlatformTrashPurgeSliceResult {
   candidateIds: string[];
 }
 
+export interface PlatformTrashPurgeSliceResultWithKey extends PlatformTrashPurgeSliceResult {
+  key: string;
+}
+
 export interface PlatformTrashPurgeRunResult {
   startedAt: string;
   completedAt: string;
   credentials: PlatformTrashPurgeSliceResult;
   driveFiles: PlatformTrashPurgeSliceResult;
+  profileA: PlatformTrashPurgeSliceResultWithKey[];
   totalPurged: number;
 }

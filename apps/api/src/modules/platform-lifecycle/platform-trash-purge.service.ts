@@ -6,6 +6,7 @@ import { resolveRetentionMsForEntity } from '../../common/lifecycle/platform-ret
 import { purgeTrashedCredentialsPastRetention } from '../credentials/credential-trash-purge.ops';
 import { DriveR2Client } from '../drive/drive-r2.client';
 import { purgeDriveTrashRetentionBatch } from '../drive/drive-trash-retention-purge.ops';
+import { purgeProfileATrashPastRetention } from '../../common/lifecycle/profile-a-trash-purge.ops';
 import {
   PLATFORM_TRASH_PURGE_AUDIT_ACTION,
   PLATFORM_TRASH_PURGE_AUDIT_ENTITY,
@@ -28,7 +29,7 @@ export class PlatformTrashPurgeService {
     const credentialRetentionMs = resolveRetentionMsForEntity('credential');
     const driveRetentionMs = resolveRetentionMsForEntity('drive_file');
 
-    const [credentials, driveFiles] = await Promise.all([
+    const [credentials, driveFiles, profileA] = await Promise.all([
       purgeTrashedCredentialsPastRetention(
         this.prisma,
         this.auditService,
@@ -42,15 +43,18 @@ export class PlatformTrashPurgeService {
         now,
         driveRetentionMs ?? undefined,
       ),
+      purgeProfileATrashPastRetention(this.prisma, this.auditService, now),
     ]);
 
+    const profileAPurged = profileA.reduce((sum, slice) => sum + slice.purged, 0);
     const completedAt = new Date().toISOString();
     const result: PlatformTrashPurgeRunResult = {
       startedAt,
       completedAt,
       credentials,
       driveFiles,
-      totalPurged: credentials.purged + driveFiles.purged,
+      profileA,
+      totalPurged: credentials.purged + driveFiles.purged + profileAPurged,
     };
 
     await this.auditService.log({
@@ -61,7 +65,7 @@ export class PlatformTrashPurgeService {
     });
 
     this.logger.log(
-      `Platform trash retention purge: credentials=${credentials.purged}, driveFiles=${driveFiles.purged}`,
+      `Platform trash retention purge: credentials=${credentials.purged}, driveFiles=${driveFiles.purged}, profileA=${profileAPurged}`,
     );
     return result;
   }

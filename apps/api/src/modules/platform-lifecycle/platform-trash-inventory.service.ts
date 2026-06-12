@@ -10,7 +10,16 @@ import {
 import {
   listResolvedRetentionRules,
   resolveRetentionDaysForEntity,
+  resolveRetentionMsForEntity,
 } from '../../common/lifecycle/platform-retention-rules.resolver';
+import {
+  purgeableTrashedCompanyWhere,
+  purgeableTrashedContactWhere,
+  purgeableTrashedDealWhere,
+  purgeableTrashedLeadWhere,
+  purgeableTrashedPartnerWhere,
+  purgeableTrashedProjectWhere,
+} from '../../common/lifecycle/profile-a-purgeable-where';
 import type {
   PlatformRetentionRuleRow,
   PlatformTrashInventoryCategory,
@@ -19,6 +28,16 @@ import type {
 
 function retentionCutoff(now: Date, retentionDays: number): Date {
   return new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+}
+
+function profileAPurgeableWhere(key: string, now: Date, retentionMs: number): object | null {
+  if (key === 'contact') return purgeableTrashedContactWhere(now, retentionMs);
+  if (key === 'company') return purgeableTrashedCompanyWhere(now, retentionMs);
+  if (key === 'lead') return purgeableTrashedLeadWhere(now, retentionMs);
+  if (key === 'deal') return purgeableTrashedDealWhere(now, retentionMs);
+  if (key === 'partner') return purgeableTrashedPartnerWhere(now, retentionMs);
+  if (key === 'project') return purgeableTrashedProjectWhere(now, retentionMs);
+  return null;
 }
 
 @Injectable()
@@ -95,8 +114,29 @@ export class PlatformTrashInventoryService {
         where: softDeletedRetentionWhere(now, retentionDays * 24 * 60 * 60 * 1000),
       });
     }
+    if (entry.profile === 'A') {
+      return this.countProfileAPurgeEligible(entry.key, now);
+    }
     const cutoff = retentionCutoff(now, retentionDays);
     return this.countByTimestampField(entry.prismaModel, entry.timestampField, 'purge', cutoff);
+  }
+
+  private countProfileAPurgeEligible(key: string, now: Date): Promise<number> {
+    const retentionMs = resolveRetentionMsForEntity(key);
+    if (retentionMs == null) return Promise.resolve(0);
+    const where = profileAPurgeableWhere(key, now, retentionMs);
+    if (!where) return Promise.resolve(0);
+    return this.countProfileAModel(key, where);
+  }
+
+  private countProfileAModel(key: string, where: object): Promise<number> {
+    if (key === 'contact') return this.prisma.contact.count({ where });
+    if (key === 'company') return this.prisma.company.count({ where });
+    if (key === 'lead') return this.prisma.lead.count({ where });
+    if (key === 'deal') return this.prisma.deal.count({ where });
+    if (key === 'partner') return this.prisma.partner.count({ where });
+    if (key === 'project') return this.prisma.project.count({ where });
+    return Promise.resolve(0);
   }
 
   private countByTimestampField(

@@ -109,6 +109,9 @@ describe('CredentialsService mutations', () => {
     expect(prisma.credentialFolderMembership.deleteMany).toHaveBeenCalledWith({
       where: { credentialId: '1' },
     });
+    expect(prisma.credentialFavorite.deleteMany).toHaveBeenCalledWith({
+      where: { credentialId: '1' },
+    });
     expect(prisma.credential.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: '1' },
