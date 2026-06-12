@@ -140,6 +140,7 @@ Outbound-партнёрство — это доход Neetrino, а не payout.
 - `05-Outbound-Partner-Services.md` — клиенты, которых Neetrino передаёт партнёрам.
 - `06-Partner-Account-Portal-v2.md` — будущий read-only портал партнёра.
 - `07-Partner-Analytics-and-Agreements.md` — аналитика и договоры.
+- `06-Implementation-Status.md` — что уже в коде (Trash / lifecycle и ключевые API).
 - `08-Partners-Cleanup-Register.md` — runtime gaps и stale-логика.
 
 ---

@@ -68,11 +68,11 @@ purgedAt    DateTime?   — final removal (job/admin)
 
 Runtime modules may still use `archivedAt` or `deletedAt`. **Do not blind-rename** without a dedicated migration.
 
-| Runtime field                   | Target field        | Modules (transitional)         |
-| ------------------------------- | ------------------- | ------------------------------ |
-| `archivedAt`                    | `trashedAt`         | Credentials, some legacy flags |
-| `deletedAt` + `status: DELETED` | trash timestamp     | Drive FileAsset                |
-| `status: ARCHIVED`              | merge into Trash UX | Drive (until DB migration)     |
+| Runtime field                   | Target field        | Modules (transitional)                                                                     |
+| ------------------------------- | ------------------- | ------------------------------------------------------------------------------------------ |
+| `archivedAt`                    | `trashedAt`         | **Credentials shipped** (`trashed_at`); CredentialProvider catalog still uses `archivedAt` |
+| `deletedAt` + `status: DELETED` | trash timestamp     | Drive FileAsset (**shipped**)                                                              |
+| `status: ARCHIVED`              | merge into Trash UX | Drive (**migrated** 2026-06-12)                                                            |
 
 Shared helpers (`@nbos/shared`, `apps/api/src/common/lifecycle/`) accept a **timestamp field** parameter so queries stay consistent during migration.
 
@@ -154,5 +154,7 @@ Inventory aggregates Profile A/B/C modules plus Mail with shipped trash lifecycl
 ## Related docs
 
 - Platform plan: `todo.md` (Trash / Purge Lifecycle)
+- **Implementation status index:** `10-Platform-Lifecycle-Implementation-Status.md`
+- Per-module: `06-Implementation-Status.md` under Clients, CRM, Projects Hub, Partners, Credentials, Drive, Mail, Settings/Admin
 - Credentials: `docs/NBOS/02-Modules/12-Credentials/`
 - Drive: `docs/NBOS/02-Modules/11-Drive/`

@@ -163,12 +163,12 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ⚠️ Partial / backlog
 
-| Область     | Что не доделано                                                               |
-| ----------- | ----------------------------------------------------------------------------- |
-| Drive       | ✅ DONE (6.1–6.5); optional polish only                                       |
-| Credentials | offboarding ↔ trash audit                                                     |
-| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                      |
-| Global      | Module Implementation-Status doc sync; Profile A `DELETE …/permanent` backlog |
+| Область     | Что не доделано                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| Drive       | ✅ DONE (6.1–6.5); optional polish only                                                    |
+| Credentials | offboarding ↔ trash audit                                                                  |
+| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                                   |
+| Global      | Profile A `DELETE …/permanent` backlog; Tasks `trashedAt`; credentials offboarding ↔ trash |
 
 ---
 
@@ -428,7 +428,7 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 ## Чеклист «не забыть»
 
 - [x] После каждой фазы — обновить этот файл (статусы ⬜ → ✅)
-- [ ] Module canon / Implementation-Status docs синхронизировать с runtime
+- [x] Module canon / Implementation-Status docs синхронизировать с runtime (`10-Platform-Lifecycle-Implementation-Status.md` + per-module `06-*`)
 - [ ] Не ломать security/RBAC Credentials и access/R2 правила Drive при терминологическом рефакторе
 - [ ] Permanent delete / purge всегда: trash-only + audit + confirmation
 - [ ] List queries по умолчанию: `scope=active` / `trashedAt IS NULL` (или transitional `deletedAt/archivedAt IS NULL`)
@@ -458,3 +458,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Решения O2/O5/C-O1/C-O2** + Profile A auto-purge (Lead/Deal/Partner/Contact/Company/Project с relation guards)                                                                                                 |
 | 2026-06-12 | **Phase 7.1 Mail:** `trashed_at` migration, trash/restore API, Trash folder UI, unified purge + inventory (`mail_thread`, 30d TTL)                                                                               |
 | 2026-06-12 | **Rename slice:** `credentials.archived_at` → `trashed_at`; DROP `projects.is_archived`; registry, seeds, cross-module queries                                                                                   |
+| 2026-06-12 | **Docs:** `10-Platform-Lifecycle-Implementation-Status.md` + per-module `06-Implementation-Status.md` (CRM, Hub, Partners, Credentials, Drive, Mail, Settings); Clients status synced                            |

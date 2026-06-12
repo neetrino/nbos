@@ -17,7 +17,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
 - **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
-- **Purge / retention** for trashed Contact / Company — admin/policy job not yet implemented.
+- **User permanent delete** before retention — admin API backlog (automated retention purge **shipped** via unified platform job).
 
 ## MVP assumptions (launch scope)
 
@@ -34,3 +34,4 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 - Web: `apps/web/src/features/clients/*`, `apps/web/src/lib/api/clients.ts`, `apps/web/src/lib/api/client-portfolio.ts`, `apps/web/src/app/(app)/clients/portfolio/*`.
 - API: `apps/api/src/modules/clients/portfolio/*` (`portfolio-access-mask.ts`, `portfolio-payload-policy.ts`), `contacts.service.ts`, `companies.service.ts`.
 - DB: migrations `20260512140000_company_billing_and_contact_fields`, `20260612120000_contact_company_trash_lifecycle` (`trashed_at` on contacts/companies).
+- Platform index: `docs/NBOS/03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.

@@ -24,6 +24,8 @@
 
 Навигация Library vs Project hub, deep links и целевая модель папок под проектом: **`08-Drive-Navigation-Project-Hub-and-Folders.md`**.
 
+**Статус реализации (Trash / purge):** см. `06-Implementation-Status.md`. Полный register: `07-Drive-Cleanup-Register.md`. Платформенный индекс: `../../03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.
+
 ---
 
 ## 2. Граница модуля

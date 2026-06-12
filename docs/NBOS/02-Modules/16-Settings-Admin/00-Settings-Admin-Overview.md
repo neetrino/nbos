@@ -29,6 +29,9 @@ My Company управляет компанией.
 | `Security Defaults`         | Глобальные правила безопасности                            |
 | `Audit Log`                 | История важных админских действий                          |
 | `Feature Flags`             | Включение/выключение функций по ролям/модулям/окружениям   |
+| `Trash inventory`           | Кросс-модульный обзор Trash + retention purge (Phase 7)    |
+
+**Статус реализации (Trash inventory / retention):** см. `06-Implementation-Status.md`. Платформенный индекс: `../../03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.
 
 ## Что не входит в Settings / Admin
 
