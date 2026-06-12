@@ -138,6 +138,18 @@ Query param standard: `?scope=active|trash` (not ad-hoc `includeArchived` withou
 
 ---
 
+## Global admin trash (Phase 7)
+
+| Surface            | Path / endpoint                                              |
+| ------------------ | ------------------------------------------------------------ |
+| API inventory      | `GET /platform/lifecycle/trash-inventory` (`COMPANY VIEW`)   |
+| Retention registry | `GET /platform/lifecycle/retention-rules`                    |
+| Web admin          | Settings → **Trash inventory** (`/settings/trash-inventory`) |
+
+Inventory aggregates Profile A/B/C modules with shipped trash lifecycle. Purge execution remains per-module (Drive cleanup apply, credential scheduler purge, future Profile A jobs).
+
+---
+
 ## Related docs
 
 - Platform plan: `todo.md` (Trash / Purge Lifecycle)
