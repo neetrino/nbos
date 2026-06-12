@@ -46,6 +46,7 @@ import {
   type ExpenseGeneralDraft,
 } from '@/features/finance/utils/expense-general-form-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
 export interface ExpenseDetailSheetProps {
@@ -207,25 +208,37 @@ export function ExpenseDetailSheet({
     if (generalSnap) setGeneralDraft({ ...generalSnap });
   }, [generalSnap]);
 
-  const handleDeleteExpense = useCallback(async () => {
-    if (!expense) return;
+  const lifecycleMode = expense ? expenseLifecycleAction(expense) : null;
+
+  const handleLifecycleConfirm = useCallback(async () => {
+    if (!expense || !lifecycleMode) return;
     setDeleteError(null);
     setDeleteSubmitting(true);
     try {
-      await expensesApi.delete(expense.id);
-      onExpenseDeleted?.(expense.id);
-      onOpenChange(false);
+      if (lifecycleMode === 'delete') {
+        await expensesApi.delete(expense.id);
+        onExpenseDeleted?.(expense.id);
+        onOpenChange(false);
+        toast.success('Expense deleted');
+      } else {
+        const updated = await expensesApi.cancel(expense.id);
+        handleExpenseChange(updated);
+        setDeleteOpen(false);
+        toast.success('Expense cancelled');
+      }
     } catch (caught) {
       setDeleteError(
         getApiErrorMessage(
           caught,
-          'Expense could not be deleted. Check your connection and try again.',
+          lifecycleMode === 'delete'
+            ? 'Expense could not be deleted. Check your connection and try again.'
+            : 'Expense could not be cancelled. Check your connection and try again.',
         ),
       );
     } finally {
       setDeleteSubmitting(false);
     }
-  }, [expense, onExpenseDeleted, onOpenChange]);
+  }, [expense, handleExpenseChange, lifecycleMode, onExpenseDeleted, onOpenChange]);
 
   if (!expenseId) return null;
 
@@ -347,6 +360,7 @@ export function ExpenseDetailSheet({
           />
           <DeleteExpenseDialog
             expenseName={expense.name}
+            mode={lifecycleMode === 'delete' ? 'delete' : 'cancel'}
             open={deleteOpen}
             isSubmitting={deleteSubmitting}
             errorMessage={deleteError}
@@ -354,7 +368,7 @@ export function ExpenseDetailSheet({
               setDeleteOpen(next);
               if (!next) setDeleteError(null);
             }}
-            onConfirm={handleDeleteExpense}
+            onConfirm={handleLifecycleConfirm}
           />
         </>
       ) : null}

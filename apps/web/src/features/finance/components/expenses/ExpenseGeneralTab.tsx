@@ -49,6 +49,7 @@ import {
   resolveExpensePayrollRunId,
   resolveExpenseSalaryLineId,
 } from '@/features/finance/utils/parse-payroll-expense-notes';
+import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 
 interface ExpenseGeneralTabProps {
   expense: Expense;
@@ -67,6 +68,7 @@ export function ExpenseGeneralTab({
   formDisabled = false,
   onDeleteClick,
 }: ExpenseGeneralTabProps) {
+  const lifecycleAction = expenseLifecycleAction(expense);
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -287,19 +289,21 @@ export function ExpenseGeneralTab({
         />
       </DetailSheetSection>
 
-      <DetailSheetSection title="Actions">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="text-destructive hover:bg-destructive/10 border-destructive/40"
-          disabled={formDisabled}
-          onClick={onDeleteClick}
-        >
-          <Trash2 size={14} aria-hidden />
-          Delete expense
-        </Button>
-      </DetailSheetSection>
+      {lifecycleAction ? (
+        <DetailSheetSection title="Actions">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 border-destructive/40"
+            disabled={formDisabled}
+            onClick={onDeleteClick}
+          >
+            <Trash2 size={14} aria-hidden />
+            {lifecycleAction === 'delete' ? 'Delete expense' : 'Cancel expense'}
+          </Button>
+        </DetailSheetSection>
+      ) : null}
     </div>
   );
 }

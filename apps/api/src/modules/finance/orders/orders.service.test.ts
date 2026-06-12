@@ -261,4 +261,25 @@ describe('OrdersService', () => {
       });
     });
   });
+
+  describe('delete', () => {
+    it('deletes PENDING_PAYMENT order without invoices', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PENDING_PAYMENT',
+        _count: { invoices: 0 },
+      });
+      prisma.order.delete.mockResolvedValue({ id: 'o1' });
+
+      await service.delete('o1');
+      expect(prisma.order.delete).toHaveBeenCalledWith({ where: { id: 'o1' } });
+    });
+
+    it('rejects delete when invoices exist', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PENDING_PAYMENT',
+        _count: { invoices: 1 },
+      });
+      await expect(service.delete('o1')).rejects.toMatchObject({ status: 409 });
+    });
+  });
 });

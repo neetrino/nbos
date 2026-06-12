@@ -10,6 +10,7 @@ import {
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { ExpensesService } from './expenses.service';
+import { assertExpensePlanEmptyDeletable } from '../../common/lifecycle/finance-record-lifecycle-guards';
 import { buildExpensePlanGridPayload } from './expense-plan-grid';
 
 const EXPENSE_PLAN_SORT_FIELDS = new Set(['createdAt', 'nextDueDate', 'amount', 'name']);
@@ -230,7 +231,12 @@ export class ExpensePlansService {
   }
 
   async delete(id: string) {
-    await this.ensureExists(id);
+    const plan = await this.prisma.expensePlan.findUnique({
+      where: { id },
+      include: { _count: { select: { expenses: true } } },
+    });
+    if (!plan) throw new NotFoundException('Expense plan not found');
+    assertExpensePlanEmptyDeletable(plan._count.expenses);
     await this.prisma.expensePlan.delete({ where: { id } });
   }
 

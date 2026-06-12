@@ -61,6 +61,10 @@ import type {
   ExpenseStatsParams,
   UpdateExpenseDto,
 } from './expense-service.types';
+import {
+  assertExpenseCancellable,
+  assertExpenseDraftDeletable,
+} from '../../common/lifecycle/finance-record-lifecycle-guards';
 
 const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
 
@@ -356,8 +360,39 @@ export class ExpensesService {
     return this.findById(id, access);
   }
 
+  async cancel(id: string, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, id, access);
+    const expense = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+    assertExpenseCancellable(expense);
+    await this.prisma.expense.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+    return this.findById(id, access);
+  }
+
   async delete(id: string, access?: ExpenseQueryParams['access']) {
     await assertExpenseAccessible(this.prisma, id, access);
+    const expense = await this.prisma.expense.findUnique({
+      where: { id },
+      select: {
+        status: true,
+        _count: { select: { expensePayments: true } },
+        salaryLine: { select: { id: true } },
+        partnerPayoutBatch: { select: { id: true } },
+      },
+    });
+    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+    assertExpenseDraftDeletable({
+      status: expense.status,
+      paymentCount: expense._count.expensePayments,
+      hasSalaryLine: expense.salaryLine != null,
+      hasPartnerPayoutBatch: expense.partnerPayoutBatch != null,
+    });
     return this.prisma.expense.delete({ where: { id } });
   }
 

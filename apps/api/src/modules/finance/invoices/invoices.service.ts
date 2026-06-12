@@ -39,6 +39,10 @@ import {
   mergeInvoiceWhere,
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
+import {
+  assertInvoiceCancellable,
+  assertInvoiceDraftDeletable,
+} from '../../../common/lifecycle/finance-record-lifecycle-guards';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -360,8 +364,29 @@ export class InvoicesService {
     }
   }
 
+  async cancel(id: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: { moneyStatus: true },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+    assertInvoiceCancellable(invoice);
+    return this.updateMoneyStatus(id, 'CANCELLED');
+  }
+
   async delete(id: string) {
-    await this.findById(id);
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: {
+        moneyStatus: true,
+        _count: { select: { payments: true } },
+      },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+    assertInvoiceDraftDeletable({
+      moneyStatus: invoice.moneyStatus,
+      paymentCount: invoice._count.payments,
+    });
     return this.prisma.invoice.delete({ where: { id } });
   }
 

@@ -930,4 +930,67 @@ describe('ExpensesService', () => {
       expect(groupWhere?.where).not.toHaveProperty('status');
     });
   });
+
+  describe('cancel', () => {
+    it('sets CANCELLED for active expense', async () => {
+      prisma.expense.findUnique.mockResolvedValueOnce({ status: 'DUE_NOW' }).mockResolvedValueOnce({
+        id: 'e1',
+        name: 'Rent',
+        amount: new Decimal(100),
+        status: 'CANCELLED',
+        expensePayments: [],
+        project: null,
+      });
+      prisma.expense.update.mockResolvedValue({ id: 'e1', status: 'CANCELLED' });
+
+      const result = await service.cancel('e1');
+      expect(prisma.expense.update).toHaveBeenCalledWith({
+        where: { id: 'e1' },
+        data: { status: 'CANCELLED' },
+      });
+      expect(result.status).toBe('CANCELLED');
+    });
+
+    it('rejects cancel for PAID expense', async () => {
+      prisma.expense.findUnique.mockResolvedValue({ status: 'PAID' });
+      await expect(service.cancel('e1')).rejects.toMatchObject({ status: 409 });
+      expect(prisma.expense.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('deletes PLANNED expense without payments', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        status: 'PLANNED',
+        _count: { expensePayments: 0 },
+        salaryLine: null,
+        partnerPayoutBatch: null,
+      });
+      prisma.expense.delete.mockResolvedValue({ id: 'e1' });
+
+      await service.delete('e1');
+      expect(prisma.expense.delete).toHaveBeenCalledWith({ where: { id: 'e1' } });
+    });
+
+    it('rejects delete when payments exist', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        status: 'PLANNED',
+        _count: { expensePayments: 1 },
+        salaryLine: null,
+        partnerPayoutBatch: null,
+      });
+      await expect(service.delete('e1')).rejects.toMatchObject({ status: 409 });
+      expect(prisma.expense.delete).not.toHaveBeenCalled();
+    });
+
+    it('rejects delete for non-PLANNED expense', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        status: 'DUE_NOW',
+        _count: { expensePayments: 0 },
+        salaryLine: null,
+        partnerPayoutBatch: null,
+      });
+      await expect(service.delete('e1')).rejects.toMatchObject({ status: 409 });
+    });
+  });
 });
