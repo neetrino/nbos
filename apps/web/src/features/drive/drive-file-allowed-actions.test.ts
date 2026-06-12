@@ -37,7 +37,7 @@ describe('applyServerFileActionGates', () => {
 
 describe('buildDriveFileActionGates', () => {
   it('enables move to trash for active files when server allows trash actions', () => {
-    const gates = buildDriveFileActionGates(layoutCaps, activeFile, ['PERMANENT_DELETE', 'SHARE']);
+    const gates = buildDriveFileActionGates(layoutCaps, activeFile, ['TRASH', 'SHARE']);
     expect(gates.canMoveToTrash).toBe(true);
   });
 

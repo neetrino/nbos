@@ -31,6 +31,12 @@ describe('reorderTasks', () => {
   });
 
   it('assigns workspaceSortOrder sequentially', async () => {
+    prisma.task.findMany.mockResolvedValue([
+      { id: 't2', trashedAt: null },
+      { id: 't0', trashedAt: null },
+      { id: 't1', trashedAt: null },
+    ]);
+
     await reorderTasks(prisma as never, {
       taskIds: ['t2', 't0', 't1'],
       scope: 'workspace',
@@ -49,6 +55,8 @@ describe('reorderTasks', () => {
   });
 
   it('assigns myPlanSortOrder for my-plan scope', async () => {
+    prisma.task.findMany.mockResolvedValue([{ id: 't1', trashedAt: null }]);
+
     await reorderTasks(prisma as never, {
       taskIds: ['t1'],
       scope: 'my-plan',
