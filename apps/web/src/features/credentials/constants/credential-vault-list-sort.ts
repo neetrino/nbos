@@ -10,12 +10,13 @@ export const CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES: Record<string, string> = {
   category: 'all',
   credentialType: 'all',
   accessLevel: 'all',
+  project: 'all',
 };
 
 export function defaultCredentialVaultSortFilter(
   vaultListScope: VaultListScope,
 ): typeof CREDENTIAL_VAULT_DEFAULT_SORT_ACTIVE | typeof CREDENTIAL_VAULT_DEFAULT_SORT_ARCHIVED {
-  return vaultListScope === 'archived'
+  return vaultListScope === 'trash'
     ? CREDENTIAL_VAULT_DEFAULT_SORT_ARCHIVED
     : CREDENTIAL_VAULT_DEFAULT_SORT_ACTIVE;
 }
@@ -26,7 +27,7 @@ export function resolveCredentialVaultListSort(
   vaultListScope: VaultListScope,
 ): CredentialVaultListSort {
   const raw = filters.sort;
-  if (vaultListScope === 'archived') {
+  if (vaultListScope === 'trash') {
     if (raw === 'name_asc') return 'name_asc';
     return 'created_desc';
   }
@@ -39,7 +40,7 @@ export function normalizeCredentialVaultSortFilter(
   raw: string | undefined,
   vaultListScope: VaultListScope,
 ): string {
-  if (vaultListScope === 'archived') {
+  if (vaultListScope === 'trash') {
     if (raw === 'name_asc') return 'name_asc';
     return CREDENTIAL_VAULT_DEFAULT_SORT_ARCHIVED;
   }

@@ -249,7 +249,7 @@ async function archiveHalfOfProjects(prisma: PrismaClient): Promise<void> {
     const code = `P-2026-${padCode(suffix)}`;
     await prisma.project.updateMany({
       where: { code },
-      data: { isArchived: true },
+      data: { trashedAt: new Date() },
     });
   }
 }
@@ -606,7 +606,7 @@ async function createRichProjectBundle(
       description: archived
         ? 'Archived project with completed delivery and maintenance.'
         : 'Active delivery and recurring maintenance.',
-      isArchived: archived,
+      trashedAt: archived ? new Date() : null,
     },
   });
 

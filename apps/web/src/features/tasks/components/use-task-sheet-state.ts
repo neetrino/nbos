@@ -32,6 +32,7 @@ interface UseTaskSheetStateParams {
   initialTask?: Task | null;
   onUpdate?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
+  onRestore?: (taskId: string) => void;
 }
 
 function taskGeneralSaveErrorMessage(err: unknown): string {
@@ -44,6 +45,7 @@ export function useTaskSheetState({
   initialTask = null,
   onUpdate,
   onDelete,
+  onRestore,
 }: UseTaskSheetStateParams) {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
@@ -449,6 +451,21 @@ export function useTaskSheetState({
     }
   }, [onDelete, task]);
 
+  const handleRestoreTask = useCallback(async () => {
+    if (!task) return false;
+    try {
+      await tasksApi.restore(task.id);
+      onRestore?.(task.id);
+      toast.success('Task restored.');
+      return true;
+    } catch (caught) {
+      const message = getApiErrorMessage(caught, 'Task could not be restored.');
+      setGeneralError(message);
+      toast.error(message);
+      return false;
+    }
+  }, [onRestore, task]);
+
   const handleSendMessage = useCallback(
     (body: string) => {
       if (!task) return;
@@ -495,6 +512,7 @@ export function useTaskSheetState({
     handleToggleItem,
     handleDeleteItem,
     handleDeleteTask,
+    handleRestoreTask,
     handleSendMessage,
     searchEmployees,
   };

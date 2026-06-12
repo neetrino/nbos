@@ -13,8 +13,9 @@ import {
 import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
-import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
+import { CredentialVaultTrashBanner } from '@/features/credentials/components/credential-vault-trash-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
+import { CredentialFolderCreateButton } from '@/features/credentials/components/credential-folder-create-button';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
 import { CredentialsVaultMainView } from '@/features/credentials/components/credentials-vault-main-view';
 import { CredentialsVaultPageOverlays } from '@/features/credentials/components/credentials-vault-page-overlays';
@@ -50,14 +51,15 @@ function CredentialsVaultPageContent() {
 
   const handleSaved = () => {
     void vault.fetchCredentials({ silent: true });
+    void vault.fetchFolders();
+    void vault.fetchProjectShells();
+    void vault.fetchSheetFolderOptions();
   };
 
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title={
-          vault.vaultListScope === 'archived' ? 'Credentials Vault — Archived' : 'Credentials Vault'
-        }
+        title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
         tabs={
           <PageHeroTabs
             value={vault.activeTab}
@@ -104,8 +106,8 @@ function CredentialsVaultPageContent() {
         }
       />
 
-      {vault.vaultListScope === 'archived' ? (
-        <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
+      {vault.vaultListScope === 'trash' ? (
+        <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
       <CredentialQuickFilterChips
@@ -115,15 +117,24 @@ function CredentialsVaultPageContent() {
         onCategoryChange={vault.setQuickCategory}
         activeQuick={vault.quickFilters}
         onToggleQuick={vault.toggleQuickFilter}
+        trailing={
+          vault.viewMode === 'folders' &&
+          vault.showCreate &&
+          (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
+            <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
+          ) : undefined
+        }
       />
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
           count={vault.selection.selectedCount}
-          archivedList={vault.vaultListScope === 'archived'}
+          trashList={vault.vaultListScope === 'trash'}
           busy={vault.loading}
           showSelectAll={vault.pageCredentialIds.length > 0}
           selectedIds={vault.selection.selectedIdList}
+          folders={vault.bulkFolderOptions}
+          activeFolderId={vault.activeFolderId}
           onSelectAll={vault.selection.selectAllOnPage}
           onClear={vault.selection.clearSelection}
           onCompleted={handleSaved}
@@ -177,6 +188,7 @@ function CredentialsVaultPageContent() {
           onCreateOpen={() => vault.openCreate()}
           onCreateInCategory={(cat) => vault.openCreate(cat)}
           onOpenCredential={vault.openCredential}
+          onSetFavorite={(id, favorite) => void vault.setCredentialFavorite(id, favorite)}
           onCopyText={vault.copyToClipboard}
           onCopySecret={(id, criticality, field) =>
             void copyVaultSecret({ id, criticality, field })
@@ -186,6 +198,22 @@ function CredentialsVaultPageContent() {
             vault.setPurgeTarget({ id, name, criticality })
           }
           onRestored={handleSaved}
+          folders={vault.folders}
+          foldersLoading={vault.foldersLoading}
+          activeFolderId={vault.activeFolderId}
+          onNavigateFolder={vault.navigateFolder}
+          onOpenFolder={vault.openFolder}
+          onRenameFolder={vault.renameFolder}
+          onDeleteFolder={vault.deleteFolder}
+          onRemoveFolderGrouping={vault.removeFolderGrouping}
+          projectShellsMode={vault.isProjectFoldersMode}
+          projectShells={vault.projectShells}
+          projectShellsLoading={vault.projectShellsLoading}
+          activeProject={vault.activeProject}
+          onOpenProject={vault.openProject}
+          onNavigateProject={vault.navigateProject}
+          credentialFolderDrag={vault.credentialFolderDragConfig}
+          credentialFolderDrop={vault.credentialFolderDropConfig}
         />
       </div>
 
@@ -207,16 +235,21 @@ function CredentialsVaultPageContent() {
         sheetCredentialId={vault.sheetCredentialId}
         sheetInitialItem={vault.sheetInitialItem}
         createPresetCategory={vault.createPresetCategory}
+        initialFolderId={vault.activeFolderId}
+        projectId={vault.isProjectFoldersMode ? vault.activeProjectId : null}
+        folderOptions={vault.sheetFolderOptions}
         deleteTarget={vault.deleteTarget}
         purgeTarget={vault.purgeTarget}
         tileCopyTarget={vault.tileCopyTarget}
         onCloseSheet={vault.closeSheet}
         onCredentialCreated={vault.handleCredentialCreated}
         onSaved={handleSaved}
-        onRequestArchive={(id, name) => {
+        onRequestMoveToTrash={(id, name) => {
           vault.closeSheet(false);
           vault.setDeleteTarget({ id, name });
         }}
+        isTrashView={vault.vaultListScope === 'trash'}
+        onRestore={(id) => void vault.restoreCredential(id)}
         onDeleteTargetChange={(open) => {
           if (!open) vault.setDeleteTarget(null);
         }}

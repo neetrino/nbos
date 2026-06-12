@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Puzzle } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { ExtensionEntityViews } from '@/features/projects/components/extension-entity-views';
 import { ProductTabViewHero } from '@/features/projects/components/product-tabs/ProductTabViewHero';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
-import { useProjectDetailViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
+import { useProjectDetailPagePreferences } from '@/features/projects/constants/projects-page-preferences-storage';
+import type { ProjectDetailViewMode } from '@/features/projects/components/project-detail-layout.constants';
 import { productExtensionToViewModel } from '@/features/projects/utils/extension-entity-view-mappers';
 import type { ProductExtensionRef } from '@/lib/api/products';
 
@@ -16,7 +17,12 @@ interface ProductExtensionsTabProps {
 }
 
 export function ProductExtensionsTab({ productId, extensions }: ProductExtensionsTabProps) {
-  const [viewMode, setViewMode] = useProjectDetailViewMode();
+  const [prefs, setPrefs] = useProjectDetailPagePreferences();
+  const setViewMode = useCallback(
+    (viewMode: ProjectDetailViewMode) => setPrefs({ viewMode }),
+    [setPrefs],
+  );
+  const viewMode = prefs.viewMode;
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const items = useMemo(
     () => extensions.map((extension) => productExtensionToViewModel(extension, productId)),

@@ -36,7 +36,6 @@ export function DriveDetailPanel({
   open,
   busy,
   onClose,
-  onArchive,
   onRestore,
   onPreview,
   onCopyFile,
@@ -52,7 +51,6 @@ export function DriveDetailPanel({
   open: boolean;
   busy: boolean;
   onClose: () => void;
-  onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
@@ -79,7 +77,6 @@ export function DriveDetailPanel({
             <DriveFileRailTrailing
               file={file}
               busy={busy}
-              onArchive={onArchive}
               onRestore={onRestore}
               onCopyFile={onCopyFile}
               onMoveFile={onMoveFile}
@@ -113,7 +110,6 @@ export function DriveDetailPanel({
 function DriveFileRailTrailing({
   file,
   busy,
-  onArchive,
   onRestore,
   onCopyFile,
   onMoveFile,
@@ -125,7 +121,6 @@ function DriveFileRailTrailing({
 }: {
   file: FileAsset;
   busy: boolean;
-  onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
   onMoveFile?: (file: FileAsset) => void;
@@ -135,12 +130,6 @@ function DriveFileRailTrailing({
   onPermanentDeleteSuccess?: () => void;
   fileActionGates: DriveFileActionGates;
 }) {
-  const isArchived = file.status === 'ARCHIVED';
-  const isTrash = file.status === 'DELETED';
-  const archiveLabel = isTrash || isArchived ? 'Restore file' : 'Archive file';
-  const archiveHint = isTrash || isArchived ? 'Restore' : 'Archive';
-  const showArchiveControl = fileActionGates.canArchive || fileActionGates.canRestore;
-
   async function handleMoveToTrash() {
     const linkCount = file.links.filter((link) => link.unlinkedAt == null).length;
     const msg =
@@ -149,7 +138,7 @@ function DriveFileRailTrailing({
         : 'Move this file to Trash? You can restore it from Trash later.';
     if (!window.confirm(msg)) return;
     try {
-      await driveApi.permanentlyDeleteFileAsset(file.id);
+      await driveApi.moveFileToTrash(file.id);
       toast.success('File moved to Trash');
       onPermanentDeleteSuccess?.();
     } catch (err) {
@@ -162,17 +151,17 @@ function DriveFileRailTrailing({
       {fileActionGates.canUploadVersion ? (
         <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
       ) : null}
-      {showArchiveControl ? (
+      {fileActionGates.canRestore ? (
         <RailTrailButton
-          ariaLabel={archiveLabel}
-          hint={archiveHint}
+          ariaLabel="Restore file"
+          hint="Restore"
           disabled={busy}
-          onClick={() => (isTrash || isArchived ? onRestore(file) : onArchive(file))}
+          onClick={() => onRestore(file)}
         >
           <Archive className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {isArchived && fileActionGates.canMoveToTrash ? (
+      {fileActionGates.canMoveToTrash ? (
         <RailTrailButton
           ariaLabel="Move to Trash"
           hint="Move to Trash"
@@ -385,6 +374,7 @@ function PreviewContent({
     mimeType.includes('typescript');
   if (mimeType.startsWith('image/')) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- signed preview URL; next/image cannot optimize remote blob
       <img
         src={preview.url}
         alt={file.displayName}

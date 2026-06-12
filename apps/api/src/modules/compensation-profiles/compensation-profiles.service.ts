@@ -1,9 +1,5 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
-import {
-  PrismaClient,
-  type CompensationProfileStatusEnum,
-  type InputJsonValue,
-} from '@nbos/database';
+import { PrismaClient, type CompensationProfileStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import {
   compensationProfileInclude,

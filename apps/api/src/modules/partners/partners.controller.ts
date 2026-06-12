@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { PartnersService } from './partners.service';
 
 @ApiTags('Partners')
@@ -38,6 +39,12 @@ export class PartnersController {
     description: 'Deprecated: use `level`. Same semantics as `level`.',
   })
   @ApiQuery({ name: 'direction', required: false, type: String })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    type: String,
+    description: 'List scope: active (default) | trash.',
+  })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -46,6 +53,7 @@ export class PartnersController {
     @Query('level') level?: string,
     @Query('type') type?: string,
     @Query('direction') direction?: string,
+    @Query('scope') scope?: string,
   ) {
     return this.partnersService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -55,6 +63,7 @@ export class PartnersController {
       level,
       type,
       direction,
+      scope,
     });
   }
 
@@ -278,10 +287,23 @@ export class PartnersController {
     return this.partnersService.update(id, body);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore partner from Trash' })
+  async restore(@Param('id') id: string) {
+    return this.partnersService.restoreFromTrash(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed partner (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.partnersService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete partner' })
+  @ApiOperation({ summary: 'Move partner to Trash' })
   async remove(@Param('id') id: string) {
-    await this.partnersService.delete(id);
+    await this.partnersService.moveToTrash(id);
   }
 }

@@ -28,7 +28,6 @@ import {
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
@@ -95,6 +94,7 @@ export function SubscriptionDetailSheet({
     const next = createSubscriptionGeneralDraft(subscription);
     setGeneralDraft(next);
     setGeneralSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on subscription.id
   }, [
     subscription?.id,
     subscription?.status,
@@ -124,7 +124,7 @@ export function SubscriptionDetailSheet({
       setGeneralSnap(next);
       onSubscriptionUpdated?.(updated);
     },
-    [onSubscriptionUpdated],
+    [onSubscriptionUpdated, setSubscription],
   );
 
   const handleGeneralSave = useCallback(() => {

@@ -198,6 +198,18 @@ Category нужна для группировки и фильтрации, но 
 | `Finance`     | payment services, accounting portals            |
 | `Other`       | нестандартные доступы                           |
 
+### 5. Credential Favorite / Credential Folder (v1)
+
+Организация vault **не заменяет** access policy credential.
+
+| Сущность                     | Назначение                                                | v1                                     |
+| ---------------------------- | --------------------------------------------------------- | -------------------------------------- |
+| `CredentialFavorite`         | Личный флаг quick-access (`employeeId`, `credentialId`)   | unique pair                            |
+| `CredentialFolder`           | Именованная папка в scope tab; optional `parentId` (tree) | shared в scope                         |
+| `CredentialFolderMembership` | Связь credential ↔ folder; `isPrimary` для UI v1          | many-to-many storage, one primary в UI |
+
+**Не v1 (задел):** folder-level sharing/visibility (private folders, share с коллегами) — см. `06-Credentials-UX-Decisions.md` → _Отложено — Folder sharing / visibility_.
+
 ---
 
 ## Обязательные Поля

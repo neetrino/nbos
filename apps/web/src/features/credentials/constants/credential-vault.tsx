@@ -1,7 +1,7 @@
-import { Columns3, LayoutGrid, List } from 'lucide-react';
+import { Columns3, Folder, LayoutGrid, List } from 'lucide-react';
 import type { ViewModeOption } from '@/components/shared';
 
-export type CredentialVaultViewMode = 'list' | 'tiles' | 'category-board';
+export type CredentialVaultViewMode = 'list' | 'tiles' | 'category-board' | 'folders';
 
 export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMode>[] = [
   {
@@ -22,6 +22,12 @@ export const CREDENTIAL_VAULT_VIEW_OPTIONS: ViewModeOption<CredentialVaultViewMo
     icon: <Columns3 className="size-3.5 shrink-0" aria-hidden />,
     ariaLabel: 'Category board view',
   },
+  {
+    value: 'folders',
+    label: 'Folders',
+    icon: <Folder className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Folders view',
+  },
 ];
 
-export type CredentialQuickFilterKey = 'mine' | 'needsRotation';
+export type CredentialQuickFilterKey = 'mine' | 'needsRotation' | 'favorites';

@@ -107,6 +107,7 @@ model Task {
   chatId             String?                @unique @map("chat_id")
   isRecurring        Boolean                @default(false) @map("is_recurring")
   templateTaskId     String?                @map("template_task_id")
+  trashedAt          DateTime?              @map("trashed_at")
   createdAt          DateTime               @default(now()) @map("created_at")
   updatedAt          DateTime               @updatedAt @map("updated_at")
 
@@ -128,6 +129,7 @@ model Task {
   @@index([assigneeId])
   @@index([reviewerId])
   @@index([creatorId])
+  @@index([trashedAt])
   @@map("tasks")
 }
 

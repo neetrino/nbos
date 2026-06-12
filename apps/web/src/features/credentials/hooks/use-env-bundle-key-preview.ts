@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { entriesFromEnvBundleSerialized, serializeEnvBundle } from '@nbos/shared';
 import { credentialNeedsVaultUnlock } from '@/features/credentials/constants/credential-vault-unlock';
-import type { CredentialSecretField } from '@/lib/api/credentials';
 
 interface UseEnvBundleKeyPreviewParams {
   open: boolean;

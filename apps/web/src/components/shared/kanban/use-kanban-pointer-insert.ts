@@ -42,7 +42,7 @@ export function useKanbanPointerInsert(options: {
         if (!list) continue;
 
         const excludeId = columnKey === sourceColumnKey ? excludeItemId : undefined;
-        const index = resolveKanbanInsertIndex(list, event.clientY, excludeId, dropZone);
+        const index = resolveKanbanInsertIndex(list, event.clientY, excludeId);
         setDropInsert({ columnKey, index });
         return;
       }

@@ -12,11 +12,7 @@ import {
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
-import { Button } from '@/components/ui/button';
-import {
-  useBonusBoardViewMode,
-  type BonusBoardViewMode,
-} from '@/features/finance/constants/bonus-board-view';
+import { useBonusBoardViewMode } from '@/features/finance/constants/bonus-board-view';
 import { BONUS_BOARD_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-board-view-options';
 import { BonusBoardListView } from '@/features/finance/components/bonus/bonus-board-list-view';
 import {

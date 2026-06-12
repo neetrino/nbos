@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Archive, ArrowLeft, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
@@ -22,7 +22,7 @@ export function CredentialsPageSettingsSheet({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const isArchivedList = vaultListScope === 'archived';
+  const isTrashList = vaultListScope === 'trash';
 
   const runExport = async (stepUpPassword: string) => {
     setExporting(true);
@@ -47,15 +47,15 @@ export function CredentialsPageSettingsSheet({
       <PageSettingsSheet
         title="Credentials — settings"
         description={
-          isArchivedList
-            ? 'Archived vault view. Return to the active vault or use list actions to restore items.'
-            : 'Encrypted vault export and access to archived credentials.'
+          isTrashList
+            ? 'Trash view. Return to the active vault or restore items from the list.'
+            : 'Encrypted vault export and access to Trash.'
         }
         triggerAriaLabel="Credentials settings"
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       >
-        {isArchivedList ? (
+        {isTrashList ? (
           <Button
             type="button"
             variant="outline"
@@ -85,10 +85,10 @@ export function CredentialsPageSettingsSheet({
               type="button"
               variant="outline"
               className="justify-start gap-2"
-              onClick={() => handleVaultListScopeChange('archived')}
+              onClick={() => handleVaultListScopeChange('trash')}
             >
-              <Archive className="text-destructive size-4 shrink-0" aria-hidden />
-              View archived credentials
+              <Trash2 className="text-destructive size-4 shrink-0" aria-hidden />
+              View Trash
             </Button>
           </>
         )}

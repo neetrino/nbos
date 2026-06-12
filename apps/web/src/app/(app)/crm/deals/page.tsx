@@ -15,8 +15,8 @@ import {
   LoadingState,
   StatusBadge,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
-  type KanbanColumn,
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
@@ -49,6 +49,9 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
+import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
+import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
+import { useListScope } from '@/hooks/use-list-scope';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import {
@@ -119,6 +122,8 @@ function DealsPipelinePageContent() {
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -136,6 +141,15 @@ function DealsPipelinePageContent() {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
+  const { scope, setScope, isTrashView } = useListScope({
+    onScopeChange: () => {
+      setSheetOpen(false);
+      setSelectedDeal(null);
+      setStageGateHighlight(null);
+      stripOpenDealFromUrl();
+    },
+  });
+
   const pushOpenDealToUrl = useCallback(
     (id: string) => {
       const p = new URLSearchParams(searchParams.toString());
@@ -150,6 +164,7 @@ function DealsPipelinePageContent() {
     try {
       const data = await dealsApi.getAll({
         pageSize: 200,
+        scope,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
@@ -165,7 +180,11 @@ function DealsPipelinePageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, scope]);
+
+  useEffect(() => {
+    if (isTrashView && view === 'kanban') setView('list');
+  }, [isTrashView, view]);
 
   const handleDealCreated = async (deal: Deal, options?: { openFull?: boolean }) => {
     setDeals((prev) => [deal, ...prev.filter((item) => item.id !== deal.id)]);
@@ -353,7 +372,7 @@ function DealsPipelinePageContent() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleMoveToTrash = async (id: string) => {
     const previousDeals = deals;
 
     setSheetOpen(false);
@@ -362,9 +381,41 @@ function DealsPipelinePageContent() {
     setDeals((prev) => prev.filter((d) => d.id !== id));
 
     try {
-      await dealsApi.delete(id);
+      await dealsApi.moveToTrash(id);
+      toast.success('Deal moved to Trash');
     } catch {
       setDeals(previousDeals);
+      toast.error('Could not move deal to Trash');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      const restored = await dealsApi.restore(id);
+      toast.success('Deal restored');
+      setSelectedDeal(restored);
+      await fetchDeals();
+    } catch {
+      toast.error('Could not restore deal');
+    }
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await dealsApi.permanentDelete(id);
+      toast.success('Deal permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedDeal(null);
+      stripOpenDealFromUrl();
+      await fetchDeals();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete deal');
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -469,8 +520,9 @@ function DealsPipelinePageContent() {
           onFilterChange={(key: string, value: string) =>
             setFilters((prev) => {
               if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-                const { boardScope: _, ...rest } = prev;
-                return rest;
+                const next = { ...prev };
+                delete next.boardScope;
+                return next;
               }
               return { ...prev, [key]: value };
             })
@@ -478,21 +530,38 @@ function DealsPipelinePageContent() {
           onClearAll={() => setFilters({})}
         />
       ),
-      viewMode: <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />,
+      viewMode: isTrashView ? null : (
+        <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />
+      ),
       trailing: (
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} aria-hidden />
-          New Deal
-        </Button>
+        <div className="flex items-center gap-2">
+          <ClientsDirectorySettingsSheet
+            listScope={scope}
+            onListScopeChange={setScope}
+            entityLabel="deals"
+          />
+          {!isTrashView ? (
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus size={16} aria-hidden />
+              New Deal
+            </Button>
+          ) : null}
+        </div>
       ),
     }),
-    [filterConfigs, filters, search, view],
+    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
+      {isTrashView ? (
+        <ClientsDirectoryTrashBanner
+          entityLabel="deals"
+          onBackToActive={() => setScope('active')}
+        />
+      ) : null}
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
@@ -500,16 +569,22 @@ function DealsPipelinePageContent() {
       ) : displayDeals.length === 0 ? (
         <EmptyState
           icon={Handshake}
-          title="No deals yet"
-          description="Create your first deal or convert a qualified lead"
+          title={isTrashView ? 'Trash is empty' : 'No deals yet'}
+          description={
+            isTrashView
+              ? 'Removed deals will appear here until restored or purged.'
+              : 'Create your first deal or convert a qualified lead'
+          }
           action={
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus size={16} />
-              Create First Deal
-            </Button>
+            isTrashView ? undefined : (
+              <Button onClick={() => setShowCreate(true)}>
+                <Plus size={16} />
+                Create First Deal
+              </Button>
+            )
           }
         />
-      ) : view === 'kanban' ? (
+      ) : !isTrashView && view === 'kanban' ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <KanbanBoard
@@ -628,12 +703,28 @@ function DealsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onDelete={(id) => {
-          const deal =
-            selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
-          if (!deal) return;
-          deleteConfirm.request({ id, name: deal.name ?? 'Deal' });
-        }}
+        isTrashView={isTrashView}
+        onMoveToTrash={
+          isTrashView
+            ? undefined
+            : (id) => {
+                const deal =
+                  selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
+                if (!deal) return;
+                deleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+              }
+        }
+        onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const deal =
+                  selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
+                if (!deal) return;
+                permanentDeleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+              }
+            : undefined
+        }
         onRefresh={fetchDeals}
         onOpenDeal={handleOpenDealById}
         blockerNavigation={dealBlockerNav}
@@ -663,14 +754,23 @@ function DealsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Delete deal?"
-        description="The deal will be removed from the pipeline and linked lists. Type the deal name to confirm."
+        title="Move deal to Trash?"
+        description="The deal will be removed from the active pipeline. Type the deal name to confirm. You can restore it from Trash later."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
           deleteConfirm.clear();
-          void handleDelete(id);
+          void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="deal"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

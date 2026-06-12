@@ -47,6 +47,7 @@ describe('InvoicesService', () => {
 
   const operationalJournal = {
     appendInvoiceCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+    reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(() => {
@@ -425,6 +426,56 @@ describe('InvoicesService', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('cancel', () => {
+    it('sets moneyStatus CANCELLED', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({ moneyStatus: 'AWAITING_PAYMENT' })
+        .mockResolvedValueOnce({
+          id: 'inv-1',
+          orderId: null,
+          amount: 1000,
+          dueDate: new Date('2026-05-01'),
+          payments: [],
+        })
+        .mockResolvedValueOnce(mockInvoiceFindByIdRow('inv-1', { moneyStatus: 'CANCELLED' }));
+
+      const result = await service.cancel('inv-1');
+      expect(prisma.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'inv-1' },
+          data: expect.objectContaining({ moneyStatus: 'CANCELLED' }),
+        }),
+      );
+      expect(result.moneyStatus).toBe('CANCELLED');
+    });
+
+    it('rejects cancel for PAID invoice', async () => {
+      prisma.invoice.findUnique.mockResolvedValue({ moneyStatus: 'PAID' });
+      await expect(service.cancel('inv-1')).rejects.toMatchObject({ status: 409 });
+    });
+  });
+
+  describe('delete', () => {
+    it('deletes NEW invoice without payments', async () => {
+      prisma.invoice.findUnique.mockResolvedValue({
+        moneyStatus: 'NEW',
+        _count: { payments: 0 },
+      });
+      prisma.invoice.delete.mockResolvedValue({ id: 'inv-1' });
+
+      await service.delete('inv-1');
+      expect(prisma.invoice.delete).toHaveBeenCalledWith({ where: { id: 'inv-1' } });
+    });
+
+    it('rejects delete when payments exist', async () => {
+      prisma.invoice.findUnique.mockResolvedValue({
+        moneyStatus: 'NEW',
+        _count: { payments: 1 },
+      });
+      await expect(service.delete('inv-1')).rejects.toMatchObject({ status: 409 });
     });
   });
 });

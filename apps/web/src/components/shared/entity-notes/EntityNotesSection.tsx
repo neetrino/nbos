@@ -15,14 +15,11 @@ export interface EntityNotesSectionProps extends EntityNotesFieldProps {
 }
 
 /** Inline notes field for detail sheets (no outer section card). */
-export function EntityNotesSection({
-  id,
-  title: _title,
-  icon: _icon,
-  sectionClassName,
-  className,
-  ...fieldProps
-}: EntityNotesSectionProps) {
+export function EntityNotesSection(props: EntityNotesSectionProps) {
+  const { id, sectionClassName, className, ...fieldProps } = props;
+  delete (fieldProps as Partial<EntityNotesSectionProps>).title;
+  delete (fieldProps as Partial<EntityNotesSectionProps>).icon;
+
   return (
     <div id={id} className={cn(sectionClassName)}>
       <EntityNotesField {...fieldProps} className={className} />

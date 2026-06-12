@@ -175,6 +175,8 @@ model EmailThread {
   assignedToEmployeeId String?        @map("assigned_to_employee_id")
   assignedByEmployeeId String?        @map("assigned_by_employee_id")
   assignedAt        DateTime?         @map("assigned_at")
+  trashedAt         DateTime?         @map("trashed_at")
+  trashedById       String?           @map("trashed_by_employee_id")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
@@ -182,9 +184,11 @@ model EmailThread {
   messages    EmailMessage[]
   assignedTo  Employee?      @relation("EmailThreadAssignee", fields: [assignedToEmployeeId], references: [id], onDelete: SetNull)
   assignedBy  Employee?      @relation("EmailThreadAssignedBy", fields: [assignedByEmployeeId], references: [id], onDelete: SetNull)
+  trashedBy   Employee?      @relation("EmailThreadTrashedBy", fields: [trashedById], references: [id], onDelete: SetNull)
 
   @@index([mailAccountId, lastMessageAt])
   @@index([mailAccountId, isSpam])
+  @@index([mailAccountId, trashedAt])
   @@index([assignedToEmployeeId])
   @@map("email_threads")
 }

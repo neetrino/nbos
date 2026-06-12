@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { parseLifecycleScopeFromQuery } from '../../common/lifecycle/entity-lifecycle-scope';
 import { tasksAccessFromUser } from './tasks-scoped-access';
 import { TasksService } from './tasks.service';
 
@@ -39,6 +40,7 @@ export class TasksController {
   @ApiQuery({ name: 'orderId', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'involvesEmployeeId', required: false })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
@@ -59,6 +61,7 @@ export class TasksController {
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
     @Query('involvesEmployeeId') involvesEmployeeId?: string,
+    @Query('scope') scope?: string,
   ) {
     return this.tasksService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -79,6 +82,7 @@ export class TasksController {
       sortBy,
       sortOrder,
       involvesEmployeeId,
+      scope: parseLifecycleScopeFromQuery(scope),
       access: tasksAccessFromUser(user),
     });
   }
@@ -221,10 +225,21 @@ export class TasksController {
     return this.tasksService.requestReviewChanges(id, tasksAccessFromUser(user));
   }
 
+  @Post(':id/restore')
+  @RequirePermission('TASKS', 'EDIT')
+  @ApiOperation({ summary: 'Restore task from Trash' })
+  async restore(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.tasksService.restoreFromTrash(id, tasksAccessFromUser(user));
+  }
+
   @Delete(':id')
   @RequirePermission('TASKS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete task' })
+  @ApiOperation({
+    summary: 'Delete draft or move task to Trash',
+    description:
+      'Empty OPEN drafts are hard-deleted. All other tasks are moved to Trash (trashedAt).',
+  })
   async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     await this.tasksService.delete(id, tasksAccessFromUser(user));
   }

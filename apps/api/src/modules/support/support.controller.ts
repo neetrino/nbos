@@ -205,7 +205,10 @@ export class SupportController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete support ticket' })
+  @ApiOperation({
+    summary: 'Hard delete blocked — close ticket via status workflow',
+    description: 'Returns 409 Conflict. Resolve and close the ticket instead.',
+  })
   async remove(@Param('id') id: string) {
     await this.supportService.delete(id);
   }

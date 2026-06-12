@@ -14,6 +14,7 @@ export type CredentialFormSnapFields = {
   criticality: string;
   nextRotationAt: string;
   manualGrants: CredentialManualGrant[];
+  folderId?: string | null;
 };
 
 /** Full form state restored when a background save fails. */
@@ -28,6 +29,7 @@ export type CredentialFormRollbackState = CredentialFormSnapFields & {
   phones: string[];
   appStorePlatform: string;
   snap: string;
+  folderId: string | null;
 };
 
 /** Stable JSON for dirty detection on the credential Sheet. */
@@ -50,5 +52,6 @@ export function buildCredentialFormSnap(fields: CredentialFormSnapFields): strin
     criticality: fields.criticality,
     nextRotationAt: fields.nextRotationAt.trim(),
     manual,
+    folderId: fields.folderId ?? null,
   });
 }

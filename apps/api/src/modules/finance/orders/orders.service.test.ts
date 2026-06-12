@@ -261,4 +261,52 @@ describe('OrdersService', () => {
       });
     });
   });
+
+  describe('close', () => {
+    it('sets CLOSED when order has invoices', async () => {
+      prisma.order.findUnique
+        .mockResolvedValueOnce({
+          status: 'ACTIVE',
+          _count: { invoices: 2 },
+        })
+        .mockResolvedValue(mockOrderFindByIdRow('o1', { status: 'CLOSED' }));
+      prisma.order.update.mockResolvedValue({ id: 'o1' });
+
+      const result = await service.close('o1');
+      expect(prisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'o1' },
+        data: { status: 'CLOSED' },
+      });
+      expect(result.status).toBe('CLOSED');
+    });
+
+    it('rejects close for draft without invoices', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PENDING_PAYMENT',
+        _count: { invoices: 0 },
+      });
+      await expect(service.close('o1')).rejects.toMatchObject({ status: 409 });
+    });
+  });
+
+  describe('delete', () => {
+    it('deletes PENDING_PAYMENT order without invoices', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PENDING_PAYMENT',
+        _count: { invoices: 0 },
+      });
+      prisma.order.delete.mockResolvedValue({ id: 'o1' });
+
+      await service.delete('o1');
+      expect(prisma.order.delete).toHaveBeenCalledWith({ where: { id: 'o1' } });
+    });
+
+    it('rejects delete when invoices exist', async () => {
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PENDING_PAYMENT',
+        _count: { invoices: 1 },
+      });
+      await expect(service.delete('o1')).rejects.toMatchObject({ status: 409 });
+    });
+  });
 });

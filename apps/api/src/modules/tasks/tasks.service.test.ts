@@ -33,6 +33,7 @@ describe('TasksService', () => {
         expect.objectContaining({
           where: {
             AND: expect.arrayContaining([
+              { trashedAt: null },
               { workspaceId: 'ws-1' },
               { planningStatus: 'BACKLOG' },
               expect.objectContaining({
@@ -47,12 +48,25 @@ describe('TasksService', () => {
       );
     });
 
+    it('filters trash scope', async () => {
+      await service.findAll({ scope: 'trash' });
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: { not: null } }),
+        }),
+      );
+    });
+
     it('applies involvesEmployeeId filter', async () => {
       await service.findAll({ involvesEmployeeId: 'emp-1' });
       const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
-        where?: { OR?: unknown[] };
+        where?: { AND?: Array<{ OR?: unknown[] } | { trashedAt: null }> };
       };
-      expect(listCall?.where?.OR).toEqual(
+      const andClause = listCall?.where?.AND ?? [];
+      const participation = andClause.find(
+        (part): part is { OR: unknown[] } => 'OR' in part && Array.isArray(part.OR),
+      );
+      expect(participation?.OR).toEqual(
         expect.arrayContaining([
           { assigneeId: { in: ['emp-1'] } },
           { creatorId: { in: ['emp-1'] } },
@@ -89,9 +103,13 @@ describe('TasksService', () => {
         access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
       });
       const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
-        where?: { OR?: unknown[] };
+        where?: { AND?: Array<{ OR?: unknown[] }> };
       };
-      expect(listCall?.where?.OR).toEqual(
+      const andClause = listCall?.where?.AND ?? [];
+      const participation = andClause.find(
+        (part): part is { OR: unknown[] } => 'OR' in part && Array.isArray(part.OR),
+      );
+      expect(participation?.OR).toEqual(
         expect.arrayContaining([{ assigneeId: { in: ['emp-1'] } }]),
       );
     });
@@ -144,7 +162,10 @@ describe('TasksService', () => {
       expect(result).toHaveLength(1);
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { links: { some: { entityType: 'PRODUCT', entityId: 'prod-1' } } },
+          where: {
+            trashedAt: null,
+            links: { some: { entityType: 'PRODUCT', entityId: 'prod-1' } },
+          },
         }),
       );
     });
@@ -157,7 +178,10 @@ describe('TasksService', () => {
       expect(result).toHaveLength(1);
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { links: { some: { entityType: 'EXTENSION', entityId: 'ext-1' } } },
+          where: {
+            trashedAt: null,
+            links: { some: { entityType: 'EXTENSION', entityId: 'ext-1' } },
+          },
         }),
       );
     });
@@ -305,10 +329,60 @@ describe('TasksService', () => {
   });
 
   describe('delete', () => {
-    it('deletes when found', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1' });
+    it('deletes empty OPEN draft', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'OPEN',
+        links: [],
+        checklists: [],
+        subtasks: [],
+        completedAt: null,
+        reviewRequestedAt: null,
+        _count: { subtasks: 0, checklists: 0 },
+      });
       await service.delete('1');
-      expect(prisma.task.delete).toHaveBeenCalled();
+      expect(prisma.task.delete).toHaveBeenCalledWith({ where: { id: '1' } });
+    });
+
+    it('moves non-draft task to Trash', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'OPEN',
+        trashedAt: null,
+        links: [{ id: 'l1', entityType: 'PROJECT', entityId: 'p1' }],
+        checklists: [],
+        subtasks: [],
+        completedAt: null,
+        reviewRequestedAt: null,
+        _count: { subtasks: 0, checklists: 0 },
+      });
+      await service.delete('1');
+      expect(prisma.task.delete).not.toHaveBeenCalled();
+      expect(prisma.task.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: expect.objectContaining({ trashedAt: expect.any(Date) }),
+      });
+    });
+  });
+
+  describe('restoreFromTrash', () => {
+    it('clears trashedAt when task is in Trash', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date(),
+        links: [],
+        checklists: [],
+        subtasks: [],
+        _count: { subtasks: 0, checklists: 0 },
+      });
+      prisma.task.update.mockResolvedValue({ id: '1', trashedAt: null, links: [] });
+      await service.restoreFromTrash('1');
+      expect(prisma.task.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { trashedAt: null },
+        }),
+      );
     });
   });
 
@@ -322,11 +396,16 @@ describe('TasksService', () => {
     it('scopes stats when involvesEmployeeId is set', async () => {
       await service.getStats('emp-1');
       const expectedWhere = expect.objectContaining({
-        OR: expect.arrayContaining([
-          { assigneeId: { in: ['emp-1'] } },
-          { creatorId: { in: ['emp-1'] } },
-          { coAssignees: { hasSome: ['emp-1'] } },
-          { observers: { hasSome: ['emp-1'] } },
+        AND: expect.arrayContaining([
+          expect.objectContaining({
+            OR: expect.arrayContaining([
+              { assigneeId: { in: ['emp-1'] } },
+              { creatorId: { in: ['emp-1'] } },
+              { coAssignees: { hasSome: ['emp-1'] } },
+              { observers: { hasSome: ['emp-1'] } },
+            ]),
+          }),
+          { trashedAt: null },
         ]),
       });
       expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);

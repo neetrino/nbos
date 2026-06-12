@@ -6,11 +6,15 @@ describe('normalizeCredentialListSort', () => {
     expect(normalizeCredentialListSort(undefined, false)).toBe('recent');
   });
 
-  it('forces archived lists to created_desc', () => {
+  it('forces trash lists to created_desc when sort is recent', () => {
     expect(normalizeCredentialListSort('recent', true)).toBe('created_desc');
   });
 
-  it('accepts name sort', () => {
+  it('accepts name sort for active vault', () => {
     expect(normalizeCredentialListSort('name_asc', false)).toBe('name_asc');
+  });
+
+  it('accepts name sort for trash lists', () => {
+    expect(normalizeCredentialListSort('name_asc', true)).toBe('name_asc');
   });
 });

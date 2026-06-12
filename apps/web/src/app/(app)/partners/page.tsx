@@ -12,6 +12,8 @@ import {
   ErrorState,
   LoadingState,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  ProfileAPermanentDeleteDialog,
+  useDeleteConfirm,
 } from '@/components/shared';
 import {
   PARTNER_LEVELS,
@@ -38,6 +40,8 @@ import {
 } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
+import { useListScope } from '@/hooks/use-list-scope';
+import { toast } from 'sonner';
 
 const PARTNERS_LIST_PAGE_SIZE = 100;
 
@@ -53,10 +57,23 @@ function PartnersPageContent() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<PartnersDirectoryViewMode>('grid');
   const [createOpen, setCreateOpen] = useState(false);
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
+
+  const closePartnerSheetOnScopeChange = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete(PARTNER_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `/partners?${qs}` : '/partners');
+  }, [router, searchParams]);
+
+  const { scope, setScope, isTrashView } = useListScope({
+    onScopeChange: closePartnerSheetOnScopeChange,
+  });
 
   const partnerListExportParams: Omit<PartnerListParams, 'page' | 'pageSize'> = useMemo(
-    () => buildPartnerListApiParams({ search, filters }),
-    [search, filters],
+    () => buildPartnerListApiParams({ search, filters, scope }),
+    [search, filters, scope],
   );
 
   const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
@@ -88,7 +105,7 @@ function PartnersPageContent() {
       const params: PartnerListParams = {
         page: 1,
         pageSize: PARTNERS_LIST_PAGE_SIZE,
-        ...buildPartnerListApiParams({ search, filters }),
+        ...buildPartnerListApiParams({ search, filters, scope }),
       };
       const [listRes, statsRes] = await Promise.all([
         partnersApi.getAll(params),
@@ -107,7 +124,44 @@ function PartnersPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, scope]);
+
+  const handleMoveToTrash = useCallback(
+    async (id: string) => {
+      await partnersApi.moveToTrash(id);
+      toast.success('Partner moved to Trash');
+      closePartnerSheet();
+      await fetchPartners();
+    },
+    [closePartnerSheet, fetchPartners],
+  );
+
+  const handleRestore = useCallback(
+    async (id: string) => {
+      const restored = await partnersApi.restore(id);
+      toast.success('Partner restored');
+      setPartners((prev) => prev.map((x) => (x.id === restored.id ? restored : x)));
+      await fetchPartners();
+    },
+    [fetchPartners],
+  );
+
+  const runPermanentDelete = useCallback(async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await partnersApi.permanentDelete(id);
+      toast.success('Partner permanently deleted');
+      permanentDeleteConfirm.clear();
+      closePartnerSheet();
+      await fetchPartners();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete partner');
+    } finally {
+      setPurging(false);
+    }
+  }, [closePartnerSheet, fetchPartners, permanentDeleteConfirm]);
 
   useEffect(() => {
     fetchPartners();
@@ -165,16 +219,20 @@ function PartnersPageContent() {
         trailing={
           <>
             <PartnersPageSettingsSheet
+              listScope={scope}
+              onListScopeChange={setScope}
               exportDisabled={loading || exportCsvSubmitting}
               exportInProgress={exportCsvSubmitting}
               statsExportDisabled={loading || !stats}
               onExportCsv={handleExportCsv}
               onExportScopeStatsCsv={handleExportScopeStatsCsv}
             />
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <Plus size={16} aria-hidden />
-              Add Partner
-            </Button>
+            {!isTrashView ? (
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                <Plus size={16} aria-hidden />
+                Add Partner
+              </Button>
+            ) : null}
           </>
         }
       />
@@ -210,12 +268,18 @@ function PartnersPageContent() {
       ) : partners.length === 0 ? (
         <EmptyState
           icon={Handshake}
-          title="No partners yet"
-          description="Start building your partner network"
+          title={isTrashView ? 'Trash is empty' : 'No partners yet'}
+          description={
+            isTrashView
+              ? 'Removed partners will appear here until restored or purged.'
+              : 'Start building your partner network'
+          }
           action={
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <Plus size={16} /> Add First Partner
-            </Button>
+            isTrashView ? undefined : (
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                <Plus size={16} /> Add First Partner
+              </Button>
+            )
           }
         />
       ) : view === 'grid' ? (
@@ -236,6 +300,27 @@ function PartnersPageContent() {
           if (!next) closePartnerSheet();
         }}
         onPartnerUpdated={handlePartnerUpdatedFromSheet}
+        isTrashView={isTrashView}
+        onMoveToTrash={isTrashView ? undefined : handleMoveToTrash}
+        onRestore={isTrashView ? handleRestore : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const partner = partners.find((item) => item.id === id);
+                if (!partner) return;
+                permanentDeleteConfirm.request({ id, name: partner.name });
+              }
+            : undefined
+        }
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="partner"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

@@ -169,9 +169,15 @@ export class ClientServicesController {
     return this.clientServicesService.update(id, body);
   }
 
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel client service record (terminal status)' })
+  async cancel(@Param('id') id: string) {
+    return this.clientServicesService.cancel(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete client service record' })
+  @ApiOperation({ summary: 'Hard delete blocked — use POST :id/cancel' })
   async remove(@Param('id') id: string) {
     await this.clientServicesService.delete(id);
   }

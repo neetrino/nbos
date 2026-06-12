@@ -97,24 +97,27 @@ export function ReportsCenter() {
     [definitions, view, search],
   );
 
-  async function requestExport(definition: ReportDefinition, format: ReportExportFormat) {
-    setCreatingExportToken(`${definition.key}:${format}`);
-    setError(null);
-    try {
-      const job = await reportsApi.createExportJob({
-        reportKey: definition.key,
-        ownerModule: definition.ownerModule,
-        format,
-        filters: exportFilters,
-      });
-      setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
-      router.push(buildReportsViewPath('EXPORTS'));
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
-    } finally {
-      setCreatingExportToken(null);
-    }
-  }
+  const requestExport = useCallback(
+    async (definition: ReportDefinition, format: ReportExportFormat) => {
+      setCreatingExportToken(`${definition.key}:${format}`);
+      setError(null);
+      try {
+        const job = await reportsApi.createExportJob({
+          reportKey: definition.key,
+          ownerModule: definition.ownerModule,
+          format,
+          filters: exportFilters,
+        });
+        setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
+        router.push(buildReportsViewPath('EXPORTS'));
+      } catch (caught) {
+        setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
+      } finally {
+        setCreatingExportToken(null);
+      }
+    },
+    [exportFilters, router],
+  );
 
   async function retryExport(jobId: string) {
     setError(null);
@@ -175,6 +178,7 @@ export function ReportsCenter() {
       creatingExportToken,
       filters,
       handleClearFilters,
+      requestExport,
       savedViews,
       search,
       showReportActions,

@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Loader2, TableProperties, Wand2 } from 'lucide-react';
+import { Download, Loader2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 

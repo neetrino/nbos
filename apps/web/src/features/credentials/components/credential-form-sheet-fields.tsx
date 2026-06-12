@@ -1,6 +1,5 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -10,6 +9,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
+import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import {
+  CREDENTIAL_COMMENT_ICON,
+  CREDENTIAL_FOLDER_ICON,
+  credentialTypeIcon,
+} from '@/features/credentials/utils/credential-vault-card-meta';
 import {
   CREDENTIAL_TYPES_FOR_CREATE,
   commentLabelForType,
@@ -19,7 +24,7 @@ import { formatCredentialTypeLabel } from '@/features/credentials/utils/credenti
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
-import { CredentialAppStoreFields } from './credential-app-store-fields';
+import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -38,10 +43,11 @@ function TypeSelect({
   isCreate: boolean;
 }) {
   const types = isCreate ? CREDENTIAL_TYPES_FOR_CREATE : CREDENTIAL_TYPES;
+  const TypeIcon = credentialTypeIcon(credentialType);
 
   return (
     <div className="grid gap-2">
-      <Label>What is stored?</Label>
+      <CredentialFormFieldLabel label="What is stored?" icon={TypeIcon} />
       <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
         <SelectTrigger>
           <SelectValue placeholder="Select type">
@@ -75,8 +81,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setPassword,
     apiKey,
     setApiKey,
-    phones,
-    setPhones,
     passphrase,
     setPassphrase,
     url,
@@ -96,8 +100,9 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setCriticality,
     nextRotationAt,
     setNextRotationAt,
-    appStorePlatform,
-    setAppStorePlatform,
+    folderId,
+    setFolderId,
+    folderOptions,
   } = form;
 
   const providerBlock = showsProviderPicker(credentialType) ? (
@@ -117,24 +122,22 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     />
   );
 
-  const appStoreBlock =
-    credentialType === 'APP_STORE_ACCOUNT' ? (
-      <CredentialAppStoreFields
-        platform={appStorePlatform}
-        onPlatformChange={setAppStorePlatform}
-        url={url}
-        onUrlChange={setUrl}
-        phones={phones}
-        onPhonesChange={setPhones}
-      />
-    ) : null;
-
   return (
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
-      {typeBlock}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {typeBlock}
+        {folderOptions.length > 0 ? (
+          <div className="grid gap-2">
+            <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
+            <CredentialFolderTreePicker
+              folders={folderOptions}
+              value={folderId}
+              onChange={setFolderId}
+            />
+          </div>
+        ) : null}
+      </div>
       {providerBlock}
-
-      {appStoreBlock}
 
       <CredentialFormDynamicFields
         credentialType={credentialType}
@@ -161,7 +164,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
 
       {credentialType === 'RECOVERY_CODES' ? (
         <div className="grid gap-2">
-          <Label htmlFor="cred-comment">{commentLabelForType(credentialType)}</Label>
+          <CredentialFormFieldLabel
+            htmlFor="cred-comment"
+            label={commentLabelForType(credentialType)}
+            icon={CREDENTIAL_COMMENT_ICON}
+          />
           <Textarea
             id="cred-comment"
             value={comment}
@@ -172,7 +179,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         </div>
       ) : (
         <div className="grid gap-2">
-          <Label htmlFor="cred-comment">{commentLabelForType(credentialType)}</Label>
+          <CredentialFormFieldLabel
+            htmlFor="cred-comment"
+            label={commentLabelForType(credentialType)}
+            icon={CREDENTIAL_COMMENT_ICON}
+          />
           <Textarea
             id="cred-comment"
             value={comment}

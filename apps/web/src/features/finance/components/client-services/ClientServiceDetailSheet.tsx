@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Layers, Trash2 } from 'lucide-react';
+import { Ban, Layers } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -51,7 +51,7 @@ interface ClientServiceDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
-  onRequestDelete: (target: { id: string; name: string }) => void;
+  onRequestCancel?: (target: { id: string; name: string }) => void;
 }
 
 function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
@@ -80,7 +80,7 @@ export function ClientServiceDetailSheet({
   open,
   onOpenChange,
   onSaved,
-  onRequestDelete,
+  onRequestCancel,
 }: ClientServiceDetailSheetProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
   const {
@@ -161,6 +161,7 @@ export function ClientServiceDetailSheet({
     const next = clientServiceToFormState(service);
     setDraft(next);
     setSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on service.id
   }, [service?.id, service?.updatedAt]);
 
   const patchDraft = useCallback((partial: Partial<ClientServiceFormState>) => {
@@ -179,7 +180,7 @@ export function ClientServiceDetailSheet({
       setSnap(next);
       onSaved();
     },
-    [onSaved],
+    [onSaved, setService],
   );
 
   const handleSave = useCallback(() => {
@@ -223,6 +224,7 @@ export function ClientServiceDetailSheet({
   const statusLabel = service
     ? clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)
     : undefined;
+  const isCancelled = service?.status === 'CANCELLED';
   const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
 
   return (
@@ -250,16 +252,18 @@ export function ClientServiceDetailSheet({
                 <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                   {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
                   {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      disabled={saving}
-                      onClick={() => onRequestDelete({ id: service.id, name: service.name })}
-                    >
-                      <Trash2 />
-                      Delete service
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
+                  {!isCancelled && onRequestCancel ? (
+                    <DetailSheetSettingsMenu>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        disabled={saving}
+                        onClick={() => onRequestCancel({ id: service.id, name: service.name })}
+                      >
+                        <Ban />
+                        Cancel service
+                      </DropdownMenuItem>
+                    </DetailSheetSettingsMenu>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -286,7 +290,8 @@ export function ClientServiceDetailSheet({
                   patchDraft={patchDraft}
                   projects={projects}
                   saving={saving}
-                  canCreateTask={canCreateTask}
+                  readOnly={isCancelled}
+                  canCreateTask={canCreateTask && !isCancelled}
                   onCreateInvoice={() => setInvoiceOpen(true)}
                   onCreateExpense={() => setExpenseOpen(true)}
                   onCreateTask={() => setQuickCreateTaskOpen(true)}
@@ -296,7 +301,7 @@ export function ClientServiceDetailSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(service && draft)}
+            visible={activeTab === 'general' && Boolean(service && draft) && !isCancelled}
             dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
             saving={saving}
             errorMessage={formError}

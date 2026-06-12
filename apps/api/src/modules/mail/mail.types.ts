@@ -46,6 +46,7 @@ export interface MailThreadListRow {
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
+  trashedAt: string | null;
 }
 
 export interface MailThreadListPageMeta {

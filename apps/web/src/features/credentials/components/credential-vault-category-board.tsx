@@ -33,6 +33,9 @@ export interface CredentialVaultCategoryBoardProps {
   categoryColumns?: readonly CredentialCategoryOption[];
   onCreateInCategory: (category: string) => void;
   onOpenCredential: (id: string) => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  canMoveToTrash?: boolean;
   onCopyText?: (text: string) => void;
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   secretFlashCredentialId?: string | null;
@@ -50,6 +53,9 @@ export function CredentialVaultCategoryBoard({
   categoryColumns,
   onCreateInCategory,
   onOpenCredential,
+  onSetFavorite,
+  onRequestMoveToTrash,
+  canMoveToTrash = false,
   onCopyText,
   onCopySecret,
   secretFlashCredentialId,
@@ -103,6 +109,9 @@ export function CredentialVaultCategoryBoard({
               credential={credential}
               variant="kanban"
               onOpen={onOpenCredential}
+              onSetFavorite={onSetFavorite}
+              onRequestMoveToTrash={onRequestMoveToTrash}
+              canMoveToTrash={canMoveToTrash}
               onCopyText={onCopyText}
               onCopySecret={onCopySecret}
               secretFlashCredentialId={secretFlashCredentialId}

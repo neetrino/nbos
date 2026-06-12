@@ -265,6 +265,41 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 
 ---
 
+## Favorites + Folders (v1 — 2026-06)
+
+**Статус:** implemented · **Не меняет access model.**
+
+| Концепт    | Смысл                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `Favorite` | Личный quick-access флаг сотрудника (`employeeId + credentialId`). Не папка, не rename/delete. |
+| `Folder`   | Обычная организация credentials внутри vault scope tab. Не даёт доступ к секретам.             |
+
+**Правила v1**
+
+- Visibility credential остаётся source of truth (Access Level, grants, scope tab).
+- Favorites filter — в List / Tiles / Category Board; **не** в Folder view.
+- Folder view — отдельный view mode: breadcrumb, nested folders, credentials grid.
+- UI v1: одна primary folder membership на credential; storage — many-to-many.
+- Bulk add/remove в папку и drag cards на folder cards — в Folder view.
+
+**v1 visibility папок:** папки в рамках scope tab **общие** для всех с доступом к tab; `ownerId` пишется при create, но ACL на папку **не применяется**.
+
+### Отложено — Folder sharing / visibility (не v1)
+
+> Место для будущих product-решений. **Не реализовывать**, пока явно не вынесено в roadmap.
+
+Возможные сценарии (TBD):
+
+- **Private folder** — только owner видит папку внутри shared scope (Team / Project).
+- **Share folder** — выдать конкретным сотрудникам видимость папки (аналог Drive folder share); credentials внутри по-прежнему фильтруются credential visibility.
+- **Hide folder** — скрыть структуру от остальных без изменения доступа к секретам.
+
+Ограничение канона: **folder grant никогда не открывает credential**, только навигацию/структуру.
+
+Технический задел: `CredentialFolder.ownerId`; отдельной таблицы folder grants в v1 нет. Референс по UX паттерну share (не по security): Drive manual grants.
+
+---
+
 ## Ссылки
 
 - План Credentials (архив MVP): `docs/archive/todos/2.todo-Credentials.archived.md`

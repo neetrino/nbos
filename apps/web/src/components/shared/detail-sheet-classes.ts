@@ -3,8 +3,6 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
-import { cn } from '@/lib/utils';
-
 /** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
 export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
 

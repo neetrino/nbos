@@ -16,8 +16,6 @@ import { requireText } from './drive-metadata';
 import { loadDriveScopedEmployeeIds } from './drive-scoped-employee-ids';
 
 const SCOPE_ALL = 'ALL';
-const SCOPE_DEPARTMENT = 'DEPARTMENT';
-const SCOPE_OWN = 'OWN';
 
 function normalizeDriveScope(scope: string | undefined): string {
   return scope?.trim().toUpperCase() ?? 'NONE';

@@ -105,6 +105,7 @@ export function toThreadListRow(row: {
   status: string;
   assignedToEmployeeId?: string | null;
   assignedTo?: { firstName: string; lastName: string } | null;
+  trashedAt?: Date | null;
 }): MailThreadListRow {
   return {
     id: row.id,
@@ -121,6 +122,7 @@ export function toThreadListRow(row: {
     assignedToName: row.assignedTo
       ? `${row.assignedTo.firstName} ${row.assignedTo.lastName}`.trim()
       : null,
+    trashedAt: row.trashedAt?.toISOString() ?? null,
   };
 }
 

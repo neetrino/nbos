@@ -185,7 +185,7 @@ function collectOrderIds(
 async function loadOrdersForProjects(
   prisma: InstanceType<typeof PrismaClient>,
   orderIds: string[],
-  payrollMonth: string,
+  _payrollMonth: string,
 ) {
   if (orderIds.length === 0) return [];
   return prisma.order.findMany({
@@ -218,7 +218,7 @@ function buildProjectsForEmployee(params: {
   focusUnits: DeliveryPayableUnitDto[];
   includeFocusCells: boolean;
 }): PayrollEmployeeBonusHistoryProjectDto[] {
-  const { ctx, selectedEmployeeId, amountByMonthOrder, focusCellsByOrder, focusUnits } = params;
+  const { ctx, amountByMonthOrder, focusCellsByOrder, focusUnits } = params;
   const orderIdsWithHistory = collectOrderIds(amountByMonthOrder, focusCellsByOrder);
   const unitByOrderId = new Map(focusUnits.map((u) => [u.orderId, u]));
   const projects: PayrollEmployeeBonusHistoryProjectDto[] = [];

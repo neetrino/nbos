@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
-import { Check, Copy, Eye, EyeOff } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Check, Copy, Eye, EyeOff, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ export interface CredentialVaultSecretFieldProps {
   guardKey: string;
   fieldId: string;
   label: string;
+  icon?: LucideIcon;
   kind: 'password' | 'textarea';
   isExisting: boolean;
   hasStored: boolean;
@@ -41,6 +43,7 @@ export function CredentialVaultSecretField({
   guardKey,
   fieldId,
   label,
+  icon: Icon = Lock,
   kind,
   isExisting,
   hasStored,
@@ -174,7 +177,7 @@ export function CredentialVaultSecretField({
   if (kind === 'textarea') {
     return (
       <div className="grid gap-2">
-        <Label htmlFor={fieldId}>{label}</Label>
+        <CredentialFormFieldLabel htmlFor={fieldId} label={label} icon={Icon} />
         <div className="relative">
           {actionButtons}
           <Textarea
@@ -201,7 +204,7 @@ export function CredentialVaultSecretField({
 
   return (
     <div className="grid gap-2">
-      <Label htmlFor={fieldId}>{label}</Label>
+      <CredentialFormFieldLabel htmlFor={fieldId} label={label} icon={Icon} />
       <div className="relative">
         {actionButtons}
         <Input

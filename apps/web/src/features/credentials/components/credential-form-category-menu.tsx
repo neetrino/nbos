@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
+import { CredentialCategoryIcon } from '@/features/credentials/components/credential-meta-icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +28,14 @@ export function CredentialFormCategoryMenu({
 }: CredentialFormCategoryMenuProps) {
   if (categoryLocked) {
     return (
-      <span className="text-muted-foreground shrink-0 text-sm font-medium">{categoryLabel}</span>
+      <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-sm font-medium">
+        <CredentialCategoryIcon
+          category={category}
+          className="size-3.5 shrink-0 opacity-80"
+          aria-hidden
+        />
+        {categoryLabel}
+      </span>
     );
   }
 
@@ -40,6 +48,11 @@ export function CredentialFormCategoryMenu({
           'rounded-md px-1.5 py-1 text-sm font-medium outline-none',
         )}
       >
+        <CredentialCategoryIcon
+          category={category}
+          className="size-3.5 shrink-0 opacity-80"
+          aria-hidden
+        />
         {categoryLabel}
         <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
@@ -48,8 +61,16 @@ export function CredentialFormCategoryMenu({
           <DropdownMenuItem
             key={opt.value}
             onClick={() => onCategoryChange(opt.value)}
-            className={opt.value === category ? 'bg-accent text-accent-foreground' : undefined}
+            className={cn(
+              'gap-2',
+              opt.value === category ? 'bg-accent text-accent-foreground' : undefined,
+            )}
           >
+            <CredentialCategoryIcon
+              category={opt.value}
+              className="size-3.5 shrink-0 opacity-80"
+              aria-hidden
+            />
             {opt.label}
           </DropdownMenuItem>
         ))}

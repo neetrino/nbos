@@ -314,10 +314,6 @@ export const productsApi = {
     return resp.data;
   },
 
-  async delete(id: string): Promise<void> {
-    await api.delete(`/api/projects/products/${id}`);
-  },
-
   async getStats(projectId?: string): Promise<ProductStats> {
     const resp = await api.get<ProductStats>('/api/projects/products/stats', {
       params: projectId ? { projectId } : undefined,

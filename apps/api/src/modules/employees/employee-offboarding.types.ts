@@ -16,6 +16,8 @@ export interface EmployeeOffboardingRevokeSummary {
   projectTeamRemovals: number;
   productTeamRemovals: number;
   credentialGrantsRevoked: number;
+  credentialAllowedListEntriesCleared: number;
+  credentialFavoritesRemoved: number;
   accessOverridesClosed: number;
 }
 

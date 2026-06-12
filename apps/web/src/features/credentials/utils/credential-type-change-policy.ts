@@ -1,4 +1,4 @@
-import type { CredentialSecretsPresent, CredentialSecretField } from '@/lib/api/credentials';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 import type { CredentialFormField } from '@/features/credentials/credential-field-config';
 import {
   fieldsForCredentialType,

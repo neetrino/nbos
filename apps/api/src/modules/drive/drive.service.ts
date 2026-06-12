@@ -55,6 +55,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
 import { readTenantOrganizationId } from './drive-tenant';
+import { buildDriveRecoverableTrashWhere } from '../../common/lifecycle/entity-lifecycle-scope';
 import { assertStorageKeyInTenantScope } from '../../common/security/storage-key-validation';
 import { buildVersionStagingKey, versionStagingPrefix } from './drive-storage-home-path';
 import {
@@ -175,10 +176,12 @@ export class DriveService {
 
   async listFileAssets(params: FileAssetQueryParams, access?: DriveEntityAccess) {
     const where = await this.buildFileAssetWhere(params, access);
+    const orderBy =
+      params.trash === true ? { updatedAt: 'desc' as const } : { createdAt: 'desc' as const };
     const rows = await this.prisma.fileAsset.findMany({
       where,
       include: FILE_ASSET_INCLUDE,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       take: 100,
     });
     const counts = await countDriveFileManualGrants(
@@ -190,15 +193,10 @@ export class DriveService {
 
   async getLifecycleCounts(access?: DriveEntityAccess) {
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
-    const [archived, trash] = await Promise.all([
-      this.prisma.fileAsset.count({
-        where: { deletedAt: null, status: 'ARCHIVED', ...accessWhere },
-      }),
-      this.prisma.fileAsset.count({
-        where: { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
-      }),
-    ]);
-    return { archived, trash };
+    const trash = await this.prisma.fileAsset.count({
+      where: { ...this.buildRecoverableTrashAccessWhere(accessWhere) },
+    });
+    return { trash };
   }
 
   async getFileAsset(
@@ -449,105 +447,28 @@ export class DriveService {
     return this.prisma.fileLink.update({ where: { id: linkId }, data: { unlinkedAt: new Date() } });
   }
 
+  /** Transitional alias — moves to unified Trash (DELETED). */
   async archiveFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    await this.getFileAsset(id, access, ['DELETE']);
-    return jsonSafeForHttp(
-      await this.prisma.fileAsset.update({
-        where: { id },
-        data: {
-          status: 'ARCHIVED',
-          archivedAt: new Date(),
-          auditEvents: { create: { action: 'archived', actorId } },
-        },
-        include: FILE_ASSET_INCLUDE,
-      }),
-    );
+    return this.moveFileAssetToTrash(id, actorId ?? 'system', access);
   }
 
+  /** Transitional alias — restores from unified Trash. */
   async restoreFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    await this.getFileAsset(id, access, ['DELETE']);
-    return jsonSafeForHttp(
-      await this.prisma.fileAsset.update({
-        where: { id },
-        data: {
-          status: 'ACTIVE',
-          archivedAt: null,
-          auditEvents: { create: { action: 'restored', actorId } },
-        },
-        include: FILE_ASSET_INCLUDE,
-      }),
-    );
+    return this.restoreTrashFileAsset(id, actorId, access);
   }
 
+  /** Transitional alias — batch move to unified Trash. */
   async archiveFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
-    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
-    if (uniqueIds.length === 0) {
-      throw new BadRequestException('ids must include at least one file id.');
-    }
-    const now = new Date();
-    const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const matched = await tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
-        select: { id: true },
-      });
-      const matchedIds = matched.map((row) => row.id);
-      if (matchedIds.length === 0) return [];
-      await tx.fileAsset.updateMany({
-        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
-        data: { status: 'ARCHIVED', archivedAt: now },
-      });
-      await tx.fileAuditEvent.createMany({
-        data: matchedIds.map((fileAssetId) => ({
-          fileAssetId,
-          actorId: actorId ?? null,
-          action: 'archived',
-        })),
-      });
-      return tx.fileAsset.findMany({
-        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
-        include: FILE_ASSET_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-      });
-    });
-    return { updated: jsonSafeForHttp(updated) };
+    return this.moveFileAssetsToTrash(ids, actorId ?? 'system', access);
   }
 
+  /** Transitional alias — batch restore from unified Trash. */
   async restoreFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
-    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
-    if (uniqueIds.length === 0) {
-      throw new BadRequestException('ids must include at least one file id.');
-    }
-    const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const matched = await tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
-        select: { id: true },
-      });
-      const matchedIds = matched.map((row) => row.id);
-      if (matchedIds.length === 0) return [];
-      await tx.fileAsset.updateMany({
-        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
-        data: { status: 'ACTIVE', archivedAt: null },
-      });
-      await tx.fileAuditEvent.createMany({
-        data: matchedIds.map((fileAssetId) => ({
-          fileAssetId,
-          actorId: actorId ?? null,
-          action: 'restored',
-        })),
-      });
-      return tx.fileAsset.findMany({
-        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
-        include: FILE_ASSET_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-      });
-    });
-    return { updated: jsonSafeForHttp(updated) };
+    return this.restoreTrashFileAssets(ids, actorId, access);
   }
 
   async restoreTrashFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    const file = await this.findTrashFileAsset(id, access, ['DELETE']);
+    const file = await this.findRecoverableTrashFileAsset(id, access);
     return jsonSafeForHttp(
       await this.prisma.fileAsset.update({
         where: { id: file.id },
@@ -568,13 +489,12 @@ export class DriveService {
       throw new BadRequestException('ids must include at least one file id.');
     }
     const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
+    const recoverableTrashWhere = this.buildRecoverableTrashAccessWhere(accessWhere);
     const updated = await this.prisma.$transaction(async (tx) => {
       const matched = await tx.fileAsset.findMany({
         where: {
           id: { in: uniqueIds },
-          status: 'DELETED',
-          deletedAt: { not: null },
-          ...accessWhere,
+          ...recoverableTrashWhere,
         },
         select: { id: true },
       });
@@ -583,9 +503,7 @@ export class DriveService {
       await tx.fileAsset.updateMany({
         where: {
           id: { in: matchedIds },
-          status: 'DELETED',
-          deletedAt: { not: null },
-          ...accessWhere,
+          ...recoverableTrashWhere,
         },
         data: { status: 'ACTIVE', archivedAt: null, deletedAt: null },
       });
@@ -612,7 +530,7 @@ export class DriveService {
     }
     const moved = [];
     for (const id of uniqueIds) {
-      moved.push(await this.permanentlyDeleteFileAsset(id, actorId, access));
+      moved.push(await this.moveFileAssetToTrash(id, actorId, access));
     }
     return { updated: jsonSafeForHttp(moved) };
   }
@@ -849,11 +767,11 @@ export class DriveService {
     return { deleted: r.count, kind };
   }
 
-  async permanentlyDeleteFileAsset(id: string, actorId: string, access?: DriveEntityAccess) {
-    await assertDriveFileActionAllowed(this.prisma, id, access, 'PERMANENT_DELETE');
+  async moveFileAssetToTrash(id: string, actorId: string, access?: DriveEntityAccess) {
+    await assertDriveFileActionAllowed(this.prisma, id, access, 'TRASH');
     const where = await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
-      where: { id, ...where, deletedAt: null },
+      where: { id, ...where, status: { not: 'DELETED' } },
       include: FILE_ASSET_INCLUDE,
     });
     if (!file) throw new NotFoundException(`File asset ${id} not found`);
@@ -863,17 +781,22 @@ export class DriveService {
           data: {
             fileAssetId: id,
             actorId,
-            action: 'permanent_deleted',
+            action: 'moved_to_trash',
             metadata: {},
           },
         });
         return tx.fileAsset.update({
           where: { id },
-          data: { status: 'DELETED', deletedAt: new Date() },
+          data: { status: 'DELETED', deletedAt: new Date(), archivedAt: null },
           include: FILE_ASSET_INCLUDE,
         });
       }),
     );
+  }
+
+  /** Transitional alias — prefer `moveFileAssetToTrash`. */
+  async permanentlyDeleteFileAsset(id: string, actorId: string, access?: DriveEntityAccess) {
+    return this.moveFileAssetToTrash(id, actorId, access);
   }
 
   async getProjectStructure(projectId: string): Promise<FolderNode> {
@@ -942,19 +865,21 @@ export class DriveService {
     };
   }
 
-  private async findTrashFileAsset(
-    id: string,
-    access?: DriveEntityAccess,
-    grantPermissions?: readonly FileGrantPermission[],
-  ) {
-    await this.assertDriveGrantPolicy(id, access, grantPermissions);
+  private buildRecoverableTrashAccessWhere(
+    accessWhere: Prisma.FileAssetWhereInput,
+  ): Prisma.FileAssetWhereInput {
+    return {
+      AND: [buildDriveRecoverableTrashWhere(), accessWhere],
+    };
+  }
+
+  private async findRecoverableTrashFileAsset(id: string, access?: DriveEntityAccess) {
+    await assertDriveFileActionAllowed(this.prisma, id, access, 'RESTORE');
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
       where: {
         id,
-        status: 'DELETED',
-        deletedAt: { not: null },
-        ...accessWhere,
+        ...this.buildRecoverableTrashAccessWhere(accessWhere),
       },
     });
     if (!file) throw new NotFoundException(`File asset ${id} not found in Trash`);
@@ -968,7 +893,7 @@ export class DriveService {
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     if (params.trash === true) {
       const clauses: Prisma.FileAssetWhereInput[] = [
-        { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
+        this.buildRecoverableTrashAccessWhere(accessWhere),
       ];
       if (params.search) {
         clauses.push({

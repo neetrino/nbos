@@ -101,6 +101,28 @@ export class SchedulerController {
     return this.schedulerService.runSalesKpiBackfillAll();
   }
 
+  @Post('credential-trash-purge')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Purge trashed credentials past retention TTL (external cron)',
+    description:
+      'Legacy credential-only purge. Prefer POST /scheduler/platform-trash-purge for unified retention purge with audit.',
+  })
+  async runCredentialTrashPurge() {
+    return this.schedulerService.runCredentialTrashPurge();
+  }
+
+  @Post('platform-trash-purge')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Unified trash retention purge (Credentials + Drive)',
+    description:
+      'Runs automated hard purge for credentials and Drive files past resolved retention TTL. Optional in-process cron when SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED=true.',
+  })
+  async runPlatformTrashPurge() {
+    return this.schedulerService.runPlatformTrashPurge();
+  }
+
   @Post('support-sla-escalation')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

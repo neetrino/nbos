@@ -45,6 +45,7 @@ export interface PartnerWireDto {
   agreementOwner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   updatedAt: string;
+  trashedAt: string | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   _count: { subscriptions: number; orders: number };
 }
@@ -137,6 +138,7 @@ export function serializePartner(row: PartnerWireRow): PartnerWireDto {
     agreementOwner: row.agreementOwner,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    trashedAt: row.trashedAt?.toISOString() ?? null,
     contact: row.contact,
     _count: row._count,
   };

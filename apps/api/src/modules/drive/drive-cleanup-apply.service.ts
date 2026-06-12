@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
@@ -16,9 +16,10 @@ import {
   failedUploadSessionWhere,
   oldTaskAttachmentLinkWhere,
   orphanFileWhere,
-  softDeletedRetentionWhere,
   temporaryExportFileWhere,
 } from './drive-cleanup-where';
+import { DriveR2Client } from './drive-r2.client';
+import { purgeRetentionFileAssets } from './drive-retention-purge.ops';
 import { jsonSafeForHttp } from './drive-json-safe';
 
 export interface DriveCleanupApplyResult {
@@ -30,9 +31,12 @@ export interface DriveCleanupApplyResult {
 
 @Injectable()
 export class DriveCleanupApplyService {
+  private readonly logger = new Logger(DriveCleanupApplyService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly audit: AuditService,
+    private readonly r2: DriveR2Client,
   ) {}
 
   async applyCleanup(
@@ -232,23 +236,8 @@ export class DriveCleanupApplyService {
     return matchedIds.length;
   }
 
-  private async markRetentionPurged(userId: string, ids: string[], now: Date): Promise<number> {
-    const where = { id: { in: ids }, ...softDeletedRetentionWhere(now) };
-    const matched = await this.prisma.fileAsset.findMany({
-      where,
-      select: { id: true },
-    });
-    if (matched.length === 0) return 0;
-
-    await this.prisma.fileAuditEvent.createMany({
-      data: matched.map((row) => ({
-        fileAssetId: row.id,
-        actorId: userId,
-        action: 'cleanup_retention_purged',
-        metadata: { source: 'drive_cleanup_apply' },
-      })),
-    });
-    return matched.length;
+  private async markRetentionPurged(_userId: string, ids: string[], now: Date): Promise<number> {
+    return purgeRetentionFileAssets(this.prisma, this.r2, this.logger, ids, now);
   }
 
   private async loadDuplicateChecksums(ids: string[]): Promise<string[]> {

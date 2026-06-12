@@ -2,6 +2,7 @@
 
 import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useListScope } from '@/hooks/use-list-scope';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
 import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
 import {
@@ -92,6 +93,14 @@ export function useTasksListPage() {
     router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname, searchParams]);
 
+  const {
+    scope: listScope,
+    setScope: setListScope,
+    isTrashView,
+  } = useListScope({
+    onScopeChange: stripTaskOpenFromUrl,
+  });
+
   const handleTaskSheetOpenChange = useCallback(
     (open: boolean) => {
       if (!open) stripTaskOpenFromUrl();
@@ -117,8 +126,9 @@ export function useTasksListPage() {
 
       const resp = await tasksApi.getAll({
         pageSize: TASK_LIST_GLOBAL_PAGE_SIZE,
-        sortBy: 'workspaceSortOrder',
-        sortOrder: 'asc',
+        scope: listScope,
+        sortBy: isTrashView ? 'trashedAt' : 'workspaceSortOrder',
+        sortOrder: isTrashView ? 'desc' : 'asc',
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
@@ -139,7 +149,7 @@ export function useTasksListPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters, creatorId, creatorReady]);
+  }, [search, filters, creatorId, creatorReady, listScope, isTrashView]);
 
   const fetchMyPlanStages = useCallback(async () => {
     if (!creatorId) {
@@ -152,6 +162,10 @@ export function useTasksListPage() {
       /* non-blocking */
     }
   }, [creatorId]);
+
+  useEffect(() => {
+    if (isTrashView) setBoardView('list');
+  }, [isTrashView]);
 
   useEffect(() => {
     void fetchTasks();
@@ -168,8 +182,9 @@ export function useTasksListPage() {
       const resp = await tasksApi.getAll({
         page: taskMeta.page + 1,
         pageSize: taskMeta.pageSize,
-        sortBy: 'workspaceSortOrder',
-        sortOrder: 'asc',
+        scope: listScope,
+        sortBy: isTrashView ? 'trashedAt' : 'workspaceSortOrder',
+        sortOrder: isTrashView ? 'desc' : 'asc',
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
@@ -185,7 +200,7 @@ export function useTasksListPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [creatorId, taskMeta, search, filters]);
+  }, [creatorId, taskMeta, search, filters, listScope, isTrashView]);
 
   const handleAction = async (taskId: string, action: 'start' | 'complete' | 'reopen') => {
     try {
@@ -210,6 +225,14 @@ export function useTasksListPage() {
   };
 
   const handleTaskDelete = useCallback(
+    (taskId: string) => {
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      if (openTaskId === taskId) stripTaskOpenFromUrl();
+    },
+    [openTaskId, stripTaskOpenFromUrl],
+  );
+
+  const handleTaskRestore = useCallback(
     (taskId: string) => {
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
       if (openTaskId === taskId) stripTaskOpenFromUrl();
@@ -299,6 +322,10 @@ export function useTasksListPage() {
     setQuickCreateColumnKey,
     handleTaskUpdate,
     handleTaskDelete,
+    handleTaskRestore,
+    listScope,
+    setListScope,
+    isTrashView,
     handleTaskCreated,
     taskMeta,
     loadMoreTasks,

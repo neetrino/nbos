@@ -30,6 +30,7 @@ export interface CompanySheetScrollBodyProps {
   draft: CompanyGeneralDraft;
   patchDraft: (partial: Partial<CompanyGeneralDraft>) => void;
   saving: boolean;
+  readOnly?: boolean;
   generalError: string | null;
   portfolioData: CompanyPortfolioResponse | null;
   portfolioLoading: boolean;
@@ -45,6 +46,7 @@ export function CompanySheetScrollBody({
   draft,
   patchDraft,
   saving,
+  readOnly = false,
   generalError,
   portfolioData,
   portfolioLoading,
@@ -52,6 +54,7 @@ export function CompanySheetScrollBody({
   searchContacts,
   onPortfolioRetry,
 }: CompanySheetScrollBodyProps) {
+  const fieldDisabled = saving || readOnly;
   const contactPicker = useRelationPickerActions('contact', 'company-sheet-primary');
   const billingContactPicker = useRelationPickerActions('contact', 'company-sheet-billing');
   const taxStatus = getTaxStatus(company.taxStatus);
@@ -76,7 +79,7 @@ export function CompanySheetScrollBody({
                 value={draft.type}
                 options={typeOptions}
                 icon={<Tag size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => {
                   if (v) patchDraft({ type: v });
                 }}
@@ -99,7 +102,7 @@ export function CompanySheetScrollBody({
                 value={draft.taxId}
                 placeholder="Optional"
                 icon={<FileText size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ taxId: v })}
               />
               <InlineField
@@ -109,7 +112,7 @@ export function CompanySheetScrollBody({
                 value={draft.legalAddress}
                 placeholder="Address…"
                 icon={<Building2 size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ legalAddress: v })}
               />
               <InlineField
@@ -119,7 +122,7 @@ export function CompanySheetScrollBody({
                 value={draft.phone}
                 placeholder="+374…"
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ phone: v })}
               />
               <InlineField
@@ -129,7 +132,7 @@ export function CompanySheetScrollBody({
                 value={draft.email}
                 placeholder="email@…"
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ email: v })}
               />
               <InlineField
@@ -139,7 +142,7 @@ export function CompanySheetScrollBody({
                 value={draft.country}
                 placeholder="Country"
                 icon={<Building2 size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ country: v })}
               />
               <InlineField
@@ -161,7 +164,7 @@ export function CompanySheetScrollBody({
                 placeholder="Search contacts…"
                 icon={<User size={12} />}
                 maxResults={25}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onSearch={searchContacts}
                 onSelect={(id, label) =>
                   patchDraft({ primaryContactId: id, primaryContactLabel: label })
@@ -176,7 +179,7 @@ export function CompanySheetScrollBody({
                 placeholder="Optional — clear to match primary"
                 icon={<User size={12} />}
                 maxResults={25}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onSearch={searchContacts}
                 onSelect={(id, label) =>
                   patchDraft({ billingContactId: id, billingContactLabel: label })
@@ -195,7 +198,7 @@ export function CompanySheetScrollBody({
             value={draft.notes}
             onChange={(notes) => patchDraft({ notes: notes ?? '' })}
             placeholder="Internal notes…"
-            disabled={saving}
+            disabled={fieldDisabled}
           />
         </div>
 

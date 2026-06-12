@@ -28,7 +28,7 @@ Prisma (maintenance script / admin console):
 
 ```ts
 await prisma.credential.findMany({
-  where: { credentialType: 'OTHER_SECRET', archivedAt: null },
+  where: { credentialType: 'OTHER_SECRET', trashedAt: null },
   select: { id: true, name: true, category: true, providerId: true },
 });
 ```

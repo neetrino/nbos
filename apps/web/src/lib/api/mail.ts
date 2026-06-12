@@ -47,6 +47,7 @@ export interface MailThreadListRow {
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
+  trashedAt: string | null;
 }
 
 export interface MailThreadListPageMeta {
@@ -129,19 +130,6 @@ export interface MailSyncLogRow {
   createdAt: string;
 }
 
-export interface MailBulkThreadActionFailedItem {
-  threadId: string;
-  error: string;
-}
-
-export interface MailBulkThreadActionResultDto {
-  total: number;
-  succeeded: number;
-  failed: number;
-  succeededThreadIds: string[];
-  failedItems: MailBulkThreadActionFailedItem[];
-}
-
 export type MailSecureMode = 'SSL' | 'STARTTLS' | 'NONE';
 
 export interface ConnectCorporateMailboxPayload {
@@ -201,6 +189,7 @@ export interface ListMailThreadsOptions {
   assignedToMe?: boolean;
   sentOnly?: boolean;
   spamOnly?: boolean;
+  scope?: 'active' | 'trash';
   search?: string;
   page?: number;
   pageSize?: number;
@@ -242,6 +231,9 @@ export const mailApi = {
     if (options.spamOnly) {
       params.spamOnly = 'true';
     }
+    if (options.scope) {
+      params.scope = options.scope;
+    }
     if (options.search !== undefined && options.search.trim() !== '') {
       params.q = options.search.trim();
     }
@@ -282,18 +274,20 @@ export const mailApi = {
     return resp.data;
   },
 
-  async bulkMarkThreadsRead(threadIds: string[]): Promise<MailBulkThreadActionResultDto> {
-    const resp = await api.post<MailBulkThreadActionResultDto>('/api/mail/threads/bulk-mark-read', {
-      threadIds,
-    });
-    return resp.data;
-  },
-
-  async deleteThread(threadId: string): Promise<{ deleted: true; threadId: string }> {
-    const resp = await api.post<{ deleted: true; threadId: string }>(
+  async deleteThread(threadId: string): Promise<{ trashed: true; threadId: string }> {
+    const resp = await api.post<{ trashed: true; threadId: string }>(
       `/api/mail/threads/${threadId}/delete`,
     );
     return resp.data;
+  },
+
+  async restoreThread(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/restore`);
+    return resp.data;
+  },
+
+  async permanentDeleteThread(threadId: string): Promise<void> {
+    await api.delete(`/api/mail/threads/${threadId}/permanent`);
   },
 
   async createOutboundDraft(
@@ -416,14 +410,6 @@ export const mailApi = {
 
   async markThreadUnread(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-unread`);
-    return resp.data;
-  },
-
-  async bulkMarkThreadsUnread(threadIds: string[]): Promise<MailBulkThreadActionResultDto> {
-    const resp = await api.post<MailBulkThreadActionResultDto>(
-      '/api/mail/threads/bulk-mark-unread',
-      { threadIds },
-    );
     return resp.data;
   },
 

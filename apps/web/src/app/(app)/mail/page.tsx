@@ -870,11 +870,18 @@ export default function MailInboxPage() {
           handleActivePanelChange({ type: 'thread', threadId });
           void load();
         }}
+        trashView={activeFolder === 'trash'}
         onThreadDeleted={(threadId) => {
           handleActivePanelChange(null);
           setThreads((prev) => prev.filter((thread) => thread.id !== threadId));
           clearThreadSelection(setSelectedThreadIds);
-          toast.success('Email deleted.');
+          toast.success('Moved to Trash.');
+        }}
+        onThreadRestored={(threadId) => {
+          setActivePanel(null);
+          setThreads((prev) => prev.filter((thread) => thread.id !== threadId));
+          clearThreadSelection(setSelectedThreadIds);
+          toast.success('Email restored to inbox.');
         }}
       />
 

@@ -6,7 +6,6 @@ import type {
   OrderStatusEnum,
   OrderTypeEnum,
   PaymentTypeEnum,
-  Prisma,
   PrismaClient,
   TaxStatus,
 } from '@nbos/database';

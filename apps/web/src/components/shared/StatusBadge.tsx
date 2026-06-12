@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 type StatusVariant =
@@ -44,6 +45,7 @@ interface StatusBadgeProps {
   variant?: StatusVariant;
   dot?: boolean;
   dotColor?: string;
+  icon?: ReactNode;
   className?: string;
   title?: string;
 }
@@ -53,6 +55,7 @@ export function StatusBadge({
   variant = 'default',
   dot,
   dotColor,
+  icon,
   className,
   title,
 }: StatusBadgeProps) {
@@ -60,11 +63,12 @@ export function StatusBadge({
     <span
       title={title ?? label}
       className={cn(
-        'inline-flex w-fit max-w-full min-w-0 items-center gap-1.5 self-start rounded-md px-2 py-0.5 text-xs font-medium',
+        'inline-flex w-fit max-w-full min-w-0 items-center gap-1 self-start rounded-md px-2 py-0.5 text-xs font-medium',
         VARIANT_STYLES[variant],
         className,
       )}
     >
+      {icon ? <span className="shrink-0">{icon}</span> : null}
       {dot && (
         <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', dotColor ?? 'bg-current')} />
       )}

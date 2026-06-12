@@ -64,9 +64,11 @@ export function DriveHero({
   libraryLinkAggregates?: { entityType: string; entityId: string; count: number }[];
   insightsOperations?: {
     busy: boolean;
+    canApplyCleanup: boolean;
     typedExportActions: DriveTypedExportAction[];
     exportJobs: DriveZipExportJobSummary[];
     cleanupCategories: DriveCleanupCandidateCategory[];
+    cleanupSelectionResetKey: number;
     onTypedExport: (action: DriveTypedExportAction) => void;
     onCancelExport: (jobId: string) => void;
     onDownloadExport: (fileAssetId: string) => void;

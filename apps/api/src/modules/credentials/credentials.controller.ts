@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -17,6 +18,7 @@ import { CredentialsService } from './credentials.service';
 import { normalizeCredentialTab } from './credential-tab';
 import { normalizeCredentialListSort } from './credential-list-sort';
 import { normalizeBulkCredentialIds } from './credential-bulk.ids';
+import { parseLifecycleScopeFromQuery } from '../../common/lifecycle/entity-lifecycle-scope';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -35,6 +37,7 @@ export class CredentialsController {
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'ownerId', required: false })
   @ApiQuery({ name: 'needsRotation', required: false })
+  @ApiQuery({ name: 'favoritesOnly', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({
     name: 'tab',
@@ -42,9 +45,15 @@ export class CredentialsController {
     enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret'],
   })
   @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: ['active', 'trash'],
+    description: 'Vault list scope (default active)',
+  })
+  @ApiQuery({
     name: 'includeArchived',
     required: false,
-    description: 'List archived credentials only',
+    description: 'Deprecated — use scope=trash',
   })
   @ApiQuery({
     name: 'sort',
@@ -62,15 +71,24 @@ export class CredentialsController {
     @Query('accessLevel') accessLevel?: string,
     @Query('ownerId') ownerId?: string,
     @Query('needsRotation') needsRotation?: string,
+    @Query('favoritesOnly') favoritesOnly?: string,
+    @Query('folderId') folderId?: string,
+    @Query('withoutFolder') withoutFolder?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
+    @Query('scope') scope?: string,
     @Query('includeArchived') includeArchived?: string,
     @Query('sort') sort?: string,
   ) {
     const archivedFlag =
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
+    const listScope = parseLifecycleScopeFromQuery(scope, archivedFlag);
     const rotationFlag =
       needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
+    const favoritesFlag =
+      favoritesOnly === '1' || favoritesOnly === 'true' || favoritesOnly === 'yes';
+    const withoutFolderFlag =
+      withoutFolder === '1' || withoutFolder === 'true' || withoutFolder === 'yes';
     const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll(
       {
@@ -82,16 +100,123 @@ export class CredentialsController {
         accessLevel,
         ownerId,
         needsRotation: rotationFlag,
+        favoritesOnly: favoritesFlag,
+        folderId,
+        withoutFolder: withoutFolderFlag,
         search,
         tab: normalizeCredentialTab(tab),
         employeeId: access.employeeId,
         departmentIds: access.departmentIds,
         viewScope: access.viewScope,
-        includeArchived: archivedFlag,
-        sort: normalizeCredentialListSort(sort, archivedFlag),
+        scope: listScope,
+        includeArchived: listScope === 'trash',
+        sort: normalizeCredentialListSort(sort, listScope === 'trash'),
       },
       access,
     );
+  }
+
+  @Get('folders')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List credential folders' })
+  @ApiQuery({ name: 'scope', required: false })
+  @ApiQuery({ name: 'parentId', required: false, description: 'Omit for all; root for top level' })
+  @ApiQuery({ name: 'projectId', required: false })
+  async listFolders(
+    @Query('scope') scope: string | undefined,
+    @Query('parentId') parentId: string | undefined,
+    @Query('projectId') projectId: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.listFolders(
+      scope,
+      parentId,
+      projectId,
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Get('project-shells')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Virtual project folders with credential counts (Project tab)' })
+  async listProjectShells(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.listProjectShells(credentialsAccessFromUser(user));
+  }
+
+  @Post('folders')
+  @RequirePermission('CREDENTIALS', 'ADD')
+  @ApiOperation({ summary: 'Create credential folder' })
+  async createFolder(
+    @Body()
+    body: { name?: string; scope?: string; parentId?: string | null; projectId?: string | null },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.createFolder(body, credentialsAccessFromUser(user));
+  }
+
+  @Put('folders/:folderId')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @ApiOperation({ summary: 'Rename credential folder' })
+  async updateFolder(
+    @Param('folderId') folderId: string,
+    @Body() body: { name?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.updateFolder(folderId, body, credentialsAccessFromUser(user));
+  }
+
+  @Delete('folders/:folderId')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete empty credential folder (Model 6)' })
+  async deleteFolder(@Param('folderId') folderId: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.deleteFolder(folderId, credentialsAccessFromUser(user));
+  }
+
+  @Post('folders/:folderId/remove-grouping')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove folder grouping (Model 5)',
+    description:
+      'Unfiles active credentials from the folder and deletes the folder. Blocked when nested child folders exist.',
+  })
+  async removeFolderGrouping(
+    @Param('folderId') folderId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    await this.credentialsService.removeFolderGrouping(folderId, credentialsAccessFromUser(user));
+  }
+
+  @Put(':id/favorite')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'Set personal favorite state for a credential' })
+  async setFavorite(
+    @Param('id') id: string,
+    @Body() body: { favorite?: boolean },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.setFavorite(
+      id,
+      Boolean(body.favorite),
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Put(':id/folders')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @ApiOperation({ summary: 'Replace ordinary folder memberships for a credential' })
+  async replaceFolders(
+    @Param('id') id: string,
+    @Body() body: { folderIds?: string[]; folderId?: string | null },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const folderIds = Array.isArray(body.folderIds)
+      ? body.folderIds
+      : body.folderId
+        ? [body.folderId]
+        : [];
+    return this.credentialsService.replaceFolders(id, folderIds, credentialsAccessFromUser(user));
   }
 
   @Post('export/file')
@@ -139,6 +264,41 @@ export class CredentialsController {
   ) {
     const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
     return this.credentialsService.bulkRestore(credentialIds, credentialsAccessFromUser(user));
+  }
+
+  @Post('bulk/folders/add')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Move credentials into a folder (v1: single folder membership)' })
+  async bulkAddToFolder(
+    @Body() body: { credentialIds?: string[]; folderId?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    const folderId = body.folderId?.trim();
+    if (!folderId) throw new BadRequestException('folderId is required');
+    return this.credentialsService.bulkAddToFolder(
+      credentialIds,
+      folderId,
+      credentialsAccessFromUser(user),
+    );
+  }
+
+  @Post('bulk/folders/remove')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remove credentials from a folder or all folders' })
+  async bulkRemoveFromFolder(
+    @Body() body: { credentialIds?: string[]; folderId?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const credentialIds = normalizeBulkCredentialIds(body.credentialIds);
+    const folderId = body.folderId?.trim() || undefined;
+    return this.credentialsService.bulkRemoveFromFolder(
+      credentialIds,
+      folderId,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Get('vault-session')

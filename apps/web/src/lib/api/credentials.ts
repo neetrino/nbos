@@ -74,6 +74,8 @@ export interface CredentialDetail {
   allowedEmployees: string[];
   createdAt: string;
   updatedAt?: string;
+  isFavorite?: boolean;
+  folders?: { id: string; name: string; isPrimary: boolean }[];
   secretsPresent: CredentialSecretsPresent;
   /** Manual access grants, returned inline with detail to avoid a second round-trip. */
   manualGrants?: CredentialManualGrant[];
@@ -97,6 +99,23 @@ export interface CredentialProviderOption {
   name: string;
   slug: string;
   website: string | null;
+}
+
+export interface CredentialFolder {
+  id: string;
+  name: string;
+  scope: string;
+  projectId: string | null;
+  parentId: string | null;
+  sortOrder: number;
+  credentialCount: number;
+}
+
+export interface CredentialProjectShell {
+  id: string;
+  name: string;
+  code: string;
+  credentialCount: number;
 }
 
 export const credentialsApi = {
@@ -145,6 +164,28 @@ export const credentialsApi = {
     }>('/api/credentials/bulk/restore', { credentialIds });
     return resp.data;
   },
+  async bulkAddToFolder(body: {
+    credentialIds: string[];
+    folderId: string;
+  }): Promise<{ succeeded: number; skipped: number; credentialIds: string[] }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/folders/add', body);
+    return resp.data;
+  },
+  async bulkRemoveFromFolder(body: {
+    credentialIds: string[];
+    folderId?: string;
+  }): Promise<{ succeeded: number; skipped: number; credentialIds: string[] }> {
+    const resp = await api.post<{
+      succeeded: number;
+      skipped: number;
+      credentialIds: string[];
+    }>('/api/credentials/bulk/folders/remove', body);
+    return resp.data;
+  },
   async getById(id: string): Promise<CredentialDetail> {
     const resp = await api.get<CredentialDetail>(`/api/credentials/${id}`);
     return resp.data;
@@ -155,6 +196,70 @@ export const credentialsApi = {
   },
   async update(id: string, data: Record<string, unknown>): Promise<CredentialDetail> {
     const resp = await api.put<CredentialDetail>(`/api/credentials/${id}`, data);
+    return resp.data;
+  },
+  async listFolders(params?: {
+    scope?: string;
+    parentId?: string | null;
+    projectId?: string;
+  }): Promise<{ folders: CredentialFolder[] }> {
+    const resp = await api.get<{ folders: CredentialFolder[] }>('/api/credentials/folders', {
+      params: {
+        scope: params?.scope,
+        projectId: params?.projectId,
+        parentId:
+          params?.parentId === null
+            ? 'root'
+            : params?.parentId !== undefined
+              ? params.parentId
+              : undefined,
+      },
+    });
+    return resp.data;
+  },
+  async listProjectShells(): Promise<{ shells: CredentialProjectShell[] }> {
+    const resp = await api.get<{ shells: CredentialProjectShell[] }>(
+      '/api/credentials/project-shells',
+    );
+    return resp.data;
+  },
+  async createFolder(body: {
+    name: string;
+    scope: string;
+    parentId?: string | null;
+    projectId?: string | null;
+  }): Promise<CredentialFolder> {
+    const resp = await api.post<CredentialFolder>('/api/credentials/folders', body);
+    return resp.data;
+  },
+  async updateFolder(id: string, body: { name: string }): Promise<CredentialFolder> {
+    const resp = await api.put<CredentialFolder>(`/api/credentials/folders/${id}`, body);
+    return resp.data;
+  },
+  async deleteFolder(id: string): Promise<void> {
+    await api.delete(`/api/credentials/folders/${id}`);
+  },
+  async removeFolderGrouping(id: string): Promise<void> {
+    await api.post(`/api/credentials/folders/${id}/remove-grouping`);
+  },
+  async replaceFolders(
+    id: string,
+    body: { folderIds?: string[]; folderId?: string | null },
+  ): Promise<{ credentialId: string; folderIds: string[] }> {
+    const resp = await api.put<{ credentialId: string; folderIds: string[] }>(
+      `/api/credentials/${id}/folders`,
+      body,
+    );
+    return resp.data;
+  },
+  async setFavorite(
+    id: string,
+    favorite: boolean,
+  ): Promise<{ credentialId: string; isFavorite: boolean }> {
+    const resp = await api.put<{ credentialId: string; isFavorite: boolean }>(
+      `/api/credentials/${id}/favorite`,
+      { favorite },
+    );
     return resp.data;
   },
   async delete(id: string): Promise<void> {

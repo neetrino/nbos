@@ -39,6 +39,11 @@ import {
   mergeInvoiceWhere,
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
+import {
+  assertInvoiceCancellable,
+  assertInvoiceDraftDeletable,
+  invoiceAccrualJournalKey,
+} from '../../../common/lifecycle/finance-record-lifecycle-guards';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -360,8 +365,39 @@ export class InvoicesService {
     }
   }
 
+  async cancel(id: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: { moneyStatus: true, code: true },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+    assertInvoiceCancellable(invoice);
+    const updated = await this.updateMoneyStatus(id, 'CANCELLED');
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      invoiceAccrualJournalKey(id),
+      `Invoice ${invoice.code ?? id} cancelled`,
+    );
+    return updated;
+  }
+
   async delete(id: string) {
-    await this.findById(id);
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: {
+        moneyStatus: true,
+        code: true,
+        _count: { select: { payments: true } },
+      },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+    assertInvoiceDraftDeletable({
+      moneyStatus: invoice.moneyStatus,
+      paymentCount: invoice._count.payments,
+    });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      invoiceAccrualJournalKey(id),
+      `Draft invoice ${invoice.code ?? id} deleted`,
+    );
     return this.prisma.invoice.delete({ where: { id } });
   }
 

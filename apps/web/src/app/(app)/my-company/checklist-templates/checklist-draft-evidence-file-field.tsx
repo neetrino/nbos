@@ -103,6 +103,7 @@ function AttachedEvidenceFileRow({
         ) : null}
         {phase === 'err' ? <File className="text-muted-foreground size-8" /> : null}
         {showImageThumb ? (
+          // eslint-disable-next-line @next/next/no-img-element -- blob preview URL; next/image cannot optimize object URLs
           <img src={previewUrl} alt="" className="size-full object-cover" width={80} height={80} />
         ) : null}
         {phase === 'ready' && !showImageThumb ? (

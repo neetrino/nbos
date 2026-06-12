@@ -22,7 +22,7 @@
 - entity-level RBAC scope на list/get (`OWN` / `DEPARTMENT` / `ALL`);
 - Phase 1 hardening: legacy raw-R2 HTTP routes disabled, `/drive/library` uses common file access filtering, folder placements enforce file-level access, upload session create/complete re-check target context, lifecycle audit actor is server-owned.
 
-**Still backlog:** list menu per-file `allowed-actions` (detail sheet wired 2026-06-02) + trash lifecycle UI (overview §7.4), расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
+**Still backlog:** list menu per-file `allowed-actions` (detail sheet wired 2026-06-02), расширенные export types / TTL / cancel, rich preview, reusable card upload widget. Trash lifecycle UI + cleanup dashboard shipped 2026-06-12 (lifecycle 6.1–6.5).
 
 **Legacy:** raw `GET/POST/DELETE /drive/:projectId...` routes disabled on `2026-05-18` and are no longer an active Drive surface.
 
@@ -101,7 +101,7 @@
 | Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                        |
 | Folder move/copy API | `PARTIAL` | Move/copy/remove + policy matrix shipped; trash lifecycle UI per overview §7.4 **MISSING**                                                                                                  |
 | Export API           | `PARTIAL` | `POST /drive/zip-exports` — selection + typed kinds (`project`/`product`/`client`/`finance`/`task_attachments`); cancel queued job; Offer/Meeting/Call/Partner/Full backup **MISSING**      |
-| Cleanup API          | `PARTIAL` | `GET /drive/cleanup/candidates` (review only) + upload-session purge; confirmed destructive cleanup actions **MISSING**                                                                     |
+| Cleanup API          | `DONE`    | `GET /drive/cleanup/candidates` + `POST /drive/cleanup/apply` (DRIVE DELETE); categories include retention purge, orphans, duplicates, task links, session/export TTL                       |
 | Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                   |
 | Permission resolver  | `PARTIAL` | **2026-06-02:** multi-link confidentiality + Share/Move/Copy policy; detail UI wired (`allowed-actions`); backlog — list menu gates, hub section filters                                    |
 
@@ -135,7 +135,7 @@
 | Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.                                                                                     |
 | Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards                                                                                     |
 | Export UI            | `MISSING` | Export by project/client/purpose/period                                                                                                   |
-| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage                                                                                            |
+| Cleanup dashboard    | `DONE`    | Storage cleanup panel in Drive Insights — category review, DRIVE DELETE gate, danger-zone confirm for retention purge                     |
 | Preview support      | `MISSING` | PDF/image/video/code previews                                                                                                             |
 | Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list                                                                                          |
 | Last selected view   | `PARTIAL` | Main Drive page remembers cards/list/table view in local browser storage; per-user server preference can be added later if needed         |

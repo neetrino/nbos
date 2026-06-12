@@ -23,6 +23,7 @@ import { TaskSheetHeader } from './TaskSheetHeader';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
+import { canDeleteTaskDraft, canMoveTaskToTrash, isTaskInTrash } from '../utils/task-draft-delete';
 
 interface TaskSheetProps {
   taskId: string | null;
@@ -31,6 +32,8 @@ interface TaskSheetProps {
   onOpenChange: (open: boolean) => void;
   onUpdate?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
+  onRestore?: (taskId: string) => void;
+  isTrashView?: boolean;
   /** Stack above a parent entity sheet (related-item open from tab). */
   forceNestedBackdrop?: boolean;
 }
@@ -47,20 +50,32 @@ export function TaskSheet({
   onOpenChange,
   onUpdate,
   onDelete,
+  onRestore,
+  isTrashView = false,
   forceNestedBackdrop,
 }: TaskSheetProps) {
-  const state = useTaskSheetState({ taskId, open, initialTask, onUpdate, onDelete });
+  const state = useTaskSheetState({ taskId, open, initialTask, onUpdate, onDelete, onRestore });
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const task = state.task;
+  const isTrashed = Boolean(task && (isTaskInTrash(task) || isTrashView));
+  const canDeleteDraft = task && !isTrashed ? canDeleteTaskDraft(task) : false;
+  const canMoveToTrash = task && !isTrashed ? canMoveTaskToTrash(task) : false;
+  const readOnly = isTrashed;
 
   async function handleDelete() {
     const deleted = await state.handleDeleteTask();
     if (deleted) onOpenChange(false);
   }
 
+  async function handleRestore() {
+    const restored = await state.handleRestoreTask();
+    if (restored) onOpenChange(false);
+  }
+
   if (!state.task && !state.loading && !state.generalError) return null;
 
-  const task = state.task;
   const blockers = task ? buildTaskCompletionBlockers(task) : [];
   const hasExtras =
     task != null &&
@@ -102,7 +117,7 @@ export function TaskSheet({
 
                       <TaskSheetHeader
                         draft={state.generalDraft}
-                        disabled={state.loading}
+                        disabled={state.loading || readOnly}
                         onPatchDraft={state.patchGeneralDraft}
                         onToggleUrgent={() => void state.handleToggleTaskUrgent()}
                       />
@@ -111,7 +126,7 @@ export function TaskSheet({
                         task={state.task}
                         taskId={state.task.id}
                         draft={state.generalDraft}
-                        disabled={state.loading}
+                        disabled={state.loading || readOnly}
                         onPatchDraft={state.patchGeneralDraft}
                         onSearchEmployees={state.searchEmployees}
                       />
@@ -189,7 +204,12 @@ export function TaskSheet({
                     onSave={() => void state.handleGeneralSave()}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}
+                    canDeleteDraft={canDeleteDraft}
+                    canMoveToTrash={canMoveToTrash}
+                    isTrashed={isTrashed}
                     onDelete={() => setDeleteOpen(true)}
+                    onMoveToTrash={() => setDeleteOpen(true)}
+                    onRestore={onRestore ? () => void handleRestore() : undefined}
                   />
                 </>
               }
@@ -212,8 +232,12 @@ export function TaskSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         itemName={state.task?.title ?? ''}
-        title="Delete task?"
-        description="The task and its checklists, subtasks, and comments will be removed."
+        title={canDeleteDraft ? 'Delete draft task?' : 'Move to Trash?'}
+        description={
+          canDeleteDraft
+            ? 'Only empty OPEN tasks can be deleted. This removes the task permanently.'
+            : 'The task will be removed from boards and lists. You can restore it from Trash later.'
+        }
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDelete();

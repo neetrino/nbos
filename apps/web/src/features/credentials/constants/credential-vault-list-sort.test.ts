@@ -9,9 +9,9 @@ describe('normalizeCredentialVaultSortFilter', () => {
     expect(normalizeCredentialVaultSortFilter('all', 'active')).toBe('recent');
   });
 
-  it('maps legacy values to created_desc on archived vault', () => {
-    expect(normalizeCredentialVaultSortFilter('all', 'archived')).toBe('created_desc');
-    expect(normalizeCredentialVaultSortFilter('recent', 'archived')).toBe('created_desc');
+  it('maps legacy values to created_desc on trash vault', () => {
+    expect(normalizeCredentialVaultSortFilter('all', 'trash')).toBe('created_desc');
+    expect(normalizeCredentialVaultSortFilter('recent', 'trash')).toBe('created_desc');
   });
 });
 
@@ -20,9 +20,7 @@ describe('resolveCredentialVaultListSort', () => {
     expect(resolveCredentialVaultListSort({ sort: 'recent' }, 'active')).toBe('recent');
   });
 
-  it('resolves created_desc default on archived vault', () => {
-    expect(resolveCredentialVaultListSort({ sort: 'created_desc' }, 'archived')).toBe(
-      'created_desc',
-    );
+  it('resolves created_desc default on trash vault', () => {
+    expect(resolveCredentialVaultListSort({ sort: 'created_desc' }, 'trash')).toBe('created_desc');
   });
 });

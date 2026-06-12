@@ -11,6 +11,8 @@ export interface MailThreadDetailPanelProps {
   compact?: boolean;
   onForward?: (payload: { mailAccountId: string; subject: string }) => void;
   onDeleted?: (threadId: string) => void;
+  onRestored?: (threadId: string) => void;
+  trashView?: boolean;
 }
 
 export function MailThreadDetailPanel({
@@ -20,6 +22,8 @@ export function MailThreadDetailPanel({
   compact = true,
   onForward,
   onDeleted,
+  onRestored,
+  trashView,
 }: MailThreadDetailPanelProps) {
   return (
     <ScrollArea className="min-h-0 flex-1">
@@ -31,6 +35,8 @@ export function MailThreadDetailPanel({
           compact={compact}
           onForward={onForward}
           onDeleted={onDeleted}
+          onRestored={onRestored}
+          trashView={trashView}
         />
       </div>
     </ScrollArea>

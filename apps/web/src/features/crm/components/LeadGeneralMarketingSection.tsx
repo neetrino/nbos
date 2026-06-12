@@ -49,7 +49,11 @@ export function LeadMarketingFields({
     requiresMarketingWhichOneSelection(draft.source, draft.sourceDetail);
 
   const searchPartners = useCallback(async (query: string) => {
-    const data = await partnersApi.getAll({ pageSize: 5, search: query || undefined });
+    const data = await partnersApi.getAll({
+      pageSize: 5,
+      search: query || undefined,
+      scope: 'active',
+    });
     return data.items.map((p) => ({ value: p.id, label: p.name }));
   }, []);
 

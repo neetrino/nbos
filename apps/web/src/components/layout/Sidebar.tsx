@@ -123,6 +123,7 @@ function SidebarHeader({
       </button>
       {!collapsed && (
         <Link href="/dashboard" className="flex min-w-0 flex-1 items-center overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sidebar logo SVG; fixed dimensions, no next/image benefit */}
           <img
             src="/logo/logo.svg"
             alt="NBOS"

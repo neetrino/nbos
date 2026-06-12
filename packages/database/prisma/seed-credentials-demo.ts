@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, randomBytes, scryptSync } from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
 import { resolveCredentialProviderId, seedCredentialProviders } from './seed-credential-providers';
 import type {
@@ -51,7 +51,7 @@ interface CredentialSeedRow {
   allowedEmployees?: string[];
   lastRotatedAt?: Date;
   nextRotationAt?: Date | null;
-  archivedAt?: Date;
+  trashedAt?: Date;
 }
 
 interface ProductSlotBinding {
@@ -60,15 +60,18 @@ interface ProductSlotBinding {
   credentialName: string;
 }
 
-function deriveKey(secret: string): Buffer {
-  return createHash('sha256').update(secret).digest();
+const V2_KEY_SALT = 'NBOS_CREDENTIALS_ENCRYPTION_V2';
+
+function deriveV2Key(secret: string): Buffer {
+  return scryptSync(secret, V2_KEY_SALT, 32, { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
 }
 
 function encryptField(plaintext: string, key: string): string {
   const iv = randomBytes(16);
-  const cipher = createCipheriv('aes-256-gcm', deriveKey(key), iv, { authTagLength: 16 });
+  const cipher = createCipheriv('aes-256-gcm', deriveV2Key(key), iv, { authTagLength: 16 });
   const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-  return `${iv.toString('hex')}:${cipher.getAuthTag().toString('hex')}:${encrypted.toString('hex')}`;
+  const body = `${iv.toString('hex')}:${cipher.getAuthTag().toString('hex')}:${encrypted.toString('hex')}`;
+  return `v2:${body}`;
 }
 
 function resolveEncryptionKey(): string {
@@ -432,7 +435,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       provider: 'Beget',
       login: 'legacy_host',
       password: 'Old-Host-Archived',
-      archivedAt: addUtcDays(now, -14),
+      trashedAt: addUtcDays(now, -14),
     },
     {
       name: 'Legacy — Expired API Key (archived)',
@@ -447,7 +450,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       password: 'Legacy-Maps-Portal-Demo',
       apiKey: 'legacy-maps-key-revoked',
       allowedEmployees: [dev.id],
-      archivedAt: addUtcDays(now, -45),
+      trashedAt: addUtcDays(now, -45),
     },
   ];
 }
@@ -589,7 +592,7 @@ async function createCredentialRows(
         allowedEmployees: encrypted.allowedEmployees ?? [],
         lastRotatedAt: encrypted.lastRotatedAt,
         nextRotationAt: encrypted.nextRotationAt,
-        archivedAt: encrypted.archivedAt,
+        trashedAt: encrypted.trashedAt,
       },
     });
     nameToId.set(row.name, created.id);
@@ -719,7 +722,7 @@ export async function seedCredentialsDemo(
   await linkDomainsAndClientServices(prisma, nameToId);
   const bindingCount = await seedProductAccessSlotBindings(prisma, ctx, nameToId);
 
-  const archivedCount = allRows.filter((r) => r.archivedAt).length;
+  const archivedCount = allRows.filter((r) => r.trashedAt).length;
   console.log(
     `  ✓ Credentials demo (${allRows.length} total, ${archivedCount} archived, ${bindingCount} product slot bindings)`,
   );

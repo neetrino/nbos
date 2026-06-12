@@ -7,6 +7,7 @@ import {
   Link2Off,
   MoreHorizontal,
   PanelRightOpen,
+  Trash2,
   UserPlus,
 } from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
@@ -27,7 +28,7 @@ import {
   SHEET_FILE_TILE_THUMBNAIL_CLASS,
 } from '@/components/shared/sheet-file-attachments.constants';
 import { formatDriveLabel, formatFileSize } from './drive-format';
-import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
+import { fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
 import {
   DriveManualGrantCountBadge,
@@ -49,7 +50,7 @@ const CARD_CONTROL_HOVER =
 
 export type DriveFileCardMenuHandlers = {
   onOpenDetails: (file: FileAsset) => void;
-  onArchive?: (file: FileAsset) => void;
+  onMoveToTrash?: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
   onMoveFile?: (file: FileAsset) => void;
@@ -441,8 +442,7 @@ function FileCardActionsMenu({
   busy: boolean;
   align: 'end' | 'start';
 }) {
-  const archived = file.status === 'ARCHIVED';
-  const inTrash = file.status === 'DELETED';
+  const inRecoverableTrash = file.status === 'DELETED' && file.deletedAt != null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -470,8 +470,7 @@ function FileCardActionsMenu({
           file={file}
           handlers={handlers}
           busy={busy}
-          archived={archived}
-          inTrash={inTrash}
+          inRecoverableTrash={inRecoverableTrash}
         />
       </DropdownMenuContent>
     </DropdownMenu>
@@ -482,14 +481,12 @@ function FileCardActionsMenuItems({
   file,
   handlers,
   busy,
-  archived,
-  inTrash,
+  inRecoverableTrash,
 }: {
   file: FileAsset;
   handlers: DriveFileCardMenuHandlers;
   busy: boolean;
-  archived: boolean;
-  inTrash: boolean;
+  inRecoverableTrash: boolean;
 }) {
   return (
     <>
@@ -534,16 +531,19 @@ function FileCardActionsMenuItems({
           Unlink
         </DropdownMenuItem>
       ) : null}
-      {inTrash || archived || handlers.onArchive ? (
+      {inRecoverableTrash ? (
+        <DropdownMenuItem disabled={busy} onClick={() => handlers.onRestore(file)}>
+          <Archive className="size-4" />
+          Restore
+        </DropdownMenuItem>
+      ) : handlers.onMoveToTrash ? (
         <DropdownMenuItem
           disabled={busy}
-          variant={inTrash || archived ? 'default' : 'destructive'}
-          onClick={() =>
-            inTrash || archived ? handlers.onRestore(file) : handlers.onArchive?.(file)
-          }
+          variant="destructive"
+          onClick={() => handlers.onMoveToTrash?.(file)}
         >
-          <Archive className="size-4" />
-          {inTrash || archived ? 'Restore' : 'Archive'}
+          <Trash2 className="size-4" />
+          Move to Trash
         </DropdownMenuItem>
       ) : null}
     </>

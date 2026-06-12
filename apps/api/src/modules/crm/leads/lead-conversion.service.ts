@@ -6,6 +6,7 @@ import { validateAttributionGate } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { mergeEntityContactIds } from '@nbos/shared';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
+import { assertEntityIsActive } from '../../../common/lifecycle/entity-lifecycle-guards';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -46,6 +47,7 @@ export class LeadConversionService {
 
   async convertToDeal(leadId: string, data: ConvertLeadDto, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
+    assertEntityIsActive(lead, 'trashedAt', 'Lead');
 
     if (lead.status !== 'SQL') {
       throw new BadRequestException(
@@ -63,6 +65,7 @@ export class LeadConversionService {
 
   async qualifyLeadAsSql(leadId: string, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
+    assertEntityIsActive(lead, 'trashedAt', 'Lead');
 
     validateAttributionGate(lead, 'Lead', 'SQL');
 

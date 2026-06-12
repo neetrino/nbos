@@ -137,9 +137,15 @@ export class InvoicesController {
     return this.invoicesService.updateOfficialInvoiceGovId(id, body.govInvoiceId ?? null);
   }
 
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancel invoice card (Profile D — preserves audit history)' })
+  async cancel(@Param('id') id: string) {
+    return this.invoicesService.cancel(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete invoice' })
+  @ApiOperation({ summary: 'Delete draft invoice (NEW only, no payments)' })
   async remove(@Param('id') id: string) {
     await this.invoicesService.delete(id);
   }

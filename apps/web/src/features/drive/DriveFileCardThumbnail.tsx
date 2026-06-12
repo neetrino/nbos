@@ -72,6 +72,7 @@ export function DriveFileCardThumbnail({
     >
       {showLoader ? <Loader2 className="size-6 animate-spin opacity-60" aria-hidden /> : null}
       {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element -- signed preview URL; next/image cannot optimize remote blob
         <img
           src={previewUrl!}
           alt={file.displayName}

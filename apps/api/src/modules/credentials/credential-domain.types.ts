@@ -41,8 +41,13 @@ export interface CredentialQueryParams {
   ownerId?: string;
   departmentIds?: string[];
   needsRotation?: boolean;
+  favoritesOnly?: boolean;
+  folderId?: string;
+  withoutFolder?: boolean;
   viewScope?: string;
+  /** @deprecated Prefer `scope`. Transitional alias for trash list. */
   includeArchived?: boolean;
+  scope?: 'active' | 'trash';
   sort?: CredentialListSort;
 }
 
@@ -88,6 +93,8 @@ export interface CreateCredentialDto {
   accessLevel?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
+  folderIds?: string[];
+  folderId?: string | null;
 }
 
 export interface UpdateCredentialDto {
@@ -119,6 +126,8 @@ export interface UpdateCredentialDto {
   accessLevel?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
+  folderIds?: string[];
+  folderId?: string | null;
   rotationReason?: string;
   /** Required when a type change would orphan stored secrets (sheet R1 checkbox). */
   acknowledgeOrphanedSecrets?: boolean;

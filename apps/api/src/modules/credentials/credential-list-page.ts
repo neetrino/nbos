@@ -24,9 +24,49 @@ async function withSecretsPresence(
   }));
 }
 
+type FavoriteDelegate = {
+  findMany: (args: unknown) => Promise<Array<{ credentialId: string }>>;
+};
+
+function favoriteDelegate(runtime: CredentialsRuntime): FavoriteDelegate | null {
+  return (
+    (
+      runtime.prisma as unknown as {
+        credentialFavorite?: FavoriteDelegate;
+      }
+    ).credentialFavorite ?? null
+  );
+}
+
+async function withListMetadata(
+  runtime: CredentialsRuntime,
+  items: ReturnType<typeof mapCredentialForApi>[],
+  employeeId?: string,
+): Promise<ReturnType<typeof mapCredentialForApi>[]> {
+  const withPresence = await withSecretsPresence(runtime, items);
+  if (!employeeId || withPresence.length === 0) return withPresence;
+
+  const delegate = favoriteDelegate(runtime);
+  if (!delegate) return withPresence;
+
+  const favorites = await delegate.findMany({
+    where: {
+      employeeId,
+      credentialId: { in: withPresence.map((item) => item.id) },
+    },
+    select: { credentialId: true },
+  });
+  const favoriteIds = new Set(favorites.map((favorite) => favorite.credentialId));
+  return withPresence.map((item) => ({
+    ...item,
+    isFavorite: favoriteIds.has(item.id),
+  }));
+}
+
 async function fetchCredentialsByOrderedIds(
   runtime: CredentialsRuntime,
   ids: string[],
+  employeeId?: string,
 ): Promise<ReturnType<typeof mapCredentialForApi>[]> {
   if (ids.length === 0) return [];
   const rows = await runtime.prisma.credential.findMany({
@@ -38,7 +78,13 @@ async function fetchCredentialsByOrderedIds(
     .map((id) => byId.get(id))
     .filter((row): row is NonNullable<typeof row> => row !== undefined)
     .map((row) => mapCredentialForApi(row));
-  return withSecretsPresence(runtime, ordered);
+  return withListMetadata(runtime, ordered, employeeId);
+}
+
+function resolveCredentialListOrderBy(sort: CredentialListSort, trashList: boolean) {
+  if (sort === 'name_asc') return { name: 'asc' as const };
+  if (trashList) return { trashedAt: 'desc' as const };
+  return { createdAt: 'desc' as const };
 }
 
 export async function findCredentialListPageStandard(
@@ -46,10 +92,11 @@ export async function findCredentialListPageStandard(
   where: Prisma.CredentialWhereInput,
   sort: CredentialListSort,
   params: CredentialQueryParams,
+  trashList = false,
 ) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
-  const orderBy = sort === 'name_asc' ? { name: 'asc' as const } : { createdAt: 'desc' as const };
+  const orderBy = resolveCredentialListOrderBy(sort, trashList);
 
   const [rows, total] = await Promise.all([
     runtime.prisma.credential.findMany({
@@ -63,9 +110,10 @@ export async function findCredentialListPageStandard(
   ]);
 
   return {
-    items: await withSecretsPresence(
+    items: await withListMetadata(
       runtime,
       rows.map((row) => mapCredentialForApi(row)),
+      params.employeeId,
     ),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
   };
@@ -106,7 +154,7 @@ export async function findCredentialListPageRecentFirst(
     pageIds.push(...extra.map((row) => row.id));
   }
 
-  const items = await fetchCredentialsByOrderedIds(runtime, pageIds);
+  const items = await fetchCredentialsByOrderedIds(runtime, pageIds, access.employeeId);
   return {
     items,
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },

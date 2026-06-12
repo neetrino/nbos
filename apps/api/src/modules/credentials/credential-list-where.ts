@@ -1,4 +1,8 @@
 import type { Prisma } from '@nbos/database';
+import {
+  buildScopeWhere,
+  parseLifecycleScopeFromQuery,
+} from '../../common/lifecycle/entity-lifecycle-scope';
 import { credentialsRbacBypassesRowFilter } from './credentials-access';
 import { buildCredentialVisibilityOr } from './credentials-visibility';
 import type { CredentialQueryParams } from './credential-domain.types';
@@ -22,13 +26,17 @@ export async function buildCredentialListWhere(
     ownerId,
     departmentIds = [],
     needsRotation = false,
+    favoritesOnly = false,
+    folderId,
+    withoutFolder = false,
     viewScope,
     includeArchived = false,
+    scope,
   } = params;
 
   const where: Prisma.CredentialWhereInput = {};
-  if (includeArchived) where.archivedAt = { not: null };
-  else where.archivedAt = null;
+  const listScope = scope ?? parseLifecycleScopeFromQuery(undefined, includeArchived);
+  Object.assign(where, buildScopeWhere(listScope));
 
   if (projectId) where.projectId = projectId;
   if (category) where.category = category as Prisma.CredentialWhereInput['category'];
@@ -37,6 +45,20 @@ export async function buildCredentialListWhere(
   }
   if (accessLevel) where.accessLevel = accessLevel as Prisma.CredentialWhereInput['accessLevel'];
   if (ownerId) where.ownerId = ownerId;
+  if (favoritesOnly && employeeId) {
+    (where as Prisma.CredentialWhereInput & { favorites?: unknown }).favorites = {
+      some: { employeeId },
+    };
+  }
+  if (folderId) {
+    (where as Prisma.CredentialWhereInput & { folderMemberships?: unknown }).folderMemberships = {
+      some: { folderId },
+    };
+  } else if (withoutFolder) {
+    (where as Prisma.CredentialWhereInput & { folderMemberships?: unknown }).folderMemberships = {
+      none: {},
+    };
+  }
   if (needsRotation) {
     const dueSoonLimit = new Date();
     dueSoonLimit.setUTCDate(dueSoonLimit.getUTCDate() + 14);

@@ -87,7 +87,10 @@ export function TerminateEmployeeDialog({
             <ul className="text-muted-foreground list-disc space-y-1 pl-5">
               <li>Set status to Terminated and record termination date</li>
               <li>Block NBOS login immediately</li>
-              <li>Revoke project/product team membership and manual access grants</li>
+              <li>
+                Revoke project/product team membership, credential grants, and SECRET allow-list
+                entries (audited per credential)
+              </li>
               <li>Create the offboarding checklist for HR / Operations / Finance</li>
               <li>Notify Finance team about final payroll</li>
             </ul>
@@ -101,8 +104,8 @@ export function TerminateEmployeeDialog({
                   <span>{inventory.projectTeamCount}</span>
                   <span>Product teams</span>
                   <span>{inventory.productTeamCount}</span>
-                  <span>Credential grants</span>
-                  <span>{inventory.credentialGrantCount}</span>
+                  <span>Credential access</span>
+                  <span>{inventory.credentialIds.length}</span>
                   <span>Drive grants</span>
                   <span>{inventory.fileGrantCount}</span>
                 </div>

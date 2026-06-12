@@ -47,6 +47,20 @@ import {
   createCredentialProvider,
   searchCredentialProviders,
 } from './credential-providers.operations';
+import { setCredentialFavorite } from './credential-favorites.operations';
+import {
+  deleteCredentialFolder,
+  createCredentialFolder,
+  listCredentialFolders,
+  removeCredentialFolderGrouping,
+  replaceCredentialFolderMemberships,
+  updateCredentialFolder,
+} from './credential-folders.operations';
+import {
+  bulkAddCredentialsToFolder,
+  bulkRemoveCredentialsFromFolder,
+} from './credential-folders-bulk.operations';
+import { listCredentialProjectShells } from './credential-project-shells.operations';
 
 export type { CredentialsAccessContext } from './credentials-access';
 export {
@@ -189,6 +203,51 @@ export class CredentialsService {
     return recordCredentialUrlOpened(this.runtime, id, access);
   }
 
+  setFavorite(id: string, favorite: boolean, access: CredentialsAccessContext) {
+    return setCredentialFavorite(this.runtime, id, favorite, access);
+  }
+
+  listFolders(
+    scope: string | undefined,
+    parentId: string | undefined,
+    projectId: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
+    return listCredentialFolders(this.runtime, access, scope, parentId, projectId);
+  }
+
+  listProjectShells(access: CredentialsAccessContext) {
+    return listCredentialProjectShells(this.runtime, access);
+  }
+
+  createFolder(
+    body: {
+      name?: string;
+      scope?: string;
+      parentId?: string | null;
+      projectId?: string | null;
+    },
+    access: CredentialsAccessContext,
+  ) {
+    return createCredentialFolder(this.runtime, body, access);
+  }
+
+  updateFolder(id: string, body: { name?: string }, access: CredentialsAccessContext) {
+    return updateCredentialFolder(this.runtime, id, body, access);
+  }
+
+  deleteFolder(id: string, access: CredentialsAccessContext) {
+    return deleteCredentialFolder(this.runtime, id, access);
+  }
+
+  removeFolderGrouping(id: string, access: CredentialsAccessContext) {
+    return removeCredentialFolderGrouping(this.runtime, id, access);
+  }
+
+  replaceFolders(id: string, folderIds: string[], access: CredentialsAccessContext) {
+    return replaceCredentialFolderMemberships(this.runtime, id, folderIds, access);
+  }
+
   create(data: CreateCredentialDto, userId: string) {
     return createCredential(this.runtime, data, userId);
   }
@@ -211,6 +270,18 @@ export class CredentialsService {
 
   bulkRestore(credentialIds: string[], access: CredentialsAccessContext) {
     return bulkRestoreCredentials(this.runtime, access, credentialIds);
+  }
+
+  bulkAddToFolder(credentialIds: string[], folderId: string, access: CredentialsAccessContext) {
+    return bulkAddCredentialsToFolder(this.runtime, access, credentialIds, folderId);
+  }
+
+  bulkRemoveFromFolder(
+    credentialIds: string[],
+    folderId: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
+    return bulkRemoveCredentialsFromFolder(this.runtime, access, credentialIds, folderId);
   }
 
   permanentlyDelete(id: string, access: CredentialsAccessContext, stepUpPassword?: string) {

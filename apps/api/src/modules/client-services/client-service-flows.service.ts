@@ -128,6 +128,11 @@ export class ClientServiceFlowsService {
   private async loadService(id: string): Promise<ClientServiceRecordRow> {
     const service = await this.prisma.clientServiceRecord.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Client service record not found');
+    if (service.status === 'CANCELLED') {
+      throw new BadRequestException(
+        'Cancelled client service records cannot create linked records',
+      );
+    }
     return service;
   }
 

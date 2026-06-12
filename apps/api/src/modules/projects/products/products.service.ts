@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -25,6 +31,7 @@ import {
   productLegacyStatusForStage,
   requireDeliveryStage,
 } from '../delivery-lifecycle';
+import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { batchProductOpenCounts } from './batch-product-open-counts';
 import { buildProductCurrentStageReadiness } from './product-current-stage-readiness';
 import { buildProductDoneReadiness } from './product-done-readiness';
@@ -185,9 +192,11 @@ export class ProductsService {
       ];
     }
 
+    const scopedWhere = mergeActiveParentProjectScope(where, { projectId });
+
     const [items, total] = await Promise.all([
       this.prisma.product.findMany({
-        where,
+        where: scopedWhere,
         include: {
           project: {
             select: {
@@ -213,7 +222,7 @@ export class ProductsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.product.count({ where }),
+      this.prisma.product.count({ where: scopedWhere }),
     ]);
 
     const openByProduct = await batchProductOpenCounts(
@@ -284,13 +293,13 @@ export class ProductsService {
             company: { select: { id: true, name: true } },
             contact: { select: { id: true, firstName: true, lastName: true } },
             credentials: {
-              where: { archivedAt: null },
+              where: { trashedAt: null },
               select: { category: true },
             },
             domains: { select: { status: true } },
             _count: {
               select: {
-                credentials: { where: { archivedAt: null } },
+                credentials: { where: { trashedAt: null } },
                 domains: true,
               },
             },
@@ -628,14 +637,16 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
-  async delete(id: string) {
+  /** @deprecated Hard delete removed — use PATCH :id/cancel or :id/complete. */
+  async delete(id: string): Promise<never> {
     await this.findById(id);
-    return this.prisma.product.delete({ where: { id } });
+    throw new ConflictException(
+      'Products cannot be deleted. Cancel delivery (PATCH /products/:id/cancel) or complete it (PATCH /products/:id/complete).',
+    );
   }
 
   async getStats(projectId?: string) {
-    const where: Prisma.ProductWhereInput = {};
-    if (projectId) where.projectId = projectId;
+    const where = mergeActiveParentProjectScope(projectId ? { projectId } : {}, { projectId });
 
     const [total, byStatus, byType] = await Promise.all([
       this.prisma.product.count({ where }),

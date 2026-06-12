@@ -80,13 +80,15 @@ export function useProductFinanceSection() {
         const nextFilters =
           key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE
             ? (() => {
-                const { boardScope: _, ...rest } = current.filters;
-                return rest;
+                const next = { ...current.filters };
+                delete next.boardScope;
+                return next;
               })()
             : key === EXPENSE_BOARD_SCOPE_FILTER_KEY && value === 'active'
               ? (() => {
-                  const { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: _, ...rest } = current.filters;
-                  return rest;
+                  const next = { ...current.filters };
+                  delete next[EXPENSE_BOARD_SCOPE_FILTER_KEY];
+                  return next;
                 })()
               : { ...current.filters, [key]: value };
         return {

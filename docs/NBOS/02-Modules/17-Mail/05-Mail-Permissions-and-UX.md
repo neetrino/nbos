@@ -77,6 +77,18 @@ MVP quick actions:
 
 Роли могут быть назначены пользователю или команде.
 
+### Platform RBAC wide scope (`ALL` / `DEPARTMENT`)
+
+Помимо ролей на уровне `MailAccountAccess`, платформенный permission scope влияет на **эффективную** роль:
+
+| `permissionScope` | Эффективная роль (если нет owner/delegated row) | Send          |
+| ----------------- | ----------------------------------------------- | ------------- |
+| `OWN`             | Только shared/owned mailbox rows                | По роли grant |
+| `ALL`             | Трактуется как `ADMIN` на любой mailbox         | Да            |
+| `DEPARTMENT`      | Трактуется как `ADMIN` на любой mailbox         | Да            |
+
+Реализация: `resolveMailViewerRole` в `mail-access.policy.ts`. Wide scope даёт доступ ко всем mailbox в tenant и **право отправки** без отдельного `MailAccountAccess` grant. Это намеренно для mail-админов / руководителей отдела; для рядовых пользователей выдавать `MAIL` с scope `OWN`.
+
 ## Send permission
 
 Перед отправкой NBOS проверяет:
