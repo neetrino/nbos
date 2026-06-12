@@ -26,7 +26,7 @@ export interface CredentialsVaultPageOverlaysProps {
   onCloseSheet: (open: boolean) => void;
   onCredentialCreated: (created: CredentialDetail) => void;
   onSaved: () => void;
-  onRequestArchive: (id: string, name: string) => void;
+  onRequestMoveToTrash: (id: string, name: string) => void;
   onDeleteTargetChange: (open: boolean) => void;
   onPurgeTargetChange: (open: boolean) => void;
   onTileCopyOpenChange: (open: boolean) => void;
@@ -48,7 +48,7 @@ export function CredentialsVaultPageOverlays({
   onCloseSheet,
   onCredentialCreated,
   onSaved,
-  onRequestArchive,
+  onRequestMoveToTrash,
   onDeleteTargetChange,
   onPurgeTargetChange,
   onTileCopyOpenChange,
@@ -73,7 +73,7 @@ export function CredentialsVaultPageOverlays({
         continueAfterCreate
         onCreated={onCredentialCreated}
         onSaved={onSaved}
-        onRequestArchive={onRequestArchive}
+        onRequestMoveToTrash={onRequestMoveToTrash}
       />
 
       <CredentialStepUpDialog

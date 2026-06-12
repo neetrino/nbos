@@ -44,8 +44,8 @@ export interface CredentialVaultCardProps {
   selected?: boolean;
   onToggleSelected?: () => void;
   onSetFavorite?: (id: string, favorite: boolean) => void;
-  onRequestArchive?: (id: string, name: string) => void;
-  canArchive?: boolean;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  canMoveToTrash?: boolean;
   credentialDrag?: CredentialVaultCardDragConfig;
 }
 
@@ -61,8 +61,8 @@ export function CredentialVaultCard({
   selected = false,
   onToggleSelected,
   onSetFavorite,
-  onRequestArchive,
-  canArchive = false,
+  onRequestMoveToTrash,
+  canMoveToTrash = false,
   credentialDrag,
 }: CredentialVaultCardProps) {
   const draggable = Boolean(credentialDrag);
@@ -77,12 +77,14 @@ export function CredentialVaultCard({
         credentialId={credential.id}
         url={credential.url}
         isFavorite={Boolean(credential.isFavorite)}
-        canArchive={canArchive}
+        canMoveToTrash={canMoveToTrash}
         onSetFavorite={
           onSetFavorite ? (favorite) => onSetFavorite(credential.id, favorite) : undefined
         }
-        onRequestArchive={
-          onRequestArchive ? () => onRequestArchive(credential.id, credential.name) : undefined
+        onRequestMoveToTrash={
+          onRequestMoveToTrash
+            ? () => onRequestMoveToTrash(credential.id, credential.name)
+            : undefined
         }
       />
       <KanbanCardShell

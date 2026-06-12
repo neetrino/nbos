@@ -1,5 +1,4 @@
 import {
-  Archive,
   Banknote,
   BriefcaseBusiness,
   Building2,
@@ -30,8 +29,7 @@ export type DriveLibraryKey =
   | 'support'
   | 'company'
   | 'personal'
-  | 'shared'
-  | 'archive';
+  | 'shared';
 
 export type DriveViewMode = 'cards' | 'tiles' | 'list' | 'table';
 
@@ -181,13 +179,6 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
     description: 'Files you can access but did not upload as your own',
     icon: Share2,
   },
-  {
-    key: 'archive',
-    title: 'Archive',
-    description: 'Hidden but recoverable assets',
-    icon: Archive,
-    status: 'ARCHIVED',
-  },
 ];
 
 export const SYSTEM_LIBRARY_KEYS: DriveLibraryKey[] = [
@@ -203,8 +194,6 @@ export const SYSTEM_LIBRARY_KEYS: DriveLibraryKey[] = [
 ];
 
 export const FREE_DRIVE_LIBRARY_KEYS: DriveLibraryKey[] = ['company', 'personal', 'shared'];
-
-export const MAINTENANCE_LIBRARY_KEYS: DriveLibraryKey[] = ['archive'];
 
 export const DEFAULT_DRIVE_LIBRARY = DRIVE_LIBRARIES[0]!;
 

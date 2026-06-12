@@ -28,7 +28,6 @@ export type DriveFileActionGates = {
   canRemovePlacement: boolean;
   canUnlink: boolean;
   canUploadVersion: boolean;
-  canArchive: boolean;
   canRestore: boolean;
   canMoveToTrash: boolean;
 };
@@ -73,7 +72,6 @@ export function buildDriveFileActionGates(
       canRemovePlacement: false,
       canUnlink: false,
       canUploadVersion: false,
-      canArchive: false,
       canRestore: false,
       canMoveToTrash: false,
     };
@@ -94,7 +92,6 @@ export function buildDriveFileActionGates(
     canUnlink: caps.canUnlinkFromRecord && serverAllows(serverActions, 'UNLINK'),
     canUploadVersion:
       !inTrash && serverAllows(serverActions, 'UPLOAD_VERSION') && file.storageProvider === 'R2',
-    canArchive: false,
     canRestore: inTrash && deleteFamily,
     canMoveToTrash: !inTrash && canTrash,
   };

@@ -26,5 +26,5 @@ export interface CredentialFormSheetProps {
   continueAfterCreate?: boolean;
   onCreated?: (credential: CredentialDetail) => void;
   onSaved?: () => void;
-  onRequestArchive?: (id: string, name: string) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
 }

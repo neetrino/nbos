@@ -50,7 +50,7 @@ const CARD_CONTROL_HOVER =
 
 export type DriveFileCardMenuHandlers = {
   onOpenDetails: (file: FileAsset) => void;
-  onArchive?: (file: FileAsset) => void;
+  onMoveToTrash?: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
   onMoveFile?: (file: FileAsset) => void;
@@ -536,11 +536,11 @@ function FileCardActionsMenuItems({
           <Archive className="size-4" />
           Restore
         </DropdownMenuItem>
-      ) : handlers.onArchive ? (
+      ) : handlers.onMoveToTrash ? (
         <DropdownMenuItem
           disabled={busy}
           variant="destructive"
-          onClick={() => handlers.onArchive?.(file)}
+          onClick={() => handlers.onMoveToTrash?.(file)}
         >
           <Trash2 className="size-4" />
           Move to Trash

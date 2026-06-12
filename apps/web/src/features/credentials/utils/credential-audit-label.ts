@@ -2,7 +2,7 @@ const CREDENTIAL_AUDIT_LABELS: Record<string, string> = {
   'credential.view': 'Viewed',
   'credential.create': 'Created',
   'credential.update': 'Updated',
-  'credential.archived': 'Archived',
+  'credential.archived': 'Moved to Trash',
   'credential.restored': 'Restored',
   'credential.permanently_deleted': 'Permanently deleted',
   'credential.secret_revealed': 'Secret revealed',

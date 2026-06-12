@@ -169,11 +169,8 @@ export class CredentialsController {
   @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete empty credential folder (Model 6)' })
-  async archiveFolder(
-    @Param('folderId') folderId: string,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    await this.credentialsService.archiveFolder(folderId, credentialsAccessFromUser(user));
+  async deleteFolder(@Param('folderId') folderId: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.deleteFolder(folderId, credentialsAccessFromUser(user));
   }
 
   @Put(':id/favorite')

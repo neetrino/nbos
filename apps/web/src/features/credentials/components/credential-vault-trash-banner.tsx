@@ -3,14 +3,11 @@
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export interface CredentialVaultArchivedBannerProps {
+export interface CredentialVaultTrashBannerProps {
   onBackToVault: () => void;
 }
 
-/** Trash scope banner (Profile C flat secure view). */
-export function CredentialVaultArchivedBanner({
-  onBackToVault,
-}: CredentialVaultArchivedBannerProps) {
+export function CredentialVaultTrashBanner({ onBackToVault }: CredentialVaultTrashBannerProps) {
   return (
     <div
       role="status"

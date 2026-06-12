@@ -204,15 +204,6 @@ export async function deleteCredentialFolder(
   });
 }
 
-/** @deprecated Use deleteCredentialFolder (Model 6 empty-only hard delete). */
-export async function archiveCredentialFolder(
-  runtime: CredentialsRuntime,
-  folderId: string,
-  access: CredentialsAccessContext,
-) {
-  return deleteCredentialFolder(runtime, folderId, access);
-}
-
 export function normalizeCredentialFolderIds(input: {
   folderIds?: string[];
   folderId?: string | null;

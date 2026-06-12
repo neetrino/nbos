@@ -49,7 +49,7 @@ import {
 } from './credential-providers.operations';
 import { setCredentialFavorite } from './credential-favorites.operations';
 import {
-  archiveCredentialFolder,
+  deleteCredentialFolder,
   createCredentialFolder,
   listCredentialFolders,
   replaceCredentialFolderMemberships,
@@ -235,8 +235,8 @@ export class CredentialsService {
     return updateCredentialFolder(this.runtime, id, body, access);
   }
 
-  archiveFolder(id: string, access: CredentialsAccessContext) {
-    return archiveCredentialFolder(this.runtime, id, access);
+  deleteFolder(id: string, access: CredentialsAccessContext) {
+    return deleteCredentialFolder(this.runtime, id, access);
   }
 
   replaceFolders(id: string, folderIds: string[], access: CredentialsAccessContext) {

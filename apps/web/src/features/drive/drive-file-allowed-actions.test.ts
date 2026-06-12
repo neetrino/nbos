@@ -39,7 +39,6 @@ describe('buildDriveFileActionGates', () => {
   it('enables move to trash for active files when server allows trash actions', () => {
     const gates = buildDriveFileActionGates(layoutCaps, activeFile, ['PERMANENT_DELETE', 'SHARE']);
     expect(gates.canMoveToTrash).toBe(true);
-    expect(gates.canArchive).toBe(false);
   });
 
   it('enables restore for recoverable trash rows', () => {

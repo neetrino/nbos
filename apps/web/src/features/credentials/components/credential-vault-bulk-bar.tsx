@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 export interface CredentialVaultBulkBarProps {
   count: number;
-  archivedList: boolean;
+  trashList: boolean;
   busy: boolean;
   showSelectAll: boolean;
   selectedIds: string[];
@@ -27,7 +27,7 @@ export interface CredentialVaultBulkBarProps {
 
 export function CredentialVaultBulkBar({
   count,
-  archivedList,
+  trashList,
   busy,
   showSelectAll,
   selectedIds,
@@ -42,7 +42,7 @@ export function CredentialVaultBulkBar({
   const [folderPickerOpen, setFolderPickerOpen] = useState(false);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [acting, setActing] = useState(false);
-  const showFolderActions = !archivedList && folders.length > 0;
+  const showFolderActions = !trashList && folders.length > 0;
 
   const runBulkArchive = async () => {
     setActing(true);
@@ -155,7 +155,7 @@ export function CredentialVaultBulkBar({
               Select page
             </Button>
           ) : null}
-          {!archivedList ? (
+          {!trashList ? (
             <>
               {showFolderActions ? (
                 <PermissionGate module="CREDENTIALS" action="EDIT">

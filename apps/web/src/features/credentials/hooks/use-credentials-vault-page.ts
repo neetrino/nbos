@@ -281,9 +281,9 @@ export function useCredentialsVaultPage() {
     setFolders((prev) => prev.map((item) => (item.id === folderId ? folder : item)));
   }, []);
 
-  const archiveFolder = useCallback(
+  const deleteFolder = useCallback(
     async (folderId: string) => {
-      await credentialsApi.archiveFolder(folderId);
+      await credentialsApi.deleteFolder(folderId);
       setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
       if (activeFolderId === folderId) {
         setActiveFolderId(null);
@@ -530,7 +530,7 @@ export function useCredentialsVaultPage() {
     openProject,
     createFolder,
     renameFolder,
-    archiveFolder,
+    deleteFolder,
     fetchFolders,
     fetchProjectShells,
     fetchSheetFolderOptions,

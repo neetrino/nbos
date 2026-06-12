@@ -557,27 +557,11 @@ export const driveApi = {
     );
   },
 
-  async archiveFileAsset(id: string, actorId?: string): Promise<FileAsset> {
-    const resp = await api.post<FileAsset>(
-      '/api/drive/files/' + encodeURIComponent(id) + '/archive',
-      { actorId },
-    );
-    return resp.data;
-  },
-
   async restoreFileAsset(id: string, actorId?: string): Promise<FileAsset> {
     const resp = await api.post<FileAsset>(
       '/api/drive/files/' + encodeURIComponent(id) + '/restore',
       { actorId },
     );
-    return resp.data;
-  },
-
-  async archiveFileAssets(ids: string[], actorId?: string): Promise<{ updated: FileAsset[] }> {
-    const resp = await api.post<{ updated: FileAsset[] }>('/api/drive/files/archive-batch', {
-      ids,
-      actorId,
-    });
     return resp.data;
   },
 
@@ -667,14 +651,8 @@ export const driveApi = {
     return resp.data;
   },
 
-  async getDriveLifecycleCounts(): Promise<{
-    trash: number;
-    archived?: number;
-    deleted?: number;
-  }> {
-    const resp = await api.get<{ trash: number; archived?: number; deleted?: number }>(
-      '/api/drive/lifecycle-counts',
-    );
+  async getDriveLifecycleCounts(): Promise<{ trash: number }> {
+    const resp = await api.get<{ trash: number }>('/api/drive/lifecycle-counts');
     return resp.data;
   },
 

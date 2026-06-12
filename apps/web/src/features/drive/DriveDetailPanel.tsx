@@ -36,7 +36,6 @@ export function DriveDetailPanel({
   open,
   busy,
   onClose,
-  onArchive,
   onRestore,
   onPreview,
   onCopyFile,
@@ -52,7 +51,6 @@ export function DriveDetailPanel({
   open: boolean;
   busy: boolean;
   onClose: () => void;
-  onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
@@ -79,7 +77,6 @@ export function DriveDetailPanel({
             <DriveFileRailTrailing
               file={file}
               busy={busy}
-              onArchive={onArchive}
               onRestore={onRestore}
               onCopyFile={onCopyFile}
               onMoveFile={onMoveFile}
@@ -113,7 +110,6 @@ export function DriveDetailPanel({
 function DriveFileRailTrailing({
   file,
   busy,
-  onArchive,
   onRestore,
   onCopyFile,
   onMoveFile,
@@ -125,7 +121,6 @@ function DriveFileRailTrailing({
 }: {
   file: FileAsset;
   busy: boolean;
-  onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
   onMoveFile?: (file: FileAsset) => void;

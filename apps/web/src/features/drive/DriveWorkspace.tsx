@@ -2373,7 +2373,7 @@ export function DriveWorkspace() {
               }
               fileMenu={{
                 onOpenDetails: onPreview,
-                onArchive: inLifecycleView ? undefined : onMoveToTrash,
+                onMoveToTrash: inLifecycleView ? undefined : onMoveToTrash,
                 onRestore,
                 onCopyFile:
                   !inLifecycleView && driveActionCapabilities.canCopyIntoFolderTree
@@ -2408,7 +2408,6 @@ export function DriveWorkspace() {
           open={Boolean(selected)}
           busy={busy}
           onClose={() => setSelected(null)}
-          onArchive={(file) => void onMoveToTrash(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
           fileActionGates={selectedFileActionGates}

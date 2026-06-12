@@ -45,7 +45,7 @@ export interface CredentialFormSheetHeaderProps {
   onToggleSettings: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
-  onRequestArchive?: (id: string, name: string) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
   resetKey: string;
 }
 
@@ -65,7 +65,7 @@ export function CredentialFormSheetHeader({
   onToggleSettings,
   isFavorite = false,
   onToggleFavorite,
-  onRequestArchive,
+  onRequestMoveToTrash,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
   const [editingName, setEditingName] = useState(false);
@@ -199,10 +199,10 @@ export function CredentialFormSheetHeader({
           <DropdownMenuItem onClick={onToggleSettings}>
             {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
           </DropdownMenuItem>
-          {onRequestArchive ? (
+          {onRequestMoveToTrash ? (
             <DropdownMenuItem
               className="text-destructive"
-              onClick={() => onRequestArchive(credentialId, name)}
+              onClick={() => onRequestMoveToTrash(credentialId, name)}
             >
               <Trash2 className="mr-2 size-4" />
               Move to Trash

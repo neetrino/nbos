@@ -25,7 +25,7 @@ interface CredentialFolderCardProps {
   canManage: boolean;
   onOpen: (folderId: string) => void;
   onRename: (folderId: string, name: string) => Promise<void>;
-  onArchive: (folderId: string) => Promise<void>;
+  onDelete: (folderId: string) => Promise<void>;
   dropHighlight?: boolean;
   /** Visual hint while a credential card is dragged over the folders grid. */
   dropState?: 'idle' | 'valid' | 'invalid';
@@ -47,7 +47,7 @@ export function CredentialFolderCard({
   canManage,
   onOpen,
   onRename,
-  onArchive,
+  onDelete,
   dropHighlight = false,
   dropState = 'idle',
   dropHandlers,
@@ -72,10 +72,10 @@ export function CredentialFolderCard({
     }
   };
 
-  const handleArchive = async () => {
+  const handleDelete = async () => {
     setBusy(true);
     try {
-      await onArchive(folder.id);
+      await onDelete(folder.id);
       toast.success('Folder deleted');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Folder could not be deleted');
@@ -157,7 +157,7 @@ export function CredentialFolderCard({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => void handleArchive()}
+                    onClick={() => void handleDelete()}
                     disabled={busy}
                   >
                     <Trash2 className="size-4" aria-hidden />

@@ -432,3 +432,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Решение пользователя:** generic `Archive` заменить на **Trash**. Новый канон: `Active → Trash → Purged`; `Archive` оставить только для historical storage / old versions / reference |
 | 2026-06-12 | **Phase 0** shipped: `09-Entity-Lifecycle-Standard.md`, `@nbos/shared` lifecycle types, API `buildScopeWhere`, web `useListScope`                                                      |
 | 2026-06-12 | **Drive 6.1** + **Credentials C0/C1** slice: unified Trash UI, scope param, folder empty-delete, trash side-effects                                                                    |
+| 2026-06-12 | **Cleanup:** мёртвый archive-код убран (Drive library, web archive API, entity attachments, credentials rename deleteFolder/trashList/onRequestMoveToTrash)                            |

@@ -198,8 +198,7 @@ export class DriveService {
         where: { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
       }),
     ]);
-    const trash = archived + deleted;
-    return { trash, archived, deleted };
+    return { trash: archived + deleted };
   }
 
   async getFileAsset(

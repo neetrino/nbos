@@ -40,9 +40,9 @@ interface CredentialVaultCardHoverActionsProps {
   credentialId: string;
   url: string | null;
   isFavorite: boolean;
-  canArchive?: boolean;
+  canMoveToTrash?: boolean;
   onSetFavorite?: (favorite: boolean) => void;
-  onRequestArchive?: () => void;
+  onRequestMoveToTrash?: () => void;
 }
 
 function FloatingVaultActionButton({
@@ -85,12 +85,12 @@ export function CredentialVaultCardHoverActions({
   credentialId,
   url,
   isFavorite,
-  canArchive = false,
+  canMoveToTrash = false,
   onSetFavorite,
-  onRequestArchive,
+  onRequestMoveToTrash,
 }: CredentialVaultCardHoverActionsProps) {
   const hasUrl = Boolean(url?.trim());
-  const showArchive = canArchive && Boolean(onRequestArchive);
+  const showMoveToTrash = canMoveToTrash && Boolean(onRequestMoveToTrash);
 
   const handleOpenUrl = () => {
     void (async () => {
@@ -142,11 +142,11 @@ export function CredentialVaultCardHoverActions({
         <FloatingVaultActionButton label="Copy link" tone="link" onClick={handleCopyLink}>
           <Link2 className="size-3.5" aria-hidden />
         </FloatingVaultActionButton>
-        {showArchive ? (
+        {showMoveToTrash ? (
           <FloatingVaultActionButton
             label="Move to Trash"
             tone="destructive"
-            onClick={() => onRequestArchive?.()}
+            onClick={() => onRequestMoveToTrash?.()}
           >
             <Trash2 className="size-3.5" aria-hidden />
           </FloatingVaultActionButton>

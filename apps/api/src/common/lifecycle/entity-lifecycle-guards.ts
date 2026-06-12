@@ -40,9 +40,3 @@ export function assertEntityIsTrashed(
     throw new BadRequestException(`${label} is not in Trash.`);
   }
 }
-
-/** @deprecated Prefer assertEntityIsActive — transitional alias. */
-export const assertTrashable = assertEntityIsActive;
-
-/** @deprecated Prefer assertEntityIsTrashed — transitional alias. */
-export const assertRestorable = assertEntityIsTrashed;

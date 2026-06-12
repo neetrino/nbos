@@ -57,7 +57,7 @@ export interface CredentialsVaultMainViewProps {
   onNavigateFolder?: (folderId: string | null) => void;
   onOpenFolder?: (folderId: string) => void;
   onRenameFolder?: (folderId: string, name: string) => Promise<void>;
-  onArchiveFolder?: (folderId: string) => Promise<void>;
+  onDeleteFolder?: (folderId: string) => Promise<void>;
   projectShellsMode?: boolean;
   projectShells?: CredentialProjectShell[];
   projectShellsLoading?: boolean;
@@ -102,7 +102,7 @@ export function CredentialsVaultMainView({
   onNavigateFolder,
   onOpenFolder,
   onRenameFolder,
-  onArchiveFolder,
+  onDeleteFolder,
   projectShellsMode,
   projectShells,
   projectShellsLoading,
@@ -121,7 +121,7 @@ export function CredentialsVaultMainView({
     [credentials, activeCategory, quickCategoryChips],
   );
 
-  const canArchiveCredential = showCreate && vaultListScope === 'active';
+  const canMoveToTrashCredential = showCreate && vaultListScope === 'active';
 
   if (viewMode === 'tiles') {
     return (
@@ -132,8 +132,8 @@ export function CredentialsVaultMainView({
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
-        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
-        canArchive={canArchiveCredential}
+        onRequestMoveToTrash={canMoveToTrashCredential ? onRequestDelete : undefined}
+        canMoveToTrash={canMoveToTrashCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -154,7 +154,7 @@ export function CredentialsVaultMainView({
         onNavigateFolder={onNavigateFolder ?? (() => undefined)}
         onOpenFolder={onOpenFolder ?? (() => undefined)}
         onRenameFolder={onRenameFolder ?? (async () => undefined)}
-        onArchiveFolder={onArchiveFolder ?? (async () => undefined)}
+        onDeleteFolder={onDeleteFolder ?? (async () => undefined)}
         projectShellsMode={projectShellsMode}
         projectShells={projectShells}
         projectShellsLoading={projectShellsLoading}
@@ -164,8 +164,8 @@ export function CredentialsVaultMainView({
         onCreateOpen={onCreateOpen}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
-        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
-        canArchive={canArchiveCredential}
+        onRequestMoveToTrash={canMoveToTrashCredential ? onRequestDelete : undefined}
+        canMoveToTrash={canMoveToTrashCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}
@@ -189,8 +189,8 @@ export function CredentialsVaultMainView({
         onCreateInCategory={onCreateInCategory}
         onOpenCredential={onOpenCredential}
         onSetFavorite={onSetFavorite}
-        onRequestArchive={canArchiveCredential ? onRequestDelete : undefined}
-        canArchive={canArchiveCredential}
+        onRequestMoveToTrash={canMoveToTrashCredential ? onRequestDelete : undefined}
+        canMoveToTrash={canMoveToTrashCredential}
         onCopyText={onCopyText}
         onCopySecret={onCopySecret}
         secretFlashCredentialId={secretFlashCredentialId}

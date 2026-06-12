@@ -61,12 +61,12 @@ export interface CredentialVaultFoldersViewProps {
   onNavigateFolder: (folderId: string | null) => void;
   onOpenFolder: (folderId: string) => void;
   onRenameFolder: (folderId: string, name: string) => Promise<void>;
-  onArchiveFolder: (folderId: string) => Promise<void>;
+  onDeleteFolder: (folderId: string) => Promise<void>;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   onSetFavorite?: (id: string, favorite: boolean) => void;
-  onRequestArchive?: (id: string, name: string) => void;
-  canArchive?: boolean;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  canMoveToTrash?: boolean;
   onCopyText: (text: string) => void;
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   secretFlashCredentialId?: string | null;
@@ -96,12 +96,12 @@ export function CredentialVaultFoldersView({
   onNavigateFolder,
   onOpenFolder,
   onRenameFolder,
-  onArchiveFolder,
+  onDeleteFolder,
   onCreateOpen,
   onOpenCredential,
   onSetFavorite,
-  onRequestArchive,
-  canArchive = false,
+  onRequestMoveToTrash,
+  canMoveToTrash = false,
   onCopyText,
   onCopySecret,
   secretFlashCredentialId,
@@ -293,7 +293,7 @@ export function CredentialVaultFoldersView({
                       canManage={showCreate}
                       onOpen={onOpenFolder}
                       onRename={onRenameFolder}
-                      onArchive={onArchiveFolder}
+                      onDelete={onDeleteFolder}
                       dropState={dropState}
                       dropHighlight={dropState === 'valid' && dropTargetFolderId === folder.id}
                       dropHandlers={
@@ -321,8 +321,8 @@ export function CredentialVaultFoldersView({
                     variant="grid"
                     onOpen={onOpenCredential}
                     onSetFavorite={onSetFavorite}
-                    onRequestArchive={onRequestArchive}
-                    canArchive={canArchive}
+                    onRequestMoveToTrash={onRequestMoveToTrash}
+                    canMoveToTrash={canMoveToTrash}
                     onCopyText={onCopyText}
                     onCopySecret={onCopySecret}
                     secretFlashCredentialId={secretFlashCredentialId}

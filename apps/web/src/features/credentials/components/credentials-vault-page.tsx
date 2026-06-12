@@ -13,7 +13,7 @@ import {
 import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
 import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
-import { CredentialVaultArchivedBanner } from '@/features/credentials/components/credential-vault-archived-banner';
+import { CredentialVaultTrashBanner } from '@/features/credentials/components/credential-vault-trash-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialFolderCreateButton } from '@/features/credentials/components/credential-folder-create-button';
 import { CredentialVaultBulkBar } from '@/features/credentials/components/credential-vault-bulk-bar';
@@ -107,7 +107,7 @@ function CredentialsVaultPageContent() {
       />
 
       {vault.vaultListScope === 'trash' ? (
-        <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
+        <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
       <CredentialQuickFilterChips
@@ -129,7 +129,7 @@ function CredentialsVaultPageContent() {
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
           count={vault.selection.selectedCount}
-          archivedList={vault.vaultListScope === 'trash'}
+          trashList={vault.vaultListScope === 'trash'}
           busy={vault.loading}
           showSelectAll={vault.pageCredentialIds.length > 0}
           selectedIds={vault.selection.selectedIdList}
@@ -204,7 +204,7 @@ function CredentialsVaultPageContent() {
           onNavigateFolder={vault.navigateFolder}
           onOpenFolder={vault.openFolder}
           onRenameFolder={vault.renameFolder}
-          onArchiveFolder={vault.archiveFolder}
+          onDeleteFolder={vault.deleteFolder}
           projectShellsMode={vault.isProjectFoldersMode}
           projectShells={vault.projectShells}
           projectShellsLoading={vault.projectShellsLoading}
@@ -243,7 +243,7 @@ function CredentialsVaultPageContent() {
         onCloseSheet={vault.closeSheet}
         onCredentialCreated={vault.handleCredentialCreated}
         onSaved={handleSaved}
-        onRequestArchive={(id, name) => {
+        onRequestMoveToTrash={(id, name) => {
           vault.closeSheet(false);
           vault.setDeleteTarget({ id, name });
         }}

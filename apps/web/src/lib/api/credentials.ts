@@ -236,7 +236,7 @@ export const credentialsApi = {
     const resp = await api.put<CredentialFolder>(`/api/credentials/folders/${id}`, body);
     return resp.data;
   },
-  async archiveFolder(id: string): Promise<void> {
+  async deleteFolder(id: string): Promise<void> {
     await api.delete(`/api/credentials/folders/${id}`);
   },
   async replaceFolders(
