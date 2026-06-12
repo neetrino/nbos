@@ -10,6 +10,8 @@ export interface FileAsset {
   purpose: string | null;
   sourceModule: string | null;
   status: string;
+  /** Set when status is DELETED (recoverable Trash). */
+  deletedAt?: string | null;
   visibility: string;
   confidentiality: string;
   storageProvider: string;

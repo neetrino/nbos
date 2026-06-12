@@ -129,7 +129,7 @@ export function CredentialFolderCard({
           tabIndex={dropInvalid ? -1 : 0}
           radius="lg"
           padding="none"
-          hoverShadow={dropInvalid ? 'none' : 'md'}
+          hoverShadow={dropInvalid ? false : 'md'}
           className={cn(
             'group/card relative flex h-full min-h-[104px] w-full flex-col overflow-hidden',
             'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',

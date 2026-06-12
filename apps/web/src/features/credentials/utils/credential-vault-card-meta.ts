@@ -92,7 +92,7 @@ export function credentialCriticalityIcon(criticality: string): LucideIcon {
 
 /** Left card stripe — criticality indicator on vault cards. */
 export function credentialCriticalityAccentBarClass(criticality: string): string {
-  return CRITICALITY_ACCENT_BAR[criticality] ?? CRITICALITY_ACCENT_BAR.LOW;
+  return CRITICALITY_ACCENT_BAR[criticality] ?? CRITICALITY_ACCENT_BAR['LOW'] ?? 'bg-gray-400';
 }
 
 const CREDENTIAL_TYPE_ICONS: Record<string, LucideIcon> = {

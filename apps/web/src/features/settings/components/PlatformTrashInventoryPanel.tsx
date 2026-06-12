@@ -74,11 +74,11 @@ export function PlatformTrashInventoryPanel() {
   };
 
   if (loading && !inventory) {
-    return <LoadingState label="Loading trash inventory…" />;
+    return <LoadingState variant="list" count={4} />;
   }
 
   if (error && !inventory) {
-    return <ErrorState message={error} onRetry={() => void load()} />;
+    return <ErrorState description={error} onRetry={() => void load()} />;
   }
 
   if (!inventory) {
@@ -91,9 +91,9 @@ export function PlatformTrashInventoryPanel() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge tone="neutral" label={`${inventory.totalTrashed} in Trash`} />
+          <StatusBadge variant="gray" label={`${inventory.totalTrashed} in Trash`} />
           {inventory.totalPurgeEligible > 0 ? (
-            <StatusBadge tone="warning" label={`${inventory.totalPurgeEligible} past retention`} />
+            <StatusBadge variant="amber" label={`${inventory.totalPurgeEligible} past retention`} />
           ) : null}
           <span className="text-muted-foreground text-xs">Updated {generatedLabel}</span>
         </div>

@@ -9,7 +9,7 @@ import type { EntityLifecycleScope } from '@nbos/shared';
 export interface ClientsDirectorySettingsSheetProps {
   listScope: EntityLifecycleScope;
   onListScopeChange: (scope: EntityLifecycleScope) => void;
-  entityLabel: 'contacts' | 'companies';
+  entityLabel: string;
 }
 
 export function ClientsDirectorySettingsSheet({

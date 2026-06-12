@@ -131,28 +131,32 @@ export function CredentialVaultFoldersView({
 
       return {
         onDragOver: (event) => {
-          if (busy || !dataTransferHasCredentialVaultDrag(event.dataTransfer)) return;
+          const dataTransfer = event.dataTransfer;
+          if (busy || !dataTransfer || !dataTransferHasCredentialVaultDrag(dataTransfer)) return;
           if (draggingCredentialIds.length === 0) return;
 
           event.preventDefault();
           if (!canDropIds(draggingCredentialIds)) {
-            event.dataTransfer.dropEffect = 'none';
+            dataTransfer.dropEffect = 'none';
             setDropTargetFolderId((current) => (current === folderId ? null : current));
             return;
           }
-          event.dataTransfer.dropEffect = 'move';
+          dataTransfer.dropEffect = 'move';
           setDropTargetFolderId(folderId);
         },
         onDragLeave: (event) => {
+          const currentTarget = event.currentTarget;
           const next = event.relatedTarget as Node | null;
-          if (next && event.currentTarget.contains(next)) return;
+          if (currentTarget instanceof HTMLElement && next && currentTarget.contains(next)) return;
           setDropTargetFolderId((current) => (current === folderId ? null : current));
         },
         onDrop: (event) => {
           event.preventDefault();
           setDropTargetFolderId(null);
           if (busy) return;
-          const raw = event.dataTransfer.getData(CREDENTIAL_VAULT_DRAG_MIME);
+          const dataTransfer = event.dataTransfer;
+          if (!dataTransfer) return;
+          const raw = dataTransfer.getData(CREDENTIAL_VAULT_DRAG_MIME);
           const parsed = parseCredentialVaultDragPayload(raw);
           if (!parsed?.credentialIds.length) return;
           if (!canDropIds(parsed.credentialIds)) {

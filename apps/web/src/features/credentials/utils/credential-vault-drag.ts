@@ -1,3 +1,5 @@
+import type { DragEvent } from 'react';
+
 /** Custom MIME for HTML5 drag of credential ids (vault folders view). */
 export const CREDENTIAL_VAULT_DRAG_MIME = 'application/x-nbos-credential-ids';
 
@@ -31,9 +33,9 @@ export type CredentialVaultCardDragConfig = {
 };
 
 export type CredentialFolderDropHandlers = {
-  onDragOver: (event: DragEvent) => void;
-  onDragLeave: (event: DragEvent) => void;
-  onDrop: (event: DragEvent) => void;
+  onDragOver: (event: DragEvent<HTMLElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLElement>) => void;
+  onDrop: (event: DragEvent<HTMLElement>) => void;
 };
 
 const VAULT_DRAG_COUNT_MARKER = 'data-credential-vault-drag-count';
