@@ -81,15 +81,22 @@ async function fetchCredentialsByOrderedIds(
   return withListMetadata(runtime, ordered, employeeId);
 }
 
+function resolveCredentialListOrderBy(sort: CredentialListSort, trashList: boolean) {
+  if (sort === 'name_asc') return { name: 'asc' as const };
+  if (trashList) return { archivedAt: 'desc' as const };
+  return { createdAt: 'desc' as const };
+}
+
 export async function findCredentialListPageStandard(
   runtime: CredentialsRuntime,
   where: Prisma.CredentialWhereInput,
   sort: CredentialListSort,
   params: CredentialQueryParams,
+  trashList = false,
 ) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
-  const orderBy = sort === 'name_asc' ? { name: 'asc' as const } : { createdAt: 'desc' as const };
+  const orderBy = resolveCredentialListOrderBy(sort, trashList);
 
   const [rows, total] = await Promise.all([
     runtime.prisma.credential.findMany({

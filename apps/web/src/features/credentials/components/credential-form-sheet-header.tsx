@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Star, Trash2 } from 'lucide-react';
+import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -46,6 +46,8 @@ export interface CredentialFormSheetHeaderProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onRequestMoveToTrash?: (id: string, name: string) => void;
+  isTrashView?: boolean;
+  onRestore?: (id: string) => void | Promise<void>;
   resetKey: string;
 }
 
@@ -66,6 +68,8 @@ export function CredentialFormSheetHeader({
   isFavorite = false,
   onToggleFavorite,
   onRequestMoveToTrash,
+  isTrashView = false,
+  onRestore,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
   const [editingName, setEditingName] = useState(false);
@@ -199,7 +203,13 @@ export function CredentialFormSheetHeader({
           <DropdownMenuItem onClick={onToggleSettings}>
             {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
           </DropdownMenuItem>
-          {onRequestMoveToTrash ? (
+          {isTrashView && onRestore ? (
+            <DropdownMenuItem onClick={() => void onRestore(credentialId)}>
+              <RotateCcw className="mr-2 size-4" />
+              Restore
+            </DropdownMenuItem>
+          ) : null}
+          {!isTrashView && onRequestMoveToTrash ? (
             <DropdownMenuItem
               className="text-destructive"
               onClick={() => onRequestMoveToTrash(credentialId, name)}

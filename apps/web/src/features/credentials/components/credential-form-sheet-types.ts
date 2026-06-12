@@ -27,4 +27,6 @@ export interface CredentialFormSheetProps {
   onCreated?: (credential: CredentialDetail) => void;
   onSaved?: () => void;
   onRequestMoveToTrash?: (id: string, name: string) => void;
+  isTrashView?: boolean;
+  onRestore?: (id: string) => void | Promise<void>;
 }

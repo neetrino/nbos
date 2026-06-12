@@ -45,7 +45,7 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
 }
 
 function CredentialFormSheetInner(props: CredentialFormSheetProps) {
-  const { open, onOpenChange, onRequestMoveToTrash } = props;
+  const { open, onOpenChange, onRequestMoveToTrash, isTrashView, onRestore } = props;
   const { me } = usePermission();
   const form = useCredentialFormSheet(props);
   const {
@@ -127,6 +127,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               isFavorite={isFavorite}
               onToggleFavorite={() => void toggleFavorite()}
               onRequestMoveToTrash={onRequestMoveToTrash}
+              isTrashView={isTrashView}
+              onRestore={onRestore}
               resetKey={headerResetKey}
             />
           )}

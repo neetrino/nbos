@@ -247,6 +247,8 @@ function CredentialsVaultPageContent() {
           vault.closeSheet(false);
           vault.setDeleteTarget({ id, name });
         }}
+        isTrashView={vault.vaultListScope === 'trash'}
+        onRestore={(id) => void vault.restoreCredential(id)}
         onDeleteTargetChange={(open) => {
           if (!open) vault.setDeleteTarget(null);
         }}

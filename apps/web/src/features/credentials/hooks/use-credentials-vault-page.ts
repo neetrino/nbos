@@ -20,6 +20,7 @@ import {
   type CredentialVaultScope,
 } from '@/features/credentials/vault-scope';
 import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
+import { useCredentialTrashProjectFilterOptions } from '@/features/credentials/hooks/use-credential-trash-project-filter-options';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
 import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
 import { useCredentialsVaultListQuery } from '@/features/credentials/hooks/use-credentials-vault-list-query';
@@ -88,6 +89,9 @@ export function useCredentialsVaultPage() {
   );
 
   const isProjectFoldersMode = activeTab === 'project' && viewMode === 'folders';
+  const { projectFilterOptions } = useCredentialTrashProjectFilterOptions(
+    vaultListScope === 'trash',
+  );
 
   const listQuery = useCredentialsVaultListQuery({
     viewMode,
@@ -441,6 +445,22 @@ export function useCredentialsVaultPage() {
     setQuickFilters(new Set());
   }, [vaultListScope]);
 
+  const restoreCredential = useCallback(
+    async (id: string) => {
+      try {
+        await credentialsApi.restore(id);
+        toast.success('Returned to vault (unfiled)');
+        setSheetOpen(false);
+        setSheetCredentialId(null);
+        stripOpenCredentialFromUrl();
+        void refetch();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Restore failed');
+      }
+    },
+    [refetch, stripOpenCredentialFromUrl],
+  );
+
   const handleCredentialCreated = useCallback(
     (created: CredentialDetail) => {
       setSheetCredentialId(created.id);
@@ -465,8 +485,8 @@ export function useCredentialsVaultPage() {
 
   const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
   const filterConfigs = useMemo(
-    () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope),
-    [activeTab, vaultListScope],
+    () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope, projectFilterOptions),
+    [activeTab, projectFilterOptions, vaultListScope],
   );
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
   const showPagedFooter = viewMode === 'list' || viewMode === 'tiles' || viewMode === 'folders';
@@ -499,6 +519,7 @@ export function useCredentialsVaultPage() {
       setFilters((prev) => ({
         ...prev,
         sort: defaultCredentialVaultSortFilter(scope),
+        project: 'all',
       }));
     },
     [setPreferences, viewMode],
@@ -569,6 +590,7 @@ export function useCredentialsVaultPage() {
     handleTabChange,
     clearFilters,
     closeSheet,
+    restoreCredential,
     handleCredentialCreated,
     quickCategoryChips,
     filterConfigs,

@@ -10,6 +10,7 @@ export const CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES: Record<string, string> = {
   category: 'all',
   credentialType: 'all',
   accessLevel: 'all',
+  project: 'all',
 };
 
 export function defaultCredentialVaultSortFilter(

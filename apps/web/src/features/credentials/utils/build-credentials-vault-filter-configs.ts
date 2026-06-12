@@ -13,7 +13,7 @@ function buildSortFilterConfig(vaultListScope: 'active' | 'trash'): FilterConfig
       label: 'Sort',
       includeAllOption: false,
       defaultOptionValue: 'created_desc',
-      defaultOptionLabel: 'Newest first',
+      defaultOptionLabel: 'Trashed (newest)',
       options: [{ value: 'name_asc', label: 'Name (A–Z)' }],
     };
   }
@@ -33,6 +33,7 @@ function buildSortFilterConfig(vaultListScope: 'active' | 'trash'): FilterConfig
 export function buildCredentialsVaultFilterConfigs(
   activeTab: CredentialVaultScope,
   vaultListScope: 'active' | 'trash' = 'active',
+  projectFilterOptions: Array<{ value: string; label: string }> = [],
 ): FilterConfig[] {
   const base: FilterConfig[] = [
     buildSortFilterConfig(vaultListScope),
@@ -47,6 +48,15 @@ export function buildCredentialsVaultFilterConfigs(
       options: CREDENTIAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
     },
   ];
+
+  if (vaultListScope === 'trash' && projectFilterOptions.length > 0) {
+    base.push({
+      key: 'project',
+      label: 'Project',
+      options: projectFilterOptions,
+    });
+  }
+
   if (activeTab !== 'all') return base;
   return [
     ...base,

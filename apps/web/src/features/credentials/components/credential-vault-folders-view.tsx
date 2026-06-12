@@ -186,6 +186,8 @@ export function CredentialVaultFoldersView({
   const folderPath = buildCredentialFolderBreadcrumb(folders, activeFolderId);
   const atProjectRoot = projectShellsMode && !activeProject;
   const insideProject = projectShellsMode && Boolean(activeProject);
+  const atVaultRoot = !activeFolderId && !projectShellsMode;
+  const credentialsSectionLabel = atVaultRoot ? 'Unfiled' : 'Credentials';
   const hasProjectShells = projectShells.length > 0;
   const hasFolders = levelFolders.length > 0;
   const hasCredentials = credentials.length > 0;
@@ -229,13 +231,19 @@ export function CredentialVaultFoldersView({
         {nav}
         <EmptyState
           icon={activeFolderId ? FolderOpen : KeyRound}
-          title={activeFolderId ? 'Folder is empty' : 'No folders or credentials'}
+          title={
+            activeFolderId
+              ? 'Folder is empty'
+              : atVaultRoot
+                ? 'No folders or unfiled credentials'
+                : 'No folders or credentials'
+          }
           description={
             activeFolderId
               ? 'Create a subfolder or add a credential to this folder'
               : insideProject
                 ? 'Add a subfolder or credential to this project'
-                : 'Create a folder or add a credential without a folder'
+                : 'Create a folder or add credentials without a folder'
           }
           action={
             showCreate ? (
@@ -308,7 +316,7 @@ export function CredentialVaultFoldersView({
 
       {!atProjectRoot && (credentialsLoading || hasCredentials) ? (
         <div className="space-y-2">
-          <VaultFoldersSectionLabel label="Credentials" />
+          <VaultFoldersSectionLabel label={credentialsSectionLabel} />
           <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
             {credentialsLoading
               ? Array.from({ length: GRID_SKELETON_COUNT }).map((_, index) => (

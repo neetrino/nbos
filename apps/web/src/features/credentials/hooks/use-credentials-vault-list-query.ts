@@ -60,6 +60,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.filters.category,
         params.filters.credentialType,
         params.filters.accessLevel,
+        params.filters.project,
         params.filters.sort,
         ...(isBoard ? [] : [params.quickCategory ?? '']),
         quickFiltersKey,
@@ -78,6 +79,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
       params.filters.category,
       params.filters.credentialType,
       params.filters.accessLevel,
+      params.filters.project,
       params.filters.sort,
       params.quickCategory,
       quickFiltersKey,
@@ -143,10 +145,15 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
             p.viewMode === 'folders' && p.activeTab !== 'project' && !p.folderId && p.withoutFolder
               ? true
               : undefined,
-          projectId:
-            p.viewMode === 'folders' && p.activeTab === 'project' && p.projectId
-              ? p.projectId
-              : undefined,
+          projectId: (() => {
+            if (p.vaultListScope === 'trash' && p.filters.project && p.filters.project !== 'all') {
+              return p.filters.project;
+            }
+            if (p.viewMode === 'folders' && p.activeTab === 'project' && p.projectId) {
+              return p.projectId;
+            }
+            return undefined;
+          })(),
           tab: p.vaultListScope === 'trash' ? undefined : vaultScopeToListTab(p.activeTab),
           scope: p.vaultListScope === 'trash' ? 'trash' : 'active',
           sort: p.listSort,
