@@ -7,6 +7,8 @@ import {
   JsonNull,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { AuditService } from '../../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import {
   assertEntityIsActive,
   assertEntityIsTrashed,
@@ -40,7 +42,10 @@ interface CompanyQueryParams {
 
 @Injectable()
 export class CompaniesService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: CompanyQueryParams) {
     const { page = 1, pageSize = 20, search, taxStatus, type, scope } = params;
@@ -213,6 +218,14 @@ export class CompaniesService {
         billingContact: { select: { id: true, firstName: true, lastName: true } },
         _count: { select: { projects: true, invoices: true } },
       },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'company',
+      id,
+      userId,
     });
   }
 

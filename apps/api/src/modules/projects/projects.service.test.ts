@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProjectsService } from './projects.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
@@ -9,7 +9,7 @@ describe('ProjectsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProjectsService(prisma as never);
+    service = new ProjectsService(prisma as never, { log: vi.fn() } as never);
   });
 
   describe('findAll', () => {

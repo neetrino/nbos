@@ -2,6 +2,8 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
 import {
@@ -61,7 +63,10 @@ function resolveProjectListScope(params: ProjectQueryParams): EntityLifecycleSco
 
 @Injectable()
 export class ProjectsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: ProjectQueryParams) {
     const { page = 1, pageSize = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = params;
@@ -211,6 +216,14 @@ export class ProjectsService {
     return this.prisma.project.update({
       where: { id },
       data: { trashedAt: null },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'project',
+      id,
+      userId,
     });
   }
 

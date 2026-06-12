@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import {
   assertEntityIsActive,
   assertEntityIsTrashed,
@@ -110,6 +112,7 @@ export class PartnersService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
   ) {}
 
   private assertDefaultPercentInRange(value: number): number {
@@ -331,6 +334,14 @@ export class PartnersService {
       include: PARTNER_WIRE_INCLUDE,
     });
     return serializePartner(row);
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'partner',
+      id,
+      userId,
+    });
   }
 
   /** @deprecated Use moveToTrash — kept for transitional callers. */

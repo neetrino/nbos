@@ -162,6 +162,13 @@ export class LeadsController {
     return this.leadsService.findById(id);
   }
 
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed lead (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.leadsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move lead to Trash' })

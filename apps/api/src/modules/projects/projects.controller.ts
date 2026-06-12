@@ -142,6 +142,13 @@ export class ProjectsController {
     return this.projectsService.findById(id);
   }
 
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed project (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.projectsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move project to Trash' })

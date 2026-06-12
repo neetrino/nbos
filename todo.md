@@ -78,21 +78,21 @@
 
 ### Матрица: модуль → профиль
 
-| Модуль                | Profile    | Trash / Archive UI                                                                  | Organization layer               | Permanent delete     |
-| --------------------- | ---------- | ----------------------------------------------------------------------------------- | -------------------------------- | -------------------- |
-| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | Admin / policy позже |
-| CRM                   | **A**      | То же                                                                               | —                                | Never MVP для WON    |
-| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | Admin-only           |
-| Products / Extensions | **A-lite** | Terminal **status** (Closed/Cancelled), не delete                                   | —                                | —                    |
-| Drive files           | **B**      | **Один Trash view**; старые Archive+Trash схлопнуть                                 | Folders = container (Model 3)    | Cleanup job          |
-| Credentials           | **C**      | **Отдельный flat secure Trash**                                                     | Folders = collection (Model 4+6) | Step-up из trash     |
-| Documents             | **G/A**    | `ARCHIVED` оставить только если это historical archive; delete UX должен быть Trash | Sections (TBD)                   | Нет в MVP            |
-| Finance               | **D**      | Void/cancel, не trash для posted                                                    | —                                | Draft-only delete    |
-| Tasks                 | **draft**  | OPEN empty-only hard delete (O1)                                                    | Board columns ≠ archive          | Trash — later phase  |
-| Support               | **A-lite** | Close status                                                                        | —                                | Убрать hard delete   |
-| Partners              | **A**      | `trashedAt`                                                                         | —                                | Policy               |
-| System / RBAC         | **E**      | deactivate                                                                          | —                                | Empty-only guards    |
-| Notifications         | **F**      | hide/trash depending on UX                                                          | —                                | —                    |
+| Модуль                | Profile    | Trash / Archive UI                                                                  | Organization layer               | Permanent delete    |
+| --------------------- | ---------- | ----------------------------------------------------------------------------------- | -------------------------------- | ------------------- |
+| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | ✅ API; UI позже    |
+| CRM                   | **A**      | То же                                                                               | —                                | ✅ API; UI позже    |
+| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | ✅ API; UI позже    |
+| Products / Extensions | **A-lite** | Terminal **status** (Closed/Cancelled), не delete                                   | —                                | —                   |
+| Drive files           | **B**      | **Один Trash view**; старые Archive+Trash схлопнуть                                 | Folders = container (Model 3)    | Cleanup job         |
+| Credentials           | **C**      | **Отдельный flat secure Trash**                                                     | Folders = collection (Model 4+6) | Step-up из trash    |
+| Documents             | **G/A**    | `ARCHIVED` оставить только если это historical archive; delete UX должен быть Trash | Sections (TBD)                   | Нет в MVP           |
+| Finance               | **D**      | Void/cancel, не trash для posted                                                    | —                                | Draft-only delete   |
+| Tasks                 | **draft**  | OPEN empty-only hard delete (O1)                                                    | Board columns ≠ archive          | Trash — later phase |
+| Support               | **A-lite** | Close status                                                                        | —                                | Убрать hard delete  |
+| Partners              | **A**      | `trashedAt`                                                                         | —                                | Policy              |
+| System / RBAC         | **E**      | deactivate                                                                          | —                                | Empty-only guards   |
+| Notifications         | **F**      | hide/trash depending on UX                                                          | —                                | —                   |
 
 ### Правила против split-brain (все профили)
 
@@ -110,7 +110,7 @@
 GET  /contacts?scope=active|trash        -- default active
 DELETE /contacts/:id                     → move to Trash (trashedAt)
 POST /contacts/:id/restore               → trashedAt = null
-DELETE /contacts/:id/permanent           → purge (admin, guards) — позже
+DELETE /contacts/:id/permanent           → purge (guards + audit) — ✅ API shipped
 
 UI: тот же list + sheet; переключатель scope в settings / filter;
     НЕТ второго navigation layer в trash.
@@ -146,29 +146,29 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ❌ Неправильно vs канон (hard delete)
 
-| Модуль          | Сущности                | Schema lifecycle                       | API                            | Web UI                                 |
-| --------------- | ----------------------- | -------------------------------------- | ------------------------------ | -------------------------------------- |
-| Clients         | Contact, Company        | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only           | hard DELETE removed                    |
-| Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)    | Delete draft в task sheet              |
-| Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                   | no delete UI                           |
-| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete          | Invoice cancel API; Order draft-only   |
-| Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE | Expense UI delete vs cancel            |
-| Finance         | Expense Plan            | ✅ empty-only delete                   | guarded DELETE                 | non-empty plan → 409                   |
-| Partners        | Partner                 | ✅ `trashedAt`                         | Trash + restore API            | Move to Trash / Restore (Profile A)    |
-| Client Services | Record                  | ✅ terminal `CANCELLED`                | `POST cancel`; DELETE → 409    | Cancel service UI (Profile A-lite)     |
-| Mail            | EmailThread             | ✅ `trashedAt`                         | trash + restore API            | Trash folder + Move to Trash / Restore |
+| Модуль          | Сущности                | Schema lifecycle                       | API                             | Web UI                                 |
+| --------------- | ----------------------- | -------------------------------------- | ------------------------------- | -------------------------------------- |
+| Clients         | Contact, Company        | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
+| CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
+| Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only            | hard DELETE removed                    |
+| Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
+| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)     | Delete draft в task sheet              |
+| Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                    | no delete UI                           |
+| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete           | Invoice cancel API; Order draft-only   |
+| Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE  | Expense UI delete vs cancel            |
+| Finance         | Expense Plan            | ✅ empty-only delete                   | guarded DELETE                  | non-empty plan → 409                   |
+| Partners        | Partner                 | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
+| Client Services | Record                  | ✅ terminal `CANCELLED`                | `POST cancel`; DELETE → 409     | Cancel service UI (Profile A-lite)     |
+| Mail            | EmailThread             | ✅ `trashedAt`                         | trash + restore API             | Trash folder + Move to Trash / Restore |
 
 ### ⚠️ Partial / backlog
 
-| Область     | Что не доделано                                                                            |
-| ----------- | ------------------------------------------------------------------------------------------ |
-| Drive       | ✅ DONE (6.1–6.5); optional polish only                                                    |
-| Credentials | offboarding ↔ trash audit                                                                  |
-| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                                   |
-| Global      | Profile A `DELETE …/permanent` backlog; Tasks `trashedAt`; credentials offboarding ↔ trash |
+| Область     | Что не доделано                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| Drive       | ✅ DONE (6.1–6.5); optional polish only                                                   |
+| Credentials | offboarding ↔ trash audit                                                                 |
+| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                                  |
+| Global      | Profile A permanent-delete **web UI**; Tasks `trashedAt`; credentials offboarding ↔ trash |
 
 ---
 
@@ -459,3 +459,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Phase 7.1 Mail:** `trashed_at` migration, trash/restore API, Trash folder UI, unified purge + inventory (`mail_thread`, 30d TTL)                                                                               |
 | 2026-06-12 | **Rename slice:** `credentials.archived_at` → `trashed_at`; DROP `projects.is_archived`; registry, seeds, cross-module queries                                                                                   |
 | 2026-06-12 | **Docs:** `10-Platform-Lifecycle-Implementation-Status.md` + per-module `06-Implementation-Status.md` (CRM, Hub, Partners, Credentials, Drive, Mail, Settings); Clients status synced                            |
+| 2026-06-12 | **Profile A permanent delete API:** `DELETE …/permanent` для Contact, Company, Lead, Deal, Partner, Project — shared ops + relation guards + audit `*.permanently_deleted`; web Danger zone backlog              |

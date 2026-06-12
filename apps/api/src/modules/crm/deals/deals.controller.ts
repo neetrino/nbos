@@ -212,6 +212,13 @@ export class DealsController {
     return this.dealsService.restoreFromTrash(id).then(() => this.dealsService.findById(id));
   }
 
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed deal (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.dealsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move deal to Trash' })

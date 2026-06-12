@@ -5,7 +5,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 ## Shipped (web + API) — Project Trash (Profile A)
 
 - **Schema:** `projects.trashed_at`; legacy `is_archived` **dropped** (`20260612200000`).
-- **API:** `GET /projects?scope=active|trash`; deprecated `?isArchived=` maps to scope; `DELETE /projects/:id` → Trash; `POST /projects/:id/restore`.
+- **API:** `GET /projects?scope=active|trash`; deprecated `?isArchived=` maps to scope; `DELETE /projects/:id` → Trash; `POST /projects/:id/restore`; `DELETE /projects/:id/permanent`.
 - **Web:** Hub directory **Trash** tab; project detail — Move to Trash / Restore; delivery board and portfolio/shells exclude trashed projects.
 - **Automated purge:** past retention via unified platform purge (relation guards on Project).
 
@@ -16,7 +16,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 
 ## Intentional placeholders / next slices
 
-- **Permanent delete** for trashed Project — admin-only backlog.
+- **Permanent delete UI** for trashed Project — Danger zone + confirmation (API shipped).
 - Delivery stage-gate / board UX gaps — see Cleanup Register.
 
 ## MVP assumptions (Trash)
@@ -25,7 +25,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 
 ## API routes (lifecycle)
 
-- `projects` — list `scope`; `DELETE` → Trash; `POST :id/restore`.
+- `projects` — list `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
 
 ## Related code
 

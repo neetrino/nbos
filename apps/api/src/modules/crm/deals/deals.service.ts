@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import { AuditService } from '../../audit/audit.service';
 import { attachDealHandoffReferences } from './deal-handoff';
 import {
@@ -432,6 +433,14 @@ export class DealsService {
     return this.prisma.deal.update({
       where: { id },
       data: { trashedAt: null },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'deal',
+      id,
+      userId,
     });
   }
 

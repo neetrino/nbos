@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { AuditService } from '../../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
 import {
   assertEntityIsActive,
@@ -34,7 +36,10 @@ interface ContactQueryParams {
 
 @Injectable()
 export class ContactsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: ContactQueryParams) {
     const {
@@ -164,6 +169,14 @@ export class ContactsService {
         companies: { select: { id: true, name: true } },
         _count: { select: { projects: true, leads: true, deals: true } },
       },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'contact',
+      id,
+      userId,
     });
   }
 

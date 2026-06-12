@@ -53,7 +53,7 @@ Active → Trash → Purged
 GET     /entities?scope=active|trash     — default active
 DELETE  /entities/:id                    → move to Trash (not prisma.delete)
 POST    /entities/:id/restore            → restore from Trash
-DELETE  /entities/:id/permanent          → purge (guards + audit) — later phases
+DELETE  /entities/:id/permanent          → purge (guards + audit) — Profile A API shipped; web confirmation backlog
 ```
 
 ### Target schema fields (Profile A business entities)

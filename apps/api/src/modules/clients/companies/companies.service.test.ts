@@ -1,15 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompaniesService } from './companies.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('CompaniesService', () => {
   let service: CompaniesService;
   let prisma: MockPrisma;
+  let auditService: Pick<AuditService, 'log'>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new CompaniesService(prisma as never);
+    auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+    service = new CompaniesService(prisma as never, auditService as never);
     prisma.contact.findFirst.mockImplementation(({ where }) =>
       Promise.resolve(where && 'id' in where && where.id ? { id: String(where.id) } : null),
     );

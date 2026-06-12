@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { PartnersService } from './partners.service';
 
 @ApiTags('Partners')
@@ -290,6 +291,13 @@ export class PartnersController {
   @ApiOperation({ summary: 'Restore partner from Trash' })
   async restore(@Param('id') id: string) {
     return this.partnersService.restoreFromTrash(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed partner (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.partnersService.permanentlyDeleteFromTrash(id, user.id);
   }
 
   @Delete(':id')

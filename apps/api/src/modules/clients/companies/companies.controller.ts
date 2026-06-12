@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { CompaniesService } from './companies.service';
 
 @ApiTags('Clients / Companies')
@@ -100,6 +101,13 @@ export class CompaniesController {
   @ApiOperation({ summary: 'Restore company from Trash' })
   async restore(@Param('id') id: string) {
     return this.companiesService.restoreFromTrash(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed company (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.companiesService.permanentlyDeleteFromTrash(id, user.id);
   }
 
   @Delete(':id')

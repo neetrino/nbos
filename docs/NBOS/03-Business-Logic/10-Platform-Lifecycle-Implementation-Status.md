@@ -2,19 +2,21 @@
 
 Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standard.md` and `todo.md` (Trash / Purge Lifecycle plan). Product rules stay in module canon; each `06-Implementation-Status.md` lists code surfaces and gaps only.
 
-**Last synced:** 2026-06-12 (Mail 7.1, credential `trashed_at` rename, project `is_archived` drop).
+**Last synced:** 2026-06-12 (Profile A `DELETE …/permanent` API, Mail 7.1, credential `trashed_at` rename).
 
 ## Profile A — business entities (`trashedAt`)
 
-| Module       | Entity           | Status doc                                                                      | Trash list       | Restore | Auto-purge (30d)                  |
-| ------------ | ---------------- | ------------------------------------------------------------------------------- | ---------------- | ------- | --------------------------------- |
-| Clients      | Contact, Company | [03-Clients/06](../02-Modules/03-Clients/06-Implementation-Status.md)           | ✅ `?scope=`     | ✅      | ✅ platform job + relation guards |
-| CRM          | Lead, Deal       | [01-CRM/06](../02-Modules/01-CRM/06-Implementation-Status.md)                   | ✅               | ✅      | ✅                                |
-| Projects Hub | Project          | [02-Projects-Hub/06](../02-Modules/02-Projects-Hub/06-Implementation-Status.md) | ✅ hub Trash tab | ✅      | ✅                                |
-| Partners     | Partner          | [08-Partners/06](../02-Modules/08-Partners/06-Implementation-Status.md)         | ✅               | ✅      | ✅                                |
-| Mail         | EmailThread      | [17-Mail/06](../02-Modules/17-Mail/06-Implementation-Status.md)                 | ✅ Trash folder  | ✅      | ✅                                |
+| Module       | Entity           | Status doc                                                                      | Trash list       | Restore | Manual purge API | Auto-purge (30d)                  |
+| ------------ | ---------------- | ------------------------------------------------------------------------------- | ---------------- | ------- | ---------------- | --------------------------------- |
+| Clients      | Contact, Company | [03-Clients/06](../02-Modules/03-Clients/06-Implementation-Status.md)           | ✅ `?scope=`     | ✅      | ✅               | ✅ platform job + relation guards |
+| CRM          | Lead, Deal       | [01-CRM/06](../02-Modules/01-CRM/06-Implementation-Status.md)                   | ✅               | ✅      | ✅               | ✅                                |
+| Projects Hub | Project          | [02-Projects-Hub/06](../02-Modules/02-Projects-Hub/06-Implementation-Status.md) | ✅ hub Trash tab | ✅      | ✅               | ✅                                |
+| Partners     | Partner          | [08-Partners/06](../02-Modules/08-Partners/06-Implementation-Status.md)         | ✅               | ✅      | ✅               | ✅                                |
+| Mail         | EmailThread      | [17-Mail/06](../02-Modules/17-Mail/06-Implementation-Status.md)                 | ✅ Trash folder  | ✅      | —                | ✅                                |
 
-**Profile A backlog (all modules):** user-facing `DELETE …/permanent` before retention (admin-only, step-up) — not shipped.
+**Profile A manual purge API:** `DELETE …/:id/permanent` on Contact, Company, Lead, Deal, Partner, Project — trashed-only, same relation guards as retention purge, audit `*.permanently_deleted`. Shared ops: `profile-a-permanent-delete.ops.ts`.
+
+**Profile A backlog:** web Danger zone + confirmation UI; optional admin step-up (Credentials-style) — not shipped.
 
 ## Profile B — Drive (`deletedAt` + `status=DELETED`)
 
@@ -57,6 +59,7 @@ Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standa
 - Types: `packages/shared/src/lifecycle/entity-lifecycle.ts`
 - API helpers: `apps/api/src/common/lifecycle/entity-lifecycle-scope.ts`, `entity-lifecycle-guards.ts`
 - Registry + purge: `platform-trash-inventory.registry.ts`, `platform-trash-purge.service.ts`
+- Profile A manual purge: `profile-a-permanent-delete.ops.ts`, `profile-a-purge-relation-guards.ts`
 - Web scope hook: `apps/web` — `useListScope()` (Profile A list pages)
 
 ## Related

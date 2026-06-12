@@ -17,16 +17,16 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
 - **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
-- **User permanent delete** before retention — admin API backlog (automated retention purge **shipped** via unified platform job).
+- **Permanent delete UI** — Danger zone + confirmation in trash views (API `DELETE …/permanent` **shipped**; automated retention purge via unified platform job).
 
 ## MVP assumptions (launch scope)
 
 - **Audience:** internal employees only; no external client/partner login roles required for Clients MVP.
-- **Delete vs Trash:** operational policy is **Trash-first** (see `00-Clients-Overview.md` §7 and platform `09-Entity-Lifecycle-Standard.md`). API `DELETE` moves to Trash (`trashedAt`); `POST …/restore` recovers. Permanent purge is a later admin slice.
+- **Delete vs Trash:** operational policy is **Trash-first** (see `00-Clients-Overview.md` §7 and platform `09-Entity-Lifecycle-Standard.md`). API `DELETE` moves to Trash (`trashedAt`); `POST …/restore` recovers; `DELETE …/permanent` purges trashed rows when relation guards pass.
 
 ## API routes (Nest)
 
-- `clients/contacts`, `clients/companies` — CRUD + `?scope=active|trash` (default active), `DELETE` → Trash, `POST :id/restore`.
+- `clients/contacts`, `clients/companies` — CRUD + `?scope=active|trash` (default active), `DELETE` → Trash, `POST :id/restore`, `DELETE :id/permanent`.
 - `clients/portfolio/contact/:contactId`, `clients/portfolio/company/:companyId` — read-only computed JSON.
 
 ## Related code (for maintainers)

@@ -14,7 +14,7 @@ Tracks **global Trash admin** shipped in Phase 7. Full Settings canon: `00-Setti
 ## Intentional placeholders / next slices
 
 - Admin UI to **edit** retention per entity (env-only today).
-- Per-module permanent-delete controls from inventory (backlog).
+- Per-module **permanent-delete UI** from inventory (Profile A API shipped; web controls backlog).
 - Broader Settings RBAC/audit gaps — Cleanup Register.
 
 ## Related code

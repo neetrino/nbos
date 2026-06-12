@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { InputJsonValue } from '@nbos/database';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { ContactsService } from './contacts.service';
 
 @ApiTags('Clients / Contacts')
@@ -91,6 +92,13 @@ export class ContactsController {
   @ApiOperation({ summary: 'Restore contact from Trash' })
   async restore(@Param('id') id: string) {
     return this.contactsService.restoreFromTrash(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed contact (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.contactsService.permanentlyDeleteFromTrash(id, user.id);
   }
 
   @Delete(':id')

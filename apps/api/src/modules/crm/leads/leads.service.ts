@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { AuditService } from '../../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { validateLeadStageGate } from './lead-stage-gate';
@@ -74,7 +76,10 @@ interface LeadQueryParams {
 
 @Injectable()
 export class LeadsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: LeadQueryParams) {
     const {
@@ -292,6 +297,14 @@ export class LeadsService {
     return this.prisma.lead.update({
       where: { id },
       data: { trashedAt: null },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'lead',
+      id,
+      userId,
     });
   }
 

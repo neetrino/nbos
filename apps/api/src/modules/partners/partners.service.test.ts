@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { PartnersService } from './partners.service';
@@ -38,7 +38,7 @@ describe('PartnersService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PartnersService(prisma as never);
+    service = new PartnersService(prisma as never, { log: vi.fn() } as never);
   });
 
   describe('findAll', () => {
