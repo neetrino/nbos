@@ -273,6 +273,10 @@ export const dealsApi = {
     return resp.data;
   },
 
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/crm/deals/${id}/permanent`);
+  },
+
   async getStats(): Promise<DealStats> {
     const resp = await api.get<DealStats>('/api/crm/deals/stats');
     return resp.data;

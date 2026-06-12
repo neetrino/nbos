@@ -72,6 +72,7 @@ interface DealSheetProps {
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
   onRefresh?: () => void;
   onOpenDeal?: (id: string) => void;
   /** One-shot navigation from CRM stage gate shortcuts; consumed via callback. */
@@ -94,6 +95,7 @@ export function DealSheet({
   isTrashView = false,
   onMoveToTrash,
   onRestore,
+  onPermanentDelete,
   onRefresh,
   onOpenDeal,
   blockerNavigation = null,
@@ -296,6 +298,15 @@ export function DealSheet({
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(deal.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash || canCreateExceptionOrder ? (
                 <DetailSheetSettingsMenu>

@@ -271,6 +271,9 @@ export const partnersApi = {
     const resp = await api.post<Partner>(`/api/partners/${id}/restore`);
     return resp.data;
   },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/partners/${id}/permanent`);
+  },
   async getStats(): Promise<PartnerStats> {
     const resp = await api.get<PartnerStats>('/api/partners/stats');
     return resp.data;

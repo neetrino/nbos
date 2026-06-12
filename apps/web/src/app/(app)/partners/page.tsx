@@ -12,6 +12,8 @@ import {
   ErrorState,
   LoadingState,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  ProfileAPermanentDeleteDialog,
+  useDeleteConfirm,
 } from '@/components/shared';
 import {
   PARTNER_LEVELS,
@@ -55,6 +57,8 @@ function PartnersPageContent() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<PartnersDirectoryViewMode>('grid');
   const [createOpen, setCreateOpen] = useState(false);
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
 
   const closePartnerSheetOnScopeChange = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
@@ -141,6 +145,23 @@ function PartnersPageContent() {
     },
     [fetchPartners],
   );
+
+  const runPermanentDelete = useCallback(async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await partnersApi.permanentDelete(id);
+      toast.success('Partner permanently deleted');
+      permanentDeleteConfirm.clear();
+      closePartnerSheet();
+      await fetchPartners();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete partner');
+    } finally {
+      setPurging(false);
+    }
+  }, [closePartnerSheet, fetchPartners, permanentDeleteConfirm]);
 
   useEffect(() => {
     fetchPartners();
@@ -282,6 +303,24 @@ function PartnersPageContent() {
         isTrashView={isTrashView}
         onMoveToTrash={isTrashView ? undefined : handleMoveToTrash}
         onRestore={isTrashView ? handleRestore : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const partner = partners.find((item) => item.id === id);
+                if (!partner) return;
+                permanentDeleteConfirm.request({ id, name: partner.name });
+              }
+            : undefined
+        }
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="partner"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

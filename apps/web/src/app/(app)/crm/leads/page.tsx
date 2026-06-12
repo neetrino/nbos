@@ -13,6 +13,7 @@ import {
   ErrorState,
   LoadingState,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
   type KanbanColumn,
   type ViewModeOption,
@@ -113,6 +114,8 @@ function LeadsPipelinePageContent() {
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
   const [leadBlockerNav, setLeadBlockerNav] = useState<LeadSheetBlockerNavigation | null>(null);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
   const leadNavTokenRef = useRef(0);
 
   const clearLeadBlockerNav = useCallback(() => setLeadBlockerNav(null), []);
@@ -368,6 +371,25 @@ function LeadsPipelinePageContent() {
       await fetchLeads();
     } catch {
       toast.error('Could not restore lead');
+    }
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await leadsApi.permanentDelete(id);
+      toast.success('Lead permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedLead(null);
+      stripOpenLeadFromUrl();
+      await fetchLeads();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete lead');
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -634,6 +656,16 @@ function LeadsPipelinePageContent() {
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const lead =
+                  selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
+                if (!lead) return;
+                permanentDeleteConfirm.request({ id, name: lead.name ?? 'Lead' });
+              }
+            : undefined
+        }
         blockerNavigation={leadBlockerNav}
         onBlockerNavigationConsumed={clearLeadBlockerNav}
         stageGateHighlight={selectedLead && stageGateHighlight ? stageGateHighlight : null}
@@ -669,6 +701,15 @@ function LeadsPipelinePageContent() {
           deleteConfirm.clear();
           void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="lead"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

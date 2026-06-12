@@ -106,6 +106,10 @@ export const leadsApi = {
     return resp.data;
   },
 
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/crm/leads/${id}/permanent`);
+  },
+
   async getStats(): Promise<LeadStats> {
     const resp = await api.get<LeadStats>('/api/crm/leads/stats');
     return resp.data;

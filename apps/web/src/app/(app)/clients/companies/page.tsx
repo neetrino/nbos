@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
   EmptyState,
   ErrorState,
@@ -46,6 +47,8 @@ function CompaniesPageContent() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
 
   const stripOpenCompanyFromUrl = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -152,6 +155,25 @@ function CompaniesPageContent() {
     toast.success('Company restored');
     setSelectedCompany(restored);
     await fetchCompanies();
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await companiesApi.permanentDelete(id);
+      toast.success('Company permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedCompany(null);
+      stripOpenCompanyFromUrl();
+      await fetchCompanies();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete company');
+    } finally {
+      setPurging(false);
+    }
   };
 
   const handleRowClick = (company: Company) => {
@@ -289,6 +311,18 @@ function CompaniesPageContent() {
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const company =
+                  selectedCompany?.id === id
+                    ? selectedCompany
+                    : companies.find((item) => item.id === id);
+                if (!company) return;
+                permanentDeleteConfirm.request({ id, name: company.name });
+              }
+            : undefined
+        }
       />
 
       <DeleteConfirmDialog
@@ -304,6 +338,15 @@ function CompaniesPageContent() {
           deleteConfirm.clear();
           void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="company"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

@@ -33,6 +33,7 @@ interface PartnerDetailSheetProps {
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void | Promise<void>;
   onRestore?: (id: string) => void | Promise<void>;
+  onPermanentDelete?: (id: string) => void;
 }
 
 export function PartnerDetailSheet({
@@ -44,6 +45,7 @@ export function PartnerDetailSheet({
   isTrashView = false,
   onMoveToTrash,
   onRestore,
+  onPermanentDelete,
 }: PartnerDetailSheetProps) {
   const {
     entity: partner,
@@ -153,7 +155,18 @@ export function PartnerDetailSheet({
                           <RotateCcw />
                           Restore
                         </DropdownMenuItem>
-                      ) : onMoveToTrash ? (
+                      ) : null}
+                      {inTrash && onPermanentDelete ? (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          disabled={!partner || loading}
+                          onClick={() => partner && onPermanentDelete(partner.id)}
+                        >
+                          <Trash2 />
+                          Delete permanently
+                        </DropdownMenuItem>
+                      ) : null}
+                      {!inTrash && onMoveToTrash ? (
                         <DropdownMenuItem
                           variant="destructive"
                           disabled={!partner || loading}

@@ -80,9 +80,9 @@
 
 | Модуль                | Profile    | Trash / Archive UI                                                                  | Organization layer               | Permanent delete    |
 | --------------------- | ---------- | ----------------------------------------------------------------------------------- | -------------------------------- | ------------------- |
-| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | ✅ API; UI позже    |
-| CRM                   | **A**      | То же                                                                               | —                                | ✅ API; UI позже    |
-| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | ✅ API; UI позже    |
+| Clients               | **A**      | Active ↔ Trash (тот же list/sheet)                                                  | —                                | ✅ API + trash UI   |
+| CRM                   | **A**      | То же                                                                               | —                                | ✅ API + trash UI   |
+| Projects              | **A**      | `trashedAt` target (заменить `isArchived` boolean — O3)                             | Delivery tabs ≠ trash            | ✅ API + trash UI   |
 | Products / Extensions | **A-lite** | Terminal **status** (Closed/Cancelled), не delete                                   | —                                | —                   |
 | Drive files           | **B**      | **Один Trash view**; старые Archive+Trash схлопнуть                                 | Folders = container (Model 3)    | Cleanup job         |
 | Credentials           | **C**      | **Отдельный flat secure Trash**                                                     | Folders = collection (Model 4+6) | Step-up из trash    |
@@ -163,12 +163,12 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ⚠️ Partial / backlog
 
-| Область     | Что не доделано                                                                           |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| Drive       | ✅ DONE (6.1–6.5); optional polish only                                                   |
-| Credentials | offboarding ↔ trash audit                                                                 |
-| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                                  |
-| Global      | Profile A permanent-delete **web UI**; Tasks `trashedAt`; credentials offboarding ↔ trash |
+| Область     | Что не доделано                                                                  |
+| ----------- | -------------------------------------------------------------------------------- |
+| Drive       | ✅ DONE (6.1–6.5); optional polish only                                          |
+| Credentials | offboarding ↔ trash audit                                                        |
+| Documents   | ✅ historical archive (решено) — не трогать в этом цикле                         |
+| Global      | Tasks `trashedAt`; credentials offboarding ↔ trash; Mail manual permanent delete |
 
 ---
 
@@ -459,4 +459,5 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Phase 7.1 Mail:** `trashed_at` migration, trash/restore API, Trash folder UI, unified purge + inventory (`mail_thread`, 30d TTL)                                                                               |
 | 2026-06-12 | **Rename slice:** `credentials.archived_at` → `trashed_at`; DROP `projects.is_archived`; registry, seeds, cross-module queries                                                                                   |
 | 2026-06-12 | **Docs:** `10-Platform-Lifecycle-Implementation-Status.md` + per-module `06-Implementation-Status.md` (CRM, Hub, Partners, Credentials, Drive, Mail, Settings); Clients status synced                            |
-| 2026-06-12 | **Profile A permanent delete API:** `DELETE …/permanent` для Contact, Company, Lead, Deal, Partner, Project — shared ops + relation guards + audit `*.permanently_deleted`; web Danger zone backlog              |
+| 2026-06-12 | **Profile A permanent delete API:** `DELETE …/permanent` для Contact, Company, Lead, Deal, Partner, Project — shared ops + relation guards + audit `*.permanently_deleted`                                       |
+| 2026-06-12 | **Profile A permanent delete web:** trash detail sheets — Restore + Delete permanently (`ProfileAPermanentDeleteDialog`, strong name-match) для Clients, CRM, Partners, Projects                                 |

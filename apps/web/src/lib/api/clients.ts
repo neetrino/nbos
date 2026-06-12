@@ -68,6 +68,9 @@ export const contactsApi = {
     const resp = await api.post<Contact>(`/api/clients/contacts/${id}/restore`);
     return resp.data;
   },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/clients/contacts/${id}/permanent`);
+  },
 };
 
 export const companiesApi = {
@@ -93,5 +96,8 @@ export const companiesApi = {
   async restore(id: string): Promise<Company> {
     const resp = await api.post<Company>(`/api/clients/companies/${id}/restore`);
     return resp.data;
+  },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/clients/companies/${id}/permanent`);
   },
 };

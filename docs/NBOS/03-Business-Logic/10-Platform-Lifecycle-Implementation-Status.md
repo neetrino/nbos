@@ -16,7 +16,7 @@ Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standa
 
 **Profile A manual purge API:** `DELETE …/:id/permanent` on Contact, Company, Lead, Deal, Partner, Project — trashed-only, same relation guards as retention purge, audit `*.permanently_deleted`. Shared ops: `profile-a-permanent-delete.ops.ts`.
 
-**Profile A backlog:** web Danger zone + confirmation UI; optional admin step-up (Credentials-style) — not shipped.
+**Profile A web:** trash detail sheets — Restore + **Delete permanently** (strong name-match confirm) on Contact, Company, Lead, Deal, Partner, Project.
 
 ## Profile B — Drive (`deletedAt` + `status=DELETED`)
 

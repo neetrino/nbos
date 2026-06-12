@@ -13,6 +13,7 @@ import {
   ErrorState,
   LoadingState,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
 } from '@/components/shared';
 import { ContactCard } from '@/features/clients/components/ContactCard';
@@ -46,6 +47,8 @@ function ContactsPageContent() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
 
   function contactDisplayName(contact: Contact): string {
     return `${contact.firstName} ${contact.lastName}`.trim() || 'Contact';
@@ -156,6 +159,25 @@ function ContactsPageContent() {
     toast.success('Contact restored');
     setSelectedContact(restored);
     await fetchContacts();
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await contactsApi.permanentDelete(id);
+      toast.success('Contact permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedContact(null);
+      stripOpenContactFromUrl();
+      await fetchContacts();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete contact');
+    } finally {
+      setPurging(false);
+    }
   };
 
   const handleRowClick = (contact: Contact) => {
@@ -288,6 +310,18 @@ function ContactsPageContent() {
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const contact =
+                  selectedContact?.id === id
+                    ? selectedContact
+                    : contacts.find((item) => item.id === id);
+                if (!contact) return;
+                permanentDeleteConfirm.request({ id, name: contactDisplayName(contact) });
+              }
+            : undefined
+        }
       />
 
       <DeleteConfirmDialog
@@ -303,6 +337,15 @@ function ContactsPageContent() {
           deleteConfirm.clear();
           void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="contact"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

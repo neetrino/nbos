@@ -41,6 +41,7 @@ interface CompanySheetProps {
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
 }
 
 function companySaveErrorMessage(err: unknown): string {
@@ -56,6 +57,7 @@ export function CompanySheet({
   isTrashView = false,
   onMoveToTrash,
   onRestore,
+  onPermanentDelete,
 }: CompanySheetProps) {
   const searchContacts = useContactSearchOptions();
   const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
@@ -218,6 +220,15 @@ export function CompanySheet({
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(company.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>

@@ -7,6 +7,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DeleteConfirmDialog,
   DetailSheetSettingsMenu,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
 } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
@@ -27,7 +28,9 @@ export function ProjectLifecycleActions({
 }: ProjectLifecycleActionsProps) {
   const router = useRouter();
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
   const [restoring, setRestoring] = useState(false);
+  const [purging, setPurging] = useState(false);
   const inTrash = isProjectInTrash(project);
 
   const handleMoveToTrash = async () => {
@@ -53,14 +56,37 @@ export function ProjectLifecycleActions({
     }
   };
 
+  const handlePermanentDelete = async () => {
+    setPurging(true);
+    try {
+      await projectsApi.permanentDelete(project.id);
+      toast.success('Project permanently deleted');
+      permanentDeleteConfirm.clear();
+      router.push('/projects');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete project');
+    } finally {
+      setPurging(false);
+    }
+  };
+
   return (
     <>
       <DetailSheetSettingsMenu>
         {inTrash ? (
-          <DropdownMenuItem disabled={restoring} onClick={() => void handleRestore()}>
-            <RotateCcw />
-            Restore
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem disabled={restoring} onClick={() => void handleRestore()}>
+              <RotateCcw />
+              Restore
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => permanentDeleteConfirm.request({ id: project.id, name: project.name })}
+            >
+              <Trash2 />
+              Delete permanently
+            </DropdownMenuItem>
+          </>
         ) : (
           <DropdownMenuItem
             variant="destructive"
@@ -83,6 +109,15 @@ export function ProjectLifecycleActions({
           deleteConfirm.clear();
           void handleMoveToTrash();
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="project"
+        isSubmitting={purging}
+        onConfirm={() => void handlePermanentDelete()}
       />
     </>
   );

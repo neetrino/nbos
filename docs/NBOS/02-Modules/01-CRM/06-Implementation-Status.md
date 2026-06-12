@@ -6,7 +6,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Profile A Trash** on Lead and Deal: `trashed_at` columns (`20260612130000_crm_lead_deal_trash_lifecycle`).
 - **API:** `GET /crm/leads`, `GET /crm/deals` with `?scope=active|trash` (default active); `DELETE :id` → move to Trash; `POST :id/restore`; `DELETE :id/permanent` → manual purge (trashed-only, relation guards, audit `lead|deal.permanently_deleted`).
-- **Web:** Leads/Deals list views with scope switch; sheets — Move to Trash / Restore; trash rows read-only in sheets (no stage change).
+- **Web:** Leads/Deals list views with scope switch; sheets — Move to Trash / Restore / **Delete permanently** (trash scope); trash rows read-only in sheets (no stage change).
 - **Stats / pipeline:** trashed rows excluded from active pipeline and dashboard scope stats (R1).
 - **Automated purge:** eligible past 30d via `POST /scheduler/platform-trash-purge` with Profile A relation guards + audit `*.retention_purged`.
 
@@ -16,7 +16,6 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 ## Intentional placeholders / next slices
 
-- **Permanent delete UI** — Danger zone + confirmation in trash views (API shipped).
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
 

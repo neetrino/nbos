@@ -39,6 +39,7 @@ interface ContactSheetProps {
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
 }
 
 function contactSaveErrorMessage(err: unknown): string {
@@ -54,6 +55,7 @@ export function ContactSheet({
   isTrashView = false,
   onMoveToTrash,
   onRestore,
+  onPermanentDelete,
 }: ContactSheetProps) {
   const [draft, setDraft] = useState<ContactGeneralDraft | null>(null);
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
@@ -163,6 +165,15 @@ export function ContactSheet({
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(contact.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>

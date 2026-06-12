@@ -295,4 +295,8 @@ export const projectsApi = {
     const resp = await api.post<FullProject>(`/api/projects/${id}/restore`);
     return resp.data;
   },
+
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/projects/${id}/permanent`);
+  },
 };

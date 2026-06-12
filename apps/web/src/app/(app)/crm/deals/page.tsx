@@ -15,6 +15,7 @@ import {
   LoadingState,
   StatusBadge,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
   type KanbanColumn,
   type ViewModeOption,
@@ -122,6 +123,8 @@ function DealsPipelinePageContent() {
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -395,6 +398,25 @@ function DealsPipelinePageContent() {
       await fetchDeals();
     } catch {
       toast.error('Could not restore deal');
+    }
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await dealsApi.permanentDelete(id);
+      toast.success('Deal permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedDeal(null);
+      stripOpenDealFromUrl();
+      await fetchDeals();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete deal');
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -693,6 +715,16 @@ function DealsPipelinePageContent() {
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const deal =
+                  selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
+                if (!deal) return;
+                permanentDeleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+              }
+            : undefined
+        }
         onRefresh={fetchDeals}
         onOpenDeal={handleOpenDealById}
         blockerNavigation={dealBlockerNav}
@@ -730,6 +762,15 @@ function DealsPipelinePageContent() {
           deleteConfirm.clear();
           void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="deal"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

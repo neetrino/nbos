@@ -62,6 +62,7 @@ interface LeadSheetProps {
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
   onRefresh?: () => void;
   blockerNavigation?: LeadSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
@@ -83,6 +84,7 @@ export function LeadSheet({
   isTrashView = false,
   onMoveToTrash,
   onRestore,
+  onPermanentDelete,
   onRefresh,
   blockerNavigation = null,
   onBlockerNavigationConsumed,
@@ -280,6 +282,15 @@ export function LeadSheet({
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(lead.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>

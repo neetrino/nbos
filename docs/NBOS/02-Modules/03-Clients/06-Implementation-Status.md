@@ -4,7 +4,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 ## Shipped (web + API)
 
-- **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`, **Profile A Trash** (`scope=active|trash` via page settings): Move to Trash, Restore, same list/sheet in both scopes.
+- **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`, **Profile A Trash** (`scope=active|trash` via page settings): Move to Trash, Restore, **Delete permanently** (name-match confirm) in trash sheets.
 - **Company / Contact row sheets** use the same detail-sheet pattern as CRM (75vw panel, floating close + rail, inline fields with draft + Save/Cancel footer). **Portfolio** opens as a nested right sheet over the row sheet (permalink + list deep link still available inside portfolio).
 - **Contact create/update** persists `messengerLinks` (WhatsApp, Telegram, preferred channel, language) via API.
 - **Company create**: searchable **primary contact** picker, optional **billing contact**, optional company phone/email/country; no manual contact UUID.
@@ -17,7 +17,6 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
 - **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
-- **Permanent delete UI** — Danger zone + confirmation in trash views (API `DELETE …/permanent` **shipped**; automated retention purge via unified platform job).
 
 ## MVP assumptions (launch scope)
 
