@@ -47,6 +47,7 @@ describe('InvoicesService', () => {
 
   const operationalJournal = {
     appendInvoiceCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+    reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(() => {

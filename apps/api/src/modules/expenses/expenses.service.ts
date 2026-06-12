@@ -64,6 +64,7 @@ import type {
 import {
   assertExpenseCancellable,
   assertExpenseDraftDeletable,
+  expenseAccrualJournalKey,
 } from '../../common/lifecycle/finance-record-lifecycle-guards';
 
 const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
@@ -364,7 +365,7 @@ export class ExpensesService {
     await assertExpenseAccessible(this.prisma, id, access);
     const expense = await this.prisma.expense.findUnique({
       where: { id },
-      select: { status: true },
+      select: { status: true, name: true },
     });
     if (!expense) throw new NotFoundException(`Expense ${id} not found`);
     assertExpenseCancellable(expense);
@@ -372,6 +373,10 @@ export class ExpensesService {
       where: { id },
       data: { status: 'CANCELLED' },
     });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      expenseAccrualJournalKey(id),
+      `Expense "${expense.name}" cancelled`,
+    );
     return this.findById(id, access);
   }
 
@@ -381,6 +386,7 @@ export class ExpensesService {
       where: { id },
       select: {
         status: true,
+        name: true,
         _count: { select: { expensePayments: true } },
         salaryLine: { select: { id: true } },
         partnerPayoutBatch: { select: { id: true } },
@@ -393,6 +399,10 @@ export class ExpensesService {
       hasSalaryLine: expense.salaryLine != null,
       hasPartnerPayoutBatch: expense.partnerPayoutBatch != null,
     });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      expenseAccrualJournalKey(id),
+      `Draft expense "${expense.name}" deleted`,
+    );
     return this.prisma.expense.delete({ where: { id } });
   }
 

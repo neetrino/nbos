@@ -15,9 +15,12 @@ import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { ORDER_STATUSES } from './order-statuses';
+import { OrderLifecycleActions } from './OrderLifecycleActions';
 
 interface OrderGeneralTabProps {
   order: Order;
+  onOrderUpdated?: (order: Order) => void | Promise<void>;
+  onOrderDeleted?: (orderId: string) => void;
 }
 
 function formatShortDate(value: string): string {
@@ -28,7 +31,7 @@ function formatShortDate(value: string): string {
   }).format(new Date(value));
 }
 
-export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
+export function OrderGeneralTab({ order, onOrderUpdated, onOrderDeleted }: OrderGeneralTabProps) {
   const statusCfg = ORDER_STATUSES[order.status];
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
@@ -60,7 +63,18 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
         </DetailSheetCollapsibleSection>
       </div>
 
-      <OrderLinkedPanel order={order} />
+      <div className="flex flex-col gap-4">
+        <OrderLinkedPanel order={order} />
+        {onOrderUpdated ? (
+          <DetailSheetSection title="Actions">
+            <OrderLifecycleActions
+              order={order}
+              onOrderUpdated={onOrderUpdated}
+              onOrderDeleted={onOrderDeleted}
+            />
+          </DetailSheetSection>
+        ) : null}
+      </div>
     </div>
   );
 }

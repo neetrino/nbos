@@ -133,6 +133,8 @@ export function OrderDetailSheet({
                   activeTab={activeTab}
                   order={order}
                   onCreateInvoice={handleCreateInvoice}
+                  onOrderUpdated={(_updated) => void refresh()}
+                  onOrderDeleted={() => onOpenChange(false)}
                 />
               ) : null}
             </div>
@@ -147,10 +149,14 @@ function OrderDetailSheetBody({
   activeTab,
   order,
   onCreateInvoice,
+  onOrderUpdated,
+  onOrderDeleted,
 }: {
   activeTab: OrderDetailSheetTab;
   order: Order;
   onCreateInvoice: () => void;
+  onOrderUpdated: (order: Order) => void;
+  onOrderDeleted: () => void;
 }) {
   if (activeTab === 'invoices') {
     return <OrderInvoicesTab order={order} onCreateInvoice={onCreateInvoice} />;
@@ -158,5 +164,11 @@ function OrderDetailSheetBody({
   if (activeTab === 'reconciliation') {
     return <OrderReconciliationTab order={order} />;
   }
-  return <OrderGeneralTab order={order} />;
+  return (
+    <OrderGeneralTab
+      order={order}
+      onOrderUpdated={onOrderUpdated}
+      onOrderDeleted={onOrderDeleted}
+    />
+  );
 }

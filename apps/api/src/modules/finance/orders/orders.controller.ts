@@ -112,9 +112,15 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, body.status);
   }
 
+  @Post(':id/close')
+  @ApiOperation({ summary: 'Close order (Profile D — terminal status, preserves history)' })
+  async close(@Param('id') id: string) {
+    return this.ordersService.close(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete order' })
+  @ApiOperation({ summary: 'Delete draft order (PENDING_PAYMENT only, no invoices)' })
   async remove(@Param('id') id: string) {
     await this.ordersService.delete(id);
   }

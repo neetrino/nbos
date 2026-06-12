@@ -12,7 +12,10 @@ import type { OrderReconciliationListGap } from './order-reconciliation-list-fil
 import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
 import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
 import { queryOrderStatsForReconciliationGap } from './orders-reconciliation-gap-stats-query';
-import { assertOrderDraftDeletable } from '../../../common/lifecycle/finance-record-lifecycle-guards';
+import {
+  assertOrderClosable,
+  assertOrderDraftDeletable,
+} from '../../../common/lifecycle/finance-record-lifecycle-guards';
 
 interface CreateOrderDto {
   projectId: string;
@@ -259,6 +262,26 @@ export class OrdersService {
     await this.prisma.order.update({
       where: { id },
       data: { status: status as OrderStatusEnum },
+    });
+    return this.findById(id);
+  }
+
+  async close(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      select: {
+        status: true,
+        _count: { select: { invoices: true } },
+      },
+    });
+    if (!order) throw new NotFoundException(`Order ${id} not found`);
+    assertOrderClosable({
+      status: order.status,
+      invoiceCount: order._count.invoices,
+    });
+    await this.prisma.order.update({
+      where: { id },
+      data: { status: 'CLOSED' },
     });
     return this.findById(id);
   }

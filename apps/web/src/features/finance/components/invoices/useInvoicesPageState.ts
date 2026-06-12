@@ -207,6 +207,17 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setInvoices((current) => replaceInvoice(current, updated));
   }, []);
 
+  const handleInvoiceDeleted = useCallback(
+    (invoiceId: string) => {
+      setSelectedInvoice(null);
+      setSheetOpen(false);
+      setStageGateHighlight(null);
+      setInvoices((current) => current.filter((row) => row.id !== invoiceId));
+      stripOpenInvoiceFromUrl();
+    },
+    [stripOpenInvoiceFromUrl],
+  );
+
   const handleInvoiceCreated = useCallback(
     async (created?: Invoice) => {
       await fetchInvoices();
@@ -249,6 +260,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     handleMoneyStatusChange,
     handlePaymentRecorded,
     handleInvoiceUpdated,
+    handleInvoiceDeleted,
     handleInvoiceCreated,
     invoiceListExportParams,
     stageGateHighlight,

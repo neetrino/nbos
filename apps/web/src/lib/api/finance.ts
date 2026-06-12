@@ -522,6 +522,10 @@ export const ordersApi = {
     const resp = await api.patch<Order>(`/api/finance/orders/${id}/status`, { status });
     return resp.data;
   },
+  async close(id: string): Promise<Order> {
+    const resp = await api.post<Order>(`/api/finance/orders/${id}/close`);
+    return resp.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
   },

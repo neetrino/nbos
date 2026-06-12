@@ -146,6 +146,16 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
     [onEntityChanged],
   );
 
+  const handleInvoiceDeleted = useCallback(
+    (_invoiceId: string) => {
+      setInvoiceSheetOpen(false);
+      setInvoice(null);
+      setInvoiceLoadId(null);
+      onEntityChanged?.();
+    },
+    [onEntityChanged],
+  );
+
   const handlePaymentRecorded = useCallback(
     async (data: {
       invoiceId: string;
@@ -197,6 +207,7 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
         loading={invoiceLoading}
         onOpenChange={handleInvoiceSheetOpenChange}
         onInvoiceUpdated={handleInvoiceUpdated}
+        onInvoiceDeleted={handleInvoiceDeleted}
         onMoneyStatusChange={handleMoneyStatusChange}
         onPaymentRecorded={handlePaymentRecorded}
         forceNestedBackdrop={nested}

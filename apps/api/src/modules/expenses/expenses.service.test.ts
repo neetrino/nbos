@@ -13,6 +13,7 @@ describe('ExpensesService', () => {
   const operationalJournal = {
     appendExpenseCardAccrualLine: vi.fn().mockResolvedValue(undefined),
     appendExpensePaymentLine: vi.fn().mockResolvedValue(undefined),
+    reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(() => {

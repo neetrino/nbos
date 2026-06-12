@@ -42,6 +42,7 @@ import {
 import {
   assertInvoiceCancellable,
   assertInvoiceDraftDeletable,
+  invoiceAccrualJournalKey,
 } from '../../../common/lifecycle/finance-record-lifecycle-guards';
 
 interface CreateInvoiceDto {
@@ -367,11 +368,16 @@ export class InvoicesService {
   async cancel(id: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
-      select: { moneyStatus: true },
+      select: { moneyStatus: true, code: true },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
     assertInvoiceCancellable(invoice);
-    return this.updateMoneyStatus(id, 'CANCELLED');
+    const updated = await this.updateMoneyStatus(id, 'CANCELLED');
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      invoiceAccrualJournalKey(id),
+      `Invoice ${invoice.code ?? id} cancelled`,
+    );
+    return updated;
   }
 
   async delete(id: string) {
@@ -379,6 +385,7 @@ export class InvoicesService {
       where: { id },
       select: {
         moneyStatus: true,
+        code: true,
         _count: { select: { payments: true } },
       },
     });
@@ -387,6 +394,10 @@ export class InvoicesService {
       moneyStatus: invoice.moneyStatus,
       paymentCount: invoice._count.payments,
     });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      invoiceAccrualJournalKey(id),
+      `Draft invoice ${invoice.code ?? id} deleted`,
+    );
     return this.prisma.invoice.delete({ where: { id } });
   }
 

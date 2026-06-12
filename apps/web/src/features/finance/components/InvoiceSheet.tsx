@@ -39,6 +39,7 @@ interface InvoiceSheetProps {
   /** True while nested host fetches invoice by id. */
   loading?: boolean;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+  onInvoiceDeleted?: (invoiceId: string) => void;
   onMoneyStatusChange?: (invoiceId: string, moneyStatus: string) => void | Promise<void>;
   onPaymentRecorded: (data: {
     invoiceId: string;
@@ -58,6 +59,7 @@ export function InvoiceSheet({
   onOpenChange,
   loading = false,
   onInvoiceUpdated,
+  onInvoiceDeleted,
   onMoneyStatusChange,
   onPaymentRecorded,
   stageGateHighlight = null,
@@ -219,6 +221,7 @@ export function InvoiceSheet({
                 patchDraft={patchGeneralDraft}
                 formDisabled={saving}
                 onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                onInvoiceDeleted={onInvoiceDeleted}
               />
             ) : null}
             {activeTab === 'payments' ? (

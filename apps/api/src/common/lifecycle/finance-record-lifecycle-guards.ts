@@ -3,6 +3,12 @@ import type { ExpenseStatusEnum, InvoiceMoneyStatusEnum, OrderStatusEnum } from 
 
 /** Profile D — draft-only hard delete for finance records with audit history. */
 
+export const invoiceAccrualJournalKey = (invoiceId: string): string =>
+  `invoice-accrual:${invoiceId}`;
+
+export const expenseAccrualJournalKey = (expenseId: string): string =>
+  `expense-accrual:${expenseId}`;
+
 export function assertInvoiceDraftDeletable(input: {
   moneyStatus: InvoiceMoneyStatusEnum;
   paymentCount: number;
@@ -39,6 +45,18 @@ export function assertOrderDraftDeletable(input: {
     throw new ConflictException(
       'Only draft orders (PENDING_PAYMENT) without invoices can be deleted.',
     );
+  }
+}
+
+export function assertOrderClosable(input: {
+  status: OrderStatusEnum;
+  invoiceCount: number;
+}): void {
+  if (input.status === 'CLOSED') {
+    throw new ConflictException('Order is already closed.');
+  }
+  if (input.status === 'PENDING_PAYMENT' && input.invoiceCount === 0) {
+    throw new ConflictException('Draft order without invoices can be deleted instead of closed.');
   }
 }
 

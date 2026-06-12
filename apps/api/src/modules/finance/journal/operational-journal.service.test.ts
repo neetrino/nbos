@@ -162,4 +162,23 @@ describe('OperationalJournalService', () => {
       _sum: { functionalAmount: true },
     });
   });
+
+  it('reverses an active journal line by idempotency key', async () => {
+    prisma.operationalJournalEntry.findUnique.mockResolvedValue({
+      id: 'j1',
+      status: 'ACTIVE',
+      description: 'Invoice card accrual INV-1',
+    });
+    prisma.operationalJournalEntry.update.mockResolvedValue({ id: 'j1', status: 'REVERSED' });
+
+    await service.reverseJournalLineByIdempotencyKey('invoice-accrual:inv-1', 'Invoice cancelled');
+
+    expect(prisma.operationalJournalEntry.update).toHaveBeenCalledWith({
+      where: { idempotencyKey: 'invoice-accrual:inv-1' },
+      data: {
+        status: 'REVERSED',
+        description: 'Invoice card accrual INV-1 — Invoice cancelled',
+      },
+    });
+  });
 });
