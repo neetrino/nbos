@@ -55,10 +55,15 @@ export async function bulkArchiveCredentials(
   if (result.succeeded === 0) return result;
 
   const archivedAt = new Date();
-  await runtime.prisma.credential.updateMany({
-    where: { id: { in: result.credentialIds } },
-    data: { archivedAt },
-  });
+  await runtime.prisma.$transaction([
+    runtime.prisma.credential.updateMany({
+      where: { id: { in: result.credentialIds } },
+      data: { archivedAt },
+    }),
+    runtime.prisma.credentialFolderMembership.deleteMany({
+      where: { credentialId: { in: result.credentialIds } },
+    }),
+  ]);
 
   await Promise.all(
     rows.map((row) =>

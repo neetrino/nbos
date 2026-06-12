@@ -9,7 +9,7 @@ import {
 } from '@/features/credentials/constants/credential-vault-pagination';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
-export type CredentialVaultListScope = 'active' | 'archived';
+export type CredentialVaultListScope = 'active' | 'trash';
 
 export type CredentialVaultPagePreferences = {
   viewMode: CredentialVaultViewMode;
@@ -25,7 +25,7 @@ const VALID_VIEW_MODES = new Set<CredentialVaultViewMode>([
   'folders',
 ]);
 const VALID_TABS = new Set<CredentialVaultScope>(['all', 'my', 'team', 'project', 'secret']);
-const VALID_LIST_SCOPES = new Set<CredentialVaultListScope>(['active', 'archived']);
+const VALID_LIST_SCOPES = new Set<CredentialVaultListScope>(['active', 'trash']);
 
 export const DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES: CredentialVaultPagePreferences = {
   viewMode: 'list',
@@ -49,7 +49,8 @@ function parseStoredPreferences(raw: string | null): CredentialVaultPagePreferen
     }
     const viewMode = parsed.viewMode;
     const activeTab = parsed.activeTab;
-    const vaultListScope = parsed.vaultListScope;
+    const rawVaultListScope = parsed.vaultListScope;
+    const vaultListScope = rawVaultListScope === 'archived' ? 'trash' : rawVaultListScope;
     const pageSize = parsed.pageSize;
     return {
       viewMode:

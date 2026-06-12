@@ -213,7 +213,7 @@ export function DriveWorkspace() {
   const [projectShellFiles, setProjectShellFiles] = useState<FileAsset[]>([]);
   const [entityRootLinkedFiles, setEntityRootLinkedFiles] = useState<FileAsset[]>([]);
   const [lifecycleView, setLifecycleView] = useState<DriveLifecycleView>('browse');
-  const [lifecycleCounts, setLifecycleCounts] = useState({ archived: 0, trash: 0 });
+  const [lifecycleCounts, setLifecycleCounts] = useState({ trash: 0 });
 
   const inLifecycleView = lifecycleView !== 'browse';
 
@@ -592,11 +592,7 @@ export function DriveWorkspace() {
   }, [driveDeepLinkFinanceProjectId, selectedLibrary.key, selectedSpace.key]);
 
   const effectiveStatus =
-    lifecycleView === 'archive'
-      ? 'ARCHIVED'
-      : lifecycleView === 'trash'
-        ? 'DELETED'
-        : (selectedLibrary.status ?? status);
+    lifecycleView === 'trash' ? 'DELETED' : (selectedLibrary.status ?? status);
 
   const driveStorageSpace = useMemo((): 'COMPANY' | 'PERSONAL' | null => {
     if (inLifecycleView) return null;
@@ -769,7 +765,7 @@ export function DriveWorkspace() {
       const counts = await driveApi.getDriveLifecycleCounts();
       setLifecycleCounts(counts);
     } catch {
-      setLifecycleCounts({ archived: 0, trash: 0 });
+      setLifecycleCounts({ trash: 0 });
     }
   }, []);
 
@@ -789,7 +785,7 @@ export function DriveWorkspace() {
       }
       if (inLifecycleView) {
         const list = await driveApi.listFileAssets({
-          ...(lifecycleView === 'trash' ? { trash: true } : { status: 'ARCHIVED' }),
+          trash: true,
           purpose: purpose === ALL_PURPOSES ? undefined : purpose,
           search: search || undefined,
         });
@@ -1130,8 +1126,8 @@ export function DriveWorkspace() {
       return projectHubSummary.projectName;
     }
 
-    if (lifecycleView === 'archive' || lifecycleView === 'trash') {
-      return DRIVE_LIFECYCLE_TITLES[lifecycleView];
+    if (lifecycleView === 'trash') {
+      return DRIVE_LIFECYCLE_TITLES.trash;
     }
 
     return selectedLibrary.title;
@@ -1168,7 +1164,7 @@ export function DriveWorkspace() {
   );
 
   const files = useMemo(() => {
-    if (lifecycleView === 'archive' || lifecycleView === 'trash') {
+    if (lifecycleView === 'trash') {
       return filterFilesForLifecycleView(rawFiles, lifecycleView);
     }
     if (browseSystemLibraryEntityRoot) {
@@ -1552,16 +1548,16 @@ export function DriveWorkspace() {
     };
   }, [rawFiles]);
 
-  async function onArchive(file: FileAsset) {
-    await mutateFile(() => driveApi.archiveFileAsset(file.id), 'File archived');
-  }
-
-  async function onRestore(file: FileAsset) {
-    if (lifecycleView === 'trash') {
+  async function restoreDriveFile(file: FileAsset) {
+    if (file.status === 'DELETED') {
       await mutateFile(() => driveApi.restoreTrashFileAsset(file.id), 'File restored');
       return;
     }
     await mutateFile(() => driveApi.restoreFileAsset(file.id), 'File restored');
+  }
+
+  async function onRestore(file: FileAsset) {
+    await restoreDriveFile(file);
   }
 
   async function onMoveToTrash(file: FileAsset) {
@@ -1685,23 +1681,23 @@ export function DriveWorkspace() {
     setSelected(null);
   }
 
-  async function onBulkArchive() {
-    const ids = await resolveBulkFileAssetIds();
-    if (ids.length === 0) return;
-    await mutateFiles(async () => driveApi.archiveFileAssets(ids), 'Selected files archived');
-  }
-
   async function onBulkRestore() {
     const ids = await resolveBulkFileAssetIds();
     if (ids.length === 0) return;
-    if (lifecycleView === 'trash') {
-      await mutateFiles(
-        async () => driveApi.restoreTrashFileAssets(ids),
-        'Selected files restored',
-      );
-      return;
-    }
-    await mutateFiles(async () => driveApi.restoreFileAssets(ids), 'Selected files restored');
+    const selected = rawFiles.filter((file) => ids.includes(file.id));
+    const deletedIds = selected.filter((file) => file.status === 'DELETED').map((file) => file.id);
+    const archivedIds = selected
+      .filter((file) => file.status === 'ARCHIVED')
+      .map((file) => file.id);
+
+    await mutateFiles(async () => {
+      if (deletedIds.length > 0) {
+        await driveApi.restoreTrashFileAssets(deletedIds);
+      }
+      if (archivedIds.length > 0) {
+        await driveApi.restoreFileAssets(archivedIds);
+      }
+    }, 'Selected files restored');
   }
 
   async function onBulkMoveToTrash() {
@@ -2247,7 +2243,6 @@ export function DriveWorkspace() {
           ) : null}
           <DriveLifecycleNav
             view={lifecycleView}
-            archiveCount={lifecycleCounts.archived}
             trashCount={lifecycleCounts.trash}
             onViewChange={handleLifecycleViewChange}
           />
@@ -2259,16 +2254,12 @@ export function DriveWorkspace() {
               count={selectedIds.length + selectedFolderIds.length}
               selectedFileCount={selectedIds.length}
               selectedFolderCount={selectedFolderIds.length}
-              archived={lifecycleView === 'archive'}
               trashView={lifecycleView === 'trash'}
               busy={busy}
               showSelectAll={canSelectAllInView}
               onSelectAll={selectAllVisibleInDrive}
-              onArchive={() => void onBulkArchive()}
               onRestore={() => void onBulkRestore()}
-              onMoveToTrash={
-                lifecycleView === 'archive' ? () => void onBulkMoveToTrash() : undefined
-              }
+              onMoveToTrash={lifecycleView === 'trash' ? undefined : () => void onBulkMoveToTrash()}
               onClear={() => {
                 setSelectedIds([]);
                 setSelectedFolderIds([]);
@@ -2382,7 +2373,7 @@ export function DriveWorkspace() {
               }
               fileMenu={{
                 onOpenDetails: onPreview,
-                onArchive: inLifecycleView ? undefined : onArchive,
+                onArchive: inLifecycleView ? undefined : onMoveToTrash,
                 onRestore,
                 onCopyFile:
                   !inLifecycleView && driveActionCapabilities.canCopyIntoFolderTree
@@ -2417,7 +2408,7 @@ export function DriveWorkspace() {
           open={Boolean(selected)}
           busy={busy}
           onClose={() => setSelected(null)}
-          onArchive={(file) => void onArchive(file)}
+          onArchive={(file) => void onMoveToTrash(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
           fileActionGates={selectedFileActionGates}

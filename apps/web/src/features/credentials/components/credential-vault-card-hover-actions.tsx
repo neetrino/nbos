@@ -144,7 +144,7 @@ export function CredentialVaultCardHoverActions({
         </FloatingVaultActionButton>
         {showArchive ? (
           <FloatingVaultActionButton
-            label="Archive"
+            label="Move to Trash"
             tone="destructive"
             onClick={() => onRequestArchive?.()}
           >

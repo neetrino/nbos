@@ -142,6 +142,10 @@ export function useCredentialsVaultPage() {
   }
 
   const fetchFolders = useCallback(async () => {
+    if (vaultListScope === 'trash') {
+      setFolders([]);
+      return;
+    }
     if (isProjectFoldersMode && !activeProjectId) {
       setFolders([]);
       return;
@@ -158,9 +162,13 @@ export function useCredentialsVaultPage() {
     } finally {
       setFoldersLoading(false);
     }
-  }, [activeTab, activeProjectId, isProjectFoldersMode]);
+  }, [activeTab, activeProjectId, isProjectFoldersMode, vaultListScope]);
 
   const fetchProjectShells = useCallback(async () => {
+    if (vaultListScope === 'trash') {
+      setProjectShells([]);
+      return;
+    }
     if (!isProjectFoldersMode) {
       setProjectShells([]);
       return;
@@ -174,7 +182,7 @@ export function useCredentialsVaultPage() {
     } finally {
       setProjectShellsLoading(false);
     }
-  }, [isProjectFoldersMode]);
+  }, [isProjectFoldersMode, vaultListScope]);
 
   useEffect(() => {
     void fetchFolders();
@@ -476,13 +484,24 @@ export function useCredentialsVaultPage() {
 
   const setVaultListScope = useCallback(
     (scope: VaultListScope) => {
-      setPreferences({ vaultListScope: scope });
+      if (scope === 'trash') {
+        setActiveFolderId(null);
+        setActiveProjectId(null);
+        setFolders([]);
+        setProjectShells([]);
+        setPreferences({
+          vaultListScope: scope,
+          viewMode: viewMode === 'folders' ? 'list' : viewMode,
+        });
+      } else {
+        setPreferences({ vaultListScope: scope });
+      }
       setFilters((prev) => ({
         ...prev,
         sort: defaultCredentialVaultSortFilter(scope),
       }));
     },
-    [setPreferences],
+    [setPreferences, viewMode],
   );
 
   return {

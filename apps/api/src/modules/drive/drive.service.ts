@@ -190,7 +190,7 @@ export class DriveService {
 
   async getLifecycleCounts(access?: DriveEntityAccess) {
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
-    const [archived, trash] = await Promise.all([
+    const [archived, deleted] = await Promise.all([
       this.prisma.fileAsset.count({
         where: { deletedAt: null, status: 'ARCHIVED', ...accessWhere },
       }),
@@ -198,7 +198,8 @@ export class DriveService {
         where: { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
       }),
     ]);
-    return { archived, trash };
+    const trash = archived + deleted;
+    return { trash, archived, deleted };
   }
 
   async getFileAsset(
@@ -968,7 +969,12 @@ export class DriveService {
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     if (params.trash === true) {
       const clauses: Prisma.FileAssetWhereInput[] = [
-        { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
+        {
+          OR: [
+            { deletedAt: null, status: 'ARCHIVED', ...accessWhere },
+            { status: 'DELETED', deletedAt: { not: null }, ...accessWhere },
+          ],
+        },
       ];
       if (params.search) {
         clauses.push({

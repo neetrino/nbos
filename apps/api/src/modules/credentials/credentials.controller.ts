@@ -18,6 +18,7 @@ import { CredentialsService } from './credentials.service';
 import { normalizeCredentialTab } from './credential-tab';
 import { normalizeCredentialListSort } from './credential-list-sort';
 import { normalizeBulkCredentialIds } from './credential-bulk.ids';
+import { parseLifecycleScopeFromQuery } from '../../common/lifecycle/entity-lifecycle-scope';
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -44,9 +45,15 @@ export class CredentialsController {
     enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret'],
   })
   @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: ['active', 'trash'],
+    description: 'Vault list scope (default active)',
+  })
+  @ApiQuery({
     name: 'includeArchived',
     required: false,
-    description: 'List archived credentials only',
+    description: 'Deprecated — use scope=trash',
   })
   @ApiQuery({
     name: 'sort',
@@ -69,11 +76,13 @@ export class CredentialsController {
     @Query('withoutFolder') withoutFolder?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
+    @Query('scope') scope?: string,
     @Query('includeArchived') includeArchived?: string,
     @Query('sort') sort?: string,
   ) {
     const archivedFlag =
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
+    const listScope = parseLifecycleScopeFromQuery(scope, archivedFlag);
     const rotationFlag =
       needsRotation === '1' || needsRotation === 'true' || needsRotation === 'yes';
     const favoritesFlag =
@@ -99,8 +108,9 @@ export class CredentialsController {
         employeeId: access.employeeId,
         departmentIds: access.departmentIds,
         viewScope: access.viewScope,
-        includeArchived: archivedFlag,
-        sort: normalizeCredentialListSort(sort, archivedFlag),
+        scope: listScope,
+        includeArchived: listScope === 'trash',
+        sort: normalizeCredentialListSort(sort, listScope === 'trash'),
       },
       access,
     );
@@ -158,7 +168,7 @@ export class CredentialsController {
   @Delete('folders/:folderId')
   @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Archive credential folder' })
+  @ApiOperation({ summary: 'Delete empty credential folder (Model 6)' })
   async archiveFolder(
     @Param('folderId') folderId: string,
     @CurrentUser() user: CurrentUserPayload,

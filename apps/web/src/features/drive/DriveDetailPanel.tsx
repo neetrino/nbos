@@ -135,12 +135,6 @@ function DriveFileRailTrailing({
   onPermanentDeleteSuccess?: () => void;
   fileActionGates: DriveFileActionGates;
 }) {
-  const isArchived = file.status === 'ARCHIVED';
-  const isTrash = file.status === 'DELETED';
-  const archiveLabel = isTrash || isArchived ? 'Restore file' : 'Archive file';
-  const archiveHint = isTrash || isArchived ? 'Restore' : 'Archive';
-  const showArchiveControl = fileActionGates.canArchive || fileActionGates.canRestore;
-
   async function handleMoveToTrash() {
     const linkCount = file.links.filter((link) => link.unlinkedAt == null).length;
     const msg =
@@ -162,17 +156,17 @@ function DriveFileRailTrailing({
       {fileActionGates.canUploadVersion ? (
         <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
       ) : null}
-      {showArchiveControl ? (
+      {fileActionGates.canRestore ? (
         <RailTrailButton
-          ariaLabel={archiveLabel}
-          hint={archiveHint}
+          ariaLabel="Restore file"
+          hint="Restore"
           disabled={busy}
-          onClick={() => (isTrash || isArchived ? onRestore(file) : onArchive(file))}
+          onClick={() => onRestore(file)}
         >
           <Archive className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      {isArchived && fileActionGates.canMoveToTrash ? (
+      {fileActionGates.canMoveToTrash ? (
         <RailTrailButton
           ariaLabel="Move to Trash"
           hint="Move to Trash"

@@ -276,10 +276,14 @@ export async function archiveCredential(
   access: CredentialsAccessContext,
 ) {
   const existing = await findMutableCredential(runtime, id, access, 'delete');
-  await runtime.prisma.credential.update({
-    where: { id },
-    data: { archivedAt: new Date() },
-  });
+  const archivedAt = new Date();
+  await runtime.prisma.$transaction([
+    runtime.prisma.credential.update({
+      where: { id },
+      data: { archivedAt },
+    }),
+    runtime.prisma.credentialFolderMembership.deleteMany({ where: { credentialId: id } }),
+  ]);
   await runtime.auditService.log({
     entityType: 'credential',
     entityId: id,

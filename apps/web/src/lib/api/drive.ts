@@ -667,8 +667,14 @@ export const driveApi = {
     return resp.data;
   },
 
-  async getDriveLifecycleCounts(): Promise<{ archived: number; trash: number }> {
-    const resp = await api.get<{ archived: number; trash: number }>('/api/drive/lifecycle-counts');
+  async getDriveLifecycleCounts(): Promise<{
+    trash: number;
+    archived?: number;
+    deleted?: number;
+  }> {
+    const resp = await api.get<{ trash: number; archived?: number; deleted?: number }>(
+      '/api/drive/lifecycle-counts',
+    );
     return resp.data;
   },
 

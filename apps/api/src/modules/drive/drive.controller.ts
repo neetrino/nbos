@@ -545,7 +545,9 @@ export class DriveController {
 
   @Get('lifecycle-counts')
   @RequirePermission('DRIVE', 'VIEW')
-  @ApiOperation({ summary: 'Counts for Archive and Trash lifecycle views' })
+  @ApiOperation({
+    summary: 'Count for unified Trash lifecycle view (includes transitional ARCHIVED rows)',
+  })
   async getLifecycleCounts(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },

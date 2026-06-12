@@ -50,7 +50,7 @@ export function CredentialVaultBulkBar({
       const result = await credentialsApi.bulkArchive(selectedIds);
       const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
       toast.success(
-        `Archived ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'}${skipped}`,
+        `Moved ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'} to Trash${skipped}`,
       );
       setConfirmArchiveOpen(false);
       onClear();
@@ -68,7 +68,7 @@ export function CredentialVaultBulkBar({
       const result = await credentialsApi.bulkRestore(selectedIds);
       const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
       toast.success(
-        `Restored ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'}${skipped}`,
+        `Returned ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'} to vault (unfiled)${skipped}`,
       );
       onClear();
       onCompleted();
@@ -202,7 +202,7 @@ export function CredentialVaultBulkBar({
                   onClick={() => setConfirmArchiveOpen(true)}
                 >
                   <Archive className="size-4" aria-hidden />
-                  Archive
+                  Move to Trash
                 </Button>
               </PermissionGate>
             </>
@@ -232,9 +232,9 @@ export function CredentialVaultBulkBar({
         open={confirmArchiveOpen}
         onOpenChange={setConfirmArchiveOpen}
         itemName={`${count} credentials`}
-        title="Archive selected credentials?"
-        description="Hidden from active lists. You can restore them from Archived."
-        confirmLabel="Archive"
+        title="Move selected credentials to Trash?"
+        description="Removed from active lists and folders. Restore from Trash returns them unfiled."
+        confirmLabel="Move to Trash"
         isSubmitting={acting}
         onConfirm={() => void runBulkArchive()}
       />

@@ -6,8 +6,8 @@ import {
 } from '@/features/credentials/constants/credentials';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
-function buildSortFilterConfig(vaultListScope: 'active' | 'archived'): FilterConfig {
-  if (vaultListScope === 'archived') {
+function buildSortFilterConfig(vaultListScope: 'active' | 'trash'): FilterConfig {
+  if (vaultListScope === 'trash') {
     return {
       key: 'sort',
       label: 'Sort',
@@ -32,7 +32,7 @@ function buildSortFilterConfig(vaultListScope: 'active' | 'archived'): FilterCon
 
 export function buildCredentialsVaultFilterConfigs(
   activeTab: CredentialVaultScope,
-  vaultListScope: 'active' | 'archived' = 'active',
+  vaultListScope: 'active' | 'trash' = 'active',
 ): FilterConfig[] {
   const base: FilterConfig[] = [
     buildSortFilterConfig(vaultListScope),

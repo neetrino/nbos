@@ -76,9 +76,9 @@ export function CredentialFolderCard({
     setBusy(true);
     try {
       await onArchive(folder.id);
-      toast.success('Folder archived');
+      toast.success('Folder deleted');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Folder could not be archived');
+      toast.error(error instanceof Error ? error.message : 'Folder could not be deleted');
     } finally {
       setBusy(false);
     }
@@ -161,7 +161,7 @@ export function CredentialFolderCard({
                     disabled={busy}
                   >
                     <Trash2 className="size-4" aria-hidden />
-                    Archive
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

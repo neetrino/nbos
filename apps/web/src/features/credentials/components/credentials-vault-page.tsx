@@ -59,9 +59,7 @@ function CredentialsVaultPageContent() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title={
-          vault.vaultListScope === 'archived' ? 'Credentials Vault — Archived' : 'Credentials Vault'
-        }
+        title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
         tabs={
           <PageHeroTabs
             value={vault.activeTab}
@@ -108,7 +106,7 @@ function CredentialsVaultPageContent() {
         }
       />
 
-      {vault.vaultListScope === 'archived' ? (
+      {vault.vaultListScope === 'trash' ? (
         <CredentialVaultArchivedBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
@@ -131,7 +129,7 @@ function CredentialsVaultPageContent() {
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
           count={vault.selection.selectedCount}
-          archivedList={vault.vaultListScope === 'archived'}
+          archivedList={vault.vaultListScope === 'trash'}
           busy={vault.loading}
           showSelectAll={vault.pageCredentialIds.length > 0}
           selectedIds={vault.selection.selectedIdList}

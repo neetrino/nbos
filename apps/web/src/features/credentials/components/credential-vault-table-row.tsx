@@ -14,7 +14,7 @@ import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialVaultTableRowProps {
   cred: CredentialListItem;
-  isArchivedList: boolean;
+  isTrashList: boolean;
   secretFlashCredentialId: string | null;
   selectionEnabled: boolean;
   selectionActive: boolean;
@@ -28,7 +28,7 @@ export interface CredentialVaultTableRowProps {
 
 export function CredentialVaultTableRow({
   cred,
-  isArchivedList,
+  isTrashList,
   secretFlashCredentialId,
   selectionEnabled,
   selectionActive,
@@ -76,7 +76,7 @@ export function CredentialVaultTableRow({
         onSetFavorite={onSetFavorite}
       />
       <TableCell onClick={(e) => e.stopPropagation()}>
-        <CredentialVaultTableUrlCell cred={cred} isArchivedList={isArchivedList} />
+        <CredentialVaultTableUrlCell cred={cred} isTrashList={isTrashList} />
       </TableCell>
     </TableRow>
   );

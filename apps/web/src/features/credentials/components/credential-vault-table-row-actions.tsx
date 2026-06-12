@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 
 export function CredentialVaultTableUrlCell({
   cred,
-  isArchivedList,
+  isTrashList,
 }: {
   cred: CredentialListItem;
-  isArchivedList: boolean;
+  isTrashList: boolean;
 }) {
-  if (cred.url && !isArchivedList) {
+  if (cred.url && !isTrashList) {
     return (
       <Button
         type="button"
@@ -35,7 +35,7 @@ export function CredentialVaultTableUrlCell({
       </Button>
     );
   }
-  if (cred.url && isArchivedList) {
+  if (cred.url && isTrashList) {
     return <span className="text-muted-foreground text-xs break-all">{cred.url}</span>;
   }
   return <>—</>;

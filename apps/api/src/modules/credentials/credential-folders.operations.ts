@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@nbos/database';
 import { buildCredentialRowVisibilityWhere } from './credential-visibility.loader';
 import type { CredentialsAccessContext } from './credentials-access';
@@ -63,7 +63,12 @@ export async function listCredentialFolders(
       parseFolderParentIdFilter(parentId),
       projectId?.trim() || undefined,
     ),
-    include: { _count: { select: { memberships: true } } },
+    include: {
+      memberships: {
+        where: { credential: { archivedAt: null } },
+        select: { credentialId: true },
+      },
+    },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
   });
 
@@ -75,7 +80,7 @@ export async function listCredentialFolders(
       projectId: folder.projectId,
       parentId: folder.parentId,
       sortOrder: folder.sortOrder,
-      credentialCount: folder._count.memberships,
+      credentialCount: folder.memberships.length,
     })),
   };
 }
@@ -163,7 +168,9 @@ export async function updateCredentialFolder(
   };
 }
 
-export async function archiveCredentialFolder(
+const NON_EMPTY_FOLDER_MESSAGE = 'Move credentials to Trash or remove them first.';
+
+export async function deleteCredentialFolder(
   runtime: CredentialsRuntime,
   folderId: string,
   access: CredentialsAccessContext,
@@ -173,18 +180,37 @@ export async function archiveCredentialFolder(
   });
   if (!existing) throw new NotFoundException(`Credential folder ${folderId} not found`);
 
-  await runtime.prisma.credentialFolder.update({
-    where: { id: folderId },
-    data: { archivedAt: new Date() },
-  });
+  const [activeMemberships, childFolders] = await Promise.all([
+    runtime.prisma.credentialFolderMembership.count({
+      where: { folderId, credential: { archivedAt: null } },
+    }),
+    runtime.prisma.credentialFolder.count({
+      where: { parentId: folderId, archivedAt: null },
+    }),
+  ]);
+
+  if (activeMemberships > 0 || childFolders > 0) {
+    throw new ConflictException(NON_EMPTY_FOLDER_MESSAGE);
+  }
+
+  await runtime.prisma.credentialFolder.delete({ where: { id: folderId } });
 
   await runtime.auditService.log({
     entityType: 'credential_folder',
     entityId: folderId,
-    action: 'credential_folder.archived',
+    action: 'credential_folder.deleted',
     userId: access.employeeId,
     projectId: existing.projectId ?? undefined,
   });
+}
+
+/** @deprecated Use deleteCredentialFolder (Model 6 empty-only hard delete). */
+export async function archiveCredentialFolder(
+  runtime: CredentialsRuntime,
+  folderId: string,
+  access: CredentialsAccessContext,
+) {
+  return deleteCredentialFolder(runtime, folderId, access);
 }
 
 export function normalizeCredentialFolderIds(input: {

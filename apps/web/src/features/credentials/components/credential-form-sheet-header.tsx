@@ -205,7 +205,7 @@ export function CredentialFormSheetHeader({
               onClick={() => onRequestArchive(credentialId, name)}
             >
               <Trash2 className="mr-2 size-4" />
-              Archive
+              Move to Trash
             </DropdownMenuItem>
           ) : null}
         </DetailSheetSettingsMenu>

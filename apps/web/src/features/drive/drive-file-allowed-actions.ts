@@ -1,5 +1,6 @@
 import type { FileAsset } from '@/lib/api/drive';
 import type { DriveActionCapabilities } from './drive-action-capabilities';
+import { isDriveFileInTrash } from './drive-lifecycle';
 
 /** Mirrors API `DRIVE_FILE_ACTIONS` in `drive-file-action-policy.ts`. */
 export const DRIVE_FILE_ACTION_KEYS = [
@@ -77,12 +78,13 @@ export function buildDriveFileActionGates(
       canMoveToTrash: false,
     };
   }
-  const isArchived = file.status === 'ARCHIVED';
-  const isTrash = file.status === 'DELETED';
+  const inTrash = isDriveFileInTrash(file);
   const deleteFamily =
     serverAllows(serverActions, 'ARCHIVE') ||
     serverAllows(serverActions, 'TRASH') ||
     serverAllows(serverActions, 'PERMANENT_DELETE');
+  const canTrash =
+    serverAllows(serverActions, 'TRASH') || serverAllows(serverActions, 'PERMANENT_DELETE');
 
   return {
     canShare: caps.canShareFile && serverAllows(serverActions, 'SHARE'),
@@ -91,9 +93,9 @@ export function buildDriveFileActionGates(
     canRemovePlacement: caps.canRemoveFromFolder && serverAllows(serverActions, 'REMOVE_PLACEMENT'),
     canUnlink: caps.canUnlinkFromRecord && serverAllows(serverActions, 'UNLINK'),
     canUploadVersion:
-      !isTrash && serverAllows(serverActions, 'UPLOAD_VERSION') && file.storageProvider === 'R2',
-    canArchive: !isTrash && !isArchived && serverAllows(serverActions, 'ARCHIVE'),
-    canRestore: (isTrash || isArchived) && deleteFamily,
-    canMoveToTrash: isArchived && serverAllows(serverActions, 'PERMANENT_DELETE'),
+      !inTrash && serverAllows(serverActions, 'UPLOAD_VERSION') && file.storageProvider === 'R2',
+    canArchive: false,
+    canRestore: inTrash && deleteFamily,
+    canMoveToTrash: !inTrash && canTrash,
   };
 }

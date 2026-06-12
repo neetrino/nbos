@@ -45,7 +45,9 @@ export interface CredentialQueryParams {
   folderId?: string;
   withoutFolder?: boolean;
   viewScope?: string;
+  /** @deprecated Prefer `scope`. Transitional alias for trash list. */
   includeArchived?: boolean;
+  scope?: 'active' | 'trash';
   sort?: CredentialListSort;
 }
 

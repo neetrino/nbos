@@ -11,7 +11,7 @@ import { PermissionGate } from '@/lib/permissions';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import { credentialVaultCheckboxRevealClass } from '@/features/credentials/constants/credential-vault-selection-checkbox';
 
-export type VaultListScope = 'active' | 'archived';
+export type VaultListScope = 'active' | 'trash';
 
 export interface CredentialVaultTableSelectionProps {
   enabled: boolean;
@@ -51,7 +51,7 @@ export function CredentialVaultTable({
   showCreate,
   selection,
 }: CredentialVaultTableProps) {
-  const isArchivedList = listScope === 'archived';
+  const isTrashList = listScope === 'trash';
   const pageIds = selection?.pageIds ?? [];
   const allPageSelected = Boolean(
     selection?.enabled && pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id)),
@@ -129,7 +129,7 @@ export function CredentialVaultTable({
             <CredentialVaultTableRow
               key={cred.id}
               cred={cred}
-              isArchivedList={isArchivedList}
+              isTrashList={isTrashList}
               secretFlashCredentialId={secretFlashCredentialId}
               selectionEnabled={selection?.enabled ?? false}
               selectionActive={bulkSelectionStarted}

@@ -147,8 +147,8 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
             p.viewMode === 'folders' && p.activeTab === 'project' && p.projectId
               ? p.projectId
               : undefined,
-          tab: p.vaultListScope === 'archived' ? undefined : vaultScopeToListTab(p.activeTab),
-          includeArchived: p.vaultListScope === 'archived',
+          tab: p.vaultListScope === 'trash' ? undefined : vaultScopeToListTab(p.activeTab),
+          scope: p.vaultListScope === 'trash' ? 'trash' : 'active',
           sort: p.listSort,
         });
         if (generation !== fetchGenerationRef.current) return;

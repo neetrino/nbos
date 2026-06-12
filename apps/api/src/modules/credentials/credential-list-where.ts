@@ -1,4 +1,8 @@
 import type { Prisma } from '@nbos/database';
+import {
+  buildScopeWhere,
+  parseLifecycleScopeFromQuery,
+} from '../../common/lifecycle/entity-lifecycle-scope';
 import { credentialsRbacBypassesRowFilter } from './credentials-access';
 import { buildCredentialVisibilityOr } from './credentials-visibility';
 import type { CredentialQueryParams } from './credential-domain.types';
@@ -27,11 +31,12 @@ export async function buildCredentialListWhere(
     withoutFolder = false,
     viewScope,
     includeArchived = false,
+    scope,
   } = params;
 
   const where: Prisma.CredentialWhereInput = {};
-  if (includeArchived) where.archivedAt = { not: null };
-  else where.archivedAt = null;
+  const listScope = scope ?? parseLifecycleScopeFromQuery(undefined, includeArchived);
+  Object.assign(where, buildScopeWhere(listScope, { field: 'archivedAt' }));
 
   if (projectId) where.projectId = projectId;
   if (category) where.category = category as Prisma.CredentialWhereInput['category'];
