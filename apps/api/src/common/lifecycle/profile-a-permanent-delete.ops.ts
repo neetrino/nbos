@@ -64,7 +64,7 @@ function specForKey(key: ProfileAPermanentDeleteKey) {
 export async function permanentlyDeleteProfileATrashedEntity(
   prisma: InstanceType<typeof PrismaClient>,
   auditService: AuditService,
-  params: { key: ProfileAPermanentDeleteKey; id: string; userId?: string },
+  params: { key: ProfileAPermanentDeleteKey; id: string; userId: string },
 ): Promise<void> {
   const spec = specForKey(params.key);
   const purgeable = await findPurgeableRow(prisma, params.key, params.id);
@@ -99,39 +99,45 @@ async function findPurgeableRow(
   id: string,
 ): Promise<{ projectId?: string | null } | null> {
   if (key === 'contact') {
-    return prisma.contact.findFirst({
+    const row = await prisma.contact.findFirst({
       where: permanentPurgeableTrashedContactWhere(id),
       select: { id: true },
     });
+    return row ? {} : null;
   }
   if (key === 'company') {
-    return prisma.company.findFirst({
+    const row = await prisma.company.findFirst({
       where: permanentPurgeableTrashedCompanyWhere(id),
       select: { id: true },
     });
+    return row ? {} : null;
   }
   if (key === 'lead') {
-    return prisma.lead.findFirst({
+    const row = await prisma.lead.findFirst({
       where: permanentPurgeableTrashedLeadWhere(id),
       select: { id: true },
     });
+    return row ? {} : null;
   }
   if (key === 'deal') {
-    return prisma.deal.findFirst({
+    const row = await prisma.deal.findFirst({
       where: permanentPurgeableTrashedDealWhere(id),
       select: { id: true, projectId: true },
     });
+    return row ? { projectId: row.projectId } : null;
   }
   if (key === 'partner') {
-    return prisma.partner.findFirst({
+    const row = await prisma.partner.findFirst({
       where: permanentPurgeableTrashedPartnerWhere(id),
       select: { id: true },
     });
+    return row ? {} : null;
   }
-  return prisma.project.findFirst({
+  const row = await prisma.project.findFirst({
     where: permanentPurgeableTrashedProjectWhere(id),
     select: { id: true },
   });
+  return row ? {} : null;
 }
 
 async function readTrashedAt(

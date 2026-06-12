@@ -42,6 +42,7 @@ describe('permanentlyDeleteProfileATrashedEntity', () => {
       permanentlyDeleteProfileATrashedEntity(prisma as never, auditService as never, {
         key: 'lead',
         id: 'missing',
+        userId: 'u-1',
       }),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
@@ -54,6 +55,7 @@ describe('permanentlyDeleteProfileATrashedEntity', () => {
       permanentlyDeleteProfileATrashedEntity(prisma as never, auditService as never, {
         key: 'deal',
         id: 'd-1',
+        userId: 'u-1',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
@@ -66,6 +68,7 @@ describe('permanentlyDeleteProfileATrashedEntity', () => {
       permanentlyDeleteProfileATrashedEntity(prisma as never, auditService as never, {
         key: 'partner',
         id: 'p-1',
+        userId: 'u-1',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
   });

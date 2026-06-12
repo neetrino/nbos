@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@nbos/database';
 import type { AuditService } from '../../modules/audit/audit.service';
+import { PLATFORM_SCHEDULER_AUDIT_ACTOR_ID } from '../../modules/platform-lifecycle/platform-trash-purge.constants';
 import { resolveRetentionMsForEntity } from './platform-retention-rules.resolver';
 import {
   purgeableTrashedCompanyWhere,
@@ -106,6 +107,7 @@ async function purgeEntityBatch(
         entityType: spec.entityType,
         entityId: row.id,
         action: spec.auditAction,
+        userId: PLATFORM_SCHEDULER_AUDIT_ACTOR_ID,
         projectId: row.projectId ?? undefined,
         changes: { scheduled: true },
       }),

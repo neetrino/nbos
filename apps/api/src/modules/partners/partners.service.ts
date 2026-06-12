@@ -336,7 +336,7 @@ export class PartnersService {
     return serializePartner(row);
   }
 
-  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+  async permanentlyDeleteFromTrash(id: string, userId: string) {
     await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
       key: 'partner',
       id,

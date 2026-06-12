@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@nbos/database';
 import type { AuditService } from '../audit/audit.service';
+import { PLATFORM_SCHEDULER_AUDIT_ACTOR_ID } from '../platform-lifecycle/platform-trash-purge.constants';
 import { MAIL_TRASH_PURGE_BATCH_CAP } from './mail-trash-retention.constants';
 import { trashedMailThreadRetentionWhere } from './mail-trash-retention.where';
 import {
@@ -40,6 +41,7 @@ export async function purgeTrashedMailThreadsPastRetention(
         entityType: MAIL_AUDIT_ENTITY_THREAD,
         entityId: row.id,
         action: MAIL_AUDIT_ACTION_THREAD_RETENTION_PURGED,
+        userId: PLATFORM_SCHEDULER_AUDIT_ACTOR_ID,
         changes: {
           mailAccountId: row.mailAccountId,
           subjectNormalized: row.subjectNormalized,

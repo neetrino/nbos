@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@nbos/database';
 import type { AuditService } from '../audit/audit.service';
+import { PLATFORM_SCHEDULER_AUDIT_ACTOR_ID } from '../platform-lifecycle/platform-trash-purge.constants';
 import { CREDENTIAL_TRASH_PURGE_BATCH_CAP } from './credential-trash-retention.constants';
 import { trashedCredentialRetentionWhere } from './credential-trash-retention.where';
 
@@ -36,6 +37,7 @@ export async function purgeTrashedCredentialsPastRetention(
         entityType: 'credential',
         entityId: row.id,
         action: 'credential.retention_purged',
+        userId: PLATFORM_SCHEDULER_AUDIT_ACTOR_ID,
         projectId: row.projectId ?? undefined,
         changes: { scheduled: true },
       }),

@@ -300,7 +300,7 @@ export class LeadsService {
     });
   }
 
-  async permanentlyDeleteFromTrash(id: string, userId?: string) {
+  async permanentlyDeleteFromTrash(id: string, userId: string) {
     await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
       key: 'lead',
       id,

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { resolveRetentionMsForEntity } from '../../common/lifecycle/platform-retention-rules.resolver';
@@ -9,6 +9,7 @@ import { purgeDriveTrashRetentionBatch } from '../drive/drive-trash-retention-pu
 import { purgeProfileATrashPastRetention } from '../../common/lifecycle/profile-a-trash-purge.ops';
 import { purgeTrashedMailThreadsPastRetention } from '../mail/mail-trash-purge.ops';
 import {
+  PLATFORM_SCHEDULER_AUDIT_ACTOR_ID,
   PLATFORM_TRASH_PURGE_AUDIT_ACTION,
   PLATFORM_TRASH_PURGE_AUDIT_ENTITY,
 } from './platform-trash-purge.constants';
@@ -70,7 +71,8 @@ export class PlatformTrashPurgeService {
       entityType: PLATFORM_TRASH_PURGE_AUDIT_ENTITY,
       entityId: PLATFORM_TRASH_PURGE_AUDIT_ENTITY,
       action: PLATFORM_TRASH_PURGE_AUDIT_ACTION,
-      changes: result,
+      userId: PLATFORM_SCHEDULER_AUDIT_ACTOR_ID,
+      changes: result as unknown as InputJsonValue,
     });
 
     this.logger.log(
