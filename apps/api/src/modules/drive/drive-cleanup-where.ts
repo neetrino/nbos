@@ -40,6 +40,20 @@ export function softDeletedRetentionWhere(now: Date): Prisma.FileAssetWhereInput
   return { status: 'DELETED', deletedAt: { lt: cutoff } };
 }
 
+/** Trash past retention with no blocking relations — safe for hard purge + R2 delete. */
+export function purgeableSoftDeletedRetentionWhere(now: Date): Prisma.FileAssetWhereInput {
+  return {
+    AND: [
+      softDeletedRetentionWhere(now),
+      { documentAttachments: { none: {} } },
+      { emailAttachments: { none: {} } },
+      { messengerChannelAttachments: { none: {} } },
+      { messengerDirectAttachments: { none: {} } },
+      { links: { none: { unlinkedAt: null } } },
+    ],
+  };
+}
+
 export function oldTaskAttachmentLinkWhere(now: Date): Prisma.FileLinkWhereInput {
   const cutoff = new Date(now.getTime() - DRIVE_TASK_ATTACHMENT_RETENTION_MS);
   return {
