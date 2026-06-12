@@ -39,6 +39,7 @@ export class DealsController {
   @ApiQuery({ name: 'type', required: false, type: String })
   @ApiQuery({ name: 'sellerId', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -48,6 +49,7 @@ export class DealsController {
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('scope') scope?: string,
   ) {
     return this.dealsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -58,6 +60,7 @@ export class DealsController {
       search,
       sortBy,
       sortOrder,
+      scope,
     });
   }
 
@@ -203,10 +206,23 @@ export class DealsController {
     return this.dealsService.findById(id);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore deal from Trash' })
+  async restore(@Param('id') id: string) {
+    return this.dealsService.restoreFromTrash(id).then(() => this.dealsService.findById(id));
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed deal (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.dealsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete deal' })
+  @ApiOperation({ summary: 'Move deal to Trash' })
   async remove(@Param('id') id: string) {
-    await this.dealsService.delete(id);
+    await this.dealsService.moveToTrash(id);
   }
 }

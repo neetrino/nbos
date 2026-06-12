@@ -28,7 +28,7 @@ export interface Project {
   code: string;
   name: string;
   description: string | null;
-  isArchived: boolean;
+  trashedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   company: { id: string; name: string } | null;
@@ -287,7 +287,16 @@ export const projectsApi = {
     return resp.data;
   },
 
-  async delete(id: string): Promise<void> {
+  async moveToTrash(id: string): Promise<void> {
     await api.delete(`/api/projects/${id}`);
+  },
+
+  async restore(id: string): Promise<FullProject> {
+    const resp = await api.post<FullProject>(`/api/projects/${id}/restore`);
+    return resp.data;
+  },
+
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/projects/${id}/permanent`);
   },
 };

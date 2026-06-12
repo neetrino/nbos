@@ -41,6 +41,8 @@ export interface CredentialFormSheetStateSlice {
   accessLevel: string;
   nextRotationAt: string;
   manualGrants: { employeeId: string; level: 'VIEW' | 'EDIT'; expiresAt: string | null }[];
+  folderId: string | null;
+  folderEditable: boolean;
   stepUpField: CredentialSecretField | null;
   stepUpMode: 'reveal' | 'copy';
   setStepUpField: Dispatch<SetStateAction<CredentialSecretField | null>>;
@@ -81,6 +83,7 @@ function buildCredentialUpdateBody(state: CredentialFormSheetStateSlice): Record
     secureNotes: state.comment.trim() === '' ? null : state.comment.trim(),
     accessLevel: state.accessLevel,
     nextRotationAt: state.nextRotationAt || null,
+    folderId: state.folderEditable ? state.folderId : undefined,
     acknowledgeOrphanedSecrets:
       state.orphanedSecretsAcknowledged &&
       state.detailCredentialType !== null &&
@@ -99,6 +102,7 @@ export function useCredentialFormSheetActions(
     onOpenChange,
     projectId,
     productId,
+    initialFolderId,
     successToast,
     continueAfterCreate = false,
     onCreated,
@@ -158,6 +162,7 @@ export function useCredentialFormSheetActions(
         };
         if (projectId) body.projectId = projectId;
         if (productId) body.productId = productId;
+        if (initialFolderId !== undefined) body.folderId = initialFolderId;
         if (state.accessLevel === 'PERSONAL' && creatorId) body.ownerId = creatorId;
         const created = await credentialsApi.create(body);
         if (successToast !== false) toast.success(successToast ?? CREATE_DEFAULT_SUCCESS_TOAST);
@@ -187,6 +192,7 @@ export function useCredentialFormSheetActions(
     onSaved,
     productId,
     projectId,
+    initialFolderId,
     saveEditInBackground,
     state,
     successToast,

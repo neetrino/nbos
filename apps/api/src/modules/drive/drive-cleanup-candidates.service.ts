@@ -8,7 +8,7 @@ import {
   failedUploadSessionWhere,
   oldTaskAttachmentLinkWhere,
   orphanFileWhere,
-  softDeletedRetentionWhere,
+  purgeableSoftDeletedRetentionWhere,
   temporaryExportFileWhere,
 } from './drive-cleanup-where';
 
@@ -174,7 +174,7 @@ export class DriveCleanupCandidatesService {
   }
 
   private async softDeletedRetention(now: Date): Promise<DriveCleanupCandidateCategory> {
-    const where = softDeletedRetentionWhere(now);
+    const where = purgeableSoftDeletedRetentionWhere(now);
     const rows = await this.prisma.fileAsset.findMany({
       where,
       select: { id: true, displayName: true, deletedAt: true, sizeBytes: true },
@@ -184,7 +184,7 @@ export class DriveCleanupCandidatesService {
     const count = await this.prisma.fileAsset.count({ where });
     return this.category(
       'soft_deleted_retention',
-      'Trash files past retention',
+      'Trash files past retention (purgeable)',
       count,
       rows,
       (row) => ({

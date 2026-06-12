@@ -100,7 +100,7 @@ describe('ExtensionsService', () => {
       expect(prisma.extension.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            project: { is: { companyId: 'comp-1' } },
+            project: { is: { companyId: 'comp-1', trashedAt: null } },
           }),
         }),
       );
@@ -635,10 +635,10 @@ describe('ExtensionsService', () => {
   });
 
   describe('delete', () => {
-    it('deletes when found', async () => {
+    it('rejects hard delete with conflict', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1' });
-      await service.delete('e1');
-      expect(prisma.extension.delete).toHaveBeenCalledWith({ where: { id: 'e1' } });
+      await expect(service.delete('e1')).rejects.toMatchObject({ status: 409 });
+      expect(prisma.extension.delete).not.toHaveBeenCalled();
     });
   });
 

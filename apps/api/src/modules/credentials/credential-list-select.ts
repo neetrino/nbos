@@ -30,8 +30,15 @@ export const CREDENTIAL_LIST_SELECT = {
   rotationOwnerId: true,
   createdAt: true,
   updatedAt: true,
-  archivedAt: true,
+  trashedAt: true,
   project: { select: { id: true, name: true } },
   department: { select: { id: true, name: true } },
   owner: { select: { id: true, firstName: true, lastName: true } },
+  folderMemberships: {
+    select: {
+      folderId: true,
+      isPrimary: true,
+      folder: { select: { id: true, name: true } },
+    },
+  },
 } as const;

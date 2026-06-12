@@ -7,6 +7,7 @@ export function useContactSearchOptions() {
   return useCallback(async (query: string) => {
     const res = await contactsApi.getAll({
       pageSize: 25,
+      scope: 'active',
       search: query.trim() || undefined,
     });
     return res.items.map((c) => ({

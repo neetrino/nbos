@@ -6,6 +6,7 @@ import {
   EMPLOYEE_OFFBOARDING_TEMPLATE_NAME,
 } from '@nbos/shared';
 import { auditCredentialAccessRevokedOnOffboard } from '../credentials/credential-offboarding-audit';
+import { revokeCredentialAccessForOffboard } from '../credentials/credential-offboarding-revoke.ops';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
@@ -16,7 +17,6 @@ import type {
   EmployeeOffboardingRevokeSummary,
 } from './employee-offboarding.types';
 
-const RESOURCE_TYPE_CREDENTIAL = 'credential';
 const OFFBOARD_NOTIFICATION_TYPE = 'employee.offboarding.finance';
 
 @Injectable()
@@ -54,7 +54,13 @@ export class EmployeeOffboardingService {
     ]);
 
     const result = await this.prisma.$transaction(async (tx) => {
-      const revoked = await this.revokeAccess(tx, employeeId, now);
+      const credentialRevoke = await revokeCredentialAccessForOffboard(tx, employeeId, now);
+      const { summary: revoked, auditedCredentialIds } = await this.revokeAccess(
+        tx,
+        employeeId,
+        now,
+        credentialRevoke,
+      );
       const templateIds = await this.ensureOffboardingTemplate(tx, actorId);
       const snapshot = buildEmployeeOffboardingSnapshotItems({ autoCompletedKeys });
 
@@ -80,7 +86,7 @@ export class EmployeeOffboardingService {
         },
       });
 
-      return { updated, revoked, checklistInstanceId: checklistInstance.id };
+      return { updated, revoked, auditedCredentialIds, checklistInstanceId: checklistInstance.id };
     });
 
     await this.audit.log({
@@ -97,7 +103,7 @@ export class EmployeeOffboardingService {
 
     await auditCredentialAccessRevokedOnOffboard(
       this.audit,
-      inventory.credentialIds,
+      result.auditedCredentialIds,
       employeeId,
       actorId,
     );
@@ -136,6 +142,7 @@ export class EmployeeOffboardingService {
       resourceGrants,
       fileGrants,
       credentialGrants,
+      allowedListCredentials,
     ] = await Promise.all([
       this.prisma.task.count({
         where: {
@@ -161,11 +168,22 @@ export class EmployeeOffboardingService {
         where: {
           employeeId,
           revokedAt: null,
-          resourceType: RESOURCE_TYPE_CREDENTIAL,
+          resourceType: 'credential',
         },
         select: { resourceId: true },
       }),
+      this.prisma.credential.findMany({
+        where: { trashedAt: null, allowedEmployees: { has: employeeId } },
+        select: { id: true },
+      }),
     ]);
+
+    const credentialIds = [
+      ...new Set([
+        ...credentialGrants.map((row) => row.resourceId),
+        ...allowedListCredentials.map((row) => row.id),
+      ]),
+    ];
 
     return {
       activeTaskCount,
@@ -176,7 +194,7 @@ export class EmployeeOffboardingService {
       credentialGrantCount: credentialGrants.length,
       projectIds: projectTeams.map((row) => row.projectId),
       productIds: productTeams.map((row) => row.productId),
-      credentialIds: credentialGrants.map((row) => row.resourceId),
+      credentialIds,
     };
   }
 
@@ -184,14 +202,11 @@ export class EmployeeOffboardingService {
     tx: TransactionClient,
     employeeId: string,
     now: Date,
-  ): Promise<EmployeeOffboardingRevokeSummary> {
-    const credentialGrantCount = await tx.resourceAccessGrant.count({
-      where: {
-        employeeId,
-        revokedAt: null,
-        resourceType: RESOURCE_TYPE_CREDENTIAL,
-      },
-    });
+    credentialRevoke: Awaited<ReturnType<typeof revokeCredentialAccessForOffboard>>,
+  ): Promise<{
+    summary: EmployeeOffboardingRevokeSummary;
+    auditedCredentialIds: string[];
+  }> {
     const resourceGrants = await tx.resourceAccessGrant.updateMany({
       where: { employeeId, revokedAt: null },
       data: { revokedAt: now },
@@ -212,12 +227,17 @@ export class EmployeeOffboardingService {
     });
 
     return {
-      resourceGrantsRevoked: resourceGrants.count,
-      fileGrantsRevoked: fileGrants.count,
-      projectTeamRemovals: projectTeamRemovals.count,
-      productTeamRemovals: productTeamRemovals.count,
-      credentialGrantsRevoked: credentialGrantCount,
-      accessOverridesClosed: accessOverridesClosed.count,
+      summary: {
+        resourceGrantsRevoked: resourceGrants.count,
+        fileGrantsRevoked: fileGrants.count,
+        projectTeamRemovals: projectTeamRemovals.count,
+        productTeamRemovals: productTeamRemovals.count,
+        credentialGrantsRevoked: credentialRevoke.credentialGrantsRevoked,
+        credentialAllowedListEntriesCleared: credentialRevoke.allowedEmployeesEntriesCleared,
+        credentialFavoritesRemoved: credentialRevoke.favoritesRemoved,
+        accessOverridesClosed: accessOverridesClosed.count,
+      },
+      auditedCredentialIds: credentialRevoke.credentialIds,
     };
   }
 

@@ -27,6 +27,13 @@ import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
 import { resolveTaskSprintAssignment } from './task-sprint-assign.op';
+import type { EntityLifecycleScope } from '@nbos/shared';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../common/lifecycle/entity-lifecycle-guards';
+import { isTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
+import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
 
 interface CreateTaskDto {
   title: string;
@@ -87,6 +94,7 @@ interface TaskQueryParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   involvesEmployeeId?: string;
+  scope?: EntityLifecycleScope;
   access?: TasksAccessContext;
 }
 
@@ -122,7 +130,10 @@ export class TasksService {
 
   async findByEntity(entityType: string, entityId: string) {
     const items = await this.prisma.task.findMany({
-      where: { links: { some: { entityType, entityId } } },
+      where: {
+        trashedAt: null,
+        links: { some: { entityType, entityId } },
+      },
       include: TASK_DETAIL_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
@@ -186,6 +197,7 @@ export class TasksService {
 
   async update(id: string, data: UpdateTaskDto, access?: TasksAccessContext) {
     const existing = await this.findById(id, access);
+    this.assertTaskMutable(existing);
     if (data.creatorId !== undefined) {
       const creatorId = data.creatorId.trim();
       if (!creatorId) throw new BadRequestException('creatorId is required');
@@ -248,6 +260,7 @@ export class TasksService {
   /** Move task to Review (work done, awaiting approval). */
   async submitForReview(id: string, reviewerId?: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     if (task.status === 'COMPLETED') {
       throw new BadRequestException('Completed tasks cannot be submitted for review.');
     }
@@ -275,6 +288,7 @@ export class TasksService {
   /** Approve review so completion rules can pass. */
   async approveReview(id: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     if (task.status !== 'REVIEW') {
       throw new BadRequestException('Task is not in Review status.');
     }
@@ -290,6 +304,7 @@ export class TasksService {
   /** Send back to In Progress after review. */
   async requestReviewChanges(id: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     if (task.status !== 'REVIEW') {
       throw new BadRequestException('Task is not in Review status.');
     }
@@ -309,6 +324,7 @@ export class TasksService {
   /** Начать задачу */
   async start(id: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     if (task.status === 'COMPLETED') {
       throw new NotFoundException('Cannot start a completed task');
     }
@@ -324,6 +340,7 @@ export class TasksService {
   /** Завершить задачу */
   async complete(id: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     const blockers = buildTaskCompletionBlockers(task);
     if (blockers.length > 0) {
       throw new BadRequestException({
@@ -345,7 +362,8 @@ export class TasksService {
 
   /** Возобновить задачу */
   async reopen(id: string, access?: TasksAccessContext) {
-    await this.findById(id, access);
+    const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     const reopened = await this.prisma.task.update({
       where: { id },
       data: {
@@ -360,7 +378,8 @@ export class TasksService {
 
   /** Pause task (On hold) */
   async setOnHold(id: string, access?: TasksAccessContext) {
-    await this.findById(id, access);
+    const task = await this.findById(id, access);
+    this.assertTaskMutable(task);
     const onHold = await this.prisma.task.update({
       where: { id },
       data: { status: 'ON_HOLD' as TaskStatusEnum },
@@ -371,21 +390,50 @@ export class TasksService {
   }
 
   async delete(id: string, access?: TasksAccessContext) {
-    await this.findById(id, access);
-    return this.prisma.task.delete({ where: { id } });
+    const task = await this.findById(id, access);
+    const draftInput = {
+      status: task.status,
+      linkCount: task.links.length,
+      checklistCount: task._count.checklists,
+      subtaskCount: task._count.subtasks,
+      completedAt: task.completedAt,
+      reviewRequestedAt: task.reviewRequestedAt,
+    };
+    if (isTaskDraftDeletable(draftInput)) {
+      return this.prisma.task.delete({ where: { id } });
+    }
+    assertEntityIsActive(task, 'trashedAt', 'Task');
+    return this.prisma.task.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string, access?: TasksAccessContext) {
+    const task = await this.findById(id, access);
+    assertEntityIsTrashed(task, 'trashedAt', 'Task');
+    const restored = await this.prisma.task.update({
+      where: { id },
+      data: { trashedAt: null },
+      include: TASK_DETAIL_INCLUDE,
+    });
+    await attachTaskLinkDisplayNames(this.prisma, [restored]);
+    return restored;
   }
 
   // ─── LINKS ───────────────────────────────────────────────
 
   async addLink(taskId: string, entityType: string, entityId: string, access?: TasksAccessContext) {
-    await this.findById(taskId, access);
+    const task = await this.findById(taskId, access);
+    this.assertTaskMutable(task);
     return this.prisma.taskLink.create({
       data: { taskId, entityType, entityId },
     });
   }
 
   async removeLink(taskId: string, linkId: string, access?: TasksAccessContext) {
-    await this.findById(taskId, access);
+    const task = await this.findById(taskId, access);
+    this.assertTaskMutable(task);
     return this.prisma.taskLink.delete({
       where: { id: linkId, taskId },
     });
@@ -394,7 +442,8 @@ export class TasksService {
   // ─── CHECKLISTS ──────────────────────────────────────────
 
   async createChecklist(taskId: string, title: string, access?: TasksAccessContext) {
-    await this.findById(taskId, access);
+    const task = await this.findById(taskId, access);
+    this.assertTaskMutable(task);
     return this.prisma.taskChecklist.create({
       data: { taskId, title },
       include: { items: true },
@@ -505,15 +554,20 @@ export class TasksService {
       const scopedIds = await loadTasksScopedEmployeeIds(this.prisma, access);
       participantWhere = buildTasksParticipationWhere(scopedIds);
     }
+    const activeWhere = buildScopeWhere('active');
     const groupArgs = {
       _count: true as const,
-      ...(participantWhere ? { where: participantWhere } : {}),
+      where: participantWhere ? { AND: [participantWhere, activeWhere] } : activeWhere,
     };
     const [byStatus, byPriority] = await Promise.all([
       this.prisma.task.groupBy({ by: ['status'], ...groupArgs }),
       this.prisma.task.groupBy({ by: ['priority'], ...groupArgs }),
     ]);
     return { byStatus, byPriority };
+  }
+
+  private assertTaskMutable(task: { trashedAt?: Date | null }): void {
+    assertEntityIsActive(task, 'trashedAt', 'Task');
   }
 
   private async generateCode(): Promise<string> {

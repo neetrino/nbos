@@ -260,10 +260,17 @@ export class ExpensesController {
     return this.expensesService.update(id, body, financeExpenseAccessFromUser(user));
   }
 
+  @Post(':id/cancel')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
+  @ApiOperation({ summary: 'Cancel expense card (Profile D — preserves audit history)' })
+  async cancel(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.expensesService.cancel(id, financeExpenseAccessFromUser(user));
+  }
+
   @Delete(':id')
   @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete expense' })
+  @ApiOperation({ summary: 'Delete draft expense (PLANNED only, no payments)' })
   async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     await this.expensesService.delete(id, financeExpenseAccessFromUser(user));
   }

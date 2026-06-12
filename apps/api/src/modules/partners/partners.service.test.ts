@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { PartnersService } from './partners.service';
@@ -25,6 +25,7 @@ function mockPartnerRow(overrides: Record<string, unknown> = {}) {
     agreementOwner: null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+    trashedAt: null,
     contact: null,
     _count: { orders: 0, subscriptions: 0 },
     ...overrides,
@@ -37,7 +38,7 @@ describe('PartnersService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PartnersService(prisma as never);
+    service = new PartnersService(prisma as never, { log: vi.fn() } as never);
   });
 
   describe('findAll', () => {
@@ -129,6 +130,32 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should default list scope to active partners', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({});
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: null }),
+        }),
+      );
+    });
+
+    it('should list trashed partners when scope is trash', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({ scope: 'trash' });
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: { not: null } }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {
@@ -211,11 +238,44 @@ describe('PartnersService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('should delete partner', async () => {
-      prisma.partner.findUnique.mockResolvedValue(mockPartnerRow());
-      await service.delete('1');
-      expect(prisma.partner.delete).toHaveBeenCalledWith({ where: { id: '1' } });
+  describe('moveToTrash', () => {
+    it('should set trashedAt on partner', async () => {
+      prisma.partner.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await service.moveToTrash('1');
+      expect(prisma.partner.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { trashedAt: expect.any(Date) },
+      });
+    });
+
+    it('should reject when partner is already trashed', async () => {
+      prisma.partner.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date('2026-01-01T00:00:00.000Z'),
+      });
+      await expect(service.moveToTrash('1')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('restoreFromTrash', () => {
+    it('should clear trashedAt and return partner wire', async () => {
+      prisma.partner.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date('2026-01-01T00:00:00.000Z'),
+      });
+      prisma.partner.update.mockResolvedValue(mockPartnerRow({ trashedAt: null }));
+      const result = await service.restoreFromTrash('1');
+      expect(prisma.partner.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { trashedAt: null },
+        include: expect.any(Object),
+      });
+      expect(result.name).toBe('P1');
+    });
+
+    it('should reject when partner is not in Trash', async () => {
+      prisma.partner.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await expect(service.restoreFromTrash('1')).rejects.toThrow(BadRequestException);
     });
   });
 

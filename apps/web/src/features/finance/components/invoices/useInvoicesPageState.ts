@@ -42,7 +42,6 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const searchParams = useSearchParams();
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
-  const portfolioProjectIdFromUrl = options?.portfolioProjectIdFromUrl?.trim() || null;
   const portfolioCreateInvoiceFromUrl = options?.portfolioCreateInvoiceFromUrl === true;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
@@ -207,6 +206,17 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setInvoices((current) => replaceInvoice(current, updated));
   }, []);
 
+  const handleInvoiceDeleted = useCallback(
+    (invoiceId: string) => {
+      setSelectedInvoice(null);
+      setSheetOpen(false);
+      setStageGateHighlight(null);
+      setInvoices((current) => current.filter((row) => row.id !== invoiceId));
+      stripOpenInvoiceFromUrl();
+    },
+    [stripOpenInvoiceFromUrl],
+  );
+
   const handleInvoiceCreated = useCallback(
     async (created?: Invoice) => {
       await fetchInvoices();
@@ -249,6 +259,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     handleMoneyStatusChange,
     handlePaymentRecorded,
     handleInvoiceUpdated,
+    handleInvoiceDeleted,
     handleInvoiceCreated,
     invoiceListExportParams,
     stageGateHighlight,

@@ -1,60 +1,36 @@
 'use client';
 
-import { Fragment } from 'react';
 import { KanbanCardShell } from '@/components/shared';
-import { StatusBadge, type StatusVariant } from '@/components/shared/StatusBadge';
 import { cn } from '@/lib/utils';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
-import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
-import {
-  formatCredentialAccessLabel,
-  getCredentialCriticality,
-} from '@/features/credentials/constants/credentials';
+import { CredentialVaultCardMetaRow } from '@/features/credentials/components/credential-vault-card-meta-row';
+import { CredentialVaultCardHoverActions } from '@/features/credentials/components/credential-vault-card-hover-actions';
+import { getCredentialCriticality } from '@/features/credentials/constants/credentials';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
+import {
+  buildCredentialVaultCardMetaBadges,
+  credentialCriticalityAccentBarClass,
+} from '@/features/credentials/utils/credential-vault-card-meta';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
+import {
+  attachCredentialVaultDragCount,
+  CREDENTIAL_VAULT_DRAG_MIME,
+  detachCredentialVaultDragCount,
+  stringifyCredentialVaultDragPayload,
+  type CredentialVaultCardDragConfig,
+} from '@/features/credentials/utils/credential-vault-drag';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
 
-const VAULT_CARD_BADGE_CLASS = 'h-4 shrink-0 px-1.5 py-0 text-[10px] leading-none';
-
+const VAULT_CARD_WRAPPER_CLASS =
+  'group/card relative z-0 hover:z-30 focus-within:z-30 has-[[data-credential-vault-action]:hover]:z-30';
 const VAULT_CARD_BODY_CLASS = 'flex h-full min-h-0 flex-1 flex-col gap-1.5 p-2.5 pl-3';
-
 const VAULT_CARD_TITLE_CLASS = 'text-foreground line-clamp-2 text-sm leading-snug font-medium';
-
-interface VaultCardMetaItem {
-  key: string;
-  label: string;
-  variant: StatusVariant;
-}
-
-function CredentialVaultCardMetaRow({ items }: { items: VaultCardMetaItem[] }) {
-  return (
-    <div className="mt-auto flex min-w-0 shrink-0 flex-wrap items-center gap-1 pt-0.5">
-      {items.map((item, index) => (
-        <Fragment key={item.key}>
-          {index > 0 ? (
-            <span
-              className="text-muted-foreground/45 shrink-0 text-[10px] leading-none select-none"
-              aria-hidden
-            >
-              |
-            </span>
-          ) : null}
-          <StatusBadge
-            label={item.label}
-            variant={item.variant}
-            className={VAULT_CARD_BADGE_CLASS}
-          />
-        </Fragment>
-      ))}
-    </div>
-  );
-}
 
 export interface CredentialVaultCardProps {
   credential: CredentialListItem;
@@ -67,6 +43,10 @@ export interface CredentialVaultCardProps {
   selectionActive?: boolean;
   selected?: boolean;
   onToggleSelected?: () => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  canMoveToTrash?: boolean;
+  credentialDrag?: CredentialVaultCardDragConfig;
 }
 
 export function CredentialVaultCard({
@@ -80,82 +60,124 @@ export function CredentialVaultCard({
   selectionActive = false,
   selected = false,
   onToggleSelected,
+  onSetFavorite,
+  onRequestMoveToTrash,
+  canMoveToTrash = false,
+  credentialDrag,
 }: CredentialVaultCardProps) {
-  const category = getCredentialCategoryMeta(credential.category);
-  const criticality = getCredentialCriticality(credential.criticality);
-  const accessLabel = formatCredentialAccessLabel(credential.accessLevel);
-
-  const metaItems: VaultCardMetaItem[] = [
-    { key: 'category', label: category.label, variant: category.badgeVariant },
-  ];
-  if (criticality) {
-    metaItems.push({
-      key: 'criticality',
-      label: criticality.label,
-      variant: criticality.variant,
-    });
-  }
-  metaItems.push({ key: 'access', label: accessLabel, variant: 'gray' });
+  const draggable = Boolean(credentialDrag);
+  const criticalityMeta = getCredentialCriticality(credential.criticality);
+  const metaItems = buildCredentialVaultCardMetaBadges(credential, {
+    includeCriticality: false,
+  });
 
   return (
-    <KanbanCardShell
-      role="button"
-      tabIndex={0}
-      radius={variant === 'grid' ? 'lg' : 'xl'}
-      padding="none"
-      hoverShadow="md"
-      className={cn(
-        'group/card relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
-        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-      )}
-      onClick={(event) => {
-        if (isCredentialVaultCheckboxTarget(event.target)) return;
-        onOpen(credential.id);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onOpen(credential.id);
+    <div className={VAULT_CARD_WRAPPER_CLASS}>
+      <CredentialVaultCardHoverActions
+        credentialId={credential.id}
+        url={credential.url}
+        isFavorite={Boolean(credential.isFavorite)}
+        canMoveToTrash={canMoveToTrash}
+        onSetFavorite={
+          onSetFavorite ? (favorite) => onSetFavorite(credential.id, favorite) : undefined
         }
-      }}
-    >
-      <span
-        className={cn('absolute top-0 bottom-0 left-0 w-0.5', category.accentBarClass)}
-        aria-hidden
+        onRequestMoveToTrash={
+          onRequestMoveToTrash
+            ? () => onRequestMoveToTrash(credential.id, credential.name)
+            : undefined
+        }
       />
-      {selectionEnabled && onToggleSelected ? (
-        <div
+      <KanbanCardShell
+        role="button"
+        tabIndex={0}
+        draggable={draggable}
+        radius={variant === 'grid' ? 'lg' : 'xl'}
+        padding="none"
+        hoverShadow="md"
+        className={cn(
+          'relative flex h-full min-h-[104px] w-full cursor-pointer flex-col overflow-hidden',
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+          draggable && 'cursor-grab active:cursor-grabbing',
+        )}
+        onDragStart={
+          credentialDrag
+            ? (event) => {
+                event.stopPropagation();
+                const credentialIds = credentialDrag.resolveDragCredentialIds(credential.id);
+                attachCredentialVaultDragCount(
+                  event.currentTarget as HTMLElement,
+                  credentialIds.length,
+                );
+                event.dataTransfer.setData(
+                  CREDENTIAL_VAULT_DRAG_MIME,
+                  stringifyCredentialVaultDragPayload({ credentialIds }),
+                );
+                event.dataTransfer.effectAllowed = 'move';
+                credentialDrag.onDragStart?.(credentialIds);
+              }
+            : undefined
+        }
+        onDragEnd={
+          credentialDrag
+            ? (event) => {
+                detachCredentialVaultDragCount(event.currentTarget as HTMLElement);
+                credentialDrag.onDragEnd?.();
+              }
+            : undefined
+        }
+        onClick={(event) => {
+          if (isCredentialVaultCheckboxTarget(event.target)) return;
+          onOpen(credential.id);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onOpen(credential.id);
+          }
+        }}
+      >
+        <span
           className={cn(
-            'absolute top-2 right-2 z-10',
-            credentialVaultCheckboxRevealClass(
-              selectionActive,
-              selected,
-              'group-hover/card:opacity-100',
-            ),
+            'absolute top-0 bottom-0 left-0 w-0.5',
+            credentialCriticalityAccentBarClass(credential.criticality),
           )}
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <CredentialVaultSelectCheckbox
-            checked={selected}
-            ariaLabel={`Select ${credential.name}`}
-            onToggle={onToggleSelected}
-          />
+          title={criticalityMeta?.label}
+          aria-label={criticalityMeta ? `Criticality: ${criticalityMeta.label}` : 'Criticality'}
+        />
+        {selectionEnabled && onToggleSelected ? (
+          <div
+            className={cn(
+              'absolute top-2 right-2 z-10',
+              credentialVaultCheckboxRevealClass(
+                selectionActive,
+                selected,
+                'group-hover/card:opacity-100',
+              ),
+            )}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <CredentialVaultSelectCheckbox
+              checked={selected}
+              ariaLabel={`Select ${credential.name}`}
+              onToggle={onToggleSelected}
+            />
+          </div>
+        ) : null}
+        <div className={VAULT_CARD_BODY_CLASS}>
+          <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+            <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
+            <CredentialVaultPreviewStrip
+              className="min-h-0 flex-1"
+              credential={credential}
+              secretFlashCredentialId={secretFlashCredentialId}
+              onCopyText={onCopyText}
+              onCopySecret={onCopySecret}
+            />
+          </div>
+          <CredentialVaultCardMetaRow items={metaItems} />
         </div>
-      ) : null}
-      <div className={VAULT_CARD_BODY_CLASS}>
-        <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-          <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
-          <CredentialVaultPreviewStrip
-            className="min-h-0 flex-1"
-            credential={credential}
-            secretFlashCredentialId={secretFlashCredentialId}
-            onCopyText={onCopyText}
-            onCopySecret={onCopySecret}
-          />
-        </div>
-        <CredentialVaultCardMetaRow items={metaItems} />
-      </div>
-    </KanbanCardShell>
+      </KanbanCardShell>
+    </div>
   );
 }

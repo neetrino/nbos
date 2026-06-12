@@ -18,7 +18,7 @@ describe('CredentialsService permanent delete step-up', () => {
       id: '1',
       projectId: null,
       criticality: 'CRITICAL',
-      archivedAt: new Date(),
+      trashedAt: new Date(),
     });
     await expect(service.permanentlyDelete('1', accessUser1)).rejects.toBeInstanceOf(
       BadRequestException,
@@ -31,7 +31,7 @@ describe('CredentialsService permanent delete step-up', () => {
       id: '1',
       projectId: null,
       criticality: 'LOW',
-      archivedAt: new Date(),
+      trashedAt: new Date(),
     });
     await expect(service.permanentlyDelete('1', accessUser1)).rejects.toBeInstanceOf(
       BadRequestException,

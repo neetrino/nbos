@@ -35,8 +35,6 @@ export interface SheetFileAttachmentsProps {
   sectionTitle?: string;
   /** Shown under the header when there are no files yet (optional). */
   emptyHint?: string;
-  /** @deprecated Use `emptyHint`. Kept for existing call sites. */
-  uploadBarLabel?: string;
   onUpload: (files: File[]) => void | Promise<void>;
   onOpenFile: (file: FileAsset) => void;
   fileMenu: (file: FileAsset) => DriveFileCardMenuHandlers;
@@ -48,12 +46,10 @@ export function SheetFileAttachments({
   pendingUploads = [],
   loading = false,
   multiple = true,
-  gridColumns: _gridColumns,
   denseTiles = false,
   embedded = false,
   sectionTitle = SHEET_FILE_SECTION_TITLE,
   emptyHint,
-  uploadBarLabel,
   onUpload,
   onOpenFile,
   fileMenu,
@@ -66,7 +62,7 @@ export function SheetFileAttachments({
   const visibleFiles = files.slice(0, SHEET_FILE_TILE_LIMIT);
   const fileCount = files.length + pendingUploads.length;
   const hasFiles = loading || visibleFiles.length > 0 || pendingUploads.length > 0;
-  const hint = emptyHint ?? uploadBarLabel;
+  const hint = emptyHint;
   const barDisabled = loading;
   const headerLabel = hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle;
 
@@ -163,7 +159,7 @@ export function SheetFileAttachments({
                   SHEET_FILE_TILE_HEIGHT_CLASS,
                 )}
               >
-                <SheetPendingFileTile item={item} dense={denseTiles} />
+                <SheetPendingFileTile item={item} />
               </div>
             ))}
             {visibleFiles.map((file) => (

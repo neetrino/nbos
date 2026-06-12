@@ -1,7 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Star } from 'lucide-react';
 import type { CredentialQuickFilterKey } from '@/features/credentials/constants/credential-vault';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
@@ -13,6 +15,7 @@ export interface CredentialQuickFilterChipsProps {
   onCategoryChange: (category: string | null) => void;
   activeQuick: Set<CredentialQuickFilterKey>;
   onToggleQuick: (key: CredentialQuickFilterKey) => void;
+  trailing?: ReactNode;
 }
 
 export function CredentialQuickFilterChips({
@@ -22,46 +25,60 @@ export function CredentialQuickFilterChips({
   onCategoryChange,
   activeQuick,
   onToggleQuick,
+  trailing,
 }: CredentialQuickFilterChipsProps) {
   const showMineChip = vaultScope === 'all';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {categoryChips.map((chip) => {
-        const active = activeCategory === chip.value;
-        return (
+      <div className="flex flex-1 flex-wrap items-center gap-2">
+        {categoryChips.map((chip) => {
+          const active = activeCategory === chip.value;
+          return (
+            <Button
+              key={chip.value}
+              type="button"
+              size="sm"
+              variant={active ? 'default' : 'outline'}
+              className={cn('h-7 rounded-full px-3 text-xs')}
+              onClick={() => onCategoryChange(active ? null : chip.value)}
+            >
+              {chip.label}
+            </Button>
+          );
+        })}
+        {showMineChip && (
           <Button
-            key={chip.value}
             type="button"
             size="sm"
-            variant={active ? 'default' : 'outline'}
-            className={cn('h-7 rounded-full px-3 text-xs')}
-            onClick={() => onCategoryChange(active ? null : chip.value)}
+            variant={activeQuick.has('mine') ? 'default' : 'outline'}
+            className="h-7 rounded-full px-3 text-xs"
+            onClick={() => onToggleQuick('mine')}
           >
-            {chip.label}
+            Mine
           </Button>
-        );
-      })}
-      {showMineChip && (
+        )}
         <Button
           type="button"
           size="sm"
-          variant={activeQuick.has('mine') ? 'default' : 'outline'}
+          variant={activeQuick.has('favorites') ? 'default' : 'outline'}
           className="h-7 rounded-full px-3 text-xs"
-          onClick={() => onToggleQuick('mine')}
+          onClick={() => onToggleQuick('favorites')}
         >
-          Mine
+          <Star size={12} className={activeQuick.has('favorites') ? 'fill-current' : undefined} />
+          Favorites
         </Button>
-      )}
-      <Button
-        type="button"
-        size="sm"
-        variant={activeQuick.has('needsRotation') ? 'default' : 'outline'}
-        className="h-7 rounded-full px-3 text-xs"
-        onClick={() => onToggleQuick('needsRotation')}
-      >
-        Needs rotation
-      </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeQuick.has('needsRotation') ? 'default' : 'outline'}
+          className="h-7 rounded-full px-3 text-xs"
+          onClick={() => onToggleQuick('needsRotation')}
+        >
+          Needs rotation
+        </Button>
+      </div>
+      {trailing ? <div className="ml-auto flex shrink-0 items-center">{trailing}</div> : null}
     </div>
   );
 }

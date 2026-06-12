@@ -35,6 +35,7 @@ export class LeadsController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'sortBy', required: false, type: String })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -44,6 +45,7 @@ export class LeadsController {
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('scope') scope?: string,
   ) {
     return this.leadsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -54,6 +56,7 @@ export class LeadsController {
       search,
       sortBy,
       sortOrder,
+      scope,
     });
   }
 
@@ -152,10 +155,24 @@ export class LeadsController {
     return this.leadConversionService.convertToDeal(id, body, { actorRoleLevel: user?.roleLevel });
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore lead from Trash' })
+  async restore(@Param('id') id: string) {
+    await this.leadsService.restoreFromTrash(id);
+    return this.leadsService.findById(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed lead (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.leadsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete lead' })
+  @ApiOperation({ summary: 'Move lead to Trash' })
   async remove(@Param('id') id: string) {
-    await this.leadsService.delete(id);
+    await this.leadsService.moveToTrash(id);
   }
 }

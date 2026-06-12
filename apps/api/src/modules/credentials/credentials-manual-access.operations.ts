@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import type { CredentialsAccessContext } from './credentials-access';
 import type { CredentialManualGrantInput } from './credential-manual-grant.types';
 import { loadCredentialManualGrants, syncCredentialManualGrants } from './credential-manual-grants';

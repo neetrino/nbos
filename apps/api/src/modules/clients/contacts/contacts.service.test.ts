@@ -1,21 +1,42 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ContactsService } from './contacts.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('ContactsService', () => {
   let service: ContactsService;
   let prisma: MockPrisma;
+  let auditService: Pick<AuditService, 'log'>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ContactsService(prisma as never);
+    auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+    service = new ContactsService(prisma as never, auditService as never);
   });
 
   describe('findAll', () => {
     it('returns paginated result', async () => {
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
+    });
+
+    it('defaults to active scope', async () => {
+      await service.findAll({});
+      expect(prisma.contact.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: null }),
+        }),
+      );
+    });
+
+    it('applies trash scope', async () => {
+      await service.findAll({ scope: 'trash' });
+      expect(prisma.contact.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: { not: null } }),
+        }),
+      );
     });
 
     it('applies contact type filter', async () => {
@@ -87,7 +108,7 @@ describe('ContactsService', () => {
 
   describe('update', () => {
     it('updates contact fields', async () => {
-      prisma.contact.findUnique.mockResolvedValue({ id: '1' });
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
       prisma.contact.update.mockResolvedValue({ id: '1', firstName: 'Updated' });
       const result = await service.update('1', {
         firstName: 'Updated',
@@ -99,13 +120,48 @@ describe('ContactsService', () => {
       });
       expect(result.firstName).toBe('Updated');
     });
+
+    it('blocks update when contact is in Trash', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: new Date() });
+      await expect(service.update('1', { firstName: 'Updated' })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
-  describe('delete', () => {
-    it('deletes when found', async () => {
-      prisma.contact.findUnique.mockResolvedValue({ id: '1' });
-      await service.delete('1');
-      expect(prisma.contact.delete).toHaveBeenCalled();
+  describe('moveToTrash', () => {
+    it('sets trashedAt when active', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await service.moveToTrash('1');
+      expect(prisma.contact.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: expect.objectContaining({ trashedAt: expect.any(Date) }),
+        }),
+      );
+    });
+
+    it('throws when already in Trash', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: new Date() });
+      await expect(service.moveToTrash('1')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('restoreFromTrash', () => {
+    it('clears trashedAt when in Trash', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: new Date() });
+      await service.restoreFromTrash('1');
+      expect(prisma.contact.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { trashedAt: null },
+        }),
+      );
+    });
+
+    it('throws when not in Trash', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await expect(service.restoreFromTrash('1')).rejects.toThrow(BadRequestException);
     });
   });
 });

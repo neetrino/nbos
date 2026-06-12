@@ -45,6 +45,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
+import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
 import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -104,6 +105,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     InvitationsModule,
     ChecklistTemplatesModule,
     PlatformAccessModule,
+    PlatformLifecycleModule,
   ],
   controllers: [HealthController],
   providers: [

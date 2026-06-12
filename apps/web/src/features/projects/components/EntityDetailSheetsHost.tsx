@@ -98,12 +98,9 @@ export function EntityDetailSheetsHost({
   const [stageGateHighlight, setStageGateHighlight] =
     useState<DeliverySheetStageGateHighlight | null>(null);
 
-  const handleDetailItemRenamed = useCallback(
-    (_updated: DeliveryBoardItem) => {
-      onEntityUpdated();
-    },
-    [onEntityUpdated],
-  );
+  const handleDetailItemRenamed = useCallback(() => {
+    onEntityUpdated();
+  }, [onEntityUpdated]);
 
   const deliveryMutations = useDeliveryBoardMutations(onEntityUpdated, {
     onStageGateBlocked: (_item, _target, errors) => setStageGateHighlight({ errors }),

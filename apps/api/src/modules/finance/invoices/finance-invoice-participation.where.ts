@@ -5,7 +5,6 @@ import {
   financeScopedBypassRowFilter,
   loadFinanceScopedEmployeeIds,
   mergeFinanceWhere,
-  type FinanceScopedAccessContext,
 } from '../finance-scoped-access';
 import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LeadConversionService } from './lead-conversion.service';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
@@ -11,7 +11,7 @@ describe('LeadConversionService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    leadsService = new LeadsService(prisma as never);
+    leadsService = new LeadsService(prisma as never, { log: vi.fn() } as never);
     service = new LeadConversionService(prisma as never, leadsService);
   });
 

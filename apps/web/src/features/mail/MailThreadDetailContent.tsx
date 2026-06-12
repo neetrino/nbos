@@ -1,9 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, Forward, MailOpen, Reply, ShieldAlert, Trash2 } from 'lucide-react';
+import { Check, Forward, MailOpen, Reply, RotateCcw, ShieldAlert, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ErrorState, LoadingState, useDeleteConfirm } from '@/components/shared';
+import {
+  ErrorState,
+  LoadingState,
+  ProfileAPermanentDeleteDialog,
+  useDeleteConfirm,
+} from '@/components/shared';
 import { MailThreadDeleteDialog } from '@/features/mail/MailThreadDeleteDialog';
 import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
 import { MailThreadReplyComposer } from '@/features/mail/MailThreadReplyComposer';
@@ -22,6 +27,8 @@ export interface MailThreadDetailContentProps {
   compact?: boolean;
   onForward?: (payload: { mailAccountId: string; subject: string }) => void;
   onDeleted?: (threadId: string) => void;
+  onRestored?: (threadId: string) => void;
+  trashView?: boolean;
 }
 
 export function MailThreadDetailContent({
@@ -31,6 +38,8 @@ export function MailThreadDetailContent({
   compact = false,
   onForward,
   onDeleted,
+  onRestored,
+  trashView = false,
 }: MailThreadDetailContentProps) {
   const {
     detail,
@@ -56,15 +65,24 @@ export function MailThreadDetailContent({
 
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [purging, setPurging] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [purgeError, setPurgeError] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
+  const permanentDeleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
   const clearDeleteConfirm = deleteConfirm.clear;
+  const clearPermanentDeleteConfirm = permanentDeleteConfirm.clear;
 
   useEffect(() => {
     setReplyComposerOpen(false);
     setDeleteError(null);
+    setRestoreError(null);
+    setPurgeError(null);
     clearDeleteConfirm();
-  }, [threadId, clearDeleteConfirm]);
+    clearPermanentDeleteConfirm();
+  }, [threadId, clearDeleteConfirm, clearPermanentDeleteConfirm]);
 
   if (loading) {
     return <LoadingState />;
@@ -80,8 +98,42 @@ export function MailThreadDetailContent({
 
   const title = detail.messages[0]?.subject ?? detail.thread.subjectNormalized;
   const headerGap = compact ? 'gap-3' : 'gap-5';
+  const isTrashView = trashView || detail.thread.trashedAt != null;
   const actionsBusy =
-    markingRead || markingUnread || markingSpam || retryingFailedMessageId !== null || deleting;
+    markingRead ||
+    markingUnread ||
+    markingSpam ||
+    retryingFailedMessageId !== null ||
+    deleting ||
+    restoring ||
+    purging;
+
+  const confirmRestore = async () => {
+    setRestoring(true);
+    setRestoreError(null);
+    try {
+      await mailApi.restoreThread(threadId);
+      onRestored?.(threadId);
+    } catch (restoreErr) {
+      setRestoreError(getApiErrorMessage(restoreErr, 'Could not restore email.'));
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  const confirmPermanentDelete = async () => {
+    setPurging(true);
+    setPurgeError(null);
+    try {
+      await mailApi.permanentDeleteThread(threadId);
+      permanentDeleteConfirm.clear();
+      onDeleted?.(threadId);
+    } catch (purgeErr) {
+      setPurgeError(getApiErrorMessage(purgeErr, 'Could not permanently delete email.'));
+    } finally {
+      setPurging(false);
+    }
+  };
 
   const confirmDelete = async () => {
     if (!deleteConfirm.target) {
@@ -132,70 +184,101 @@ export function MailThreadDetailContent({
 
         {canEdit ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="gap-2"
-              onClick={() => setReplyComposerOpen((open) => !open)}
-            >
-              <Reply size={16} aria-hidden />
-              Reply
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="gap-2"
-              onClick={() =>
-                onForward?.({
-                  mailAccountId: detail.mailAccount.id,
-                  subject: defaultForwardSubjectFromMessages(detail.messages),
-                })
-              }
-            >
-              <Forward size={16} aria-hidden />
-              Forward
-            </Button>
-            {!detail.thread.hasUnread ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="gap-2"
-                disabled={actionsBusy}
-                onClick={() => void markUnread()}
-              >
-                <MailOpen size={16} aria-hidden />
-                Mark as unread
-              </Button>
-            ) : null}
-            {!detail.thread.isSpam ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="gap-2"
-                disabled={actionsBusy}
-                onClick={() => void markSpam()}
-              >
-                <ShieldAlert size={16} aria-hidden />
-                Spam
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="text-destructive hover:text-destructive gap-2"
-              disabled={deleting}
-              onClick={() => deleteConfirm.request({ id: threadId, name: title })}
-            >
-              <Trash2 size={16} aria-hidden />
-              Delete
-            </Button>
+            {isTrashView ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                  disabled={actionsBusy}
+                  onClick={() => void confirmRestore()}
+                >
+                  <RotateCcw size={16} aria-hidden />
+                  Restore
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="text-destructive hover:text-destructive gap-2"
+                  disabled={actionsBusy}
+                  onClick={() => permanentDeleteConfirm.request({ id: threadId, name: title })}
+                >
+                  <Trash2 size={16} aria-hidden />
+                  Delete permanently
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                  onClick={() => setReplyComposerOpen((open) => !open)}
+                >
+                  <Reply size={16} aria-hidden />
+                  Reply
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                  onClick={() =>
+                    onForward?.({
+                      mailAccountId: detail.mailAccount.id,
+                      subject: defaultForwardSubjectFromMessages(detail.messages),
+                    })
+                  }
+                >
+                  <Forward size={16} aria-hidden />
+                  Forward
+                </Button>
+                {!detail.thread.hasUnread ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                    disabled={actionsBusy}
+                    onClick={() => void markUnread()}
+                  >
+                    <MailOpen size={16} aria-hidden />
+                    Mark as unread
+                  </Button>
+                ) : null}
+                {!detail.thread.isSpam ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                    disabled={actionsBusy}
+                    onClick={() => void markSpam()}
+                  >
+                    <ShieldAlert size={16} aria-hidden />
+                    Spam
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="text-destructive hover:text-destructive gap-2"
+                  disabled={deleting}
+                  onClick={() => deleteConfirm.request({ id: threadId, name: title })}
+                >
+                  <Trash2 size={16} aria-hidden />
+                  Move to Trash
+                </Button>
+              </>
+            )}
           </div>
         ) : null}
+        {restoreError ? <p className="text-destructive text-sm">{restoreError}</p> : null}
+        {purgeError ? <p className="text-destructive text-sm">{purgeError}</p> : null}
       </div>
 
       <MailThreadMessages
@@ -228,6 +311,15 @@ export function MailThreadDetailContent({
         errorMessage={deleteError}
         onOpenChange={deleteConfirm.onOpenChange}
         onConfirm={() => void confirmDelete()}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? title}
+        entityLabel="email thread"
+        isSubmitting={purging}
+        onConfirm={() => void confirmPermanentDelete()}
       />
     </div>
   );

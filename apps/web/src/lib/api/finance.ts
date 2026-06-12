@@ -467,6 +467,10 @@ export const invoicesApi = {
     });
     return resp.data;
   },
+  async cancel(id: string): Promise<Invoice> {
+    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/cancel`);
+    return resp.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/invoices/${id}`);
   },
@@ -518,6 +522,10 @@ export const ordersApi = {
     const resp = await api.patch<Order>(`/api/finance/orders/${id}/status`, { status });
     return resp.data;
   },
+  async close(id: string): Promise<Order> {
+    const resp = await api.post<Order>(`/api/finance/orders/${id}/close`);
+    return resp.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
   },
@@ -542,6 +550,10 @@ export const expensesApi = {
   },
   async update(id: string, data: UpdateExpensePayload): Promise<Expense> {
     const resp = await api.put<Expense>(`/api/expenses/${id}`, data);
+    return resp.data;
+  },
+  async cancel(id: string): Promise<Expense> {
+    const resp = await api.post<Expense>(`/api/expenses/${id}/cancel`);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

@@ -13,6 +13,7 @@ import {
   ErrorState,
   LoadingState,
   DeleteConfirmDialog,
+  ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
 } from '@/components/shared';
 import { ContactCard } from '@/features/clients/components/ContactCard';
@@ -24,6 +25,9 @@ import {
   type ClientsDirectoryViewMode,
 } from '@/features/clients/constants/clients-directory-view-options';
 import { CONTACT_ROLES } from '@/features/clients/constants/clients';
+import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
+import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
+import { useListScope } from '@/hooks/use-list-scope';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { toast } from 'sonner';
 
@@ -43,16 +47,35 @@ function ContactsPageContent() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
+  const permanentDeleteConfirm = useDeleteConfirm();
+  const [purging, setPurging] = useState(false);
 
   function contactDisplayName(contact: Contact): string {
     return `${contact.firstName} ${contact.lastName}`.trim() || 'Contact';
   }
+
+  const stripOpenContactFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_CONTACT_QUERY)) return;
+    params.delete(OPEN_CONTACT_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const { scope, setScope, isTrashView } = useListScope({
+    onScopeChange: () => {
+      setSheetOpen(false);
+      setSelectedContact(null);
+      stripOpenContactFromUrl();
+    },
+  });
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
     try {
       const data = await contactsApi.getAll({
         pageSize: 100,
+        scope,
         search: search || undefined,
         contactType:
           filters.contactType && filters.contactType !== 'all' ? filters.contactType : undefined,
@@ -64,7 +87,7 @@ function ContactsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, scope]);
 
   useEffect(() => {
     fetchContacts();
@@ -76,14 +99,6 @@ function ContactsPageContent() {
   useEffect(() => {
     deepLinkContactAttemptedRef.current = null;
   }, [openContactId]);
-
-  const stripOpenContactFromUrl = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (!params.has(OPEN_CONTACT_QUERY)) return;
-    params.delete(OPEN_CONTACT_QUERY);
-    const q = params.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
 
   const pushOpenContactToUrl = useCallback(
     (id: string) => {
@@ -130,12 +145,39 @@ function ContactsPageContent() {
     await fetchContacts();
   };
 
-  const handleDelete = async (id: string) => {
-    await contactsApi.delete(id);
+  const handleMoveToTrash = async (id: string) => {
+    await contactsApi.moveToTrash(id);
+    toast.success('Contact moved to Trash');
     setSheetOpen(false);
     setSelectedContact(null);
     stripOpenContactFromUrl();
     await fetchContacts();
+  };
+
+  const handleRestore = async (id: string) => {
+    const restored = await contactsApi.restore(id);
+    toast.success('Contact restored');
+    setSelectedContact(restored);
+    await fetchContacts();
+  };
+
+  const runPermanentDelete = async () => {
+    const id = permanentDeleteConfirm.target?.id;
+    if (!id) return;
+    setPurging(true);
+    try {
+      await contactsApi.permanentDelete(id);
+      toast.success('Contact permanently deleted');
+      permanentDeleteConfirm.clear();
+      setSheetOpen(false);
+      setSelectedContact(null);
+      stripOpenContactFromUrl();
+      await fetchContacts();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete contact');
+    } finally {
+      setPurging(false);
+    }
   };
 
   const handleRowClick = (contact: Contact) => {
@@ -174,19 +216,34 @@ function ContactsPageContent() {
         <ViewModeSwitch value={view} onChange={setView} options={CLIENTS_DIRECTORY_VIEW_OPTIONS} />
       ),
       trailing: (
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} aria-hidden />
-          New Contact
-        </Button>
+        <div className="flex items-center gap-2">
+          <ClientsDirectorySettingsSheet
+            listScope={scope}
+            onListScopeChange={setScope}
+            entityLabel="contacts"
+          />
+          {!isTrashView ? (
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus size={16} aria-hidden />
+              New Contact
+            </Button>
+          ) : null}
+        </div>
       ),
     }),
-    [filterConfigs, filters, search, view],
+    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
+      {isTrashView ? (
+        <ClientsDirectoryTrashBanner
+          entityLabel="contacts"
+          onBackToActive={() => setScope('active')}
+        />
+      ) : null}
       {loading ? (
         <LoadingState
           variant={view === 'grid' ? 'cards' : 'list'}
@@ -197,13 +254,19 @@ function ContactsPageContent() {
       ) : contacts.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No contacts yet"
-          description="Add your first contact to get started"
+          title={isTrashView ? 'Trash is empty' : 'No contacts yet'}
+          description={
+            isTrashView
+              ? 'Removed contacts will appear here until restored or purged.'
+              : 'Add your first contact to get started'
+          }
           action={
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus size={16} />
-              Create First Contact
-            </Button>
+            isTrashView ? undefined : (
+              <Button onClick={() => setShowCreate(true)}>
+                <Plus size={16} />
+                Create First Contact
+              </Button>
+            )
           }
         />
       ) : view === 'grid' ? (
@@ -233,12 +296,32 @@ function ContactsPageContent() {
           }
         }}
         onUpdate={handleUpdate}
-        onDelete={(id) => {
-          const contact =
-            selectedContact?.id === id ? selectedContact : contacts.find((item) => item.id === id);
-          if (!contact) return;
-          deleteConfirm.request({ id, name: contactDisplayName(contact) });
-        }}
+        isTrashView={isTrashView}
+        onMoveToTrash={
+          isTrashView
+            ? undefined
+            : (id) => {
+                const contact =
+                  selectedContact?.id === id
+                    ? selectedContact
+                    : contacts.find((item) => item.id === id);
+                if (!contact) return;
+                deleteConfirm.request({ id, name: contactDisplayName(contact) });
+              }
+        }
+        onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
+        onPermanentDelete={
+          isTrashView
+            ? (id) => {
+                const contact =
+                  selectedContact?.id === id
+                    ? selectedContact
+                    : contacts.find((item) => item.id === id);
+                if (!contact) return;
+                permanentDeleteConfirm.request({ id, name: contactDisplayName(contact) });
+              }
+            : undefined
+        }
       />
 
       <DeleteConfirmDialog
@@ -246,14 +329,23 @@ function ContactsPageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Delete contact?"
-        description="The contact will be removed from the directory."
+        title="Move contact to Trash?"
+        description="The contact will be removed from active lists. You can restore it from Trash later."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
           deleteConfirm.clear();
-          void handleDelete(id);
+          void handleMoveToTrash(id);
         }}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? ''}
+        entityLabel="contact"
+        isSubmitting={purging}
+        onConfirm={() => void runPermanentDelete()}
       />
     </div>
   );

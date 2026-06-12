@@ -138,6 +138,7 @@ export function EmployeeSheet({
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checklist probe keyed on employee.id
   }, [open, current?.id, current?.status]);
 
   const patchDraft = useCallback((partial: Partial<EmployeeGeneralDraft>) => {

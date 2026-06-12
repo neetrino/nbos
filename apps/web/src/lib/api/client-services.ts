@@ -194,6 +194,11 @@ export const clientServicesApi = {
     await api.delete(`/api/client-services/${id}`);
   },
 
+  async cancel(id: string): Promise<ClientServiceRecord> {
+    const resp = await api.post<ClientServiceRecord>(`/api/client-services/${id}/cancel`);
+    return resp.data;
+  },
+
   async createInvoice(
     id: string,
     data?: { amount?: number; dueDate?: string | null; type?: string },

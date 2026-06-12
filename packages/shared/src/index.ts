@@ -21,3 +21,4 @@ export * from './credentials/credential-provider-slug';
 export * from './employees/employee-offboarding.constants';
 export * from './employees/employee-onboarding.constants';
 export * from './employees/employee-reactivation-access';
+export * from './lifecycle/entity-lifecycle';

@@ -14,11 +14,12 @@ export async function findAllCredentials(
   access?: CredentialsAccessContext,
 ) {
   const where = await buildCredentialListWhere(runtime, params);
-  const sort = normalizeCredentialListSort(params.sort, params.includeArchived ?? false);
+  const isTrashList = params.scope === 'trash' || (params.includeArchived ?? false);
+  const sort = normalizeCredentialListSort(params.sort, isTrashList);
 
   if (sort === 'recent' && access?.employeeId) {
     return findCredentialListPageRecentFirst(runtime, access, where, params);
   }
 
-  return findCredentialListPageStandard(runtime, where, sort, params);
+  return findCredentialListPageStandard(runtime, where, sort, params, isTrashList);
 }

@@ -13,13 +13,7 @@ import {
 } from './sheet-file-attachments.constants';
 import type { SheetPendingUpload } from './sheet-pending-upload.types';
 
-export function SheetPendingFileTile({
-  item,
-  dense = false,
-}: {
-  item: SheetPendingUpload;
-  dense?: boolean;
-}) {
+export function SheetPendingFileTile({ item }: { item: SheetPendingUpload }) {
   const ext = fileExtensionLabel(item.displayName);
   const isError = item.status === 'error';
 
@@ -35,6 +29,7 @@ export function SheetPendingFileTile({
     >
       <span className={SHEET_FILE_TILE_ICON_AREA_CLASS}>
         {item.previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- blob preview URL; next/image cannot optimize object URLs
           <img
             src={item.previewUrl}
             alt=""

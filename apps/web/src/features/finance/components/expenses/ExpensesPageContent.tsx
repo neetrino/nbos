@@ -50,6 +50,7 @@ import {
   EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
   EXPENSE_PAYROLL_SOURCE_PAYROLL,
 } from '@/features/finance/constants/expense-payroll-filter';
+import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import {
   EXPENSE_BOARD_SCOPE_FILTER_KEY,
@@ -61,7 +62,7 @@ import {
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
-import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
+import { ExpensesPageMainPanel } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
   buildExpenseListApiParams,
@@ -325,17 +326,25 @@ export function ExpensesPageContent({
 
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
+    const mode = expenseLifecycleAction(deleteTarget);
+    if (!mode) return;
     setDeleteError(null);
     setDeleteSubmitting(true);
     try {
-      await expensesApi.delete(deleteTarget.id);
+      if (mode === 'delete') {
+        await expensesApi.delete(deleteTarget.id);
+      } else {
+        await expensesApi.cancel(deleteTarget.id);
+      }
       setDeleteTarget(null);
       await fetchExpenses();
     } catch (caught) {
       setDeleteError(
         getApiErrorMessage(
           caught,
-          'Expense could not be deleted. Check your connection and try again.',
+          mode === 'delete'
+            ? 'Expense could not be deleted. Check your connection and try again.'
+            : 'Expense could not be cancelled. Check your connection and try again.',
         ),
       );
     } finally {

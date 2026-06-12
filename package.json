@@ -83,8 +83,11 @@
     "*.{ts,tsx,js,jsx,json,md,css}": [
       "pnpm exec prettier --write --ignore-path .prettierignore"
     ],
-    "*.{ts,tsx,js,jsx}": [
-      "pnpm exec eslint --fix"
+    "apps/web/**/*.{ts,tsx,js,jsx}": [
+      "pnpm exec eslint --fix --config apps/web/eslint.config.mjs"
+    ],
+    "{apps/api,packages/shared}/**/*.{ts,tsx,js,jsx}": [
+      "pnpm exec eslint --fix --config eslint.config.mjs"
     ]
   }
 }

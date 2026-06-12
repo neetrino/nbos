@@ -21,7 +21,7 @@ export function usePartnerFilterOptions() {
     let cancelled = false;
     void (async () => {
       try {
-        const { items } = await partnersApi.getAll({ pageSize: 200 });
+        const { items } = await partnersApi.getAll({ pageSize: 200, scope: 'active' });
         if (cancelled) return;
         const sorted = [...items].sort((a, b) => a.name.localeCompare(b.name));
         setLoadError(null);

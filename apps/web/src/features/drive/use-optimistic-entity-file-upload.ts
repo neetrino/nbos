@@ -82,7 +82,7 @@ export function useOptimisticEntityFileUpload({
       setPending((current) => [...current, ...batch]);
 
       const outcomes = await Promise.allSettled(
-        picked.map((file, index) => uploadOneDriveFileToEntity(file, link, library, { purpose })),
+        picked.map((file) => uploadOneDriveFileToEntity(file, link, library, { purpose })),
       );
 
       let failed = 0;

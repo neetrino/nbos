@@ -30,7 +30,7 @@ export function ClientServiceInvoicesTab({
 }: ClientServiceInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
-  const invoices = links?.invoices ?? [];
+  const invoices = useMemo(() => links?.invoices ?? [], [links?.invoices]);
   const firstInvoice = invoices[0];
 
   const itemSummaries = useMemo(

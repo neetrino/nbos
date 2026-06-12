@@ -14,8 +14,8 @@ export async function unlinkFileFromEntityRecord(
   await driveApi.unlinkFileAsset(file.id, link.id);
 }
 
-/** Archives the file in Drive and soft-unlinks it from the entity when linked. */
-export async function archiveAndUnlinkFileFromEntityRecord(
+/** Moves the file to Trash in Drive and soft-unlinks it from the entity when linked. */
+export async function moveToTrashAndUnlinkFileFromEntityRecord(
   file: FileAsset,
   entityType: string,
   entityId: string,
@@ -24,5 +24,5 @@ export async function archiveAndUnlinkFileFromEntityRecord(
   if (link) {
     await driveApi.unlinkFileAsset(file.id, link.id);
   }
-  await driveApi.archiveFileAsset(file.id);
+  await driveApi.moveFileToTrash(file.id);
 }

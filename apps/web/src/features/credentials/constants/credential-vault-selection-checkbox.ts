@@ -16,5 +16,8 @@ export function credentialVaultCheckboxRevealClass(
 /** Ignore row/card navigation when the event originated on the vault select checkbox. */
 export function isCredentialVaultCheckboxTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return target.closest('[data-credential-vault-select]') !== null;
+  return (
+    target.closest('[data-credential-vault-select]') !== null ||
+    target.closest('[data-credential-vault-action]') !== null
+  );
 }

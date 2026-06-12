@@ -1,4 +1,5 @@
 import type { FileAsset } from '@/lib/api/drive';
+import { isDriveFileInTrash } from '@/features/drive/drive-lifecycle';
 import type { DriveLibraryOption, DriveSpaceOption, DriveViewMode } from './drive-options';
 import { DRIVE_LIBRARIES, DEFAULT_DRIVE_SPACE } from './drive-options';
 import { toFileSizeNumber } from './drive-format';
@@ -38,7 +39,7 @@ export function fileMatchesLibrary(
 ): boolean {
   if (library.key === 'all') return true;
   if (library.key === 'shared' && ctx?.spaceKey === 'shared') {
-    return file.status !== 'ARCHIVED';
+    return !isDriveFileInTrash(file);
   }
   if (library.status) return file.status === library.status;
 

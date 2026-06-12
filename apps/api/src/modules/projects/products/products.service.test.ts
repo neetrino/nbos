@@ -72,7 +72,7 @@ describe('ProductsService', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            project: { is: { companyId: 'comp-1' } },
+            project: { is: { companyId: 'comp-1', trashedAt: null } },
           }),
         }),
       );
@@ -944,10 +944,10 @@ describe('ProductsService', () => {
   });
 
   describe('delete', () => {
-    it('deletes when found', async () => {
+    it('rejects hard delete with conflict', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1' });
-      await service.delete('p1');
-      expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: 'p1' } });
+      await expect(service.delete('p1')).rejects.toMatchObject({ status: 409 });
+      expect(prisma.product.delete).not.toHaveBeenCalled();
     });
   });
 

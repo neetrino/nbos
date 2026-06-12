@@ -1,17 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  Header,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ExtensionsService } from './extensions.service';
 import {
@@ -162,12 +149,5 @@ export class ExtensionsController {
   @ApiOperation({ summary: 'Complete extension delivery' })
   async complete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.extensionsService.complete(id, user.id);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete extension' })
-  async remove(@Param('id') id: string) {
-    await this.extensionsService.delete(id);
   }
 }

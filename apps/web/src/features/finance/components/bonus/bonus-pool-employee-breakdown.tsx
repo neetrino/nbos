@@ -2,10 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import {
-  formatBonusPoolMoney,
-  parseBonusPoolAmount,
-} from '@/features/finance/utils/bonus-pool-amount';
+import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusPoolEmployeeLine } from '@/lib/api/bonus';
 import {
   Table,

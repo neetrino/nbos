@@ -6,10 +6,7 @@ import { Banknote, Users } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
-import {
-  useSalaryBoardViewMode,
-  type SalaryBoardViewMode,
-} from '@/features/finance/constants/salary-board-view';
+import { useSalaryBoardViewMode } from '@/features/finance/constants/salary-board-view';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,

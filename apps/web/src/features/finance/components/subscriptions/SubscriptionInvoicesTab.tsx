@@ -24,7 +24,7 @@ interface SubscriptionInvoicesTabProps {
 export function SubscriptionInvoicesTab({ subscription }: SubscriptionInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
-  const invoices = subscription.invoices ?? [];
+  const invoices = useMemo(() => subscription.invoices ?? [], [subscription.invoices]);
 
   const itemSummaries = useMemo(() => invoices.map(subscriptionInvoiceToItemSummary), [invoices]);
 

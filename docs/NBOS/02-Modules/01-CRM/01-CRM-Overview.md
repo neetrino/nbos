@@ -247,3 +247,7 @@ CRM не должен становиться отдельным глобальн
 | Сделки в активном pipeline         | ~46      |
 
 Эти данные будут мигрированы в NBOS при запуске.
+
+---
+
+**Статус реализации в коде (Trash / lifecycle):** см. `06-Implementation-Status.md`. Сводка по платформе: `../../03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.

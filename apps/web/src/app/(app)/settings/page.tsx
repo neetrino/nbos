@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   ToggleLeft,
+  Trash2,
 } from 'lucide-react';
 import { PageHero } from '@/components/shared';
 
@@ -59,6 +60,12 @@ const SETTINGS_SECTIONS = [
     href: '/settings/audit-log',
     description: 'Read-only trail for risky admin changes.',
     icon: ClipboardList,
+  },
+  {
+    title: 'Trash inventory',
+    href: '/settings/trash-inventory',
+    description: 'Cross-module recoverable Trash counts and retention purge eligibility.',
+    icon: Trash2,
   },
 ] as const;
 

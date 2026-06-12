@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
-import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import { assertPostingPeriodOpenForBookedAt } from './posting-period-guard';
 
 describe('assertPostingPeriodOpenForBookedAt', () => {

@@ -1,3 +1,4 @@
+import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
 export interface Contact {
@@ -9,6 +10,7 @@ export interface Contact {
   role: string;
   notes: string | null;
   messengerLinks: Record<string, string> | null;
+  trashedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   companies: Array<{ id: string; name: string }>;
@@ -27,6 +29,7 @@ export interface Company {
   email: string | null;
   country: string | null;
   billingContactId: string | null;
+  trashedAt?: string | null;
   createdAt: string;
   contact: { id: string; firstName: string; lastName: string };
   billingContact: { id: string; firstName: string; lastName: string } | null;
@@ -39,8 +42,10 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+type ClientsListParams = Record<string, unknown> & { scope?: EntityLifecycleScope };
+
 export const contactsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Contact>> {
+  async getAll(params?: ClientsListParams): Promise<ListData<Contact>> {
     const resp = await api.get<ListData<Contact>>('/api/clients/contacts', { params });
     return resp.data;
   },
@@ -56,13 +61,20 @@ export const contactsApi = {
     const resp = await api.put<Contact>(`/api/clients/contacts/${id}`, data);
     return resp.data;
   },
-  async delete(id: string): Promise<void> {
+  async moveToTrash(id: string): Promise<void> {
     await api.delete(`/api/clients/contacts/${id}`);
+  },
+  async restore(id: string): Promise<Contact> {
+    const resp = await api.post<Contact>(`/api/clients/contacts/${id}/restore`);
+    return resp.data;
+  },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/clients/contacts/${id}/permanent`);
   },
 };
 
 export const companiesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Company>> {
+  async getAll(params?: ClientsListParams): Promise<ListData<Company>> {
     const resp = await api.get<ListData<Company>>('/api/clients/companies', { params });
     return resp.data;
   },
@@ -78,7 +90,14 @@ export const companiesApi = {
     const resp = await api.put<Company>(`/api/clients/companies/${id}`, data);
     return resp.data;
   },
-  async delete(id: string): Promise<void> {
+  async moveToTrash(id: string): Promise<void> {
     await api.delete(`/api/clients/companies/${id}`);
+  },
+  async restore(id: string): Promise<Company> {
+    const resp = await api.post<Company>(`/api/clients/companies/${id}/restore`);
+    return resp.data;
+  },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/clients/companies/${id}/permanent`);
   },
 };

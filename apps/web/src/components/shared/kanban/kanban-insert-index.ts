@@ -7,7 +7,6 @@ export function resolveKanbanInsertIndex(
   listRoot: HTMLElement,
   clientY: number,
   excludeItemId?: string,
-  dropZoneRoot?: HTMLElement | null,
 ): number {
   const rows = Array.from(
     listRoot.querySelectorAll<HTMLElement>(`[${KANBAN_CARD_ROW_DATA_ATTR}]`),

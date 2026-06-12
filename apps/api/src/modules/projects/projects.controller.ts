@@ -29,12 +29,12 @@ export class ProjectsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'isArchived', required: false, type: Boolean })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
-    @Query('isArchived') isArchived?: string,
+    @Query('scope') scope?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
@@ -42,7 +42,7 @@ export class ProjectsController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       search,
-      isArchived: isArchived === 'true' ? true : isArchived === 'false' ? false : undefined,
+      scope,
       sortBy,
       sortOrder,
     });
@@ -125,17 +125,30 @@ export class ProjectsController {
       description?: string;
       companyId?: string;
       contactId?: string;
-      isArchived?: boolean;
       contactIds?: string[];
     },
   ) {
     return this.projectsService.update(id, body);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore project from Trash' })
+  async restore(@Param('id') id: string) {
+    await this.projectsService.restoreFromTrash(id);
+    return this.projectsService.findById(id);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Permanently delete trashed project (cannot be undone)' })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.projectsService.permanentlyDeleteFromTrash(id, user.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete project' })
+  @ApiOperation({ summary: 'Move project to Trash' })
   async remove(@Param('id') id: string) {
-    await this.projectsService.delete(id);
+    await this.projectsService.moveToTrash(id);
   }
 }

@@ -40,6 +40,7 @@ export interface Partner {
   agreementOwner: PartnerAgreementOwnerSummary | null;
   createdAt: string;
   updatedAt: string;
+  trashedAt?: string | null;
   contact?: PartnerContactSummary | null;
   _count?: { orders: number; subscriptions: number };
 }
@@ -197,6 +198,7 @@ export interface PartnerListParams {
   /** @deprecated Prefer `level`. */
   type?: string;
   direction?: string;
+  scope?: 'active' | 'trash';
 }
 
 export interface CreatePartnerPayload {
@@ -261,6 +263,16 @@ export const partnersApi = {
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/partners/${id}`);
+  },
+  async moveToTrash(id: string): Promise<void> {
+    await api.delete(`/api/partners/${id}`);
+  },
+  async restore(id: string): Promise<Partner> {
+    const resp = await api.post<Partner>(`/api/partners/${id}/restore`);
+    return resp.data;
+  },
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/partners/${id}/permanent`);
   },
   async getStats(): Promise<PartnerStats> {
     const resp = await api.get<PartnerStats>('/api/partners/stats');

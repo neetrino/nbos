@@ -36,17 +36,19 @@ describe('applyServerFileActionGates', () => {
 });
 
 describe('buildDriveFileActionGates', () => {
-  it('enables trash only for archived files when server allows permanent delete', () => {
+  it('enables move to trash for active files when server allows trash actions', () => {
+    const gates = buildDriveFileActionGates(layoutCaps, activeFile, ['TRASH', 'SHARE']);
+    expect(gates.canMoveToTrash).toBe(true);
+  });
+
+  it('enables restore for recoverable trash rows', () => {
     const gates = buildDriveFileActionGates(
       layoutCaps,
-      {
-        ...activeFile,
-        status: 'ARCHIVED',
-      },
-      ['PERMANENT_DELETE', 'SHARE'],
+      { ...activeFile, status: 'DELETED', deletedAt: '2026-01-01T00:00:00.000Z' },
+      ['PERMANENT_DELETE'],
     );
-    expect(gates.canMoveToTrash).toBe(true);
-    expect(gates.canArchive).toBe(false);
+    expect(gates.canRestore).toBe(true);
+    expect(gates.canMoveToTrash).toBe(false);
   });
 
   it('denies copy when server omits COPY', () => {

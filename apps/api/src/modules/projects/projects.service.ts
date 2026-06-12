@@ -1,6 +1,9 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
+import type { EntityLifecycleScope } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
 import {
@@ -10,6 +13,14 @@ import {
 } from './delivery-lifecycle';
 import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../common/lifecycle/entity-lifecycle-guards';
+import {
+  mergeProfileAListScope,
+  parseLifecycleScopeFromQuery,
+} from '../../common/lifecycle/entity-lifecycle-scope';
 
 const PROJECT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code']);
 
@@ -25,35 +36,37 @@ interface UpdateProjectDto {
   description?: string;
   companyId?: string | null;
   contactId?: string;
-  isArchived?: boolean;
   contactIds?: string[];
 }
 
 interface ProjectQueryParams {
   page?: number;
   pageSize?: number;
-  isArchived?: boolean;
+  scope?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
 
+function resolveProjectListScope(params: ProjectQueryParams): EntityLifecycleScope {
+  return parseLifecycleScopeFromQuery(params.scope);
+}
+
 @Injectable()
 export class ProjectsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: ProjectQueryParams) {
-    const {
-      page = 1,
-      pageSize = 20,
-      isArchived,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-    } = params;
+    const { page = 1, pageSize = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = params;
 
-    const where: Prisma.ProjectWhereInput = {};
-    if (isArchived !== undefined) where.isArchived = isArchived;
+    const where: Prisma.ProjectWhereInput = mergeProfileAListScope(
+      {},
+      resolveProjectListScope(params),
+    );
+
     if (search) {
       const q = search.trim();
       if (q.length > 0) {
@@ -121,9 +134,11 @@ export class ProjectsService {
   async update(id: string, data: UpdateProjectDto) {
     const existing = await this.prisma.project.findUnique({
       where: { id },
-      select: { contactId: true },
+      select: { contactId: true, trashedAt: true },
     });
     if (!existing) throw new NotFoundException(`Project ${id} not found`);
+
+    assertEntityIsActive(existing, 'trashedAt', 'Project');
 
     let resolvedContactId = data.contactId ?? existing.contactId;
 
@@ -146,20 +161,49 @@ export class ProjectsService {
         ...(data.contactIds !== undefined || data.contactId !== undefined
           ? { contactId: resolvedContactId }
           : {}),
-        ...(data.isArchived !== undefined && { isArchived: data.isArchived }),
       },
     });
 
     return this.findById(id);
   }
 
-  async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.project.delete({ where: { id } });
+  async moveToTrash(id: string) {
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!project) throw new NotFoundException(`Project ${id} not found`);
+    assertEntityIsActive(project, 'trashedAt', 'Project');
+    return this.prisma.project.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string) {
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!project) throw new NotFoundException(`Project ${id} not found`);
+    assertEntityIsTrashed(project, 'trashedAt', 'Project');
+    return this.prisma.project.update({
+      where: { id },
+      data: { trashedAt: null },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'project',
+      id,
+      userId,
+    });
   }
 
   async getStats() {
-    const total = await this.prisma.project.count();
+    const activeWhere = mergeProfileAListScope({}, 'active');
+    const total = await this.prisma.project.count({ where: activeWhere });
     return { total };
   }
 

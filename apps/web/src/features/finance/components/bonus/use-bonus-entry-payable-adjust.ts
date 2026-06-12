@@ -33,6 +33,7 @@ export function useBonusEntryPayableAdjust(
     setForm(initialForm(entry));
     setEditing(false);
     setSubmitError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form reset keyed on entry.id
   }, [open, entry?.id, entry?.payableAdjustment, entry?.payableAmount]);
 
   const startEdit = useCallback(() => {

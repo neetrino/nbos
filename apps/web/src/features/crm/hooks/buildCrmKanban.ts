@@ -8,7 +8,6 @@ import {
 import {
   getBoardStageKeys,
   resolveBoardLifecycleScope,
-  type BoardLifecycleScope,
   type BoardStageDefinition,
 } from '@/features/shared/board-lifecycle';
 

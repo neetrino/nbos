@@ -1,6 +1,16 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../common/lifecycle/entity-lifecycle-guards';
+import {
+  mergeProfileAListScope,
+  parseLifecycleScopeFromQuery,
+} from '../../common/lifecycle/entity-lifecycle-scope';
 import {
   parsePartnerDirectionForWrite,
   parsePartnerLevelForWrite,
@@ -56,6 +66,7 @@ interface PartnerQueryParams {
   /** @deprecated Use `level`. Alias for Prisma `Partner.type`. */
   type?: string;
   direction?: string;
+  scope?: string;
 }
 
 interface CreatePartnerDto {
@@ -101,6 +112,7 @@ export class PartnersService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
   ) {}
 
   private assertDefaultPercentInRange(value: number): number {
@@ -138,9 +150,19 @@ export class PartnersService {
     }
   }
 
+  private async assertPartnerIsActiveForMutation(id: string): Promise<void> {
+    const partner = await this.prisma.partner.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!partner) throw new NotFoundException(`Partner ${id} not found`);
+    assertEntityIsActive(partner, 'trashedAt', 'Partner');
+  }
+
   async findAll(params: PartnerQueryParams) {
-    const { page = 1, pageSize = 20, search, status, level, type, direction } = params;
-    const where: Prisma.PartnerWhereInput = {};
+    const { page = 1, pageSize = 20, search, status, level, type, direction, scope } = params;
+    const lifecycleScope = parseLifecycleScopeFromQuery(scope);
+    const where: Prisma.PartnerWhereInput = mergeProfileAListScope({}, lifecycleScope);
 
     if (search?.trim()) {
       const q = search.trim();
@@ -229,7 +251,7 @@ export class PartnersService {
   }
 
   async update(id: string, data: UpdatePartnerDto): Promise<PartnerWireDto> {
-    await this.findById(id);
+    await this.assertPartnerIsActiveForMutation(id);
 
     const defaultPercent =
       data.defaultPercent === undefined
@@ -286,9 +308,40 @@ export class PartnersService {
     return serializePartner(row);
   }
 
-  async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.partner.delete({ where: { id } });
+  async moveToTrash(id: string): Promise<void> {
+    const partner = await this.prisma.partner.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!partner) throw new NotFoundException(`Partner ${id} not found`);
+    assertEntityIsActive(partner, 'trashedAt', 'Partner');
+    await this.prisma.partner.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string): Promise<PartnerWireDto> {
+    const partner = await this.prisma.partner.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!partner) throw new NotFoundException(`Partner ${id} not found`);
+    assertEntityIsTrashed(partner, 'trashedAt', 'Partner');
+    const row = await this.prisma.partner.update({
+      where: { id },
+      data: { trashedAt: null },
+      include: PARTNER_WIRE_INCLUDE,
+    });
+    return serializePartner(row);
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'partner',
+      id,
+      userId,
+    });
   }
 
   /** NBOS § Partner Commission Policy: percents by deal type; null row uses partner defaultPercent. */
@@ -300,6 +353,7 @@ export class PartnersService {
     partnerId: string,
     body: { rows: CommissionPolicyRowInput[] },
   ): Promise<PartnerCommissionPolicyViewDto> {
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return applyPartnerCommissionPolicy(this.prisma, partnerId, body.rows);
   }
 
@@ -362,7 +416,7 @@ export class PartnersService {
     partnerId: string,
     input: CreatePartnerPayoutBatchInput,
   ): Promise<PartnerPayoutBatchDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return createPartnerPayoutBatch(this.prisma, partnerId, input);
   }
 
@@ -371,7 +425,7 @@ export class PartnersService {
     batchId: string,
     input: ApprovePartnerPayoutBatchInput,
   ): Promise<PartnerPayoutBatchDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return approvePartnerPayoutBatch(this.prisma, partnerId, batchId, input);
   }
 
@@ -380,7 +434,7 @@ export class PartnersService {
     batchId: string,
     input: CancelPartnerPayoutBatchInput,
   ): Promise<PartnerPayoutBatchDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return cancelPartnerPayoutBatch(this.prisma, partnerId, batchId, input);
   }
 
@@ -393,7 +447,7 @@ export class PartnersService {
     partnerId: string,
     input: CreatePartnerServiceTermInput,
   ): Promise<PartnerServiceTermWireDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return createPartnerServiceTerm(this.prisma, partnerId, input);
   }
 
@@ -402,7 +456,7 @@ export class PartnersService {
     termId: string,
     input: UpdatePartnerServiceTermInput,
   ): Promise<PartnerServiceTermWireDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return updatePartnerServiceTerm(this.prisma, partnerId, termId, input);
   }
 
@@ -411,17 +465,19 @@ export class PartnersService {
     termId: string,
     input: CreateFinanceFromServiceTermInput,
   ): Promise<PartnerServiceTermWireDto> {
-    await this.findById(partnerId);
+    await this.assertPartnerIsActiveForMutation(partnerId);
     return createFinanceFromPartnerServiceTerm(this.prisma, partnerId, termId, input);
   }
 
   async getStats() {
+    const activeWhere = { trashedAt: null } satisfies Prisma.PartnerWhereInput;
     const [total, totalSubscriptions, avgPayout] = await Promise.all([
-      this.prisma.partner.count(),
+      this.prisma.partner.count({ where: activeWhere }),
       this.prisma.subscription.count({
-        where: { partnerId: { not: null } },
+        where: { partnerId: { not: null }, partner: activeWhere },
       }),
       this.prisma.partner.aggregate({
+        where: activeWhere,
         _avg: { defaultPercent: true },
       }),
     ]);

@@ -13,6 +13,7 @@ export default function SignUpInfoPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- auth logo SVG; fixed dimensions, no next/image benefit */}
             <img
               src="/logo/logo.svg"
               alt="NBOS"

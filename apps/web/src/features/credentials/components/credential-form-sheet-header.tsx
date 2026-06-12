@@ -1,14 +1,19 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
 import {
   getAccessLevel,
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
+import {
+  CredentialAccessIcon,
+  CredentialCriticalityIcon,
+} from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
 import { CredentialFormCategoryMenu } from './credential-form-category-menu';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
@@ -38,7 +43,11 @@ export interface CredentialFormSheetHeaderProps {
   criticality: string;
   showSettings: boolean;
   onToggleSettings: () => void;
-  onRequestArchive?: (id: string, name: string) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  isTrashView?: boolean;
+  onRestore?: (id: string) => void | Promise<void>;
   resetKey: string;
 }
 
@@ -56,7 +65,11 @@ export function CredentialFormSheetHeader({
   criticality,
   showSettings,
   onToggleSettings,
-  onRequestArchive,
+  isFavorite = false,
+  onToggleFavorite,
+  onRequestMoveToTrash,
+  isTrashView = false,
+  onRestore,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
   const [editingName, setEditingName] = useState(false);
@@ -141,6 +154,13 @@ export function CredentialFormSheetHeader({
                 label={accessMeta.label}
                 variant={accessMeta.variant}
                 className={ACCESS_SCOPE_BADGE_CLASS}
+                icon={
+                  <CredentialAccessIcon
+                    accessLevel={accessLevel}
+                    className="size-2.5 shrink-0 opacity-90"
+                    aria-hidden
+                  />
+                }
               />
             ) : null}
 
@@ -149,11 +169,34 @@ export function CredentialFormSheetHeader({
                 label={critMeta.label}
                 variant={critMeta.variant}
                 className={ACCESS_SCOPE_BADGE_CLASS}
+                icon={
+                  <CredentialCriticalityIcon
+                    criticality={criticality}
+                    className="size-2.5 shrink-0 opacity-90"
+                    aria-hidden
+                  />
+                }
               />
             ) : null}
           </div>
 
-          <div className="ml-auto shrink-0">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            {!isCreate && onToggleFavorite ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'text-muted-foreground size-8 shrink-0',
+                  isFavorite && 'text-amber-500 hover:text-amber-600',
+                )}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                onClick={onToggleFavorite}
+              >
+                <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
+              </Button>
+            ) : null}
             <CredentialFormCategoryMenu
               category={category}
               categoryLabel={categoryLabel}
@@ -165,18 +208,26 @@ export function CredentialFormSheetHeader({
         </div>
       </div>
 
-      {!isCreate && credentialId && onRequestArchive ? (
+      {!isCreate && credentialId ? (
         <DetailSheetSettingsMenu>
           <DropdownMenuItem onClick={onToggleSettings}>
             {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={() => onRequestArchive(credentialId, name)}
-          >
-            <Trash2 className="mr-2 size-4" />
-            Archive
-          </DropdownMenuItem>
+          {isTrashView && onRestore ? (
+            <DropdownMenuItem onClick={() => void onRestore(credentialId)}>
+              <RotateCcw className="mr-2 size-4" />
+              Restore
+            </DropdownMenuItem>
+          ) : null}
+          {!isTrashView && onRequestMoveToTrash ? (
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => onRequestMoveToTrash(credentialId, name)}
+            >
+              <Trash2 className="mr-2 size-4" />
+              Move to Trash
+            </DropdownMenuItem>
+          ) : null}
         </DetailSheetSettingsMenu>
       ) : null}
     </div>

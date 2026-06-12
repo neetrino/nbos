@@ -30,6 +30,7 @@ import {
   type CredentialFormRollbackState,
 } from '@/features/credentials/utils/credential-form-sheet-snapshot';
 import { toast } from 'sonner';
+import { filterCredentialFoldersForContext } from '@/features/credentials/utils/credential-folder-scope';
 import type { CredentialFormSheetProps } from '@/features/credentials/components/credential-form-sheet-types';
 
 export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
@@ -42,6 +43,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     initialCategory,
     allowedCategories,
     initialCredentialType,
+    initialFolderId,
     presetKey = '',
   } = props;
 
@@ -67,6 +69,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [nextRotationAt, setNextRotationAt] = useState('');
   const [manualGrants, setManualGrants] = useState<CredentialManualGrant[]>([]);
+  const [folderId, setFolderId] = useState<string | null>(initialFolderId ?? null);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [detail, setDetail] = useState<CredentialDetail | null>(null);
   const [revealed, setRevealed] = useState<Partial<Record<CredentialSecretField, string>>>({});
   const [stepUpField, setStepUpField] = useState<CredentialSecretField | null>(null);
@@ -92,6 +96,38 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const categoryLocked = categoryOptions.length === 1;
   const categoryLabel = CREDENTIAL_CATEGORIES.find((c) => c.value === category)?.label ?? category;
 
+  const scopedFolderOptions = useMemo(
+    () =>
+      filterCredentialFoldersForContext(props.folderOptions ?? [], {
+        isCreate,
+        vaultScope: props.vaultScope,
+        accessLevel,
+        projectId: detail?.projectId ?? props.projectId ?? initialItem?.project?.id ?? null,
+      }),
+    [
+      props.folderOptions,
+      props.vaultScope,
+      props.projectId,
+      isCreate,
+      accessLevel,
+      detail?.projectId,
+      initialItem?.project?.id,
+    ],
+  );
+
+  const folderEditable = scopedFolderOptions.length > 0 || initialFolderId !== undefined;
+
+  useEffect(() => {
+    if (isCreate || !open) return;
+    if (
+      folderId &&
+      scopedFolderOptions.length > 0 &&
+      !scopedFolderOptions.some((folder) => folder.id === folderId)
+    ) {
+      setFolderId(null);
+    }
+  }, [folderId, isCreate, open, scopedFolderOptions]);
+
   const resetCreate = useCallback(() => {
     setName(initialName ?? '');
     setCategory(defaultCategoryForVaultScope(vaultScope, initialCategory, allowedCategories));
@@ -110,6 +146,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setComment('');
     setNextRotationAt('');
     setManualGrants([]);
+    setFolderId(initialFolderId ?? null);
+    setIsFavorite(false);
     setAccessLevel(accessLevelForVaultScope(vaultScope) ?? 'PROJECT_TEAM');
     setDetail(null);
     setRevealed({});
@@ -118,7 +156,14 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setOrphanedSecretsAcknowledged(false);
     setDetailHydrated(false);
     setSnap('');
-  }, [allowedCategories, initialCategory, initialCredentialType, initialName, vaultScope]);
+  }, [
+    allowedCategories,
+    initialCategory,
+    initialCredentialType,
+    initialFolderId,
+    initialName,
+    vaultScope,
+  ]);
 
   const draftClearHandlers = useMemo(
     () => ({
@@ -195,6 +240,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       comment: string;
       nextRotationAt: string;
       manualGrants: CredentialManualGrant[];
+      folderId?: string | null;
     }) => {
       setSnap(buildCredentialFormSnap(fields));
     },
@@ -215,6 +261,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       comment,
       nextRotationAt,
       manualGrants,
+      folderId,
     });
     setEnvSnap(envData.trim());
   }, [
@@ -232,6 +279,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     comment,
     nextRotationAt,
     manualGrants,
+    folderId,
   ]);
 
   const captureFormRollback = useCallback((): (() => void) => {
@@ -259,6 +307,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         ...g,
         employee: { ...g.employee },
       })),
+      folderId,
     };
     return () => {
       setName(saved.name);
@@ -281,6 +330,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       setEnvSnap(saved.envSnap);
       setManualGrants(saved.manualGrants);
       setSnap(saved.snap);
+      setFolderId(saved.folderId);
     };
   }, [
     accessLevel,
@@ -293,6 +343,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     envSnap,
     login,
     manualGrants,
+    folderId,
     name,
     nextRotationAt,
     password,
@@ -335,6 +386,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
       const rotationDate = d.nextRotationAt?.slice(0, 10) ?? '';
       setNextRotationAt(rotationDate);
       setManualGrants(grants);
+      const primaryFolder = d.folders?.find((folder) => folder.isPrimary) ?? d.folders?.[0];
+      setFolderId(primaryFolder?.id ?? null);
+      setIsFavorite(d.isFavorite ?? false);
       setRevealed({});
       setOrphanedSecretsAcknowledged(false);
       applyFormSnapshot({
@@ -350,6 +404,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
         comment: d.comment ?? '',
         nextRotationAt: rotationDate,
         manualGrants: grants,
+        folderId: primaryFolder?.id ?? null,
       });
     },
     [applyFormSnapshot],
@@ -476,11 +531,28 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
           criticality,
           nextRotationAt,
           manualGrants,
+          folderId,
         }) !== snap ||
         Boolean(password || passphrase || apiKey) ||
         (credentialType === 'ENV_BUNDLE' && envData.trim() !== envSnap);
 
   dirtyRef.current = dirty;
+
+  const toggleFavorite = useCallback(async () => {
+    if (!credentialId) return;
+    const next = !isFavorite;
+    setIsFavorite(next);
+    setDetail((current) => (current ? { ...current, isFavorite: next } : current));
+    try {
+      await credentialsApi.setFavorite(credentialId, next);
+      toast.success(next ? 'Added to favorites' : 'Removed from favorites');
+      props.onSaved?.();
+    } catch {
+      setIsFavorite(!next);
+      setDetail((current) => (current ? { ...current, isFavorite: !next } : current));
+      toast.error('Favorite could not be updated');
+    }
+  }, [credentialId, isFavorite, props]);
 
   return {
     isCreate,
@@ -530,6 +602,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setNextRotationAt,
     manualGrants,
     setManualGrants,
+    folderId,
+    setFolderId,
+    folderEditable,
+    scopedFolderOptions,
+    isFavorite,
+    toggleFavorite,
     open,
     detail,
     revealed,

@@ -48,9 +48,17 @@ describe('credential-vault-page-state-storage', () => {
     });
   });
 
-  it('persists archived list scope', () => {
-    writeCredentialVaultPagePreferences({ vaultListScope: 'archived' });
-    expect(readCredentialVaultPagePreferences().vaultListScope).toBe('archived');
+  it('persists folders view mode', () => {
+    writeCredentialVaultPagePreferences({ viewMode: 'folders' });
+    expect(readCredentialVaultPagePreferences().viewMode).toBe('folders');
+  });
+
+  it('migrates legacy archived list scope to trash', () => {
+    window.localStorage.setItem(
+      'nbos:credentials:vault-page-state',
+      JSON.stringify({ ...DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES, vaultListScope: 'archived' }),
+    );
+    expect(readCredentialVaultPagePreferences().vaultListScope).toBe('trash');
   });
 
   it('ignores invalid stored values', () => {

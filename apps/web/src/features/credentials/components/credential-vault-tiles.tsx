@@ -30,6 +30,9 @@ export interface CredentialVaultTilesProps {
   selection?: CredentialVaultTilesSelectionProps;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
+  onSetFavorite?: (id: string, favorite: boolean) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  canMoveToTrash?: boolean;
   onCopyText: (text: string) => void;
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void;
   secretFlashCredentialId?: string | null;
@@ -42,6 +45,9 @@ export function CredentialVaultTiles({
   selection,
   onCreateOpen,
   onOpenCredential,
+  onSetFavorite,
+  onRequestMoveToTrash,
+  canMoveToTrash = false,
   onCopyText,
   onCopySecret,
   secretFlashCredentialId,
@@ -83,6 +89,9 @@ export function CredentialVaultTiles({
           credential={credential}
           variant="grid"
           onOpen={onOpenCredential}
+          onSetFavorite={onSetFavorite}
+          onRequestMoveToTrash={onRequestMoveToTrash}
+          canMoveToTrash={canMoveToTrash}
           onCopyText={onCopyText}
           onCopySecret={onCopySecret}
           secretFlashCredentialId={secretFlashCredentialId}

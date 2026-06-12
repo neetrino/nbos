@@ -20,8 +20,6 @@ export const PRODUCT_DETAIL_TAB = {
   tasks: 'tasks',
   extensions: 'extensions',
   support: 'support',
-  /** @deprecated Use {@link PRODUCT_DETAIL_TAB.support}. Kept for legacy deep links. */
-  tickets: 'support',
   technical: 'technical',
   credentials: 'credentials',
   finance: 'finance',

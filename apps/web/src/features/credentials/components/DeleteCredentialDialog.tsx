@@ -27,7 +27,7 @@ export function DeleteCredentialDialog({
     setDeleting(true);
     try {
       await credentialsApi.delete(credentialId);
-      toast.success('Credential archived');
+      toast.success('Credential moved to Trash');
       onOpenChange(false);
       onDeleted();
     } catch (err) {
@@ -43,9 +43,9 @@ export function DeleteCredentialDialog({
       open={open}
       onOpenChange={onOpenChange}
       itemName={credentialName ?? ''}
-      title="Archive credential?"
-      description="Hidden from active lists and project handoff. You can restore it from Archived."
-      confirmLabel="Archive"
+      title="Move credential to Trash?"
+      description="Moved to Trash and removed from folders. You can restore it from Trash (returns unfiled)."
+      confirmLabel="Move to Trash"
       isSubmitting={deleting}
       onConfirm={handleDelete}
     />

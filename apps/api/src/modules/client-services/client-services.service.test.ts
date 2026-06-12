@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -161,5 +161,75 @@ describe('ClientServicesService', () => {
     expect(result.financeLinks.expensePlans[0]?.name).toBe('Renewal plan');
     expect(result.financeLinks.expenses[0]?.name).toBe('Registrar');
     expect(result.financeLinks.tasks[0]?.id).toBe('t1');
+  });
+
+  it('findAll excludes cancelled services by default', async () => {
+    prisma.clientServiceRecord.findMany.mockResolvedValue([]);
+    prisma.clientServiceRecord.count.mockResolvedValue(0);
+
+    await service.findAll({ page: 1, pageSize: 20 });
+
+    expect(prisma.clientServiceRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: { not: 'CANCELLED' } }),
+      }),
+    );
+  });
+
+  it('findAll can filter cancelled services explicitly', async () => {
+    prisma.clientServiceRecord.findMany.mockResolvedValue([]);
+    prisma.clientServiceRecord.count.mockResolvedValue(0);
+
+    await service.findAll({ status: 'CANCELLED' });
+
+    expect(prisma.clientServiceRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: 'CANCELLED' }),
+      }),
+    );
+  });
+
+  it('cancel sets terminal status', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue({ id: 'svc-1', status: 'ACTIVE' });
+    prisma.taskLink.findMany.mockResolvedValue([]);
+    prisma.clientServiceRecord.update.mockResolvedValue({
+      id: 'svc-1',
+      name: 'DNS',
+      status: 'CANCELLED',
+      ourCost: new Decimal('10'),
+      clientCharge: new Decimal('20'),
+      invoices: [],
+      expensePlans: [],
+      expenses: [],
+      project: { id: 'project-1', code: 'P1', name: 'Proj' },
+      product: null,
+      providerAccount: null,
+      _count: { invoices: 0, expensePlans: 0, expenses: 0 },
+    });
+
+    const result = await service.cancel('svc-1');
+
+    expect(prisma.clientServiceRecord.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'svc-1' },
+        data: { status: 'CANCELLED' },
+      }),
+    );
+    expect(result.status).toBe('CANCELLED');
+  });
+
+  it('delete is blocked with conflict', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue({ id: 'svc-1', status: 'ACTIVE' });
+
+    await expect(service.delete('svc-1')).rejects.toBeInstanceOf(ConflictException);
+    expect(prisma.clientServiceRecord.delete).not.toHaveBeenCalled();
+  });
+
+  it('update rejects cancelled service', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue({ id: 'svc-1', status: 'CANCELLED' });
+
+    await expect(service.update('svc-1', { name: 'New name' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });

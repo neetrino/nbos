@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { AuditService } from '../../audit/audit.service';
+import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { validateLeadStageGate } from './lead-stage-gate';
@@ -8,6 +10,14 @@ import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 import { leadDetailInclude } from './lead.includes';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../../common/lifecycle/entity-lifecycle-guards';
+import {
+  mergeProfileAListScope,
+  parseLifecycleScopeFromQuery,
+} from '../../../common/lifecycle/entity-lifecycle-scope';
 
 const LEAD_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'status', 'source']);
 
@@ -61,11 +71,15 @@ interface LeadQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  scope?: string;
 }
 
 @Injectable()
 export class LeadsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: LeadQueryParams) {
     const {
@@ -77,9 +91,11 @@ export class LeadsService {
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
+      scope,
     } = params;
 
-    const where: Prisma.LeadWhereInput = {};
+    const lifecycleScope = parseLifecycleScopeFromQuery(scope);
+    const where: Prisma.LeadWhereInput = mergeProfileAListScope({}, lifecycleScope);
 
     if (status) {
       where.status = status as Prisma.EnumLeadStatusEnumFilter['equals'];
@@ -186,6 +202,7 @@ export class LeadsService {
 
   async update(id: string, data: UpdateLeadDto, meta: { actorRoleLevel?: number } = {}) {
     const existing = await this.findById(id);
+    assertEntityIsActive(existing, 'trashedAt', 'Lead');
     const nextSource = data.source !== undefined ? data.source : existing.source;
     const nextPartnerId =
       data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId;
@@ -257,9 +274,38 @@ export class LeadsService {
     return lead;
   }
 
-  async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.lead.delete({ where: { id } });
+  async moveToTrash(id: string) {
+    const lead = await this.prisma.lead.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!lead) throw new NotFoundException(`Lead ${id} not found`);
+    assertEntityIsActive(lead, 'trashedAt', 'Lead');
+    return this.prisma.lead.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string) {
+    const lead = await this.prisma.lead.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!lead) throw new NotFoundException(`Lead ${id} not found`);
+    assertEntityIsTrashed(lead, 'trashedAt', 'Lead');
+    return this.prisma.lead.update({
+      where: { id },
+      data: { trashedAt: null },
+    });
+  }
+
+  async permanentlyDeleteFromTrash(id: string, userId: string) {
+    await permanentlyDeleteProfileATrashedEntity(this.prisma, this.auditService, {
+      key: 'lead',
+      id,
+      userId,
+    });
   }
 
   async updateStatus(id: string, status: string) {
@@ -270,14 +316,17 @@ export class LeadsService {
   }
 
   async getStats() {
+    const activeWhere = mergeProfileAListScope({}, 'active');
     const [total, byStatus, bySource] = await Promise.all([
-      this.prisma.lead.count(),
+      this.prisma.lead.count({ where: activeWhere }),
       this.prisma.lead.groupBy({
         by: ['status'],
+        where: activeWhere,
         _count: true,
       }),
       this.prisma.lead.groupBy({
         by: ['source'],
+        where: activeWhere,
         _count: true,
       }),
     ]);
