@@ -205,6 +205,7 @@ function CredentialsVaultPageContent() {
           onOpenFolder={vault.openFolder}
           onRenameFolder={vault.renameFolder}
           onDeleteFolder={vault.deleteFolder}
+          onRemoveFolderGrouping={vault.removeFolderGrouping}
           projectShellsMode={vault.isProjectFoldersMode}
           projectShells={vault.projectShells}
           projectShellsLoading={vault.projectShellsLoading}

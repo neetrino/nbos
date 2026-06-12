@@ -239,6 +239,9 @@ export const credentialsApi = {
   async deleteFolder(id: string): Promise<void> {
     await api.delete(`/api/credentials/folders/${id}`);
   },
+  async removeFolderGrouping(id: string): Promise<void> {
+    await api.post(`/api/credentials/folders/${id}/remove-grouping`);
+  },
   async replaceFolders(
     id: string,
     body: { folderIds?: string[]; folderId?: string | null },

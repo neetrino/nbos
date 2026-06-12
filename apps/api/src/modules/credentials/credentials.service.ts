@@ -52,6 +52,7 @@ import {
   deleteCredentialFolder,
   createCredentialFolder,
   listCredentialFolders,
+  removeCredentialFolderGrouping,
   replaceCredentialFolderMemberships,
   updateCredentialFolder,
 } from './credential-folders.operations';
@@ -237,6 +238,10 @@ export class CredentialsService {
 
   deleteFolder(id: string, access: CredentialsAccessContext) {
     return deleteCredentialFolder(this.runtime, id, access);
+  }
+
+  removeFolderGrouping(id: string, access: CredentialsAccessContext) {
+    return removeCredentialFolderGrouping(this.runtime, id, access);
   }
 
   replaceFolders(id: string, folderIds: string[], access: CredentialsAccessContext) {

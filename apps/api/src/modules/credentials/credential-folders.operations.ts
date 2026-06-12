@@ -169,6 +169,7 @@ export async function updateCredentialFolder(
 }
 
 const NON_EMPTY_FOLDER_MESSAGE = 'Move credentials to Trash or remove them first.';
+const NESTED_FOLDER_MESSAGE = 'Move or delete nested folders first.';
 
 export async function deleteCredentialFolder(
   runtime: CredentialsRuntime,
@@ -201,6 +202,42 @@ export async function deleteCredentialFolder(
     action: 'credential_folder.deleted',
     userId: access.employeeId,
     projectId: existing.projectId ?? undefined,
+  });
+}
+
+/** Model 5: unfile active credentials and delete the folder in one action (no child folders). */
+export async function removeCredentialFolderGrouping(
+  runtime: CredentialsRuntime,
+  folderId: string,
+  access: CredentialsAccessContext,
+) {
+  const existing = await runtime.prisma.credentialFolder.findFirst({
+    where: { id: folderId, archivedAt: null },
+  });
+  if (!existing) throw new NotFoundException(`Credential folder ${folderId} not found`);
+
+  const childFolders = await runtime.prisma.credentialFolder.count({
+    where: { parentId: folderId, archivedAt: null },
+  });
+  if (childFolders > 0) throw new ConflictException(NESTED_FOLDER_MESSAGE);
+
+  const memberships = await runtime.prisma.credentialFolderMembership.findMany({
+    where: { folderId, credential: { archivedAt: null } },
+    select: { credentialId: true },
+  });
+
+  await runtime.prisma.$transaction([
+    runtime.prisma.credentialFolderMembership.deleteMany({ where: { folderId } }),
+    runtime.prisma.credentialFolder.delete({ where: { id: folderId } }),
+  ]);
+
+  await runtime.auditService.log({
+    entityType: 'credential_folder',
+    entityId: folderId,
+    action: 'credential_folder.grouping_removed',
+    userId: access.employeeId,
+    projectId: existing.projectId ?? undefined,
+    changes: { unfiledCredentials: memberships.length },
   });
 }
 

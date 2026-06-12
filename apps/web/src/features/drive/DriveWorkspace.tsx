@@ -116,6 +116,8 @@ import {
 import { useDriveFileAllowedActions } from './use-drive-file-allowed-actions';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
 import { runDriveZipExportJob } from './drive-zip-export-run';
+import { cleanupConfirmMessage } from './drive-cleanup-ui';
+import { usePermission } from '@/lib/permissions';
 import { buildDriveTypedExportActions, type DriveTypedExportAction } from './drive-export-ui';
 import { DriveProjectHubNav } from './DriveProjectHubNav';
 import {
@@ -133,6 +135,8 @@ type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 type LibraryUploadLink = { entityType: string; entityId: string };
 
 export function DriveWorkspace() {
+  const { can } = usePermission();
+  const canApplyCleanup = can('DELETE', 'DRIVE');
   const searchParams = useSearchParams();
   const driveDeepLinkProjectId = searchParams.get(DRIVE_DEEP_LINK_PROJECT_ID_QUERY)?.trim() ?? '';
   const driveDeepLinkProductId = searchParams.get(DRIVE_DEEP_LINK_PRODUCT_ID_QUERY)?.trim() ?? '';
@@ -171,6 +175,7 @@ export function DriveWorkspace() {
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [exportJobs, setExportJobs] = useState<DriveZipExportJobSummary[]>([]);
   const [cleanupCategories, setCleanupCategories] = useState<DriveCleanupCandidateCategory[]>([]);
+  const [cleanupSelectionResetKey, setCleanupSelectionResetKey] = useState(0);
   const [linkAggregates, setLinkAggregates] = useState<
     { entityType: string; entityId: string; count: number }[]
   >([]);
@@ -1303,11 +1308,7 @@ export function DriveWorkspace() {
 
   const handleApplyCleanup = useCallback(
     async (kind: string, ids: string[]) => {
-      if (
-        !window.confirm(
-          `Apply cleanup for ${ids.length} selected item(s)? This cannot be undone automatically.`,
-        )
-      ) {
+      if (!window.confirm(cleanupConfirmMessage(kind, ids.length, 'selected'))) {
         return;
       }
       setBusy(true);
@@ -1315,6 +1316,7 @@ export function DriveWorkspace() {
         const result = await driveApi.applyDriveCleanup({ kind, ids });
         const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
         toast.success(`Applied ${result.applied} item(s)${skipped}`);
+        setCleanupSelectionResetKey((key) => key + 1);
         await refreshInsightsOperations();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Cleanup apply failed');
@@ -1327,17 +1329,14 @@ export function DriveWorkspace() {
 
   const handleApplyCleanupAll = useCallback(
     async (kind: string) => {
-      if (
-        !window.confirm(
-          'Run batch cleanup for this category (up to 100 items)? This cannot be undone automatically.',
-        )
-      ) {
+      if (!window.confirm(cleanupConfirmMessage(kind, 0, 'batch'))) {
         return;
       }
       setBusy(true);
       try {
         const result = await driveApi.applyDriveCleanup({ kind, applyAll: true });
         toast.success(`Applied ${result.applied} item(s) in batch`);
+        setCleanupSelectionResetKey((key) => key + 1);
         await refreshInsightsOperations();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Cleanup apply failed');
@@ -1371,9 +1370,11 @@ export function DriveWorkspace() {
     if (!insightsOpen) return null;
     return {
       busy,
+      canApplyCleanup,
       typedExportActions,
       exportJobs,
       cleanupCategories,
+      cleanupSelectionResetKey,
       onTypedExport: handleTypedExport,
       onCancelExport: handleCancelExport,
       onDownloadExport: handleDownloadExport,
@@ -1383,7 +1384,9 @@ export function DriveWorkspace() {
     };
   }, [
     busy,
+    canApplyCleanup,
     cleanupCategories,
+    cleanupSelectionResetKey,
     exportJobs,
     handleApplyCleanup,
     handleApplyCleanupAll,

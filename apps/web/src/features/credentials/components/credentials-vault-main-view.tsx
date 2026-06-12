@@ -58,6 +58,7 @@ export interface CredentialsVaultMainViewProps {
   onOpenFolder?: (folderId: string) => void;
   onRenameFolder?: (folderId: string, name: string) => Promise<void>;
   onDeleteFolder?: (folderId: string) => Promise<void>;
+  onRemoveFolderGrouping?: (folderId: string) => Promise<void>;
   projectShellsMode?: boolean;
   projectShells?: CredentialProjectShell[];
   projectShellsLoading?: boolean;
@@ -103,6 +104,7 @@ export function CredentialsVaultMainView({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onRemoveFolderGrouping,
   projectShellsMode,
   projectShells,
   projectShellsLoading,
@@ -155,6 +157,7 @@ export function CredentialsVaultMainView({
         onOpenFolder={onOpenFolder ?? (() => undefined)}
         onRenameFolder={onRenameFolder ?? (async () => undefined)}
         onDeleteFolder={onDeleteFolder ?? (async () => undefined)}
+        onRemoveFolderGrouping={onRemoveFolderGrouping ?? (async () => undefined)}
         projectShellsMode={projectShellsMode}
         projectShells={projectShells}
         projectShellsLoading={projectShellsLoading}

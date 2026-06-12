@@ -1,7 +1,10 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { deleteCredentialFolder } from './credential-folders.operations';
+import {
+  deleteCredentialFolder,
+  removeCredentialFolderGrouping,
+} from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
 
 const access = { employeeId: 'emp-1', departmentIds: [] as string[] };
@@ -83,5 +86,56 @@ describe('deleteCredentialFolder', () => {
     await expect(deleteCredentialFolder(runtime, 'missing', access)).rejects.toThrow(
       NotFoundException,
     );
+  });
+});
+
+describe('removeCredentialFolderGrouping', () => {
+  let prisma: MockPrisma;
+  let runtime: CredentialsRuntime;
+
+  beforeEach(() => {
+    prisma = createMockPrisma();
+    runtime = createRuntime(prisma);
+  });
+
+  it('unfiles credentials and deletes folder', async () => {
+    prisma.credentialFolder.findFirst.mockResolvedValue({
+      id: 'folder-1',
+      archivedAt: null,
+      projectId: 'project-1',
+    });
+    prisma.credentialFolder.count.mockResolvedValue(0);
+    prisma.credentialFolderMembership.findMany.mockResolvedValue([
+      { credentialId: 'cred-1' },
+      { credentialId: 'cred-2' },
+    ]);
+
+    await removeCredentialFolderGrouping(runtime, 'folder-1', access);
+
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(prisma.credentialFolderMembership.deleteMany).toHaveBeenCalledWith({
+      where: { folderId: 'folder-1' },
+    });
+    expect(prisma.credentialFolder.delete).toHaveBeenCalledWith({ where: { id: 'folder-1' } });
+    expect(runtime.auditService.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'credential_folder.grouping_removed',
+        changes: { unfiledCredentials: 2 },
+      }),
+    );
+  });
+
+  it('blocks when nested child folders exist', async () => {
+    prisma.credentialFolder.findFirst.mockResolvedValue({
+      id: 'folder-1',
+      archivedAt: null,
+      projectId: null,
+    });
+    prisma.credentialFolder.count.mockResolvedValue(1);
+
+    await expect(removeCredentialFolderGrouping(runtime, 'folder-1', access)).rejects.toThrow(
+      ConflictException,
+    );
+    expect(prisma.credentialFolder.delete).not.toHaveBeenCalled();
   });
 });

@@ -62,6 +62,7 @@ export interface CredentialVaultFoldersViewProps {
   onOpenFolder: (folderId: string) => void;
   onRenameFolder: (folderId: string, name: string) => Promise<void>;
   onDeleteFolder: (folderId: string) => Promise<void>;
+  onRemoveFolderGrouping: (folderId: string) => Promise<void>;
   onCreateOpen: () => void;
   onOpenCredential: (id: string) => void;
   onSetFavorite?: (id: string, favorite: boolean) => void;
@@ -97,6 +98,7 @@ export function CredentialVaultFoldersView({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  onRemoveFolderGrouping,
   onCreateOpen,
   onOpenCredential,
   onSetFavorite,
@@ -302,6 +304,7 @@ export function CredentialVaultFoldersView({
                       onOpen={onOpenFolder}
                       onRename={onRenameFolder}
                       onDelete={onDeleteFolder}
+                      onRemoveGrouping={onRemoveFolderGrouping}
                       dropState={dropState}
                       dropHighlight={dropState === 'valid' && dropTargetFolderId === folder.id}
                       dropHandlers={

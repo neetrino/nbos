@@ -297,6 +297,18 @@ export function useCredentialsVaultPage() {
     [activeFolderId, refetch],
   );
 
+  const removeFolderGrouping = useCallback(
+    async (folderId: string) => {
+      await credentialsApi.removeFolderGrouping(folderId);
+      setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
+      if (activeFolderId === folderId) {
+        setActiveFolderId(null);
+      }
+      void refetch({ silent: true });
+    },
+    [activeFolderId, refetch],
+  );
+
   const resolveCredentialForFolder = useCallback(
     (credentialId: string): CredentialFolderMatchInput | null => {
       const credential = credentials.find((item) => item.id === credentialId);
@@ -552,6 +564,7 @@ export function useCredentialsVaultPage() {
     createFolder,
     renameFolder,
     deleteFolder,
+    removeFolderGrouping,
     fetchFolders,
     fetchProjectShells,
     fetchSheetFolderOptions,

@@ -101,6 +101,17 @@ export class SchedulerController {
     return this.schedulerService.runSalesKpiBackfillAll();
   }
 
+  @Post('credential-trash-purge')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Purge trashed credentials past retention TTL (external cron)',
+    description:
+      'Hard-deletes credentials in Trash longer than CREDENTIAL_TRASH_RETENTION_MS (default 30 days). Optional in-process cron when SCHEDULER_CREDENTIAL_TRASH_PURGE_ENABLED=true.',
+  })
+  async runCredentialTrashPurge() {
+    return this.schedulerService.runCredentialTrashPurge();
+  }
+
   @Post('support-sla-escalation')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

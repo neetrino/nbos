@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Folder, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Folder, FolderOutput, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmDialog, KanbanCardShell } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ interface CredentialFolderCardProps {
   onOpen: (folderId: string) => void;
   onRename: (folderId: string, name: string) => Promise<void>;
   onDelete: (folderId: string) => Promise<void>;
+  onRemoveGrouping: (folderId: string) => Promise<void>;
   dropHighlight?: boolean;
   /** Visual hint while a credential card is dragged over the folders grid. */
   dropState?: 'idle' | 'valid' | 'invalid';
@@ -48,13 +49,16 @@ export function CredentialFolderCard({
   onOpen,
   onRename,
   onDelete,
+  onRemoveGrouping,
   dropHighlight = false,
   dropState = 'idle',
   dropHandlers,
 }: CredentialFolderCardProps) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [removeGroupingOpen, setRemoveGroupingOpen] = useState(false);
   const isEmptyFolder = folder.credentialCount === 0 && childFolderCount === 0;
+  const canRemoveGrouping = folder.credentialCount > 0 && childFolderCount === 0;
   const [busy, setBusy] = useState(false);
 
   const handleRename = async (name: string) => {
@@ -86,6 +90,19 @@ export function CredentialFolderCard({
       setDeleteOpen(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Folder could not be deleted');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRemoveGrouping = async () => {
+    setBusy(true);
+    try {
+      await onRemoveGrouping(folder.id);
+      toast.success('Folder removed — credentials returned to Unfiled');
+      setRemoveGroupingOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Folder grouping could not be removed');
     } finally {
       setBusy(false);
     }
@@ -162,16 +179,22 @@ export function CredentialFolderCard({
                     <Pencil className="size-4" aria-hidden />
                     Rename
                   </DropdownMenuItem>
+                  {canRemoveGrouping ? (
+                    <DropdownMenuItem onClick={() => setRemoveGroupingOpen(true)} disabled={busy}>
+                      <FolderOutput className="size-4" aria-hidden />
+                      Remove grouping
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
                     onClick={() => {
                       if (!isEmptyFolder) {
-                        toast.error('Move credentials to Trash or remove them first.');
+                        toast.error('Move credentials to Trash or remove nested folders first.');
                         return;
                       }
                       setDeleteOpen(true);
                     }}
-                    disabled={busy}
+                    disabled={busy || !isEmptyFolder}
                   >
                     <Trash2 className="size-4" aria-hidden />
                     Delete
@@ -225,6 +248,18 @@ export function CredentialFolderCard({
         confirmLabel="Delete folder"
         isSubmitting={busy}
         onConfirm={() => void handleDelete()}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={removeGroupingOpen}
+        onOpenChange={setRemoveGroupingOpen}
+        itemName={folder.name}
+        title="Remove folder grouping?"
+        description={`${folder.credentialCount} credential(s) will move to Unfiled. The folder will be deleted. Credentials stay in the vault.`}
+        confirmLabel="Remove grouping"
+        isSubmitting={busy}
+        onConfirm={() => void handleRemoveGrouping()}
       />
     </>
   );

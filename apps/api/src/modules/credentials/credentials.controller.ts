@@ -173,6 +173,21 @@ export class CredentialsController {
     await this.credentialsService.deleteFolder(folderId, credentialsAccessFromUser(user));
   }
 
+  @Post('folders/:folderId/remove-grouping')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove folder grouping (Model 5)',
+    description:
+      'Unfiles active credentials from the folder and deletes the folder. Blocked when nested child folders exist.',
+  })
+  async removeFolderGrouping(
+    @Param('folderId') folderId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    await this.credentialsService.removeFolderGrouping(folderId, credentialsAccessFromUser(user));
+  }
+
   @Put(':id/favorite')
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Set personal favorite state for a credential' })
