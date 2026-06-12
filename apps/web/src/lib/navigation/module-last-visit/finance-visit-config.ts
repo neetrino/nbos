@@ -9,7 +9,6 @@ export const FINANCE_SECTION_DEFAULTS: Record<FinanceSectionId, string> = {
   payroll: '/finance/payroll',
 };
 
-const EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
 const EXPENSES_PREFIX = '/finance/expenses';
 const PAYROLL_RUN_DETAIL_PATTERN = /^\/finance\/payroll\/[^/]+$/;
 

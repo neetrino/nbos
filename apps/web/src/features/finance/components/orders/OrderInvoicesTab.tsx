@@ -24,7 +24,7 @@ interface OrderInvoicesTabProps {
 export function OrderInvoicesTab({ order, onCreateInvoice }: OrderInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
-  const invoices = order.invoices ?? [];
+  const invoices = useMemo(() => order.invoices ?? [], [order.invoices]);
 
   const itemSummaries = useMemo(
     () => invoices.map((row) => invoicePreviewToItemSummary(row)),

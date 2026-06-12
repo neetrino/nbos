@@ -70,8 +70,9 @@ export function useSupportChangeControlQuery() {
   const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters((prev) => {
       if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const { boardScope: _, ...rest } = prev;
-        return rest;
+        const next = { ...prev };
+        delete next.boardScope;
+        return next;
       }
       return { ...prev, [key]: value };
     });

@@ -33,6 +33,7 @@ export function useBonusEntryPlannedAdjust(
     setForm(initialForm(entry));
     setEditing(false);
     setSubmitError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form reset keyed on entry.id
   }, [open, entry?.id, entry?.amount, entry?.title]);
 
   const startEdit = useCallback(() => {

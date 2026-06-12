@@ -30,7 +30,7 @@ export function ClientServiceExpensesTab({
 }: ClientServiceExpensesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
-  const expenses = links?.expenses ?? [];
+  const expenses = useMemo(() => links?.expenses ?? [], [links?.expenses]);
 
   const itemSummaries = useMemo(
     () => expenses.map((row) => clientServiceExpenseLinkToItemSummary(row)),

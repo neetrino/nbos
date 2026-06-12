@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Folder } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -30,17 +30,27 @@ export function CredentialFolderTreePicker({
 }: CredentialFolderTreePickerProps) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [lastExpandedValue, setLastExpandedValue] = useState<string | null>(value);
   const tree = useMemo(() => buildCredentialFolderTree(folders), [folders]);
   const label = credentialFolderPathLabel(folders, value);
 
-  useEffect(() => {
-    if (!value || open) return;
+  const expandAncestors = (folderId: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
-      for (const id of collectAncestorIds(tree, value)) next.add(id);
+      for (const id of collectAncestorIds(tree, folderId)) next.add(id);
       return next;
     });
-  }, [open, tree, value]);
+  };
+
+  if (!open && value !== lastExpandedValue) {
+    setLastExpandedValue(value);
+    if (value) expandAncestors(value);
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && value) expandAncestors(value);
+    setOpen(nextOpen);
+  };
 
   const selectFolder = (folderId: string | null) => {
     onChange(folderId);
@@ -48,7 +58,7 @@ export function CredentialFolderTreePicker({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
         id={id}
         disabled={disabled}

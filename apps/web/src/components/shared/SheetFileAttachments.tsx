@@ -46,7 +46,6 @@ export function SheetFileAttachments({
   pendingUploads = [],
   loading = false,
   multiple = true,
-  gridColumns: _gridColumns,
   denseTiles = false,
   embedded = false,
   sectionTitle = SHEET_FILE_SECTION_TITLE,
@@ -160,7 +159,7 @@ export function SheetFileAttachments({
                   SHEET_FILE_TILE_HEIGHT_CLASS,
                 )}
               >
-                <SheetPendingFileTile item={item} dense={denseTiles} />
+                <SheetPendingFileTile item={item} />
               </div>
             ))}
             {visibleFiles.map((file) => (

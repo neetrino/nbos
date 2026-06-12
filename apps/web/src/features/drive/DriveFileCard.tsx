@@ -28,7 +28,7 @@ import {
   SHEET_FILE_TILE_THUMBNAIL_CLASS,
 } from '@/components/shared/sheet-file-attachments.constants';
 import { formatDriveLabel, formatFileSize } from './drive-format';
-import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
+import { fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
 import {
   DriveManualGrantCountBadge,

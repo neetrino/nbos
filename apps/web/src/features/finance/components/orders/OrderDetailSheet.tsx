@@ -133,7 +133,7 @@ export function OrderDetailSheet({
                   activeTab={activeTab}
                   order={order}
                   onCreateInvoice={handleCreateInvoice}
-                  onOrderUpdated={(_updated) => void refresh()}
+                  onOrderUpdated={() => void refresh()}
                   onOrderDeleted={() => onOpenChange(false)}
                 />
               ) : null}

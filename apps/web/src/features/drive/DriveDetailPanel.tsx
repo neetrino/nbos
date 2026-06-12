@@ -374,6 +374,7 @@ function PreviewContent({
     mimeType.includes('typescript');
   if (mimeType.startsWith('image/')) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- signed preview URL; next/image cannot optimize remote blob
       <img
         src={preview.url}
         alt={file.displayName}

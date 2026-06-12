@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Save, Shield } from 'lucide-react';
-import type { AccessScopeMode, PlatformAccessAction, PlatformResourceFamily } from '@nbos/shared';
+import type { AccessScopeMode, PlatformAccessAction } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import {

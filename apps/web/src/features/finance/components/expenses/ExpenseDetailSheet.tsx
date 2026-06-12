@@ -132,6 +132,7 @@ export function ExpenseDetailSheet({
     const next = createExpenseGeneralDraft(expense);
     setGeneralDraft(next);
     setGeneralSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on expense.id
   }, [
     expense?.id,
     expense?.name,

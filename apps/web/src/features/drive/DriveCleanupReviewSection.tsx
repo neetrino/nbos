@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AlertTriangle, Eraser, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -32,10 +32,12 @@ export function DriveCleanupReviewSection({
     [categories],
   );
   const [selectedByKind, setSelectedByKind] = useState<Record<string, string[]>>({});
+  const [trackedResetKey, setTrackedResetKey] = useState(selectionResetKey);
 
-  useEffect(() => {
+  if (trackedResetKey !== selectionResetKey) {
+    setTrackedResetKey(selectionResetKey);
     setSelectedByKind({});
-  }, [selectionResetKey]);
+  }
 
   const cleanupTotal = activeCategories.reduce((sum, row) => sum + row.count, 0);
   const dangerTotal = activeCategories

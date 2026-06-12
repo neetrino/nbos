@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompaniesService } from './companies.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import type { AuditService } from '../../audit/audit.service';
 
 describe('CompaniesService', () => {

@@ -109,6 +109,7 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
 
   useLayoutEffect(() => {
     setSlots(slots);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- caller memoizes slots; track slot fields only
   }, [setSlots, slots.tabs, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
 
   useLayoutEffect(() => {

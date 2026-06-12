@@ -13,13 +13,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { CompleteUploadSessionDto, CreateUploadSessionDto } from './drive.types';
-import {
-  pickConfidentiality,
-  pickLinkType,
-  pickPurpose,
-  pickVisibility,
-  requireText,
-} from './drive-metadata';
+import { requireText } from './drive-metadata';
 import { resolveDriveLibraryEntityType } from './drive-library';
 import {
   UPLOAD_SESSION_PRESIGN_EXPIRY_SECONDS,

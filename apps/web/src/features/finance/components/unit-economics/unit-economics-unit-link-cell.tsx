@@ -5,7 +5,6 @@ import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/un
 
 export function UnitEconomicsUnitLinkCell({
   row,
-  onDrilldown: _onDrilldown,
 }: {
   row: UnitEconomicsRow;
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;

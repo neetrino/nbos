@@ -8,10 +8,7 @@ export interface ClientsDirectoryTrashBannerProps {
   onBackToActive: () => void;
 }
 
-export function ClientsDirectoryTrashBanner({
-  entityLabel,
-  onBackToActive,
-}: ClientsDirectoryTrashBannerProps) {
+export function ClientsDirectoryTrashBanner({ onBackToActive }: ClientsDirectoryTrashBannerProps) {
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3">
       <p className="text-muted-foreground text-sm">

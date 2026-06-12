@@ -6,9 +6,6 @@ import { priorityClass, type PriorityCard } from '../dashboard-control-registry'
 
 export { MiniAnalytics } from './MiniAnalyticsPanel';
 
-const WIDGET_DROP_VISIBLE = 'widget-drop-visible';
-const WIDGET_DROP_HIDDEN = 'widget-drop-hidden';
-
 interface PriorityFeedProps {
   priorities: PriorityCard[];
 }

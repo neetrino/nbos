@@ -62,7 +62,7 @@ import {
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
-import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
+import { ExpensesPageMainPanel } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
   buildExpenseListApiParams,

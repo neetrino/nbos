@@ -145,6 +145,7 @@ export function DealSheet({
       setGeneralDraft(next);
       setGeneralSnap(next);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on deal.id
   }, [deal?.id, deal?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<DealGeneralDraft>) => {

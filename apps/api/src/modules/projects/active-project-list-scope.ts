@@ -1,7 +1,5 @@
 import type { Prisma } from '@nbos/database';
 
-type ProjectRelationFilter = Prisma.ProductWhereInput['project'];
-
 /**
  * Cross-project lists (delivery board, global hub) must not surface rows for trashed projects.
  * When `projectId` is set, callers are scoped to a single project view and keep all rows.

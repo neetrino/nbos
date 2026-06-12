@@ -17,7 +17,6 @@ import {
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
-  type KanbanColumn,
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
@@ -521,8 +520,9 @@ function DealsPipelinePageContent() {
           onFilterChange={(key: string, value: string) =>
             setFilters((prev) => {
               if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-                const { boardScope: _, ...rest } = prev;
-                return rest;
+                const next = { ...prev };
+                delete next.boardScope;
+                return next;
               }
               return { ...prev, [key]: value };
             })

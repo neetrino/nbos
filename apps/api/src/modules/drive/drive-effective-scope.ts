@@ -1,7 +1,6 @@
 import type { AccessScopeMode } from '@nbos/shared';
 
-const RBAC_DRIVE_SCOPES = ['OWN', 'DEPARTMENT', 'ALL'] as const;
-type RbacDriveScope = (typeof RBAC_DRIVE_SCOPES)[number];
+type RbacDriveScope = 'OWN' | 'DEPARTMENT' | 'ALL';
 
 const RBAC_BREADTH: Record<RbacDriveScope, number> = {
   OWN: 1,

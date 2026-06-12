@@ -1,8 +1,5 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
-import {
-  buildFinancePeriodFilterConfig,
-  FINANCE_PERIOD_FILTER_KEY,
-} from '@/features/finance/constants/finance-period-filter';
+import { buildFinancePeriodFilterConfig } from '@/features/finance/constants/finance-period-filter';
 import {
   buildExpenseBoardScopeFilterConfig,
   EXPENSE_SORT_BY_FILTER_KEY,

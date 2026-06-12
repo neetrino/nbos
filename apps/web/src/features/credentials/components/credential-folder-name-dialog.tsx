@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,10 +29,12 @@ export function CredentialFolderNameDialog({
   onSubmit,
 }: CredentialFolderNameDialogProps) {
   const [name, setName] = useState(initialName);
+  const [wasOpen, setWasOpen] = useState(open);
 
-  useEffect(() => {
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setName(initialName);
-  }, [open, initialName]);
+  }
 
   const handleSubmit = () => {
     void onSubmit(name.trim());

@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { AtSign, Braces, KeyRound, Lock, Shield, Terminal } from 'lucide-react';
 import {
   ApplePlatformIcon,

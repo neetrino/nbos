@@ -88,6 +88,7 @@ export function ExpensePlanDetailSheet({
     const next = createExpensePlanGeneralDraft(plan);
     setGeneralDraft(next);
     setGeneralSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on plan.id
   }, [
     plan?.id,
     plan?.name,

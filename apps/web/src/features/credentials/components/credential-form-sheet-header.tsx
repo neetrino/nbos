@@ -11,9 +11,9 @@ import {
   getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
 import {
-  credentialAccessIcon,
-  credentialCriticalityIcon,
-} from '@/features/credentials/utils/credential-vault-card-meta';
+  CredentialAccessIcon,
+  CredentialCriticalityIcon,
+} from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
 import { CredentialFormCategoryMenu } from './credential-form-category-menu';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
@@ -92,8 +92,6 @@ export function CredentialFormSheetHeader({
 
   const accessMeta = getAccessLevel(accessLevel);
   const critMeta = getCredentialCriticality(criticality);
-  const AccessIcon = credentialAccessIcon(accessLevel);
-  const CritIcon = credentialCriticalityIcon(criticality);
 
   const commitName = () => {
     const trimmed = nameDraft.trim();
@@ -156,7 +154,13 @@ export function CredentialFormSheetHeader({
                 label={accessMeta.label}
                 variant={accessMeta.variant}
                 className={ACCESS_SCOPE_BADGE_CLASS}
-                icon={<AccessIcon className="size-2.5 shrink-0 opacity-90" aria-hidden />}
+                icon={
+                  <CredentialAccessIcon
+                    accessLevel={accessLevel}
+                    className="size-2.5 shrink-0 opacity-90"
+                    aria-hidden
+                  />
+                }
               />
             ) : null}
 
@@ -165,7 +169,13 @@ export function CredentialFormSheetHeader({
                 label={critMeta.label}
                 variant={critMeta.variant}
                 className={ACCESS_SCOPE_BADGE_CLASS}
-                icon={<CritIcon className="size-2.5 shrink-0 opacity-90" aria-hidden />}
+                icon={
+                  <CredentialCriticalityIcon
+                    criticality={criticality}
+                    className="size-2.5 shrink-0 opacity-90"
+                    aria-hidden
+                  />
+                }
               />
             ) : null}
           </div>

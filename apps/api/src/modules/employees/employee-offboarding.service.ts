@@ -55,7 +55,12 @@ export class EmployeeOffboardingService {
 
     const result = await this.prisma.$transaction(async (tx) => {
       const credentialRevoke = await revokeCredentialAccessForOffboard(tx, employeeId, now);
-      const revoked = await this.revokeAccess(tx, employeeId, now, credentialRevoke);
+      const { summary: revoked, auditedCredentialIds } = await this.revokeAccess(
+        tx,
+        employeeId,
+        now,
+        credentialRevoke,
+      );
       const templateIds = await this.ensureOffboardingTemplate(tx, actorId);
       const snapshot = buildEmployeeOffboardingSnapshotItems({ autoCompletedKeys });
 
@@ -81,7 +86,7 @@ export class EmployeeOffboardingService {
         },
       });
 
-      return { updated, revoked, checklistInstanceId: checklistInstance.id };
+      return { updated, revoked, auditedCredentialIds, checklistInstanceId: checklistInstance.id };
     });
 
     await this.audit.log({
@@ -98,7 +103,7 @@ export class EmployeeOffboardingService {
 
     await auditCredentialAccessRevokedOnOffboard(
       this.audit,
-      result.revoked.auditedCredentialIds,
+      result.auditedCredentialIds,
       employeeId,
       actorId,
     );
@@ -109,15 +114,13 @@ export class EmployeeOffboardingService {
       actorId,
     );
 
-    const { auditedCredentialIds: _auditedCredentialIds, ...revoked } = result.revoked;
-
     return {
       employeeId,
       status: result.updated.status,
       fireDate: now.toISOString(),
       checklistInstanceId: result.checklistInstanceId,
       inventory,
-      revoked,
+      revoked: result.revoked,
       financeNotificationsSent,
     };
   }
@@ -200,7 +203,10 @@ export class EmployeeOffboardingService {
     employeeId: string,
     now: Date,
     credentialRevoke: Awaited<ReturnType<typeof revokeCredentialAccessForOffboard>>,
-  ): Promise<EmployeeOffboardingRevokeSummary & { auditedCredentialIds: string[] }> {
+  ): Promise<{
+    summary: EmployeeOffboardingRevokeSummary;
+    auditedCredentialIds: string[];
+  }> {
     const resourceGrants = await tx.resourceAccessGrant.updateMany({
       where: { employeeId, revokedAt: null },
       data: { revokedAt: now },
@@ -221,14 +227,16 @@ export class EmployeeOffboardingService {
     });
 
     return {
-      resourceGrantsRevoked: resourceGrants.count,
-      fileGrantsRevoked: fileGrants.count,
-      projectTeamRemovals: projectTeamRemovals.count,
-      productTeamRemovals: productTeamRemovals.count,
-      credentialGrantsRevoked: credentialRevoke.credentialGrantsRevoked,
-      credentialAllowedListEntriesCleared: credentialRevoke.allowedEmployeesEntriesCleared,
-      credentialFavoritesRemoved: credentialRevoke.favoritesRemoved,
-      accessOverridesClosed: accessOverridesClosed.count,
+      summary: {
+        resourceGrantsRevoked: resourceGrants.count,
+        fileGrantsRevoked: fileGrants.count,
+        projectTeamRemovals: projectTeamRemovals.count,
+        productTeamRemovals: productTeamRemovals.count,
+        credentialGrantsRevoked: credentialRevoke.credentialGrantsRevoked,
+        credentialAllowedListEntriesCleared: credentialRevoke.allowedEmployeesEntriesCleared,
+        credentialFavoritesRemoved: credentialRevoke.favoritesRemoved,
+        accessOverridesClosed: accessOverridesClosed.count,
+      },
       auditedCredentialIds: credentialRevoke.credentialIds,
     };
   }

@@ -250,7 +250,6 @@ export function PayrollRunDetailPageContent({
     matrixFullscreen,
     matrixSearch,
     detailViewMode,
-    refreshRunQuiet,
     run,
     statusBusy,
   ]);

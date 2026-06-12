@@ -1,7 +1,4 @@
-import {
-  PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
-  PLATFORM_TRASH_INVENTORY_ENTRIES,
-} from './platform-trash-inventory.registry';
+import { PLATFORM_TRASH_INVENTORY_ENTRIES } from './platform-trash-inventory.registry';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

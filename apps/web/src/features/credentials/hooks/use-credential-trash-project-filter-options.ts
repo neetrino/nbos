@@ -13,10 +13,7 @@ export function useCredentialTrashProjectFilterOptions(enabled: boolean) {
   const [options, setOptions] = useState<CredentialTrashProjectFilterOption[]>([]);
 
   useEffect(() => {
-    if (!enabled) {
-      setOptions([]);
-      return;
-    }
+    if (!enabled) return;
 
     let cancelled = false;
     void (async () => {
@@ -35,5 +32,5 @@ export function useCredentialTrashProjectFilterOptions(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { projectFilterOptions: options };
+  return { projectFilterOptions: enabled ? options : [] };
 }

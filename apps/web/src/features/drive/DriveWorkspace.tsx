@@ -11,8 +11,6 @@ import {
 } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -856,7 +854,6 @@ export function DriveWorkspace() {
     effectiveStatus,
     inLifecycleView,
     libraryEntityFolderScope,
-    lifecycleView,
     projectHubAwaitingFocus,
     projectHubFileBrowse,
     projectHubSummary,
@@ -1683,7 +1680,6 @@ export function DriveWorkspace() {
   async function onBulkRestore() {
     const ids = await resolveBulkFileAssetIds();
     if (ids.length === 0) return;
-    const selected = rawFiles.filter((file) => ids.includes(file.id));
     await mutateFiles(async () => {
       await driveApi.restoreTrashFileAssets(ids);
     }, 'Selected files restored');

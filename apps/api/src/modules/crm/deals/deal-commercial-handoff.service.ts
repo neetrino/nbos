@@ -11,11 +11,7 @@ import { AuditService } from '../../audit/audit.service';
 import { dealDetailInclude } from './deal.includes';
 import { DealWonHandler } from './deal-won.handler';
 import { validateDealWonGate } from './deal-won-gate';
-import {
-  assertDealHasCommercialAmount,
-  createOrderForDeal,
-  ensureProjectForDeal,
-} from './deal-order-bootstrap.ops';
+import { assertDealHasCommercialAmount, createOrderForDeal } from './deal-order-bootstrap.ops';
 import { createDealDepositInvoice } from './deal-deposit-invoice.ops';
 import {
   DEPOSIT_COMMERCIAL_DEAL_TYPES,

@@ -24,7 +24,6 @@ import { formatCredentialTypeLabel } from '@/features/credentials/utils/credenti
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
-import { CredentialAppStoreFields } from './credential-app-store-fields';
 import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
@@ -82,8 +81,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setPassword,
     apiKey,
     setApiKey,
-    phones,
-    setPhones,
     passphrase,
     setPassphrase,
     url,
@@ -103,8 +100,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setCriticality,
     nextRotationAt,
     setNextRotationAt,
-    appStorePlatform,
-    setAppStorePlatform,
     folderId,
     setFolderId,
     folderOptions,
@@ -126,18 +121,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
       isCreate={isCreate}
     />
   );
-
-  const appStoreBlock =
-    credentialType === 'APP_STORE_ACCOUNT' ? (
-      <CredentialAppStoreFields
-        platform={appStorePlatform}
-        onPlatformChange={setAppStorePlatform}
-        url={url}
-        onUrlChange={setUrl}
-        phones={phones}
-        onPhonesChange={setPhones}
-      />
-    ) : null;
 
   return (
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>

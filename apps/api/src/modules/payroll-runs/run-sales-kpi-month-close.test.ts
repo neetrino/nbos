@@ -1,4 +1,3 @@
-import { Decimal } from '@nbos/database';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { runSalesKpiMonthClose } from './run-sales-kpi-month-close';

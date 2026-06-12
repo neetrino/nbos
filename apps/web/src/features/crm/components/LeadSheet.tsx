@@ -120,6 +120,7 @@ export function LeadSheet({
       setGeneralDraft(next);
       setGeneralSnap(next);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on lead.id
   }, [lead?.id, lead?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<LeadGeneralDraft>) => {

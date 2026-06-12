@@ -42,7 +42,6 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const searchParams = useSearchParams();
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
-  const portfolioProjectIdFromUrl = options?.portfolioProjectIdFromUrl?.trim() || null;
   const portfolioCreateInvoiceFromUrl = options?.portfolioCreateInvoiceFromUrl === true;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);

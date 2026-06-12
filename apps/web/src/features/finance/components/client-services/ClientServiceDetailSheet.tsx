@@ -161,6 +161,7 @@ export function ClientServiceDetailSheet({
     const next = clientServiceToFormState(service);
     setDraft(next);
     setSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on service.id
   }, [service?.id, service?.updatedAt]);
 
   const patchDraft = useCallback((partial: Partial<ClientServiceFormState>) => {
@@ -179,7 +180,7 @@ export function ClientServiceDetailSheet({
       setSnap(next);
       onSaved();
     },
-    [onSaved],
+    [onSaved, setService],
   );
 
   const handleSave = useCallback(() => {
