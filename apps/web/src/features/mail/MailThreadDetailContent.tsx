@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Check, Forward, MailOpen, Reply, RotateCcw, ShieldAlert, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ErrorState, LoadingState, useDeleteConfirm } from '@/components/shared';
+import {
+  ErrorState,
+  LoadingState,
+  ProfileAPermanentDeleteDialog,
+  useDeleteConfirm,
+} from '@/components/shared';
 import { MailThreadDeleteDialog } from '@/features/mail/MailThreadDeleteDialog';
 import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
 import { MailThreadReplyComposer } from '@/features/mail/MailThreadReplyComposer';
@@ -61,17 +66,23 @@ export function MailThreadDetailContent({
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [purging, setPurging] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [purgeError, setPurgeError] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
+  const permanentDeleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
   const clearDeleteConfirm = deleteConfirm.clear;
+  const clearPermanentDeleteConfirm = permanentDeleteConfirm.clear;
 
   useEffect(() => {
     setReplyComposerOpen(false);
     setDeleteError(null);
     setRestoreError(null);
+    setPurgeError(null);
     clearDeleteConfirm();
-  }, [threadId, clearDeleteConfirm]);
+    clearPermanentDeleteConfirm();
+  }, [threadId, clearDeleteConfirm, clearPermanentDeleteConfirm]);
 
   if (loading) {
     return <LoadingState />;
@@ -94,7 +105,8 @@ export function MailThreadDetailContent({
     markingSpam ||
     retryingFailedMessageId !== null ||
     deleting ||
-    restoring;
+    restoring ||
+    purging;
 
   const confirmRestore = async () => {
     setRestoring(true);
@@ -106,6 +118,20 @@ export function MailThreadDetailContent({
       setRestoreError(getApiErrorMessage(restoreErr, 'Could not restore email.'));
     } finally {
       setRestoring(false);
+    }
+  };
+
+  const confirmPermanentDelete = async () => {
+    setPurging(true);
+    setPurgeError(null);
+    try {
+      await mailApi.permanentDeleteThread(threadId);
+      permanentDeleteConfirm.clear();
+      onDeleted?.(threadId);
+    } catch (purgeErr) {
+      setPurgeError(getApiErrorMessage(purgeErr, 'Could not permanently delete email.'));
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -159,17 +185,30 @@ export function MailThreadDetailContent({
         {canEdit ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
             {isTrashView ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="gap-2"
-                disabled={actionsBusy}
-                onClick={() => void confirmRestore()}
-              >
-                <RotateCcw size={16} aria-hidden />
-                Restore
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                  disabled={actionsBusy}
+                  onClick={() => void confirmRestore()}
+                >
+                  <RotateCcw size={16} aria-hidden />
+                  Restore
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="text-destructive hover:text-destructive gap-2"
+                  disabled={actionsBusy}
+                  onClick={() => permanentDeleteConfirm.request({ id: threadId, name: title })}
+                >
+                  <Trash2 size={16} aria-hidden />
+                  Delete permanently
+                </Button>
+              </>
             ) : (
               <>
                 <Button
@@ -239,6 +278,7 @@ export function MailThreadDetailContent({
           </div>
         ) : null}
         {restoreError ? <p className="text-destructive text-sm">{restoreError}</p> : null}
+        {purgeError ? <p className="text-destructive text-sm">{purgeError}</p> : null}
       </div>
 
       <MailThreadMessages
@@ -271,6 +311,15 @@ export function MailThreadDetailContent({
         errorMessage={deleteError}
         onOpenChange={deleteConfirm.onOpenChange}
         onConfirm={() => void confirmDelete()}
+      />
+
+      <ProfileAPermanentDeleteDialog
+        open={permanentDeleteConfirm.open}
+        onOpenChange={permanentDeleteConfirm.onOpenChange}
+        itemName={permanentDeleteConfirm.target?.name ?? title}
+        entityLabel="email thread"
+        isSubmitting={purging}
+        onConfirm={() => void confirmPermanentDelete()}
       />
     </div>
   );

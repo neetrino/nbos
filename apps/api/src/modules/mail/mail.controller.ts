@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -343,6 +344,22 @@ export class MailController {
     @Param('threadId') threadId: string,
   ) {
     return this.mailThreadCommandService.restoreThreadFromTrash(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
+  }
+
+  @Delete('threads/:threadId/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MAIL', 'DELETE')
+  @ApiOperation({ summary: 'Permanently delete trashed thread (cannot be undone)' })
+  async permanentDeleteThread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    await this.mailThreadCommandService.permanentlyDeleteThreadFromTrash(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,

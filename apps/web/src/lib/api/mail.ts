@@ -286,6 +286,10 @@ export const mailApi = {
     return resp.data;
   },
 
+  async permanentDeleteThread(threadId: string): Promise<void> {
+    await api.delete(`/api/mail/threads/${threadId}/permanent`);
+  },
+
   async createOutboundDraft(
     threadId: string,
     body: CreateMailOutboundDraftPayload,

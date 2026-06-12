@@ -11,6 +11,7 @@ import {
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
+import { permanentlyDeleteTrashedMailThread } from './mail-thread-permanent-delete.ops';
 import { moveMailThreadToTrash, restoreMailThreadFromTrash } from './mail-thread-trash.ops';
 import type { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { patchThreadNeedsBusinessLinkIfChanged } from './mail-thread-needs-link.ops';
@@ -269,5 +270,22 @@ export class MailThreadCommandService {
       viewScope: accessScope,
       threadId,
     });
+  }
+
+  /** Permanently deletes a trashed thread (manual purge before retention). */
+  async permanentlyDeleteThreadFromTrash(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<{ deleted: true; threadId: string }> {
+    const outcome = await permanentlyDeleteTrashedMailThread(this.prisma, this.auditService, {
+      employeeId,
+      accessScope,
+      threadId,
+    });
+    if (!outcome.ok) {
+      throw new NotFoundException('Thread not found');
+    }
+    return { deleted: true, threadId };
   }
 }

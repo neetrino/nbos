@@ -56,6 +56,9 @@ export const MAIL_AUDIT_ACTION_THREAD_RESTORED = 'mail.thread_restored';
 /** Scheduled retention purge hard-deleted a trashed thread. */
 export const MAIL_AUDIT_ACTION_THREAD_RETENTION_PURGED = 'mail.thread_retention_purged';
 
+/** Manual permanent delete of a trashed thread (before retention). */
+export const MAIL_AUDIT_ACTION_THREAD_PERMANENTLY_DELETED = 'mail.thread_permanently_deleted';
+
 /** Mailbox connected via provider (Gmail OAuth or corporate IMAP/SMTP). */
 export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_CONNECTED = 'mail.mail_account_connected';
 

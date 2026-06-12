@@ -12,7 +12,7 @@ Tracks **shipped Trash / Purge runtime** vs canon in `09-Entity-Lifecycle-Standa
 | CRM          | Lead, Deal       | [01-CRM/06](../02-Modules/01-CRM/06-Implementation-Status.md)                   | ✅               | ✅      | ✅               | ✅                                |
 | Projects Hub | Project          | [02-Projects-Hub/06](../02-Modules/02-Projects-Hub/06-Implementation-Status.md) | ✅ hub Trash tab | ✅      | ✅               | ✅                                |
 | Partners     | Partner          | [08-Partners/06](../02-Modules/08-Partners/06-Implementation-Status.md)         | ✅               | ✅      | ✅               | ✅                                |
-| Mail         | EmailThread      | [17-Mail/06](../02-Modules/17-Mail/06-Implementation-Status.md)                 | ✅ Trash folder  | ✅      | —                | ✅                                |
+| Mail         | EmailThread      | [17-Mail/06](../02-Modules/17-Mail/06-Implementation-Status.md)                 | ✅ Trash folder  | ✅      | ✅               | ✅                                |
 
 **Profile A manual purge API:** `DELETE …/:id/permanent` on Contact, Company, Lead, Deal, Partner, Project — trashed-only, same relation guards as retention purge, audit `*.permanently_deleted`. Shared ops: `profile-a-permanent-delete.ops.ts`.
 

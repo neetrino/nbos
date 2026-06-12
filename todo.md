@@ -146,20 +146,20 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 ### ❌ Неправильно vs канон (hard delete)
 
-| Модуль          | Сущности                | Schema lifecycle                       | API                             | Web UI                                 |
-| --------------- | ----------------------- | -------------------------------------- | ------------------------------- | -------------------------------------- |
-| Clients         | Contact, Company        | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
-| CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
-| Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only            | hard DELETE removed                    |
-| Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
-| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)     | Delete draft в task sheet              |
-| Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                    | no delete UI                           |
-| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete           | Invoice cancel API; Order draft-only   |
-| Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE  | Expense UI delete vs cancel            |
-| Finance         | Expense Plan            | ✅ empty-only delete                   | guarded DELETE                  | non-empty plan → 409                   |
-| Partners        | Partner                 | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)    |
-| Client Services | Record                  | ✅ terminal `CANCELLED`                | `POST cancel`; DELETE → 409     | Cancel service UI (Profile A-lite)     |
-| Mail            | EmailThread             | ✅ `trashedAt`                         | trash + restore API             | Trash folder + Move to Trash / Restore |
+| Модуль          | Сущности                | Schema lifecycle                       | API                             | Web UI                                                      |
+| --------------- | ----------------------- | -------------------------------------- | ------------------------------- | ----------------------------------------------------------- |
+| Clients         | Contact, Company        | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
+| CRM             | Lead, Deal              | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
+| Projects Hub    | Product, Extension      | ✅ terminal status                     | cancel/complete only            | hard DELETE removed                                         |
+| Projects        | Project                 | ✅ `trashedAt` (dropped `is_archived`) | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
+| Tasks           | Task                    | ✅ draft-only guards                   | guarded DELETE (empty OPEN)     | Delete draft в task sheet                                   |
+| Support         | Ticket                  | ✅ close workflow                      | DELETE → 409                    | no delete UI                                                |
+| Finance         | Invoice, Order, Payment | 🟡 Profile D guards                    | cancel / draft-delete           | Invoice cancel API; Order draft-only                        |
+| Finance         | Expense                 | ✅ cancel + draft guards               | `POST cancel` / guarded DELETE  | Expense UI delete vs cancel                                 |
+| Finance         | Expense Plan            | ✅ empty-only delete                   | guarded DELETE                  | non-empty plan → 409                                        |
+| Partners        | Partner                 | ✅ `trashedAt`                         | Trash + restore + permanent API | Move to Trash / Restore (Profile A)                         |
+| Client Services | Record                  | ✅ terminal `CANCELLED`                | `POST cancel`; DELETE → 409     | Cancel service UI (Profile A-lite)                          |
+| Mail            | EmailThread             | ✅ `trashedAt`                         | trash + restore + permanent API | Trash folder + Move to Trash / Restore / Delete permanently |
 
 ### ⚠️ Partial / backlog
 
@@ -168,7 +168,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | Drive       | ✅ DONE (6.1–6.5); optional polish only                                      |
 | Credentials | offboarding rotation tasks + revealed-history inventory (canon §Offboarding) |
 | Documents   | ✅ historical archive (решено) — не трогать в этом цикле                     |
-| Global      | Tasks `trashedAt`; Mail manual permanent delete                              |
+| Global      | Tasks `trashedAt` (O1 deferred)                                              |
 
 ---
 
@@ -462,3 +462,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Profile A permanent delete API:** `DELETE …/permanent` для Contact, Company, Lead, Deal, Partner, Project — shared ops + relation guards + audit `*.permanently_deleted`                                       |
 | 2026-06-12 | **Profile A permanent delete web:** trash detail sheets — Restore + Delete permanently (`ProfileAPermanentDeleteDialog`, strong name-match) для Clients, CRM, Partners, Projects                                 |
 | 2026-06-12 | **Credentials offboarding:** revoke grants + SECRET `allowedEmployees` + favorites on offboard; audit `credential.access_revoked` per credential; HR preview shows unified credential access footprint           |
+| 2026-06-12 | **Mail permanent delete:** `DELETE /mail/threads/:id/permanent` (trashed-only, cascade + audit `mail.thread_permanently_deleted`); Trash detail UI with strong name confirm                                      |
