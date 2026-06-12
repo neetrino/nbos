@@ -27,8 +27,18 @@ export interface PlatformRetentionRuleRow {
   entityLabel: string;
   profile: LifecycleProfile;
   timestampField: LifecycleTimestampField;
+  registryRetentionDays: number | null;
   retentionDays: number | null;
+  automatedPurge: boolean;
   scheduledPurgeJob?: string;
+}
+
+export interface PlatformTrashPurgeRunResult {
+  startedAt: string;
+  completedAt: string;
+  credentials: { purged: number; candidateIds: string[] };
+  driveFiles: { purged: number; candidateIds: string[] };
+  totalPurged: number;
 }
 
 export const platformLifecycleApi = {
@@ -42,6 +52,10 @@ export const platformLifecycleApi = {
     const resp = await api.get<{ rules: PlatformRetentionRuleRow[] }>(
       '/api/platform/lifecycle/retention-rules',
     );
+    return resp.data;
+  },
+  async runRetentionPurge(): Promise<PlatformTrashPurgeRunResult> {
+    const resp = await api.post<PlatformTrashPurgeRunResult>('/api/platform/lifecycle/purge/run');
     return resp.data;
   },
 };

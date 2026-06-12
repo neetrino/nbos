@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, RefreshCw, ShieldAlert, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Eraser, ExternalLink, RefreshCw, ShieldAlert, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -29,6 +30,7 @@ function profileTone(profile: string): string {
 export function PlatformTrashInventoryPanel() {
   const [inventory, setInventory] = useState<PlatformTrashInventoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [purging, setPurging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -47,6 +49,28 @@ export function PlatformTrashInventoryPanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const handleRunPurge = async () => {
+    if (
+      !window.confirm(
+        'Run automated retention purge for Credentials and Drive?\n\nThis permanently deletes trashed rows past retention TTL. This cannot be undone.',
+      )
+    ) {
+      return;
+    }
+    setPurging(true);
+    try {
+      const result = await platformLifecycleApi.runRetentionPurge();
+      toast.success(
+        `Purged ${result.totalPurged} row(s) — credentials: ${result.credentials.purged}, drive: ${result.driveFiles.purged}`,
+      );
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Retention purge failed');
+    } finally {
+      setPurging(false);
+    }
+  };
 
   if (loading && !inventory) {
     return <LoadingState label="Loading trash inventory…" />;
@@ -72,23 +96,38 @@ export function PlatformTrashInventoryPanel() {
           ) : null}
           <span className="text-muted-foreground text-xs">Updated {generatedLabel}</span>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={loading}
-          onClick={() => void load()}
-        >
-          <RefreshCw className={cn('mr-1.5 size-3.5', loading && 'animate-spin')} aria-hidden />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {inventory.totalPurgeEligible > 0 ? (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={loading || purging}
+              onClick={() => void handleRunPurge()}
+            >
+              <Eraser className={cn('mr-1.5 size-3.5', purging && 'animate-pulse')} aria-hidden />
+              Run retention purge
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={loading || purging}
+            onClick={() => void load()}
+          >
+            <RefreshCw className={cn('mr-1.5 size-3.5', loading && 'animate-spin')} aria-hidden />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {inventory.totalPurgeEligible > 0 ? (
         <p className="text-muted-foreground flex items-start gap-2 text-sm">
           <ShieldAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden />
-          Rows past retention are eligible for scheduled purge jobs (Drive cleanup, credential trash
-          purge). Permanent purge requires admin confirmation in each module.
+          Rows past retention are eligible for automated purge (Credentials + Drive). Profile A
+          entities are inventory-only until purge jobs ship. Override TTL via
+          PLATFORM_TRASH_RETENTION_DAYS_* env vars.
         </p>
       ) : null}
 

@@ -98,7 +98,7 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     retentionDays: PLATFORM_DEFAULT_TRASH_RETENTION_DAYS,
     prismaModel: 'credential',
     webHref: '/credentials',
-    scheduledPurgeJob: 'POST /scheduler/credential-trash-purge',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
   {
     key: 'drive_file',
@@ -110,6 +110,6 @@ export const PLATFORM_TRASH_INVENTORY_ENTRIES: PlatformTrashInventoryEntryDefini
     prismaModel: 'fileAsset',
     driveTrash: true,
     webHref: '/drive',
-    scheduledPurgeJob: 'Drive cleanup apply (soft_deleted_retention)',
+    scheduledPurgeJob: 'POST /scheduler/platform-trash-purge',
   },
 ];

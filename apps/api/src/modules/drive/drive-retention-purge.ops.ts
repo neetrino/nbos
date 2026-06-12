@@ -11,8 +11,9 @@ export async function purgeRetentionFileAssets(
   logger: Pick<Logger, 'warn'>,
   ids: string[],
   now: Date,
+  retentionMs?: number,
 ): Promise<number> {
-  const where = { id: { in: ids }, ...purgeableSoftDeletedRetentionWhere(now) };
+  const where = { id: { in: ids }, ...purgeableSoftDeletedRetentionWhere(now, retentionMs) };
   const rows = await prisma.fileAsset.findMany({
     where,
     select: {

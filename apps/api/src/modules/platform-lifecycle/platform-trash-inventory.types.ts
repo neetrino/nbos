@@ -26,6 +26,21 @@ export interface PlatformRetentionRuleRow {
   entityLabel: string;
   profile: LifecycleProfile;
   timestampField: LifecycleTimestampField;
+  registryRetentionDays: number | null;
   retentionDays: number | null;
+  automatedPurge: boolean;
   scheduledPurgeJob?: string;
+}
+
+export interface PlatformTrashPurgeSliceResult {
+  purged: number;
+  candidateIds: string[];
+}
+
+export interface PlatformTrashPurgeRunResult {
+  startedAt: string;
+  completedAt: string;
+  credentials: PlatformTrashPurgeSliceResult;
+  driveFiles: PlatformTrashPurgeSliceResult;
+  totalPurged: number;
 }

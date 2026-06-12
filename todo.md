@@ -168,7 +168,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 | Drive       | **Схлопнуть Archive + Trash в один Trash**; confirmed destructive cleanup; **физический purge R2** после retention |
 | Credentials | **Phase C** (vault context, folders Model 6, trash side-effects); purge TTL; offboarding ↔ trash                   |
 | Documents   | Проверить `ARCHIVED`: это historical archive или delete UX; delete UX переводить на Trash                          |
-| Global      | Trash inventory dashboard shipped (7.2); unified purge orchestration backlog (7.4)                                 |
+| Global      | Trash inventory + retention resolver + unified purge (7.2–7.4); Profile A auto-purge backlog; Mail O2              |
 
 ---
 
@@ -396,12 +396,12 @@ purgedAt    DateTime?   -- шаг 2: job/admin/policy; окончательно�
 
 ### Phase 7 — Mail & Global Admin Trash — P3
 
-| #   | Задача                                     | Статус     |
-| --- | ------------------------------------------ | ---------- |
-| 7.1 | Mail: trash-first vs MVP delete (после O2) | ⬜ TODO    |
-| 7.2 | Admin page: cross-module trash inventory   | ✅ DONE    |
-| 7.3 | Retention rules engine (per entity type)   | 🟡 PARTIAL |
-| 7.4 | Purge jobs + audit                         | 🟡 PARTIAL |
+| #   | Задача                                     | Статус  |
+| --- | ------------------------------------------ | ------- |
+| 7.1 | Mail: trash-first vs MVP delete (после O2) | ⬜ TODO |
+| 7.2 | Admin page: cross-module trash inventory   | ✅ DONE |
+| 7.3 | Retention rules engine (per entity type)   | ✅ DONE |
+| 7.4 | Purge jobs + audit                         | ✅ DONE |
 
 ---
 
@@ -454,3 +454,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Phase 4 Finance (slice):** Profile D guards (`finance-record-lifecycle-guards`), Invoice/Expense cancel endpoints, draft-only delete; Expense web delete vs cancel; Expense Plan empty-only delete             |
 | 2026-06-12 | **Phase 4 Finance (complete):** Order `POST /close`, journal accrual `REVERSED` on void; Invoice/Order lifecycle actions in web sheets                                                                           |
 | 2026-06-12 | **Drive 6.5** + **Credentials C3** + **Phase 7.2:** admin cleanup dashboard; credential folder grouping + retention purge; Settings Trash inventory (`GET /platform/lifecycle/trash-inventory`)                  |
+| 2026-06-12 | **Phase 7.3–7.4:** retention resolver (env overrides), unified purge (`POST /platform/lifecycle/purge/run`, `POST /scheduler/platform-trash-purge`), admin Run retention purge UI                                |

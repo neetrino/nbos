@@ -7,6 +7,10 @@ import {
   PLATFORM_TRASH_INVENTORY_ENTRIES,
   type PlatformTrashInventoryEntryDefinition,
 } from '../../common/lifecycle/platform-trash-inventory.registry';
+import {
+  listResolvedRetentionRules,
+  resolveRetentionDaysForEntity,
+} from '../../common/lifecycle/platform-retention-rules.resolver';
 import type {
   PlatformRetentionRuleRow,
   PlatformTrashInventoryCategory,
@@ -25,14 +29,16 @@ export class PlatformTrashInventoryService {
   ) {}
 
   listRetentionRules(): PlatformRetentionRuleRow[] {
-    return PLATFORM_TRASH_INVENTORY_ENTRIES.map((entry) => ({
-      key: entry.key,
-      moduleLabel: entry.moduleLabel,
-      entityLabel: entry.entityLabel,
-      profile: entry.profile,
-      timestampField: entry.timestampField,
-      retentionDays: entry.retentionDays,
-      scheduledPurgeJob: entry.scheduledPurgeJob,
+    return listResolvedRetentionRules().map((rule) => ({
+      key: rule.key,
+      moduleLabel: rule.moduleLabel,
+      entityLabel: rule.entityLabel,
+      profile: rule.profile,
+      timestampField: rule.timestampField,
+      retentionDays: rule.retentionDays,
+      scheduledPurgeJob: rule.scheduledPurgeJob,
+      registryRetentionDays: rule.registryRetentionDays,
+      automatedPurge: rule.automatedPurge,
     }));
   }
 
@@ -56,13 +62,14 @@ export class PlatformTrashInventoryService {
       this.countTrashed(entry),
       this.countPurgeEligible(entry, now),
     ]);
+    const retentionDays = resolveRetentionDaysForEntity(entry.key, entry.retentionDays);
     return {
       key: entry.key,
       moduleLabel: entry.moduleLabel,
       entityLabel: entry.entityLabel,
       profile: entry.profile,
       timestampField: entry.timestampField,
-      retentionDays: entry.retentionDays,
+      retentionDays,
       count,
       purgeEligibleCount,
       webHref: entry.webHref,
@@ -81,11 +88,14 @@ export class PlatformTrashInventoryService {
     entry: PlatformTrashInventoryEntryDefinition,
     now: Date,
   ): Promise<number> {
-    if (entry.retentionDays == null) return Promise.resolve(0);
+    const retentionDays = resolveRetentionDaysForEntity(entry.key, entry.retentionDays);
+    if (retentionDays == null) return Promise.resolve(0);
     if (entry.driveTrash) {
-      return this.prisma.fileAsset.count({ where: softDeletedRetentionWhere(now) });
+      return this.prisma.fileAsset.count({
+        where: softDeletedRetentionWhere(now, retentionDays * 24 * 60 * 60 * 1000),
+      });
     }
-    const cutoff = retentionCutoff(now, entry.retentionDays);
+    const cutoff = retentionCutoff(now, retentionDays);
     return this.countByTimestampField(entry.prismaModel, entry.timestampField, 'purge', cutoff);
   }
 

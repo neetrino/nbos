@@ -13,8 +13,9 @@ export async function purgeTrashedCredentialsPastRetention(
   prisma: InstanceType<typeof PrismaClient>,
   auditService: AuditService,
   now: Date,
+  retentionMs?: number,
 ): Promise<CredentialTrashPurgeResult> {
-  const where = trashedCredentialRetentionWhere(now);
+  const where = trashedCredentialRetentionWhere(now, retentionMs);
   const candidates = await prisma.credential.findMany({
     where,
     select: { id: true, projectId: true },
