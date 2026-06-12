@@ -2,6 +2,12 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../../common/lifecycle/entity-lifecycle-guards';
+import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
+import { mergeClientListScope } from '../client-entity-lifecycle';
 
 const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
 
@@ -23,6 +29,7 @@ interface ContactQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  scope?: string;
 }
 
 @Injectable()
@@ -38,9 +45,11 @@ export class ContactsService {
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
+      scope,
     } = params;
 
-    const where: Prisma.ContactWhereInput = {};
+    const lifecycleScope = parseLifecycleScopeFromQuery(scope);
+    const where: Prisma.ContactWhereInput = mergeClientListScope({}, lifecycleScope);
     const typeFilter = contactType ?? role;
     if (typeFilter) where.role = typeFilter as ContactRole;
     if (search) {
@@ -106,7 +115,8 @@ export class ContactsService {
   }
 
   async update(id: string, data: Partial<CreateContactDto>) {
-    await this.findById(id);
+    const existing = await this.findById(id);
+    assertEntityIsActive(existing, 'trashedAt', 'Contact');
     return this.prisma.contact.update({
       where: { id },
       data: {
@@ -127,8 +137,38 @@ export class ContactsService {
     });
   }
 
+  async moveToTrash(id: string) {
+    const contact = await this.prisma.contact.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!contact) throw new NotFoundException(`Contact ${id} not found`);
+    assertEntityIsActive(contact, 'trashedAt', 'Contact');
+    return this.prisma.contact.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string) {
+    const contact = await this.prisma.contact.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!contact) throw new NotFoundException(`Contact ${id} not found`);
+    assertEntityIsTrashed(contact, 'trashedAt', 'Contact');
+    return this.prisma.contact.update({
+      where: { id },
+      data: { trashedAt: null },
+      include: {
+        companies: { select: { id: true, name: true } },
+        _count: { select: { projects: true, leads: true, deals: true } },
+      },
+    });
+  }
+
+  /** @deprecated Use moveToTrash — kept for transitional callers. */
   async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.contact.delete({ where: { id } });
+    return this.moveToTrash(id);
   }
 }

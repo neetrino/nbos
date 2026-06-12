@@ -24,6 +24,7 @@ export interface ContactSheetScrollBodyProps {
   draft: ContactGeneralDraft;
   patchDraft: (partial: Partial<ContactGeneralDraft>) => void;
   saving: boolean;
+  readOnly?: boolean;
   generalError: string | null;
   portfolioData: ContactPortfolioResponse | null;
   portfolioLoading: boolean;
@@ -36,12 +37,14 @@ export function ContactSheetScrollBody({
   draft,
   patchDraft,
   saving,
+  readOnly = false,
   generalError,
   portfolioData,
   portfolioLoading,
   portfolioError,
   onPortfolioRetry,
 }: ContactSheetScrollBodyProps) {
+  const fieldDisabled = saving || readOnly;
   const roleOptions = CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label }));
   const channelOptions = PREFERRED_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
   const languageOptions = LANGUAGES.map((l) => ({ value: l.value, label: l.label }));
@@ -65,7 +68,7 @@ export function ContactSheetScrollBody({
                 value={draft.firstName}
                 placeholder="First name"
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ firstName: v })}
               />
               <InlineField
@@ -75,7 +78,7 @@ export function ContactSheetScrollBody({
                 value={draft.lastName}
                 placeholder="Last name"
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ lastName: v })}
               />
               <InlineField
@@ -85,7 +88,7 @@ export function ContactSheetScrollBody({
                 value={draft.phone}
                 placeholder="+374…"
                 icon={<Phone size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ phone: v })}
               />
               <InlineField
@@ -95,7 +98,7 @@ export function ContactSheetScrollBody({
                 value={draft.email}
                 placeholder="email@…"
                 icon={<Mail size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ email: v })}
               />
             </div>
@@ -110,7 +113,7 @@ export function ContactSheetScrollBody({
                 value={draft.role}
                 options={roleOptions}
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => {
                   if (v) patchDraft({ role: v });
                 }}
@@ -124,7 +127,7 @@ export function ContactSheetScrollBody({
                 placeholder="Select…"
                 clearable
                 icon={<Phone size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ preferredChannel: v })}
               />
               <InlineField
@@ -136,7 +139,7 @@ export function ContactSheetScrollBody({
                 placeholder="Select…"
                 clearable
                 icon={<User size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ language: v })}
               />
               <InlineField
@@ -157,7 +160,7 @@ export function ContactSheetScrollBody({
                 value={draft.whatsapp}
                 placeholder="+374…"
                 icon={<Phone size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ whatsapp: v })}
               />
               <InlineField
@@ -167,7 +170,7 @@ export function ContactSheetScrollBody({
                 value={draft.telegram}
                 placeholder="@username"
                 icon={<MessageCircle size={12} />}
-                disabled={saving}
+                disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ telegram: v })}
               />
             </div>
@@ -181,7 +184,7 @@ export function ContactSheetScrollBody({
             value={draft.notes}
             onChange={(notes) => patchDraft({ notes: notes ?? '' })}
             placeholder="Preferences, important details…"
-            disabled={saving}
+            disabled={fieldDisabled}
           />
 
           {contact.companies.length > 0 ? (

@@ -148,7 +148,7 @@ UI: тот же list + sheet; переключатель scope в settings / fil
 
 | Модуль          | Сущности                         | Schema lifecycle     | API                      | Web UI                                |
 | --------------- | -------------------------------- | -------------------- | ------------------------ | ------------------------------------- |
-| Clients         | Contact, Company                 | ❌                   | `prisma.delete`          | Delete на list/sheet                  |
+| Clients         | Contact, Company                 | ✅ `trashedAt`       | Trash + restore API      | Move to Trash / Restore (Profile A)   |
 | CRM             | Lead, Deal                       | ❌                   | `prisma.delete`          | Delete на deals/leads                 |
 | Projects Hub    | Product, Extension               | ❌                   | `prisma.delete`          | частично (client services delete)     |
 | Projects        | Project                          | ⚠️ `isArchived` only | hard delete API (UI нет) | таб Archived legacy, action trash нет |
@@ -228,13 +228,13 @@ purgedAt    DateTime?   -- шаг 2: job/admin/policy; окончательно�
 
 | #   | Задача                                                                                         | Статус  |
 | --- | ---------------------------------------------------------------------------------------------- | ------- |
-| 1.1 | Migration: `contacts.trashed_at`, `companies.trashed_at` (+ indexes; optional `trashed_by_id`) | ⬜ TODO |
-| 1.2 | API Profile A: `scope=active\|trash`; DELETE → move to Trash; POST restore; убрать hard delete | ⬜ TODO |
-| 1.3 | Guards: trash всегда или block при active deals? (TBD)                                         | ⬜ TODO |
-| 1.4 | Web: Delete → Move to Trash; scope switch Active/Trash; **тот же list/sheet** (R1–R2)          | ⬜ TODO |
-| 1.5 | Portfolio / lists: `scope=active` по умолчанию                                                 | ⬜ TODO |
-| 1.6 | Tests: scope isolation, trash, restore, guards                                                 | ⬜ TODO |
-| 1.7 | Обновить `06-Implementation-Status.md`                                                         | ⬜ TODO |
+| 1.1 | Migration: `contacts.trashed_at`, `companies.trashed_at` (+ indexes; optional `trashed_by_id`) | ✅ DONE |
+| 1.2 | API Profile A: `scope=active\|trash`; DELETE → move to Trash; POST restore; убрать hard delete | ✅ DONE |
+| 1.3 | Guards: trash всегда (MVP); block update/restore guards; active-deals block — backlog          | ✅ DONE |
+| 1.4 | Web: Delete → Move to Trash; scope switch Active/Trash; **тот же list/sheet** (R1–R2)          | ✅ DONE |
+| 1.5 | Portfolio / lists: `scope=active` по умолчанию                                                 | ✅ DONE |
+| 1.6 | Tests: scope isolation, trash, restore, guards                                                 | ✅ DONE |
+| 1.7 | Обновить `06-Implementation-Status.md`                                                         | ✅ DONE |
 
 **Done when:** Profile A reference implementation для CRM и остальных A-модулей.
 
@@ -433,3 +433,4 @@ Phase C2–C3, Phase 6.4–7          — polish + global
 | 2026-06-12 | **Phase 0** shipped: `09-Entity-Lifecycle-Standard.md`, `@nbos/shared` lifecycle types, API `buildScopeWhere`, web `useListScope`                                                      |
 | 2026-06-12 | **Drive 6.1** + **Credentials C0/C1** slice: unified Trash UI, scope param, folder empty-delete, trash side-effects                                                                    |
 | 2026-06-12 | **Cleanup:** мёртвый archive-код убран (Drive library, web archive API, entity attachments, credentials rename deleteFolder/trashList/onRequestMoveToTrash)                            |
+| 2026-06-12 | **Phase 1 Clients** shipped: `trashed_at` migration, Profile A API (`scope`, trash, restore), web scope switch + Move to Trash / Restore, portfolio active-only                        |

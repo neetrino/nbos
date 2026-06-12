@@ -7,6 +7,12 @@ import {
   JsonNull,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  assertEntityIsActive,
+  assertEntityIsTrashed,
+} from '../../../common/lifecycle/entity-lifecycle-guards';
+import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
+import { mergeClientListScope } from '../client-entity-lifecycle';
 
 interface CreateCompanyDto {
   name: string;
@@ -29,6 +35,7 @@ interface CompanyQueryParams {
   search?: string;
   taxStatus?: string;
   type?: string;
+  scope?: string;
 }
 
 @Injectable()
@@ -36,8 +43,9 @@ export class CompaniesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: CompanyQueryParams) {
-    const { page = 1, pageSize = 20, search, taxStatus, type } = params;
-    const where: Prisma.CompanyWhereInput = {};
+    const { page = 1, pageSize = 20, search, taxStatus, type, scope } = params;
+    const lifecycleScope = parseLifecycleScopeFromQuery(scope);
+    const where: Prisma.CompanyWhereInput = mergeClientListScope({}, lifecycleScope);
 
     if (search) {
       where.OR = [
@@ -92,21 +100,21 @@ export class CompaniesService {
     return company;
   }
 
-  private async assertContactExists(contactId: string) {
-    const c = await this.prisma.contact.findUnique({
-      where: { id: contactId },
+  private async assertActiveContactExists(contactId: string) {
+    const c = await this.prisma.contact.findFirst({
+      where: { id: contactId, trashedAt: null },
       select: { id: true },
     });
-    if (!c) throw new BadRequestException(`Contact ${contactId} not found`);
+    if (!c) throw new BadRequestException(`Contact ${contactId} not found or is in Trash`);
   }
 
   async create(data: CreateCompanyDto) {
-    await this.assertContactExists(data.contactId);
+    await this.assertActiveContactExists(data.contactId);
     const billingId =
       data.billingContactId && data.billingContactId !== data.contactId
         ? data.billingContactId
         : null;
-    if (billingId) await this.assertContactExists(billingId);
+    if (billingId) await this.assertActiveContactExists(billingId);
 
     return this.prisma.company.create({
       data: {
@@ -133,19 +141,20 @@ export class CompaniesService {
 
   async update(id: string, data: Partial<CreateCompanyDto>) {
     const existing = await this.findById(id);
+    assertEntityIsActive(existing, 'trashedAt', 'Company');
 
     if (data.taxStatus !== undefined && data.taxStatus !== existing.taxStatus) {
       throw new BadRequestException('Tax status cannot be changed after company creation.');
     }
 
-    if (data.contactId) await this.assertContactExists(data.contactId);
+    if (data.contactId) await this.assertActiveContactExists(data.contactId);
 
     let billingContactId: string | null | undefined = undefined;
     if (data.billingContactId !== undefined) {
       if (data.billingContactId === null || data.billingContactId === '') {
         billingContactId = null;
       } else {
-        await this.assertContactExists(data.billingContactId);
+        await this.assertActiveContactExists(data.billingContactId);
         const primary = data.contactId ?? existing.contactId;
         billingContactId = data.billingContactId === primary ? null : data.billingContactId;
       }
@@ -176,8 +185,39 @@ export class CompaniesService {
     });
   }
 
+  async moveToTrash(id: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!company) throw new NotFoundException(`Company ${id} not found`);
+    assertEntityIsActive(company, 'trashedAt', 'Company');
+    return this.prisma.company.update({
+      where: { id },
+      data: { trashedAt: new Date() },
+    });
+  }
+
+  async restoreFromTrash(id: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!company) throw new NotFoundException(`Company ${id} not found`);
+    assertEntityIsTrashed(company, 'trashedAt', 'Company');
+    return this.prisma.company.update({
+      where: { id },
+      data: { trashedAt: null },
+      include: {
+        contact: { select: { id: true, firstName: true, lastName: true } },
+        billingContact: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { projects: true, invoices: true } },
+      },
+    });
+  }
+
+  /** @deprecated Use moveToTrash — kept for transitional callers. */
   async delete(id: string) {
-    await this.findById(id);
-    return this.prisma.company.delete({ where: { id } });
+    return this.moveToTrash(id);
   }
 }

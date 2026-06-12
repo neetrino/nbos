@@ -27,12 +27,14 @@ export class ContactsController {
   @ApiQuery({ name: 'contactType', required: false })
   @ApiQuery({ name: 'role', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('contactType') contactType?: string,
     @Query('role') role?: string,
     @Query('search') search?: string,
+    @Query('scope') scope?: string,
   ) {
     return this.contactsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -40,6 +42,7 @@ export class ContactsController {
       contactType,
       role,
       search,
+      scope,
     });
   }
 
@@ -84,10 +87,16 @@ export class ContactsController {
     return this.contactsService.update(id, body);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore contact from Trash' })
+  async restore(@Param('id') id: string) {
+    return this.contactsService.restoreFromTrash(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete contact' })
+  @ApiOperation({ summary: 'Move contact to Trash' })
   async remove(@Param('id') id: string) {
-    await this.contactsService.delete(id);
+    await this.contactsService.moveToTrash(id);
   }
 }

@@ -26,12 +26,14 @@ export class CompaniesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'taxStatus', required: false })
+  @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('type') type?: string,
     @Query('taxStatus') taxStatus?: string,
+    @Query('scope') scope?: string,
   ) {
     return this.companiesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -39,6 +41,7 @@ export class CompaniesController {
       search,
       taxStatus,
       type,
+      scope,
     });
   }
 
@@ -93,10 +96,16 @@ export class CompaniesController {
     return this.companiesService.update(id, body);
   }
 
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore company from Trash' })
+  async restore(@Param('id') id: string) {
+    return this.companiesService.restoreFromTrash(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete company' })
+  @ApiOperation({ summary: 'Move company to Trash' })
   async remove(@Param('id') id: string) {
-    await this.companiesService.delete(id);
+    await this.companiesService.moveToTrash(id);
   }
 }

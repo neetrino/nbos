@@ -18,10 +18,11 @@ export class PortfolioService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async getContactPortfolio(contactId: string, user: CurrentUserPayload) {
-    const contact = await this.prisma.contact.findUnique({
-      where: { id: contactId },
+    const contact = await this.prisma.contact.findFirst({
+      where: { id: contactId, trashedAt: null },
       include: {
         companies: {
+          where: { trashedAt: null },
           select: {
             id: true,
             name: true,
@@ -175,8 +176,8 @@ export class PortfolioService {
   }
 
   async getCompanyPortfolio(companyId: string, user: CurrentUserPayload) {
-    const company = await this.prisma.company.findUnique({
-      where: { id: companyId },
+    const company = await this.prisma.company.findFirst({
+      where: { id: companyId, trashedAt: null },
       include: {
         contact: true,
         billingContact: true,
