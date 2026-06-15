@@ -4,6 +4,7 @@ import {
   PrismaClient,
   type DocumentAttachmentPurposeEnum,
   type DocumentListScopeEnum,
+  type DocumentRecentInteractionTypeEnum,
   type DocumentStatusEnum,
   type DocumentTypeEnum,
   type InputJsonValue,
@@ -42,7 +43,9 @@ import {
   DOCUMENT_AUDIT_ACTION_ACCESS_CHANGED,
   DOCUMENT_AUDIT_ACTION_SECTION_LIST_SCOPE_CHANGED,
   DOCUMENT_AUDIT_ENTITY_TYPE,
+  DOCUMENT_FAVORITES_LIMIT,
   DOCUMENT_LIST_LIMIT,
+  DOCUMENT_RECENT_LIMIT,
   DOCUMENT_SECTION_AUDIT_ENTITY_TYPE,
 } from './documents.constants';
 import {
@@ -59,7 +62,9 @@ import { slugifyTitle } from './documents-slug';
 import type {
   AddDocumentAttachmentDto,
   CreateDocumentDto,
+  CreateDocumentSectionDto,
   CreateDocumentTagDto,
+  DocumentRecentInteractionType,
   ExportDocumentQuery,
   ListDocumentsQuery,
   UpdateDocumentDto,
@@ -80,6 +85,27 @@ export class DocumentsService {
     return this.prisma.documentSection.findMany({
       where: { archivedAt: null },
       orderBy: { sortOrder: 'asc' },
+    });
+  }
+
+  async createDocumentSection(dto: CreateDocumentSectionDto, actorId: string) {
+    const name = dto.name?.trim();
+    if (!name) throw new BadRequestException('Section name is required.');
+    const slug = `${slugifyTitle(name)}-${randomUUID().slice(0, 8)}`;
+    const agg = await this.prisma.documentSection.aggregate({
+      where: { archivedAt: null },
+      _max: { sortOrder: true },
+    });
+    return this.prisma.documentSection.create({
+      data: {
+        name,
+        slug,
+        description: dto.description?.trim() ?? null,
+        icon: dto.icon ?? null,
+        sortOrder: (agg._max.sortOrder ?? 0) + 1,
+        createdById: actorId,
+        updatedById: actorId,
+      },
     });
   }
 
@@ -189,6 +215,8 @@ export class DocumentsService {
           : null;
       activityEvents = activityEvents.slice(0, DOCUMENT_ACTIVITY_PAGE_SIZE);
     }
+    void this.recordDocumentRecent(id, access.employeeId, 'OPENED').catch(() => undefined);
+
     return {
       ...doc,
       activityEvents,
@@ -466,6 +494,8 @@ export class DocumentsService {
 
     await this.prisma.document.update({ where: { id }, data });
 
+    void this.recordDocumentRecent(id, actorId, 'EDITED').catch(() => undefined);
+
     if (accessScopeChanged) {
       await this.recordActivity(id, actorId, 'access_changed', {
         listScopeOverride: dto.listScopeOverride ?? null,
@@ -597,6 +627,144 @@ export class DocumentsService {
       },
     });
     return updated;
+  }
+
+  async listFavorites(userId: string, access: DocumentsReadAccess) {
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) return [];
+
+    const rows = await this.prisma.documentFavorite.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: DOCUMENT_FAVORITES_LIMIT,
+      include: {
+        document: {
+          include: DOCUMENT_LIST_INCLUDE,
+        },
+      },
+    });
+
+    return rows
+      .filter((row) =>
+        employeeCanReadDocumentRow(
+          {
+            ownerId: row.document.ownerId,
+            createdById: row.document.createdById,
+            listScopeOverride: row.document.listScopeOverride,
+            section: row.document.section,
+          },
+          read.viewScope,
+          access.employeeId,
+          read.colleagueIds,
+        ),
+      )
+      .filter((row) => row.document.status !== 'ARCHIVED')
+      .map((row) => ({ ...row.document, isFavorite: true }));
+  }
+
+  async favoriteDocument(documentId: string, userId: string, access: DocumentsReadAccess) {
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) throw new NotFoundException(`Document ${documentId} not found`);
+
+    const doc = await this.prisma.document.findUnique({
+      where: { id: documentId },
+      select: {
+        id: true,
+        status: true,
+        ownerId: true,
+        createdById: true,
+        listScopeOverride: true,
+        section: { select: { defaultListScope: true } },
+      },
+    });
+    if (!doc) throw new NotFoundException(`Document ${documentId} not found`);
+    if (
+      !employeeCanReadDocumentRow(
+        {
+          ownerId: doc.ownerId,
+          createdById: doc.createdById,
+          listScopeOverride: doc.listScopeOverride,
+          section: doc.section,
+        },
+        read.viewScope,
+        access.employeeId,
+        read.colleagueIds,
+      )
+    ) {
+      throw new NotFoundException(`Document ${documentId} not found`);
+    }
+    if (doc.status === 'ARCHIVED') {
+      throw new BadRequestException('Cannot favorite an archived document.');
+    }
+
+    await this.prisma.documentFavorite.upsert({
+      where: { documentId_userId: { documentId, userId } },
+      create: { documentId, userId },
+      update: {},
+    });
+  }
+
+  async unfavoriteDocument(documentId: string, userId: string) {
+    await this.prisma.documentFavorite.deleteMany({ where: { documentId, userId } });
+  }
+
+  async listRecent(userId: string, access: DocumentsReadAccess) {
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) return [];
+
+    const rows = await this.prisma.documentRecent.findMany({
+      where: { userId },
+      orderBy: { lastInteractedAt: 'desc' },
+      take: DOCUMENT_RECENT_LIMIT,
+      include: {
+        document: {
+          include: DOCUMENT_LIST_INCLUDE,
+        },
+      },
+    });
+
+    return rows
+      .filter((row) =>
+        employeeCanReadDocumentRow(
+          {
+            ownerId: row.document.ownerId,
+            createdById: row.document.createdById,
+            listScopeOverride: row.document.listScopeOverride,
+            section: row.document.section,
+          },
+          read.viewScope,
+          access.employeeId,
+          read.colleagueIds,
+        ),
+      )
+      .filter((row) => row.document.status !== 'ARCHIVED')
+      .map((row) => ({
+        ...row.document,
+        lastInteractedAt: row.lastInteractedAt,
+        lastInteractionType: row.lastInteractionType,
+      }));
+  }
+
+  async recordDocumentRecent(
+    documentId: string,
+    userId: string,
+    interactionType: DocumentRecentInteractionType,
+  ) {
+    await this.prisma.documentRecent.upsert({
+      where: { documentId_userId: { documentId, userId } },
+      create: {
+        documentId,
+        userId,
+        lastInteractionType: interactionType as DocumentRecentInteractionTypeEnum,
+        interactionCount: 1,
+        lastInteractedAt: new Date(),
+      },
+      update: {
+        lastInteractedAt: new Date(),
+        lastInteractionType: interactionType as DocumentRecentInteractionTypeEnum,
+        interactionCount: { increment: 1 },
+      },
+    });
   }
 
   async removeDocumentAttachment(

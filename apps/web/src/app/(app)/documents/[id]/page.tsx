@@ -11,6 +11,7 @@ import { PageHero, ErrorState, LoadingState } from '@/components/shared';
 import { PAGE_TAB_BAR_WRAPPER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { formatDocumentActivityDetail } from '@/features/documents/document-activity-format';
 import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
+import { DocumentFavoriteButton } from '@/features/documents/DocumentFavoriteButton';
 import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
 import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor';
 import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
@@ -45,6 +46,7 @@ export default function DocumentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [contentTab, setContentTab] = useState<ContentTab>('view');
 
   const docRef = useRef<DocumentDetail | null>(null);
@@ -70,10 +72,14 @@ export default function DocumentDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const next = await documentsApi.getDocument(id);
+      const [next, favorites] = await Promise.all([
+        documentsApi.getDocument(id),
+        documentsApi.listFavorites().catch(() => []),
+      ]);
       setOlderActivity([]);
       setActivityPagingCursor(next.activityNextCursor ?? null);
       setDoc(next);
+      setIsFavorite(favorites.some((f) => f.id === id));
       const canEditDoc = hasDocumentsEditPermission(permissions);
       setContentTab(next.status === 'DRAFT' && canEditDoc ? 'edit' : 'view');
     } catch (e) {
@@ -156,39 +162,48 @@ export default function DocumentDetailPage() {
           <PageHero
             title={doc.title}
             trailing={
-              canDelete && doc.status === 'ARCHIVED' ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  onClick={() => void handleRestore()}
-                  disabled={restoring}
-                >
-                  {restoring ? (
-                    <Loader2 size={14} className="animate-spin" aria-hidden />
-                  ) : (
-                    <RotateCcw size={14} aria-hidden />
-                  )}
-                  Restore
-                </Button>
-              ) : canDelete && doc.status !== 'ARCHIVED' ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  onClick={handleArchive}
-                  disabled={archiving}
-                >
-                  {archiving ? (
-                    <Loader2 size={14} className="animate-spin" aria-hidden />
-                  ) : (
-                    <Archive size={14} aria-hidden />
-                  )}
-                  Archive
-                </Button>
-              ) : null
+              <div className="flex items-center gap-2">
+                {doc.status !== 'ARCHIVED' ? (
+                  <DocumentFavoriteButton
+                    documentId={doc.id}
+                    isFavorite={isFavorite}
+                    onToggled={setIsFavorite}
+                  />
+                ) : null}
+                {canDelete && doc.status === 'ARCHIVED' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => void handleRestore()}
+                    disabled={restoring}
+                  >
+                    {restoring ? (
+                      <Loader2 size={14} className="animate-spin" aria-hidden />
+                    ) : (
+                      <RotateCcw size={14} aria-hidden />
+                    )}
+                    Restore
+                  </Button>
+                ) : canDelete && doc.status !== 'ARCHIVED' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={handleArchive}
+                    disabled={archiving}
+                  >
+                    {archiving ? (
+                      <Loader2 size={14} className="animate-spin" aria-hidden />
+                    ) : (
+                      <Archive size={14} aria-hidden />
+                    )}
+                    Archive
+                  </Button>
+                ) : null}
+              </div>
             }
           />
           {doc.description ? (

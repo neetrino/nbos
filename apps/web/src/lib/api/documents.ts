@@ -22,6 +22,8 @@ export interface DocumentListItem {
   title: string;
   slug: string;
   status: string;
+  /** Document type: NATIVE | UPLOADED_FILE | EXTERNAL_LINK */
+  type?: string;
   description?: string | null;
   plainText?: string | null;
   createdById: string | null;
@@ -32,6 +34,13 @@ export interface DocumentListItem {
   tagLinks?: Array<{ tag: { id: string; name: string; slug: string } }>;
   /** Present when list was requested with `search` (server-computed excerpt). */
   searchSnippet?: string | null;
+  /** Set on favorites list items. */
+  isFavorite?: boolean;
+}
+
+export interface DocumentRecentItem extends DocumentListItem {
+  lastInteractedAt: string;
+  lastInteractionType: 'OPENED' | 'EDITED';
 }
 
 export interface DocumentActivityItem {
@@ -89,8 +98,31 @@ export interface DocumentActivityPage {
 }
 
 export const documentsApi = {
+  async listFavorites(): Promise<DocumentListItem[]> {
+    const resp = await api.get<DocumentListItem[]>('/api/documents/favorites');
+    return resp.data;
+  },
+
+  async favoriteDocument(id: string): Promise<void> {
+    await api.post('/api/documents/' + encodeURIComponent(id) + '/favorite');
+  },
+
+  async unfavoriteDocument(id: string): Promise<void> {
+    await api.delete('/api/documents/' + encodeURIComponent(id) + '/favorite');
+  },
+
+  async listRecent(): Promise<DocumentRecentItem[]> {
+    const resp = await api.get<DocumentRecentItem[]>('/api/documents/recent');
+    return resp.data;
+  },
+
   async listSections(): Promise<DocumentSection[]> {
     const resp = await api.get<DocumentSection[]>('/api/documents/sections');
+    return resp.data;
+  },
+
+  async createDocumentSection(data: { name: string }): Promise<DocumentSection> {
+    const resp = await api.post<DocumentSection>('/api/documents/sections', data);
     return resp.data;
   },
 

@@ -119,6 +119,8 @@ model Document {
   tagLinks       DocumentTagOnDocument[]
   attachments    DocumentAttachment[]
   activityEvents DocumentActivityEvent[]
+  favorites      DocumentFavorite[]
+  recents        DocumentRecent[]
 
   @@index([sectionId])
   @@index([status])
@@ -184,4 +186,37 @@ model DocumentActivityEvent {
   @@index([actorId])
   @@index([createdAt])
   @@map("document_activity_events")
+}
+
+model DocumentFavorite {
+  id         String   @id @default(uuid())
+  documentId String   @map("document_id")
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, userId])
+  @@index([userId])
+  @@map("document_favorites")
+}
+
+enum DocumentRecentInteractionTypeEnum {
+  OPENED
+  EDITED
+}
+
+model DocumentRecent {
+  id                  String                             @id @default(uuid())
+  documentId          String                             @map("document_id")
+  userId              String                             @map("user_id")
+  lastInteractedAt    DateTime                           @default(now()) @map("last_interacted_at")
+  interactionCount    Int                                @default(1) @map("interaction_count")
+  lastInteractionType DocumentRecentInteractionTypeEnum  @default(OPENED) @map("last_interaction_type")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, userId])
+  @@index([userId, lastInteractedAt(sort: Desc)])
+  @@map("document_recents")
 }

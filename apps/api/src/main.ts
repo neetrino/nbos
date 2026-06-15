@@ -66,6 +66,10 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
+  // Allows NestJS to close the HTTP server (release the port) before the
+  // process exits on SIGTERM — prevents EADDRINUSE during hot-reload restarts.
+  app.enableShutdownHooks();
+
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
 

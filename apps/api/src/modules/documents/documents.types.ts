@@ -31,6 +31,12 @@ export interface CreateDocumentTagDto {
   color?: string;
 }
 
+export interface CreateDocumentSectionDto {
+  name: string;
+  description?: string;
+  icon?: string;
+}
+
 export interface UpdateDocumentSectionDto {
   /** Section default for document list visibility (`ALL` \| `OWN` \| `DEPARTMENT`). */
   defaultListScope: string;
@@ -45,3 +51,5 @@ export interface AddDocumentAttachmentDto {
 export interface ExportDocumentQuery {
   format?: string;
 }
+
+export type DocumentRecentInteractionType = 'OPENED' | 'EDITED';
