@@ -3,17 +3,63 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronRight, FilePlus, FileText, FolderOpen, FolderPlus, LayoutGrid } from 'lucide-react';
+import {
+  ChevronRight,
+  FilePlus,
+  FileText,
+  FolderOpen,
+  FolderPlus,
+  LayoutGrid,
+  Star,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
+import { useDocumentFavorites } from './DocumentFavoritesContext';
 import { usePermission } from '@/lib/permissions';
 
 const NATIVE_TYPE = 'NATIVE';
 const DOCS_PER_SECTION = 20;
+
+interface DocFavoriteStarProps {
+  doc: DocumentListItem;
+}
+
+function DocFavoriteStar({ doc }: DocFavoriteStarProps) {
+  const { isFavorited, toggle } = useDocumentFavorites();
+  const favorite = isFavorited(doc.id);
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void toggle(doc, favorite);
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+      aria-pressed={favorite}
+      onClick={handleToggle}
+      className={cn(
+        'mr-1 flex size-4 shrink-0 items-center justify-center rounded transition-opacity',
+        favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+      )}
+    >
+      <Star
+        size={11}
+        aria-hidden
+        className={cn(
+          'transition-colors',
+          favorite ? 'fill-amber-400 stroke-amber-400' : 'stroke-muted-foreground',
+        )}
+      />
+    </button>
+  );
+}
 
 interface SectionEntry {
   section: DocumentSection;
@@ -328,11 +374,11 @@ export function DocumentsSidebar() {
                           </li>
                         ) : (
                           entry.docs.map((doc) => (
-                            <li key={doc.id}>
+                            <li key={doc.id} className="group flex items-center">
                               <Link
                                 href={`/documents/${doc.id}`}
                                 className={cn(
-                                  'flex items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors',
+                                  'flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors',
                                   activeDocId === doc.id
                                     ? 'bg-accent text-accent-foreground font-medium'
                                     : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
@@ -341,6 +387,7 @@ export function DocumentsSidebar() {
                                 <FileText size={11} aria-hidden className="shrink-0 opacity-70" />
                                 <span className="truncate">{doc.title}</span>
                               </Link>
+                              <DocFavoriteStar doc={doc} />
                             </li>
                           ))
                         )}

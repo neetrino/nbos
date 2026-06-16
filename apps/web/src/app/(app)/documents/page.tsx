@@ -1,44 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, FolderOpen, LayoutGrid, Plus, Star } from 'lucide-react';
+import { FileText, Plus, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroSearch, EmptyState, ErrorState } from '@/components/shared';
-import {
-  documentsApi,
-  type DocumentListItem,
-  type DocumentRecentItem,
-  type DocumentSection,
-} from '@/lib/api/documents';
+import { documentsApi, type DocumentListItem, type DocumentRecentItem } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { useDebouncedValue } from '@/components/shared';
 import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
 import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
+import { useDocumentFavorites } from '@/features/documents/DocumentFavoritesContext';
 
-const RECENT_DISPLAY_LIMIT = 8;
-const FAVORITES_DISPLAY_LIMIT = 8;
-const SECTIONS_DISPLAY_LIMIT = 6;
-
-function SectionsSkeleton() {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-20 w-full rounded-lg" />
-      ))}
-    </div>
-  );
-}
+const RECENT_DISPLAY_LIMIT = 20;
 
 function DocListSkeleton() {
   return (
     <div className="space-y-2">
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <Skeleton key={i} className="h-9 w-full rounded" />
       ))}
     </div>
@@ -47,14 +30,11 @@ function DocListSkeleton() {
 
 export default function DocumentsHomePage() {
   const router = useRouter();
-  const { me, can } = usePermission();
-  const [sections, setSections] = useState<DocumentSection[]>([]);
+  const { can } = usePermission();
+  const { favorites, loading: loadingFavorites } = useDocumentFavorites();
   const [recent, setRecent] = useState<DocumentRecentItem[]>([]);
-  const [favorites, setFavorites] = useState<DocumentListItem[]>([]);
-  const [drafts, setDrafts] = useState<DocumentListItem[]>([]);
-  const [teamUpdated, setTeamUpdated] = useState<DocumentListItem[]>([]);
   const [searchResults, setSearchResults] = useState<DocumentListItem[]>([]);
-  const [loadingBase, setLoadingBase] = useState(true);
+  const [loadingRecent, setLoadingRecent] = useState(true);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -62,28 +42,17 @@ export default function DocumentsHomePage() {
   const debouncedSearch = useDebouncedValue(search, DOCUMENTS_SEARCH_DEBOUNCE_MS).trim();
 
   const loadBase = useCallback(async () => {
-    setLoadingBase(true);
+    setLoadingRecent(true);
     setError(null);
     try {
-      const [sec, recentList, favoriteList, draftList, latestList] = await Promise.all([
-        documentsApi.listSections(),
-        documentsApi.listRecent(),
-        documentsApi.listFavorites(),
-        documentsApi.listDocuments({ status: 'DRAFT', includeArchived: false }),
-        documentsApi.listDocuments({ includeArchived: false }),
-      ]);
-      setSections(sec.slice(0, SECTIONS_DISPLAY_LIMIT));
+      const recentList = await documentsApi.listRecent();
       setRecent(recentList.slice(0, RECENT_DISPLAY_LIMIT));
-      setFavorites(favoriteList.slice(0, FAVORITES_DISPLAY_LIMIT));
-      const mine = me?.id ? draftList.filter((d) => d.createdById === me.id).slice(0, 8) : [];
-      setDrafts(mine);
-      setTeamUpdated(latestList.slice(0, 8));
     } catch (e) {
       setError(getApiErrorMessage(e, 'Documents could not be loaded.'));
     } finally {
-      setLoadingBase(false);
+      setLoadingRecent(false);
     }
-  }, [me?.id]);
+  }, []);
 
   useEffect(() => {
     void loadBase();
@@ -113,7 +82,7 @@ export default function DocumentsHomePage() {
           <PageHeroSearch
             value={search}
             onChange={setSearch}
-            placeholder="Search title, body, section, tags…"
+            placeholder="Search title, body, tags…"
           />
         }
         trailing={
@@ -137,20 +106,21 @@ export default function DocumentsHomePage() {
             <EmptyState
               icon={FileText}
               title="No matching documents"
-              description="Search checks titles, body text, sections, tags and attachment names."
+              description="Search checks titles, body text, tags and attachment names."
             />
           ) : (
             <DocumentsTable rows={searchResults} />
           )}
         </section>
       ) : (
-        <>
-          {/* Recent */}
-          <section>
-            <h2 className="text-foreground mb-3 flex items-center gap-2 text-lg font-semibold">
-              <FileText size={18} aria-hidden /> Recent
-            </h2>
-            {loadingBase ? (
+        <Tabs defaultValue="recent">
+          <TabsList>
+            <TabsTrigger value="recent">Recent</TabsTrigger>
+            <TabsTrigger value="favorites">Favorites</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="recent" className="mt-4">
+            {loadingRecent ? (
               <DocListSkeleton />
             ) : recent.length === 0 ? (
               <EmptyState
@@ -161,14 +131,10 @@ export default function DocumentsHomePage() {
             ) : (
               <DocumentsTable rows={recent} />
             )}
-          </section>
+          </TabsContent>
 
-          {/* Favorites */}
-          <section>
-            <h2 className="text-foreground mb-3 flex items-center gap-2 text-lg font-semibold">
-              <Star size={18} aria-hidden /> Favorites
-            </h2>
-            {loadingBase ? (
+          <TabsContent value="favorites" className="mt-4">
+            {loadingFavorites ? (
               <DocListSkeleton />
             ) : favorites.length === 0 ? (
               <EmptyState
@@ -179,92 +145,14 @@ export default function DocumentsHomePage() {
             ) : (
               <DocumentsTable rows={favorites} />
             )}
-          </section>
-
-          {/* Sections */}
-          <section>
-            <h2 className="text-foreground mb-3 flex items-center gap-2 text-lg font-semibold">
-              <LayoutGrid size={18} aria-hidden /> Sections
-            </h2>
-            {loadingBase ? (
-              <SectionsSkeleton />
-            ) : sections.length === 0 ? (
-              <EmptyState
-                icon={FolderOpen}
-                title="No sections yet"
-                description="Default sections will be created on first API load."
-              />
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {sections.map((s) => (
-                  <Link key={s.id} href={`/documents/sections/${s.id}`}>
-                    <Card className="hover:border-primary/40 h-full transition-colors hover:shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <FolderOpen size={18} className="text-primary shrink-0" />
-                          <span className="truncate">{s.name}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground line-clamp-2 text-sm">
-                          {s.description ?? 'Open section to see documents.'}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* My drafts */}
-            <section>
-              <h2 className="text-foreground mb-3 text-lg font-semibold">My drafts</h2>
-              {loadingBase ? (
-                <DocListSkeleton />
-              ) : drafts.length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title="No drafts"
-                  description={
-                    canAdd
-                      ? 'Drafts you create will show here.'
-                      : 'You can read documents, but creating drafts is not permitted for your role.'
-                  }
-                />
-              ) : (
-                <DocumentsTable rows={drafts} />
-              )}
-            </section>
-
-            {/* Recently updated by team */}
-            <section>
-              <h2 className="text-foreground mb-3 text-lg font-semibold">Recently updated</h2>
-              {loadingBase ? (
-                <DocListSkeleton />
-              ) : teamUpdated.length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title="No documents yet"
-                  description={
-                    canAdd
-                      ? 'Create a draft to get started.'
-                      : 'Documents will appear here after your team publishes them.'
-                  }
-                />
-              ) : (
-                <DocumentsTable rows={teamUpdated} />
-              )}
-            </section>
-          </div>
-        </>
+          </TabsContent>
+        </Tabs>
       )}
 
       <CreateDocumentDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        sections={sections}
+        sections={[]}
         onCreated={(id) => router.push(`/documents/${id}`)}
       />
     </div>
