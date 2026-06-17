@@ -41,7 +41,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.2.1",
-    "dompurify": "^3.4.1",
+    "dompurify": "^3.4.9",
     "framer-motion": "^12.12.1",
     "lucide-react": "^0.513.0",
     "next": "16.2.6",
