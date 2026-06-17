@@ -22,15 +22,24 @@ export interface DocumentListItem {
   title: string;
   slug: string;
   status: string;
-  /** Document type: NATIVE | UPLOADED_FILE | EXTERNAL_LINK */
-  type?: string;
+  /** Document type: NATIVE | UPLOADED_FILE | EXTERNAL_LINK | GOOGLE_DOC | GOOGLE_SHEET */
+  type: string;
   description?: string | null;
   plainText?: string | null;
   createdById: string | null;
   ownerId?: string | null;
   updatedById?: string | null;
   updatedAt: string;
-  section: { id: string; name: string; slug: string; sortOrder: number };
+  /** Null for documents using libraryKey or driveFolderId location. */
+  section: { id: string; name: string; slug: string; sortOrder: number } | null;
+  /** Drive library category key (deals | projects | products | …). */
+  libraryKey?: string | null;
+  /** CRM entity type (DEAL | LEAD | PROJECT | …). */
+  entityType?: string | null;
+  /** CRM entity ID matching entityType. */
+  entityId?: string | null;
+  /** Real DriveFolder ID (COMPANY or PERSONAL space). */
+  driveFolderId?: string | null;
   tagLinks?: Array<{ tag: { id: string; name: string; slug: string } }>;
   /** Present when list was requested with `search` (server-computed excerpt). */
   searchSnippet?: string | null;
@@ -82,7 +91,16 @@ export interface DocumentDetail {
   createdById: string | null;
   ownerId?: string | null;
   updatedById?: string | null;
-  section: { id: string; name: string; slug: string; sortOrder: number };
+  /** Null for documents using libraryKey or driveFolderId location. */
+  section: { id: string; name: string; slug: string; sortOrder: number } | null;
+  /** Drive library category key (deals | projects | products | …). */
+  libraryKey?: string | null;
+  /** CRM entity type (DEAL | LEAD | PROJECT | …). */
+  entityType?: string | null;
+  /** CRM entity ID matching entityType. */
+  entityId?: string | null;
+  /** Real DriveFolder ID (COMPANY or PERSONAL space). */
+  driveFolderId?: string | null;
   tagLinks: Array<{ tag: DocumentTag }>;
   attachments: DocumentAttachmentItem[];
   activityEvents: DocumentActivityItem[];
@@ -144,6 +162,11 @@ export const documentsApi = {
 
   async listDocuments(params?: {
     sectionId?: string;
+    type?: string;
+    libraryKey?: string;
+    entityType?: string;
+    entityId?: string;
+    driveFolderId?: string;
     status?: string;
     search?: string;
     includeArchived?: boolean;
@@ -170,7 +193,11 @@ export const documentsApi = {
 
   async createDocument(data: {
     title: string;
-    sectionId: string;
+    sectionId?: string;
+    libraryKey?: string;
+    entityType?: string;
+    entityId?: string;
+    driveFolderId?: string;
     type?: string;
     description?: string;
   }): Promise<DocumentDetail> {

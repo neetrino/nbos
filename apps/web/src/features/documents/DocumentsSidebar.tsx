@@ -1,411 +1,697 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  ChevronRight,
-  FilePlus,
-  FileText,
-  FolderOpen,
-  FolderPlus,
-  LayoutGrid,
-  Star,
-} from 'lucide-react';
+import { Building2, CircleUserRound, FilePlus, LayoutGrid, Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
-import { useDocumentFavorites } from './DocumentFavoritesContext';
+import { documentsApi, type DocumentListItem } from '@/lib/api/documents';
+import { driveApi } from '@/lib/api/drive';
 import { usePermission } from '@/lib/permissions';
+import { NATIVE_TYPE, DOCS_PER_LOCATION, type RenameState } from './documents-sidebar-nodes';
+import { CreateDocumentDialog } from './CreateDocumentDialog';
+import {
+  LIBRARY_CATEGORIES,
+  LibrarySection,
+  DriveSpaceSection,
+  buildFolderStates,
+  categoryHasEntityLayer,
+  type CategoryState,
+  type LibraryFolderState,
+  type SpaceState,
+  type DriveSpaceKey,
+} from './documents-sidebar-spaces';
+import type { EntityRowState } from './documents-sidebar-entities';
+import { canCreateDocumentInLibrary } from './documents-library-create-rules';
 
-const NATIVE_TYPE = 'NATIVE';
-const DOCS_PER_SECTION = 20;
+type SelectedLocation =
+  | { kind: 'library-category'; key: string }
+  | { kind: 'library-entity'; key: string; entityType: string; entityId: string; label: string }
+  | { kind: 'library-folder'; key: string; folderId: string }
+  | { kind: 'drive-folder'; folderId: string; space: DriveSpaceKey }
+  | null;
 
-interface DocFavoriteStarProps {
-  doc: DocumentListItem;
+function initCategoryState(): CategoryState[] {
+  return LIBRARY_CATEGORIES.map((lib) => ({
+    key: lib.key,
+    entityRows: [],
+    entitiesLoaded: false,
+    docs: [],
+    docsLoaded: false,
+    libraryFolders: [],
+    libraryFoldersLoaded: false,
+    open: false,
+  }));
 }
 
-function DocFavoriteStar({ doc }: DocFavoriteStarProps) {
-  const { isFavorited, toggle } = useDocumentFavorites();
-  const favorite = isFavorited(doc.id);
+type DocumentsSidebarProps = {
+  style?: CSSProperties;
+};
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    void toggle(doc, favorite);
-  };
-
-  return (
-    <button
-      type="button"
-      aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
-      aria-pressed={favorite}
-      onClick={handleToggle}
-      className={cn(
-        'mr-1 flex size-4 shrink-0 items-center justify-center rounded transition-opacity',
-        favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-      )}
-    >
-      <Star
-        size={11}
-        aria-hidden
-        className={cn(
-          'transition-colors',
-          favorite ? 'fill-amber-400 stroke-amber-400' : 'stroke-muted-foreground',
-        )}
-      />
-    </button>
-  );
-}
-
-interface SectionEntry {
-  section: DocumentSection;
-  docs: DocumentListItem[];
-  docsLoaded: boolean;
-  open: boolean;
-}
-
-export function DocumentsSidebar() {
+export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { can } = usePermission();
-  const [sections, setSections] = useState<SectionEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const canAdd = can('ADD', 'DOCUMENTS');
+  const canDriveAdd = can('ADD', 'DRIVE');
 
-  // Folder creation
-  const [creatingFolder, setCreatingFolder] = useState(false);
+  const activeDocId = (() => {
+    if (!pathname.startsWith('/documents/')) return undefined;
+    const seg = pathname.split('/')[2];
+    return seg && seg !== 'sections' ? seg : undefined;
+  })();
+
+  const [categories, setCategories] = useState<CategoryState[]>(initCategoryState);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [spaces, setSpaces] = useState<SpaceState[]>([
+    { key: 'COMPANY', open: false, folders: [], foldersLoaded: false },
+    { key: 'PERSONAL', open: false, folders: [], foldersLoaded: false },
+  ]);
+  const [selected, setSelected] = useState<SelectedLocation>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // ── New folder (Company/Personal inline input) ───────────────
+  const [creatingFolderSpace, setCreatingFolderSpace] = useState<DriveSpaceKey | null>(null);
+  const [creatingFolderParentId, setCreatingFolderParentId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [folderSaving, setFolderSaving] = useState(false);
-  const newFolderInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
-  // Inline document creation
-  const [creatingDocInSection, setCreatingDocInSection] = useState<string | null>(null);
-  const [newDocTitle, setNewDocTitle] = useState('');
-  const [docSaving, setDocSaving] = useState(false);
-  const newDocInputRef = useRef<HTMLInputElement>(null);
+  // ── New library folder (same inline input but scoped to a library key) ───
+  const [creatingLibraryFolderKey, setCreatingLibraryFolderKey] = useState<string | null>(null);
 
-  const canAdd = can('ADD', 'DOCUMENTS');
-  const canManageSections = can('MANAGE_SECTIONS', 'DOCUMENTS');
-
-  const activeSectionId = pathname.startsWith('/documents/sections/')
-    ? pathname.split('/')[3]
-    : undefined;
-  const activeDocId =
-    pathname.startsWith('/documents/') && !pathname.startsWith('/documents/sections/')
-      ? (() => {
-          const parts = pathname.split('/');
-          return parts[2] && parts[2] !== 'sections' ? parts[2] : undefined;
-        })()
-      : undefined;
-
-  // The section where the current doc lives — used for the header "new doc" button.
-  const currentSectionId = useMemo(() => {
-    if (activeSectionId) return activeSectionId;
-    if (activeDocId) {
-      const entry = sections.find((e) => e.docs.some((d) => d.id === activeDocId));
-      if (entry) return entry.section.id;
-    }
-    return sections[0]?.section.id ?? null;
-  }, [activeSectionId, activeDocId, sections]);
-
-  const loadSections = useCallback(async () => {
-    setLoading(true);
-    try {
-      const secs = await documentsApi.listSections();
-      setSections(
-        secs.map((s) => ({
-          section: s,
-          docs: [],
-          docsLoaded: false,
-          open: s.id === activeSectionId,
-        })),
-      );
-    } catch {
-      // non-fatal: sidebar degrades gracefully
-    } finally {
-      setLoading(false);
-    }
-  }, [activeSectionId]);
+  // ── Rename state ─────────────────────────────────────────────
+  const [renamingFolder, setRenamingFolder] = useState<RenameState | null>(null);
 
   useEffect(() => {
-    void loadSections();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (creatingFolderSpace || creatingLibraryFolderKey) {
+      setTimeout(() => folderInputRef.current?.focus(), 50);
+    }
+  }, [creatingFolderSpace, creatingLibraryFolderKey]);
+
+  // ── Library category docs (non-entity libraries only) ────────
+  const loadCategoryDocs = useCallback(async (key: string) => {
+    try {
+      const docs = await documentsApi.listDocuments({ type: 'NATIVE', libraryKey: key });
+      const native = docs.filter((d) => d.type === NATIVE_TYPE).slice(0, DOCS_PER_LOCATION);
+      setCategories((prev) =>
+        prev.map((c) => (c.key === key ? { ...c, docs: native, docsLoaded: true } : c)),
+      );
+    } catch {
+      setCategories((prev) => prev.map((c) => (c.key === key ? { ...c, docsLoaded: true } : c)));
+    }
   }, []);
 
-  useEffect(() => {
-    if (creatingFolder) setTimeout(() => newFolderInputRef.current?.focus(), 50);
-  }, [creatingFolder]);
-
-  useEffect(() => {
-    if (creatingDocInSection) setTimeout(() => newDocInputRef.current?.focus(), 50);
-  }, [creatingDocInSection]);
-
-  const toggleSection = async (idx: number) => {
-    setSections((prev) =>
-      prev.map((entry, i) => (i === idx ? { ...entry, open: !entry.open } : entry)),
-    );
-    const entry = sections[idx];
-    if (!entry || entry.docsLoaded) return;
+  // ── Library folders ───────────────────────────────────────────
+  const loadLibraryFolders = useCallback(async (key: string) => {
     try {
-      const docs = await documentsApi.listDocuments({
-        sectionId: entry.section.id,
-        includeArchived: false,
-      });
-      const nativeDocs = docs
-        .filter((d) => !d.type || d.type === NATIVE_TYPE)
-        .slice(0, DOCS_PER_SECTION);
-      setSections((prev) =>
-        prev.map((e, i) => (i === idx ? { ...e, docs: nativeDocs, docsLoaded: true } : e)),
+      const res = await driveApi.listFolderTree({ libraryKey: key });
+      const folderStates: LibraryFolderState[] = res.folders.map((f) => ({
+        folder: f,
+        docs: [],
+        docsLoaded: false,
+        open: false,
+      }));
+      setCategories((prev) =>
+        prev.map((c) =>
+          c.key === key ? { ...c, libraryFolders: folderStates, libraryFoldersLoaded: true } : c,
+        ),
       );
     } catch {
-      // ignore: docs under section won't show until retry
+      setCategories((prev) =>
+        prev.map((c) => (c.key === key ? { ...c, libraryFoldersLoaded: true } : c)),
+      );
     }
-  };
+  }, []);
 
-  /** Open a section and begin inline doc creation inside it. */
-  const startDocCreation = (sectionId: string) => {
-    setSections((prev) => prev.map((e) => (e.section.id === sectionId ? { ...e, open: true } : e)));
-    setCreatingDocInSection(sectionId);
-  };
+  // ── Library entity rows ───────────────────────────────────────
+  const loadCategoryEntities = useCallback(async (key: string) => {
+    try {
+      const { items } = await driveApi.listLibraryEntities(key);
+      const rows: EntityRowState[] = items.map((item) => ({
+        id: item.id,
+        entityType: item.entityType,
+        label: item.label,
+        code: item.code,
+        docs: [],
+        docsLoaded: false,
+        open: false,
+      }));
+      setCategories((prev) =>
+        prev.map((c) => (c.key === key ? { ...c, entityRows: rows, entitiesLoaded: true } : c)),
+      );
+    } catch {
+      setCategories((prev) =>
+        prev.map((c) => (c.key === key ? { ...c, entitiesLoaded: true } : c)),
+      );
+    }
+  }, []);
 
+  // ── Docs under a specific entity ─────────────────────────────
+  const loadEntityDocs = useCallback(
+    async (categoryKey: string, entityType: string, entityId: string) => {
+      try {
+        const docs = await documentsApi.listDocuments({
+          type: 'NATIVE',
+          libraryKey: categoryKey,
+          entityType,
+          entityId,
+        });
+        const native = docs
+          .filter((d): d is DocumentListItem => d.type === NATIVE_TYPE)
+          .slice(0, DOCS_PER_LOCATION);
+        setCategories((prev) =>
+          prev.map((c) => {
+            if (c.key !== categoryKey) return c;
+            return {
+              ...c,
+              entityRows: c.entityRows.map((e) =>
+                e.id === entityId ? { ...e, docs: native, docsLoaded: true } : e,
+              ),
+            };
+          }),
+        );
+      } catch {
+        setCategories((prev) =>
+          prev.map((c) => {
+            if (c.key !== categoryKey) return c;
+            return {
+              ...c,
+              entityRows: c.entityRows.map((e) =>
+                e.id === entityId ? { ...e, docsLoaded: true } : e,
+              ),
+            };
+          }),
+        );
+      }
+    },
+    [],
+  );
+
+  // ── Docs under a library folder ──────────────────────────────
+  const loadLibraryFolderDocs = useCallback(async (categoryKey: string, folderId: string) => {
+    try {
+      const docs = await documentsApi.listDocuments({ type: 'NATIVE', driveFolderId: folderId });
+      const native = docs
+        .filter((d): d is DocumentListItem => d.type === NATIVE_TYPE)
+        .slice(0, DOCS_PER_LOCATION);
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (c.key !== categoryKey) return c;
+          return {
+            ...c,
+            libraryFolders: c.libraryFolders.map((lf) =>
+              lf.folder.id === folderId ? { ...lf, docs: native, docsLoaded: true } : lf,
+            ),
+          };
+        }),
+      );
+    } catch {
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (c.key !== categoryKey) return c;
+          return {
+            ...c,
+            libraryFolders: c.libraryFolders.map((lf) =>
+              lf.folder.id === folderId ? { ...lf, docsLoaded: true } : lf,
+            ),
+          };
+        }),
+      );
+    }
+  }, []);
+
+  const toggleCategory = useCallback(
+    (key: string) => {
+      const cat = categories.find((c) => c.key === key);
+      const isClosingEntityCategory = cat?.open === true && categoryHasEntityLayer(key);
+      setCategories((prev) => {
+        const c = prev.find((item) => item.key === key);
+        if (!c) return prev;
+        if (!c.open) {
+          if (categoryHasEntityLayer(key) && !c.entitiesLoaded) void loadCategoryEntities(key);
+          else if (!categoryHasEntityLayer(key) && !c.docsLoaded) void loadCategoryDocs(key);
+          if (!c.libraryFoldersLoaded) void loadLibraryFolders(key);
+        }
+        return prev.map((item) => (item.key === key ? { ...item, open: !item.open } : item));
+      });
+      if (isClosingEntityCategory) {
+        setSelected((sel) => (sel?.kind === 'library-entity' && sel.key === key ? null : sel));
+      } else if (!categoryHasEntityLayer(key)) {
+        setSelected({ kind: 'library-category', key });
+      }
+    },
+    [categories, loadCategoryEntities, loadCategoryDocs, loadLibraryFolders],
+  );
+
+  const toggleLibraryOpen = useCallback(() => {
+    const isClosing = libraryOpen;
+    setLibraryOpen((v) => !v);
+    if (isClosing) {
+      setSelected((sel) =>
+        sel?.kind === 'library-category' ||
+        sel?.kind === 'library-entity' ||
+        sel?.kind === 'library-folder'
+          ? null
+          : sel,
+      );
+    }
+  }, [libraryOpen]);
+
+  const toggleEntity = useCallback(
+    (categoryKey: string, entityId: string) => {
+      setCategories((prev) => {
+        const cat = prev.find((c) => c.key === categoryKey);
+        const entity = cat?.entityRows.find((e) => e.id === entityId);
+        if (entity) {
+          setSelected({
+            kind: 'library-entity',
+            key: categoryKey,
+            entityType: entity.entityType,
+            entityId: entity.id,
+            label: entity.label,
+          });
+          if (!entity.docsLoaded) {
+            void loadEntityDocs(categoryKey, entity.entityType, entity.id);
+          }
+        }
+        return prev.map((c) => {
+          if (c.key !== categoryKey) return c;
+          return {
+            ...c,
+            entityRows: c.entityRows.map((e) => (e.id === entityId ? { ...e, open: !e.open } : e)),
+          };
+        });
+      });
+    },
+    [loadEntityDocs],
+  );
+
+  const toggleLibraryFolder = useCallback(
+    (categoryKey: string, folderId: string) => {
+      setSelected({ kind: 'library-folder', key: categoryKey, folderId });
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (c.key !== categoryKey) return c;
+          const lf = c.libraryFolders.find((f) => f.folder.id === folderId);
+          if (lf && !lf.docsLoaded) {
+            void loadLibraryFolderDocs(categoryKey, folderId);
+          }
+          return {
+            ...c,
+            libraryFolders: c.libraryFolders.map((f) =>
+              f.folder.id === folderId ? { ...f, open: !f.open } : f,
+            ),
+          };
+        }),
+      );
+    },
+    [loadLibraryFolderDocs],
+  );
+
+  // ── Drive space folders ───────────────────────────────────────
+  const loadSpaceFolders = useCallback(async (spaceKey: DriveSpaceKey) => {
+    try {
+      const res = await driveApi.listFolderTree({ space: spaceKey });
+      setSpaces((prev) =>
+        prev.map((s) =>
+          s.key === spaceKey
+            ? { ...s, folders: buildFolderStates(res.folders), foldersLoaded: true }
+            : s,
+        ),
+      );
+    } catch {
+      setSpaces((prev) =>
+        prev.map((s) => (s.key === spaceKey ? { ...s, foldersLoaded: true } : s)),
+      );
+    }
+  }, []);
+
+  const toggleSpace = useCallback(
+    (spaceKey: DriveSpaceKey) => {
+      const isClosing = spaces.find((s) => s.key === spaceKey)?.open === true;
+      setSpaces((prev) => {
+        const sp = prev.find((s) => s.key === spaceKey);
+        if (sp && !sp.foldersLoaded) void loadSpaceFolders(spaceKey);
+        return prev.map((s) => (s.key === spaceKey ? { ...s, open: !s.open } : s));
+      });
+      if (isClosing) {
+        setSelected((sel) => (sel?.kind === 'drive-folder' && sel.space === spaceKey ? null : sel));
+      }
+    },
+    [loadSpaceFolders, spaces],
+  );
+
+  const loadFolderDocs = useCallback(async (folderId: string, spaceKey: DriveSpaceKey) => {
+    try {
+      const docs = await documentsApi.listDocuments({ type: 'NATIVE', driveFolderId: folderId });
+      const native = docs
+        .filter((d): d is DocumentListItem => d.type === NATIVE_TYPE)
+        .slice(0, DOCS_PER_LOCATION);
+      setSpaces((prev) =>
+        prev.map((s) => {
+          if (s.key !== spaceKey) return s;
+          return {
+            ...s,
+            folders: s.folders.map((f) =>
+              f.folder.id === folderId ? { ...f, docs: native, docsLoaded: true } : f,
+            ),
+          };
+        }),
+      );
+    } catch {
+      setSpaces((prev) =>
+        prev.map((s) => {
+          if (s.key !== spaceKey) return s;
+          return {
+            ...s,
+            folders: s.folders.map((f) =>
+              f.folder.id === folderId ? { ...f, docsLoaded: true } : f,
+            ),
+          };
+        }),
+      );
+    }
+  }, []);
+
+  const toggleFolder = useCallback(
+    (folderId: string, spaceKey: DriveSpaceKey) => {
+      setSelected({ kind: 'drive-folder', folderId, space: spaceKey });
+      setSpaces((prev) =>
+        prev.map((s) => {
+          if (s.key !== spaceKey) return s;
+          const fs = s.folders.find((f) => f.folder.id === folderId);
+          if (fs && !fs.docsLoaded) void loadFolderDocs(folderId, spaceKey);
+          return {
+            ...s,
+            folders: s.folders.map((f) => (f.folder.id === folderId ? { ...f, open: !f.open } : f)),
+          };
+        }),
+      );
+    },
+    [loadFolderDocs],
+  );
+
+  // ── Create folder (Company/Personal) ─────────────────────────
   const handleCreateFolder = async () => {
     const name = newFolderName.trim();
-    if (!name) {
-      setCreatingFolder(false);
+    if (!name || !creatingFolderSpace) {
+      setCreatingFolderSpace(null);
       setNewFolderName('');
       return;
     }
     setFolderSaving(true);
     try {
-      const section = await documentsApi.createDocumentSection({ name });
-      setSections((prev) => [...prev, { section, docs: [], docsLoaded: false, open: false }]);
-      setCreatingFolder(false);
-      setNewFolderName('');
+      await driveApi.createFolder({
+        name,
+        space: creatingFolderSpace,
+        parentId: creatingFolderParentId ?? undefined,
+      });
+      await loadSpaceFolders(creatingFolderSpace);
     } catch {
-      // keep input open on error so user can retry
-    } finally {
       setFolderSaving(false);
-    }
-  };
-
-  const handleCreateDoc = async (sectionId: string) => {
-    const title = newDocTitle.trim();
-    if (!title) {
-      setCreatingDocInSection(null);
-      setNewDocTitle('');
       return;
     }
-    setDocSaving(true);
-    try {
-      const created = await documentsApi.createDocument({ title, sectionId });
-      const newItem: DocumentListItem = {
-        id: created.id,
-        title: created.title,
-        slug: created.slug,
-        status: created.status,
-        type: created.type,
-        updatedAt: created.updatedAt,
-        section: created.section,
-        createdById: created.createdById,
-      };
-      setSections((prev) =>
-        prev.map((e) => (e.section.id === sectionId ? { ...e, docs: [newItem, ...e.docs] } : e)),
-      );
-      setCreatingDocInSection(null);
-      setNewDocTitle('');
-      router.push(`/documents/${created.id}`);
-    } catch {
-      // keep input open on error so user can retry
-    } finally {
-      setDocSaving(false);
-    }
+    setCreatingFolderSpace(null);
+    setNewFolderName('');
+    setCreatingFolderParentId(null);
+    setFolderSaving(false);
   };
 
+  const startCreateFolder = (space: DriveSpaceKey, parentId: string | null = null) => {
+    setCreatingLibraryFolderKey(null);
+    setCreatingFolderSpace(space);
+    setCreatingFolderParentId(parentId);
+    setNewFolderName('');
+  };
+
+  // ── Create library folder ─────────────────────────────────────
+  const handleCreateLibraryFolder = async () => {
+    const name = newFolderName.trim();
+    if (!name || !creatingLibraryFolderKey) {
+      setCreatingLibraryFolderKey(null);
+      setNewFolderName('');
+      return;
+    }
+    setFolderSaving(true);
+    try {
+      await driveApi.createFolder({ name, libraryKey: creatingLibraryFolderKey });
+      await loadLibraryFolders(creatingLibraryFolderKey);
+    } catch {
+      setFolderSaving(false);
+      return;
+    }
+    setCreatingLibraryFolderKey(null);
+    setNewFolderName('');
+    setFolderSaving(false);
+  };
+
+  const startCreateLibraryFolder = (categoryKey: string) => {
+    setCreatingFolderSpace(null);
+    setCreatingLibraryFolderKey(categoryKey);
+    setNewFolderName('');
+  };
+
+  // ── Rename folder ─────────────────────────────────────────────
+  const handleRenameStart = useCallback((folderId: string, currentName: string) => {
+    setRenamingFolder({ folderId, value: currentName, saving: false });
+  }, []);
+
+  const handleRenameChange = useCallback((value: string) => {
+    setRenamingFolder((prev) => (prev ? { ...prev, value } : null));
+  }, []);
+
+  const handleRenameSubmit = useCallback(async () => {
+    if (!renamingFolder) return;
+    const name = renamingFolder.value.trim();
+    if (!name) {
+      setRenamingFolder(null);
+      return;
+    }
+    setRenamingFolder((prev) => (prev ? { ...prev, saving: true } : null));
+    try {
+      await driveApi.renameFolder(renamingFolder.folderId, { name });
+      // Refresh: reload whichever section contains the renamed folder
+      const folderId = renamingFolder.folderId;
+      setRenamingFolder(null);
+      // Reload library folders in all open categories
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (!c.libraryFolders.some((lf) => lf.folder.id === folderId)) return c;
+          return {
+            ...c,
+            libraryFolders: c.libraryFolders.map((lf) =>
+              lf.folder.id === folderId ? { ...lf, folder: { ...lf.folder, name } } : lf,
+            ),
+          };
+        }),
+      );
+      // Reload drive space folders for matching folder
+      setSpaces((prev) =>
+        prev.map((s) => ({
+          ...s,
+          folders: s.folders.map((f) =>
+            f.folder.id === folderId ? { ...f, folder: { ...f.folder, name } } : f,
+          ),
+        })),
+      );
+    } catch {
+      setRenamingFolder((prev) => (prev ? { ...prev, saving: false } : null));
+    }
+  }, [renamingFolder]);
+
+  const handleRenameCancel = useCallback(() => {
+    setRenamingFolder(null);
+  }, []);
+
+  const handleDocumentCreated = useCallback(
+    (id: string) => {
+      router.push(`/documents/${id}`);
+      if (!selected) return;
+      if (selected.kind === 'library-entity') {
+        void loadEntityDocs(selected.key, selected.entityType, selected.entityId);
+      } else if (selected.kind === 'library-category') {
+        void loadCategoryDocs(selected.key);
+      } else if (selected.kind === 'library-folder') {
+        void loadLibraryFolderDocs(selected.key, selected.folderId);
+      } else if (selected.kind === 'drive-folder') {
+        void loadFolderDocs(selected.folderId, selected.space);
+      }
+    },
+    [selected, loadEntityDocs, loadCategoryDocs, loadLibraryFolderDocs, loadFolderDocs, router],
+  );
+
+  // True only when the selected item is actually inside an expanded/visible branch.
+  const isSelectedVisible = (() => {
+    if (!selected) return false;
+    if (selected.kind === 'drive-folder') {
+      return spaces.find((s) => s.key === selected.space)?.open === true;
+    }
+    if (selected.kind === 'library-entity') {
+      if (!libraryOpen) return false;
+      return categories.find((c) => c.key === selected.key)?.open === true;
+    }
+    if (selected.kind === 'library-folder') {
+      if (!libraryOpen) return false;
+      return categories.find((c) => c.key === selected.key)?.open === true;
+    }
+    return false;
+  })();
+
+  // Header FilePlus rules:
+  // • library-entity under a folder-only category → no FilePlus
+  // • library-entity under Support → FilePlus allowed
+  // • library-folder → FilePlus allowed (documents inside folders are always allowed)
+  // • drive-folder → keep existing behaviour
+  const canShowFilePlus = (() => {
+    if (!canAdd || !isSelectedVisible) return false;
+    if (selected?.kind === 'drive-folder') return true;
+    if (selected?.kind === 'library-folder') return true;
+    if (selected?.kind === 'library-entity') {
+      return canCreateDocumentInLibrary(selected.key);
+    }
+    return false;
+  })();
+
+  const selectedLibraryKey = selected?.kind === 'library-category' ? selected.key : null;
+  const activeEntityId = selected?.kind === 'library-entity' ? selected.entityId : null;
+  const selectedLibraryFolderId = selected?.kind === 'library-folder' ? selected.folderId : null;
+  const selectedFolderBySpace = (spaceKey: DriveSpaceKey) =>
+    selected?.kind === 'drive-folder' && selected.space === spaceKey ? selected.folderId : null;
+
+  const showFolderInput = creatingFolderSpace !== null || creatingLibraryFolderKey !== null;
+
   return (
-    <aside className="border-border bg-background relative z-[44] flex h-full w-52 shrink-0 flex-col overflow-y-auto border-r">
-      {/* Header */}
-      <div className="border-border flex items-center justify-between border-b px-3 py-2">
-        <Link
-          href="/documents"
-          className={cn(
-            'flex items-center gap-1.5 text-sm font-semibold transition-colors',
-            pathname === '/documents'
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          <LayoutGrid size={15} aria-hidden />
-          Documents
-        </Link>
-        <div className="flex items-center gap-0.5">
-          {canAdd ? (
+    <>
+      <aside
+        style={style}
+        className="bg-background relative z-[44] flex h-full shrink-0 flex-col overflow-y-auto"
+      >
+        <div className="border-border flex items-center justify-between border-b px-3 py-2">
+          <Link
+            href="/documents"
+            className={cn(
+              'flex items-center gap-1.5 text-sm font-semibold transition-colors',
+              pathname === '/documents'
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <LayoutGrid size={15} aria-hidden />
+            Documents
+          </Link>
+          {canShowFilePlus ? (
             <Button
               type="button"
               variant="ghost"
               size="icon"
               aria-label="New document"
               className="size-6 shrink-0"
-              disabled={!currentSectionId}
-              onClick={() => currentSectionId && startDocCreation(currentSectionId)}
+              onClick={() => setCreateDialogOpen(true)}
             >
               <FilePlus size={13} aria-hidden />
             </Button>
           ) : null}
-          {canManageSections ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="New folder"
-              className="size-6 shrink-0"
-              onClick={() => setCreatingFolder(true)}
-            >
-              <FolderPlus size={13} aria-hidden />
-            </Button>
-          ) : null}
         </div>
-      </div>
 
-      {/* Inline new-folder input */}
-      {creatingFolder ? (
-        <div className="border-border border-b px-2 py-1.5">
-          <Input
-            ref={newFolderInputRef}
-            value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
-            placeholder="Folder name…"
-            className="h-6 px-2 text-xs"
-            disabled={folderSaving}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void handleCreateFolder();
-              if (e.key === 'Escape') {
-                setCreatingFolder(false);
-                setNewFolderName('');
-              }
-            }}
-            onBlur={() => void handleCreateFolder()}
-          />
-        </div>
-      ) : null}
-
-      {/* Sections tree */}
-      <nav className="flex-1 overflow-y-auto px-1 py-1">
-        {loading ? (
-          <div className="space-y-1 px-2 py-1">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-6 w-full rounded" />
-            ))}
+        {showFolderInput ? (
+          <div className="border-border border-b px-2 py-1.5">
+            <Input
+              ref={folderInputRef}
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Folder name…"
+              className="h-6 px-2 text-xs"
+              disabled={folderSaving}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  void (creatingFolderSpace ? handleCreateFolder() : handleCreateLibraryFolder());
+                }
+                if (e.key === 'Escape') {
+                  setCreatingFolderSpace(null);
+                  setCreatingLibraryFolderKey(null);
+                  setNewFolderName('');
+                }
+              }}
+              onBlur={() => {
+                void (creatingFolderSpace ? handleCreateFolder() : handleCreateLibraryFolder());
+              }}
+            />
           </div>
-        ) : (
+        ) : null}
+
+        <nav className="flex-1 overflow-y-auto px-1 py-1">
           <ul className="space-y-0.5">
-            {sections.map((entry, idx) => (
-              <li key={entry.section.id}>
-                <Collapsible open={entry.open}>
-                  <div className="group flex items-center">
-                    <CollapsibleTrigger
-                      aria-label={entry.open ? 'Collapse folder' : 'Expand folder'}
-                      onClick={() => void toggleSection(idx)}
-                      className="text-muted-foreground hover:text-foreground flex size-5 shrink-0 items-center justify-center rounded transition-colors"
-                    >
-                      <ChevronRight
-                        size={12}
-                        className={cn('transition-transform', entry.open && 'rotate-90')}
-                      />
-                    </CollapsibleTrigger>
-
-                    <button
-                      type="button"
-                      onClick={() => void toggleSection(idx)}
-                      className={cn(
-                        'flex flex-1 items-center gap-1.5 rounded px-1.5 py-1 text-sm transition-colors',
-                        activeSectionId === entry.section.id
-                          ? 'bg-accent text-accent-foreground font-medium'
-                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                      )}
-                    >
-                      <FolderOpen size={14} aria-hidden className="shrink-0" />
-                      <span className="truncate">{entry.section.name}</span>
-                    </button>
-
-                    {/* Per-section new-doc button, visible on row hover */}
-                    {canAdd ? (
-                      <button
-                        type="button"
-                        onClick={() => startDocCreation(entry.section.id)}
-                        aria-label={`New document in ${entry.section.name}`}
-                        className="text-muted-foreground hover:text-foreground mr-1 flex size-4 shrink-0 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100"
-                      >
-                        <FilePlus size={11} aria-hidden />
-                      </button>
-                    ) : null}
-                  </div>
-
-                  <CollapsibleContent>
-                    {/* Inline new-doc input — appears at top of the section */}
-                    {creatingDocInSection === entry.section.id ? (
-                      <div className="mt-0.5 ml-5">
-                        <Input
-                          ref={newDocInputRef}
-                          value={newDocTitle}
-                          onChange={(e) => setNewDocTitle(e.target.value)}
-                          placeholder="Document name…"
-                          className="h-6 px-2 text-xs"
-                          disabled={docSaving}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void handleCreateDoc(entry.section.id);
-                            if (e.key === 'Escape') {
-                              setCreatingDocInSection(null);
-                              setNewDocTitle('');
-                            }
-                          }}
-                          onBlur={() => void handleCreateDoc(entry.section.id)}
-                        />
-                      </div>
-                    ) : null}
-
-                    {entry.docsLoaded ? (
-                      <ul className="mt-0.5 ml-5 space-y-0.5">
-                        {entry.docs.length === 0 ? (
-                          <li className="text-muted-foreground px-2 py-0.5 text-xs">
-                            No documents
-                          </li>
-                        ) : (
-                          entry.docs.map((doc) => (
-                            <li key={doc.id} className="group flex items-center">
-                              <Link
-                                href={`/documents/${doc.id}`}
-                                className={cn(
-                                  'flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-0.5 text-xs transition-colors',
-                                  activeDocId === doc.id
-                                    ? 'bg-accent text-accent-foreground font-medium'
-                                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                                )}
-                              >
-                                <FileText size={11} aria-hidden className="shrink-0 opacity-70" />
-                                <span className="truncate">{doc.title}</span>
-                              </Link>
-                              <DocFavoriteStar doc={doc} />
-                            </li>
-                          ))
-                        )}
-                      </ul>
+            <li>
+              <LibrarySection
+                open={libraryOpen}
+                libraryIcon={<Library size={14} aria-hidden className="shrink-0" />}
+                categories={categories}
+                activeDocId={activeDocId}
+                selectedKey={selectedLibraryKey}
+                activeEntityId={activeEntityId}
+                selectedLibraryFolderId={selectedLibraryFolderId}
+                canAdd={canAdd}
+                canDriveAdd={canDriveAdd}
+                renamingFolder={renamingFolder}
+                onToggleRoot={toggleLibraryOpen}
+                onToggleCategory={toggleCategory}
+                onToggleEntity={toggleEntity}
+                onToggleLibraryFolder={toggleLibraryFolder}
+                onNewDoc={() => setCreateDialogOpen(true)}
+                onNewLibraryFolder={startCreateLibraryFolder}
+                onRenameStart={handleRenameStart}
+                onRenameChange={handleRenameChange}
+                onRenameSubmit={() => {
+                  void handleRenameSubmit();
+                }}
+                onRenameCancel={handleRenameCancel}
+              />
+            </li>
+            {spaces.map((space) => (
+              <li key={space.key}>
+                <DriveSpaceSection
+                  space={space}
+                  spaceIcon={
+                    space.key === 'COMPANY' ? (
+                      <Building2 size={14} aria-hidden className="shrink-0" />
                     ) : (
-                      <div className="mt-0.5 ml-5 space-y-0.5">
-                        {Array.from({ length: 2 }).map((_, i) => (
-                          <Skeleton key={i} className="h-4 w-full rounded" />
-                        ))}
-                      </div>
-                    )}
-                  </CollapsibleContent>
-                </Collapsible>
+                      <CircleUserRound size={14} aria-hidden className="shrink-0" />
+                    )
+                  }
+                  label={space.key === 'COMPANY' ? 'Company' : 'Personal'}
+                  activeDocId={activeDocId}
+                  selectedFolderId={selectedFolderBySpace(space.key)}
+                  canAdd={canAdd}
+                  canDriveAdd={canDriveAdd}
+                  renamingFolder={renamingFolder}
+                  onToggleRoot={() => toggleSpace(space.key)}
+                  onToggleFolder={(folderId) => toggleFolder(folderId, space.key)}
+                  onNewDoc={() => setCreateDialogOpen(true)}
+                  onNewFolder={(parentId) => startCreateFolder(space.key, parentId)}
+                  onRenameStart={handleRenameStart}
+                  onRenameChange={handleRenameChange}
+                  onRenameSubmit={() => {
+                    void handleRenameSubmit();
+                  }}
+                  onRenameCancel={handleRenameCancel}
+                />
               </li>
             ))}
           </ul>
-        )}
-      </nav>
-    </aside>
+        </nav>
+      </aside>
+
+      {createDialogOpen && selected ? (
+        <CreateDocumentDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          location={selected}
+          onCreated={handleDocumentCreated}
+        />
+      ) : null}
+    </>
   );
 }

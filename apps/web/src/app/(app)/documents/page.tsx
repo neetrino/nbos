@@ -1,18 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FileText, Plus, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileText, Star } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroSearch, EmptyState, ErrorState } from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentRecentItem } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
 import { useDebouncedValue } from '@/components/shared';
 import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
-import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
 import { useDocumentFavorites } from '@/features/documents/DocumentFavoritesContext';
 
@@ -29,15 +25,12 @@ function DocListSkeleton() {
 }
 
 export default function DocumentsHomePage() {
-  const router = useRouter();
-  const { can } = usePermission();
   const { favorites, loading: loadingFavorites } = useDocumentFavorites();
   const [recent, setRecent] = useState<DocumentRecentItem[]>([]);
   const [searchResults, setSearchResults] = useState<DocumentListItem[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, DOCUMENTS_SEARCH_DEBOUNCE_MS).trim();
 
@@ -71,7 +64,6 @@ export default function DocumentsHomePage() {
       .finally(() => setLoadingSearch(false));
   }, [debouncedSearch]);
 
-  const canAdd = can('ADD', 'DOCUMENTS');
   const isSearching = debouncedSearch.length > 0;
 
   return (
@@ -84,14 +76,6 @@ export default function DocumentsHomePage() {
             onChange={setSearch}
             placeholder="Search title, body, tags…"
           />
-        }
-        trailing={
-          canAdd ? (
-            <Button type="button" size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
-              <Plus size={14} aria-hidden />
-              New document
-            </Button>
-          ) : null
         }
       />
 
@@ -148,13 +132,6 @@ export default function DocumentsHomePage() {
           </TabsContent>
         </Tabs>
       )}
-
-      <CreateDocumentDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        sections={[]}
-        onCreated={(id) => router.push(`/documents/${id}`)}
-      />
     </div>
   );
 }

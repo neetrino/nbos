@@ -141,6 +141,8 @@ export interface DriveFolder {
   ownerId: string | null;
   createdById: string | null;
   parentId: string | null;
+  /** Drive library category key when this folder is scoped to a Documents library. */
+  libraryKey?: string | null;
   archivedAt: string | null;
   deletedAt: string | null;
   createdAt: string;
@@ -154,6 +156,8 @@ export type DriveFolderListParams = {
   parentId?: string | null;
   scopeEntityType?: string;
   scopeEntityId?: string;
+  /** Drive library category key — when set, fetches folders scoped to that library. */
+  libraryKey?: string;
 };
 
 export interface DriveFolderListing {
@@ -169,6 +173,7 @@ export interface DriveFolderListing {
 
 export interface DriveFolderTreeResponse {
   space: 'COMPANY' | 'PERSONAL';
+  libraryKey?: string | null;
   scopeEntityType?: string | null;
   scopeEntityId?: string | null;
   folders: DriveFolder[];
@@ -349,6 +354,7 @@ export const driveApi = {
         space: params.space,
         scopeEntityType: params.scopeEntityType,
         scopeEntityId: params.scopeEntityId,
+        libraryKey: params.libraryKey,
       },
     });
     return resp.data;
@@ -360,6 +366,7 @@ export const driveApi = {
     parentId?: string | null;
     scopeEntityType?: string;
     scopeEntityId?: string;
+    libraryKey?: string;
   }): Promise<DriveFolder> {
     const resp = await api.post<DriveFolder>('/api/drive/folders', data);
     return resp.data;

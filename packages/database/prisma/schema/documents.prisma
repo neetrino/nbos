@@ -90,7 +90,16 @@ model Document {
   title                  String
   slug                   String                     @unique
   description            String?
-  sectionId              String                     @map("section_id")
+  /// Legacy section-based location; nullable since new documents use libraryKey or driveFolderId.
+  sectionId              String?                    @map("section_id")
+  /// Drive library category key (deals | projects | products | clients | finance | partners | tasks | support).
+  libraryKey             String?                    @map("library_key")
+  /// Real DriveFolder ID (COMPANY or PERSONAL space). Mutually exclusive with libraryKey.
+  driveFolderId          String?                    @map("drive_folder_id")
+  /// CRM entity type (DEAL | LEAD | PROJECT | …). Requires libraryKey; mutually exclusive with driveFolderId.
+  entityType             String?                    @map("entity_type")
+  /// CRM entity ID matching entityType. Requires both libraryKey and entityType.
+  entityId               String?                    @map("entity_id")
   parentId               String?                    @map("parent_id")
   status                 DocumentStatusEnum         @default(DRAFT)
   ownerId                String?                    @map("owner_id")
@@ -111,7 +120,7 @@ model Document {
   updatedAt              DateTime                   @updatedAt @map("updated_at")
   listScopeOverride      DocumentListScopeEnum?     @map("list_scope_override")
 
-  section        DocumentSection         @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  section        DocumentSection?        @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   parent         Document?               @relation("DocumentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children       Document[]              @relation("DocumentHierarchy")
   coverFileAsset FileAsset?              @relation("DocumentCoverAsset", fields: [coverFileAssetId], references: [id], onDelete: SetNull)
@@ -123,6 +132,9 @@ model Document {
   recents        DocumentRecent[]
 
   @@index([sectionId])
+  @@index([libraryKey])
+  @@index([driveFolderId])
+  @@index([entityType, entityId])
   @@index([status])
   @@index([type])
   @@index([createdAt])

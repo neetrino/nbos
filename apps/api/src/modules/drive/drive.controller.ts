@@ -138,17 +138,23 @@ export class DriveController {
   @ApiQuery({ name: 'space', required: false, description: 'COMPANY | PERSONAL' })
   @ApiQuery({ name: 'scopeEntityType', required: false })
   @ApiQuery({ name: 'scopeEntityId', required: false })
+  @ApiQuery({
+    name: 'libraryKey',
+    required: false,
+    description: 'deals | projects | products | clients | finance | partners | tasks | support',
+  })
   async listFolderTree(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
     @Query('space') space?: string,
     @Query('scopeEntityType') scopeEntityType?: string,
     @Query('scopeEntityId') scopeEntityId?: string,
+    @Query('libraryKey') libraryKey?: string,
   ) {
     return this.driveFolders.listFolderTree(
       space ?? '',
       user.id,
-      { scopeEntityType, scopeEntityId },
+      { scopeEntityType, scopeEntityId, libraryKey },
       await this.driveAccessContext.fromRequest(user, request.permissionScope),
     );
   }

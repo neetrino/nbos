@@ -212,15 +212,17 @@ export default function DocumentDetailPage() {
 
           <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
             <DocumentStatusBadge status={doc.status} />
-            <span>
-              Section:{' '}
-              <Link
-                href={`/documents/sections/${doc.section.id}`}
-                className="text-primary font-medium hover:underline"
-              >
-                {doc.section.name}
-              </Link>
-            </span>
+            {doc.section ? (
+              <span>
+                Section:{' '}
+                <Link
+                  href={`/documents/sections/${doc.section.id}`}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {doc.section.name}
+                </Link>
+              </span>
+            ) : null}
             <span>Updated {formatDocumentRelativeTime(doc.updatedAt)}</span>
             {doc.publishedAt ? (
               <span>Published {formatDocumentRelativeTime(doc.publishedAt)}</span>

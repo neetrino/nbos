@@ -110,12 +110,26 @@ export class DocumentsController {
   @RequirePermission('DOCUMENTS', 'VIEW')
   @ApiOperation({ summary: 'List documents' })
   @ApiQuery({ name: 'sectionId', required: false })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by document type, e.g. NATIVE' })
+  @ApiQuery({ name: 'libraryKey', required: false, description: 'Drive library category key' })
+  @ApiQuery({
+    name: 'entityType',
+    required: false,
+    description: 'CRM entity type (DEAL | LEAD | PROJECT | …)',
+  })
+  @ApiQuery({ name: 'entityId', required: false, description: 'CRM entity ID matching entityType' })
+  @ApiQuery({ name: 'driveFolderId', required: false, description: 'Real DriveFolder ID' })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'includeArchived', required: false })
   async listDocuments(
     @CurrentUser() user: CurrentUserPayload,
     @Query('sectionId') sectionId?: string,
+    @Query('type') type?: string,
+    @Query('libraryKey') libraryKey?: string,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+    @Query('driveFolderId') driveFolderId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('includeArchived') includeArchived?: string,
@@ -123,6 +137,11 @@ export class DocumentsController {
     return this.documentsService.listDocuments(
       {
         sectionId,
+        type,
+        libraryKey,
+        entityType,
+        entityId,
+        driveFolderId,
         status,
         search,
         includeArchived: includeArchived === 'true' || includeArchived === '1',
