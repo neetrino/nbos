@@ -18,10 +18,7 @@ import {
   type RenameState,
 } from './documents-sidebar-nodes';
 import { EntityList, type EntityRowState } from './documents-sidebar-entities';
-import {
-  canCreateDocumentInLibrary,
-  canCreateFolderInLibrary,
-} from './documents-library-create-rules';
+import { canCreateDocumentInLibrary } from './documents-library-create-rules';
 
 // Library children: all system keys except 'all'
 export const LIBRARY_CATEGORIES: DriveLibraryOption[] = DRIVE_LIBRARIES.filter(
@@ -94,7 +91,6 @@ interface LibrarySectionProps {
   onToggleEntity: (categoryKey: string, entityId: string) => void;
   onToggleLibraryFolder: (categoryKey: string, folderId: string) => void;
   onNewDoc: () => void;
-  onNewLibraryFolder: (categoryKey: string) => void;
   onRenameStart: (folderId: string, currentName: string) => void;
   onRenameChange: (value: string) => void;
   onRenameSubmit: () => void;
@@ -117,7 +113,6 @@ export function LibrarySection({
   onToggleEntity,
   onToggleLibraryFolder,
   onNewDoc,
-  onNewLibraryFolder,
   onRenameStart,
   onRenameChange,
   onRenameSubmit,
@@ -130,7 +125,6 @@ export function LibrarySection({
           const option = LIBRARY_CATEGORIES.find((l) => l.key === cat.key)!;
           const Icon = option.icon;
           const isEntityLib = categoryHasEntityLayer(cat.key);
-          const folderAllowed = canDriveAdd && canCreateFolderInLibrary(cat.key);
           const docAllowed = canAdd && canCreateDocumentInLibrary(cat.key);
           const isCatSelected = !isEntityLib && selectedKey === cat.key;
 
@@ -143,35 +137,18 @@ export function LibrarySection({
                 onToggle={() => onToggleCategory(cat.key)}
                 active={isCatSelected}
                 actions={
-                  cat.open && (folderAllowed || (!isEntityLib && isCatSelected && docAllowed)) ? (
-                    <>
-                      {folderAllowed ? (
-                        <button
-                          type="button"
-                          aria-label={`New folder in ${option.title}`}
-                          className="text-muted-foreground hover:text-foreground flex size-4 items-center justify-center rounded"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNewLibraryFolder(cat.key);
-                          }}
-                        >
-                          <FolderPlus size={11} aria-hidden />
-                        </button>
-                      ) : null}
-                      {!isEntityLib && isCatSelected && docAllowed ? (
-                        <button
-                          type="button"
-                          aria-label={`New document in ${option.title}`}
-                          className="text-muted-foreground hover:text-foreground flex size-4 items-center justify-center rounded"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNewDoc();
-                          }}
-                        >
-                          <FilePlus size={11} aria-hidden />
-                        </button>
-                      ) : null}
-                    </>
+                  !isEntityLib && isCatSelected && docAllowed ? (
+                    <button
+                      type="button"
+                      aria-label={`New document in ${option.title}`}
+                      className="text-muted-foreground hover:text-foreground flex size-4 items-center justify-center rounded"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNewDoc();
+                      }}
+                    >
+                      <FilePlus size={11} aria-hidden />
+                    </button>
                   ) : null
                 }
               >
@@ -199,7 +176,7 @@ export function LibrarySection({
                         folderState={lf}
                         activeDocId={activeDocId}
                         isSelected={selectedLibraryFolderId === lf.folder.id}
-                        canAdd={canAdd}
+                        canAdd={canAdd && docAllowed}
                         renamingFolder={renamingFolder}
                         onToggle={() => onToggleLibraryFolder(cat.key, lf.folder.id)}
                         onRenameStart={onRenameStart}

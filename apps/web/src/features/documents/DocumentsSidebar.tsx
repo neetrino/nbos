@@ -3,7 +3,14 @@
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Building2, CircleUserRound, FilePlus, LayoutGrid, Library } from 'lucide-react';
+import {
+  Building2,
+  CircleUserRound,
+  FilePlus,
+  FolderPlus,
+  LayoutGrid,
+  Library,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +31,10 @@ import {
   type DriveSpaceKey,
 } from './documents-sidebar-spaces';
 import type { EntityRowState } from './documents-sidebar-entities';
-import { canCreateDocumentInLibrary } from './documents-library-create-rules';
+import {
+  canCreateDocumentInLibrary,
+  canCreateFolderInLibrary,
+} from './documents-library-create-rules';
 
 type SelectedLocation =
   | { kind: 'library-category'; key: string }
@@ -65,6 +75,7 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
 
   const [categories, setCategories] = useState<CategoryState[]>(initCategoryState);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [activeLibraryCategoryKey, setActiveLibraryCategoryKey] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<SpaceState[]>([
     { key: 'COMPANY', open: false, folders: [], foldersLoaded: false },
     { key: 'PERSONAL', open: false, folders: [], foldersLoaded: false },
@@ -226,17 +237,17 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
   const toggleCategory = useCallback(
     (key: string) => {
       const cat = categories.find((c) => c.key === key);
+      const isOpening = !cat?.open;
       const isClosingEntityCategory = cat?.open === true && categoryHasEntityLayer(key);
-      setCategories((prev) => {
-        const c = prev.find((item) => item.key === key);
-        if (!c) return prev;
-        if (!c.open) {
-          if (categoryHasEntityLayer(key) && !c.entitiesLoaded) void loadCategoryEntities(key);
-          else if (!categoryHasEntityLayer(key) && !c.docsLoaded) void loadCategoryDocs(key);
-          if (!c.libraryFoldersLoaded) void loadLibraryFolders(key);
-        }
-        return prev.map((item) => (item.key === key ? { ...item, open: !item.open } : item));
-      });
+      if (isOpening) {
+        setActiveLibraryCategoryKey(key);
+        if (categoryHasEntityLayer(key) && !cat?.entitiesLoaded) void loadCategoryEntities(key);
+        else if (!categoryHasEntityLayer(key) && !cat?.docsLoaded) void loadCategoryDocs(key);
+        if (!cat?.libraryFoldersLoaded) void loadLibraryFolders(key);
+      }
+      setCategories((prev) =>
+        prev.map((item) => (item.key === key ? { ...item, open: !item.open } : item)),
+      );
       if (isClosingEntityCategory) {
         setSelected((sel) => (sel?.kind === 'library-entity' && sel.key === key ? null : sel));
       } else if (!categoryHasEntityLayer(key)) {
@@ -262,6 +273,7 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
 
   const toggleEntity = useCallback(
     (categoryKey: string, entityId: string) => {
+      setActiveLibraryCategoryKey(categoryKey);
       setCategories((prev) => {
         const cat = prev.find((c) => c.key === categoryKey);
         const entity = cat?.entityRows.find((e) => e.id === entityId);
@@ -430,15 +442,32 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
   // ── Create library folder ─────────────────────────────────────
   const handleCreateLibraryFolder = async () => {
     const name = newFolderName.trim();
-    if (!name || !creatingLibraryFolderKey) {
+    // Capture key before any await to avoid stale closure.
+    const key = creatingLibraryFolderKey;
+    if (!name || !key) {
       setCreatingLibraryFolderKey(null);
       setNewFolderName('');
       return;
     }
     setFolderSaving(true);
     try {
-      await driveApi.createFolder({ name, libraryKey: creatingLibraryFolderKey });
-      await loadLibraryFolders(creatingLibraryFolderKey);
+      const folder = await driveApi.createFolder({ name, libraryKey: key });
+      // Add directly to state — createFolder already returns the created folder,
+      // so no second round-trip needed. Avoids catch-swallowed refresh bugs.
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (c.key !== key) return c;
+          if (c.libraryFolders.some((lf) => lf.folder.id === folder.id)) return c;
+          return {
+            ...c,
+            libraryFolders: [
+              ...c.libraryFolders,
+              { folder, docs: [], docsLoaded: false, open: false },
+            ],
+            libraryFoldersLoaded: true,
+          };
+        }),
+      );
     } catch {
       setFolderSaving(false);
       return;
@@ -555,6 +584,15 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
     return false;
   })();
 
+  // Header FolderPlus: only show when the active category is actually open,
+  // so the newly created folder is immediately visible to the user.
+  const canShowFolderPlus =
+    canDriveAdd &&
+    libraryOpen &&
+    !!activeLibraryCategoryKey &&
+    canCreateFolderInLibrary(activeLibraryCategoryKey) &&
+    (categories.find((c) => c.key === activeLibraryCategoryKey)?.open ?? false);
+
   const selectedLibraryKey = selected?.kind === 'library-category' ? selected.key : null;
   const activeEntityId = selected?.kind === 'library-entity' ? selected.entityId : null;
   const selectedLibraryFolderId = selected?.kind === 'library-folder' ? selected.folderId : null;
@@ -582,18 +620,32 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
             <LayoutGrid size={15} aria-hidden />
             Documents
           </Link>
-          {canShowFilePlus ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="New document"
-              className="size-6 shrink-0"
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              <FilePlus size={13} aria-hidden />
-            </Button>
-          ) : null}
+          <div className="flex items-center gap-0.5">
+            {canShowFolderPlus ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="New folder"
+                className="size-6 shrink-0"
+                onClick={() => startCreateLibraryFolder(activeLibraryCategoryKey!)}
+              >
+                <FolderPlus size={13} aria-hidden />
+              </Button>
+            ) : null}
+            {canShowFilePlus ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="New document"
+                className="size-6 shrink-0"
+                onClick={() => setCreateDialogOpen(true)}
+              >
+                <FilePlus size={13} aria-hidden />
+              </Button>
+            ) : null}
+          </div>
         </div>
 
         {showFolderInput ? (
@@ -641,7 +693,6 @@ export function DocumentsSidebar({ style }: DocumentsSidebarProps) {
                 onToggleEntity={toggleEntity}
                 onToggleLibraryFolder={toggleLibraryFolder}
                 onNewDoc={() => setCreateDialogOpen(true)}
-                onNewLibraryFolder={startCreateLibraryFolder}
                 onRenameStart={handleRenameStart}
                 onRenameChange={handleRenameChange}
                 onRenameSubmit={() => {
