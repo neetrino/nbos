@@ -25,9 +25,9 @@ export function MailThreadDeleteDialog({
       open={open}
       onOpenChange={onOpenChange}
       itemName={threadSubject}
-      title="Delete this email?"
-      description="The thread and its messages will be removed from Mail. This action cannot be undone."
-      confirmLabel="Delete"
+      title="Move to Trash?"
+      description="The thread will be hidden from your inbox. You can restore it from Trash before retention purge."
+      confirmLabel="Move to Trash"
       isSubmitting={isSubmitting}
       errorMessage={errorMessage}
       onConfirm={onConfirm}

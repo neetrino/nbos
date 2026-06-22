@@ -299,6 +299,27 @@ export class OperationalJournalService {
     });
   }
 
+  /** Marks an accrual line reversed (Profile D void/cancel). No-op when missing or already reversed. */
+  async reverseJournalLineByIdempotencyKey(
+    idempotencyKey: string,
+    reversalNote: string,
+  ): Promise<void> {
+    const row = await this.prisma.operationalJournalEntry.findUnique({
+      where: { idempotencyKey },
+      select: { id: true, status: true, description: true },
+    });
+    if (!row || row.status === 'REVERSED') return;
+
+    const description = row.description?.trim()
+      ? `${row.description} — ${reversalNote}`
+      : reversalNote;
+
+    await this.prisma.operationalJournalEntry.update({
+      where: { idempotencyKey },
+      data: { status: 'REVERSED', description },
+    });
+  }
+
   async appendPartnerAccrualLine(input: PartnerAccrualJournalLineInput) {
     const postingPeriod = await this.ensureOpenPostingPeriod(input.bookedAt);
     const description =

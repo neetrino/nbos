@@ -42,7 +42,6 @@ interface ClientServiceGeneralTabProps {
 
 export function ClientServiceGeneralTab({
   serviceId,
-  service,
   draft,
   patchDraft,
   projects,

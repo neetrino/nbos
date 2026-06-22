@@ -49,7 +49,7 @@ export function ProductBonusPoolSheet({
   const [timelineEvents, setTimelineEvents] = useState<BonusPoolTimelineEvent[]>([]);
   const [riskFlags, setRiskFlags] = useState<BonusPoolRiskFlag[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [linesError, setLinesError] = useState<string | null>(null);
+  const [, setLinesError] = useState<string | null>(null);
   const [entriesError, setEntriesError] = useState<string | null>(null);
   const [timelineError, setTimelineError] = useState<string | null>(null);
   const [fundingSyncing, setFundingSyncing] = useState(false);

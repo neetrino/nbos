@@ -220,11 +220,4 @@ export class ProductsController {
   ) {
     return this.productsService.confirmAcceptance(id, body);
   }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete product' })
-  async remove(@Param('id') id: string) {
-    await this.productsService.delete(id);
-  }
 }

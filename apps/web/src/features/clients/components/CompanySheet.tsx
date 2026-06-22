@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { RotateCcw, Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
+import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
 import { EntityDetailSheetLoadingShell } from '@/components/shared/entity-detail-sheet-loading-shell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -38,7 +39,10 @@ interface CompanySheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, data: Record<string, unknown>) => Promise<void>;
-  onDelete?: (id: string) => void;
+  isTrashView?: boolean;
+  onMoveToTrash?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
 }
 
 function companySaveErrorMessage(err: unknown): string {
@@ -51,7 +55,10 @@ export function CompanySheet({
   open,
   onOpenChange,
   onUpdate,
-  onDelete,
+  isTrashView = false,
+  onMoveToTrash,
+  onRestore,
+  onPermanentDelete,
 }: CompanySheetProps) {
   const searchContacts = useContactSearchOptions();
   const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
@@ -139,6 +146,7 @@ export function CompanySheet({
   useRegisterRelationCreated(open && draft ? handleRelationCreated : null);
 
   const startEditingName = () => {
+    if (isTrashView) return;
     setNameValue(draft?.name ?? company?.name ?? '');
     setEditingName(true);
   };
@@ -207,11 +215,27 @@ export function CompanySheet({
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
-              {onDelete ? (
+              {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(company.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(company.id)}>
+                    <RotateCcw />
+                    Restore
+                  </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(company.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : onMoveToTrash ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(company.id)}>
                     <Trash2 />
-                    Delete
+                    Move to Trash
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               ) : null}
@@ -222,33 +246,36 @@ export function CompanySheet({
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
         <ScrollArea className="min-h-0 flex-1">
-          {activeTab === 'general' ? (
-            <CompanySheetScrollBody
-              company={company}
-              draft={draft}
-              patchDraft={patchDraft}
-              saving={saving}
-              generalError={generalError}
-              portfolioData={portfolio.data}
-              portfolioLoading={portfolio.loading}
-              portfolioError={portfolio.error}
-              searchContacts={searchContacts}
-              onPortfolioRetry={portfolio.reload}
-            />
-          ) : (
-            <ClientPortfolioPanel
-              tab={activeTab as ClientEmbeddedPortfolioTabId}
-              data={portfolio.data}
-              loading={portfolio.loading}
-              error={portfolio.error}
-              variant="company"
-              onRetry={portfolio.reload}
-            />
-          )}
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' ? (
+              <CompanySheetScrollBody
+                company={company}
+                draft={draft}
+                patchDraft={patchDraft}
+                saving={saving}
+                readOnly={isTrashView}
+                generalError={generalError}
+                portfolioData={portfolio.data}
+                portfolioLoading={portfolio.loading}
+                portfolioError={portfolio.error}
+                searchContacts={searchContacts}
+                onPortfolioRetry={portfolio.reload}
+              />
+            ) : (
+              <ClientPortfolioPanel
+                tab={activeTab as ClientEmbeddedPortfolioTabId}
+                data={portfolio.data}
+                loading={portfolio.loading}
+                error={portfolio.error}
+                variant="company"
+                onRetry={portfolio.reload}
+              />
+            )}
+          </DetailSheetTabPanel>
         </ScrollArea>
 
         <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(draft)}
+          visible={!isTrashView && activeTab === 'general' && Boolean(draft)}
           dirty={generalDirty}
           saving={saving}
           errorMessage={generalError}

@@ -8,9 +8,11 @@ import {
   MAIL_AUDIT_ACTION_THREAD_MARKED_UNREAD,
   MAIL_AUDIT_ACTION_THREAD_MARKED_SPAM,
   MAIL_AUDIT_ACTION_THREAD_NEEDS_LINK_UPDATED,
-  MAIL_AUDIT_ACTION_THREAD_DELETED,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
+import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
+import { permanentlyDeleteTrashedMailThread } from './mail-thread-permanent-delete.ops';
+import { moveMailThreadToTrash, restoreMailThreadFromTrash } from './mail-thread-trash.ops';
 import type { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { patchThreadNeedsBusinessLinkIfChanged } from './mail-thread-needs-link.ops';
 import { publishMailThreadNeedsLinkChangedNotifications } from './mail-thread-needs-link-notify.ops';
@@ -21,7 +23,7 @@ import {
 } from './mail-thread-mark-read-provider.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
-import type { MailThreadDetailDto } from './mail.types';
+import type { MailBulkThreadActionResultDto, MailThreadDetailDto } from './mail.types';
 
 @Injectable()
 export class MailThreadCommandService {
@@ -49,6 +51,7 @@ export class MailThreadCommandService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     if (!thread.hasUnread) {
       return requireMailThreadDetailDto(this.prisma, {
         employeeId,
@@ -108,6 +111,7 @@ export class MailThreadCommandService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     await this.prisma.emailThread.update({
       where: { id: threadId },
       data: { hasUnread: true },
@@ -128,6 +132,66 @@ export class MailThreadCommandService {
       viewScope: accessScope,
       threadId,
     });
+  }
+
+  async bulkMarkThreadsRead(
+    employeeId: string,
+    accessScope: string,
+    threadIds: string[],
+  ): Promise<MailBulkThreadActionResultDto> {
+    return this.runBulkThreadAction(threadIds, async (threadId) => {
+      await this.markThreadRead(employeeId, accessScope, threadId);
+    });
+  }
+
+  async bulkMarkThreadsUnread(
+    employeeId: string,
+    accessScope: string,
+    threadIds: string[],
+  ): Promise<MailBulkThreadActionResultDto> {
+    return this.runBulkThreadAction(threadIds, async (threadId) => {
+      await this.markThreadUnread(employeeId, accessScope, threadId);
+    });
+  }
+
+  private async runBulkThreadAction(
+    threadIds: string[],
+    runForThread: (threadId: string) => Promise<void>,
+  ): Promise<MailBulkThreadActionResultDto> {
+    const uniqueThreadIds = [...new Set(threadIds)];
+    const settled = await Promise.allSettled(
+      uniqueThreadIds.map(async (threadId) => {
+        await runForThread(threadId);
+        return threadId;
+      }),
+    );
+    const succeededThreadIds: string[] = [];
+    const failedItems: MailBulkThreadActionResultDto['failedItems'] = [];
+    settled.forEach((result, index) => {
+      const threadId = uniqueThreadIds[index];
+      if (result.status === 'fulfilled') {
+        succeededThreadIds.push(threadId);
+        return;
+      }
+      failedItems.push({
+        threadId,
+        error: this.resolveBulkFailureMessage(result.reason),
+      });
+    });
+    return {
+      total: uniqueThreadIds.length,
+      succeeded: succeededThreadIds.length,
+      failed: failedItems.length,
+      succeededThreadIds,
+      failedItems,
+    };
+  }
+
+  private resolveBulkFailureMessage(error: unknown): string {
+    if (error instanceof Error && error.message.trim().length > 0) {
+      return error.message;
+    }
+    return 'Unknown error';
   }
 
   /**
@@ -196,6 +260,7 @@ export class MailThreadCommandService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     if (!thread.isSpam) {
       await this.prisma.emailThread.update({
         where: { id: threadId },
@@ -220,32 +285,67 @@ export class MailThreadCommandService {
     });
   }
 
-  /** Removes thread and cascaded messages from NBOS (no provider mailbox delete in MVP). */
+  /** Moves thread to Trash (recoverable; no provider mailbox delete in MVP). */
+  async moveThreadToTrash(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<{ trashed: true; threadId: string }> {
+    const outcome = await moveMailThreadToTrash(this.prisma, this.auditService, {
+      employeeId,
+      accessScope,
+      threadId,
+    });
+    if (!outcome.ok) {
+      throw new NotFoundException('Thread not found');
+    }
+    return { trashed: true, threadId };
+  }
+
+  /** @deprecated Use moveThreadToTrash — kept for transitional route handlers. */
   async deleteThread(
     employeeId: string,
     accessScope: string,
     threadId: string,
-  ): Promise<{ deleted: true; threadId: string }> {
-    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
-      threadId,
+  ): Promise<{ trashed: true; threadId: string }> {
+    return this.moveThreadToTrash(employeeId, accessScope, threadId);
+  }
+
+  /** Restores a trashed thread back to the active inbox. */
+  async restoreThreadFromTrash(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<MailThreadDetailDto> {
+    const outcome = await restoreMailThreadFromTrash(this.prisma, this.auditService, {
       employeeId,
       accessScope,
+      threadId,
     });
-    if (!thread) {
+    if (!outcome.ok) {
       throw new NotFoundException('Thread not found');
     }
-    await this.prisma.emailThread.delete({ where: { id: threadId } });
-    const auditChanges: InputJsonValue = {
-      mailAccountId: thread.mailAccountId,
-      subjectNormalized: thread.subjectNormalized,
-    };
-    await this.auditService.log({
-      entityType: MAIL_AUDIT_ENTITY_THREAD,
-      entityId: threadId,
-      action: MAIL_AUDIT_ACTION_THREAD_DELETED,
-      userId: employeeId,
-      changes: auditChanges,
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
     });
+  }
+
+  /** Permanently deletes a trashed thread (manual purge before retention). */
+  async permanentlyDeleteThreadFromTrash(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<{ deleted: true; threadId: string }> {
+    const outcome = await permanentlyDeleteTrashedMailThread(this.prisma, this.auditService, {
+      employeeId,
+      accessScope,
+      threadId,
+    });
+    if (!outcome.ok) {
+      throw new NotFoundException('Thread not found');
+    }
     return { deleted: true, threadId };
   }
 }

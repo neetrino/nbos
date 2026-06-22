@@ -158,7 +158,6 @@ export function IntegratedSearchFilters({
             placeholder={searchPlaceholder}
             aria-label={searchPlaceholder}
             role="searchbox"
-            aria-expanded={hasFilters ? panelOpen : undefined}
             aria-controls={hasFilters ? 'integrated-search-filter-panel' : undefined}
             className="h-9 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
           />

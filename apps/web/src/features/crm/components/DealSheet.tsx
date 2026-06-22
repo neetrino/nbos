@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import {
+  RotateCcw,
   Trash2,
   LayoutGrid,
   History,
@@ -14,6 +15,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
   EntityItemHost,
@@ -68,7 +70,10 @@ interface DealSheetProps {
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, data: Partial<Deal>) => Promise<void>;
   onStatusChange: (id: string, status: string) => Promise<void>;
-  onDelete?: (id: string) => void;
+  isTrashView?: boolean;
+  onMoveToTrash?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
   onRefresh?: () => void;
   onOpenDeal?: (id: string) => void;
   /** One-shot navigation from CRM stage gate shortcuts; consumed via callback. */
@@ -88,7 +93,10 @@ export function DealSheet({
   onOpenChange,
   onUpdate,
   onStatusChange,
-  onDelete,
+  isTrashView = false,
+  onMoveToTrash,
+  onRestore,
+  onPermanentDelete,
   onRefresh,
   onOpenDeal,
   blockerNavigation = null,
@@ -138,6 +146,7 @@ export function DealSheet({
       setGeneralDraft(next);
       setGeneralSnap(next);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on deal.id
   }, [deal?.id, deal?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<DealGeneralDraft>) => {
@@ -232,12 +241,14 @@ export function DealSheet({
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);
   const TypeIcon = typeVisual.Icon;
   const canCreateExceptionOrder =
+    !isTrashView &&
     deal.status !== 'WON' &&
     deal.status !== 'FAILED' &&
     (deal.orders?.length ?? 0) === 0 &&
     (deal.type === 'PRODUCT' || deal.type === 'EXTENSION' || deal.type === 'OUTSOURCE');
 
   const startEditing = () => {
+    if (isTrashView) return;
     setNameValue(generalDraft?.name ?? deal.name ?? '');
     setEditingName(true);
   };
@@ -283,7 +294,23 @@ export function DealSheet({
             titleEditHint="Click to edit deal name"
             onStartEditing={startEditing}
             actions={
-              onDelete || canCreateExceptionOrder ? (
+              isTrashView && onRestore ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem onClick={() => onRestore(deal.id)}>
+                    <RotateCcw />
+                    Restore
+                  </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(deal.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : onMoveToTrash || canCreateExceptionOrder ? (
                 <DetailSheetSettingsMenu>
                   {canCreateExceptionOrder ? (
                     <DropdownMenuItem onClick={() => setExceptionDialogOpen(true)}>
@@ -291,10 +318,10 @@ export function DealSheet({
                       Exception order
                     </DropdownMenuItem>
                   ) : null}
-                  {onDelete ? (
-                    <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                  {onMoveToTrash ? (
+                    <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(deal.id)}>
                       <Trash2 />
-                      Delete
+                      Move to Trash
                     </DropdownMenuItem>
                   ) : null}
                 </DetailSheetSettingsMenu>
@@ -306,7 +333,7 @@ export function DealSheet({
           <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
             <DealPipelineStages
               currentStatus={deal.status}
-              onStageClick={(key) => onStatusChange(deal.id, key)}
+              onStageClick={isTrashView ? () => {} : (key) => onStatusChange(deal.id, key)}
             />
           </div>
 
@@ -318,32 +345,35 @@ export function DealSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-7 py-5">
-              {activeTab === 'general' && generalDraft ? (
-                <DealGeneralTab
-                  deal={deal}
-                  draft={generalDraft}
-                  patchDraft={patchGeneralDraft}
-                  onRefresh={onRefresh}
-                  onOpenTaskTab={() => setActiveTab('task')}
-                  onOpenDeal={onOpenDeal}
-                  gateRequiredFields={gateRequiredFields}
-                />
-              ) : null}
-              {activeTab === 'history' && <DealHistoryTab />}
-              {activeTab === 'invoice' && (
-                <DealInvoiceTab
-                  deal={deal}
-                  onRefresh={onRefresh}
-                  expandCreateFormNonce={invoiceCreateNonce}
-                />
-              )}
-              {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
-              {activeTab === 'calls' && <DealCallsTab />}
+              <DetailSheetTabPanel tabKey={activeTab}>
+                {activeTab === 'general' && generalDraft ? (
+                  <DealGeneralTab
+                    deal={deal}
+                    draft={generalDraft}
+                    patchDraft={patchGeneralDraft}
+                    formDisabled={isTrashView}
+                    onRefresh={onRefresh}
+                    onOpenTaskTab={() => setActiveTab('task')}
+                    onOpenDeal={onOpenDeal}
+                    gateRequiredFields={gateRequiredFields}
+                  />
+                ) : null}
+                {activeTab === 'history' && <DealHistoryTab />}
+                {activeTab === 'invoice' && (
+                  <DealInvoiceTab
+                    deal={deal}
+                    onRefresh={onRefresh}
+                    expandCreateFormNonce={invoiceCreateNonce}
+                  />
+                )}
+                {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
+                {activeTab === 'calls' && <DealCallsTab />}
+              </DetailSheetTabPanel>
             </div>
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(generalDraft)}
+            visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
             dirty={generalDirty}
             saving={false}
             errorMessage={generalError}

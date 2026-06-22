@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { ApiError } from '@/lib/api-errors';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
-import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
+import { type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { mergeProductWorkSpaceTasks } from '@/features/tasks/work-spaces/work-space-utils';
 import {
   appendUniqueTasks,

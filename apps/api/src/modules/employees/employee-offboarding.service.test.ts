@@ -37,12 +37,14 @@ describe('EmployeeOffboardingService', () => {
       prisma.productTeamMember.findMany.mockResolvedValue([]);
       prisma.resourceAccessGrant.count.mockResolvedValue(1);
       prisma.resourceAccessGrant.findMany.mockResolvedValue([{ resourceId: 'c1' }]);
+      prisma.credential.findMany.mockResolvedValue([{ id: 'c2' }]);
       prisma.fileAssetGrant.count.mockResolvedValue(0);
 
       const preview = await service.buildPreview('e1');
       expect(preview.employeeName).toBe('Ann Lee');
       expect(preview.inventory.activeTaskCount).toBe(2);
       expect(preview.inventory.projectTeamCount).toBe(1);
+      expect(preview.inventory.credentialIds).toEqual(['c1', 'c2']);
     });
   });
 

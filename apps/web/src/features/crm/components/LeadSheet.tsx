@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
-import { ArrowRight, Trash2, LayoutGrid, History } from 'lucide-react';
+import { ArrowRight, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
 } from '@/components/shared';
@@ -59,7 +60,10 @@ interface LeadSheetProps {
   onUpdate: (id: string, data: Partial<Lead>) => Promise<void>;
   onStatusChange: (id: string, status: string) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
-  onDelete?: (id: string) => void;
+  isTrashView?: boolean;
+  onMoveToTrash?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
   onRefresh?: () => void;
   blockerNavigation?: LeadSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
@@ -78,7 +82,10 @@ export function LeadSheet({
   onUpdate,
   onStatusChange,
   onConvertToDeal,
-  onDelete,
+  isTrashView = false,
+  onMoveToTrash,
+  onRestore,
+  onPermanentDelete,
   onRefresh,
   blockerNavigation = null,
   onBlockerNavigationConsumed,
@@ -114,6 +121,7 @@ export function LeadSheet({
       setGeneralDraft(next);
       setGeneralSnap(next);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on lead.id
   }, [lead?.id, lead?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<LeadGeneralDraft>) => {
@@ -213,6 +221,7 @@ export function LeadSheet({
   const nameGateRequired = gateRequiredFields.has('name');
 
   const startEditingName = () => {
+    if (isTrashView) return;
     setNameValue(generalDraft?.name ?? lead.name ?? '');
     setEditingName(true);
   };
@@ -263,17 +272,33 @@ export function LeadSheet({
           )}
           actions={
             <>
-              {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
+              {!isTrashView && !isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
                 <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
                   <ArrowRight size={14} className="mr-1" />
                   Convert to Deal
                 </Button>
               ) : null}
-              {onDelete ? (
+              {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(lead.id)}>
+                    <RotateCcw />
+                    Restore
+                  </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(lead.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : onMoveToTrash ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(lead.id)}>
                     <Trash2 />
-                    Delete
+                    Move to Trash
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               ) : null}
@@ -285,7 +310,7 @@ export function LeadSheet({
         <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
           <LeadPipelineStages
             currentStatus={lead.status}
-            onStageClick={(key) => onStatusChange(lead.id, key)}
+            onStageClick={isTrashView ? () => {} : (key) => onStatusChange(lead.id, key)}
           />
         </div>
 
@@ -298,30 +323,33 @@ export function LeadSheet({
         {/* ── Content ── */}
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-5 py-4">
-            {activeTab === 'general' && generalDraft ? (
-              <LeadGeneralTab
-                lead={lead}
-                draft={generalDraft}
-                patchDraft={patchGeneralDraft}
-                gateRequiredFields={gateRequiredFields}
-                sectionIds={{
-                  contact: LEAD_SHEET_SECTION.CONTACT,
-                  marketing: LEAD_SHEET_SECTION.MARKETING,
-                  assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
-                  notes: LEAD_SHEET_SECTION.NOTES,
-                }}
-              />
-            ) : null}
-            {activeTab === 'history' && (
-              <div className="text-muted-foreground py-12 text-center text-sm">
-                History coming soon...
-              </div>
-            )}
+            <DetailSheetTabPanel tabKey={activeTab}>
+              {activeTab === 'general' && generalDraft ? (
+                <LeadGeneralTab
+                  lead={lead}
+                  draft={generalDraft}
+                  patchDraft={patchGeneralDraft}
+                  formDisabled={isTrashView}
+                  gateRequiredFields={gateRequiredFields}
+                  sectionIds={{
+                    contact: LEAD_SHEET_SECTION.CONTACT,
+                    marketing: LEAD_SHEET_SECTION.MARKETING,
+                    assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                    notes: LEAD_SHEET_SECTION.NOTES,
+                  }}
+                />
+              ) : null}
+              {activeTab === 'history' && (
+                <div className="text-muted-foreground py-12 text-center text-sm">
+                  History coming soon...
+                </div>
+              )}
+            </DetailSheetTabPanel>
           </div>
         </ScrollArea>
 
         <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(generalDraft)}
+          visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
           dirty={generalDirty}
           saving={false}
           errorMessage={generalError}

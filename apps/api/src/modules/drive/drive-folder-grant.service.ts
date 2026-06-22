@@ -8,7 +8,6 @@ import {
   revokeDriveFileResourceAccessGrant,
   syncDriveFileResourceAccessGrant,
 } from './drive-resource-access-grant.sync';
-import type { FileGrantPermission } from './drive-grant-permissions';
 import { normalizeFileGrantPermission } from './drive-grant-permissions';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveFolderService } from './drive-folder.service';

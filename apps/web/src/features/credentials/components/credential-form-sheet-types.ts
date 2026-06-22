@@ -1,4 +1,5 @@
 import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
@@ -16,6 +17,8 @@ export interface CredentialFormSheetProps {
   initialCategory?: string;
   allowedCategories?: string[];
   initialCredentialType?: string;
+  initialFolderId?: string | null;
+  folderOptions?: CredentialFolder[];
   submitLabel?: string;
   successToast?: string | false;
   presetKey?: string;
@@ -23,5 +26,7 @@ export interface CredentialFormSheetProps {
   continueAfterCreate?: boolean;
   onCreated?: (credential: CredentialDetail) => void;
   onSaved?: () => void;
-  onRequestArchive?: (id: string, name: string) => void;
+  onRequestMoveToTrash?: (id: string, name: string) => void;
+  isTrashView?: boolean;
+  onRestore?: (id: string) => void | Promise<void>;
 }

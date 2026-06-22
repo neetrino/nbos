@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@nbos/database';
+import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 
 /**
@@ -49,6 +50,7 @@ export async function patchThreadNeedsBusinessLinkIfChanged(
   if (!thread) {
     return { kind: 'no_access' };
   }
+  assertMailThreadIsActive(thread);
   if (thread.needsBusinessLink === params.needsBusinessLink) {
     return { kind: 'noop' };
   }

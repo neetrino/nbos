@@ -37,6 +37,8 @@ Drive может хранить supporting documents, инструкции, invo
 
 Если secret найден в Drive, Messenger или обычном файле - это security incident. Его нужно перенести в Credentials, удалить/заархивировать небезопасную копию и зафиксировать событие.
 
+**Статус реализации в коде (Trash / vault context):** см. `06-Implementation-Status.md`. Полный cleanup matrix: `99-Credentials-Cleanup-Register.md`.
+
 ---
 
 ## Граница Модуля

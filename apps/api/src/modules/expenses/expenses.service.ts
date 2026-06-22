@@ -61,6 +61,11 @@ import type {
   ExpenseStatsParams,
   UpdateExpenseDto,
 } from './expense-service.types';
+import {
+  assertExpenseCancellable,
+  assertExpenseDraftDeletable,
+  expenseAccrualJournalKey,
+} from '../../common/lifecycle/finance-record-lifecycle-guards';
 
 const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
 
@@ -356,8 +361,48 @@ export class ExpensesService {
     return this.findById(id, access);
   }
 
+  async cancel(id: string, access?: ExpenseQueryParams['access']) {
+    await assertExpenseAccessible(this.prisma, id, access);
+    const expense = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { status: true, name: true },
+    });
+    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+    assertExpenseCancellable(expense);
+    await this.prisma.expense.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      expenseAccrualJournalKey(id),
+      `Expense "${expense.name}" cancelled`,
+    );
+    return this.findById(id, access);
+  }
+
   async delete(id: string, access?: ExpenseQueryParams['access']) {
     await assertExpenseAccessible(this.prisma, id, access);
+    const expense = await this.prisma.expense.findUnique({
+      where: { id },
+      select: {
+        status: true,
+        name: true,
+        _count: { select: { expensePayments: true } },
+        salaryLine: { select: { id: true } },
+        partnerPayoutBatch: { select: { id: true } },
+      },
+    });
+    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+    assertExpenseDraftDeletable({
+      status: expense.status,
+      paymentCount: expense._count.expensePayments,
+      hasSalaryLine: expense.salaryLine != null,
+      hasPartnerPayoutBatch: expense.partnerPayoutBatch != null,
+    });
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      expenseAccrualJournalKey(id),
+      `Draft expense "${expense.name}" deleted`,
+    );
     return this.prisma.expense.delete({ where: { id } });
   }
 

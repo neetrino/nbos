@@ -219,7 +219,7 @@ export function PayrollAllocationMatrixWorkspace({
         setSavingCellKey(null);
       }
     },
-    [matrix, onSalaryLinesStale, payrollRunId, refreshValidation],
+    [applyMatrix, matrix, onSalaryLinesStale, payrollRunId, refreshValidation],
   );
 
   const handleResetLayout = useCallback(() => {
@@ -237,7 +237,7 @@ export function PayrollAllocationMatrixWorkspace({
         setLayoutBusy(false);
       }
     })();
-  }, [payrollRunId, viewMode]);
+  }, [applyMatrix, payrollRunId, viewMode]);
 
   const layoutDisabled = !matrix?.editable || layoutBusy;
 

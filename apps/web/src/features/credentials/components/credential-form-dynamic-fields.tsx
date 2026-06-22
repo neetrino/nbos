@@ -4,8 +4,10 @@ import { Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import { credentialFormFieldIcon } from '@/features/credentials/utils/credential-vault-card-meta';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS } from '@/features/credentials/constants/credential-vault-copy';
 import { useCredentialVaultCopyFeedback } from '@/features/credentials/hooks/use-credential-vault-copy-feedback';
 import { CredentialEnvTableEditor } from './credential-env-table-editor';
@@ -94,6 +96,7 @@ export function CredentialFormDynamicFields({
               guardKey={`${guardScope}-login`}
               id="nbos-cred-login"
               label={spec.label}
+              icon={credentialFormFieldIcon('login')}
               value={login}
               onChange={onLoginChange}
               showCopy={login.trim().length > 0}
@@ -107,6 +110,7 @@ export function CredentialFormDynamicFields({
               key={spec.field}
               id="cred-url"
               label={spec.label}
+              icon={credentialFormFieldIcon('url')}
               value={url}
               onChange={onUrlChange}
             />
@@ -120,6 +124,7 @@ export function CredentialFormDynamicFields({
               guardKey={`${guardScope}-password`}
               fieldId="nbos-cred-password"
               label={spec.label}
+              icon={credentialFormFieldIcon('password')}
               kind={spec.kind === 'textarea' ? 'textarea' : 'password'}
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.password)}
@@ -139,6 +144,7 @@ export function CredentialFormDynamicFields({
               guardKey={`${guardScope}-passphrase`}
               fieldId="nbos-cred-passphrase"
               label={spec.label}
+              icon={credentialFormFieldIcon('passphrase')}
               kind="password"
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.passphrase)}
@@ -158,6 +164,7 @@ export function CredentialFormDynamicFields({
               guardKey={`${guardScope}-api-key`}
               fieldId="nbos-cred-api-key"
               label={spec.label}
+              icon={credentialFormFieldIcon('apiKey')}
               kind="password"
               isExisting={isExisting}
               hasStored={Boolean(secretsPresent?.apiKey)}
@@ -179,17 +186,19 @@ export function CredentialFormDynamicFields({
 function PlainTextField({
   id,
   label,
+  icon,
   value,
   onChange,
 }: {
   id: string;
   label: string;
+  icon: LucideIcon;
   value: string;
   onChange: (v: string) => void;
 }) {
   return (
     <div className="grid gap-2">
-      <Label htmlFor={id}>{label}</Label>
+      <CredentialFormFieldLabel htmlFor={id} label={label} icon={icon} />
       <Input
         id={id}
         name={id}
@@ -217,6 +226,7 @@ function GuardedTextField({
   guardKey,
   id,
   label,
+  icon,
   value,
   onChange,
   showCopy = false,
@@ -224,6 +234,7 @@ function GuardedTextField({
   guardKey: string;
   id: string;
   label: string;
+  icon: LucideIcon;
   value: string;
   onChange: (v: string) => void;
   showCopy?: boolean;
@@ -239,7 +250,7 @@ function GuardedTextField({
 
   return (
     <div className="grid gap-2">
-      <Label htmlFor={id}>{label}</Label>
+      <CredentialFormFieldLabel htmlFor={id} label={label} icon={icon} />
       <div className="relative">
         {showCopy ? (
           <div className="absolute top-1/2 right-1 z-10 flex -translate-y-1/2 items-center">

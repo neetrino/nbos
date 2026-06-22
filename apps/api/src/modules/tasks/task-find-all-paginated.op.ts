@@ -19,6 +19,8 @@ import {
 import { loadTasksScopedEmployeeIds, tasksViewBypassesRowFilter } from './tasks-scoped-access';
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
 import type { TasksAccessContext } from './tasks-scoped-access';
+import type { EntityLifecycleScope } from '@nbos/shared';
+import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
 import { normalizeTaskListPage, normalizeTaskListPageSize } from './task-list-pagination';
 
@@ -31,6 +33,7 @@ const TASK_SORT_FIELDS = new Set([
   'title',
   'workspaceSortOrder',
   'myPlanSortOrder',
+  'trashedAt',
 ]);
 
 export interface TaskFindAllPaginatedParams {
@@ -53,6 +56,8 @@ export interface TaskFindAllPaginatedParams {
   sortOrder?: 'asc' | 'desc';
   /** When set, only tasks where this employee is assignee, creator, co-assignee, or observer. */
   involvesEmployeeId?: string;
+  /** Active (default) or Trash list scope. */
+  scope?: EntityLifecycleScope;
   /** When `projectId` is set, gates list to projects the viewer participates in (unless TASKS_VIEW is ALL). */
   access?: TasksAccessContext;
 }
@@ -84,7 +89,7 @@ export async function taskFindAllPaginated(
   const page = normalizeTaskListPage(rawPage);
   const pageSize = normalizeTaskListPageSize(rawPageSize);
 
-  const parts: Prisma.TaskWhereInput[] = [];
+  const parts: Prisma.TaskWhereInput[] = [buildScopeWhere(params.scope ?? 'active')];
   if (status) parts.push({ status: status as TaskStatusEnum });
   if (priority) parts.push({ priority: priority as TaskPriorityEnum });
   if (assigneeId) parts.push({ assigneeId });

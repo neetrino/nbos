@@ -41,7 +41,7 @@ export async function grantCredentialEmergencyAccess(
   );
 
   const credential = await runtime.prisma.credential.findFirst({
-    where: { id: credentialId, archivedAt: null },
+    where: { id: credentialId, trashedAt: null },
     select: { id: true, name: true, ownerId: true, criticality: true, projectId: true },
   });
   if (!credential) throw new NotFoundException(`Credential ${credentialId} not found`);
@@ -49,7 +49,7 @@ export async function grantCredentialEmergencyAccess(
   const alreadyVisible = await runtime.prisma.credential.findFirst({
     where: {
       id: credentialId,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,

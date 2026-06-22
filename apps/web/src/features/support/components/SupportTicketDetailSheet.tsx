@@ -3,7 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { DetailSheetTabBar, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import {
+  DetailSheetTabBar,
+  DetailSheetTabPanel,
+  EntityDetailSheetContent,
+  StatusBadge,
+} from '@/components/shared';
 import {
   getTicketCategory,
   getTicketCoverage,
@@ -310,35 +315,37 @@ export function SupportTicketDetailSheet({
                   }}
                 />
 
-                {activeTab === 'general' ? (
-                  <SupportTicketDetailGeneralTab
-                    ticket={ticket}
-                    draft={draft}
-                    dirty={dirty}
-                    saving={saving}
-                    employees={employees}
-                    contacts={contacts}
-                    productOptions={productOptions}
-                    meId={meId}
-                    taskBusy={taskBusy}
-                    onPatchDraft={patchDraft}
-                    onSave={() => void handleSave()}
-                    onCancel={handleCancel}
-                    onOpenCreateTask={() => setTaskDialogOpen(true)}
-                    onListInvalidate={onListInvalidate}
-                    onReloadTicket={loadTicket}
-                    onRequestResolve={onRequestResolve}
-                    onRequestClose={onRequestClose}
-                    onRequestEscalate={onRequestEscalate}
-                    onRequestTechnical={onRequestTechnical}
-                  />
-                ) : null}
+                <DetailSheetTabPanel tabKey={activeTab}>
+                  {activeTab === 'general' ? (
+                    <SupportTicketDetailGeneralTab
+                      ticket={ticket}
+                      draft={draft}
+                      dirty={dirty}
+                      saving={saving}
+                      employees={employees}
+                      contacts={contacts}
+                      productOptions={productOptions}
+                      meId={meId}
+                      taskBusy={taskBusy}
+                      onPatchDraft={patchDraft}
+                      onSave={() => void handleSave()}
+                      onCancel={handleCancel}
+                      onOpenCreateTask={() => setTaskDialogOpen(true)}
+                      onListInvalidate={onListInvalidate}
+                      onReloadTicket={loadTicket}
+                      onRequestResolve={onRequestResolve}
+                      onRequestClose={onRequestClose}
+                      onRequestEscalate={onRequestEscalate}
+                      onRequestTechnical={onRequestTechnical}
+                    />
+                  ) : null}
 
-                {activeTab === 'activity' ? (
-                  <ScrollArea className="min-h-0 flex-1">
-                    <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
-                  </ScrollArea>
-                ) : null}
+                  {activeTab === 'activity' ? (
+                    <ScrollArea className="min-h-0 flex-1">
+                      <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
+                    </ScrollArea>
+                  ) : null}
+                </DetailSheetTabPanel>
               </div>
             ) : null}
           </div>

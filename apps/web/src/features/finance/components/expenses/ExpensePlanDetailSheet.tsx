@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   DeleteConfirmDialog,
   ErrorState,
@@ -88,6 +89,7 @@ export function ExpensePlanDetailSheet({
     const next = createExpensePlanGeneralDraft(plan);
     setGeneralDraft(next);
     setGeneralSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on plan.id
   }, [
     plan?.id,
     plan?.name,
@@ -216,7 +218,7 @@ export function ExpensePlanDetailSheet({
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchPlan()} />
               ) : plan && generalDraft ? (
-                <>
+                <DetailSheetTabPanel tabKey={activeTab}>
                   {activeTab === 'general' ? (
                     <ExpensePlanGeneralTab
                       plan={plan}
@@ -229,7 +231,7 @@ export function ExpensePlanDetailSheet({
                   ) : null}
                   {activeTab === 'cards' ? <ExpensePlanCardsTab plan={plan} /> : null}
                   {activeTab === 'history' ? <ExpensePlanHistoryTab /> : null}
-                </>
+                </DetailSheetTabPanel>
               ) : null}
             </div>
           </ScrollArea>

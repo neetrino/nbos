@@ -33,6 +33,8 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
       accessLevel: state.accessLevel,
       nextRotationAt: state.nextRotationAt,
       manualGrants: state.manualGrants,
+      folderId: state.folderId,
+      folderEditable: state.folderEditable,
       stepUpField: state.stepUpField,
       stepUpMode: state.stepUpMode,
       setStepUpField: state.setStepUpField,
@@ -70,6 +72,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     copySecretField: actions.copySecretField,
     downloadEnvBundle: actions.downloadEnvBundle,
     submitLabel: props.submitLabel ?? 'Save',
+    folderOptions: state.scopedFolderOptions,
     onOpenChange: props.onOpenChange,
   };
 }

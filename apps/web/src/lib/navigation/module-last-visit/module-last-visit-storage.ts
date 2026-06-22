@@ -1,4 +1,3 @@
-import type { SidebarModuleKey } from '@nbos/shared/constants';
 import {
   FINANCE_SECTION_DEFAULTS,
   type FinanceSectionId,
@@ -91,10 +90,7 @@ function migrateLegacyFinanceStorage(): void {
   }
 }
 
-function getSectionState(
-  moduleKey: RegisteredModuleKey,
-  config: Extract<ModuleVisitConfig, { kind: 'sections' }>,
-): SectionModuleVisitState {
+function getSectionState(moduleKey: RegisteredModuleKey): SectionModuleVisitState {
   const stored = readPayload()[moduleKey];
   if (stored?.kind === 'sections') {
     return stored;
@@ -102,10 +98,7 @@ function getSectionState(
   return { kind: 'sections', sectionPaths: {} };
 }
 
-function getFlatState(
-  moduleKey: RegisteredModuleKey,
-  config: Extract<ModuleVisitConfig, { kind: 'flat' }>,
-): FlatModuleVisitState {
+function getFlatState(moduleKey: RegisteredModuleKey): FlatModuleVisitState {
   const stored = readPayload()[moduleKey];
   if (stored?.kind === 'flat') {
     return stored;
@@ -118,7 +111,7 @@ function readSectionHref(
   config: Extract<ModuleVisitConfig, { kind: 'sections' }>,
   sectionId: string,
 ): string {
-  const state = getSectionState(moduleKey, config);
+  const state = getSectionState(moduleKey);
   const stored = state.sectionPaths[sectionId];
   if (stored && config.isPathInSection(stored, sectionId)) {
     return stored;
@@ -141,7 +134,7 @@ function readLastActiveSection(
   moduleKey: RegisteredModuleKey,
   config: Extract<ModuleVisitConfig, { kind: 'sections' }>,
 ): string {
-  const state = getSectionState(moduleKey, config);
+  const state = getSectionState(moduleKey);
   if (state.lastSection && config.sectionDefaults[state.lastSection]) {
     return state.lastSection;
   }
@@ -153,7 +146,7 @@ function readLastActiveSection(
 export function readModuleEntryHref(moduleKey: RegisteredModuleKey): string {
   const config = MODULE_VISIT_REGISTRY[moduleKey];
   if (config.kind === 'flat') {
-    const state = getFlatState(moduleKey, config);
+    const state = getFlatState(moduleKey);
     if (state.lastPath && config.isValidPath(state.lastPath)) {
       return state.lastPath;
     }
@@ -185,7 +178,7 @@ export function writeModuleLastVisitFromPathname(pathname: string): void {
     return;
   }
 
-  const state = getSectionState(moduleKey, config);
+  const state = getSectionState(moduleKey);
   state.sectionPaths[sectionId] = config.resolveStoredPath?.(path, sectionId) ?? path;
   state.lastSection = sectionId;
   payload[moduleKey] = state;

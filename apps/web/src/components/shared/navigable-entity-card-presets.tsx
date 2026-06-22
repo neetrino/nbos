@@ -91,8 +91,8 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
       title={project.name}
       description={project.description}
       headerTrailing={
-        project.isArchived ? (
-          <Archive size={14} className="text-muted-foreground shrink-0" />
+        project.trashedAt != null ? (
+          <Archive size={14} className="text-muted-foreground shrink-0" aria-label="In Trash" />
         ) : undefined
       }
       metaLines={metaLines}

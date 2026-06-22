@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Package, Sparkles, Tag } from 'lucide-react';
+import { Layers, Package, Tag } from 'lucide-react';
 import { EntityNotesField, InlineField } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';

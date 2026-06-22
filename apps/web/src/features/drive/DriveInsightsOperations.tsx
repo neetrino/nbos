@@ -14,9 +14,11 @@ function exportStatusTone(status: DriveZipExportJobSummary['status']): string {
 
 export function DriveInsightsOperations({
   busy,
+  canApplyCleanup,
   typedExportActions,
   exportJobs,
   cleanupCategories,
+  cleanupSelectionResetKey,
   onTypedExport,
   onCancelExport,
   onDownloadExport,
@@ -25,9 +27,11 @@ export function DriveInsightsOperations({
   onApplyCleanupAll,
 }: {
   busy: boolean;
+  canApplyCleanup: boolean;
   typedExportActions: DriveTypedExportAction[];
   exportJobs: DriveZipExportJobSummary[];
   cleanupCategories: DriveCleanupCandidateCategory[];
+  cleanupSelectionResetKey: number;
   onTypedExport: (action: DriveTypedExportAction) => void;
   onCancelExport: (jobId: string) => void;
   onDownloadExport: (fileAssetId: string) => void;
@@ -124,11 +128,16 @@ export function DriveInsightsOperations({
       </div>
 
       <div className="bg-card/80 border-border/60 rounded-xl border px-3 py-2">
-        <p className="text-foreground text-xs font-semibold">Cleanup review</p>
+        <p className="text-foreground text-xs font-semibold">Storage cleanup</p>
+        <p className="text-muted-foreground mt-0.5 text-[11px]">
+          Admin review of DB-first cleanup candidates. Apply is gated by Drive DELETE permission.
+        </p>
         <div className="mt-2">
           <DriveCleanupReviewSection
             busy={busy}
+            canApply={canApplyCleanup}
             categories={cleanupCategories}
+            selectionResetKey={cleanupSelectionResetKey}
             onApply={onApplyCleanup}
             onApplyAll={onApplyCleanupAll}
           />

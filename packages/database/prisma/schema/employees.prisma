@@ -75,6 +75,9 @@ model Employee {
   invitationsSent          Invitation[]            @relation("InvitedBy")
   invitationReceived       Invitation?             @relation("InvitationEmployee")
   credentialsOwned              Credential[]              @relation("CredentialOwner")
+  credentialFavorites           CredentialFavorite[]      @relation("CredentialFavoriteEmployee")
+  credentialFoldersOwned        CredentialFolder[]        @relation("CredentialFolderOwner")
+  credentialFolderMembershipsCreated CredentialFolderMembership[] @relation("CredentialFolderMembershipCreatedBy")
   credentialSecretVersionsRotated CredentialSecretVersion[] @relation("CredentialSecretVersionRotatedBy")
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
@@ -94,6 +97,7 @@ model Employee {
   mailAccountAccessesGranted       MailAccountAccess[]                 @relation("MailAccountAccessGrantedBy")
   mailThreadsAssigned              EmailThread[]                       @relation("EmailThreadAssignee")
   mailThreadsAssignedBy            EmailThread[]                       @relation("EmailThreadAssignedBy")
+  mailThreadsTrashedBy             EmailThread[]                       @relation("EmailThreadTrashedBy")
   inAppNotificationsReceived       InAppNotification[]
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]

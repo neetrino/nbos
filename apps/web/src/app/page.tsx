@@ -62,6 +62,7 @@ export default async function LandingPage() {
       <nav className="border-border/60 border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- landing logo SVG; fixed dimensions, no next/image benefit */}
             <img
               src="/logo/logo.svg"
               alt="NBOS"
@@ -228,6 +229,7 @@ export default async function LandingPage() {
       <footer className="border-border/60 border-t py-8">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element -- footer logo SVG; fixed dimensions, no next/image benefit */}
             <img src="/logo/logo.svg" alt="NBOS" width={120} height={20} className="h-5 w-auto" />
             NBOS by Neetrino
           </div>

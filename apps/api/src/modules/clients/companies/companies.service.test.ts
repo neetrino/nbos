@@ -1,16 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompaniesService } from './companies.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('CompaniesService', () => {
   let service: CompaniesService;
   let prisma: MockPrisma;
+  let auditService: Pick<AuditService, 'log'>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new CompaniesService(prisma as never);
-    prisma.contact.findUnique.mockImplementation(({ where }) =>
+    auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+    service = new CompaniesService(prisma as never, auditService as never);
+    prisma.contact.findFirst.mockImplementation(({ where }) =>
       Promise.resolve(where && 'id' in where && where.id ? { id: String(where.id) } : null),
     );
   });
@@ -19,6 +22,24 @@ describe('CompaniesService', () => {
     it('returns paginated result', async () => {
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
+    });
+
+    it('defaults to active scope', async () => {
+      await service.findAll({});
+      expect(prisma.company.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: null }),
+        }),
+      );
+    });
+
+    it('applies trash scope', async () => {
+      await service.findAll({ scope: 'trash' });
+      expect(prisma.company.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ trashedAt: { not: null } }),
+        }),
+      );
     });
 
     it('applies search filter', async () => {
@@ -96,6 +117,7 @@ describe('CompaniesService', () => {
         id: '1',
         taxStatus: 'NO_TAX',
         contactId: 'c1',
+        trashedAt: null,
       });
       prisma.company.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
@@ -110,11 +132,29 @@ describe('CompaniesService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('deletes when found', async () => {
-      prisma.company.findUnique.mockResolvedValue({ id: '1' });
-      await service.delete('1');
-      expect(prisma.company.delete).toHaveBeenCalled();
+  describe('moveToTrash', () => {
+    it('sets trashedAt when active', async () => {
+      prisma.company.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      await service.moveToTrash('1');
+      expect(prisma.company.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: expect.objectContaining({ trashedAt: expect.any(Date) }),
+        }),
+      );
+    });
+  });
+
+  describe('restoreFromTrash', () => {
+    it('clears trashedAt when in Trash', async () => {
+      prisma.company.findUnique.mockResolvedValue({ id: '1', trashedAt: new Date() });
+      await service.restoreFromTrash('1');
+      expect(prisma.company.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { trashedAt: null },
+        }),
+      );
     });
   });
 });

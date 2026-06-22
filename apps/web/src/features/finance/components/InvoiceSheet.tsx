@@ -8,6 +8,7 @@ import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
@@ -39,6 +40,7 @@ interface InvoiceSheetProps {
   /** True while nested host fetches invoice by id. */
   loading?: boolean;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+  onInvoiceDeleted?: (invoiceId: string) => void;
   onMoneyStatusChange?: (invoiceId: string, moneyStatus: string) => void | Promise<void>;
   onPaymentRecorded: (data: {
     invoiceId: string;
@@ -58,6 +60,7 @@ export function InvoiceSheet({
   onOpenChange,
   loading = false,
   onInvoiceUpdated,
+  onInvoiceDeleted,
   onMoneyStatusChange,
   onPaymentRecorded,
   stageGateHighlight = null,
@@ -84,6 +87,7 @@ export function InvoiceSheet({
     const next = createInvoiceGeneralDraft(invoice);
     setGeneralDraft(next);
     setGeneralSnap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on invoice.id
   }, [invoice?.id, invoice?.amount, invoice?.taxStatus, invoice?.companyId, invoice?.projectId]);
 
   const patchGeneralDraft = useCallback((partial: Partial<InvoiceGeneralDraft>) => {
@@ -211,24 +215,27 @@ export function InvoiceSheet({
           <div className="px-5 py-5">
             <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
 
-            {activeTab === 'general' ? (
-              <InvoiceGeneralTab
-                invoice={invoice}
-                gateRequiredFields={gateRequiredFields}
-                draft={onInvoiceUpdated ? generalDraft : null}
-                patchDraft={patchGeneralDraft}
-                formDisabled={saving}
-                onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
-              />
-            ) : null}
-            {activeTab === 'payments' ? (
-              <InvoicePaymentsTab
-                invoice={invoice}
-                gateRequiredFields={gateRequiredFields}
-                onPaymentRecorded={onPaymentRecorded}
-              />
-            ) : null}
-            {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+            <DetailSheetTabPanel tabKey={activeTab}>
+              {activeTab === 'general' ? (
+                <InvoiceGeneralTab
+                  invoice={invoice}
+                  gateRequiredFields={gateRequiredFields}
+                  draft={onInvoiceUpdated ? generalDraft : null}
+                  patchDraft={patchGeneralDraft}
+                  formDisabled={saving}
+                  onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                  onInvoiceDeleted={onInvoiceDeleted}
+                />
+              ) : null}
+              {activeTab === 'payments' ? (
+                <InvoicePaymentsTab
+                  invoice={invoice}
+                  gateRequiredFields={gateRequiredFields}
+                  onPaymentRecorded={onPaymentRecorded}
+                />
+              ) : null}
+              {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+            </DetailSheetTabPanel>
           </div>
         </ScrollArea>
 

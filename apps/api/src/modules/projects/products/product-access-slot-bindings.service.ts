@@ -82,7 +82,7 @@ export class ProductAccessSlotBindingsService {
             credentialType: true,
             login: true,
             url: true,
-            archivedAt: true,
+            trashedAt: true,
           },
         },
       },
@@ -121,7 +121,7 @@ export class ProductAccessSlotBindingsService {
         credentialType: string;
         login: string | null;
         url: string | null;
-        archivedAt: Date | null;
+        trashedAt: Date | null;
       };
     }>,
   ): ProductAccessSlotRowDto {
@@ -150,7 +150,7 @@ export class ProductAccessSlotBindingsService {
         credentialType: string;
         login: string | null;
         url: string | null;
-        archivedAt: Date | null;
+        trashedAt: Date | null;
       };
     }>,
   ): ProductAccessSlotRowDto {
@@ -169,7 +169,7 @@ export class ProductAccessSlotBindingsService {
   }
 
   private toSummary(cred: {
-    archivedAt: Date | null;
+    trashedAt: Date | null;
     id: string;
     name: string;
     category: string;
@@ -177,7 +177,7 @@ export class ProductAccessSlotBindingsService {
     login: string | null;
     url: string | null;
   }): AccessSlotBindingEntry['boundCredential'] {
-    if (cred.archivedAt) return null;
+    if (cred.trashedAt) return null;
     return {
       id: cred.id,
       name: cred.name,
@@ -212,7 +212,7 @@ export class ProductAccessSlotBindingsService {
     const credential = await this.prisma.credential.findUnique({
       where: { id: credentialId },
     });
-    if (!credential || credential.archivedAt) {
+    if (!credential || credential.trashedAt) {
       throw new NotFoundException('Credential not found');
     }
     if (!credential.projectId || credential.projectId !== product.projectId) {

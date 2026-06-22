@@ -6,14 +6,14 @@ import {
 } from '@/features/credentials/constants/credentials';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
-function buildSortFilterConfig(vaultListScope: 'active' | 'archived'): FilterConfig {
-  if (vaultListScope === 'archived') {
+function buildSortFilterConfig(vaultListScope: 'active' | 'trash'): FilterConfig {
+  if (vaultListScope === 'trash') {
     return {
       key: 'sort',
       label: 'Sort',
       includeAllOption: false,
       defaultOptionValue: 'created_desc',
-      defaultOptionLabel: 'Newest first',
+      defaultOptionLabel: 'Trashed (newest)',
       options: [{ value: 'name_asc', label: 'Name (A–Z)' }],
     };
   }
@@ -32,7 +32,8 @@ function buildSortFilterConfig(vaultListScope: 'active' | 'archived'): FilterCon
 
 export function buildCredentialsVaultFilterConfigs(
   activeTab: CredentialVaultScope,
-  vaultListScope: 'active' | 'archived' = 'active',
+  vaultListScope: 'active' | 'trash' = 'active',
+  projectFilterOptions: Array<{ value: string; label: string }> = [],
 ): FilterConfig[] {
   const base: FilterConfig[] = [
     buildSortFilterConfig(vaultListScope),
@@ -47,6 +48,15 @@ export function buildCredentialsVaultFilterConfigs(
       options: CREDENTIAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
     },
   ];
+
+  if (vaultListScope === 'trash' && projectFilterOptions.length > 0) {
+    base.push({
+      key: 'project',
+      label: 'Project',
+      options: projectFilterOptions,
+    });
+  }
+
   if (activeTab !== 'all') return base;
   return [
     ...base,

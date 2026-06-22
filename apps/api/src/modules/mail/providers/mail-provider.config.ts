@@ -14,8 +14,8 @@ export class MailProviderConfig {
     return this.config.get<string>('APP_URL')?.trim() || 'http://localhost:3000';
   }
 
-  get apiPublicUrl(): string {
-    return this.config.get<string>('API_PUBLIC_URL')?.trim() || 'http://localhost:4000';
+  get backendUrl(): string {
+    return this.config.getOrThrow<string>('BACKEND_URL').trim();
   }
 
   get googleClientId(): string {
@@ -27,10 +27,7 @@ export class MailProviderConfig {
   }
 
   get googleRedirectUri(): string {
-    return (
-      this.config.get<string>('MAIL_GMAIL_REDIRECT_URI')?.trim() ||
-      `${this.apiPublicUrl}/api/mail/oauth/google/callback`
-    );
+    return new URL('/api/mail/oauth/google/callback', this.backendUrl).toString();
   }
 
   get gmailPubsubTopic(): string | null {

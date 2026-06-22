@@ -1,13 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { RotateCcw, Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
   StatusBadge,
@@ -36,7 +37,10 @@ interface ContactSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, data: Record<string, unknown>) => Promise<void>;
-  onDelete?: (id: string) => void;
+  isTrashView?: boolean;
+  onMoveToTrash?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
 }
 
 function contactSaveErrorMessage(err: unknown): string {
@@ -49,7 +53,10 @@ export function ContactSheet({
   open,
   onOpenChange,
   onUpdate,
-  onDelete,
+  isTrashView = false,
+  onMoveToTrash,
+  onRestore,
+  onPermanentDelete,
 }: ContactSheetProps) {
   const [draft, setDraft] = useState<ContactGeneralDraft | null>(null);
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
@@ -153,11 +160,27 @@ export function ContactSheet({
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
-              {onDelete ? (
+              {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(contact.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(contact.id)}>
+                    <RotateCcw />
+                    Restore
+                  </DropdownMenuItem>
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(contact.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : onMoveToTrash ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(contact.id)}>
                     <Trash2 />
-                    Delete
+                    Move to Trash
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               ) : null}
@@ -168,32 +191,35 @@ export function ContactSheet({
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
         <ScrollArea className="min-h-0 flex-1">
-          {activeTab === 'general' ? (
-            <ContactSheetScrollBody
-              contact={contact}
-              draft={draft}
-              patchDraft={patchDraft}
-              saving={saving}
-              generalError={generalError}
-              portfolioData={portfolio.data}
-              portfolioLoading={portfolio.loading}
-              portfolioError={portfolio.error}
-              onPortfolioRetry={portfolio.reload}
-            />
-          ) : (
-            <ClientPortfolioPanel
-              tab={activeTab as ClientEmbeddedPortfolioTabId}
-              data={portfolio.data}
-              loading={portfolio.loading}
-              error={portfolio.error}
-              variant="contact"
-              onRetry={portfolio.reload}
-            />
-          )}
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' ? (
+              <ContactSheetScrollBody
+                contact={contact}
+                draft={draft}
+                patchDraft={patchDraft}
+                saving={saving}
+                readOnly={isTrashView}
+                generalError={generalError}
+                portfolioData={portfolio.data}
+                portfolioLoading={portfolio.loading}
+                portfolioError={portfolio.error}
+                onPortfolioRetry={portfolio.reload}
+              />
+            ) : (
+              <ClientPortfolioPanel
+                tab={activeTab as ClientEmbeddedPortfolioTabId}
+                data={portfolio.data}
+                loading={portfolio.loading}
+                error={portfolio.error}
+                variant="contact"
+                onRetry={portfolio.reload}
+              />
+            )}
+          </DetailSheetTabPanel>
         </ScrollArea>
 
         <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(draft)}
+          visible={!isTrashView && activeTab === 'general' && Boolean(draft)}
           dirty={generalDirty}
           saving={saving}
           errorMessage={generalError}

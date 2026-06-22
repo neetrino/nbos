@@ -103,15 +103,8 @@ Mail
 ## Основные принципы
 
 1. Mail - отдельный модуль, но он обязан интегрироваться с `Clients`, `CRM`, `Support`, `Drive`, `Credentials`, `Notifications`, `Messenger`, `Calendar` и `Technical Infrastructure` (с явными границами — см. разделы связи ниже).
-2. Source of truth для email history в NBOS - база данных после sync, а не открытое соединение IMAP/Gmail.
-3. Любой provider подключается через adapter contract.
-4. Вложения не хранятся в Mail напрямую.
-5. Secrets и tokens не хранятся в обычных таблицах Mail.
-6. В MVP не нужно копировать весь функционал Gmail: labels, filters, rules, snooze, delegation и complex search идут позже.
-7. Письмо может быть связано с бизнес-сущностью, но не должно автоматически менять её lifecycle без явного правила.
-8. Внешняя отправка всегда должна иметь audit: кто, из какого mailbox, кому и с каким результатом отправил.
-9. Ошибки sync/send должны быть видны owner/admin, а не теряться в фоне.
-10. Если email используется как клиентская коммуникация, он должен быть доступен из соответствующего business context.
+
+**Статус реализации в коде:** см. `06-Implementation-Status.md` (Trash / inbox MVP). Детальный gap register: `99-Mail-Cleanup-Register.md`. 2. Source of truth для email history в NBOS - база данных после sync, а не открытое соединение IMAP/Gmail. 3. Любой provider подключается через adapter contract. 4. Вложения не хранятся в Mail напрямую. 5. Secrets и tokens не хранятся в обычных таблицах Mail. 6. В MVP не нужно копировать весь функционал Gmail: labels, filters, rules, snooze, delegation и complex search идут позже. 7. Письмо может быть связано с бизнес-сущностью, но не должно автоматически менять её lifecycle без явного правила. 8. Внешняя отправка всегда должна иметь audit: кто, из какого mailbox, кому и с каким результатом отправил. 9. Ошибки sync/send должны быть видны owner/admin, а не теряться в фоне. 10. Если email используется как клиентская коммуникация, он должен быть доступен из соответствующего business context.
 
 ## MVP scope
 
@@ -167,4 +160,5 @@ Health подключённых ящиков (ошибки sync/send, квоты
 - `03-Mail-Architecture.md`
 - `04-Mail-Integrations.md`
 - `05-Mail-Permissions-and-UX.md`
+- `06-Mail-Security-Stance.md` — реализованная защита MVP + опционально KMS/body encryption на будущее
 - `99-Mail-Cleanup-Register.md`

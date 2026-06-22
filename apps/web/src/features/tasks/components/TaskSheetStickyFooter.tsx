@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, MoreHorizontal, Pause, Play, RotateCcw, Trash2 } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, Pause, Play, RotateCcw, Trash2, Undo2 } from 'lucide-react';
 import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,12 @@ interface TaskSheetStickyFooterProps {
   onSave: () => void;
   onCancel: () => void;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
+  canDeleteDraft: boolean;
+  canMoveToTrash: boolean;
+  isTrashed: boolean;
   onDelete: () => void;
+  onMoveToTrash: () => void;
+  onRestore?: () => void;
 }
 
 const FOOTER_SHELL_CLASS =
@@ -39,10 +44,29 @@ export function TaskSheetStickyFooter({
   onSave,
   onCancel,
   onTaskAction,
+  canDeleteDraft,
+  canMoveToTrash,
+  isTrashed,
   onDelete,
+  onMoveToTrash,
+  onRestore,
 }: TaskSheetStickyFooterProps) {
   const effectiveStatus = workflowFooterStatus ?? taskStatus;
-  const showSaveBar = (dirty || Boolean(errorMessage)) && workflowFooterStatus == null;
+  const showSaveBar =
+    !isTrashed && (dirty || Boolean(errorMessage)) && workflowFooterStatus == null;
+
+  if (isTrashed && onRestore) {
+    return (
+      <div className={FOOTER_SHELL_CLASS}>
+        <div className="flex justify-center">
+          <Button type="button" size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE} onClick={onRestore}>
+            <Undo2 size={14} aria-hidden />
+            Restore
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (showSaveBar) {
     return (
@@ -82,7 +106,10 @@ export function TaskSheetStickyFooter({
         taskStatus={effectiveStatus}
         workflowSaving={workflowSaving}
         onTaskAction={onTaskAction}
+        canDeleteDraft={canDeleteDraft}
+        canMoveToTrash={canMoveToTrash}
         onDelete={onDelete}
+        onMoveToTrash={onMoveToTrash}
       />
     </div>
   );
@@ -92,14 +119,20 @@ interface TaskSheetWorkflowActionsProps {
   taskStatus: string;
   workflowSaving: boolean;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
+  canDeleteDraft: boolean;
+  canMoveToTrash: boolean;
   onDelete: () => void;
+  onMoveToTrash: () => void;
 }
 
 function TaskSheetWorkflowActions({
   taskStatus,
   workflowSaving,
   onTaskAction,
+  canDeleteDraft,
+  canMoveToTrash,
   onDelete,
+  onMoveToTrash,
 }: TaskSheetWorkflowActionsProps) {
   const mode = resolveTaskWorkflowFooterMode(taskStatus);
   const canHold = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
@@ -179,10 +212,26 @@ function TaskSheetWorkflowActions({
           >
             <RotateCcw size={14} /> Reopen
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
-            <Trash2 size={14} /> Delete Task
-          </DropdownMenuItem>
+          {canDeleteDraft ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
+                <Trash2 size={14} /> Delete draft
+              </DropdownMenuItem>
+            </>
+          ) : null}
+          {canMoveToTrash ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={workflowSaving}
+                onClick={onMoveToTrash}
+              >
+                <Trash2 size={14} /> Move to Trash
+              </DropdownMenuItem>
+            </>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

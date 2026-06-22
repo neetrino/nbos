@@ -46,6 +46,7 @@ export interface MailThreadListRow {
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
+  trashedAt: string | null;
 }
 
 export interface MailThreadListPageMeta {
@@ -133,4 +134,17 @@ export interface MailSyncLogRow {
   kind: string;
   detail: string | null;
   createdAt: string;
+}
+
+export interface MailBulkThreadActionFailedItem {
+  threadId: string;
+  error: string;
+}
+
+export interface MailBulkThreadActionResultDto {
+  total: number;
+  succeeded: number;
+  failed: number;
+  succeededThreadIds: string[];
+  failedItems: MailBulkThreadActionFailedItem[];
 }

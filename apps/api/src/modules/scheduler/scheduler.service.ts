@@ -9,6 +9,8 @@ import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner
 import { SalesKpiMonthCloseService } from '../payroll-runs/sales-kpi-month-close.service';
 import { backfillSalesKpiAndPayablesForAllEarnedPeriods } from '../payroll-runs/run-sales-kpi-month-close';
 import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
+import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-purge.service';
+import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
 
 interface OverdueResult {
   marked: number;
@@ -29,6 +31,8 @@ export class SchedulerService {
     private readonly reportsScheduleRunnerService: ReportsScheduleRunnerService,
     private readonly supportSlaOrchestrationService: SupportSlaOrchestrationService,
     private readonly salesKpiMonthClose: SalesKpiMonthCloseService,
+    private readonly credentialsTrashPurgeService: CredentialsTrashPurgeService,
+    private readonly platformTrashPurgeService: PlatformTrashPurgeService,
   ) {}
 
   /** Monthly subscription billing (generates invoices). */
@@ -153,6 +157,18 @@ export class SchedulerService {
       `Sales KPI month-close: earned=${result.earnedPeriod}, synced=${result.syncedCount}, skipped=${result.skippedCount}, payables=${result.refreshedPayableCount}`,
     );
     return result;
+  }
+
+  /** Credentials: hard-purge trashed credentials past retention TTL. */
+  async runCredentialTrashPurge() {
+    this.logger.log('Scheduler: credential trash retention purge');
+    return this.credentialsTrashPurgeService.runRetentionPurge();
+  }
+
+  /** Platform: unified retention purge (Credentials + Drive) with audit. */
+  async runPlatformTrashPurge() {
+    this.logger.log('Scheduler: platform trash retention purge');
+    return this.platformTrashPurgeService.runRetentionPurge();
   }
 
   /** Support: SLA warning / breach in-app orchestration (idempotent per ticket + recipient). */

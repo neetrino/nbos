@@ -39,6 +39,6 @@ import { DriveLibraryEntitiesService } from './drive-library-entities.service';
     DriveAccessContextService,
     DriveLibraryEntitiesService,
   ],
-  exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
+  exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService, DriveR2Client],
 })
 export class DriveModule {}

@@ -1,0 +1,69 @@
+---
+alwaysApply: true
+---
+
+---
+description: Frontend-only safety boundaries for NBOS web work
+globs:
+  - apps/web/
+alwaysApply: false
+---
+
+# Frontend Safety — NBOS Web
+
+You are working on **frontend UI only unless explicitly told otherwise.
+
+## Allowed edit scope (SAFE_FRONTEND_EDIT_SCOPE)
+
+You MAY edit files under:
+
+- apps/web/src/features/**
+- apps/web/src/components/**
+- apps/web/src/app/(app)/** and apps/web/src/app/(auth)/** (pages/layouts only — NOT app/api/)
+- apps/web/src/hooks/**
+- apps/web/src/lib/format/**, lib/date/**, lib/utils.ts, lib/download-tabular-csv.ts, lib/persisted-client-state/**, lib/notifications/** (UI)
+- apps/web/src/app/globals.css
+- apps/web/public/**
+- Co-located *.test.ts(x) under apps/web/
+
+Before editing, state which files you plan to change and keep diffs minimal and frontend-scoped.
+
+## Forbidden (DO_NOT_TOUCH_SCOPE)
+
+Do NOT edit:
+
+- apps/api/**
+- packages/database/** (schema, migrations, seeds, generated client)
+- packages/shared/** without explicit full-stack approval
+- apps/web/src/auth.ts, apps/web/src/proxy.ts, apps/web/src/lib/bff-proxy.ts
+- apps/web/src/app/api/**
+- apps/web/next.config.ts (unless explicitly assigned)
+- Root/monorepo: package.json, pnpm-lock.yaml, turbo.json, .github/**, Dockerfile.*, scripts/**
+- .env, .env.local, apps/web/.env.local, or any secrets
+- node_modules/**, .next/**, generated Prisma output
+
+## Shared files — ask first
+
+If a task requires changing:
+
+- packages/shared/**
+- apps/web/src/lib/api/** (REST paths/payload types)
+- apps/web/src/lib/navigation/nav-config.ts
+- apps/web/src/lib/permissions/**
+
+Stop and ask for approval. Do not change API contracts or database schema.
+
+## Workflow rules
+
+1. Preserve existing architecture (features/, shared components, TanStack Query, persisted client state).
+2. Do not run DB migrations or db:* scripts.
+3. Do not change package versions or add dependencies without approval.
+4. Do not remove files because knip or grep shows zero imports — flag for manual review instead.
+5. Do not fix unrelated TypeScript/backend/CI errors outside apps/web unless explicitly asked.
+6. Align behavior with docs/NBOS/05-UI-Specifications/** and relevant module canon (read-only unless docs task assigned).
+7. No inline styles — Tailwind/classes only. No any. Named exports only.
+8. Match existing patterns: PageHero, entity detail sheets, Kanban standards, permission gates.
+
+## Product canon
+
+docs/NBOS is source of truth for behavior. Do not invent UX from code alone when canon exists.

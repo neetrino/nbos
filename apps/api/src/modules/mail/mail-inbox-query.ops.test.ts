@@ -39,6 +39,27 @@ describe('listMailThreadsForViewer', () => {
     );
   });
 
+  it('filters active scope by default (trashedAt null)', async () => {
+    const { prisma, emailThreadFindMany } = mockPrismaForThreads();
+    await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', {});
+    expect(emailThreadFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ trashedAt: null }),
+      }),
+    );
+  });
+
+  it('filters trash scope (trashedAt not null)', async () => {
+    const { prisma, emailThreadFindMany } = mockPrismaForThreads();
+    await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', { scope: 'trash' });
+    expect(emailThreadFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ trashedAt: { not: null } }),
+        orderBy: { trashedAt: 'desc' },
+      }),
+    );
+  });
+
   it('passes skip and take from pagination', async () => {
     const { prisma, emailThreadFindMany } = mockPrismaForThreads();
     await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', { page: 2, pageSize: 10 });

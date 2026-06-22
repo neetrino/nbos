@@ -21,7 +21,7 @@ async function findBulkMutableIds(
     access,
     action,
   );
-  const archivedFilter = mode === 'archive' ? { archivedAt: null } : { archivedAt: { not: null } };
+  const archivedFilter = mode === 'archive' ? { trashedAt: null } : { trashedAt: { not: null } };
 
   return runtime.prisma.credential.findMany({
     where: {
@@ -54,11 +54,19 @@ export async function bulkArchiveCredentials(
   const result = buildBulkResult(credentialIds, rows);
   if (result.succeeded === 0) return result;
 
-  const archivedAt = new Date();
-  await runtime.prisma.credential.updateMany({
-    where: { id: { in: result.credentialIds } },
-    data: { archivedAt },
-  });
+  const trashedAt = new Date();
+  await runtime.prisma.$transaction([
+    runtime.prisma.credential.updateMany({
+      where: { id: { in: result.credentialIds } },
+      data: { trashedAt },
+    }),
+    runtime.prisma.credentialFolderMembership.deleteMany({
+      where: { credentialId: { in: result.credentialIds } },
+    }),
+    runtime.prisma.credentialFavorite.deleteMany({
+      where: { credentialId: { in: result.credentialIds } },
+    }),
+  ]);
 
   await Promise.all(
     rows.map((row) =>
@@ -87,7 +95,7 @@ export async function bulkRestoreCredentials(
 
   await runtime.prisma.credential.updateMany({
     where: { id: { in: result.credentialIds } },
-    data: { archivedAt: null },
+    data: { trashedAt: null },
   });
 
   await Promise.all(

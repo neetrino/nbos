@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -768,9 +774,12 @@ export class SupportService {
     }
   }
 
-  async delete(id: string) {
+  /** @deprecated Hard delete removed — close ticket via status workflow (Profile A-lite). */
+  async delete(id: string): Promise<never> {
     await this.findById(id);
-    return this.prisma.supportTicket.delete({ where: { id } });
+    throw new ConflictException(
+      'Support tickets cannot be deleted. Resolve and close the ticket instead.',
+    );
   }
 
   async getStats() {

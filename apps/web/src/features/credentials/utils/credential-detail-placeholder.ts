@@ -40,5 +40,7 @@ export function credentialDetailPlaceholderFromListItem(
     project: item.project,
     department: item.department,
     owner: item.owner,
+    isFavorite: item.isFavorite,
+    folders: item.folders,
   };
 }

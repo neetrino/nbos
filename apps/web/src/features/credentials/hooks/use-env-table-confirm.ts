@@ -80,7 +80,6 @@ export function useEnvTableConfirm({
     setPasteChoiceOpen(false);
   }, [
     action,
-    onApplyKey,
     onResolveKeyOverwrite,
     onApplyRows,
     onClearPastePending,

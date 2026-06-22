@@ -19,6 +19,7 @@ import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
+import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
 import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -62,6 +63,10 @@ function TasksPageContent() {
     initialTask,
     handleTaskUpdate,
     handleTaskDelete,
+    handleTaskRestore,
+    listScope,
+    setListScope,
+    isTrashView,
     handleTaskCreated,
     taskMeta,
     loadMoreTasks,
@@ -90,18 +95,32 @@ function TasksPageContent() {
           />
         }
         viewMode={
-          <ViewModeSwitch value={boardView} onChange={setBoardView} options={TASKS_VIEW_OPTIONS} />
+          isTrashView ? null : (
+            <ViewModeSwitch
+              value={boardView}
+              onChange={setBoardView}
+              options={TASKS_VIEW_OPTIONS}
+            />
+          )
         }
         trailing={
           <>
             <TasksPageSettingsSheet
+              listScope={listScope}
+              onListScopeChange={setListScope}
               exportDisabled={loading || !stats}
               onExportScopeStatsCsv={handleExportScopeStatsCsv}
             />
             <Button
               onClick={() => setQuickCreateOpen(true)}
-              disabled={newTaskDisabled}
-              title={newTaskDisabled ? 'Employee profile required' : undefined}
+              disabled={newTaskDisabled || isTrashView}
+              title={
+                isTrashView
+                  ? 'Create tasks from the active list'
+                  : newTaskDisabled
+                    ? 'Employee profile required'
+                    : undefined
+              }
             >
               <Plus size={16} aria-hidden />
               New Task
@@ -110,7 +129,14 @@ function TasksPageContent() {
         }
       />
 
-      <TasksWorkflowScopeBanner scope={boardScope} />
+      {isTrashView ? (
+        <ClientsDirectoryTrashBanner
+          entityLabel="tasks"
+          onBackToActive={() => setListScope('active')}
+        />
+      ) : (
+        <TasksWorkflowScopeBanner scope={boardScope} />
+      )}
 
       {loading ? (
         <LoadingState />
@@ -126,8 +152,12 @@ function TasksPageContent() {
       ) : displayTasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title="No tasks in this view"
-          description="Try another status scope or clear filters."
+          title={isTrashView ? 'Trash is empty' : 'No tasks in this view'}
+          description={
+            isTrashView
+              ? 'Removed tasks appear here. Restore from the detail sheet.'
+              : 'Try another status scope or clear filters.'
+          }
         />
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -150,6 +180,8 @@ function TasksPageContent() {
         onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}
         onDelete={handleTaskDelete}
+        onRestore={handleTaskRestore}
+        isTrashView={isTrashView}
       />
 
       <QuickCreateTaskDialog

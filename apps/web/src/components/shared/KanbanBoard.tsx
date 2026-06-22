@@ -174,7 +174,7 @@ export function KanbanBoard<T>({
 
       setDropTarget(col);
       const excludeId = dragItem.fromColumn === col ? dragItem.id : undefined;
-      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId, event.currentTarget);
+      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId);
       setDropInsert({ columnKey: col, index });
     },
     [dragItem],

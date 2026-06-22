@@ -36,7 +36,7 @@ export function ClientServiceTasksTab({
 }: ClientServiceTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
-  const tasks = links?.tasks ?? [];
+  const tasks = useMemo(() => links?.tasks ?? [], [links?.tasks]);
   const firstTask = tasks[0];
 
   const itemSummaries = useMemo(

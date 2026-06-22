@@ -162,17 +162,20 @@ export class DriveFolderService {
   async listFolderTree(
     space: string,
     userId: string,
-    scopeParams?: { scopeEntityType?: string; scopeEntityId?: string },
+    scopeParams?: { scopeEntityType?: string; scopeEntityId?: string; libraryKey?: string },
     access?: DriveEntityContextAccess,
   ) {
+    const libraryKey = normalizeLibraryKey(scopeParams?.libraryKey);
     const entityScope = parseEntityScope(scopeParams ?? {});
     await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
-    const normalized = entityScope ? 'COMPANY' : normalizeSpace(space);
+    const normalized = libraryKey ? 'COMPANY' : entityScope ? 'COMPANY' : normalizeSpace(space);
     const ownerWhere =
       normalized === 'PERSONAL' ? { ownerId: userId } : entityScope ? { ownerId: null } : {};
     const folders = await this.prisma.driveFolder.findMany({
       where: {
         space: normalized,
+        // Null-safe filter: library folders have a libraryKey; regular folders do not.
+        libraryKey: libraryKey ?? null,
         deletedAt: null,
         NOT: {
           AND: [{ parentId: null }, { name: DRIVE_ROOT_STORAGE_FOLDER_NAME }],
@@ -184,6 +187,7 @@ export class DriveFolderService {
     });
     return jsonSafeForHttp({
       space: normalized,
+      libraryKey: libraryKey ?? null,
       scopeEntityType: entityScope?.scopeEntityType ?? null,
       scopeEntityId: entityScope?.scopeEntityId ?? null,
       folders,
@@ -244,9 +248,16 @@ export class DriveFolderService {
     if (name === DRIVE_ROOT_STORAGE_FOLDER_NAME) {
       throw new BadRequestException('This folder name is reserved.');
     }
+    const libraryKey = normalizeLibraryKey(dto.libraryKey);
     const entityScope = parseEntityScope(dto);
     await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
-    const space = entityScope ? 'COMPANY' : normalizeSpace(dto.space);
+    if (libraryKey && entityScope) {
+      throw new BadRequestException('Cannot combine libraryKey with entity scope.');
+    }
+    if (libraryKey && dto.space?.trim() && dto.space.trim().toUpperCase() !== 'COMPANY') {
+      throw new BadRequestException('Library-scoped folders use space COMPANY only.');
+    }
+    const space = libraryKey ? 'COMPANY' : entityScope ? 'COMPANY' : normalizeSpace(dto.space);
     if (entityScope && dto.space?.trim() && dto.space.trim().toUpperCase() !== 'COMPANY') {
       throw new BadRequestException('Entity-scoped folders use space COMPANY only.');
     }
@@ -258,6 +269,7 @@ export class DriveFolderService {
         name: name.slice(0, 180),
         space,
         parentId,
+        libraryKey: libraryKey ?? null,
         scopeEntityType: entityScope?.scopeEntityType ?? null,
         scopeEntityId: entityScope?.scopeEntityId ?? null,
         ownerId: space === 'PERSONAL' ? userId : null,
@@ -633,6 +645,29 @@ function normalizeSpace(input: string | undefined): DriveSpaceEnum {
   const value = input?.trim().toUpperCase();
   if (value === 'COMPANY' || value === 'PERSONAL') return value;
   throw new BadRequestException('space must be COMPANY or PERSONAL.');
+}
+
+const VALID_LIBRARY_KEYS = new Set([
+  'deals',
+  'projects',
+  'products',
+  'clients',
+  'finance',
+  'partners',
+  'tasks',
+  'support',
+]);
+
+/** Returns the normalised library key or null. Throws on an unknown key. */
+function normalizeLibraryKey(input: string | undefined): string | null {
+  if (!input?.trim()) return null;
+  const key = input.trim().toLowerCase();
+  if (!VALID_LIBRARY_KEYS.has(key)) {
+    throw new BadRequestException(
+      `Invalid libraryKey. Allowed: ${[...VALID_LIBRARY_KEYS].join(', ')}`,
+    );
+  }
+  return key;
 }
 
 function normalizeParentId(input: string | undefined): string | null {

@@ -89,7 +89,7 @@ export function ModuleHeroSlotProvider({
             className={linkToHeaderTab ? '!mt-0' : undefined}
           />
         </div>
-        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
       </div>
     </ModuleHeroSlotContext.Provider>
   );
@@ -109,6 +109,7 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
 
   useLayoutEffect(() => {
     setSlots(slots);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- caller memoizes slots; track slot fields only
   }, [setSlots, slots.tabs, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
 
   useLayoutEffect(() => {

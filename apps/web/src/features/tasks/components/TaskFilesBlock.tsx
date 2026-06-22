@@ -7,7 +7,7 @@ import { driveApi, type FileAsset } from '@/lib/api/drive';
 import { DRIVE_LIBRARIES } from '@/features/drive/drive-options';
 import type { DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
 import {
-  archiveAndUnlinkFileFromEntityRecord,
+  moveToTrashAndUnlinkFileFromEntityRecord,
   unlinkFileFromEntityRecord,
 } from '@/features/drive/entity-attachment-record-actions';
 import { useOptimisticEntityFileUpload } from '@/features/drive/use-optimistic-entity-file-upload';
@@ -59,14 +59,14 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
     }
   };
 
-  const runArchive = async (file: FileAsset) => {
+  const runMoveToTrash = async (file: FileAsset) => {
     setBusyFileId(file.id);
     try {
-      await archiveAndUnlinkFileFromEntityRecord(file, 'TASK', taskId);
-      toast.success('File archived and unlinked from task');
+      await moveToTrashAndUnlinkFileFromEntityRecord(file, 'TASK', taskId);
+      toast.success('File moved to Trash and unlinked from task');
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not archive file');
+      toast.error(err instanceof Error ? err.message : 'Could not move file to Trash');
     } finally {
       setBusyFileId(null);
     }
@@ -79,7 +79,7 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
     },
     onUnlinkFromRecord: () => void runUnlink(file),
-    onArchive: (target) => void runArchive(target),
+    onMoveToTrash: (target) => void runMoveToTrash(target),
     onRestore: () => undefined,
   });
 

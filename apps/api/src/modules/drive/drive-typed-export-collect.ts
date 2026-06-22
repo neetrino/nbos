@@ -26,7 +26,7 @@ export async function collectAccessibleExportFileIds(
     })),
   };
   const statusWhere: Prisma.FileAssetWhereInput = options?.includeArchived
-    ? { status: { in: ['ACTIVE', 'ARCHIVED', 'APPROVED', 'DRAFT'] } }
+    ? { status: { in: ['ACTIVE', 'APPROVED', 'DRAFT'] } }
     : { deletedAt: null };
   const purposeWhere: Prisma.FileAssetWhereInput =
     options?.purposes && options.purposes.length > 0

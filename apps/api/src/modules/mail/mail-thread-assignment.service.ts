@@ -8,6 +8,7 @@ import {
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import { employeeHasMailAccountAccess } from './mail-account-access.ops';
+import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import type { MailThreadDetailDto } from './mail.types';
@@ -33,6 +34,7 @@ export class MailThreadAssignmentService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     const targetHasAccess = await employeeHasMailAccountAccess(
       this.prisma,
       thread.mailAccountId,
@@ -77,6 +79,7 @@ export class MailThreadAssignmentService {
     if (!thread) {
       throw new NotFoundException('Thread not found');
     }
+    assertMailThreadIsActive(thread);
     await this.prisma.emailThread.update({
       where: { id: threadId },
       data: { assignedToEmployeeId: null, assignedByEmployeeId: null, assignedAt: null },

@@ -3,8 +3,6 @@
  * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
-import { cn } from '@/lib/utils';
-
 /** Top inset for edge-attached sheets (right sheet bottom is flush with viewport). */
 export const SHEET_VIEWPORT_TOP_INSET_CLASS = 'top-[2.5vh]';
 
@@ -260,6 +258,9 @@ export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
+
+/** Fade + slide for sheet tab body crossfade (see globals.css). */
+export const DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS = 'detail-sheet-tab-panel-transition';
 
 /** Full-width page tab bar (no horizontal sheet padding). */
 export const PAGE_TAB_BAR_WRAPPER_CLASS =

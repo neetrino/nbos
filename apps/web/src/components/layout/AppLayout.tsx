@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, startTransition, useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { MyAccountSheetProvider } from '@/features/account/components/my-account-sheet-provider';
 import { MyWalletSheetProvider } from '@/features/account/components/my-wallet-sheet-provider';
@@ -18,7 +19,26 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
   const mainOffsetPx = sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX;
+
+  /**
+   * Auto-collapse the sidebar when entering /documents routes.
+   * Once the user manually toggles, we stop overriding their preference for
+   * the current Documents session. Leaving /documents resets the guard so the
+   * next visit auto-collapses again.
+   */
+  const autoCollapsedRef = useRef(false);
+  const isDocumentsRoute = pathname.startsWith('/documents');
+
+  useEffect(() => {
+    if (isDocumentsRoute && !autoCollapsedRef.current) {
+      autoCollapsedRef.current = true;
+      startTransition(() => setSidebarCollapsed(true));
+    } else if (!isDocumentsRoute) {
+      autoCollapsedRef.current = false;
+    }
+  }, [isDocumentsRoute]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--app-sidebar-width', `${mainOffsetPx}px`);

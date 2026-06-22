@@ -1,39 +1,9 @@
-import { createCipheriv, randomBytes } from 'crypto';
 import { describe, it, expect } from 'vitest';
-import { encrypt, decrypt, deriveLegacyKey, deriveV2Key } from './crypto';
+import { encrypt, decrypt, deriveV2Key } from './crypto';
 
 const TEST_KEY = 'test-encryption-key-for-unit-tests';
 
-function encryptLegacy(plaintext: string, masterKeyMaterial: string): string {
-  const iv = randomBytes(16);
-  const cipher = createCipheriv('aes-256-gcm', deriveLegacyKey(masterKeyMaterial), iv, {
-    authTagLength: 16,
-  });
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-  return `${iv.toString('hex')}:${cipher.getAuthTag().toString('hex')}:${encrypted.toString('hex')}`;
-}
-
 describe('crypto', () => {
-  describe('deriveLegacyKey', () => {
-    it('should return a 32-byte buffer', () => {
-      const key = deriveLegacyKey(TEST_KEY);
-      expect(key).toBeInstanceOf(Buffer);
-      expect(key.length).toBe(32);
-    });
-
-    it('should be deterministic', () => {
-      const key1 = deriveLegacyKey(TEST_KEY);
-      const key2 = deriveLegacyKey(TEST_KEY);
-      expect(key1.equals(key2)).toBe(true);
-    });
-
-    it('should produce different keys for different inputs', () => {
-      const key1 = deriveLegacyKey('key-a');
-      const key2 = deriveLegacyKey('key-b');
-      expect(key1.equals(key2)).toBe(false);
-    });
-  });
-
   describe('deriveV2Key', () => {
     it('should return a 32-byte buffer', () => {
       const key = deriveV2Key(TEST_KEY);
@@ -41,8 +11,8 @@ describe('crypto', () => {
       expect(key.length).toBe(32);
     });
 
-    it('should differ from legacy derivation', () => {
-      expect(deriveV2Key(TEST_KEY).equals(deriveLegacyKey(TEST_KEY))).toBe(false);
+    it('should be deterministic', () => {
+      expect(deriveV2Key(TEST_KEY).equals(deriveV2Key(TEST_KEY))).toBe(true);
     });
   });
 
@@ -89,18 +59,11 @@ describe('crypto', () => {
       parts[3] = 'ff'.repeat(16);
       expect(() => decrypt(parts.join(':'), TEST_KEY)).toThrow();
     });
-  });
 
-  describe('decrypt legacy', () => {
-    it('should decrypt legacy iv:authTag:ciphertext blobs', () => {
-      const plain = 'legacy gmail refresh token blob';
-      const legacy = encryptLegacy(plain, TEST_KEY);
-      expect(legacy.startsWith('v2:')).toBe(false);
-      expect(decrypt(legacy, TEST_KEY)).toBe(plain);
-    });
-
-    it('should throw on invalid legacy format', () => {
-      expect(() => decrypt('invalid', TEST_KEY)).toThrow('Invalid encrypted format');
+    it('should reject legacy unversioned ciphertext', () => {
+      expect(() => decrypt('aa:bb:cc', TEST_KEY)).toThrow(
+        'Invalid encrypted format: expected v2:iv:authTag:ciphertext',
+      );
     });
   });
 });

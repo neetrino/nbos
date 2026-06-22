@@ -2,6 +2,7 @@
 
 import type { Expense } from '@/lib/api/finance';
 import { CreateExpenseDialog } from './CreateExpenseDialog';
+import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 import { DeleteExpenseDialog } from './DeleteExpenseDialog';
 
 interface ExpensesPageDialogsProps {
@@ -30,6 +31,8 @@ export function ExpensesPageDialogs({
   onDeleteOpenChange,
   onConfirmDeleteExpense,
 }: ExpensesPageDialogsProps) {
+  const lifecycleMode = deleteTarget ? expenseLifecycleAction(deleteTarget) : null;
+
   return (
     <>
       <CreateExpenseDialog
@@ -39,14 +42,17 @@ export function ExpensesPageDialogs({
         defaultStatus={defaultCreateStatus}
         onCreated={onExpenseCreated}
       />
-      <DeleteExpenseDialog
-        expenseName={deleteTarget?.name ?? ''}
-        open={deleteTarget !== null}
-        isSubmitting={deleteSubmitting}
-        errorMessage={deleteError}
-        onOpenChange={onDeleteOpenChange}
-        onConfirm={onConfirmDeleteExpense}
-      />
+      {lifecycleMode ? (
+        <DeleteExpenseDialog
+          expenseName={deleteTarget?.name ?? ''}
+          mode={lifecycleMode}
+          open={deleteTarget !== null}
+          isSubmitting={deleteSubmitting}
+          errorMessage={deleteError}
+          onOpenChange={onDeleteOpenChange}
+          onConfirm={onConfirmDeleteExpense}
+        />
+      ) : null}
     </>
   );
 }

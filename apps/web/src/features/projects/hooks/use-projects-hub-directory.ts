@@ -17,9 +17,9 @@ const emptyMeta = () => ({
   totalPages: 0,
 });
 
-function tabToArchiveFilter(tab: ProjectsHubTab): boolean | undefined {
-  if (tab === 'active') return false;
-  if (tab === 'archived') return true;
+function tabToScope(tab: ProjectsHubTab): 'active' | 'trash' | undefined {
+  if (tab === 'active') return 'active';
+  if (tab === 'trash') return 'trash';
   return undefined;
 }
 
@@ -66,12 +66,12 @@ export function useProjectsHubDirectory() {
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const isArchived = tabToArchiveFilter(activeTab);
+      const scope = tabToScope(activeTab);
       const data = await projectsApi.getAll({
         page,
         pageSize: PROJECTS_HUB_PAGE_SIZE,
         search: debouncedSearch || undefined,
-        ...(isArchived === undefined ? {} : { isArchived }),
+        ...(scope ? { scope } : {}),
       });
       setItems(data.items);
       setMeta(data.meta);

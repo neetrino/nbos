@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Inject,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -11,6 +17,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
+import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
 import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import {
@@ -137,9 +144,11 @@ export class ExtensionsService {
       where.name = { contains: search, mode: 'insensitive' };
     }
 
+    const scopedWhere = mergeActiveParentProjectScope(where, { projectId });
+
     const [items, total] = await Promise.all([
       this.prisma.extension.findMany({
-        where,
+        where: scopedWhere,
         include: {
           project: {
             select: {
@@ -166,7 +175,7 @@ export class ExtensionsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.extension.count({ where }),
+      this.prisma.extension.count({ where: scopedWhere }),
     ]);
 
     const openTasksByExt = await batchExtensionOpenTaskCounts(
@@ -530,14 +539,16 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
-  async delete(id: string) {
+  /** @deprecated Hard delete removed — use PATCH :id/cancel or :id/complete. */
+  async delete(id: string): Promise<never> {
     await this.findById(id);
-    return this.prisma.extension.delete({ where: { id } });
+    throw new ConflictException(
+      'Extensions cannot be deleted. Cancel delivery (PATCH /extensions/:id/cancel) or complete it (PATCH /extensions/:id/complete).',
+    );
   }
 
   async getStats(projectId?: string) {
-    const where: Prisma.ExtensionWhereInput = {};
-    if (projectId) where.projectId = projectId;
+    const where = mergeActiveParentProjectScope(projectId ? { projectId } : {}, { projectId });
 
     const [total, byStatus, bySize] = await Promise.all([
       this.prisma.extension.count({ where }),

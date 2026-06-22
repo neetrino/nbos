@@ -205,9 +205,26 @@
 | #    | P   | Статус | Задача                                                    | Проверка  |
 | ---- | --- | ------ | --------------------------------------------------------- | --------- |
 | 10.1 | P0  | ✅     | 🤖 `CREDENTIALS_ENCRYPTION_KEY` required (env validation) | Boot fail |
-| 10.2 | P0  | ✅     | 🤖 AES-256-GCM at rest                                    | —         |
+| 10.2 | P0  | ✅     | 🤖 AES-256-GCM at rest (v2 scrypt KDF)                    | —         |
 | 10.3 | P1  | ⬜     | 🤖 Audit `credential.secret_revealed`                     | —         |
 | 10.4 | P0  | ⬜     | 🤖 RBAC regression (`credentials.service.*.test` в gate)  | 403       |
+
+---
+
+## 17. Mail module security (2026-06 audit — закрыто для MVP)
+
+> Канон: `docs/NBOS/02-Modules/17-Mail/06-Mail-Security-Stance.md`. KMS / body encryption — **опционально**, не backlog.
+
+| #    | P   | Статус | Задача                                               | Проверка        |
+| ---- | --- | ------ | ---------------------------------------------------- | --------------- |
+| 17.1 | P0  | ✅     | 🤖 Provider secrets encrypted (`MailProviderSecret`) | Не plaintext    |
+| 17.2 | P0  | ✅     | 🤖 v2 scrypt + AES-256-GCM (shared crypto)           | `crypto.ts`     |
+| 17.3 | P0  | ✅     | 🤖 RBAC send на compose/reply/draft/queue            | READER → 403    |
+| 17.4 | P1  | ✅     | 🤖 Rate limit send endpoints (20/min)                | Throttle        |
+| 17.5 | P0  | ✅     | 🤖 HTML sanitize (inbound + outbound)                | DOMPurify tests |
+| 17.6 | P1  | ✅     | 🤖 Gmail blob: refresh token only                    | normalize store |
+| 17.7 | P2  | ⏸      | KMS / per-item DEK — **только по compliance**        | См. stance doc  |
+| 17.8 | P2  | ⏸      | Field encryption email body — **только по policy**   | См. stance doc  |
 
 ---
 

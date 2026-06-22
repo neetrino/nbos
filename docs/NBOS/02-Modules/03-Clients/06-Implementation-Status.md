@@ -4,7 +4,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 ## Shipped (web + API)
 
-- **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`.
+- **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`, **Profile A Trash** (`scope=active|trash` via page settings): Move to Trash, Restore, **Delete permanently** (name-match confirm) in trash sheets.
 - **Company / Contact row sheets** use the same detail-sheet pattern as CRM (75vw panel, floating close + rail, inline fields with draft + Save/Cancel footer). **Portfolio** opens as a nested right sheet over the row sheet (permalink + list deep link still available inside portfolio).
 - **Contact create/update** persists `messengerLinks` (WhatsApp, Telegram, preferred channel, language) via API.
 - **Company create**: searchable **primary contact** picker, optional **billing contact**, optional company phone/email/country; no manual contact UUID.
@@ -17,20 +17,20 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
 - **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
-- **Archive-first lifecycle** for Contact / Company (soft-delete, global trash, purge rules) — canon in `00-Clients-Overview.md` §7; runtime enforcement/UI may land incrementally (see **MVP assumptions** below).
 
 ## MVP assumptions (launch scope)
 
 - **Audience:** internal employees only; no external client/partner login roles required for Clients MVP.
-- **Delete vs archive:** operational policy is **archive-first** (see `00-Clients-Overview.md` §7). Hard `DELETE` may still exist in APIs until a unified archive is implemented; team should avoid deleting entities that already participate in CRM / finance / delivery history.
+- **Delete vs Trash:** operational policy is **Trash-first** (see `00-Clients-Overview.md` §7 and platform `09-Entity-Lifecycle-Standard.md`). API `DELETE` moves to Trash (`trashedAt`); `POST …/restore` recovers; `DELETE …/permanent` purges trashed rows when relation guards pass.
 
 ## API routes (Nest)
 
-- `clients/contacts`, `clients/companies` — CRUD as before, extended as above.
+- `clients/contacts`, `clients/companies` — CRUD + `?scope=active|trash` (default active), `DELETE` → Trash, `POST :id/restore`, `DELETE :id/permanent`.
 - `clients/portfolio/contact/:contactId`, `clients/portfolio/company/:companyId` — read-only computed JSON.
 
 ## Related code (for maintainers)
 
 - Web: `apps/web/src/features/clients/*`, `apps/web/src/lib/api/clients.ts`, `apps/web/src/lib/api/client-portfolio.ts`, `apps/web/src/app/(app)/clients/portfolio/*`.
 - API: `apps/api/src/modules/clients/portfolio/*` (`portfolio-access-mask.ts`, `portfolio-payload-policy.ts`), `contacts.service.ts`, `companies.service.ts`.
-- DB: migration `20260512140000_company_billing_and_contact_fields`.
+- DB: migrations `20260512140000_company_billing_and_contact_fields`, `20260612120000_contact_company_trash_lifecycle` (`trashed_at` on contacts/companies).
+- Platform index: `docs/NBOS/03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.

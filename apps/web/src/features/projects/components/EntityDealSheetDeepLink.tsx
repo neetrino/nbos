@@ -102,7 +102,6 @@ export function EntityDealSheetDeepLink({
       onOpenChange={onOpenChange}
       onUpdate={handleUpdate}
       onStatusChange={handleStatusChange}
-      onDelete={() => toast.message('Delete deals from the CRM pipeline.')}
       onRefresh={handleRefresh}
       onOpenDeal={(id) => void handleOpenDeal(id)}
     />

@@ -147,7 +147,7 @@ export default function SopPage() {
                 return (
                   <tr key={row.id} className="border-border border-t">
                     <td className="px-4 py-2">{row.title}</td>
-                    <td className="px-4 py-2">{row.section.name}</td>
+                    <td className="px-4 py-2">{row.section?.name ?? '—'}</td>
                     <td className="px-4 py-2">
                       <StatusBadge
                         label={row.status}

@@ -45,26 +45,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'CRM',
     href: '/crm',
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
-    children: [
-      {
-        label: 'Dashboard',
-        href: '/crm/dashboard',
-        navSection: 'dashboard',
-        permission: { module: 'CRM_LEADS', action: 'VIEW' },
-      },
-      {
-        label: 'Leads',
-        href: '/crm/leads',
-        navSection: 'leads',
-        permission: { module: 'CRM_LEADS', action: 'VIEW' },
-      },
-      {
-        label: 'Deals',
-        href: '/crm/deals',
-        navSection: 'deals',
-        permission: { module: 'CRM_DEALS', action: 'VIEW' },
-      },
-    ],
   },
   {
     key: 'marketing',

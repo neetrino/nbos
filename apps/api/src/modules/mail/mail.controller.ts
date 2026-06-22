@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -10,7 +11,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { parseEntityLifecycleScope } from '@nbos/shared';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
@@ -102,6 +105,11 @@ export class MailController {
     description: 'If true, only spam threads; default inbox excludes spam',
   })
   @ApiQuery({
+    name: 'scope',
+    required: false,
+    description: 'List scope: active (default) or trash',
+  })
+  @ApiQuery({
     name: 'q',
     required: false,
     description: 'Search thread subject (normalized); case-insensitive substring',
@@ -123,6 +131,7 @@ export class MailController {
     @Query('unreadOnly') unreadOnly?: string,
     @Query('needsLinkOnly') needsLinkOnly?: string,
     @Query('spamOnly') spamOnly?: string,
+    @Query('scope') scope?: string,
     @Query('assignedToMe') assignedToMe?: string,
     @Query('sentOnly') sentOnly?: string,
     @Query('q') q?: string,
@@ -134,6 +143,7 @@ export class MailController {
       unreadOnly: isQueryFlagTrue(unreadOnly),
       needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
       spamOnly: isQueryFlagTrue(spamOnly),
+      scope: parseEntityLifecycleScope(scope),
       assignedToMe: isQueryFlagTrue(assignedToMe),
       sentOnly: isQueryFlagTrue(sentOnly),
       search: q,
@@ -254,6 +264,7 @@ export class MailController {
 
   @Post('threads/:threadId/messages/:messageId/queue')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({
     summary: 'Queue outbound draft for send (DRAFT → QUEUED; no SMTP or worker yet)',
@@ -274,6 +285,7 @@ export class MailController {
 
   @Post('threads/:threadId/drafts')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({ summary: 'Create outbound draft message in thread (no SMTP send)' })
   async createOutboundDraft(
@@ -309,13 +321,45 @@ export class MailController {
   @Post('threads/:threadId/delete')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Delete thread and its messages from NBOS (no provider delete in MVP)' })
+  @ApiOperation({ summary: 'Move thread to Trash (recoverable; no provider delete in MVP)' })
   async deleteThread(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Param('threadId') threadId: string,
   ) {
-    return this.mailThreadCommandService.deleteThread(
+    return this.mailThreadCommandService.moveThreadToTrash(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
+  }
+
+  @Post('threads/:threadId/restore')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Restore thread from Trash' })
+  async restoreThread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    return this.mailThreadCommandService.restoreThreadFromTrash(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
+  }
+
+  @Delete('threads/:threadId/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MAIL', 'DELETE')
+  @ApiOperation({ summary: 'Permanently delete trashed thread (cannot be undone)' })
+  async permanentDeleteThread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    await this.mailThreadCommandService.permanentlyDeleteThreadFromTrash(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,

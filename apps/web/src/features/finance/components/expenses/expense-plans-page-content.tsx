@@ -95,7 +95,7 @@ export function ExpensePlansPageContent() {
   const [generatePlan, setGeneratePlan] = useState<ExpensePlan | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [, setProjectsLoading] = useState(false);
 
   const replaceListUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -355,11 +355,6 @@ export function ExpensePlansPageContent() {
     },
     [pathname, router, searchParams],
   );
-
-  const openGenerateDialog = useCallback((plan: ExpensePlan) => {
-    setGeneratePlan(plan);
-    setGenerateOpen(true);
-  }, []);
 
   const moduleHeroSlots = useMemo(
     () => ({

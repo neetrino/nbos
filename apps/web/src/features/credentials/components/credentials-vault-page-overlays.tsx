@@ -7,6 +7,7 @@ import { PermanentDeleteCredentialDialog } from '@/features/credentials/componen
 import type { CredentialDeleteTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
 import type { CredentialTileCopyTarget } from '@/features/credentials/hooks/use-credentials-vault-page';
 import type { CredentialDetail } from '@/lib/api/credentials';
+import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
@@ -16,13 +17,18 @@ export interface CredentialsVaultPageOverlaysProps {
   sheetCredentialId: string | null;
   sheetInitialItem: CredentialListItem | null;
   createPresetCategory: string | undefined;
+  initialFolderId?: string | null;
+  projectId?: string | null;
+  folderOptions: CredentialFolder[];
   deleteTarget: CredentialDeleteTarget | null;
   purgeTarget: CredentialDeleteTarget | null;
   tileCopyTarget: CredentialTileCopyTarget | null;
   onCloseSheet: (open: boolean) => void;
   onCredentialCreated: (created: CredentialDetail) => void;
   onSaved: () => void;
-  onRequestArchive: (id: string, name: string) => void;
+  onRequestMoveToTrash: (id: string, name: string) => void;
+  isTrashView?: boolean;
+  onRestore?: (id: string) => void | Promise<void>;
   onDeleteTargetChange: (open: boolean) => void;
   onPurgeTargetChange: (open: boolean) => void;
   onTileCopyOpenChange: (open: boolean) => void;
@@ -35,13 +41,18 @@ export function CredentialsVaultPageOverlays({
   sheetCredentialId,
   sheetInitialItem,
   createPresetCategory,
+  initialFolderId,
+  projectId,
+  folderOptions,
   deleteTarget,
   purgeTarget,
   tileCopyTarget,
   onCloseSheet,
   onCredentialCreated,
   onSaved,
-  onRequestArchive,
+  onRequestMoveToTrash,
+  isTrashView = false,
+  onRestore,
   onDeleteTargetChange,
   onPurgeTargetChange,
   onTileCopyOpenChange,
@@ -55,12 +66,20 @@ export function CredentialsVaultPageOverlays({
         credentialId={sheetCredentialId}
         initialItem={sheetInitialItem}
         vaultScope={activeTab}
+        projectId={projectId ?? undefined}
         initialCategory={createPresetCategory}
-        presetKey={sheetCredentialId ?? `create-${createPresetCategory ?? ''}-${activeTab}`}
+        initialFolderId={sheetCredentialId ? undefined : initialFolderId}
+        folderOptions={folderOptions}
+        presetKey={
+          sheetCredentialId ??
+          `create-${createPresetCategory ?? ''}-${initialFolderId ?? ''}-${activeTab}`
+        }
         continueAfterCreate
         onCreated={onCredentialCreated}
         onSaved={onSaved}
-        onRequestArchive={onRequestArchive}
+        onRequestMoveToTrash={onRequestMoveToTrash}
+        isTrashView={isTrashView}
+        onRestore={onRestore}
       />
 
       <CredentialStepUpDialog

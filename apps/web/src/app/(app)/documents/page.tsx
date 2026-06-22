@@ -1,71 +1,70 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useDebouncedValue } from '@/components/shared';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FileText, FolderOpen, LayoutGrid, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  PageHero,
-  PageHeroSearch,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-} from '@/components/shared';
-import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
+import { FileText, Star } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHero, PageHeroSearch, EmptyState, ErrorState } from '@/components/shared';
+import { documentsApi, type DocumentListItem, type DocumentRecentItem } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
+import { useDebouncedValue } from '@/components/shared';
 import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
-import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
+import { useDocumentFavorites } from '@/features/documents/DocumentFavoritesContext';
+
+const RECENT_DISPLAY_LIMIT = 20;
+
+function DocListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="h-9 w-full rounded" />
+      ))}
+    </div>
+  );
+}
 
 export default function DocumentsHomePage() {
-  const router = useRouter();
-  const { me, can } = usePermission();
-  const [sections, setSections] = useState<DocumentSection[]>([]);
-  const [recent, setRecent] = useState<DocumentListItem[]>([]);
-  const [drafts, setDrafts] = useState<DocumentListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { favorites, loading: loadingFavorites } = useDocumentFavorites();
+  const [recent, setRecent] = useState<DocumentRecentItem[]>([]);
+  const [searchResults, setSearchResults] = useState<DocumentListItem[]>([]);
+  const [loadingRecent, setLoadingRecent] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, DOCUMENTS_SEARCH_DEBOUNCE_MS).trim();
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const loadBase = useCallback(async () => {
+    setLoadingRecent(true);
     setError(null);
     try {
-      const q = debouncedSearch || undefined;
-      const [sec, all, draftList] = await Promise.all([
-        documentsApi.listSections(),
-        documentsApi.listDocuments({
-          includeArchived: false,
-          ...(q ? { search: q } : {}),
-        }),
-        documentsApi.listDocuments({
-          status: 'DRAFT',
-          includeArchived: false,
-          ...(q ? { search: q } : {}),
-        }),
-      ]);
-      setSections(sec);
-      setRecent(all.slice(0, 12));
-      const mine = me?.id ? draftList.filter((d) => d.createdById === me.id).slice(0, 12) : [];
-      setDrafts(mine);
+      const recentList = await documentsApi.listRecent();
+      setRecent(recentList.slice(0, RECENT_DISPLAY_LIMIT));
     } catch (e) {
       setError(getApiErrorMessage(e, 'Documents could not be loaded.'));
     } finally {
-      setLoading(false);
+      setLoadingRecent(false);
     }
-  }, [debouncedSearch, me?.id]);
+  }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    void loadBase();
+  }, [loadBase]);
 
-  const canAdd = can('ADD', 'DOCUMENTS');
+  useEffect(() => {
+    if (!debouncedSearch) {
+      setSearchResults([]);
+      return;
+    }
+    setLoadingSearch(true);
+    documentsApi
+      .listDocuments({ search: debouncedSearch, includeArchived: false })
+      .then((results) => setSearchResults(results))
+      .catch(() => setSearchResults([]))
+      .finally(() => setLoadingSearch(false));
+  }, [debouncedSearch]);
+
+  const isSearching = debouncedSearch.length > 0;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -75,102 +74,64 @@ export default function DocumentsHomePage() {
           <PageHeroSearch
             value={search}
             onChange={setSearch}
-            placeholder="Search title, body, section, tags…"
+            placeholder="Search title, body, tags…"
           />
         }
-        trailing={
-          canAdd ? (
-            <Button type="button" size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
-              <Plus size={14} aria-hidden />
-              New document
-            </Button>
-          ) : null
-        }
       />
 
-      {loading ? <LoadingState variant="cards" /> : null}
-      {error ? <ErrorState description={error} onRetry={load} /> : null}
+      {error ? <ErrorState description={error} onRetry={() => void loadBase()} /> : null}
 
-      {!loading && !error ? (
-        <>
-          <section>
-            <h2 className="text-foreground mb-3 flex items-center gap-2 text-lg font-semibold">
-              <LayoutGrid size={18} /> Sections
-            </h2>
-            {sections.length === 0 ? (
+      {isSearching ? (
+        <section>
+          <h2 className="text-foreground mb-3 text-lg font-semibold">Search results</h2>
+          {loadingSearch ? (
+            <DocListSkeleton />
+          ) : searchResults.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No matching documents"
+              description="Search checks titles, body text, tags and attachment names."
+            />
+          ) : (
+            <DocumentsTable rows={searchResults} />
+          )}
+        </section>
+      ) : (
+        <Tabs defaultValue="recent">
+          <TabsList>
+            <TabsTrigger value="recent">Recent</TabsTrigger>
+            <TabsTrigger value="favorites">Favorites</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="recent" className="mt-4">
+            {loadingRecent ? (
+              <DocListSkeleton />
+            ) : recent.length === 0 ? (
               <EmptyState
-                icon={FolderOpen}
-                title="No sections yet"
-                description="Default sections will appear after the first API load."
+                icon={FileText}
+                title="No recent documents"
+                description="Documents you open or edit will appear here."
               />
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {sections.map((s) => (
-                  <Link key={s.id} href={`/documents/sections/${s.id}`}>
-                    <Card className="hover:border-primary/40 h-full transition-colors hover:shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <FolderOpen size={18} className="text-primary shrink-0" />
-                          <span className="truncate">{s.name}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground line-clamp-2 text-sm">
-                          {s.description ?? 'Open section to see documents.'}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
+              <DocumentsTable rows={recent} />
             )}
-          </section>
+          </TabsContent>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <section>
-              <h2 className="text-foreground mb-3 text-lg font-semibold">Recent updates</h2>
-              {recent.length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title={debouncedSearch ? 'No matching documents' : 'No documents yet'}
-                  description={
-                    debouncedSearch
-                      ? 'Search checks titles, text, sections, tags and linked attachment names.'
-                      : canAdd
-                        ? 'Create a draft to get started.'
-                        : 'Documents will appear here after your team publishes them.'
-                  }
-                />
-              ) : (
-                <DocumentsTable rows={recent} />
-              )}
-            </section>
-            <section>
-              <h2 className="text-foreground mb-3 text-lg font-semibold">My drafts</h2>
-              {drafts.length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title="No drafts"
-                  description={
-                    canAdd
-                      ? 'Drafts you create will show here.'
-                      : 'You can read documents, but creating drafts is not allowed for your role.'
-                  }
-                />
-              ) : (
-                <DocumentsTable rows={drafts} />
-              )}
-            </section>
-          </div>
-        </>
-      ) : null}
-
-      <CreateDocumentDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        sections={sections}
-        onCreated={(id) => router.push(`/documents/${id}`)}
-      />
+          <TabsContent value="favorites" className="mt-4">
+            {loadingFavorites ? (
+              <DocListSkeleton />
+            ) : favorites.length === 0 ? (
+              <EmptyState
+                icon={Star}
+                title="No favorites yet"
+                description="Star a document from its page to pin it here."
+              />
+            ) : (
+              <DocumentsTable rows={favorites} />
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }

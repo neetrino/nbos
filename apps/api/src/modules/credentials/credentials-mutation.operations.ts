@@ -19,12 +19,57 @@ import {
   manualGrantsFromEmployeeIds,
   syncCredentialManualGrants,
 } from './credential-manual-grants';
+import {
+  normalizeCredentialFolderIds,
+  replaceCredentialFolderMemberships,
+} from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
 
 const CREDENTIAL_DETAIL_INCLUDE = {
   project: { select: { id: true, name: true } },
   provider: { select: { id: true, name: true, slug: true, website: true } },
+  folderMemberships: {
+    select: {
+      folderId: true,
+      isPrimary: true,
+      folder: { select: { id: true, name: true } },
+    },
+  },
 } as const;
+
+type FavoriteDelegate = {
+  findMany: (args: unknown) => Promise<Array<{ employeeId: string }>>;
+};
+
+function credentialFavoriteDelegate(runtime: CredentialsRuntime): FavoriteDelegate | null {
+  return (
+    (
+      runtime.prisma as unknown as {
+        credentialFavorite?: FavoriteDelegate;
+      }
+    ).credentialFavorite ?? null
+  );
+}
+
+async function loadFavoriteRows(
+  runtime: CredentialsRuntime,
+  credentialId: string,
+  employeeId: string,
+): Promise<Array<{ employeeId: string }>> {
+  const favoriteDelegate = credentialFavoriteDelegate(runtime);
+  if (!favoriteDelegate) return [];
+  return favoriteDelegate.findMany({
+    where: { credentialId, employeeId },
+    select: { employeeId: true },
+  });
+}
+
+async function loadCredentialAfterFolderChange(runtime: CredentialsRuntime, credentialId: string) {
+  return runtime.prisma.credential.findUnique({
+    where: { id: credentialId },
+    include: CREDENTIAL_DETAIL_INCLUDE,
+  });
+}
 
 export async function findCredentialById(
   runtime: CredentialsRuntime,
@@ -34,7 +79,7 @@ export async function findCredentialById(
   const credential = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -47,8 +92,9 @@ export async function findCredentialById(
   if (!credential) throw new NotFoundException(`Credential ${id} not found`);
 
   const comment = decryptComment(runtime, credential.secureNotes);
-  const [manualGrants] = await Promise.all([
+  const [manualGrants, favorites] = await Promise.all([
     loadCredentialManualGrants(runtime.prisma, id),
+    loadFavoriteRows(runtime, id, access.employeeId),
     runtime.auditService.log({
       entityType: 'credential',
       entityId: id,
@@ -57,7 +103,7 @@ export async function findCredentialById(
       projectId: credential.projectId ?? undefined,
     }),
   ]);
-  return { ...mapCredentialForApi(credential), comment, manualGrants };
+  return { ...mapCredentialForApi({ ...credential, favorites }), comment, manualGrants };
 }
 
 function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | null {
@@ -129,8 +175,20 @@ export async function createCredential(
   if (createGrants.length > 0) {
     await syncCredentialManualGrants(runtime.prisma, credential.id, createGrants, userId);
   }
+  const folderIds = normalizeCredentialFolderIds(data);
+  if (folderIds !== undefined && folderIds.length > 0) {
+    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, {
+      employeeId: userId,
+      departmentIds: [],
+      viewScope: 'ALL',
+      editScope: 'ALL',
+      deleteScope: 'ALL',
+    });
+    const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
+    if (updated) return mapCredentialForApi({ ...updated, favorites: [] });
+  }
 
-  return mapCredentialForApi(credential);
+  return mapCredentialForApi({ ...credential, favorites: [] });
 }
 
 export async function updateCredential(
@@ -142,7 +200,7 @@ export async function updateCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -198,8 +256,18 @@ export async function updateCredential(
       access.employeeId,
     );
   }
+  const folderIds = normalizeCredentialFolderIds(data);
+  if (folderIds !== undefined) {
+    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, access);
+    const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
+    if (updated) {
+      const favorites = await loadFavoriteRows(runtime, updated.id, access.employeeId);
+      return mapCredentialForApi({ ...updated, favorites });
+    }
+  }
 
-  return mapCredentialForApi(credential);
+  const favorites = await loadFavoriteRows(runtime, credential.id, access.employeeId);
+  return mapCredentialForApi({ ...credential, favorites });
 }
 
 export async function archiveCredential(
@@ -208,10 +276,15 @@ export async function archiveCredential(
   access: CredentialsAccessContext,
 ) {
   const existing = await findMutableCredential(runtime, id, access, 'delete');
-  await runtime.prisma.credential.update({
-    where: { id },
-    data: { archivedAt: new Date() },
-  });
+  const trashedAt = new Date();
+  await runtime.prisma.$transaction([
+    runtime.prisma.credential.update({
+      where: { id },
+      data: { trashedAt },
+    }),
+    runtime.prisma.credentialFolderMembership.deleteMany({ where: { credentialId: id } }),
+    runtime.prisma.credentialFavorite.deleteMany({ where: { credentialId: id } }),
+  ]);
   await runtime.auditService.log({
     entityType: 'credential',
     entityId: id,
@@ -229,7 +302,7 @@ export async function restoreCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: { not: null },
+      trashedAt: { not: null },
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -240,7 +313,7 @@ export async function restoreCredential(
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
-  await runtime.prisma.credential.update({ where: { id }, data: { archivedAt: null } });
+  await runtime.prisma.credential.update({ where: { id }, data: { trashedAt: null } });
   await runtime.auditService.log({
     entityType: 'credential',
     entityId: id,
@@ -259,7 +332,7 @@ export async function permanentlyDeleteCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: { not: null },
+      trashedAt: { not: null },
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,
@@ -292,7 +365,7 @@ async function findMutableCredential(
   const existing = await runtime.prisma.credential.findFirst({
     where: {
       id,
-      archivedAt: null,
+      trashedAt: null,
       ...(await buildCredentialRowVisibilityWhere(
         runtime.prisma,
         runtime.platformAccessResolver,

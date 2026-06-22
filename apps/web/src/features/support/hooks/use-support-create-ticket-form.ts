@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { projectsApi, type Project, type ProjectProductSummary } from '@/lib/api/projects';
 import { supportApi } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
