@@ -38,6 +38,13 @@ export const INVOICE_TAX_STATUS_OPTIONS = [
   { value: 'TAX_FREE', label: 'Tax Free' },
 ] as const;
 
+export const INVOICE_PAYMENT_METHOD_OPTIONS = [
+  { value: 'BANK', label: 'Bank transfer' },
+  { value: 'CARD', label: 'Card' },
+  { value: 'CASH', label: 'Cash' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
 export const EXPENSE_STAGES = [
   { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
   { value: 'DUE_SOON', label: 'Due Soon', variant: 'purple' as StatusVariant },

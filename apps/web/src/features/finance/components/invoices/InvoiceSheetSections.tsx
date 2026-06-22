@@ -4,8 +4,6 @@ import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
-import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
-import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
@@ -95,28 +93,31 @@ export function InvoicePaymentsSection({
   gateRequiredFields?: ReadonlySet<string>;
 }) {
   return (
-    <DetailSheetSection
-      title="Payments"
-      className={invoiceStageGateSectionClass(gateRequiredFields, INVOICE_GATE_FIELD_PAYMENTS)}
-    >
+    <div className="space-y-4">
       {invoice.paymentCoverage?.isFullyPaid ? (
         <p className="text-sm font-medium text-green-600">Fully paid</p>
       ) : null}
+      <RecordPaymentForm
+        invoice={invoice}
+        onRecordPayment={onPaymentRecorded}
+        gateRequiredFields={gateRequiredFields}
+      />
       {invoice.payments.length > 0 ? (
-        <div className="space-y-4">
-          {invoice.payments.map((payment) => (
-            <FinanceProofAttachments
-              key={payment.id}
-              entityType="PAYMENT"
-              entityId={payment.id}
-              purpose="PAYMENT_PROOF"
-              title={`Payment proof · ${new Date(payment.paymentDate).toLocaleDateString()}`}
-            />
-          ))}
-        </div>
+        <DetailSheetSection title="Payment proofs">
+          <div className="space-y-4">
+            {invoice.payments.map((payment) => (
+              <FinanceProofAttachments
+                key={payment.id}
+                entityType="PAYMENT"
+                entityId={payment.id}
+                purpose="PAYMENT_PROOF"
+                title={`Payment proof · ${new Date(payment.paymentDate).toLocaleDateString()}`}
+              />
+            ))}
+          </div>
+        </DetailSheetSection>
       ) : null}
-      <RecordPaymentForm invoice={invoice} onRecordPayment={onPaymentRecorded} />
-    </DetailSheetSection>
+    </div>
   );
 }
 
