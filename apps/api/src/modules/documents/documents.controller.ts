@@ -17,11 +17,16 @@ import { DocumentsService } from './documents.service';
 import type {
   AddDocumentAttachmentDto,
   CreateDocumentDto,
+  CreateDocumentSectionDto,
   ExportDocumentQuery,
   CreateDocumentTagDto,
   UpdateDocumentDto,
   UpdateDocumentSectionDto,
 } from './documents.types';
+
+// Literal sub-path guards — keep these above parameterised GET :id
+const FAVORITES_PATH = 'favorites';
+const RECENT_PATH = 'recent';
 
 @ApiTags('Documents')
 @ApiBearerAuth()
@@ -34,6 +39,16 @@ export class DocumentsController {
   @ApiOperation({ summary: 'List document sections (ensures default sections exist)' })
   async listSections() {
     return this.documentsService.listSections();
+  }
+
+  @Post('sections')
+  @RequirePermission('DOCUMENTS', 'MANAGE_SECTIONS')
+  @ApiOperation({ summary: 'Create a document section (folder)' })
+  async createDocumentSection(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: CreateDocumentSectionDto,
+  ) {
+    return this.documentsService.createDocumentSection(body, user.id);
   }
 
   @Patch('sections/:sectionId')
@@ -61,16 +76,60 @@ export class DocumentsController {
     return this.documentsService.createTag(body);
   }
 
+  @Get(FAVORITES_PATH)
+  @RequirePermission('DOCUMENTS', 'VIEW')
+  @ApiOperation({ summary: 'List documents favorited by the current user' })
+  async listFavorites(@CurrentUser() user: CurrentUserPayload) {
+    return this.documentsService.listFavorites(user.id, buildDocumentsReadAccess(user));
+  }
+
+  @Post(':id/favorite')
+  @RequirePermission('DOCUMENTS', 'VIEW')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Star / favorite a document' })
+  async favoriteDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    await this.documentsService.favoriteDocument(id, user.id, buildDocumentsReadAccess(user));
+  }
+
+  @Delete(':id/favorite')
+  @RequirePermission('DOCUMENTS', 'VIEW')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Unstar / unfavorite a document' })
+  async unfavoriteDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    await this.documentsService.unfavoriteDocument(id, user.id);
+  }
+
+  @Get(RECENT_PATH)
+  @RequirePermission('DOCUMENTS', 'VIEW')
+  @ApiOperation({ summary: 'List documents recently interacted with by the current user' })
+  async listRecent(@CurrentUser() user: CurrentUserPayload) {
+    return this.documentsService.listRecent(user.id, buildDocumentsReadAccess(user));
+  }
+
   @Get()
   @RequirePermission('DOCUMENTS', 'VIEW')
   @ApiOperation({ summary: 'List documents' })
   @ApiQuery({ name: 'sectionId', required: false })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by document type, e.g. NATIVE' })
+  @ApiQuery({ name: 'libraryKey', required: false, description: 'Drive library category key' })
+  @ApiQuery({
+    name: 'entityType',
+    required: false,
+    description: 'CRM entity type (DEAL | LEAD | PROJECT | …)',
+  })
+  @ApiQuery({ name: 'entityId', required: false, description: 'CRM entity ID matching entityType' })
+  @ApiQuery({ name: 'driveFolderId', required: false, description: 'Real DriveFolder ID' })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'includeArchived', required: false })
   async listDocuments(
     @CurrentUser() user: CurrentUserPayload,
     @Query('sectionId') sectionId?: string,
+    @Query('type') type?: string,
+    @Query('libraryKey') libraryKey?: string,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+    @Query('driveFolderId') driveFolderId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('includeArchived') includeArchived?: string,
@@ -78,6 +137,11 @@ export class DocumentsController {
     return this.documentsService.listDocuments(
       {
         sectionId,
+        type,
+        libraryKey,
+        entityType,
+        entityId,
+        driveFolderId,
         status,
         search,
         includeArchived: includeArchived === 'true' || includeArchived === '1',
