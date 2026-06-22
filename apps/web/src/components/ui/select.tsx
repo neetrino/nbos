@@ -48,7 +48,7 @@ function SelectTrigger({
         'focus-visible:ring-ring/45 focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2',
         'data-placeholder:text-muted-foreground',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/25',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
         'data-[size=default]:h-10 data-[size=default]:min-h-10 data-[size=default]:px-3 data-[size=default]:py-2 data-[size=default]:pr-2.5',
         'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg data-[size=sm]:px-2.5 data-[size=sm]:pr-2 data-[size=sm]:text-xs',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5',
@@ -176,7 +176,7 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpArrow
       data-slot="select-scroll-up-button"
       className={cn(
-        'text-muted-foreground hover:text-foreground from-popover top-0 z-10 flex w-full cursor-default items-center justify-center bg-gradient-to-b to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
+        'text-muted-foreground hover:text-foreground from-popover top-0 z-10 flex w-full cursor-pointer items-center justify-center bg-gradient-to-b to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
         className,
       )}
       {...props}
@@ -194,7 +194,7 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownArrow
       data-slot="select-scroll-down-button"
       className={cn(
-        'text-muted-foreground hover:text-foreground from-popover bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-gradient-to-t to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
+        'text-muted-foreground hover:text-foreground from-popover bottom-0 z-10 flex w-full cursor-pointer items-center justify-center bg-gradient-to-t to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
         className,
       )}
       {...props}

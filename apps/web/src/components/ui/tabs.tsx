@@ -58,7 +58,7 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       listVariant: {
@@ -80,7 +80,7 @@ const tabsTriggerVariants = cva(
 /** Pill tab button class for plain `<button>` strips (e.g. {@link DetailSheetTabBar}). */
 export function pillTabButtonClass(isActive: boolean): string {
   return cn(
-    'inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70',
+    'inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap font-medium outline-offset-2 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70',
     PILL_TAB_SHAPE_CLASS,
     isActive ? PILL_TAB_ACTIVE_CLASS : PILL_TAB_INACTIVE_CLASS,
   );
