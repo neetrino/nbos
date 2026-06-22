@@ -178,6 +178,13 @@ export const DETAIL_SHEET_FIELD_LEADING_ICON_CLASS =
 /** Row wrapper for a field with an external leading icon. */
 export const DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS = '-ml-3 flex gap-0.5';
 
+/** Compact pill segmented control inside detail sheet forms (CRM Dashboard nav style). */
+export const DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS =
+  'bg-muted/70 relative flex w-full items-center gap-0.5 rounded-full px-1 py-1';
+
+export const DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS =
+  'relative z-10 inline-flex h-8 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors';
+
 /** Avatar + label open the linked entity sheet; shared hover tint (see relation picker chip). */
 export const RELATION_PICKER_SHEET_TARGET_GROUP_CLASS =
   'group/open flex min-w-0 shrink items-center gap-2';

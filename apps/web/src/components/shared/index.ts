@@ -70,6 +70,11 @@ export type {
 export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { KanbanColumnMoneyPill } from './kanban/KanbanColumnMoneyPill';
 export { InlineField, type InlineFieldProps } from './InlineField';
+export {
+  DetailSheetFieldSegmented,
+  type DetailSheetFieldSegmentedOption,
+  type DetailSheetFieldSegmentedProps,
+} from './DetailSheetFieldSegmented';
 export { MoneyInput, type MoneyInputProps } from './MoneyInput';
 export { NbosMoneyInput, type NbosMoneyInputProps } from './NbosMoneyInput';
 export { AmdCurrencyIcon, type AmdCurrencyIconProps } from './AmdCurrencyIcon';
