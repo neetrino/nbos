@@ -9,7 +9,7 @@ export default function CrmLayout({ children }: { children: ReactNode }) {
     <ModuleHeroSlotProvider
       title="CRM"
       tabs={<PageHeroNavLinks items={CRM_MODULE_NAV} ariaLabel="CRM sections" />}
-      className="flex h-[calc(100dvh-7rem)] min-h-0 flex-col gap-5"
+      className="flex h-[calc(100dvh-7rem)] min-h-0 w-full min-w-0 flex-col gap-5"
     >
       {children}
     </ModuleHeroSlotProvider>

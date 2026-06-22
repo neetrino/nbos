@@ -60,7 +60,9 @@ export function DocumentsTable({ rows }: { rows: DocumentListItem[] }) {
                   )}
                 </TableCell>
               ) : null}
-              <TableCell className="text-muted-foreground text-sm">{row.section.name}</TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {row.section?.name ?? '—'}
+              </TableCell>
               <TableCell>
                 <DocumentStatusBadge status={row.status} />
               </TableCell>

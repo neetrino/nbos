@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCallback, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
@@ -10,6 +11,7 @@ import {
   PAGE_HERO_TAB_ICON,
   PAGE_HERO_TAB_ICON_WRAP,
 } from './page-hero-layout';
+import { SlidingPillBackdrop, useSlidingPillIndicator } from './sliding-pill-indicator';
 
 export type PageHeroNavLinkItem = {
   href: string;
@@ -29,31 +31,58 @@ export interface PageHeroNavLinksProps {
   className?: string;
 }
 
+function isNavItemActive(pathname: string, item: PageHeroNavLinkItem): boolean {
+  const prefix = item.matchPrefix ?? item.href;
+  const excluded =
+    item.excludeMatchPrefix !== undefined && pathname.startsWith(item.excludeMatchPrefix);
+  if (excluded) return false;
+  if (item.exactMatch) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(`${prefix}/`);
+}
+
 export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLinksProps) {
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
+
+  const activeHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
+
+  const getActiveElement = useCallback(
+    () => (activeHref ? linkRefs.current.get(activeHref) : undefined),
+    [activeHref],
+  );
+
+  const { indicator, ready } = useSlidingPillIndicator(
+    navRef,
+    getActiveElement,
+    `${activeHref}:${pathname}`,
+  );
 
   return (
-    <nav className={cn(PAGE_HERO_PILL_GROUP, 'w-max min-w-0', className)} aria-label={ariaLabel}>
+    <nav
+      ref={navRef}
+      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0', className)}
+      aria-label={ariaLabel}
+    >
+      <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary shadow-md" />
       {items.map((item) => {
-        const prefix = item.matchPrefix ?? item.href;
-        const excluded =
-          item.excludeMatchPrefix !== undefined && pathname.startsWith(item.excludeMatchPrefix);
-        const active =
-          !excluded &&
-          (item.exactMatch
-            ? pathname === item.href
-            : pathname === item.href || pathname.startsWith(`${prefix}/`));
+        const active = isNavItemActive(pathname, item);
         const Icon = item.icon;
         return (
           <Link
             key={item.href}
+            ref={(node) => {
+              if (node) linkRefs.current.set(item.href, node);
+              else linkRefs.current.delete(item.href);
+            }}
             href={item.href}
             aria-current={active ? 'page' : undefined}
             title={item.label}
             className={cn(
               PAGE_HERO_TAB_BUTTON,
+              'relative z-10',
               active
-                ? 'bg-primary text-primary-foreground shadow-md'
+                ? 'text-primary-foreground'
                 : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
             )}
           >

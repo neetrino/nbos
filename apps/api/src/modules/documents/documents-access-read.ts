@@ -79,6 +79,8 @@ function effectiveAllWhere(): Prisma.DocumentWhereInput {
     OR: [
       { listScopeOverride: 'ALL' },
       { AND: [{ listScopeOverride: null }, { section: { defaultListScope: 'ALL' } }] },
+      // Documents with no section (libraryKey / driveFolderId location) default to ALL scope.
+      { AND: [{ listScopeOverride: null }, { sectionId: null }] },
     ],
   };
 }
@@ -163,7 +165,8 @@ export interface DocumentReadRow {
   ownerId: string | null;
   createdById: string | null;
   listScopeOverride: DocumentListScopeEnum | null;
-  section: { defaultListScope: DocumentListScopeEnum };
+  /** Null for documents using libraryKey or driveFolderId location (treated as ALL scope). */
+  section: { defaultListScope: DocumentListScopeEnum } | null;
 }
 
 function isActorOnDocument(doc: DocumentReadRow, actorId: string): boolean {
@@ -225,7 +228,8 @@ export function employeeCanReadDocumentRow(
   colleagueIds: string[],
 ): boolean {
   if (viewScope === 'NONE') return false;
-  const effective = doc.listScopeOverride ?? doc.section.defaultListScope;
+  // Documents without a section (libraryKey / driveFolderId) default to ALL scope.
+  const effective = doc.listScopeOverride ?? doc.section?.defaultListScope ?? 'ALL';
   return (
     rbacAllowsRead(viewScope, doc, employeeId, colleagueIds) &&
     effectiveListScopeAllowsRead(effective, doc, employeeId, colleagueIds)

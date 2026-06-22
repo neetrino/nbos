@@ -26,6 +26,7 @@ packages/database/src/generated/prisma/
 npm-debug.log*
 pnpm-debug.log*
 tmp/
+tmp_*
 temp/
 .cache/
 

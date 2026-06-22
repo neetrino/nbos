@@ -128,11 +128,13 @@ export interface FileUploadSessionCompleteRow {
 
 export interface CreateDriveFolderDto {
   name: string;
-  /** Required for Company/Personal; optional when scopeEntityType + scopeEntityId are set (defaults to COMPANY). */
+  /** Required for Company/Personal; optional when scopeEntityType + scopeEntityId or libraryKey are set (defaults to COMPANY). */
   space?: string;
   parentId?: string;
   scopeEntityType?: string;
   scopeEntityId?: string;
+  /** Drive library category key (deals | projects | …). When set, folder is scoped to that library; space defaults to COMPANY. */
+  libraryKey?: string;
 }
 
 export interface DriveFolderQueryParams {

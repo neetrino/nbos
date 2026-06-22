@@ -111,6 +111,19 @@ export interface MailThreadDetailDto {
   messages: MailMessageRow[];
 }
 
+export interface MailBulkThreadActionFailedItem {
+  threadId: string;
+  error: string;
+}
+
+export interface MailBulkThreadActionResultDto {
+  total: number;
+  succeeded: number;
+  failed: number;
+  succeededThreadIds: string[];
+  failedItems: MailBulkThreadActionFailedItem[];
+}
+
 export interface PatchMailThreadPayload {
   needsBusinessLink: boolean;
 }
@@ -271,6 +284,21 @@ export const mailApi = {
 
   async markThreadRead(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-read`);
+    return resp.data;
+  },
+
+  async bulkMarkThreadsRead(threadIds: string[]): Promise<MailBulkThreadActionResultDto> {
+    const resp = await api.post<MailBulkThreadActionResultDto>('/api/mail/threads/bulk-mark-read', {
+      threadIds,
+    });
+    return resp.data;
+  },
+
+  async bulkMarkThreadsUnread(threadIds: string[]): Promise<MailBulkThreadActionResultDto> {
+    const resp = await api.post<MailBulkThreadActionResultDto>(
+      '/api/mail/threads/bulk-mark-unread',
+      { threadIds },
+    );
     return resp.data;
   },
 

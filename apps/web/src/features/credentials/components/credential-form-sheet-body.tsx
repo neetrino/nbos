@@ -1,6 +1,7 @@
 'use client';
 
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
+import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { cn } from '@/lib/utils';
 import { CredentialFormSheetFields } from './credential-form-sheet-fields';
 import { CredentialManualAccessPanel } from './credential-manual-access-panel';
@@ -46,25 +47,31 @@ export function CredentialFormSheetBody({
 
   return (
     <div className={cn('px-6 pt-6 pb-6', stretchTab && DETAIL_SHEET_TAB_BODY_STRETCH_CLASS)}>
-      {activeTab === 'general' ? <CredentialFormSheetFields form={form} /> : null}
-      {activeTab === 'manual-access' ? (
-        <CredentialManualAccessPanel
-          grants={manualGrants}
-          inheritedSummary={inheritedSummary}
-          onGrantsChange={onManualGrantsChange}
-        />
-      ) : null}
-      {activeTab === 'activity' ? (
-        <CredentialSheetAuditPanel
-          entries={audit.entries}
-          loading={audit.loading}
-          onReload={() => void audit.reload()}
-          embedded
-        />
-      ) : null}
-      {activeTab === 'secret-history' && credentialId ? (
-        <CredentialSecretVersionsPanel credentialId={credentialId} sheetOpen={sheetOpen} embedded />
-      ) : null}
+      <DetailSheetTabPanel tabKey={activeTab}>
+        {activeTab === 'general' ? <CredentialFormSheetFields form={form} /> : null}
+        {activeTab === 'manual-access' ? (
+          <CredentialManualAccessPanel
+            grants={manualGrants}
+            inheritedSummary={inheritedSummary}
+            onGrantsChange={onManualGrantsChange}
+          />
+        ) : null}
+        {activeTab === 'activity' ? (
+          <CredentialSheetAuditPanel
+            entries={audit.entries}
+            loading={audit.loading}
+            onReload={() => void audit.reload()}
+            embedded
+          />
+        ) : null}
+        {activeTab === 'secret-history' && credentialId ? (
+          <CredentialSecretVersionsPanel
+            credentialId={credentialId}
+            sheetOpen={sheetOpen}
+            embedded
+          />
+        ) : null}
+      </DetailSheetTabPanel>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { MailAccountAccessRole } from '@nbos/database';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { AssignThreadDto } from './dto/assign-thread.dto';
+import { BulkThreadActionDto } from './dto/bulk-thread-action.dto';
 import { ComposeMailDto, ReplyMailDto } from './dto/compose-mail.dto';
 import { ShareMailAccountDto, UpdateMailAccountAccessDto } from './dto/share-mail-account.dto';
 import { MailAccountAccessService } from './mail-account-access.service';
@@ -145,6 +146,38 @@ export class MailCollabController {
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
+    );
+  }
+
+  @Post('threads/bulk-mark-read')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'VIEW')
+  @ApiOperation({ summary: 'Bulk mark threads as read (NBOS + provider)' })
+  bulkMarkRead(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Body() body: BulkThreadActionDto,
+  ) {
+    return this.threadCommandService.bulkMarkThreadsRead(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      body.threadIds,
+    );
+  }
+
+  @Post('threads/bulk-mark-unread')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Bulk mark threads unread (NBOS user state)' })
+  bulkMarkUnread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Body() body: BulkThreadActionDto,
+  ) {
+    return this.threadCommandService.bulkMarkThreadsUnread(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      body.threadIds,
     );
   }
 

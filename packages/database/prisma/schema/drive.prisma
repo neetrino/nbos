@@ -189,6 +189,9 @@ model DriveFolder {
   /// When set with scopeEntityId, folder belongs to a Library entity (DEAL, PROJECT, …), not Company/Personal free tree.
   scopeEntityType  String?        @map("scope_entity_type")
   scopeEntityId    String?        @map("scope_entity_id")
+  /// Drive library category key (deals | projects | products | clients | finance | partners | tasks | support).
+  /// When set, folder is scoped to that Documents library category; space is COMPANY.
+  libraryKey       String?        @map("library_key")
   ownerId          String?        @map("owner_id")
   createdById      String?        @map("created_by_id")
   parentId         String?        @map("parent_id")
@@ -204,6 +207,7 @@ model DriveFolder {
 
   @@index([space, ownerId])
   @@index([scopeEntityType, scopeEntityId])
+  @@index([libraryKey])
   @@index([parentId])
   @@index([deletedAt])
   @@map("drive_folders")

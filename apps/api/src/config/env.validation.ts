@@ -29,7 +29,12 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
   const errors: string[] = [];
 
   // Hard requirements in every environment (already used via getOrThrow at runtime).
-  const requiredAlways = ['DATABASE_URL', 'JWT_SECRET', 'CREDENTIALS_ENCRYPTION_KEY'];
+  const requiredAlways = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'CREDENTIALS_ENCRYPTION_KEY',
+    'BACKEND_URL',
+  ];
   for (const key of requiredAlways) {
     if (isBlank(config[key])) errors.push(`${key} is required`);
   }

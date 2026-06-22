@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
+import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
 import { EntityDetailSheetLoadingShell } from '@/components/shared/entity-detail-sheet-loading-shell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -245,30 +246,32 @@ export function CompanySheet({
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
         <ScrollArea className="min-h-0 flex-1">
-          {activeTab === 'general' ? (
-            <CompanySheetScrollBody
-              company={company}
-              draft={draft}
-              patchDraft={patchDraft}
-              saving={saving}
-              readOnly={isTrashView}
-              generalError={generalError}
-              portfolioData={portfolio.data}
-              portfolioLoading={portfolio.loading}
-              portfolioError={portfolio.error}
-              searchContacts={searchContacts}
-              onPortfolioRetry={portfolio.reload}
-            />
-          ) : (
-            <ClientPortfolioPanel
-              tab={activeTab as ClientEmbeddedPortfolioTabId}
-              data={portfolio.data}
-              loading={portfolio.loading}
-              error={portfolio.error}
-              variant="company"
-              onRetry={portfolio.reload}
-            />
-          )}
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' ? (
+              <CompanySheetScrollBody
+                company={company}
+                draft={draft}
+                patchDraft={patchDraft}
+                saving={saving}
+                readOnly={isTrashView}
+                generalError={generalError}
+                portfolioData={portfolio.data}
+                portfolioLoading={portfolio.loading}
+                portfolioError={portfolio.error}
+                searchContacts={searchContacts}
+                onPortfolioRetry={portfolio.reload}
+              />
+            ) : (
+              <ClientPortfolioPanel
+                tab={activeTab as ClientEmbeddedPortfolioTabId}
+                data={portfolio.data}
+                loading={portfolio.loading}
+                error={portfolio.error}
+                variant="company"
+                onRetry={portfolio.reload}
+              />
+            )}
+          </DetailSheetTabPanel>
         </ScrollArea>
 
         <DetailSheetFormFooter

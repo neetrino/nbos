@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderOpen, Plus, RefreshCcw, Search, Settings, Share2 } from 'lucide-react';
+import { FolderOpen, Plus, RefreshCcw, Search, Settings, Share2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +34,7 @@ export interface MailToolbarRowProps {
   onRefresh: () => void;
   onSyncAccount: (accountId: string) => void;
   onShareAccount: (account: MailAccountHealthSummaryRow) => void;
+  onDeleteAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
 }
 
@@ -51,6 +52,7 @@ export function MailToolbarRow({
   onRefresh,
   onSyncAccount,
   onShareAccount,
+  onDeleteAccount,
   onConnectMailbox,
 }: MailToolbarRowProps) {
   const selectedAccount =
@@ -151,6 +153,15 @@ export function MailToolbarRow({
               >
                 <Share2 />
                 Share mailbox
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => onDeleteAccount(selectedAccount)}
+              >
+                <Trash2 />
+                Delete mailbox
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>

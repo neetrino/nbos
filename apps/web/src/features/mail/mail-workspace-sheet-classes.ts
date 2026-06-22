@@ -40,3 +40,26 @@ export const MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS = cn(
   'max-sm:left-3 sm:right-[calc(100vw-var(--app-sidebar-width))]',
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 );
+
+/**
+ * Nested forward composer panel: keep parent thread visibly exposed on `sm+`.
+ * Mobile remains full width for usability.
+ */
+export const MAIL_NESTED_FORWARD_SHEET_CONTENT_CLASS = cn(
+  'flex w-full flex-col gap-0 overflow-hidden p-0',
+  rightSheetSideClasses(
+    SHEET_VIEWPORT_TOP_INSET_CLASS,
+    'bottom-0',
+    SHEET_VIEWPORT_MAX_HEIGHT_CLASS,
+  ),
+  'data-[side=right]:rounded-tl-2xl data-[side=right]:border-l',
+  'data-[side=right]:w-full data-[side=right]:max-w-none',
+  'sm:data-[side=right]:left-[calc(var(--app-sidebar-width)+15vw)] sm:data-[side=right]:right-0',
+  'sm:data-[side=right]:w-auto sm:max-w-none',
+);
+
+/** Floating close rail anchor for nested forward composer width preset. */
+export const MAIL_NESTED_FORWARD_SHEET_RAIL_ANCHOR_CLASS = cn(
+  'max-sm:left-3 sm:right-[calc(85vw-var(--app-sidebar-width))]',
+  SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
+);

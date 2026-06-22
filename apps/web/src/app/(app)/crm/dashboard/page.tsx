@@ -19,6 +19,7 @@ import { StatusBadge } from '@/components/shared';
 import { leadsApi, type LeadStats } from '@/lib/api/leads';
 import { dealsApi, type DealStats } from '@/lib/api/deals';
 import { useCrmDashboardScopeStatsCsvExport } from '@/features/crm/hooks/use-crm-dashboard-scope-stats-csv-export';
+import { CrmDashboardKpiCard } from '@/features/crm/components/CrmDashboardKpiCard';
 import { LEAD_SOURCES, getLeadStage } from '@/features/crm/constants/leadPipeline';
 import { formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
 
@@ -116,29 +117,18 @@ export default function CrmDashboardPage() {
   ];
 
   return (
-    <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
+    <div className="min-h-0 min-w-0 flex-1 space-y-6 overflow-y-auto overscroll-contain">
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28 rounded-xl" />
           ))}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
             {kpis.map((kpi) => (
-              <Card key={kpi.label}>
-                <CardContent className="flex items-center gap-4 p-5">
-                  <div className={`rounded-xl p-3 ${kpi.iconClass}`}>
-                    <kpi.icon size={20} />
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs font-medium">{kpi.label}</p>
-                    <p className="text-foreground mt-0.5 text-2xl font-bold">{kpi.value}</p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">{kpi.change}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <CrmDashboardKpiCard key={kpi.label} {...kpi} />
             ))}
           </div>
 

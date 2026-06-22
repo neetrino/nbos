@@ -11,6 +11,10 @@ export function escapeDocumentSearchLikePattern(term: string): string {
 export interface SearchDocumentsListFtsParams {
   term: string;
   sectionId?: string;
+  libraryKey?: string;
+  entityType?: string;
+  entityId?: string;
+  driveFolderId?: string;
   status?: DocumentStatusEnum;
   includeArchived: boolean;
   limit: number;
@@ -47,7 +51,7 @@ function ftsListAccessSql(p: {
   return sql`
     AND (${rbac})
     AND (
-      CASE COALESCE(d.list_scope_override, ds.default_list_scope)::text
+      CASE COALESCE(d.list_scope_override, COALESCE(ds.default_list_scope, 'ALL'::"DocumentListScopeEnum"))::text
         WHEN 'ALL' THEN TRUE
         WHEN 'OWN' THEN (d.owner_id = ${p.employeeId} OR d.created_by_id = ${p.employeeId})
         WHEN 'DEPARTMENT' THEN (
@@ -65,6 +69,9 @@ function ftsListAccessSql(p: {
  * Ranked document ids: FTS on `search_vector` and `attachment_search_vector`, plus the same
  * OR paths as list ILIKE (title, description, plain text, section name, tag names, attachment
  * file names), with RBAC × list-scope access.
+ *
+ * Uses LEFT JOIN on document_sections to support documents without a section
+ * (libraryKey / driveFolderId location).
  */
 export async function searchDocumentIdsForList(
   prisma: InstanceType<typeof PrismaClient>,
@@ -77,6 +84,18 @@ export async function searchDocumentIdsForList(
   const filters: ReturnType<typeof sql>[] = [];
   if (params.sectionId) {
     filters.push(sql`d.section_id = ${params.sectionId}`);
+  }
+  if (params.libraryKey) {
+    filters.push(sql`d.library_key = ${params.libraryKey}`);
+  }
+  if (params.entityType) {
+    filters.push(sql`d.entity_type = ${params.entityType}`);
+  }
+  if (params.entityId) {
+    filters.push(sql`d.entity_id = ${params.entityId}`);
+  }
+  if (params.driveFolderId) {
+    filters.push(sql`d.drive_folder_id = ${params.driveFolderId}`);
   }
   if (params.status) {
     filters.push(sql`d.status = ${params.status}::"DocumentStatusEnum"`);
@@ -107,9 +126,9 @@ export async function searchDocumentIdsForList(
         END)
       )::float8 AS rank
     FROM documents d
-    INNER JOIN document_sections ds ON ds.id = d.section_id
+    LEFT JOIN document_sections ds ON ds.id = d.section_id
     CROSS JOIN sq
-    WHERE ds.archived_at IS NULL
+    WHERE (ds.archived_at IS NULL OR d.section_id IS NULL)
     ${extraAnd}
     ${accessSql}
     AND (
@@ -118,7 +137,7 @@ export async function searchDocumentIdsForList(
       OR d.title ILIKE ${pattern} ESCAPE '\\'
       OR COALESCE(d.description, '') ILIKE ${pattern} ESCAPE '\\'
       OR COALESCE(d.plain_text, '') ILIKE ${pattern} ESCAPE '\\'
-      OR ds.name ILIKE ${pattern} ESCAPE '\\'
+      OR COALESCE(ds.name, '') ILIKE ${pattern} ESCAPE '\\'
       OR EXISTS (
         SELECT 1
         FROM document_tag_links dtl

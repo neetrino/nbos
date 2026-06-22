@@ -9,7 +9,7 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
-import { PageHero } from '@/components/shared';
+import { PageHero, PageHeroTabs } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -84,10 +84,19 @@ export function DriveHero({
         title="Drive"
         tabs={
           <div className={cn(PAGE_HERO_TAB_SCROLL, lifecycleView !== 'browse' && 'opacity-45')}>
-            <DriveSpaceTabs
-              selected={selectedSpace}
-              onSelect={onSelectSpace}
-              lifecycleActive={lifecycleView !== 'browse'}
+            <PageHeroTabs
+              value={selectedSpace.key}
+              onChange={(key) => {
+                const space = DRIVE_SPACES.find((item) => item.key === key);
+                if (space) onSelectSpace(space);
+              }}
+              options={DRIVE_SPACES.map((space) => ({
+                value: space.key,
+                label: space.segmentLabel,
+                icon: space.icon,
+              }))}
+              ariaLabel="Drive spaces"
+              dimmed={lifecycleView !== 'browse'}
             />
           </div>
         }
@@ -134,56 +143,6 @@ export function DriveHero({
         </section>
       ) : null}
     </>
-  );
-}
-
-function DriveSpaceTabs({
-  selected,
-  onSelect,
-  lifecycleActive = false,
-}: {
-  selected: DriveSpaceOption;
-  onSelect: (space: DriveSpaceOption) => void;
-  lifecycleActive?: boolean;
-}) {
-  return (
-    <div
-      className="bg-muted/70 inline-flex items-center gap-0.5 rounded-full p-1"
-      role="tablist"
-      aria-label="Drive spaces"
-    >
-      {DRIVE_SPACES.map((space) => {
-        const active = !lifecycleActive && space.key === selected.key;
-        const Icon = space.icon;
-        return (
-          <button
-            key={space.key}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            onClick={() => onSelect(space)}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
-              active
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
-            )}
-          >
-            <span
-              className={cn(
-                'flex size-7 shrink-0 items-center justify-center rounded-full',
-                active
-                  ? 'bg-primary-foreground/20 text-primary-foreground'
-                  : 'bg-muted text-muted-foreground',
-              )}
-            >
-              <Icon className="size-4" aria-hidden />
-            </span>
-            {space.segmentLabel}
-          </button>
-        );
-      })}
-    </div>
   );
 }
 

@@ -1,5 +1,12 @@
 export type MailComposePanelMode = 'new' | 'forward';
 
+export type MailOverlayPanel = {
+  type: 'forward-compose';
+  defaultAccountId?: string | null;
+  defaultSubject?: string;
+  threadId: string;
+} | null;
+
 export type ActiveMailPanel =
   | { type: 'thread'; threadId: string }
   | {

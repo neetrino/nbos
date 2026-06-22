@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
@@ -31,7 +32,19 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
   const { can, isLoading: permsLoading } = usePermission();
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [moreExpanded, setMoreExpanded] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const navigation = useSidebarNavigation();
+  const pathname = usePathname();
+  // Hover-expand overlay is only meaningful on /documents where the sidebar
+  // is auto-collapsed to give the editor more space.  On all other routes
+  // the sidebar is expanded by default; hover should have no special effect.
+  const isDocumentsRoute = pathname.startsWith('/documents');
+
+  // Reset hover state on every route change so stale hover cannot persist
+  // across navigation (e.g. clicking a nav item while hover-expanded).
+  useEffect(() => {
+    startTransition(() => setIsHovering(false));
+  }, [pathname]);
 
   const visibleModules = useMemo(
     () => getVisibleNavModules(can, permsLoading, NAV_MODULE_DEFINITIONS),
@@ -57,43 +70,89 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
     navigation.reorderPrimaryModules(visibleKeys, primaryKeys);
   };
 
-  const sidebarWidthPx = collapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX;
+  // Hover overlay is active only on /documents and only when sidebar is collapsed.
+  const isHoveringCollapsed = collapsed && isHovering && isDocumentsRoute;
+  // Visual expansion follows click state everywhere; hover adds to it only on /documents.
+  const visuallyExpanded = !collapsed || isHoveringCollapsed;
 
   return (
+    /*
+     * Outer aside — the real layout column that AppLayout's CSS grid measures.
+     * Its width is ONLY driven by the click-expand state (collapsed prop).
+     * Hover NEVER changes this width, so the grid never shifts during hover.
+     * position:relative makes it the containing block for the inner surface.
+     */
     <aside
-      className="border-sidebar-border bg-sidebar z-40 flex h-screen min-w-0 shrink-0 flex-col overflow-x-hidden border-r"
-      style={{ width: sidebarWidthPx }}
+      className="relative h-screen min-w-0 shrink-0"
+      style={{ width: collapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX }}
     >
-      <SidebarHeader collapsed={collapsed} onCollapsedChange={onCollapsedChange} />
+      {/*
+       * Inner visual surface.
+       *
+       * Collapsed + hovered → absolute positioning lets the surface visually
+       * expand to the full expanded width while the outer aside (and the
+       * AppLayout grid column) remains at the collapsed width.  The surface
+       * overlays the first slice of main content while hovered; as soon as
+       * the mouse leaves, it collapses back. z-40 keeps it above page content
+       * but below modals/dialogs (typically z-50+).
+       *
+       * Expanded (click state) → h-full, in normal flow, no overlay trick.
+       *
+       * Mouse events live here (not on the outer aside) so onMouseLeave fires
+       * at the visual 260 px edge, not the layout 56 px edge.
+       */}
+      <div
+        className={cn(
+          'border-sidebar-border bg-sidebar flex flex-col overflow-x-hidden border-r',
+          'transition-[width] duration-200',
+          isHoveringCollapsed ? 'absolute inset-y-0 left-0 z-[45] shadow-xl' : 'h-full',
+        )}
+        style={{
+          width: visuallyExpanded ? SIDEBAR_WIDTH_EXPANDED_PX : SIDEBAR_WIDTH_COLLAPSED_PX,
+        }}
+        onMouseEnter={() => collapsed && isDocumentsRoute && setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        <SidebarHeader
+          collapsed={!visuallyExpanded}
+          onCollapsedChange={(nextCollapsed) => {
+            setIsHovering(false);
+            onCollapsedChange(nextCollapsed);
+          }}
+        />
 
-      <nav className={cn('flex-1 overflow-y-auto', SIDEBAR_NAV_LIST_CLASS)}>
-        <SidebarNavList
-          collapsed={collapsed}
+        <nav className={cn('flex-1 overflow-y-auto', SIDEBAR_NAV_LIST_CLASS)}>
+          <SidebarNavList
+            collapsed={!visuallyExpanded}
+            primaryItems={layout.primary}
+            hiddenItems={layout.hidden}
+            personalLinks={navigation.sidebarLinks}
+            moreExpanded={moreExpanded}
+            onToggleMore={() => setMoreExpanded((value) => !value)}
+          />
+        </nav>
+
+        <div className="border-sidebar-border border-t p-1.5">
+          <SidebarSettingsMenu
+            collapsed={!visuallyExpanded}
+            onCustomizeMenu={() => setCustomizeOpen(true)}
+          />
+        </div>
+
+        <SidebarNavigationCustomizeSheet
+          open={customizeOpen}
+          onOpenChange={setCustomizeOpen}
           primaryItems={layout.primary}
           hiddenItems={layout.hidden}
           personalLinks={navigation.sidebarLinks}
-          moreExpanded={moreExpanded}
-          onToggleMore={() => setMoreExpanded((value) => !value)}
+          isSaving={navigation.isSaving}
+          onReorder={handleReorder}
+          onHide={navigation.hideModule}
+          onRestore={navigation.restoreModule}
+          onCreateLink={navigation.createPersonalLink}
+          onDeleteLink={navigation.deletePersonalLink}
         />
-      </nav>
-
-      <div className="border-sidebar-border border-t p-1.5">
-        <SidebarSettingsMenu collapsed={collapsed} onCustomizeMenu={() => setCustomizeOpen(true)} />
       </div>
-
-      <SidebarNavigationCustomizeSheet
-        open={customizeOpen}
-        onOpenChange={setCustomizeOpen}
-        primaryItems={layout.primary}
-        hiddenItems={layout.hidden}
-        personalLinks={navigation.sidebarLinks}
-        isSaving={navigation.isSaving}
-        onReorder={handleReorder}
-        onHide={navigation.hideModule}
-        onRestore={navigation.restoreModule}
-        onCreateLink={navigation.createPersonalLink}
-        onDeleteLink={navigation.deletePersonalLink}
-      />
     </aside>
   );
 }

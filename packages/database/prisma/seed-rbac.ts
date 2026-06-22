@@ -393,6 +393,11 @@ async function main() {
     action: 'MANAGE_SECTIONS',
   });
   permissionRecords.push({
+    id: 'perm-documents-export',
+    module: 'DOCUMENTS',
+    action: 'EXPORT',
+  });
+  permissionRecords.push({
     id: 'perm-checklist-templates-publish',
     module: 'CHECKLIST_TEMPLATES',
     action: 'PUBLISH',
@@ -446,6 +451,18 @@ async function main() {
     rolePermissionData.push({
       roleId,
       permissionId: 'perm-documents-manage-sections',
+      scope: editScope,
+    });
+  }
+
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const docsScopes = moduleMap.DOCUMENTS;
+    if (!docsScopes) continue;
+    const editScope = docsScopes[1];
+    if (editScope === 'NONE') continue;
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-documents-export',
       scope: editScope,
     });
   }
