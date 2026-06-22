@@ -5,10 +5,16 @@ import { Calendar, CreditCard, FileText, Loader2, Save, Wallet } from 'lucide-re
 import {
   AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DetailSheetFieldSegmented,
   InlineField,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { formatAmount, INVOICE_PAYMENT_METHOD_OPTIONS } from '@/features/finance/constants/finance';
+import {
+  DEFAULT_INVOICE_PAYMENT_METHOD,
+  formatAmount,
+  INVOICE_PAYMENT_METHOD_OPTIONS,
+  type InvoicePaymentMethod,
+} from '@/features/finance/constants/finance';
 import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -40,7 +46,9 @@ export function RecordPaymentForm({
   const outstanding = invoice.paymentCoverage?.outstandingAmount ?? parseFloat(invoice.amount);
   const [amount, setAmount] = useState(String(outstanding || ''));
   const [paymentDate, setPaymentDate] = useState(todayDateInputValue);
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<InvoicePaymentMethod>(
+    DEFAULT_INVOICE_PAYMENT_METHOD,
+  );
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,10 +70,10 @@ export function RecordPaymentForm({
         invoiceId: invoice.id,
         amount: Number(amount),
         paymentDate,
-        paymentMethod: paymentMethod || undefined,
+        paymentMethod,
         notes: notes || undefined,
       });
-      setPaymentMethod('');
+      setPaymentMethod(DEFAULT_INVOICE_PAYMENT_METHOD);
       setNotes('');
       setPaymentDate(todayDateInputValue());
     } catch (caught) {
@@ -118,15 +126,11 @@ export function RecordPaymentForm({
             onValueChange={setPaymentDate}
           />
         </div>
-        <InlineField
-          variant="controlled"
+        <DetailSheetFieldSegmented
           label="Method"
-          type="select"
-          value={paymentMethod}
-          options={[...INVOICE_PAYMENT_METHOD_OPTIONS]}
-          placeholder="Optional"
-          clearable
           icon={<CreditCard size={14} className={FIELD_ICON_CLASS} />}
+          value={paymentMethod}
+          options={INVOICE_PAYMENT_METHOD_OPTIONS}
           onValueChange={setPaymentMethod}
         />
         <InlineField

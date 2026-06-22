@@ -39,11 +39,13 @@ export const INVOICE_TAX_STATUS_OPTIONS = [
 ] as const;
 
 export const INVOICE_PAYMENT_METHOD_OPTIONS = [
-  { value: 'BANK', label: 'Bank transfer' },
-  { value: 'CARD', label: 'Card' },
+  { value: 'TRANSACTION', label: 'Transaction' },
   { value: 'CASH', label: 'Cash' },
-  { value: 'OTHER', label: 'Other' },
 ] as const;
+
+export const DEFAULT_INVOICE_PAYMENT_METHOD = INVOICE_PAYMENT_METHOD_OPTIONS[0].value;
+
+export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHOD_OPTIONS)[number]['value'];
 
 export const EXPENSE_STAGES = [
   { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
