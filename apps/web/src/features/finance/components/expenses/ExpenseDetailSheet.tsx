@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   ErrorState,
   LoadingState,
@@ -288,7 +289,7 @@ export function ExpenseDetailSheet({
               ) : error && !expense ? (
                 <ErrorState description={error} onRetry={() => void fetchExpense()} />
               ) : expense && generalDraft ? (
-                <>
+                <DetailSheetTabPanel tabKey={activeTab}>
                   {activeTab === 'general' ? (
                     <ExpenseGeneralTab
                       expense={expense}
@@ -321,7 +322,7 @@ export function ExpenseDetailSheet({
                       />
                     </div>
                   ) : null}
-                </>
+                </DetailSheetTabPanel>
               ) : null}
             </div>
           </ScrollArea>

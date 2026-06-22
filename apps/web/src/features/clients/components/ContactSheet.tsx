@@ -8,6 +8,7 @@ import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
   StatusBadge,
@@ -168,28 +169,30 @@ export function ContactSheet({
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
         <ScrollArea className="min-h-0 flex-1">
-          {activeTab === 'general' ? (
-            <ContactSheetScrollBody
-              contact={contact}
-              draft={draft}
-              patchDraft={patchDraft}
-              saving={saving}
-              generalError={generalError}
-              portfolioData={portfolio.data}
-              portfolioLoading={portfolio.loading}
-              portfolioError={portfolio.error}
-              onPortfolioRetry={portfolio.reload}
-            />
-          ) : (
-            <ClientPortfolioPanel
-              tab={activeTab as ClientEmbeddedPortfolioTabId}
-              data={portfolio.data}
-              loading={portfolio.loading}
-              error={portfolio.error}
-              variant="contact"
-              onRetry={portfolio.reload}
-            />
-          )}
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' ? (
+              <ContactSheetScrollBody
+                contact={contact}
+                draft={draft}
+                patchDraft={patchDraft}
+                saving={saving}
+                generalError={generalError}
+                portfolioData={portfolio.data}
+                portfolioLoading={portfolio.loading}
+                portfolioError={portfolio.error}
+                onPortfolioRetry={portfolio.reload}
+              />
+            ) : (
+              <ClientPortfolioPanel
+                tab={activeTab as ClientEmbeddedPortfolioTabId}
+                data={portfolio.data}
+                loading={portfolio.loading}
+                error={portfolio.error}
+                variant="contact"
+                onRetry={portfolio.reload}
+              />
+            )}
+          </DetailSheetTabPanel>
         </ScrollArea>
 
         <DetailSheetFormFooter

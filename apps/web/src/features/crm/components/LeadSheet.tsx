@@ -10,6 +10,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
 } from '@/components/shared';
@@ -298,25 +299,27 @@ export function LeadSheet({
         {/* ── Content ── */}
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-5 py-4">
-            {activeTab === 'general' && generalDraft ? (
-              <LeadGeneralTab
-                lead={lead}
-                draft={generalDraft}
-                patchDraft={patchGeneralDraft}
-                gateRequiredFields={gateRequiredFields}
-                sectionIds={{
-                  contact: LEAD_SHEET_SECTION.CONTACT,
-                  marketing: LEAD_SHEET_SECTION.MARKETING,
-                  assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
-                  notes: LEAD_SHEET_SECTION.NOTES,
-                }}
-              />
-            ) : null}
-            {activeTab === 'history' && (
-              <div className="text-muted-foreground py-12 text-center text-sm">
-                History coming soon...
-              </div>
-            )}
+            <DetailSheetTabPanel tabKey={activeTab}>
+              {activeTab === 'general' && generalDraft ? (
+                <LeadGeneralTab
+                  lead={lead}
+                  draft={generalDraft}
+                  patchDraft={patchGeneralDraft}
+                  gateRequiredFields={gateRequiredFields}
+                  sectionIds={{
+                    contact: LEAD_SHEET_SECTION.CONTACT,
+                    marketing: LEAD_SHEET_SECTION.MARKETING,
+                    assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                    notes: LEAD_SHEET_SECTION.NOTES,
+                  }}
+                />
+              ) : null}
+              {activeTab === 'history' && (
+                <div className="text-muted-foreground py-12 text-center text-sm">
+                  History coming soon...
+                </div>
+              )}
+            </DetailSheetTabPanel>
           </div>
         </ScrollArea>
 

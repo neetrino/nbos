@@ -5,6 +5,7 @@ import { Repeat } from 'lucide-react';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityItemHost,
   ErrorState,
@@ -218,7 +219,7 @@ export function SubscriptionDetailSheet({
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchSubscription()} />
               ) : subscription && generalDraft ? (
-                <>
+                <DetailSheetTabPanel tabKey={activeTab}>
                   {activeTab === 'general' ? (
                     <SubscriptionGeneralTab
                       subscription={subscription}
@@ -233,7 +234,7 @@ export function SubscriptionDetailSheet({
                     <SubscriptionInvoicesTab subscription={subscription} />
                   ) : null}
                   {activeTab === 'history' ? <SubscriptionHistoryTab /> : null}
-                </>
+                </DetailSheetTabPanel>
               ) : null}
               {actionError ? (
                 <p className="text-destructive mt-4 text-sm" role="alert">

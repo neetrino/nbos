@@ -261,6 +261,9 @@ export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 
+/** Fade + slide for sheet tab body crossfade (see globals.css). */
+export const DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS = 'detail-sheet-tab-panel-transition';
+
 /** Full-width page tab bar (no horizontal sheet padding). */
 export const PAGE_TAB_BAR_WRAPPER_CLASS =
   'border-border flex shrink-0 items-center gap-1 border-b pb-0';

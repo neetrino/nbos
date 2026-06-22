@@ -9,6 +9,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   type DetailSheetTabItem,
   EntityDetailSheetContent,
   StatusBadge,
@@ -290,39 +291,41 @@ export function EmployeeSheet({
           <DetailSheetTabBar tabs={employeeTabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
           <ScrollArea className="min-h-0 flex-1">
-            {activeTab === 'general' ? (
-              <EmployeeSheetScrollBody
-                employeeId={current.id}
-                draft={draft}
-                patchDraft={patchDraft}
-                roles={roles}
-                saving={saving}
-                canEdit={canEdit && current.status !== 'TERMINATED'}
-                generalError={generalError}
-              />
-            ) : null}
-            {activeTab === 'departments' ? (
-              <EmployeeDepartmentsPanel
-                employee={current}
-                departments={departments}
-                canEdit={canEdit && current.status !== 'TERMINATED'}
-                onUpdated={(emp) => {
-                  setCurrent(emp);
-                  const next = createEmployeeGeneralDraft(emp);
-                  setDraft(next);
-                  setSnap(next);
-                  void onSaved?.();
-                }}
-              />
-            ) : null}
-            {activeTab === 'offboarding' && current.status === 'TERMINATED' ? (
-              <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
-            ) : null}
-            {activeTab === 'onboarding' &&
-            current.status !== 'TERMINATED' &&
-            hasOnboardingChecklist ? (
-              <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
-            ) : null}
+            <DetailSheetTabPanel tabKey={activeTab}>
+              {activeTab === 'general' ? (
+                <EmployeeSheetScrollBody
+                  employeeId={current.id}
+                  draft={draft}
+                  patchDraft={patchDraft}
+                  roles={roles}
+                  saving={saving}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  generalError={generalError}
+                />
+              ) : null}
+              {activeTab === 'departments' ? (
+                <EmployeeDepartmentsPanel
+                  employee={current}
+                  departments={departments}
+                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  onUpdated={(emp) => {
+                    setCurrent(emp);
+                    const next = createEmployeeGeneralDraft(emp);
+                    setDraft(next);
+                    setSnap(next);
+                    void onSaved?.();
+                  }}
+                />
+              ) : null}
+              {activeTab === 'offboarding' && current.status === 'TERMINATED' ? (
+                <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
+              ) : null}
+              {activeTab === 'onboarding' &&
+              current.status !== 'TERMINATED' &&
+              hasOnboardingChecklist ? (
+                <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
+              ) : null}
+            </DetailSheetTabPanel>
           </ScrollArea>
 
           <DetailSheetFormFooter

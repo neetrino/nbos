@@ -111,6 +111,7 @@ export {
   type DetailSheetTabBarProps,
   type DetailSheetTabItem,
 } from './DetailSheetTabBar';
+export { DetailSheetTabPanel, type DetailSheetTabPanelProps } from './DetailSheetTabPanel';
 export { DetailSheetPlaceholderTab } from './DetailSheetPlaceholderTab';
 export {
   DetailSheetSettingsMenu,
