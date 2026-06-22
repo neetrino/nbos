@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 
 import { cn } from '@/lib/utils';
+import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
@@ -34,7 +35,7 @@ function PopoverContent({
         side={side}
         sideOffset={sideOffset}
         anchor={anchor}
-        className="isolate z-50"
+        className={cn('isolate', PORTAL_DROPDOWN_Z_CLASS)}
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
@@ -43,7 +44,8 @@ function PopoverContent({
             'ring-border/40 shadow-xl ring-1 shadow-black/[0.08] backdrop-blur-md',
             'data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-            'z-50 flex w-72 min-w-[min(100vw-2rem,18rem)] origin-(--transform-origin) flex-col gap-3 rounded-xl p-3 text-sm outline-hidden duration-150',
+            PORTAL_DROPDOWN_Z_CLASS,
+            'flex w-72 min-w-[min(100vw-2rem,18rem)] origin-(--transform-origin) flex-col gap-3 rounded-xl p-3 text-sm outline-hidden duration-150',
             className,
           )}
           {...props}

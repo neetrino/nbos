@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { Calendar, Flame, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   const { me } = usePermission();
   const { onOpenFull, open, onOpenChange } = props;
   const form = useQuickCreateTaskForm({ ...props, me });
+  const dueDateFieldRef = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,7 +128,10 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
 
             <div className="flex min-h-9 items-center gap-3">
               <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>Due date</span>
-              <div className="relative flex min-w-0 flex-1 items-center gap-2">
+              <div
+                ref={dueDateFieldRef}
+                className="relative flex min-w-0 flex-1 items-center gap-2"
+              >
                 <Calendar size={16} className="text-primary shrink-0" aria-hidden />
                 <NbosDatePicker
                   id="quick-task-due"
@@ -138,6 +143,8 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                   embedded
                   className="min-w-0 flex-1"
                   aria-label="Due date"
+                  popoverAnchorRef={dueDateFieldRef}
+                  popoverAlign="start"
                 />
               </div>
             </div>
