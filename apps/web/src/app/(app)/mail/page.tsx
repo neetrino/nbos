@@ -48,11 +48,7 @@ import { MailThreadList } from '@/features/mail/MailThreadList';
 
 import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
 
-import {
-  activeMailThreadId,
-  type ActiveMailPanel,
-  type MailOverlayPanel,
-} from '@/features/mail/mail-active-panel';
+import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
 
 import { mailFolderListParams, type MailFolderKey } from '@/features/mail/mail-folder-config';
 
@@ -95,7 +91,6 @@ export default function MailInboxPage() {
   const threadSearchQuery = useDebouncedValue(threadSearchDraft, SEARCH_DEBOUNCE_MS).trim();
 
   const [activePanel, setActivePanel] = useState<ActiveMailPanel>(null);
-  const [overlayPanel, setOverlayPanel] = useState<MailOverlayPanel>(null);
 
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(() => new Set());
   const [oauthHandled, setOauthHandled] = useState(false);
@@ -164,7 +159,6 @@ export default function MailInboxPage() {
 
   useEffect(() => {
     setActivePanel(null);
-    setOverlayPanel(null);
 
     clearThreadSelection(setSelectedThreadIds);
   }, [filterAccountId, activeFolder, threadSearchQuery, threadPage]);
@@ -261,7 +255,6 @@ export default function MailInboxPage() {
       setDeleteMailboxTarget(null);
       setFilterAccountId(null);
       setActivePanel(null);
-      setOverlayPanel(null);
       clearThreadSelection(setSelectedThreadIds);
       updateMailQuery((params) => {
         params.delete(MAIL_ACCOUNT_QUERY_KEY);
@@ -290,9 +283,6 @@ export default function MailInboxPage() {
   const handleActivePanelChange = useCallback(
     (panel: ActiveMailPanel) => {
       setActivePanel(panel);
-      if (panel?.type !== 'thread') {
-        setOverlayPanel(null);
-      }
       updateMailQuery(
         (params) => {
           if (panel?.type === 'thread') {
@@ -333,10 +323,6 @@ export default function MailInboxPage() {
     },
     [activePanel, updateMailQuery],
   );
-
-  const handleOverlayPanelChange = useCallback((panel: MailOverlayPanel) => {
-    setOverlayPanel(panel);
-  }, []);
 
   const selectAccount = (accountId: string | null) => {
     setThreadPage(1);
@@ -451,7 +437,7 @@ export default function MailInboxPage() {
       }
       setSelectedThreadIds((prev) => {
         const next = new Set(prev);
-        result.succeededThreadIds.forEach((threadId) => next.delete(threadId));
+        result.succeededThreadIds.forEach((threadId: string) => next.delete(threadId));
         return next;
       });
       toast.error(
@@ -495,7 +481,7 @@ export default function MailInboxPage() {
       }
       setSelectedThreadIds((prev) => {
         const next = new Set(prev);
-        result.succeededThreadIds.forEach((threadId) => next.delete(threadId));
+        result.succeededThreadIds.forEach((threadId: string) => next.delete(threadId));
         return next;
       });
       toast.error(
@@ -589,7 +575,6 @@ export default function MailInboxPage() {
       if (activePanel?.type === 'thread') {
         setActivePanel(null);
       }
-      setOverlayPanel(null);
       return;
     }
     if (filterAccountId !== queryAccountId) {
@@ -648,7 +633,6 @@ export default function MailInboxPage() {
         if (activePanel?.type === 'thread' && activePanel.threadId === queryOpenThreadId) {
           setActivePanel(null);
         }
-        setOverlayPanel(null);
         updateMailQuery((params) => {
           params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         });
@@ -678,7 +662,6 @@ export default function MailInboxPage() {
     if (activePanel?.type === 'connect') {
       return;
     }
-    setOverlayPanel(null);
     setActivePanel({ type: 'connect' });
   }, [canView, loading, queryOpenConnectMailbox, activePanel, updateMailQuery]);
 
@@ -712,7 +695,6 @@ export default function MailInboxPage() {
     if (activePanel?.type === 'share' && activePanel.accountId === shareAccount.id) {
       return;
     }
-    setOverlayPanel(null);
     setActivePanel({
       type: 'share',
       accountId: shareAccount.id,
@@ -727,15 +709,6 @@ export default function MailInboxPage() {
     filterAccountId,
     updateMailQuery,
   ]);
-
-  useEffect(() => {
-    if (
-      overlayPanel?.type === 'forward-compose' &&
-      (activePanel?.type !== 'thread' || overlayPanel.threadId !== activePanel.threadId)
-    ) {
-      setOverlayPanel(null);
-    }
-  }, [activePanel, overlayPanel]);
 
   if (!canView) {
     return (
@@ -854,8 +827,6 @@ export default function MailInboxPage() {
       <MailActivePanelHost
         activePanel={activePanel}
         onActivePanelChange={handleActivePanelChange}
-        overlayPanel={overlayPanel}
-        onOverlayPanelChange={handleOverlayPanelChange}
         accounts={accountHealth}
         canEdit={canEdit}
         onThreadMarkedRead={handleThreadMarkedRead}
