@@ -40,7 +40,7 @@
     "jsonwebtoken": "^9.0.2",
     "mailparser": "^3.9.9",
     "nestjs-pino": "^4.6.1",
-    "nodemailer": "^8.0.10",
+    "nodemailer": "^9.0.1",
     "pdfkit": "^0.18.0",
     "pino": "^10.3.1",
     "reflect-metadata": "^0.2.2",
