@@ -1,9 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useCallback, useRef, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
 import { PAGE_HERO_VIEW_BUTTON } from './page-hero-layout';
+import { SlidingPillBackdrop, useSlidingPillIndicator } from './sliding-pill-indicator';
 
 export type ViewModeOption<T extends string> = {
   value: T;
@@ -28,48 +29,49 @@ export function ViewModeSwitch<T extends string>({
   className,
   ariaLabel = 'View mode',
 }: ViewModeSwitchProps<T>) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  const getActiveElement = useCallback(() => buttonRefs.current.get(value), [value]);
+
+  const { indicator, ready } = useSlidingPillIndicator(groupRef, getActiveElement, value, false);
+
   return (
     <div
-      className={cn(PAGE_HERO_PILL_GROUP, 'shrink-0', className)}
+      ref={groupRef}
+      className={cn(PAGE_HERO_PILL_GROUP, 'relative shrink-0', className)}
       role="group"
       aria-label={ariaLabel}
     >
-      {options.map((option) => (
-        <ViewModeButton
-          key={option.value}
-          option={option}
-          active={value === option.value}
-          onSelect={() => onChange(option.value)}
-        />
-      ))}
+      <SlidingPillBackdrop
+        indicator={indicator}
+        ready={ready}
+        className="bg-background shadow-sm"
+      />
+      {options.map((option) => {
+        const active = value === option.value;
+        return (
+          <button
+            key={option.value}
+            ref={(node) => {
+              if (node) buttonRefs.current.set(option.value, node);
+              else buttonRefs.current.delete(option.value);
+            }}
+            type="button"
+            onClick={() => onChange(option.value)}
+            aria-label={option.ariaLabel ?? option.label}
+            aria-pressed={active}
+            title={option.label}
+            className={cn(
+              PAGE_HERO_VIEW_BUTTON,
+              'relative z-10',
+              active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {option.icon}
+          </button>
+        );
+      })}
     </div>
-  );
-}
-
-function ViewModeButton<T extends string>({
-  option,
-  active,
-  onSelect,
-}: {
-  option: ViewModeOption<T>;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-label={option.ariaLabel ?? option.label}
-      aria-pressed={active}
-      title={option.label}
-      className={cn(
-        PAGE_HERO_VIEW_BUTTON,
-        active
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground',
-      )}
-    >
-      {option.icon}
-    </button>
   );
 }

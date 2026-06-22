@@ -255,6 +255,32 @@ body {
   .nbos-animate-pulse-soft {
     animation: nbos-pulse-soft 2s var(--motion-ease-out) infinite;
   }
+
+  .detail-sheet-tab-panel-transition {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity var(--motion-duration-base) var(--motion-ease-out),
+      transform var(--motion-duration-base) var(--motion-ease-out);
+    will-change: opacity, transform;
+  }
+
+  .detail-sheet-tab-panel-fading {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .detail-sheet-tab-panel-transition {
+      transition: none;
+      will-change: auto;
+    }
+
+    .detail-sheet-tab-panel-fading {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 /* TipTap / ProseMirror (native documents) */

@@ -56,6 +56,7 @@ export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
+export { SegmentedTabs, type SegmentedTabOption, type SegmentedTabsProps } from './SegmentedTabs';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
 export {
   KanbanCardShell,
@@ -111,6 +112,7 @@ export {
   type DetailSheetTabBarProps,
   type DetailSheetTabItem,
 } from './DetailSheetTabBar';
+export { DetailSheetTabPanel, type DetailSheetTabPanelProps } from './DetailSheetTabPanel';
 export { DetailSheetPlaceholderTab } from './DetailSheetPlaceholderTab';
 export {
   DetailSheetSettingsMenu,

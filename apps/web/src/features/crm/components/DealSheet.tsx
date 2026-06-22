@@ -15,6 +15,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityDetailSheetLoadingShell,
   EntityItemHost,
@@ -344,28 +345,30 @@ export function DealSheet({
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-7 py-5">
-              {activeTab === 'general' && generalDraft ? (
-                <DealGeneralTab
-                  deal={deal}
-                  draft={generalDraft}
-                  patchDraft={patchGeneralDraft}
-                  formDisabled={isTrashView}
-                  onRefresh={onRefresh}
-                  onOpenTaskTab={() => setActiveTab('task')}
-                  onOpenDeal={onOpenDeal}
-                  gateRequiredFields={gateRequiredFields}
-                />
-              ) : null}
-              {activeTab === 'history' && <DealHistoryTab />}
-              {activeTab === 'invoice' && (
-                <DealInvoiceTab
-                  deal={deal}
-                  onRefresh={onRefresh}
-                  expandCreateFormNonce={invoiceCreateNonce}
-                />
-              )}
-              {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
-              {activeTab === 'calls' && <DealCallsTab />}
+              <DetailSheetTabPanel tabKey={activeTab}>
+                {activeTab === 'general' && generalDraft ? (
+                  <DealGeneralTab
+                    deal={deal}
+                    draft={generalDraft}
+                    patchDraft={patchGeneralDraft}
+                    formDisabled={isTrashView}
+                    onRefresh={onRefresh}
+                    onOpenTaskTab={() => setActiveTab('task')}
+                    onOpenDeal={onOpenDeal}
+                    gateRequiredFields={gateRequiredFields}
+                  />
+                ) : null}
+                {activeTab === 'history' && <DealHistoryTab />}
+                {activeTab === 'invoice' && (
+                  <DealInvoiceTab
+                    deal={deal}
+                    onRefresh={onRefresh}
+                    expandCreateFormNonce={invoiceCreateNonce}
+                  />
+                )}
+                {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
+                {activeTab === 'calls' && <DealCallsTab />}
+              </DetailSheetTabPanel>
             </div>
           </ScrollArea>
 

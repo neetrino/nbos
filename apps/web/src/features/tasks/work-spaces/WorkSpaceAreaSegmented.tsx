@@ -1,11 +1,11 @@
 'use client';
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SegmentedTabs } from '@/components/shared';
 import type { WorkspaceArea } from './workspace-area';
 
-const AREA_SEGMENTS: Array<{ value: WorkspaceArea; label: string }> = [
-  { value: 'active', label: 'Active' },
-  { value: 'planning', label: 'Planning' },
+const AREA_SEGMENTS = [
+  { value: 'active' as const, label: 'Active' },
+  { value: 'planning' as const, label: 'Planning' },
 ];
 
 export function WorkSpaceAreaSegmented({
@@ -18,22 +18,14 @@ export function WorkSpaceAreaSegmented({
   className?: string;
 }) {
   return (
-    <Tabs
+    <SegmentedTabs
       value={value}
-      onValueChange={(next) => onValueChange(next as WorkspaceArea)}
+      onChange={onValueChange}
+      options={AREA_SEGMENTS}
+      ariaLabel="Work space area"
       className={className}
-    >
-      <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
-        {AREA_SEGMENTS.map((segment) => (
-          <TabsTrigger
-            key={segment.value}
-            value={segment.value}
-            className="px-3 py-1.5 text-xs font-medium"
-          >
-            {segment.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+      listClassName="w-full sm:w-auto"
+      buttonClassName="px-3 py-1.5 text-xs"
+    />
   );
 }

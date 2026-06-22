@@ -8,6 +8,7 @@ import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
@@ -214,25 +215,27 @@ export function InvoiceSheet({
           <div className="px-5 py-5">
             <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
 
-            {activeTab === 'general' ? (
-              <InvoiceGeneralTab
-                invoice={invoice}
-                gateRequiredFields={gateRequiredFields}
-                draft={onInvoiceUpdated ? generalDraft : null}
-                patchDraft={patchGeneralDraft}
-                formDisabled={saving}
-                onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
-                onInvoiceDeleted={onInvoiceDeleted}
-              />
-            ) : null}
-            {activeTab === 'payments' ? (
-              <InvoicePaymentsTab
-                invoice={invoice}
-                gateRequiredFields={gateRequiredFields}
-                onPaymentRecorded={onPaymentRecorded}
-              />
-            ) : null}
-            {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+            <DetailSheetTabPanel tabKey={activeTab}>
+              {activeTab === 'general' ? (
+                <InvoiceGeneralTab
+                  invoice={invoice}
+                  gateRequiredFields={gateRequiredFields}
+                  draft={onInvoiceUpdated ? generalDraft : null}
+                  patchDraft={patchGeneralDraft}
+                  formDisabled={saving}
+                  onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                  onInvoiceDeleted={onInvoiceDeleted}
+                />
+              ) : null}
+              {activeTab === 'payments' ? (
+                <InvoicePaymentsTab
+                  invoice={invoice}
+                  gateRequiredFields={gateRequiredFields}
+                  onPaymentRecorded={onPaymentRecorded}
+                />
+              ) : null}
+              {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+            </DetailSheetTabPanel>
           </div>
         </ScrollArea>
 
