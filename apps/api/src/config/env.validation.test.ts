@@ -8,6 +8,7 @@ const validProd = {
   DATABASE_URL: 'postgresql://app_user:pw@host/db?sslmode=require',
   JWT_SECRET: STRONG,
   CREDENTIALS_ENCRYPTION_KEY: STRONG,
+  BACKEND_URL: 'https://api.example.com',
   CORS_ORIGIN: 'https://app.example.com',
   SCHEDULER_API_KEY: STRONG,
 };
@@ -57,6 +58,7 @@ describe('validateEnv', () => {
         DATABASE_URL: 'x',
         JWT_SECRET: 'dev-weak',
         CREDENTIALS_ENCRYPTION_KEY: 'dev-weak',
+        BACKEND_URL: 'http://localhost:4000',
       }),
     ).not.toThrow();
   });
