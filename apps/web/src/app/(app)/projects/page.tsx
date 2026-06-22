@@ -21,6 +21,7 @@ import {
   ErrorState,
   LoadingState,
   ListPagination,
+  DetailSheetTabPanel,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   ProjectNavigableCard,
   type ViewModeOption,
@@ -107,74 +108,78 @@ export default function ProjectsPage() {
         }
       />
 
-      {loading ? (
-        <LoadingState variant="cards" count={6} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void refetch()} />
-      ) : projects.length === 0 ? (
-        <EmptyState
-          icon={FolderKanban}
-          title="No projects found"
-          description="Create your first project to get started"
-          action={
-            <Button
-              type="button"
-              aria-label="Create new project"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus size={16} aria-hidden />
-              Project
-            </Button>
-          }
-        />
-      ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
-          {projects.map((project) => (
-            <ProjectNavigableCard key={project.id} project={project} />
-          ))}
-        </div>
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="text-center">Orders</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((project) => (
-                <TableRow
-                  key={project.id}
-                  className="cursor-pointer"
-                  onClick={() => handleClick(project)}
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-accent/10 text-accent rounded-lg p-1.5">
-                        <FolderKanban size={14} />
-                      </div>
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                        <p className="text-muted-foreground text-xs">{project.code}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {project.contact?.firstName} {project.contact?.lastName}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {project.company?.name ?? '—'}
-                  </TableCell>
-                  <TableCell className="text-center font-medium">{project._count.orders}</TableCell>
+      <DetailSheetTabPanel tabKey={activeTab}>
+        {loading ? (
+          <LoadingState variant="cards" count={6} />
+        ) : error ? (
+          <ErrorState description={error} onRetry={() => void refetch()} />
+        ) : projects.length === 0 ? (
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects found"
+            description="Create your first project to get started"
+            action={
+              <Button
+                type="button"
+                aria-label="Create new project"
+                onClick={() => setCreateOpen(true)}
+              >
+                <Plus size={16} aria-hidden />
+                Project
+              </Button>
+            }
+          />
+        ) : view === 'grid' ? (
+          <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
+            {projects.map((project) => (
+              <ProjectNavigableCard key={project.id} project={project} />
+            ))}
+          </div>
+        ) : (
+          <div className="border-border overflow-hidden rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead className="text-center">Orders</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow
+                    key={project.id}
+                    className="cursor-pointer"
+                    onClick={() => handleClick(project)}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-accent/10 text-accent rounded-lg p-1.5">
+                          <FolderKanban size={14} />
+                        </div>
+                        <div>
+                          <p className="font-medium">{project.name}</p>
+                          <p className="text-muted-foreground text-xs">{project.code}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {project.contact?.firstName} {project.contact?.lastName}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {project.company?.name ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-center font-medium">
+                      {project._count.orders}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </DetailSheetTabPanel>
 
       {!loading && !error && projects.length > 0 ? (
         <ListPagination meta={meta} onPageChange={setPage} />

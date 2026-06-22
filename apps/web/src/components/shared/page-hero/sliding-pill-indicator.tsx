@@ -8,6 +8,10 @@ export type SlidingPillIndicatorRect = {
   width: number;
 };
 
+/** Shared easing/duration for pill toggles (PageHero tabs, view mode, segmented filters). */
+export const SLIDING_PILL_TRANSITION_CLASS =
+  'transition-[left,width] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
 export function SlidingPillBackdrop({
   indicator,
   ready,
@@ -24,7 +28,7 @@ export function SlidingPillBackdrop({
       aria-hidden
       className={cn(
         'pointer-events-none absolute top-1 bottom-1 rounded-full',
-        ready && 'transition-[left,width] duration-300 ease-out',
+        ready && SLIDING_PILL_TRANSITION_CLASS,
         className,
       )}
       style={{ left: indicator.left, width: indicator.width }}

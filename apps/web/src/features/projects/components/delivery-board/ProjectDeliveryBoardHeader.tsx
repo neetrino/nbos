@@ -1,4 +1,4 @@
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SegmentedTabs } from '@/components/shared';
 import { DeliveryBoardKindSegmented } from './DeliveryBoardKindSegmented';
 import type {
   DeliveryBoardKindFilter,
@@ -56,18 +56,14 @@ export function ProjectDeliveryBoardHeader({
         </div>
       )}
       {!hideStatusFilters ? (
-        <Tabs
+        <SegmentedTabs
           value={statusFilter}
-          onValueChange={(next) => onStatusFilterChange(next as DeliveryBoardStatusFilter)}
-        >
-          <TabsList variant="segmented" className="w-fit">
-            {STATUS_FILTERS.map((filter) => (
-              <TabsTrigger key={filter.value} value={filter.value} className="px-3 py-2 text-xs">
-                {filter.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          onChange={onStatusFilterChange}
+          options={STATUS_FILTERS}
+          ariaLabel="Delivery board status"
+          className="w-fit"
+          buttonClassName="px-3 py-2 text-xs"
+        />
       ) : null}
     </div>
   );
