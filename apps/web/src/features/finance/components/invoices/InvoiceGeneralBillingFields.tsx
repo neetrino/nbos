@@ -1,14 +1,9 @@
 'use client';
 
-import { DollarSign, Receipt } from 'lucide-react';
-import { InlineField } from '@/components/shared';
+import { Receipt } from 'lucide-react';
+import { AmdCurrencyIcon, DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
-
-const TAX_OPTIONS = INVOICE_TAX_STATUS_OPTIONS.map((row) => ({
-  value: row.value,
-  label: row.label,
-}));
 
 interface InvoiceGeneralBillingFieldsProps {
   draft: InvoiceGeneralDraft;
@@ -22,26 +17,23 @@ export function InvoiceGeneralBillingFields({
   disabled = false,
 }: InvoiceGeneralBillingFieldsProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <InlineField
         variant="controlled"
         label="Amount"
         type="money"
         value={draft.amount}
-        icon={<DollarSign size={12} />}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
         disabled={disabled}
         onValueChange={(amount) => patchDraft({ amount })}
       />
-      <InlineField
-        variant="controlled"
+      <DetailSheetFieldSegmented
         label="Tax Status"
-        type="select"
-        value={draft.taxStatus}
-        options={TAX_OPTIONS}
-        placeholder="Tax / Tax Free"
         icon={<Receipt size={12} />}
+        value={draft.taxStatus}
+        options={INVOICE_TAX_STATUS_OPTIONS}
         disabled={disabled}
-        onValueChange={(taxStatus) => taxStatus && patchDraft({ taxStatus })}
+        onValueChange={(taxStatus) => patchDraft({ taxStatus })}
       />
     </div>
   );

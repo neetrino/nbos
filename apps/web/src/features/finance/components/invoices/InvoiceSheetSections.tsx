@@ -1,7 +1,6 @@
-import type { ReactNode } from 'react';
-import { FileText, Building2, Clock, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
+import { FileText, Building2, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
 import { DetailSheetSection, InlineField, StatusBadge } from '@/components/shared';
-import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
+import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
@@ -16,70 +15,6 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   if (!money) return null;
   return <StatusBadge label={money.label} variant={money.variant} />;
-}
-
-export function InvoiceMoneySummaryRow({
-  invoice,
-  gateRequiredFields = new Set<string>(),
-  billingFields = null,
-}: {
-  invoice: InvoiceSheetInvoice;
-  gateRequiredFields?: ReadonlySet<string>;
-  billingFields?: ReactNode;
-}) {
-  const coverage = invoice.paymentCoverage;
-  const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
-  const isOverdue = isInvoiceOverdue(invoice);
-
-  return (
-    <div
-      className={invoiceStageGateSectionClass(
-        gateRequiredFields,
-        INVOICE_GATE_FIELD_PAYMENTS,
-        'space-y-4',
-      )}
-    >
-      {billingFields}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <MoneyMetric
-          label="Outstanding"
-          value={formatAmount(outstanding, invoice.currency)}
-          emphasize={outstanding > 0 && isOverdue}
-        />
-        <MoneyMetric
-          label="Paid"
-          value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
-        />
-        <MoneyMetric
-          label="Due"
-          value={invoice.dueDate ? formatShortDate(invoice.dueDate) : '—'}
-          emphasize={Boolean(isOverdue && invoice.dueDate)}
-        />
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <InlineField
-          variant="controlled"
-          label="Created"
-          type="text"
-          value={formatShortDate(invoice.createdAt)}
-          icon={<Clock size={12} />}
-          disabled
-          onValueChange={() => undefined}
-        />
-        {invoice.paidDate ? (
-          <InlineField
-            variant="controlled"
-            label="Paid on"
-            type="text"
-            value={formatShortDate(invoice.paidDate)}
-            icon={<Clock size={12} />}
-            disabled
-            onValueChange={() => undefined}
-          />
-        ) : null}
-      </div>
-    </div>
-  );
 }
 
 export function InvoiceOfficialSection({
@@ -185,29 +120,6 @@ export function InvoicePaymentsSection({
   );
 }
 
-function MoneyMetric({
-  label,
-  value,
-  emphasize = false,
-}: {
-  label: string;
-  value: string;
-  emphasize?: boolean;
-}) {
-  return (
-    <div className="min-w-0">
-      <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-        {label}
-      </p>
-      <p
-        className={`mt-1 text-sm font-semibold tabular-nums ${emphasize ? 'text-red-600' : 'text-foreground'}`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
 function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
   if (invoice.taxStatus !== 'TAX') {
     return (
@@ -255,22 +167,5 @@ function LinkedEntity({
       disabled
       onValueChange={() => undefined}
     />
-  );
-}
-
-function formatShortDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function isInvoiceOverdue(invoice: InvoiceSheetInvoice) {
-  return (
-    invoice.moneyStatus === 'OVERDUE' ||
-    Boolean(
-      invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.moneyStatus !== 'PAID',
-    )
   );
 }
