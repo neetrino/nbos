@@ -171,6 +171,13 @@ export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
   DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
 ].join(' ');
 
+/** Leading icon outside a field shell when the label row is hidden. */
+export const DETAIL_SHEET_FIELD_LEADING_ICON_CLASS =
+  'text-muted-foreground/70 flex size-11 shrink-0 items-center justify-center';
+
+/** Row wrapper for a field with an external leading icon. */
+export const DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS = '-ml-3 flex gap-0.5';
+
 /** Avatar + label open the linked entity sheet; shared hover tint (see relation picker chip). */
 export const RELATION_PICKER_SHEET_TARGET_GROUP_CLASS =
   'group/open flex min-w-0 shrink items-center gap-2';

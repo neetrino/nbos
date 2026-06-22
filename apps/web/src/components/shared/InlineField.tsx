@@ -70,6 +70,7 @@ type InlineFieldControlledProps = {
   className?: string;
   clearable?: boolean;
   disabled?: boolean;
+  hideLabel?: boolean;
   datePickerVariant?: 'compact' | 'extended';
   datePickerMode?: 'date' | 'datetime';
 };
@@ -332,10 +333,11 @@ function InlineFieldUncontrolled({
 
 export function InlineField(props: InlineFieldProps) {
   if (props.variant === 'controlled') {
-    const { datePickerVariant, datePickerMode, ...controlledProps } = props;
+    const { datePickerVariant, datePickerMode, hideLabel, ...controlledProps } = props;
     return (
       <ControlledInlineField
         {...controlledProps}
+        hideLabel={hideLabel}
         datePickerVariant={datePickerVariant}
         datePickerMode={datePickerMode}
       />
