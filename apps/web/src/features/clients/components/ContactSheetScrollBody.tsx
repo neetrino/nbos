@@ -1,7 +1,12 @@
 'use client';
 
 import { Building2, Calendar, Mail, MessageCircle, Phone, User } from 'lucide-react';
-import { DetailSheetSection, EntityNotesSection, InlineField } from '@/components/shared';
+import {
+  DetailSheetFieldSegmented,
+  DetailSheetSection,
+  EntityNotesSection,
+  InlineField,
+} from '@/components/shared';
 import { CONTACT_ROLES, LANGUAGES, PREFERRED_CHANNELS } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
@@ -45,9 +50,7 @@ export function ContactSheetScrollBody({
   onPortfolioRetry,
 }: ContactSheetScrollBodyProps) {
   const fieldDisabled = saving || readOnly;
-  const roleOptions = CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label }));
   const channelOptions = PREFERRED_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
-  const languageOptions = LANGUAGES.map((l) => ({ value: l.value, label: l.label }));
 
   return (
     <div className="space-y-6 px-7 py-5">
@@ -106,17 +109,13 @@ export function ContactSheetScrollBody({
 
           <DetailSheetSection title="Details" icon={<User size={12} />}>
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InlineField
-                variant="controlled"
+              <DetailSheetFieldSegmented
                 label="Contact type"
-                type="select"
-                value={draft.role}
-                options={roleOptions}
                 icon={<User size={12} />}
+                value={draft.role}
+                options={CONTACT_ROLES}
                 disabled={fieldDisabled}
-                onValueChange={(v) => {
-                  if (v) patchDraft({ role: v });
-                }}
+                onValueChange={(role) => patchDraft({ role })}
               />
               <InlineField
                 variant="controlled"
@@ -130,17 +129,13 @@ export function ContactSheetScrollBody({
                 disabled={fieldDisabled}
                 onValueChange={(v) => patchDraft({ preferredChannel: v })}
               />
-              <InlineField
-                variant="controlled"
+              <DetailSheetFieldSegmented
                 label="Language"
-                type="select"
-                value={draft.language}
-                options={languageOptions}
-                placeholder="Select…"
-                clearable
                 icon={<User size={12} />}
+                value={draft.language || null}
+                options={LANGUAGES}
                 disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ language: v })}
+                onValueChange={(language) => patchDraft({ language })}
               />
               <InlineField
                 label="Created"

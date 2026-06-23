@@ -152,11 +152,17 @@ export function ContactSheet({
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
-              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                {displayTitle}
-              </h2>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {role ? <StatusBadge label={role.label} variant={role.variant} /> : null}
+              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                  {displayTitle}
+                </h2>
+                {role ? (
+                  <StatusBadge
+                    label={role.label}
+                    variant={role.variant}
+                    className="shrink-0 self-center"
+                  />
+                ) : null}
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
