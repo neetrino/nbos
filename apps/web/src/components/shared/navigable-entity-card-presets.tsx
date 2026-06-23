@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Archive,
   Building2,
@@ -7,6 +8,7 @@ import {
   FolderKanban,
   ListChecks,
   Package,
+  ShoppingBag,
   User,
 } from 'lucide-react';
 import {
@@ -15,6 +17,15 @@ import {
   type NavigableEntityCardBadge,
   type NavigableEntityCardMetaLine,
 } from '@/components/shared';
+import {
+  NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
+  PROJECT_HUB_CARD_CODE_PILL_CLASS,
+  PROJECT_HUB_CARD_ICON_TILE_CLASS,
+  PROJECT_HUB_CARD_META_ROW_CLASS,
+  PROJECT_HUB_CARD_ORDERS_PILL_CLASS,
+  PROJECT_HUB_CARD_SHELL_CLASS,
+} from '@/components/shared/navigable-entity-card.constants';
+import { cn } from '@/lib/utils';
 import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
@@ -73,31 +84,62 @@ function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntit
 
 /** Project Hub directory card. */
 export function ProjectNavigableCard({ project }: { project: Project }) {
-  const metaLines: NavigableEntityCardMetaLine[] = [];
-  if (project.company) {
-    metaLines.push({ icon: Building2, text: project.company.name });
-  }
   const contactName =
     `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim();
-  if (contactName) {
-    metaLines.push({ icon: User, text: contactName });
-  }
+  const orderCount = project._count.orders;
+  const ordersLabel = `${orderCount} order${orderCount === 1 ? '' : 's'}`;
 
   return (
-    <NavigableEntityCard
-      href={`/projects/${project.id}`}
-      icon={FolderKanban}
-      eyebrow={project.code}
-      title={project.name}
-      description={project.description}
-      headerTrailing={
-        project.trashedAt != null ? (
-          <Archive size={14} className="text-muted-foreground shrink-0" aria-label="In Trash" />
-        ) : undefined
-      }
-      metaLines={metaLines}
-      footer={<span>{project._count.orders} orders</span>}
-    />
+    <div className={cn(PROJECT_HUB_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS)}>
+      <Link
+        href={`/projects/${project.id}`}
+        className="flex min-h-0 flex-1 flex-col p-5 focus-visible:outline-none"
+      >
+        <div className="flex items-start gap-3">
+          <div className={PROJECT_HUB_CARD_ICON_TILE_CLASS}>
+            <FolderKanban className="size-5" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+              <span className={PROJECT_HUB_CARD_CODE_PILL_CLASS}>{project.code}</span>
+              {project.trashedAt != null ? (
+                <Archive
+                  size={14}
+                  className="text-muted-foreground shrink-0"
+                  aria-label="In Trash"
+                />
+              ) : null}
+            </div>
+            <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
+              {project.name}
+            </h3>
+            {project.company || contactName ? (
+              <div className="mt-3 flex flex-col gap-1.5">
+                {project.company ? (
+                  <span className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                    <Building2 className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{project.company.name}</span>
+                  </span>
+                ) : null}
+                {contactName ? (
+                  <span className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                    <User className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{contactName}</span>
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-auto flex justify-end pt-4">
+          <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+            <ShoppingBag className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            {ordersLabel}
+          </span>
+        </div>
+      </Link>
+    </div>
   );
 }
 
