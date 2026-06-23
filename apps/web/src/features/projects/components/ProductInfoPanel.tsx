@@ -100,7 +100,7 @@ export function ProductInfoPanel({
           </DetailInfoSubsection>
         )}
 
-        <DetailInfoSubsection first={!hasDescription && !forceDescription}>
+        <DetailInfoSubsection first={!hasDescription && !forceDescription} className="pb-3">
           <OverviewMetaGrid>
             <OverviewMetaTile
               label="Stage"
@@ -144,16 +144,15 @@ export function ProductInfoPanel({
               value={new Date(product.createdAt).toLocaleDateString()}
             />
           </OverviewMetaGrid>
-        </DetailInfoSubsection>
-
-        <DetailInfoSubsection className="pb-3">
-          {projectLoading ? (
-            <LoadingState count={2} />
-          ) : project ? (
-            <ProjectContactsSection embedded project={project} onProjectUpdated={setProject} />
-          ) : (
-            <p className="text-muted-foreground text-xs">Could not load project contacts.</p>
-          )}
+          <div className="mt-4">
+            {projectLoading ? (
+              <LoadingState count={2} />
+            ) : project ? (
+              <ProjectContactsSection embedded project={project} onProjectUpdated={setProject} />
+            ) : (
+              <p className="text-muted-foreground text-xs">Could not load project contacts.</p>
+            )}
+          </div>
         </DetailInfoSubsection>
 
         <DetailInfoSubsection title="Product team" className="mt-4 pt-6">
