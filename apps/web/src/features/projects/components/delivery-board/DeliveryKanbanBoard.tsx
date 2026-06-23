@@ -47,8 +47,9 @@ import {
 } from './delivery-kanban-ids';
 import {
   DELIVERY_KANBAN_BOARD_ROW_CLASS,
+  DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
   DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
-  DELIVERY_KANBAN_COLUMN_WIDTH_PX,
+  deliveryKanbanBoardMinWidthPx,
 } from './delivery-kanban-layout';
 import { DELIVERY_TERMINAL_DROP_ZONES } from './delivery-terminal-drop-zones';
 import { DeliveryKanbanTerminalDropBar } from './DeliveryKanbanTerminalDropBar';
@@ -191,62 +192,64 @@ export function DeliveryKanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div className="relative flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
-        <div
-          className={cn(DELIVERY_KANBAN_BOARD_ROW_CLASS, activeItem && 'pb-28')}
-          style={{
-            minWidth: `${columns.length * (DELIVERY_KANBAN_COLUMN_WIDTH_PX + 16)}px`,
-          }}
-        >
-          {columns.map((col, colIdx) => (
-            <div key={col.stage} className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
-              <KanbanStageColumn
-                stage={col.stage}
-                title={col.label}
-                count={col.items.length}
-                showLeftRule={colIdx > 0}
-                dragCardHeightPx={dragCardHeightPx}
-                dropInsertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
-                isDropTarget={dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage}
-              >
-                {col.items.map((item, itemIdx) => (
-                  <Fragment key={getItemKey(item)}>
-                    <KanbanInsertPlaceholderBeforeItem
-                      insertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
-                      itemIdx={itemIdx}
-                      isDropTarget={
-                        dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage
-                      }
-                      heightPx={dragCardHeightPx}
-                    />
-                    <KanbanDraggableCard
-                      id={deliveryKanbanCardId(getItemKey(item))}
-                      itemKey={getItemKey(item)}
-                      disabled={
-                        busyItemId === getItemId(item) ||
-                        getItemLifecycle(item)?.workStatus === 'ON_HOLD'
-                      }
-                    >
-                      <ProjectDeliveryBoardCard
-                        item={item}
-                        isActionBusy={busyItemId === getItemId(item)}
-                        onOpenProduct={onOpenProduct}
-                        onOpenProductTab={onOpenProductTab}
-                        onOpenDetails={onOpenDetails ? () => onOpenDetails(item) : undefined}
-                        onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
-                        onResume={() => onBoardAction(item, 'RESUME')}
-                        onComplete={() => onBoardAction(item, 'COMPLETE')}
-                        onCancel={() => onCancel(item)}
-                        kanbanActionIsolation
-                        kanbanMinimal
-                        onOpenQuickTaskForProject={(pid) => setQuickCreateProjectId(pid)}
-                        quickTaskDisabled={quickTaskDisabled}
+        <div className={cn(DELIVERY_KANBAN_BOARD_SCROLL_CLASS, activeItem && 'pb-28')}>
+          <div
+            className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
+            style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length)}px` }}
+          >
+            {columns.map((col, colIdx) => (
+              <div key={col.stage} className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
+                <KanbanStageColumn
+                  stage={col.stage}
+                  title={col.label}
+                  count={col.items.length}
+                  showLeftRule={colIdx > 0}
+                  dragCardHeightPx={dragCardHeightPx}
+                  dropInsertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
+                  isDropTarget={
+                    dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage
+                  }
+                >
+                  {col.items.map((item, itemIdx) => (
+                    <Fragment key={getItemKey(item)}>
+                      <KanbanInsertPlaceholderBeforeItem
+                        insertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
+                        itemIdx={itemIdx}
+                        isDropTarget={
+                          dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage
+                        }
+                        heightPx={dragCardHeightPx}
                       />
-                    </KanbanDraggableCard>
-                  </Fragment>
-                ))}
-              </KanbanStageColumn>
-            </div>
-          ))}
+                      <KanbanDraggableCard
+                        id={deliveryKanbanCardId(getItemKey(item))}
+                        itemKey={getItemKey(item)}
+                        disabled={
+                          busyItemId === getItemId(item) ||
+                          getItemLifecycle(item)?.workStatus === 'ON_HOLD'
+                        }
+                      >
+                        <ProjectDeliveryBoardCard
+                          item={item}
+                          isActionBusy={busyItemId === getItemId(item)}
+                          onOpenProduct={onOpenProduct}
+                          onOpenProductTab={onOpenProductTab}
+                          onOpenDetails={onOpenDetails ? () => onOpenDetails(item) : undefined}
+                          onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
+                          onResume={() => onBoardAction(item, 'RESUME')}
+                          onComplete={() => onBoardAction(item, 'COMPLETE')}
+                          onCancel={() => onCancel(item)}
+                          kanbanActionIsolation
+                          kanbanMinimal
+                          onOpenQuickTaskForProject={(pid) => setQuickCreateProjectId(pid)}
+                          quickTaskDisabled={quickTaskDisabled}
+                        />
+                      </KanbanDraggableCard>
+                    </Fragment>
+                  ))}
+                </KanbanStageColumn>
+              </div>
+            ))}
+          </div>
         </div>
         {activeItem ? (
           <DeliveryKanbanTerminalDropBar
