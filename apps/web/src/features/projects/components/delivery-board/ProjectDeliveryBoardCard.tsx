@@ -19,6 +19,9 @@ import {
   getProductType,
 } from '@/features/projects/constants/projects';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
+import { DeliveryBoardKanbanCardHeader } from './DeliveryBoardKanbanCardHeader';
+import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
+import { DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS } from './delivery-board-card-ui.constants';
 import {
   getItemId,
   getItemLifecycle,
@@ -101,11 +104,13 @@ export function ProjectDeliveryBoardCard({
     : undefined;
 
   const projectId = getProjectId(item);
+  const boardChrome = getDeliveryBoardCardChrome(dealTypeVisual);
 
   return (
     <KanbanCardShell
       preset="crm"
       padding="lg"
+      radius="xl"
       baseShadow="sm"
       hoverShadow="md"
       transition="all"
@@ -126,34 +131,55 @@ export function ProjectDeliveryBoardCard({
         }}
         className={getCardBodyClassName(Boolean(productId || onOpenDetails))}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-start gap-2">
-            <CardKindIcon visual={dealTypeVisual} />
-            <div className="min-w-0 text-left">
-              <p className="truncate text-sm font-semibold">{title}</p>
-              {metaLabel && <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>}
-              {!kanbanMinimal ? (
-                <StatusBadge
-                  label={dealTypeVisual.label}
-                  variant={dealTypeVisual.badgeVariant}
-                  className="mt-1.5 w-fit text-[9px]"
-                />
-              ) : null}
-            </div>
-          </div>
-          <div className="flex shrink-0 items-start gap-2">
-            {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
-              <DeliveryStageReadinessRing lifecycle={lifecycle} />
-            ) : null}
-            {lifecycle && !kanbanMinimal ? <LifecycleBadge lifecycle={lifecycle} /> : null}
-          </div>
-        </div>
-        {isClosedCompact ? (
-          <ClosedCompactCardMeta item={item} />
+        {kanbanMinimal && !isClosedCompact ? (
+          <>
+            <DeliveryBoardKanbanCardHeader
+              title={title}
+              metaLabel={metaLabel}
+              visual={dealTypeVisual}
+              lifecycle={lifecycle}
+            />
+            <div
+              className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, boardChrome.dividerClass)}
+              aria-hidden
+            />
+            <DeliveryCardMeta item={item} metaDensity="board" visual={dealTypeVisual} />
+            <DeliveryCardTeamAvatars item={item} />
+          </>
         ) : (
-          <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 flex-1 items-start gap-2">
+                <CardKindIcon visual={dealTypeVisual} />
+                <div className="min-w-0 text-left">
+                  <p className="truncate text-sm font-semibold">{title}</p>
+                  {metaLabel && (
+                    <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>
+                  )}
+                  {!kanbanMinimal ? (
+                    <StatusBadge
+                      label={dealTypeVisual.label}
+                      variant={dealTypeVisual.badgeVariant}
+                      className="mt-1.5 w-fit text-[9px]"
+                    />
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-start gap-2">
+                {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
+                  <DeliveryStageReadinessRing lifecycle={lifecycle} />
+                ) : null}
+                {lifecycle && !kanbanMinimal ? <LifecycleBadge lifecycle={lifecycle} /> : null}
+              </div>
+            </div>
+            {isClosedCompact ? (
+              <ClosedCompactCardMeta item={item} />
+            ) : (
+              <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
+            )}
+            {!kanbanMinimal ? <DeliveryCardTeamAvatars item={item} /> : null}
+          </>
         )}
-        <DeliveryCardTeamAvatars item={item} />
       </button>
       {kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && projectId ? (
         <DeliveryKanbanCardHoverActions
@@ -236,13 +262,6 @@ function DeliveryKanbanCardHoverActions({
   return (
     <div onPointerDown={onPointerDown}>
       <ActionTileHoverBar variant="kanban-card">
-        <ActionTileButton
-          label="Project"
-          icon={<FolderKanban aria-hidden />}
-          tone="neutral"
-          size="card"
-          href={`/projects/${projectId}`}
-        />
         {onOpenQuickTaskForProject ? (
           <ActionTileButton
             label="Task"
@@ -254,6 +273,13 @@ function DeliveryKanbanCardHoverActions({
             onClick={() => onOpenQuickTaskForProject(projectId)}
           />
         ) : null}
+        <ActionTileButton
+          label="Project"
+          icon={<FolderKanban aria-hidden />}
+          tone="neutral"
+          size="card"
+          href={`/projects/${projectId}`}
+        />
       </ActionTileHoverBar>
     </div>
   );

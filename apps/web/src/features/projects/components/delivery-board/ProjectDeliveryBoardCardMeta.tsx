@@ -1,4 +1,5 @@
 import { Building2, Calendar } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type {
   DeliveryLifecycleProjection,
   ProjectExtensionSummary,
@@ -8,21 +9,107 @@ import {
   formatDeliveryHoldUntil,
   isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
+import type { DealTypePresentation } from '@/lib/deal-type-visual';
+import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
+import { DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS } from './delivery-board-card-ui.constants';
+import { cn } from '@/lib/utils';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
 
-export type DeliveryBoardCardMetaDensity = 'full' | 'minimal';
+export type DeliveryBoardCardMetaDensity = 'full' | 'minimal' | 'board';
 
 export function DeliveryCardMeta({
   item,
   metaDensity,
+  visual,
 }: {
   item: DeliveryBoardItem;
   metaDensity: DeliveryBoardCardMetaDensity;
+  visual?: DealTypePresentation;
 }) {
+  if (metaDensity === 'board') {
+    if (!visual) return null;
+    return <BoardCardMeta item={item} visual={visual} />;
+  }
   if (item.kind === 'PRODUCT') {
     return <ProductCardMeta product={item.product} metaDensity={metaDensity} />;
   }
   return <ExtensionCardMeta extension={item.extension} metaDensity={metaDensity} />;
+}
+
+function BoardCardMeta({
+  item,
+  visual,
+}: {
+  item: DeliveryBoardItem;
+  visual: DealTypePresentation;
+}) {
+  const chrome = getDeliveryBoardCardChrome(visual);
+  if (item.kind === 'PRODUCT') {
+    return <ProductBoardMeta product={item.product} metaIconClass={chrome.metaIconClass} />;
+  }
+  return <ExtensionBoardMeta extension={item.extension} metaIconClass={chrome.metaIconClass} />;
+}
+
+function ProductBoardMeta({
+  product,
+  metaIconClass,
+}: {
+  product: ProjectProductSummary;
+  metaIconClass: string;
+}) {
+  const holdCopy = getHoldCopy(product.deliveryLifecycle);
+  return (
+    <div className="space-y-2.5 text-left">
+      {product.project ? (
+        <BoardMetaLine
+          icon={Building2}
+          label={`${product.project.name} (${product.project.code})`}
+          metaIconClass={metaIconClass}
+        />
+      ) : null}
+      {product.deadline ? (
+        <BoardMetaLine
+          icon={Calendar}
+          label={formatBoardCardDate(product.deadline)}
+          metaIconClass={metaIconClass}
+        />
+      ) : null}
+      {holdCopy ? (
+        <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function ExtensionBoardMeta({
+  extension,
+  metaIconClass,
+}: {
+  extension: ProjectExtensionSummary;
+  metaIconClass: string;
+}) {
+  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
+  return (
+    <div className="space-y-2.5 text-left">
+      {extension.project ? (
+        <BoardMetaLine
+          icon={Building2}
+          label={`${extension.project.name} (${extension.project.code})`}
+          metaIconClass={metaIconClass}
+        />
+      ) : null}
+      {extension.product ? (
+        <BoardMetaLine
+          icon={Building2}
+          label={extension.product.name}
+          metaIconClass={metaIconClass}
+        />
+      ) : null}
+      {holdCopy ? (
+        <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>
+      ) : null}
+    </div>
+  );
 }
 
 function ProductCardMeta({
@@ -30,28 +117,25 @@ function ProductCardMeta({
   metaDensity,
 }: {
   product: ProjectProductSummary;
-  metaDensity: DeliveryBoardCardMetaDensity;
+  metaDensity: Exclude<DeliveryBoardCardMetaDensity, 'board'>;
 }) {
   const holdCopy = getHoldCopy(product.deliveryLifecycle);
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
       {product.project && (
-        <MetaLine icon={Building2} label={`${product.project.name} (${product.project.code})`} />
+        <LegacyMetaLine
+          icon={Building2}
+          label={`${product.project.name} (${product.project.code})`}
+        />
       )}
       {product.deadline && (
-        <MetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
+        <LegacyMetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
       )}
       {!minimal ? (
         <p className="text-muted-foreground text-xs">
           {product._count.tasks} Work Space tasks · {product._count.extensions} ext. ·{' '}
           {product._count.tickets} tickets
-        </p>
-      ) : null}
-      {product.checklistStageProgress && product.checklistStageProgress.total > 0 ? (
-        <p className="text-muted-foreground text-xs">
-          Checklist {product.checklistStageProgress.completed}/
-          {product.checklistStageProgress.total}
         </p>
       ) : null}
       {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
@@ -64,14 +148,14 @@ function ExtensionCardMeta({
   metaDensity,
 }: {
   extension: ProjectExtensionSummary;
-  metaDensity: DeliveryBoardCardMetaDensity;
+  metaDensity: Exclude<DeliveryBoardCardMetaDensity, 'board'>;
 }) {
   const holdCopy = getHoldCopy(extension.deliveryLifecycle);
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
       {extension.project && (
-        <MetaLine
+        <LegacyMetaLine
           icon={Building2}
           label={`${extension.project.name} (${extension.project.code})`}
         />
@@ -86,15 +170,17 @@ function ExtensionCardMeta({
       ) : (
         <p className="text-muted-foreground text-xs">No linked product</p>
       )}
-      {extension.checklistStageProgress && extension.checklistStageProgress.total > 0 ? (
-        <p className="text-muted-foreground text-xs">
-          Checklist {extension.checklistStageProgress.completed}/
-          {extension.checklistStageProgress.total}
-        </p>
-      ) : null}
       {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
   );
+}
+
+function formatBoardCardDate(iso: string): string {
+  const date = new Date(iso);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 }
 
 function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
@@ -111,7 +197,26 @@ function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined
     : `${base} text-muted-foreground`;
 }
 
-function MetaLine({ icon: Icon, label }: { icon: typeof Building2; label: string }) {
+function BoardMetaLine({
+  icon: Icon,
+  label,
+  metaIconClass,
+}: {
+  icon: LucideIcon;
+  label: string;
+  metaIconClass: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={cn(DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS, metaIconClass)}>
+        <Icon size={14} aria-hidden />
+      </span>
+      <span className="text-foreground min-w-0 truncate text-xs leading-snug">{label}</span>
+    </div>
+  );
+}
+
+function LegacyMetaLine({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
     <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
       <Icon size={12} />

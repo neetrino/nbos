@@ -9,7 +9,7 @@ export function DeliveryCardTeamAvatars({ item }: { item: DeliveryBoardItem }) {
   if (members.length === 0) return null;
 
   return (
-    <div className="mt-3 flex items-center justify-between gap-2">
+    <div className="mt-3 flex items-center justify-start gap-2">
       <div className="flex shrink-0 -space-x-1.5">
         {members.map((member) => (
           <span
