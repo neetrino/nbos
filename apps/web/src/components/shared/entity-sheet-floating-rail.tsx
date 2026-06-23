@@ -6,9 +6,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-/** Shared with drive / custom trailing rail controls for identical hover chips. */
+/** Shared with sheet close + drive / custom trailing rail controls. */
 export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS =
-  'group/rail-control relative size-10 shrink-0 overflow-visible rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 max-sm:rounded-full';
+  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:w-14 hover:bg-primary/90 focus-visible:w-14 active:translate-y-0 sm:rounded-l-full sm:rounded-r-none';
+
+/** Vertical stack — right edges align to sheet seam; overflow visible so hover lengthens left. */
+export const ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS =
+  'flex flex-col items-end gap-1.5 overflow-visible';
 
 export const ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS =
   'pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100 max-sm:left-full max-sm:ml-2 max-sm:translate-x-1 sm:right-full sm:mr-2 sm:-translate-x-1';

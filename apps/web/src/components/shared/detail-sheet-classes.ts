@@ -30,7 +30,7 @@ export const SHEET_CENTER_SHELL_CLASS =
 
 /** Rail column inside {@link SHEET_CENTER_SHELL_CLASS} — clears panel top rounded corner. */
 export const SHEET_CENTER_RAIL_COLUMN_CLASS =
-  'pointer-events-auto flex w-11 shrink-0 flex-col items-end gap-1.5 self-start pt-[1.5rem]';
+  'pointer-events-auto flex shrink-0 flex-col items-end gap-1.5 self-start overflow-visible pt-[1.5rem]';
 
 /** Center sheet panel surface (inside shell — not viewport-fixed). */
 export const SHEET_CENTER_PANEL_SURFACE_CLASS =

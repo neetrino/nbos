@@ -10,6 +10,11 @@ import {
   SHEET_CENTER_PANEL_SURFACE_CLASS,
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import {
+  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
+} from '@/components/shared/entity-sheet-floating-rail';
 import { SheetCenterShell } from '@/components/ui/sheet-center-shell';
 
 /** Above sheet overlay/popup (z-50) so the rail stays clickable. */
@@ -27,12 +32,6 @@ const SHEET_POPUP_BASE_CLASS =
 const SHEET_SIDE_EDGE_CLASS =
   'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-3/4 data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]';
 
-const SHEET_FLOATING_RAIL_HINT_CLASS =
-  'pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/sheet-floating-close:translate-x-0 group-hover/sheet-floating-close:opacity-100 group-focus-visible/sheet-floating-close:translate-x-0 group-focus-visible/sheet-floating-close:opacity-100 max-sm:left-full max-sm:ml-2 max-sm:translate-x-1 sm:right-full sm:mr-2 sm:-translate-x-1';
-
-const SHEET_FLOATING_CLOSE_BUTTON_CLASS =
-  'group/sheet-floating-close bg-primary text-primary-foreground hover:bg-primary/90 relative size-11 shrink-0 overflow-visible rounded-full border-0 shadow-md sm:rounded-l-full sm:rounded-r-none';
-
 function SheetFloatingRailStack({
   floatingRail,
   floatingRailVisible = true,
@@ -47,7 +46,8 @@ function SheetFloatingRailStack({
   return (
     <div
       className={cn(
-        'flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out',
+        ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
+        'transition-all duration-200 ease-in-out',
         floatingRailVisible
           ? 'pointer-events-auto translate-x-0 opacity-100'
           : 'pointer-events-none translate-x-[2.5rem] opacity-0',
@@ -62,14 +62,14 @@ function SheetFloatingRailStack({
               type="button"
               variant="default"
               size="icon"
-              className={SHEET_FLOATING_CLOSE_BUTTON_CLASS}
+              className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
               aria-label="Close panel"
               title="Close"
             />
           }
         >
-          <XIcon className="size-5" />
-          <span className={SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
+          <XIcon className="size-4" aria-hidden />
+          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       ) : null}
@@ -205,7 +205,7 @@ function SheetContent({
       {rightFloatingRail ? (
         <div
           className={cn(
-            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
+            'fixed overflow-visible transition-all duration-200 ease-in-out max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
             SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailVisible
               ? 'pointer-events-auto translate-x-0 opacity-100'
