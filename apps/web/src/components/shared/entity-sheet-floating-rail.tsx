@@ -6,9 +6,15 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-/** Shared with sheet close + drive / custom trailing rail controls. */
-export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS =
-  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:w-14 hover:bg-primary/90 focus-visible:w-14 active:translate-y-0 sm:rounded-l-full sm:rounded-r-none';
+/** Shared rail control base (close + action buttons). */
+const ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS =
+  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:bg-primary/90 active:translate-y-0 sm:rounded-l-full sm:rounded-r-none';
+
+/** Copy / Open / Dashboard / Close — lengthen slightly to the left on hover. */
+export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS = cn(
+  ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS,
+  'hover:w-14 focus-visible:w-14',
+);
 
 /** Vertical stack — right edges align to sheet seam; overflow visible so hover lengthens left. */
 export const ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS =

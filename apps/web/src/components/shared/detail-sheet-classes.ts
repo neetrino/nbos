@@ -18,6 +18,9 @@ export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
 /** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
 export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]';
 
+/** Horizontal anchor for {@code sm:max-w-md} page settings sheets. */
+export const PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS = 'sm:right-[28rem]';
+
 /** Bottom-center sheet height — flush with viewport bottom (mirrors right sheet edge attach). */
 export const SHEET_CENTER_VIEWPORT_HEIGHT_CLASS = 'h-[90vh] max-h-[90vh]';
 
