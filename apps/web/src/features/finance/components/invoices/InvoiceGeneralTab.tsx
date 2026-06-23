@@ -4,13 +4,13 @@ import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 import {
   InvoiceDescriptionSection,
   InvoiceLinkedEntitiesSection,
-  InvoiceMoneySummaryRow,
   InvoiceOfficialSection,
 } from './InvoiceSheetSections';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { DetailSheetSection } from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceManualContextFields } from './InvoiceManualContextFields';
+import { InvoiceMoneyCard } from './InvoiceMoneyCard';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
 import { InvoiceLifecycleActions } from './InvoiceLifecycleActions';
 
@@ -40,13 +40,11 @@ export function InvoiceGeneralTab({
 
   return (
     <div className="mx-auto flex w-full max-w-none flex-col gap-4">
-      <DetailSheetSection title="Money">
-        <InvoiceMoneySummaryRow
-          invoice={invoice}
-          gateRequiredFields={gateRequiredFields}
-          billingFields={billingFields}
-        />
-      </DetailSheetSection>
+      <InvoiceMoneyCard
+        invoice={invoice}
+        gateRequiredFields={gateRequiredFields}
+        billingFields={billingFields}
+      />
 
       {invoice.type === 'MANUAL' && draft && onInvoiceUpdated ? (
         <DetailSheetSection title="Client context">

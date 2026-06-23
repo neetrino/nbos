@@ -38,6 +38,15 @@ export const INVOICE_TAX_STATUS_OPTIONS = [
   { value: 'TAX_FREE', label: 'Tax Free' },
 ] as const;
 
+export const INVOICE_PAYMENT_METHOD_OPTIONS = [
+  { value: 'TRANSACTION', label: 'Transaction' },
+  { value: 'CASH', label: 'Cash' },
+] as const;
+
+export const DEFAULT_INVOICE_PAYMENT_METHOD = INVOICE_PAYMENT_METHOD_OPTIONS[0].value;
+
+export type InvoicePaymentMethod = (typeof INVOICE_PAYMENT_METHOD_OPTIONS)[number]['value'];
+
 export const EXPENSE_STAGES = [
   { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
   { value: 'DUE_SOON', label: 'Due Soon', variant: 'purple' as StatusVariant },

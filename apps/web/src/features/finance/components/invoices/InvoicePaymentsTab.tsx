@@ -3,8 +3,6 @@
 import { DetailSheetSection } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
-import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
-import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { RecordPaymentForm } from './RecordPaymentForm';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 
@@ -27,15 +25,14 @@ export function InvoicePaymentsTab({
 }: InvoicePaymentsTabProps) {
   return (
     <div className="space-y-4">
-      <DetailSheetSection
-        title="Record payment"
-        className={invoiceStageGateSectionClass(gateRequiredFields, INVOICE_GATE_FIELD_PAYMENTS)}
-      >
-        {invoice.paymentCoverage?.isFullyPaid ? (
-          <p className="mb-3 text-sm font-medium text-green-600">Fully paid</p>
-        ) : null}
-        <RecordPaymentForm invoice={invoice} onRecordPayment={onPaymentRecorded} />
-      </DetailSheetSection>
+      {invoice.paymentCoverage?.isFullyPaid ? (
+        <p className="text-sm font-medium text-green-600">Fully paid</p>
+      ) : null}
+      <RecordPaymentForm
+        invoice={invoice}
+        onRecordPayment={onPaymentRecorded}
+        gateRequiredFields={gateRequiredFields}
+      />
 
       {invoice.payments.length > 0 ? (
         <DetailSheetSection title="Recorded payments">

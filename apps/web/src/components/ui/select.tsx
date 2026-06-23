@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Select as SelectPrimitive } from '@base-ui/react/select';
 
 import { cn } from '@/lib/utils';
+import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react';
 
 const Select = SelectPrimitive.Root;
@@ -48,7 +49,7 @@ function SelectTrigger({
         'focus-visible:ring-ring/45 focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2',
         'data-placeholder:text-muted-foreground',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/25',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
         'data-[size=default]:h-10 data-[size=default]:min-h-10 data-[size=default]:px-3 data-[size=default]:py-2 data-[size=default]:pr-2.5',
         'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg data-[size=sm]:px-2.5 data-[size=sm]:pr-2 data-[size=sm]:text-xs',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5',
@@ -89,7 +90,7 @@ function SelectContent({
         align={align}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
-        className="isolate z-50"
+        className={cn('isolate', PORTAL_DROPDOWN_Z_CLASS)}
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
@@ -99,7 +100,8 @@ function SelectContent({
             'ring-border/40 shadow-xl ring-1 shadow-black/[0.08]',
             'data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-            'relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 backdrop-blur-md duration-150',
+            PORTAL_DROPDOWN_Z_CLASS,
+            'relative isolate max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 backdrop-blur-md duration-150',
             'data-[align-trigger=true]:animate-none',
             className,
           )}
@@ -176,7 +178,7 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpArrow
       data-slot="select-scroll-up-button"
       className={cn(
-        'text-muted-foreground hover:text-foreground from-popover top-0 z-10 flex w-full cursor-default items-center justify-center bg-gradient-to-b to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
+        'text-muted-foreground hover:text-foreground from-popover top-0 z-10 flex w-full cursor-pointer items-center justify-center bg-gradient-to-b to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
         className,
       )}
       {...props}
@@ -194,7 +196,7 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownArrow
       data-slot="select-scroll-down-button"
       className={cn(
-        'text-muted-foreground hover:text-foreground from-popover bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-gradient-to-t to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
+        'text-muted-foreground hover:text-foreground from-popover bottom-0 z-10 flex w-full cursor-pointer items-center justify-center bg-gradient-to-t to-transparent py-1.5 transition-colors [&_svg:not([class*="size-"])]:size-4',
         className,
       )}
       {...props}

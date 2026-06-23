@@ -4,6 +4,7 @@ import { Building2, Calendar, CreditCard, FolderKanban, Layers, Receipt, Tag } f
 import {
   AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetFieldSegmented,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -54,31 +55,24 @@ export function DealInfoProjectBillingFields({
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
 
-      <InlineField
-        variant="controlled"
+      <DetailSheetFieldSegmented
         label="Tax Status"
-        type="select"
-        value={draft.taxStatus}
-        options={TAX_STATUS_OPTIONS.map((type) => ({ value: type.value, label: type.label }))}
-        placeholder="Tax / Tax Free"
         icon={<Receipt size={12} />}
+        value={draft.taxStatus}
+        options={TAX_STATUS_OPTIONS}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'taxStatus')}
-        onValueChange={(v) => patchDraft({ taxStatus: v })}
+        onValueChange={(taxStatus) => patchDraft({ taxStatus })}
       />
 
-      <InlineField
-        variant="controlled"
+      <DetailSheetFieldSegmented
         label="Payment Type"
-        type="select"
-        value={draft.paymentType ?? ''}
-        options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-        placeholder="Select payment type..."
         icon={<CreditCard size={12} />}
-        clearable
+        value={draft.paymentType}
+        options={PAYMENT_TYPES}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
-        onValueChange={(v) => patchDraft({ paymentType: v || null })}
+        onValueChange={(paymentType) => patchDraft({ paymentType })}
       />
 
       <RelationPickerField
