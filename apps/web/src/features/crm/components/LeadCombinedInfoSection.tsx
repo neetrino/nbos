@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import { User, Phone, Mail, Link2, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
-  DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DetailSheetCollapsibleSection,
@@ -72,10 +71,11 @@ export function LeadCombinedInfoSection({
             <InlineField
               variant="controlled"
               label="Contact name"
+              hideLabel
               type="text"
               value={draft.contactName}
               placeholder="Contact name…"
-              icon={<User size={12} />}
+              icon={<User size={18} />}
               disabled={formDisabled}
               className={leadStageGateFieldClass(gateRequiredFields, 'contactName')}
               onValueChange={(v) => patchDraft({ contactName: v })}
@@ -83,10 +83,11 @@ export function LeadCombinedInfoSection({
             <InlineField
               variant="controlled"
               label="Phone"
+              hideLabel
               type="phone"
               value={draft.phone ?? ''}
               placeholder="+374…"
-              icon={<Phone size={12} />}
+              icon={<Phone size={18} />}
               disabled={formDisabled}
               className={leadStageGateFieldClass(gateRequiredFields, 'phone')}
               onValueChange={(v) => patchDraft({ phone: v || null })}
@@ -94,10 +95,11 @@ export function LeadCombinedInfoSection({
             <InlineField
               variant="controlled"
               label="Email"
+              hideLabel
               type="email"
               value={draft.email ?? ''}
               placeholder="email@example.com"
-              icon={<Mail size={12} />}
+              icon={<Mail size={18} />}
               disabled={formDisabled}
               className={leadStageGateFieldClass(gateRequiredFields, 'email')}
               onValueChange={(v) => patchDraft({ email: v || null })}
@@ -115,6 +117,31 @@ export function LeadCombinedInfoSection({
               onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
               {...contactsPicker}
             />
+            <div id={sectionIds.assignment}>
+              <RelationPickerField
+                label="Seller"
+                entityKind="employee"
+                className={leadStageGateFieldClass(gateRequiredFields, 'assignedTo')}
+                value={draft.assignedTo}
+                selectionLabel={
+                  draft.sellerDisplayLabel ??
+                  (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
+                }
+                placeholder="Search seller…"
+                icon={<User size={12} />}
+                disabled={formDisabled}
+                onSearch={searchEmployees}
+                onSelect={(value, label) =>
+                  patchDraft({ assignedTo: value, sellerDisplayLabel: label })
+                }
+                onClear={
+                  formDisabled || gateRequiredFields.has('assignedTo')
+                    ? undefined
+                    : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
+                }
+                {...employeePicker}
+              />
+            </div>
           </div>
         </div>
         <div id={sectionIds.marketing} className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
@@ -129,36 +156,8 @@ export function LeadCombinedInfoSection({
         </div>
       </div>
 
-      <div className="pt-4">
-        <div id={sectionIds.assignment} className="min-w-0">
-          <RelationPickerField
-            label="Seller"
-            entityKind="employee"
-            className={leadStageGateFieldClass(gateRequiredFields, 'assignedTo')}
-            value={draft.assignedTo}
-            selectionLabel={
-              draft.sellerDisplayLabel ??
-              (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
-            }
-            placeholder="Search seller…"
-            icon={<User size={12} />}
-            disabled={formDisabled}
-            onSearch={searchEmployees}
-            onSelect={(value, label) =>
-              patchDraft({ assignedTo: value, sellerDisplayLabel: label })
-            }
-            onClear={
-              formDisabled || gateRequiredFields.has('assignedTo')
-                ? undefined
-                : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
-            }
-            {...employeePicker}
-          />
-        </div>
-      </div>
-
       {lead.deal ? (
-        <div className={DETAIL_SHEET_PANEL_DIVIDER_CLASS}>
+        <div className="mt-10">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Linked deal</p>
           <div className="border-border bg-muted/20 flex items-center gap-3 rounded-xl border p-3 shadow-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">

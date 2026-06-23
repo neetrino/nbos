@@ -27,7 +27,7 @@ const SEGMENTED_TABS_LIST_CLASS =
   'border-border bg-background relative inline-flex min-w-0 items-center gap-0.5 rounded-lg border p-0.5';
 
 const SEGMENTED_TABS_BUTTON_CLASS =
-  'relative z-10 inline-flex shrink-0 items-center justify-center gap-1 rounded-md font-medium outline-offset-2 transition-colors duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70';
+  'relative z-10 inline-flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-md font-medium outline-offset-2 transition-colors duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70';
 
 /** Bordered segmented control with sliding primary pill (All / Active / Archived, etc.). */
 export function SegmentedTabs<T extends string>({

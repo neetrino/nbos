@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type RefObject } from 'react';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -42,6 +42,9 @@ export interface NbosDatePickerProps {
   embedded?: boolean;
   /** Raised pill button (icon-only when empty — no placeholder dash). */
   iconButtonShell?: boolean;
+  /** Position popover relative to this element instead of the trigger (e.g. full form row). */
+  popoverAnchorRef?: RefObject<HTMLElement | null>;
+  popoverAlign?: 'start' | 'center' | 'end';
 }
 
 export function NbosDatePicker({
@@ -58,6 +61,8 @@ export function NbosDatePicker({
   'aria-label': ariaLabel,
   embedded = false,
   iconButtonShell = false,
+  popoverAnchorRef,
+  popoverAlign = 'start',
 }: NbosDatePickerProps) {
   const parsed = useMemo(
     () => (mode === 'datetime' ? parseDatetimeLocalValue(value) : parseIsoDateValue(value)),
@@ -132,8 +137,10 @@ export function NbosDatePicker({
         />
       </PopoverTrigger>
       <PopoverContent
-        align="start"
+        align={popoverAlign}
+        side="bottom"
         sideOffset={6}
+        anchor={popoverAnchorRef}
         className={cn(
           'gap-0 rounded-2xl p-4 shadow-xl',
           variant === 'extended' ? 'flex flex-row' : 'flex flex-col',

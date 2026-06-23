@@ -84,7 +84,7 @@ export function CreateDealDialog({
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>Title *</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </div>
