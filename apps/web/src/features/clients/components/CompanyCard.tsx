@@ -28,11 +28,10 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
             {company.contact.firstName} {company.contact.lastName}
           </p>
         </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
-        {taxSt && <StatusBadge label={taxSt.label} variant={taxSt.variant} />}
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          {compType ? <StatusBadge label={compType.label} variant={compType.variant} /> : null}
+          {taxSt ? <StatusBadge label={taxSt.label} variant={taxSt.variant} /> : null}
+        </div>
       </div>
 
       {company.taxId && (

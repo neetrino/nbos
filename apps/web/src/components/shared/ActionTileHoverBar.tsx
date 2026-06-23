@@ -40,8 +40,8 @@ export function ActionTileHoverBar({ variant, children, className }: ActionTileH
       onPointerDown={stopCardClick}
       onClick={stopCardClick}
       className={cn(
-        'mt-2 flex flex-wrap justify-end gap-2',
-        variant === 'row' && 'shrink-0 items-center',
+        'flex flex-wrap justify-end gap-2',
+        variant === 'row' ? 'shrink-0 items-center' : 'mt-2',
         HOVER_REVEAL_BY_VARIANT[variant],
         className,
       )}

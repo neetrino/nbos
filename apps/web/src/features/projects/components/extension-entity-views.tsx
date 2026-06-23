@@ -90,7 +90,14 @@ export function ExtensionEntityListRow({
       <button type="button" onClick={onOpenDeliveryCard} className="min-w-0 flex-1 text-left">
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-semibold">{extension.name}</span>
-          {size && <span className="text-muted-foreground text-xs">{size.label}</span>}
+          {statusLabel ? (
+            <StatusBadge
+              label={statusLabel}
+              variant={status?.variant ?? 'gray'}
+              className="shrink-0 self-center"
+            />
+          ) : null}
+          {size ? <span className="text-muted-foreground text-xs">{size.label}</span> : null}
         </div>
         <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
           {extension.productName ? <span className="truncate">{extension.productName}</span> : null}
@@ -106,9 +113,6 @@ export function ExtensionEntityListRow({
           ) : null}
         </div>
       </button>
-      {statusLabel ? (
-        <StatusBadge label={statusLabel} variant={status?.variant ?? 'gray'} className="shrink-0" />
-      ) : null}
       <DeliveryDealRowHoverActions
         onOpenDeliveryCard={onOpenDeliveryCard}
         onOpenDeal={onOpenDeal}

@@ -191,9 +191,16 @@ function ProductListRow({
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-semibold">{product.name}</span>
-          {productType && (
+          {status && statusLabel ? (
+            <StatusBadge
+              label={statusLabel}
+              variant={status.variant}
+              className="shrink-0 self-center"
+            />
+          ) : null}
+          {productType ? (
             <span className="text-muted-foreground text-xs">{productType.label}</span>
-          )}
+          ) : null}
         </div>
         <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
           {product.pm && (
@@ -214,9 +221,6 @@ function ProductListRow({
           </span>
         </div>
       </a>
-      {status && statusLabel && (
-        <StatusBadge label={statusLabel} variant={status.variant} className="shrink-0" />
-      )}
       <EntityLinkedSheetsHoverActions
         variant="row"
         contextHref={`/projects/${projectId}`}

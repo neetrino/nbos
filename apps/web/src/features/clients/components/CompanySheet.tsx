@@ -190,28 +190,40 @@ export function CompanySheet({
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  onBlur={commitNameToDraft}
-                  onKeyDown={handleNameKeyDown}
-                  placeholder="Company name…"
-                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-                />
-              ) : (
-                <h2
-                  onClick={startEditingName}
-                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-                  title="Click to edit company name"
-                >
-                  {draft.name.trim() || company.name}
-                </h2>
-              )}
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
-                {taxStatus && <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />}
+              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                {editingName ? (
+                  <input
+                    ref={nameInputRef}
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    onBlur={commitNameToDraft}
+                    onKeyDown={handleNameKeyDown}
+                    placeholder="Company name…"
+                    className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+                  />
+                ) : (
+                  <h2
+                    onClick={startEditingName}
+                    className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                    title="Click to edit company name"
+                  >
+                    {draft.name.trim() || company.name}
+                  </h2>
+                )}
+                {compType ? (
+                  <StatusBadge
+                    label={compType.label}
+                    variant={compType.variant}
+                    className="shrink-0 self-center"
+                  />
+                ) : null}
+                {taxStatus ? (
+                  <StatusBadge
+                    label={taxStatus.label}
+                    variant={taxStatus.variant}
+                    className="shrink-0 self-center"
+                  />
+                ) : null}
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
