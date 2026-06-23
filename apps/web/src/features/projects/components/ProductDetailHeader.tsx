@@ -70,7 +70,13 @@ function ProductTitleRow({
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
       <span className={PRODUCT_TITLE_CLASS}>{productName}</span>
-      {stageStatus ? <StatusBadge label={stageStatus.label} variant={stageStatus.variant} /> : null}
+      {stageStatus ? (
+        <StatusBadge
+          label={stageStatus.label}
+          variant={stageStatus.variant}
+          className="shrink-0 self-center"
+        />
+      ) : null}
     </div>
   );
 }
@@ -107,7 +113,11 @@ function ProductNameSwitcher({
       >
         <span className={cn(PRODUCT_TITLE_CLASS, 'min-w-0')}>{productName}</span>
         {stageStatus ? (
-          <StatusBadge label={stageStatus.label} variant={stageStatus.variant} />
+          <StatusBadge
+            label={stageStatus.label}
+            variant={stageStatus.variant}
+            className="shrink-0 self-center"
+          />
         ) : null}
         <ChevronsUpDown className="size-3.5 shrink-0 opacity-60" aria-hidden />
       </button>
