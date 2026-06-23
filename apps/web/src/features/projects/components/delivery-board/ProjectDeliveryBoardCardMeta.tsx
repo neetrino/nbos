@@ -1,4 +1,4 @@
-import { Building2, Calendar, User } from 'lucide-react';
+import { Building2, Calendar } from 'lucide-react';
 import type {
   DeliveryLifecycleProjection,
   ProjectExtensionSummary,
@@ -39,9 +39,6 @@ function ProductCardMeta({
       {product.project && (
         <MetaLine icon={Building2} label={`${product.project.name} (${product.project.code})`} />
       )}
-      {!minimal && product.pm && (
-        <MetaLine icon={User} label={`${product.pm.firstName} ${product.pm.lastName}`} />
-      )}
       {product.deadline && (
         <MetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
       )}
@@ -79,12 +76,6 @@ function ExtensionCardMeta({
           label={`${extension.project.name} (${extension.project.code})`}
         />
       )}
-      {!minimal && extension.assignee && (
-        <MetaLine
-          icon={User}
-          label={`${extension.assignee.firstName} ${extension.assignee.lastName}`}
-        />
-      )}
       {!minimal ? (
         <p className="text-muted-foreground text-xs">
           {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space
@@ -120,7 +111,7 @@ function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined
     : `${base} text-muted-foreground`;
 }
 
-function MetaLine({ icon: Icon, label }: { icon: typeof User; label: string }) {
+function MetaLine({ icon: Icon, label }: { icon: typeof Building2; label: string }) {
   return (
     <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
       <Icon size={12} />

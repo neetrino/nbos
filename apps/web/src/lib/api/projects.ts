@@ -62,6 +62,10 @@ export interface ProjectProductSummary {
     deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
   pm: EmployeeRef | null;
+  developer?: EmployeeRef | null;
+  designer?: EmployeeRef | null;
+  technicalSpecialist?: EmployeeRef | null;
+  qaLead?: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   /** Present when item comes from list/global board (not embedded project bundle). */
   projectId?: string;

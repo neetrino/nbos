@@ -23,6 +23,10 @@ export function productToDeliveryBoardItem(product: Product): DeliveryBoardItem 
         }
       : null,
     pm: product.pm,
+    developer: product.developer ?? null,
+    designer: product.designer ?? null,
+    technicalSpecialist: product.technicalSpecialist ?? null,
+    qaLead: product.qaLead ?? null,
     deliveryLifecycle: product.deliveryLifecycle,
     projectId: product.projectId,
     project: product.project,

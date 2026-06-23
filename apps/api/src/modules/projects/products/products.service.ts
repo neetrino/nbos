@@ -208,6 +208,10 @@ export class ProductsService {
             },
           },
           pm: { select: { id: true, firstName: true, lastName: true } },
+          developer: { select: { id: true, firstName: true, lastName: true } },
+          designer: { select: { id: true, firstName: true, lastName: true } },
+          technicalSpecialist: { select: { id: true, firstName: true, lastName: true } },
+          qaLead: { select: { id: true, firstName: true, lastName: true } },
           order: {
             select: {
               id: true,

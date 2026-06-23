@@ -1,4 +1,4 @@
-import { Building2, Calendar, CheckCircle2, User } from 'lucide-react';
+import { Building2, Calendar, CheckCircle2 } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
 import { getItemLifecycle } from './project-delivery-board-model';
@@ -25,22 +25,6 @@ export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
           <Building2 size={12} />
           <span className="truncate">
             {item.extension.project.name} ({item.extension.project.code})
-          </span>
-        </p>
-      )}
-      {item.kind === 'PRODUCT' && item.product.pm && (
-        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <User size={12} />
-          <span className="truncate">
-            {item.product.pm.firstName} {item.product.pm.lastName}
-          </span>
-        </p>
-      )}
-      {item.kind === 'EXTENSION' && item.extension.assignee && (
-        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <User size={12} />
-          <span className="truncate">
-            {item.extension.assignee.firstName} {item.extension.assignee.lastName}
           </span>
         </p>
       )}

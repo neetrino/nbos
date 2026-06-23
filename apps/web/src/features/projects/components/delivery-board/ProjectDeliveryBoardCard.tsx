@@ -36,6 +36,7 @@ import {
   ClosedCompactCardMeta,
 } from './ProjectDeliveryBoardClosedCompact';
 import { DeliveryCardMeta } from './ProjectDeliveryBoardCardMeta';
+import { DeliveryCardTeamAvatars } from './DeliveryCardTeamAvatars';
 import { getDealTypePresentation, type DealTypePresentation } from '@/lib/deal-type-visual';
 
 interface ProjectDeliveryBoardCardProps {
@@ -152,6 +153,7 @@ export function ProjectDeliveryBoardCard({
         ) : (
           <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
         )}
+        <DeliveryCardTeamAvatars item={item} />
       </button>
       {kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && projectId ? (
         <DeliveryKanbanCardHoverActions
