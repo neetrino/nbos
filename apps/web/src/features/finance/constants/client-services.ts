@@ -15,6 +15,18 @@ export const CLIENT_SERVICE_STATUSES = [
   { value: 'CANCELLED', label: 'Cancelled' },
 ] as const;
 
+/** Compact labels for client service detail sheet status segmented control. */
+export const CLIENT_SERVICE_STATUS_SEGMENTED_OPTIONS = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'SUSPENDED', label: 'Suspended' },
+  { value: 'EXPIRING_SOON', label: 'Expiring' },
+  { value: 'EXPIRED', label: 'Expired' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+] as const;
+
+export const CLIENT_SERVICE_TYPE_SEGMENTED_OPTIONS = CLIENT_SERVICE_TYPES;
+
 export const CLIENT_SERVICE_BILLING_MODELS = [
   { value: 'WE_PAY', label: 'We Pay' },
   { value: 'REMINDER_ONLY', label: 'Reminder Only' },

@@ -240,18 +240,30 @@ export function ClientServiceDetailSheet({
             {loading && !service ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : service ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                     <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
                     <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                       {service.name}
                     </h2>
+                    {typeLabel ? (
+                      <StatusBadge
+                        label={typeLabel}
+                        variant="indigo"
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                  {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
-                  {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
+                  {statusLabel ? (
+                    <StatusBadge
+                      label={statusLabel}
+                      variant="gray"
+                      className="shrink-0 self-center"
+                    />
+                  ) : null}
                   {!isCancelled && onRequestCancel ? (
                     <DetailSheetSettingsMenu>
                       <DropdownMenuItem

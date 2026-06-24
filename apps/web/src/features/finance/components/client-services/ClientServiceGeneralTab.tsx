@@ -1,11 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban, Layers, Receipt, RefreshCw, Tag } from 'lucide-react';
+import {
+  Calendar,
+  CircleDot,
+  DollarSign,
+  FolderKanban,
+  Layers,
+  Receipt,
+  RefreshCw,
+  Tag,
+} from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetFieldSegmented,
   DetailSheetSection,
   EntityNotesSection,
   InlineField,
@@ -18,8 +28,8 @@ import {
   CLIENT_SERVICE_BILLING_MODELS,
   CLIENT_SERVICE_FREQUENCIES,
   CLIENT_SERVICE_PRICING_MODELS,
-  CLIENT_SERVICE_STATUSES,
-  CLIENT_SERVICE_TYPES,
+  CLIENT_SERVICE_STATUS_SEGMENTED_OPTIONS,
+  CLIENT_SERVICE_TYPE_SEGMENTED_OPTIONS,
 } from '@/features/finance/constants/client-services';
 import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
@@ -65,45 +75,46 @@ export function ClientServiceGeneralTab({
         onOpenChange={setBasicsOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Name"
-            type="text"
-            value={draft.name}
-            placeholder="Service name"
-            disabled={formDisabled}
-            onValueChange={(name) => patchDraft({ name })}
-          />
-          <RelationPickerField
-            label="Project"
-            entityKind="project"
-            value={draft.projectId || null}
-            selectionLabel={projectLabel}
-            placeholder="Search projects…"
-            icon={<FolderKanban size={12} />}
-            disabled={formDisabled}
-            onSearch={searchProjects}
-            onSelect={(id) => patchDraft({ projectId: id })}
-            {...projectPicker}
-          />
-          <InlineField
-            variant="controlled"
+          <div className="flex flex-wrap items-start gap-3">
+            <InlineField
+              variant="controlled"
+              label="Name"
+              type="text"
+              value={draft.name}
+              placeholder="Service name"
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(name) => patchDraft({ name })}
+            />
+            <RelationPickerField
+              label="Project"
+              entityKind="project"
+              value={draft.projectId || null}
+              selectionLabel={projectLabel}
+              placeholder="Search projects…"
+              icon={<FolderKanban size={12} />}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onSearch={searchProjects}
+              onSelect={(id) => patchDraft({ projectId: id })}
+              {...projectPicker}
+            />
+          </div>
+          <DetailSheetFieldSegmented
             label="Type"
-            type="select"
-            value={draft.type}
-            options={mapSelectOptions(CLIENT_SERVICE_TYPES)}
             icon={<Layers size={12} />}
+            value={draft.type}
+            options={CLIENT_SERVICE_TYPE_SEGMENTED_OPTIONS}
             disabled={formDisabled}
-            onValueChange={(type) => type && patchDraft({ type })}
+            onValueChange={(type) => patchDraft({ type })}
           />
-          <InlineField
-            variant="controlled"
+          <DetailSheetFieldSegmented
             label="Status"
-            type="select"
+            icon={<CircleDot size={12} />}
             value={draft.status}
-            options={mapSelectOptions(CLIENT_SERVICE_STATUSES)}
+            options={CLIENT_SERVICE_STATUS_SEGMENTED_OPTIONS}
             disabled={formDisabled}
-            onValueChange={(status) => status && patchDraft({ status })}
+            onValueChange={(status) => patchDraft({ status })}
           />
           <InlineField
             variant="controlled"
