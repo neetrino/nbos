@@ -106,7 +106,11 @@ export default function FinanceDashboardPage() {
   useModuleHeroSlots(moduleHeroSlots);
 
   if (loading) {
-    return <DashboardLoadingSkeleton />;
+    return (
+      <div className="pb-5">
+        <DashboardLoadingSkeleton />
+      </div>
+    );
   }
 
   if (!data) {
@@ -126,7 +130,7 @@ export default function FinanceDashboardPage() {
   const zoneHubMetrics = buildFinanceZoneHubMetrics(data);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-5">
       {showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
 
       {matchesOverviewSearch('Finance zones', query) ? (

@@ -6,7 +6,13 @@ import { UnitEconomicsPageContent } from '@/features/finance/components/unit-eco
 
 export default function UnitEconomicsPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense
+      fallback={
+        <div className="pb-5">
+          <LoadingState />
+        </div>
+      }
+    >
       <UnitEconomicsPageContent />
     </Suspense>
   );
