@@ -125,6 +125,7 @@ export function getSubscriptionBillingFrequency(value: string) {
 export {
   AMD_CURRENCY_SYMBOL,
   formatAmount,
+  formatAmountAbbreviated,
   formatAmountCompact,
   formatAmountDramSuffix,
   formatGroupedNumber,

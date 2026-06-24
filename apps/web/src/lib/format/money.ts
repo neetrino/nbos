@@ -138,3 +138,28 @@ export const formatAmountCompact = formatGroupedNumber;
 export function formatAmountDramSuffix(amount: number): string {
   return `${formatGroupedNumber(amount)}${AMD_CURRENCY_SYMBOL}`;
 }
+
+const AMOUNT_ABBREV_K = 1_000;
+const AMOUNT_ABBREV_M = 1_000_000;
+
+function formatAbbreviatedMagnitude(value: number, divisor: number, suffix: string): string {
+  const scaled = value / divisor;
+  if (Number.isInteger(scaled)) {
+    return `${scaled}${suffix}`;
+  }
+  return `${parseFloat(scaled.toFixed(1))}${suffix}`;
+}
+
+/** Salary board cells: `250K`, `2.5M` — totals should keep {@link formatAmount}. */
+export function formatAmountAbbreviated(amount: number): string {
+  const absolute = Math.abs(amount);
+  const sign = amount < 0 ? '-' : '';
+
+  if (absolute >= AMOUNT_ABBREV_M) {
+    return `${sign}${formatAbbreviatedMagnitude(absolute, AMOUNT_ABBREV_M, 'M')}`;
+  }
+  if (absolute >= AMOUNT_ABBREV_K) {
+    return `${sign}${formatAbbreviatedMagnitude(absolute, AMOUNT_ABBREV_K, 'K')}`;
+  }
+  return `${sign}${formatGroupedNumber(Math.round(absolute))}`;
+}

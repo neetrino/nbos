@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AMD_CURRENCY_SYMBOL,
   formatAmount,
+  formatAmountAbbreviated,
   formatAmountDramSuffix,
   formatGroupedNumber,
   formatMoneyDram,
@@ -22,6 +23,15 @@ describe('money formatting', () => {
     expect(formatMoneyDramOrDash(0)).toBe('—');
     expect(formatAmount(1500, 'AMD')).toBe(formatMoneyDram(1500));
     expect(formatAmountDramSuffix(1500)).toBe(`${formatGroupedNumber(1500)}${AMD_CURRENCY_SYMBOL}`);
+  });
+
+  it('abbreviates large amounts for compact grid cells', () => {
+    expect(formatAmountAbbreviated(250_000)).toBe('250K');
+    expect(formatAmountAbbreviated(2_500_000)).toBe('2.5M');
+    expect(formatAmountAbbreviated(1_000)).toBe('1K');
+    expect(formatAmountAbbreviated(1_500)).toBe('1.5K');
+    expect(formatAmountAbbreviated(999)).toBe('999');
+    expect(formatAmountAbbreviated(-250_000)).toBe('-250K');
   });
 
   it('parses grouped input strings', () => {

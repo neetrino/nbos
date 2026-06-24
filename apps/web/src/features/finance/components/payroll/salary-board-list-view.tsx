@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatAmount } from '@/features/finance/constants/finance';
+import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import {
   salaryLineListRowClass,
   salaryLineStatusBoardUi,
@@ -189,17 +189,17 @@ function SalaryBoardListEntryRow({
       <TableCell
         className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
       >
-        {formatAmount(payable)}
+        {formatAmountAbbreviated(payable)}
       </TableCell>
       <TableCell
         className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums opacity-90`}
       >
-        {formatAmount(paid)}
+        {formatAmountAbbreviated(paid)}
       </TableCell>
       <TableCell
         className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
       >
-        {formatAmount(remaining)}
+        {formatAmountAbbreviated(remaining)}
       </TableCell>
     </TableRow>
   );

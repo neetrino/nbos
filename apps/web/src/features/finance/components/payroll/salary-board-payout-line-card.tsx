@@ -5,7 +5,7 @@ import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
-import { formatAmount } from '@/features/finance/constants/finance';
+import { formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import {
   formatPayrollMonthShort,
   parseSalaryBoardAmount,
@@ -47,11 +47,11 @@ export function SalaryBoardPayoutLineCard({
         </div>
       </div>
       <p className="text-foreground mt-2.5 text-base font-semibold tabular-nums">
-        {formatAmount(payable)}
+        {formatAmountAbbreviated(payable)}
       </p>
       <p className="text-muted-foreground text-[10px] tabular-nums">
-        {formatAmount(parseSalaryBoardAmount(entry.cell.paidAmount))} paid ·{' '}
-        {formatAmount(remaining)} left
+        {formatAmountAbbreviated(parseSalaryBoardAmount(entry.cell.paidAmount))} paid ·{' '}
+        {formatAmountAbbreviated(remaining)} left
       </p>
       <SalaryBoardSalesKpiStrip summary={entry.cell.salesKpiSummary} />
       <div className="mt-2 flex flex-wrap gap-1">
