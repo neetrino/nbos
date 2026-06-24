@@ -10,7 +10,6 @@ import {
   EntityItemHost,
   ErrorState,
   LoadingState,
-  StatusBadge,
 } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
@@ -21,7 +20,6 @@ import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
-import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -78,7 +76,6 @@ export function OrderDetailSheet({
 
   if (!orderId) return null;
 
-  const statusCfg = order ? ORDER_STATUSES[order.status] : undefined;
   const sourcePageHref = ordersListWithOpenOrderHref(orderId);
   const total = order ? Number(order.amount ?? order.totalAmount ?? 0) : 0;
 
@@ -95,23 +92,16 @@ export function OrderDetailSheet({
             {loading && !order ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : order ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
-                    <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {getOrderDisplayTitle(order)}
-                    </h2>
-                  </div>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    {order.code} · {formatAmount(total)}
-                  </p>
+              <div className="min-w-0">
+                <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                  <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {getOrderDisplayTitle(order)}
+                  </h2>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {statusCfg ? (
-                    <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
-                  ) : null}
-                </div>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {order.code} · {formatAmount(total)}
+                </p>
               </div>
             ) : null}
           </div>

@@ -13,6 +13,7 @@ export interface DetailSheetCollapsibleSectionProps {
   id?: string;
   title: string;
   icon?: ReactNode;
+  titleTrailing?: ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: ReactNode;
@@ -23,6 +24,7 @@ export function DetailSheetCollapsibleSection({
   id,
   title,
   icon,
+  titleTrailing,
   open,
   onOpenChange,
   children,
@@ -32,10 +34,13 @@ export function DetailSheetCollapsibleSection({
     <section id={id} className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS, className)}>
       <Collapsible open={open} onOpenChange={onOpenChange}>
         <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 rounded-lg outline-none select-none">
-          <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-            {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
-            {title}
-          </h4>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
+              {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
+              {title}
+            </h4>
+            {titleTrailing}
+          </div>
           <ChevronDown
             size={14}
             className={cn(
