@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Banknote, Receipt } from 'lucide-react';
+import { Banknote, Ban, Receipt, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -13,6 +14,7 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
@@ -266,20 +268,37 @@ export function ExpenseDetailSheet({
             {loading && !expense ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : expense ? (
-              <div className="min-w-0">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <Receipt className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {generalDraft?.name.trim() || expense.name}
-                  </h2>
-                  {stage ? (
-                    <StatusBadge
-                      label={stage.label}
-                      variant={stage.variant}
-                      className="shrink-0 self-center"
-                    />
-                  ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                    <Receipt className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {generalDraft?.name.trim() || expense.name}
+                    </h2>
+                    {stage ? (
+                      <StatusBadge
+                        label={stage.label}
+                        variant={stage.variant}
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
+                  </div>
                 </div>
+                {lifecycleMode ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      disabled={saving}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleteOpen(true);
+                      }}
+                    >
+                      {lifecycleMode === 'delete' ? <Trash2 /> : <Ban />}
+                      {lifecycleMode === 'delete' ? 'Delete expense' : 'Cancel expense'}
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -306,10 +325,6 @@ export function ExpenseDetailSheet({
                       patchDraft={patchGeneralDraft}
                       gateRequiredFields={gateRequiredFields}
                       formDisabled={saving}
-                      onDeleteClick={() => {
-                        setDeleteError(null);
-                        setDeleteOpen(true);
-                      }}
                     />
                   ) : null}
                   {activeTab === 'payments' ? (

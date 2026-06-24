@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { DollarSign, Layers, LayoutGrid, StickyNote, Trash2 } from 'lucide-react';
+import { DollarSign, Layers, LayoutGrid, StickyNote } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
@@ -9,7 +9,6 @@ import {
   InlineField,
   StatusBadge,
 } from '@/components/shared';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -44,7 +43,6 @@ import {
   resolveExpensePayrollRunId,
   resolveExpenseSalaryLineId,
 } from '@/features/finance/utils/parse-payroll-expense-notes';
-import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 
 interface ExpenseGeneralTabProps {
   expense: Expense;
@@ -52,7 +50,6 @@ interface ExpenseGeneralTabProps {
   patchDraft: (partial: Partial<ExpenseGeneralDraft>) => void;
   gateRequiredFields: ReadonlySet<string>;
   formDisabled?: boolean;
-  onDeleteClick: () => void;
 }
 
 export function ExpenseGeneralTab({
@@ -61,9 +58,7 @@ export function ExpenseGeneralTab({
   patchDraft,
   gateRequiredFields,
   formDisabled = false,
-  onDeleteClick,
 }: ExpenseGeneralTabProps) {
-  const lifecycleAction = expenseLifecycleAction(expense);
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -310,22 +305,6 @@ export function ExpenseGeneralTab({
           title=""
         />
       </DetailSheetSection>
-
-      {lifecycleAction ? (
-        <DetailSheetSection title="Actions">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="text-destructive hover:bg-destructive/10 border-destructive/40 w-full"
-            disabled={formDisabled}
-            onClick={onDeleteClick}
-          >
-            <Trash2 size={14} aria-hidden />
-            {lifecycleAction === 'delete' ? 'Delete expense' : 'Cancel expense'}
-          </Button>
-        </DetailSheetSection>
-      ) : null}
     </div>
   );
 }
