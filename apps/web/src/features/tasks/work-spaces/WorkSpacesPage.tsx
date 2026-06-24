@@ -14,7 +14,8 @@ import {
   type FilterConfig,
   LoadingState,
   ListPagination,
-  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  WORK_SPACE_PRODUCT_CARD_GRID_CLASS,
   WorkSpaceNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
@@ -166,7 +167,7 @@ export function WorkSpacesPage() {
       />
 
       {loading ? (
-        <LoadingState />
+        <LoadingState variant="cards" count={6} />
       ) : error ? (
         <ErrorState description={error} onRetry={() => void refetch()} />
       ) : items.length === 0 ? (
@@ -192,7 +193,13 @@ export function WorkSpacesPage() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+        <div
+          className={
+            tab === 'product'
+              ? WORK_SPACE_PRODUCT_CARD_GRID_CLASS
+              : NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS
+          }
+        >
           {items.map((workspace) => (
             <WorkSpaceNavigableCard
               key={workspace.id}
@@ -203,7 +210,7 @@ export function WorkSpacesPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-card/40 overflow-hidden rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(15,23,42,0.04)] ring-1 ring-black/[0.04]">
+        <div className="border-border overflow-hidden rounded-xl border">
           <WorkSpaceListTable workspaces={items} />
         </div>
       )}

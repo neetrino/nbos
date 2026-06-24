@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
 import {
   Archive,
   Building2,
@@ -14,6 +15,7 @@ import {
 import {
   EntityLinkedSheetsHoverActions,
   NavigableEntityCard,
+  StatusBadge,
   type NavigableEntityCardBadge,
   type NavigableEntityCardMetaLine,
 } from '@/components/shared';
@@ -143,15 +145,50 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
   );
 }
 
-/** Work Spaces directory card. */
+function workSpaceHubCodePill(workspace: WorkSpace): string | null {
+  return workspace.project?.code ?? null;
+}
+
+function workSpaceHubMetaRows(workspace: WorkSpace): Array<{ icon: LucideIcon; text: string }> {
+  const rows: Array<{ icon: LucideIcon; text: string }> = [];
+
+  if (workspace.type === 'PRODUCT_DELIVERY') {
+    if (workspace.project?.name) {
+      rows.push({ icon: Building2, text: workspace.project.name });
+    }
+    return rows;
+  }
+
+  if (workspace.product?.name) {
+    rows.push({ icon: Package, text: workspace.product.name });
+  }
+  if (workspace.project?.name) {
+    rows.push({ icon: Building2, text: workspace.project.name });
+  }
+  if (rows.length === 0) {
+    if (workspace.description?.trim()) {
+      rows.push({ icon: FolderKanban, text: workspace.description.trim() });
+    } else {
+      const context = getWorkSpaceContextLabel(workspace);
+      if (context) rows.push({ icon: FolderKanban, text: context });
+    }
+  }
+
+  return rows.slice(0, 2);
+}
+
+/** Work Spaces directory card — aligned with {@link ProjectNavigableCard}. */
 export function WorkSpaceNavigableCard({
   workspace,
   onOpenProductDelivery,
   onOpenProductDeal,
 }: WorkSpaceNavigableCardProps) {
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
+  const tasksLabel = `${taskCount} task${taskCount === 1 ? '' : 's'}`;
   const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
-  const contextLabel = getWorkSpaceContextLabel(workspace);
+  const CardIcon = isProductDelivery ? Package : FolderKanban;
+  const metaRows = workSpaceHubMetaRows(workspace);
+  const codePill = workSpaceHubCodePill(workspace);
   const dealId = workspace.product ? getEntityOrderDealId(workspace.product.order) : null;
   const contextHref =
     workspace.productId && workspace.projectId
@@ -168,34 +205,133 @@ export function WorkSpaceNavigableCard({
         contextHref={contextHref}
         onOpenDelivery={() => onOpenProductDelivery(workspace.productId!)}
         onOpenDeal={dealId && onOpenProductDeal ? () => onOpenProductDeal(dealId) : undefined}
+        variant="project-hub-card-footer"
       />
     ) : null;
 
+  if (isProductDelivery) {
+    return (
+      <div
+        className={cn(
+          PROJECT_HUB_CARD_SHELL_CLASS,
+          NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
+          'relative h-auto self-start',
+        )}
+      >
+        <Link
+          href={`/work-spaces/${workspace.id}`}
+          className="block p-4 focus-visible:outline-none"
+        >
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+              <CardIcon className="size-4" aria-hidden />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <h3 className="text-foreground line-clamp-2 min-w-0 text-sm font-bold tracking-tight">
+                  {workspace.name}
+                </h3>
+                <StatusBadge
+                  label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
+                  variant={workspace.scrumEnabled ? 'blue' : 'gray'}
+                  className="shrink-0"
+                />
+              </div>
+              {codePill ? (
+                <span className={cn(PROJECT_HUB_CARD_CODE_PILL_CLASS, 'w-fit')}>{codePill}</span>
+              ) : null}
+              {metaRows.map((row) => {
+                const RowIcon = row.icon;
+                return (
+                  <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                    <RowIcon className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{row.text}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </Link>
+        <div className="relative min-h-9 px-4 pt-1 pb-4">
+          <div
+            className={cn(
+              'flex justify-end transition-opacity duration-150',
+              hoverActions &&
+                'group-focus-within/project-hub-card:opacity-0 group-hover/project-hub-card:opacity-0',
+            )}
+          >
+            <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+              <ListChecks className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+              {tasksLabel}
+            </span>
+          </div>
+          {hoverActions ? (
+            <div
+              className={cn(
+                'absolute inset-x-4 top-1 bottom-4 flex items-center justify-end gap-2',
+                'pointer-events-none opacity-0 transition-opacity duration-150',
+                'group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100',
+                'group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100',
+              )}
+            >
+              {hoverActions}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <NavigableEntityCard
-      href={`/work-spaces/${workspace.id}`}
-      icon={isProductDelivery ? Package : FolderKanban}
-      eyebrow={workspace.project?.code ?? undefined}
-      title={workspace.name}
-      badges={[
-        {
-          label: getWorkSpaceTypeLabel(workspace.type),
-          variant: getWorkSpaceTypeVariant(workspace.type),
-        },
-        {
-          label: workspace.scrumEnabled ? 'Scrum-enabled' : 'Kanban',
-          variant: workspace.scrumEnabled ? 'blue' : 'gray',
-        },
-      ]}
-      description={workspace.description ?? contextLabel}
-      metaLines={[
-        {
-          icon: ListChecks,
-          text: `${taskCount} tasks · ${contextLabel}`,
-        },
-      ]}
-      hoverActions={hoverActions}
-    />
+    <div className={cn(PROJECT_HUB_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS)}>
+      <Link
+        href={`/work-spaces/${workspace.id}`}
+        className="flex min-h-0 flex-1 flex-col p-5 focus-visible:outline-none"
+      >
+        <div className="flex items-start gap-3">
+          <div className={PROJECT_HUB_CARD_ICON_TILE_CLASS}>
+            <CardIcon className="size-5" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="text-foreground min-w-0 text-base font-bold tracking-tight">
+                {workspace.name}
+              </h3>
+              <StatusBadge
+                label={getWorkSpaceTypeLabel(workspace.type)}
+                variant={getWorkSpaceTypeVariant(workspace.type)}
+                className="shrink-0"
+              />
+              <StatusBadge
+                label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
+                variant={workspace.scrumEnabled ? 'blue' : 'gray'}
+                className="shrink-0"
+              />
+            </div>
+            {metaRows.length > 0 ? (
+              <div className="mt-3 flex flex-col gap-1.5">
+                {metaRows.map((row) => {
+                  const RowIcon = row.icon;
+                  return (
+                    <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                      <RowIcon className="size-3.5 shrink-0" aria-hidden />
+                      <span className="truncate">{row.text}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-auto flex justify-end pt-4">
+          <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+            <ListChecks className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            {tasksLabel}
+          </span>
+        </div>
+      </Link>
+    </div>
   );
 }
 

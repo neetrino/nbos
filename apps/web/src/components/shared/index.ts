@@ -39,6 +39,7 @@ export {
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  WORK_SPACE_PRODUCT_CARD_GRID_CLASS,
 } from './navigable-entity-card.constants';
 export {
   ProductNavigableCard,

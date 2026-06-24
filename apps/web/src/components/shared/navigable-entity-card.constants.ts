@@ -31,3 +31,7 @@ export const PROJECT_HUB_CARD_META_ROW_CLASS =
 
 /** Same responsive behavior as {@link NAVIGABLE_ENTITY_CARD_GRID_CLASS}. */
 export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS = NAVIGABLE_ENTITY_CARD_GRID_CLASS;
+
+/** Work Spaces product tab — slightly wider cards than default hub grid. */
+export const WORK_SPACE_PRODUCT_CARD_GRID_CLASS =
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,32rem),1fr))]';

@@ -3,7 +3,12 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export type ActionTileHoverBarVariant = 'card' | 'row' | 'kanban-card';
+export type ActionTileHoverBarVariant =
+  | 'card'
+  | 'row'
+  | 'kanban-card'
+  | 'project-hub-card'
+  | 'project-hub-card-footer';
 
 const HOVER_REVEAL_BY_VARIANT: Record<ActionTileHoverBarVariant, string> = {
   card: [
@@ -21,6 +26,13 @@ const HOVER_REVEAL_BY_VARIANT: Record<ActionTileHoverBarVariant, string> = {
     'group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100',
     'group-focus-within/kanban-card:pointer-events-auto group-focus-within/kanban-card:opacity-100',
   ].join(' '),
+  'project-hub-card': [
+    'pointer-events-none opacity-0 transition-opacity duration-150',
+    'group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100',
+    'group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100',
+  ].join(' '),
+  /** Parent toggles visibility — bar stays interactive when shown. */
+  'project-hub-card-footer': '',
 };
 
 function stopCardClick(event: MouseEvent) {
@@ -41,7 +53,11 @@ export function ActionTileHoverBar({ variant, children, className }: ActionTileH
       onClick={stopCardClick}
       className={cn(
         'flex flex-wrap justify-end gap-2',
-        variant === 'row' ? 'shrink-0 items-center' : 'mt-2',
+        variant === 'row'
+          ? 'shrink-0 items-center'
+          : variant === 'project-hub-card' || variant === 'project-hub-card-footer'
+            ? ''
+            : 'mt-2',
         HOVER_REVEAL_BY_VARIANT[variant],
         className,
       )}
