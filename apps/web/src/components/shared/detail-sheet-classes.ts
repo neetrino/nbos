@@ -154,7 +154,7 @@ export const DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS = [
 export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex w-full min-h-8 items-center gap-1 rounded-xl px-3 py-1',
+  'flex h-10 w-full items-center gap-1 rounded-xl px-3',
 ].join(' ');
 
 /** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
@@ -233,8 +233,9 @@ export const RELATION_PICKER_REPLACE_ZONE_CLASS = [
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'border-border/40 flex w-full min-h-8 min-w-0 items-center gap-1 rounded-xl border border-transparent py-1 pr-1 pl-2.5 text-sm',
-  'focus-within:border-border/50 transition-[border-color]',
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3 pr-1 text-sm',
+  'focus-within:border-border/50',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
@@ -265,7 +266,7 @@ export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'text-muted-foreground hover:text-foreground flex min-h-8 w-full items-center gap-2 rounded-xl px-3 py-1 text-left text-sm',
+  'text-muted-foreground hover:text-foreground flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm',
 ].join(' ');
 
 /** Use on Save / Cancel in detail sheets and sticky form footers. */

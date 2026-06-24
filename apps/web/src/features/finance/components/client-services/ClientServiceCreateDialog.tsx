@@ -84,27 +84,32 @@ export function ClientServiceCreateDialog({
               {formError}
             </p>
           ) : null}
-          <div className="space-y-2">
-            <Label>Project *</Label>
-            <Select
-              value={form.projectId}
-              onValueChange={(projectId) => setForm({ ...form, projectId: projectId ?? '' })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.code} - {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Name *</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Project *</Label>
+              <Select
+                value={form.projectId}
+                onValueChange={(projectId) => setForm({ ...form, projectId: projectId ?? '' })}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.code} - {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <ClientServiceSelectField

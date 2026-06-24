@@ -75,7 +75,7 @@ export function ClientServiceGeneralTab({
         onOpenChange={setBasicsOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className="flex flex-wrap items-start gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <InlineField
               variant="controlled"
               label="Name"
@@ -83,7 +83,7 @@ export function ClientServiceGeneralTab({
               value={draft.name}
               placeholder="Service name"
               disabled={formDisabled}
-              className="min-w-0 flex-1"
+              className="min-w-0"
               onValueChange={(name) => patchDraft({ name })}
             />
             <RelationPickerField
@@ -94,7 +94,7 @@ export function ClientServiceGeneralTab({
               placeholder="Search projects…"
               icon={<FolderKanban size={12} />}
               disabled={formDisabled}
-              className="min-w-0 flex-1"
+              className="min-w-0"
               onSearch={searchProjects}
               onSelect={(id) => patchDraft({ projectId: id })}
               {...projectPicker}
