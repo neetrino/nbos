@@ -21,7 +21,7 @@ export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
     items.length === 1 ? '1 payment received' : `${items.length} payments received`;
 
   return (
-    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
+    <div className={cn(FINANCE_DASHBOARD_PANEL_CARD_CLASS, 'flex h-full flex-col')}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <div className="rounded-full bg-emerald-100 p-2.5 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
@@ -44,7 +44,7 @@ export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
       {items.length === 0 ? (
         <p className="text-muted-foreground mt-5 text-sm">No payments yet.</p>
       ) : (
-        <div className="mt-5 space-y-2">
+        <div className="mt-5 flex flex-1 flex-col gap-2">
           {items.map((item, index) => (
             <RecentPaymentRow key={item.id} item={item} index={index} />
           ))}
@@ -59,7 +59,7 @@ function RecentPaymentRow({ item, index }: { item: RecentPaymentItem; index: num
   const avatarShell = CLIENT_AVATAR_SHELLS[index % CLIENT_AVATAR_SHELLS.length]!;
 
   return (
-    <div className={cn(PAYMENT_ROW_SHELL, 'flex items-center gap-3')}>
+    <div className={cn(PAYMENT_ROW_SHELL, 'flex min-h-12 flex-1 items-center gap-3')}>
       <div
         className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white"
         aria-hidden

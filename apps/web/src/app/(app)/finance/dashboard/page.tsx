@@ -147,7 +147,7 @@ export default function FinanceDashboardPage() {
 
       {matchesOverviewSearch('Invoice distribution', query) ||
       matchesOverviewSearch('Recent payments', query) ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
           {matchesOverviewSearch('Invoice distribution', query) ? (
             <InvoiceDistribution items={data.invoiceStatusItems} />
           ) : null}
