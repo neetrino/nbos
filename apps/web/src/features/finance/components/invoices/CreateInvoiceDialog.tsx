@@ -219,9 +219,10 @@ function InvoiceAmountFields({
         label="Amount *"
         value={form.amount}
         onChange={(amount) => setForm({ ...form, amount })}
+        wrapperClassName="gap-2"
         autoFocus
       />
-      <div>
+      <div className="space-y-2">
         <Label>Due date</Label>
         <NbosDatePicker
           value={form.dueDate}
@@ -229,7 +230,7 @@ function InvoiceAmountFields({
           variant="extended"
           aria-label="Due date"
         />
-        <p className="text-muted-foreground mt-1 text-xs">
+        <p className="text-muted-foreground text-xs">
           Defaults to 10 days from creation when left empty.
         </p>
       </div>
