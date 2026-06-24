@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -13,6 +14,7 @@ import {
   LoadingState,
   StatusBadge,
 } from '@/components/shared';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
@@ -185,18 +187,30 @@ export function ExpensePlanDetailSheet({
             {loading && !plan ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : plan ? (
-              <div className="min-w-0">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {generalDraft?.name.trim() || plan.name}
-                  </h2>
-                  <StatusBadge
-                    label={frequencyLabel}
-                    variant="gray"
-                    className="shrink-0 self-center"
-                  />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                    <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {generalDraft?.name.trim() || plan.name}
+                    </h2>
+                    <StatusBadge
+                      label={frequencyLabel}
+                      variant="gray"
+                      className="shrink-0 self-center"
+                    />
+                  </div>
                 </div>
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    disabled={saving}
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    <Trash2 />
+                    Delete plan
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
               </div>
             ) : null}
           </div>
@@ -222,7 +236,6 @@ export function ExpensePlanDetailSheet({
                       patchDraft={patchGeneralDraft}
                       formDisabled={saving}
                       onGenerateClick={() => setGenerateOpen(true)}
-                      onDeleteClick={() => setDeleteOpen(true)}
                     />
                   ) : null}
                   {activeTab === 'cards' ? <ExpensePlanCardsTab plan={plan} /> : null}

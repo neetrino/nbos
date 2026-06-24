@@ -11,15 +11,6 @@ export const EXPENSE_FREQUENCIES = [
   { value: 'MULTI_YEAR', label: 'Multi-year' },
 ] as const;
 
-/** Compact labels for expense detail sheet frequency segmented control. */
-export const EXPENSE_FREQUENCY_SEGMENTED_OPTIONS = [
-  { value: 'ONE_TIME', label: 'Once' },
-  { value: 'MONTHLY', label: 'Monthly' },
-  { value: 'QUARTERLY', label: 'Quarter' },
-  { value: 'YEARLY', label: 'Yearly' },
-  { value: 'MULTI_YEAR', label: 'Multi-yr' },
-] as const;
-
 /** Fixed width for compact expense sheet fields (amount, category). */
 export const EXPENSE_COMPACT_FIELD_WIDTH_CLASS = 'w-[10rem] shrink-0';
 
@@ -33,20 +24,6 @@ export const EXPENSE_SHEET_FIELD_ROW_2_CLASS = 'grid grid-cols-2 gap-3';
 
 export const EXPENSE_SHEET_FIELD_CELL_CLASS = 'min-w-0 w-full';
 
-/** Plan categories (OFFICE excluded); compact labels for segmented control. */
-export const EXPENSE_PLAN_CATEGORY_SEGMENTED_OPTIONS = [
-  { value: 'DOMAIN', label: 'Domain' },
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'MARKETING', label: 'Marketing' },
-  { value: 'SALARY', label: 'Salary' },
-  { value: 'BONUS', label: 'Bonus' },
-  { value: 'PARTNER_PAYOUT', label: 'Partner' },
-  { value: 'TOOLS', label: 'Tools' },
-  { value: 'OTHER', label: 'Other' },
-] as const;
-
-/** Compact labels for expense detail sheet status segmented control. */
 export const EXPENSE_STATUS_SEGMENTED_OPTIONS = [
   { value: 'PLANNED', label: 'Planned' },
   { value: 'DUE_SOON', label: 'Soon' },
