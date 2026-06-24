@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { DollarSign, Layers, LayoutGrid, StickyNote } from 'lucide-react';
+import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
@@ -286,17 +286,6 @@ export function ExpenseGeneralTab({
         </div>
       </DetailSheetSection>
 
-      <EntityNotesSection
-        title="Notes"
-        icon={<StickyNote size={12} />}
-        entityType="expense"
-        entityId={expense.id}
-        value={draft.notes}
-        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder="Optional notes…"
-        disabled={formDisabled}
-      />
-
       <DetailSheetSection title="Proofs" icon={<Layers size={12} />}>
         <FinanceProofAttachments
           entityType="EXPENSE"
@@ -305,6 +294,15 @@ export function ExpenseGeneralTab({
           title=""
         />
       </DetailSheetSection>
+
+      <EntityNotesSection
+        entityType="expense"
+        entityId={expense.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder="Optional notes…"
+        disabled={formDisabled}
+      />
     </div>
   );
 }
