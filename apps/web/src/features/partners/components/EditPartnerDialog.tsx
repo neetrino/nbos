@@ -42,6 +42,7 @@ interface EditPartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: (updated: Partner) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function EditPartnerDialog({
@@ -49,6 +50,7 @@ export function EditPartnerDialog({
   open,
   onOpenChange,
   onSaved,
+  forceNestedBackdrop = false,
 }: EditPartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
@@ -151,7 +153,10 @@ export function EditPartnerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]"
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <DialogHeader>
           <DialogTitle>Edit Partner</DialogTitle>
         </DialogHeader>

@@ -64,7 +64,7 @@ export function ReactivateEmployeeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Reactivate employee</DialogTitle>
         </DialogHeader>

@@ -12,6 +12,8 @@ interface DeleteExpenseDialogProps {
   errorMessage: string | null;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void | Promise<void>;
+  /** Use when opened inside an entity detail sheet (blurs floating rail). */
+  forceNestedBackdrop?: boolean;
 }
 
 const COPY: Record<
@@ -39,6 +41,7 @@ export function DeleteExpenseDialog({
   errorMessage,
   onOpenChange,
   onConfirm,
+  forceNestedBackdrop = false,
 }: DeleteExpenseDialogProps) {
   const copy = COPY[mode];
   return (
@@ -52,6 +55,7 @@ export function DeleteExpenseDialog({
       confirmLabel={copy.confirmLabel}
       isSubmitting={isSubmitting}
       errorMessage={errorMessage}
+      forceNestedBackdrop={forceNestedBackdrop}
       onConfirm={onConfirm}
     />
   );

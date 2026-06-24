@@ -361,6 +361,7 @@ export function ExpenseDetailSheet({
             open={deleteOpen}
             isSubmitting={deleteSubmitting}
             errorMessage={deleteError}
+            forceNestedBackdrop
             onOpenChange={(next) => {
               setDeleteOpen(next);
               if (!next) setDeleteError(null);

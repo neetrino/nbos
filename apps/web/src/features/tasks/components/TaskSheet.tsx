@@ -237,6 +237,7 @@ export function TaskSheet({
             ? 'Only empty OPEN tasks can be deleted. This removes the task permanently.'
             : 'The task will be removed from boards and lists. You can restore it from Trash later.'
         }
+        forceNestedBackdrop
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDelete();

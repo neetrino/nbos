@@ -121,6 +121,7 @@ export function SubscriptionDetailActions({
         subscription={subscription}
         open={partnerOpen}
         onOpenChange={setPartnerOpen}
+        forceNestedBackdrop
         onSaved={(updated) => {
           onSubscriptionChange(updated);
           onError(null);
@@ -131,6 +132,7 @@ export function SubscriptionDetailActions({
         open={cancelOpen}
         isSubmitting={Boolean(cancellingId && cancellingId === subscription.id)}
         onOpenChange={setCancelOpen}
+        forceNestedBackdrop
         onConfirm={() => void confirmCancel()}
       />
       <SubscriptionHoldDialog
@@ -138,6 +140,7 @@ export function SubscriptionDetailActions({
         open={holdOpen}
         isSubmitting={Boolean(holdingId && holdingId === subscription.id)}
         onOpenChange={setHoldOpen}
+        forceNestedBackdrop
         onConfirm={() => void confirmHold()}
       />
     </>

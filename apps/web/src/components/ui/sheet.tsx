@@ -135,8 +135,13 @@ function SheetOverlay({
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        'fixed inset-0 bg-black/10 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs',
-        stackAboveFloatingRail ? SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS : 'z-50',
+        'fixed inset-0 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0',
+        stackAboveFloatingRail
+          ? cn(
+              SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS,
+              'bg-black/25 supports-backdrop-filter:backdrop-blur-sm',
+            )
+          : 'z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
         className,
       )}
       {...props}

@@ -240,6 +240,7 @@ export function PartnerDetailSheet({
           partner={partner}
           open={editOpen}
           onOpenChange={setEditOpen}
+          forceNestedBackdrop
           onSaved={(updated) => {
             patchPartner(updated);
             setEditOpen(false);
@@ -254,6 +255,7 @@ export function PartnerDetailSheet({
         itemName={deleteConfirm.target?.name ?? ''}
         title="Move partner to Trash?"
         description="The partner will be removed from active lists. Linked orders and accruals stay intact; restore from Trash later."
+        forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           deleteConfirm.clear();

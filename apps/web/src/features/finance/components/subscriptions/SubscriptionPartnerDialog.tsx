@@ -29,6 +29,7 @@ interface SubscriptionPartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: (updated: Subscription) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function SubscriptionPartnerDialog({
@@ -36,6 +37,7 @@ export function SubscriptionPartnerDialog({
   open,
   onOpenChange,
   onSaved,
+  forceNestedBackdrop = false,
 }: SubscriptionPartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [partnersLoading, setPartnersLoading] = useState(false);
@@ -114,7 +116,7 @@ export function SubscriptionPartnerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>Partner for {subscription.code}</DialogTitle>
         </DialogHeader>

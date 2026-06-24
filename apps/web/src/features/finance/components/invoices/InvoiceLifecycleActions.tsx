@@ -89,6 +89,7 @@ export function InvoiceLifecycleActions({
         confirmLabel={isDelete ? 'Delete' : 'Cancel invoice'}
         isSubmitting={submitting}
         errorMessage={error}
+        forceNestedBackdrop
         onConfirm={() => void handleConfirm()}
       />
     </>

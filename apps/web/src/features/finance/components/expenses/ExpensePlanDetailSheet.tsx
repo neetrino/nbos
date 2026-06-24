@@ -259,6 +259,7 @@ export function ExpensePlanDetailSheet({
         itemName={plan?.name ?? ''}
         title="Delete plan?"
         description="Linked expense cards keep running; only the plan link is cleared."
+        forceNestedBackdrop
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDeletePlan();

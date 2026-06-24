@@ -695,6 +695,7 @@ function LeadsPipelinePageContent() {
         itemName={deleteConfirm.target?.name ?? ''}
         title="Move lead to Trash?"
         description="The lead will be removed from the active pipeline. You can restore it from Trash later."
+        forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
