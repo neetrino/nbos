@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
@@ -13,12 +13,12 @@ import {
 import type {
   FinanceDashboardData,
   FinanceKpi,
-  RecentPaymentItem,
   UpcomingInvoiceItem,
 } from './finance-dashboard-data';
 
 export { ExpenseCardsSnapshot, PayrollRunsSnapshot } from './finance-dashboard-snapshot-panels';
 export { InvoiceDistribution } from './finance-dashboard-invoice-status-panel';
+export { RecentPayments } from './finance-dashboard-recent-payments-panel';
 
 export function DashboardLoadingSkeleton() {
   return (
@@ -49,21 +49,6 @@ export function KpiCards({ kpis }: { kpis: FinanceKpi[] }) {
       {kpis.map((kpi) => (
         <KpiCard key={kpi.label} kpi={kpi} />
       ))}
-    </div>
-  );
-}
-
-export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
-  return (
-    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
-      <h2 className="text-foreground text-lg font-semibold">Recent Payments</h2>
-      <div className="mt-4 space-y-3">
-        {items.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No payments yet.</p>
-        ) : (
-          items.map((item) => <RecentPaymentRow key={item.id} item={item} />)
-        )}
-      </div>
     </div>
   );
 }
@@ -162,25 +147,6 @@ function KpiCard({ kpi }: { kpi: FinanceKpi }) {
         <p className="text-muted-foreground mt-1 text-sm">{kpi.label}</p>
       </div>
       <p className="text-muted-foreground mt-2 text-xs">{kpi.change}</p>
-    </div>
-  );
-}
-
-function RecentPaymentRow({ item }: { item: RecentPaymentItem }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
-          <p className="text-foreground truncate text-sm">{item.client}</p>
-        </div>
-        <p className="text-muted-foreground ml-5 text-xs">
-          {item.invoice} · {item.dateLabel}
-        </p>
-      </div>
-      <span className="text-foreground shrink-0 text-sm font-medium">
-        {formatAmount(item.amount)}
-      </span>
     </div>
   );
 }

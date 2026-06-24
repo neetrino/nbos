@@ -24,7 +24,7 @@ import type {
 const PAYROLL_TILE_SHELL = 'bg-sky-50/90 dark:bg-sky-950/25';
 const EXPENSE_TILE_SHELL = 'bg-muted/35';
 const EXPENSE_SUMMARY_BANNER =
-  'bg-orange-50/90 border-orange-100 text-orange-950 dark:bg-orange-950/30 dark:border-orange-900/40 dark:text-orange-100';
+  'border-border/70 bg-white text-foreground dark:bg-white dark:text-foreground';
 
 export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayrollRunsSummary }) {
   const href = payrollRunsListHref();
