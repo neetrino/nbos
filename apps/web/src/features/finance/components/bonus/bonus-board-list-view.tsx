@@ -25,8 +25,26 @@ import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
-const LIST_ROW_CELL = 'px-4 py-3 align-middle';
-const LIST_HEAD_CELL = 'px-4 py-3';
+const LIST_EDGE_START = 'px-0 pl-6';
+const LIST_EDGE_END = 'px-0 pr-6';
+const LIST_ROW_CELL = 'px-0 py-3 align-middle';
+const LIST_HEAD_CELL = cn(LIST_ROW_CELL, 'h-auto font-medium');
+const LIST_BADGE_SIZE_CLASS = 'px-2.5 py-1 text-xs';
+const LIST_TYPE_BADGE_CLASS = cn('inline-flex rounded-md font-medium', LIST_BADGE_SIZE_CLASS);
+const LIST_EMPLOYEE_COLUMN = 'w-[28%]';
+const LIST_BLOCK_COLUMN = 'w-[18%]';
+const LIST_AMOUNT_COLUMN = 'w-[18%]';
+const LIST_EMPLOYEE_HEAD = cn(LIST_HEAD_CELL, LIST_EMPLOYEE_COLUMN, LIST_EDGE_START, 'text-left');
+const LIST_EMPLOYEE_CELL = cn(LIST_ROW_CELL, LIST_EMPLOYEE_COLUMN, LIST_EDGE_START, 'font-medium');
+const LIST_BLOCK_COLUMN_HEAD = cn(LIST_HEAD_CELL, LIST_BLOCK_COLUMN, 'text-center');
+const LIST_BLOCK_COLUMN_CELL = cn(LIST_ROW_CELL, LIST_BLOCK_COLUMN, 'text-center');
+const LIST_AMOUNT_COLUMN_HEAD = cn(LIST_HEAD_CELL, LIST_AMOUNT_COLUMN, LIST_EDGE_END, 'text-right');
+const LIST_AMOUNT_COLUMN_CELL = cn(
+  LIST_ROW_CELL,
+  LIST_AMOUNT_COLUMN,
+  LIST_EDGE_END,
+  'text-right text-sm font-semibold tabular-nums',
+);
 
 function handleBonusRowKeyDown(
   event: KeyboardEvent<HTMLTableRowElement>,
@@ -61,15 +79,15 @@ export function BonusBoardListView({
   const statusColumnLabel = boardScope === 'CLOSED' ? 'Outcome' : 'Status';
 
   return (
-    <div className="border-border bg-card overflow-hidden rounded-xl border">
-      <Table>
+    <div className="border-border bg-card min-h-0 flex-1 overflow-auto rounded-xl border">
+      <Table className="w-full table-fixed">
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className={LIST_HEAD_CELL}>Employee</TableHead>
-            <TableHead className={LIST_HEAD_CELL}>Project</TableHead>
-            <TableHead className={LIST_HEAD_CELL}>Type</TableHead>
-            <TableHead className={LIST_HEAD_CELL}>{statusColumnLabel}</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Amount</TableHead>
+            <TableHead className={LIST_EMPLOYEE_HEAD}>Employee</TableHead>
+            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>Project</TableHead>
+            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>Type</TableHead>
+            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>{statusColumnLabel}</TableHead>
+            <TableHead className={LIST_AMOUNT_COLUMN_HEAD}>Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -86,27 +104,29 @@ export function BonusBoardListView({
                 role="button"
                 aria-label={`${employeeDisplayName(row.employee)} · ${projectCode} · ${formatAmount(parseBonusAmount(row.amount))}`}
               >
-                <TableCell className={cn(LIST_ROW_CELL, 'font-medium')}>
+                <TableCell className={LIST_EMPLOYEE_CELL}>
                   {employeeDisplayName(row.employee)}
                 </TableCell>
-                <TableCell className={LIST_ROW_CELL}>{projectCode}</TableCell>
-                <TableCell className={LIST_ROW_CELL}>
-                  <span
-                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
-                  >
-                    {typeCfg.label}
-                  </span>
+                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
+                  <div className="flex justify-center">{projectCode}</div>
                 </TableCell>
-                <TableCell className={LIST_ROW_CELL}>
-                  <StatusBadge
-                    label={BONUS_ENTRY_STATUS_LABEL[row.status]}
-                    variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
-                    className="text-[10px]"
-                  />
+                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
+                  <div className="flex justify-center">
+                    <span className={cn(LIST_TYPE_BADGE_CLASS, typeCfg.color)}>
+                      {typeCfg.label}
+                    </span>
+                  </div>
                 </TableCell>
-                <TableCell
-                  className={`${LIST_ROW_CELL} text-right text-sm font-semibold tabular-nums`}
-                >
+                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
+                  <div className="flex justify-center">
+                    <StatusBadge
+                      label={BONUS_ENTRY_STATUS_LABEL[row.status]}
+                      variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
+                      className={LIST_BADGE_SIZE_CLASS}
+                    />
+                  </div>
+                </TableCell>
+                <TableCell className={LIST_AMOUNT_COLUMN_CELL}>
                   {formatAmount(parseBonusAmount(row.amount))}
                 </TableCell>
               </TableRow>
