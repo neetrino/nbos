@@ -25,6 +25,7 @@ export interface TeamMemberEmployee {
   lastName: string;
   email: string;
   position: string | null;
+  status: string;
 }
 
 export interface ProjectTeamMemberRow {

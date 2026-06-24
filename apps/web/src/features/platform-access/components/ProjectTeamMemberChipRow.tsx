@@ -4,6 +4,7 @@ import { RelationPickerChip } from '@/components/shared/relation-picker/Relation
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import type { ProjectTeamMemberRow } from '@/lib/api/platform-access';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
+import { TeamMemberEmployeeStatusBadge } from './TeamMemberEmployeeStatusBadge';
 
 interface ProjectTeamMemberChipRowProps {
   row: ProjectTeamMemberRow;
@@ -28,6 +29,12 @@ export function ProjectTeamMemberChipRow({
   return (
     <RelationPickerChip
       label={name}
+      labelAddon={
+        <TeamMemberEmployeeStatusBadge
+          status={row.employee.status}
+          className="shrink-0 px-1.5 py-0 text-[10px]"
+        />
+      }
       subtitle={row.employee.email}
       entityKind="employee"
       disabled={disabled}

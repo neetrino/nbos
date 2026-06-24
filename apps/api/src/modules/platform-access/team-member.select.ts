@@ -4,4 +4,5 @@ export const teamMemberEmployeeSelect = {
   lastName: true,
   email: true,
   position: true,
+  status: true,
 } as const;
