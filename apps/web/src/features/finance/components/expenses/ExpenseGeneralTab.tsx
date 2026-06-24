@@ -1,20 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  CalendarDays,
-  CircleDot,
-  DollarSign,
-  FolderKanban,
-  Layers,
-  Receipt,
-  StickyNote,
-  Tag,
-  Trash2,
-} from 'lucide-react';
+import { DollarSign, Layers, LayoutGrid, StickyNote, Trash2 } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
-  DetailSheetFieldSegmented,
   DetailSheetSection,
   EntityNotesSection,
   InlineField,
@@ -23,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
@@ -38,10 +28,10 @@ import {
 } from '@/features/finance/constants/expense-stage-gate-highlight';
 import {
   EXPENSE_BACKLOG_REASONS,
-  EXPENSE_COMPACT_FIELD_WIDTH_CLASS,
-  EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS,
-  EXPENSE_FREQUENCY_SEGMENTED_OPTIONS,
-  EXPENSE_STATUS_SEGMENTED_OPTIONS,
+  EXPENSE_FREQUENCIES,
+  EXPENSE_SHEET_FIELD_CELL_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_3_CLASS,
   EXPENSE_TYPES,
   PROJECTS_PAGE_SIZE,
   TAX_STATUSES,
@@ -102,16 +92,27 @@ export function ExpenseGeneralTab({
     return items;
   }, [expense.category]);
 
-  const statusSegmentedOptions = useMemo((): Array<{ value: string; label: string }> => {
-    const base: Array<{ value: string; label: string }> = EXPENSE_STATUS_SEGMENTED_OPTIONS.map(
-      (s) => ({ value: s.value, label: s.label }),
-    );
-    if (!base.some((s) => s.value === expense.status)) {
-      const row = EXPENSE_STAGES.find((s) => s.value === expense.status);
-      base.push({ value: row?.value ?? expense.status, label: row?.label ?? expense.status });
+  const statusOptions = useMemo((): Array<{ value: string; label: string }> => {
+    const items: Array<{ value: string; label: string }> = EXPENSE_STAGES.map((s) => ({
+      value: s.value,
+      label: s.label,
+    }));
+    if (!items.some((s) => s.value === expense.status)) {
+      items.push({ value: expense.status, label: expense.status });
     }
-    return base;
+    return items;
   }, [expense.status]);
+
+  const frequencyOptions = useMemo((): Array<{ value: string; label: string }> => {
+    const items: Array<{ value: string; label: string }> = EXPENSE_FREQUENCIES.map((f) => ({
+      value: f.value,
+      label: f.label,
+    }));
+    if (!items.some((f) => f.value === expense.frequency)) {
+      items.push({ value: expense.frequency, label: expense.frequency });
+    }
+    return items;
+  }, [expense.frequency]);
 
   const projectOptions = [
     { value: 'none', label: 'None' },
@@ -155,7 +156,7 @@ export function ExpenseGeneralTab({
         />
       ) : null}
 
-      <DetailSheetSection title="Expense" icon={<Receipt size={12} />}>
+      <DetailSheetSection title="General" icon={<LayoutGrid size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           {ledgerSummary}
           <InlineField
@@ -167,7 +168,7 @@ export function ExpenseGeneralTab({
             disabled={formDisabled}
             onValueChange={(v) => patchDraft({ name: v })}
           />
-          <div className="flex flex-wrap items-start gap-3">
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
             <InlineField
               variant="controlled"
               label="Amount"
@@ -176,7 +177,7 @@ export function ExpenseGeneralTab({
               placeholder="0"
               icon={<DollarSign size={12} />}
               disabled={formDisabled}
-              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ amount: v })}
             />
             <InlineField
@@ -185,20 +186,22 @@ export function ExpenseGeneralTab({
               type="date"
               value={draft.dueDate}
               disabled={formDisabled}
-              className={EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ dueDate: v })}
             />
-            <DetailSheetFieldSegmented
+            <InlineField
+              variant="controlled"
               label="Type"
-              icon={<Tag size={12} />}
+              type="select"
               value={draft.type}
-              options={EXPENSE_TYPES}
+              options={EXPENSE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
               disabled={formDisabled}
-              className="min-w-0 flex-1"
-              onValueChange={(type) => patchDraft({ type })}
+              selectMenuTone="highlight"
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(v) => v && patchDraft({ type: v })}
             />
           </div>
-          <div className="flex flex-wrap items-start gap-3">
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
             <InlineField
               variant="controlled"
               label="Category"
@@ -207,28 +210,35 @@ export function ExpenseGeneralTab({
               options={categoryOptions}
               disabled={formDisabled}
               selectMenuTone="highlight"
-              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && patchDraft({ category: v })}
             />
-            <DetailSheetFieldSegmented
+            <InlineField
+              variant="controlled"
               label="Frequency"
-              icon={<CalendarDays size={12} />}
+              type="select"
               value={draft.frequency}
-              options={EXPENSE_FREQUENCY_SEGMENTED_OPTIONS}
+              options={frequencyOptions}
               disabled={formDisabled}
-              className="min-w-0 flex-1"
-              onValueChange={(frequency) => patchDraft({ frequency })}
+              selectMenuTone="highlight"
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(v) => v && patchDraft({ frequency: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Status"
+              type="select"
+              value={draft.status}
+              options={statusOptions}
+              disabled={formDisabled}
+              selectMenuTone="highlight"
+              className={cn(
+                EXPENSE_SHEET_FIELD_CELL_CLASS,
+                expenseStageGateFieldClass(gateRequiredFields, EXPENSE_GATE_FIELD_STATUS),
+              )}
+              onValueChange={(v) => v && patchDraft({ status: v })}
             />
           </div>
-          <DetailSheetFieldSegmented
-            label="Status"
-            icon={<CircleDot size={12} />}
-            value={draft.status}
-            options={statusSegmentedOptions}
-            disabled={formDisabled}
-            className={expenseStageGateFieldClass(gateRequiredFields, EXPENSE_GATE_FIELD_STATUS)}
-            onValueChange={(status) => patchDraft({ status })}
-          />
           {draft.status === 'BACKLOG' ? (
             <InlineField
               variant="controlled"
@@ -243,28 +253,30 @@ export function ExpenseGeneralTab({
               onValueChange={(v) => v && patchDraft({ backlogReason: v })}
             />
           ) : null}
-        </div>
-      </DetailSheetSection>
-
-      <DetailSheetSection title="Tax & project" icon={<FolderKanban size={12} />}>
-        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <DetailSheetFieldSegmented
-            label="Tax status"
-            icon={<Receipt size={12} />}
-            value={draft.taxStatus}
-            options={TAX_STATUSES}
-            disabled={formDisabled}
-            onValueChange={(taxStatus) => patchDraft({ taxStatus })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Project"
-            type="select"
-            value={draft.projectId}
-            options={projectOptions}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ projectId: v })}
-          />
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+            <InlineField
+              variant="controlled"
+              label="Tax status"
+              type="select"
+              value={draft.taxStatus}
+              options={TAX_STATUSES.map((t) => ({ value: t.value, label: t.label }))}
+              disabled={formDisabled}
+              selectMenuTone="highlight"
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(v) => v && patchDraft({ taxStatus: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Project"
+              type="select"
+              value={draft.projectId}
+              options={projectOptions}
+              disabled={formDisabled}
+              selectMenuTone="highlight"
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(v) => v && patchDraft({ projectId: v })}
+            />
+          </div>
           <div className="flex items-center gap-2 pt-1">
             <Checkbox
               id={`expense-pass-${expense.id}`}
@@ -305,7 +317,7 @@ export function ExpenseGeneralTab({
             type="button"
             size="sm"
             variant="outline"
-            className="text-destructive hover:bg-destructive/10 border-destructive/40"
+            className="text-destructive hover:bg-destructive/10 border-destructive/40 w-full"
             disabled={formDisabled}
             onClick={onDeleteClick}
           >

@@ -151,45 +151,47 @@ export function ControlledInlineField({
         ? wrapShell(
             cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
             <>
-              <Select
-                value={str}
-                onValueChange={(v) => {
-                  if (v == null || v === '') {
-                    onValueChange('');
-                    return;
-                  }
-                  onValueChange(v);
-                }}
-                disabled={disabled}
-              >
-                <SelectTrigger
-                  size="sm"
-                  className={cn(
-                    DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
-                    fitContent && 'w-auto',
-                    showClear && 'pr-1',
-                  )}
-                >
-                  <SelectValue
-                    placeholder={placeholder ?? 'Select...'}
-                    className={fitContent ? 'flex-none' : undefined}
-                  >
-                    {(selected: string | null) =>
-                      selected ? resolveSelectOptionLabel(selected, options) : null
+              <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
+                <Select
+                  value={str}
+                  onValueChange={(v) => {
+                    if (v == null || v === '') {
+                      onValueChange('');
+                      return;
                     }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
-                      <span className="flex items-center gap-2">
-                        {opt.icon}
-                        {opt.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    onValueChange(v);
+                  }}
+                  disabled={disabled}
+                >
+                  <SelectTrigger
+                    size="sm"
+                    className={cn(
+                      DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
+                      fitContent && 'w-auto',
+                      showClear && 'pr-1',
+                    )}
+                  >
+                    <SelectValue
+                      placeholder={placeholder ?? 'Select...'}
+                      className={fitContent ? 'flex-none' : undefined}
+                    >
+                      {(selected: string | null) =>
+                        selected ? resolveSelectOptionLabel(selected, options) : null
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
+                        <span className="flex items-center gap-2">
+                          {opt.icon}
+                          {opt.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               {clearButton}
             </>,
           )
