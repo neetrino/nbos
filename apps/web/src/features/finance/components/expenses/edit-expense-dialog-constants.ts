@@ -26,6 +26,19 @@ export const EXPENSE_COMPACT_FIELD_WIDTH_CLASS = 'w-[10rem] shrink-0';
 /** Due date field width in expense detail sheet. */
 export const EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS = 'w-[8.5rem] shrink-0';
 
+/** Plan categories (OFFICE excluded); compact labels for segmented control. */
+export const EXPENSE_PLAN_CATEGORY_SEGMENTED_OPTIONS = [
+  { value: 'DOMAIN', label: 'Domain' },
+  { value: 'HOSTING', label: 'Hosting' },
+  { value: 'SERVICE', label: 'Service' },
+  { value: 'MARKETING', label: 'Marketing' },
+  { value: 'SALARY', label: 'Salary' },
+  { value: 'BONUS', label: 'Bonus' },
+  { value: 'PARTNER_PAYOUT', label: 'Partner' },
+  { value: 'TOOLS', label: 'Tools' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
 /** Compact labels for expense detail sheet status segmented control. */
 export const EXPENSE_STATUS_SEGMENTED_OPTIONS = [
   { value: 'PLANNED', label: 'Planned' },

@@ -7,11 +7,13 @@ import {
   FolderKanban,
   Layers,
   StickyNote,
+  Tag,
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetFieldSegmented,
   DetailSheetSection,
   EntityNotesSection,
   InlineField,
@@ -22,14 +24,16 @@ import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
-import { EXPENSE_FREQUENCIES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import {
+  EXPENSE_COMPACT_FIELD_WIDTH_CLASS,
+  EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS,
+  EXPENSE_FREQUENCY_SEGMENTED_OPTIONS,
+  EXPENSE_PLAN_CATEGORY_SEGMENTED_OPTIONS,
+} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
-
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
 
 interface ExpensePlanGeneralTabProps {
   plan: ExpensePlan;
@@ -57,52 +61,57 @@ export function ExpensePlanGeneralTab({
     <div className="mx-auto flex w-full max-w-none flex-col gap-4">
       <DetailSheetSection title="Plan" icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Name"
-            type="text"
-            value={draft.name}
-            placeholder="Plan name…"
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ name: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Expected amount"
-            type="money"
-            value={draft.amount}
-            placeholder="0"
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ amount: v })}
-          />
-          <InlineField
-            variant="controlled"
+          <div className="flex flex-wrap items-start gap-3">
+            <InlineField
+              variant="controlled"
+              label="Name"
+              type="text"
+              value={draft.name}
+              placeholder="Plan name…"
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(v) => patchDraft({ name: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Expected amount"
+              type="money"
+              value={draft.amount}
+              placeholder="0"
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              onValueChange={(v) => patchDraft({ amount: v })}
+            />
+          </div>
+          <DetailSheetFieldSegmented
             label="Category"
-            type="select"
+            icon={<Tag size={12} />}
             value={draft.category}
-            options={PLAN_CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label }))}
+            options={EXPENSE_PLAN_CATEGORY_SEGMENTED_OPTIONS}
             disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ category: v })}
+            onValueChange={(category) => patchDraft({ category })}
           />
-          <InlineField
-            variant="controlled"
-            label="Frequency"
-            type="select"
-            value={draft.frequency}
-            options={EXPENSE_FREQUENCIES.map((f) => ({ value: f.value, label: f.label }))}
-            icon={<CalendarDays size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ frequency: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Next due"
-            type="date"
-            value={draft.nextDueDate}
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ nextDueDate: v })}
-          />
+          <div className="flex flex-wrap items-start gap-3">
+            <DetailSheetFieldSegmented
+              label="Frequency"
+              icon={<CalendarDays size={12} />}
+              value={draft.frequency}
+              options={EXPENSE_FREQUENCY_SEGMENTED_OPTIONS}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(frequency) => patchDraft({ frequency })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Next due"
+              type="date"
+              value={draft.nextDueDate}
+              disabled={formDisabled}
+              className={EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS}
+              onValueChange={(v) => patchDraft({ nextDueDate: v })}
+            />
+          </div>
           <InlineField
             variant="controlled"
             label="Provider"

@@ -15,7 +15,6 @@ import {
 } from '@/components/shared';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { ExpensePlanCardsTab } from '@/features/finance/components/expenses/ExpensePlanCardsTab';
 import { ExpensePlanGeneralTab } from '@/features/finance/components/expenses/ExpensePlanGeneralTab';
@@ -179,28 +178,25 @@ export function ExpensePlanDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="compact"
+          width="medium"
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
             {loading && !plan ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : plan ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                    <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {generalDraft?.name.trim() || plan.name}
-                    </h2>
-                  </div>
-                  <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatAmount(Number(plan.amount))}
-                    <span className="mx-1.5">·</span>
-                    {frequencyLabel}
-                  </p>
+              <div className="min-w-0">
+                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {generalDraft?.name.trim() || plan.name}
+                  </h2>
+                  <StatusBadge
+                    label={frequencyLabel}
+                    variant="gray"
+                    className="shrink-0 self-center"
+                  />
                 </div>
-                <StatusBadge label={frequencyLabel} variant="gray" />
               </div>
             ) : null}
           </div>
