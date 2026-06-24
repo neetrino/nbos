@@ -56,7 +56,7 @@ export function SubscriptionsPageContent({
     (!gridPayload || gridPayload.rows.length === 0);
 
   return (
-    <>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {mutationError ? (
         <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
@@ -82,7 +82,7 @@ export function SubscriptionsPageContent({
           onOpenSubscription={onOpenSubscription}
         />
       )}
-    </>
+    </div>
   );
 }
 
