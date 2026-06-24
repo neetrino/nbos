@@ -11,7 +11,6 @@ import {
   ErrorState,
   LoadingState,
 } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
@@ -77,7 +76,6 @@ export function OrderDetailSheet({
   if (!orderId) return null;
 
   const sourcePageHref = ordersListWithOpenOrderHref(orderId);
-  const total = order ? Number(order.amount ?? order.totalAmount ?? 0) : 0;
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchOrder()}>
@@ -99,9 +97,6 @@ export function OrderDetailSheet({
                     {getOrderDisplayTitle(order)}
                   </h2>
                 </div>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {order.code} · {formatAmount(total)}
-                </p>
               </div>
             ) : null}
           </div>

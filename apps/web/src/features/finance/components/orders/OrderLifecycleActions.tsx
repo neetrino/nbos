@@ -86,6 +86,7 @@ export function OrderLifecycleActions({
         confirmLabel={isDelete ? 'Delete' : 'Close order'}
         isSubmitting={submitting}
         errorMessage={error}
+        forceNestedBackdrop
         onConfirm={() => void handleConfirm()}
       />
     </>

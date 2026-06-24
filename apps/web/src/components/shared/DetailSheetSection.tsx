@@ -11,7 +11,9 @@ export interface DetailSheetSectionProps {
   id?: string;
   title: string;
   icon?: ReactNode;
-  children: ReactNode;
+  titleTrailing?: ReactNode;
+  titleRowClassName?: string;
+  children?: ReactNode;
   className?: string;
 }
 
@@ -20,16 +22,30 @@ export function DetailSheetSection({
   id,
   title,
   icon,
+  titleTrailing,
+  titleRowClassName,
   children,
   className,
 }: DetailSheetSectionProps) {
+  const hasBody = children != null;
+
   return (
     <section id={id} className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS, className)}>
-      <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
-        {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
-        {title}
-      </h4>
-      {children}
+      <div
+        className={cn(
+          'flex min-w-0 items-center gap-2',
+          hasBody ? 'mb-4' : undefined,
+          titleTrailing ? 'flex-wrap' : undefined,
+          titleRowClassName,
+        )}
+      >
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
+          {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
+          {title}
+        </h4>
+        {titleTrailing}
+      </div>
+      {hasBody ? children : null}
     </section>
   );
 }

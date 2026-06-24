@@ -7,12 +7,14 @@ import {
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
   StatusBadge,
 } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { ORDER_STATUSES } from './order-statuses';
@@ -28,7 +30,7 @@ function formatShortDate(value: string): string {
   return new Intl.DateTimeFormat('en', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit',
+    day: 'numeric',
   }).format(new Date(value));
 }
 
@@ -62,25 +64,27 @@ export function OrderGeneralTab({ order, onOrderUpdated, onOrderDeleted }: Order
               <InlineField label="Amount" value={formatAmount(total)} />
               <InlineField label="Currency" value={order.currency} />
             </div>
-            <InlineField
-              label="Created"
-              value={formatShortDate(order.createdAt)}
-              editable={false}
-            />
+            <div className="border-border mt-4 border-t pt-4">
+              <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
+            </div>
           </div>
         </DetailSheetCollapsibleSection>
       </div>
 
       <div className="flex min-w-0 flex-col gap-4">
         <OrderLinkedPanel order={order} />
-        {onOrderUpdated ? (
-          <DetailSheetSection title="Actions">
-            <OrderLifecycleActions
-              order={order}
-              onOrderUpdated={onOrderUpdated}
-              onOrderDeleted={onOrderDeleted}
-            />
-          </DetailSheetSection>
+        {onOrderUpdated && orderLifecycleAction(order) ? (
+          <DetailSheetSection
+            title="Actions"
+            titleRowClassName="w-full justify-between gap-3"
+            titleTrailing={
+              <OrderLifecycleActions
+                order={order}
+                onOrderUpdated={onOrderUpdated}
+                onOrderDeleted={onOrderDeleted}
+              />
+            }
+          />
         ) : null}
       </div>
     </div>

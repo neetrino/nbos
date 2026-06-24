@@ -36,7 +36,9 @@ function DialogOverlay({
       data-slot="dialog-overlay"
       className={cn(
         'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate bg-black/25 duration-150 supports-backdrop-filter:backdrop-blur-sm',
-        nested ? cn(DIALOG_NESTED_Z_CLASS, 'bg-black/40') : 'z-50',
+        nested
+          ? cn(DIALOG_NESTED_Z_CLASS, 'bg-black/40 supports-backdrop-filter:backdrop-blur-md')
+          : 'z-50',
         className,
       )}
       {...props}

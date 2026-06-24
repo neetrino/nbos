@@ -162,6 +162,7 @@ export {
 export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { toSheetPipelineStages, type SheetPipelineStageSource } from './pipeline-stage-config';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
+export { DetailSheetMetaDate } from './DetailSheetMetaDate';
 export {
   DetailSheetCollapsibleSection,
   type DetailSheetCollapsibleSectionProps,
