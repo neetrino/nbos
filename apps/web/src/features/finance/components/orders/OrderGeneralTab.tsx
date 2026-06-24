@@ -14,16 +14,12 @@ import {
 } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { ORDER_STATUSES } from './order-statuses';
-import { OrderLifecycleActions } from './OrderLifecycleActions';
 
 interface OrderGeneralTabProps {
   order: Order;
-  onOrderUpdated?: (order: Order) => void | Promise<void>;
-  onOrderDeleted?: (orderId: string) => void;
 }
 
 function formatShortDate(value: string): string {
@@ -34,7 +30,7 @@ function formatShortDate(value: string): string {
   }).format(new Date(value));
 }
 
-export function OrderGeneralTab({ order, onOrderUpdated, onOrderDeleted }: OrderGeneralTabProps) {
+export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
   const statusCfg = ORDER_STATUSES[order.status];
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
@@ -73,19 +69,6 @@ export function OrderGeneralTab({ order, onOrderUpdated, onOrderDeleted }: Order
 
       <div className="flex min-w-0 flex-col gap-4">
         <OrderLinkedPanel order={order} />
-        {onOrderUpdated && orderLifecycleAction(order) ? (
-          <DetailSheetSection
-            title="Actions"
-            titleRowClassName="w-full justify-between gap-3"
-            titleTrailing={
-              <OrderLifecycleActions
-                order={order}
-                onOrderUpdated={onOrderUpdated}
-                onOrderDeleted={onOrderDeleted}
-              />
-            }
-          />
-        ) : null}
       </div>
     </div>
   );
