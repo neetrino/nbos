@@ -21,7 +21,6 @@ import type {
   FinanceDashboardPayrollRunsSummary,
 } from './finance-dashboard-data';
 
-const PAYROLL_TILE_SHELL = 'bg-sky-50/90 dark:bg-sky-950/25';
 const EXPENSE_TILE_SHELL = 'bg-muted/35';
 const EXPENSE_SUMMARY_BANNER =
   'border-border/70 bg-white text-foreground dark:bg-white dark:text-foreground';
@@ -42,28 +41,28 @@ export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayr
       />
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <SnapshotMetricTile
-          shellClass={PAYROLL_TILE_SHELL}
+          shellClass={EXPENSE_TILE_SHELL}
           icon={ClipboardList}
           iconShellClass="bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300"
           label="Runs in scope"
           value={String(payroll.runCount)}
         />
         <SnapshotMetricTile
-          shellClass={PAYROLL_TILE_SHELL}
+          shellClass={EXPENSE_TILE_SHELL}
           icon={CircleDollarSign}
           iconShellClass="bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300"
           label="Total payable"
           value={formatAmount(payroll.totalPayable)}
         />
         <SnapshotMetricTile
-          shellClass={PAYROLL_TILE_SHELL}
+          shellClass={EXPENSE_TILE_SHELL}
           icon={CheckCircle2}
           iconShellClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
           label="Total paid"
           value={formatAmount(payroll.totalPaid)}
         />
         <SnapshotMetricTile
-          shellClass={PAYROLL_TILE_SHELL}
+          shellClass={EXPENSE_TILE_SHELL}
           icon={PieChart}
           iconShellClass="bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
           label="Remaining"
