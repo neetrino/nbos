@@ -84,7 +84,7 @@ export function ClientServiceCreateDialog({
               {formError}
             </p>
           ) : null}
-          <div>
+          <div className="space-y-2">
             <Label>Project *</Label>
             <Select
               value={form.projectId}
@@ -102,7 +102,7 @@ export function ClientServiceCreateDialog({
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Name *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
