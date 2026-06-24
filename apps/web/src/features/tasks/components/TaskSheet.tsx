@@ -12,7 +12,11 @@ import {
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
-import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-classes';
+import {
+  TASK_SHEET_RAIL_ANCHOR_CLASS,
+  TASK_SHEET_SECTION_SURFACE_CLASS,
+  TASK_SHEET_WIDTH_CLASS,
+} from './task-sheet-classes';
 import { TaskSheetSplitLayout } from './TaskSheetSplitLayout';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
@@ -37,11 +41,6 @@ interface TaskSheetProps {
   /** Stack above a parent entity sheet (related-item open from tab). */
   forceNestedBackdrop?: boolean;
 }
-
-const TASK_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 p-0 shadow-2xl ring-1 ring-black/5 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(96vw,112rem)] 2xl:data-[side=right]:w-[min(98vw,128rem)] dark:ring-white/10';
-
-const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(96vw,112rem)] 2xl:right-[min(98vw,128rem)]';
 
 export function TaskSheet({
   taskId,

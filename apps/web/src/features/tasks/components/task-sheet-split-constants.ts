@@ -11,6 +11,13 @@ export const TASK_SHEET_DETAIL_MIN_PX =
 /** Minimum chat column width (header + composer). */
 export const TASK_SHEET_CHAT_MIN_PX = 300;
 
+import { TASK_SHEET_VIEWPORT_WIDTH_FRACTION } from './task-sheet-classes';
+
+/** Minimum viewport width for detail+chat row at {@link TASK_SHEET_VIEWPORT_WIDTH_FRACTION}. */
+export const TASK_SHEET_SPLIT_ROW_MIN_VIEWPORT_PX = Math.ceil(
+  (TASK_SHEET_DETAIL_MIN_PX + TASK_SHEET_CHAT_MIN_PX) / TASK_SHEET_VIEWPORT_WIDTH_FRACTION,
+);
+
 export const TASK_SHEET_DETAIL_RATIO_MIN = 0.3;
 export const TASK_SHEET_DETAIL_RATIO_MAX = 0.7;
 export const TASK_SHEET_DETAIL_RATIO_DEFAULT = 0.5;

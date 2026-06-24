@@ -7,7 +7,9 @@ import {
   readStoredTaskSheetDetailRatio,
 } from './task-sheet-split-ratio';
 
-const TASK_SHEET_SPLIT_ROW_MEDIA = '(min-width: 1280px)';
+import { TASK_SHEET_SPLIT_ROW_MIN_VIEWPORT_PX } from './task-sheet-split-constants';
+
+const TASK_SHEET_SPLIT_ROW_MEDIA = `(min-width: ${TASK_SHEET_SPLIT_ROW_MIN_VIEWPORT_PX}px)`;
 
 function readSplitRowMedia(): boolean {
   if (typeof window === 'undefined') return false;

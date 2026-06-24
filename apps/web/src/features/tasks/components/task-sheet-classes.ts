@@ -1,5 +1,15 @@
 /** Layout / surface class strings for {@link TaskSheet}. */
 
+/** Right task sheet width on sm+ (fraction of viewport). */
+export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.65;
+
+/** Right task sheet — ~65vw on sm+ (tasks list / workspace). */
+export const TASK_SHEET_WIDTH_CLASS =
+  'flex w-full flex-col gap-0 p-0 shadow-2xl ring-1 ring-black/5 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[65vw] dark:ring-white/10';
+
+/** Anchor floating rail to the left edge of {@link TASK_SHEET_WIDTH_CLASS}. */
+export const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[65vw]';
+
 export const TASK_SHEET_DETAIL_COLUMN_CLASS =
   'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 xl:border-r dark:bg-muted/15';
 
