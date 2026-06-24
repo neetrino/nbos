@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import {
   ArrowUpRight,
   Banknote,
@@ -12,10 +11,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type { FinanceSectionId } from '@/lib/navigation/module-last-visit';
-import { financeZoneEntryLabel } from '@/features/finance/constants/finance-zone-entry-label';
-import { useModuleSectionHref } from '@/lib/navigation/hooks/use-module-section-href';
-import { FINANCE_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/finance-visit-config';
+import {
+  FINANCE_ZONE_HUB_CARD_THEMES,
+  type FinanceZoneHubCardAction,
+  type FinanceZoneHubCardTheme,
+} from '@/features/finance/constants/finance-zone-hub-card-theme';
 import type { FinanceZoneHubMetrics } from './build-finance-zone-hub-metrics';
 
 type FinanceZoneHubCardsProps = {
@@ -23,51 +23,58 @@ type FinanceZoneHubCardsProps = {
 };
 
 export function FinanceZoneHubCards({ metrics }: FinanceZoneHubCardsProps) {
-  const pathname = usePathname();
-
   return (
     <section aria-label="Finance module zones">
       <h2 className="text-foreground text-sm font-semibold tracking-tight">Finance zones</h2>
-      <p className="text-muted-foreground mt-1 text-xs">
-        Jump to Revenue, Expenses, Payroll, or analytics. Links open your last page in each zone.
-      </p>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <OverviewZoneCard metrics={metrics.overview} />
-        <OperationalZoneCard
-          pathname={pathname}
-          zone="revenue"
+        <ZoneHubCard
+          theme={FINANCE_ZONE_HUB_CARD_THEMES.revenue}
           title="Revenue"
           description="Orders, invoices, payments, subscriptions"
           icon={ShoppingCart}
-          iconClassName="bg-emerald-100 text-emerald-700"
           primaryLabel="Outstanding"
           primaryValue={formatAmount(metrics.revenue.outstandingAmount)}
           secondaryLabel="MRR"
           secondaryValue={formatAmount(metrics.revenue.monthlyRecurringRevenue)}
+          actions={[
+            {
+              href: '/finance/subscriptions',
+              label: 'Open Subscriptions',
+            },
+          ]}
         />
-        <OperationalZoneCard
-          pathname={pathname}
-          zone="expenses"
+        <ZoneHubCard
+          theme={FINANCE_ZONE_HUB_CARD_THEMES.expenses}
           title="Expenses"
           description="Pay Now, plans, client services"
           icon={Receipt}
-          iconClassName="bg-amber-100 text-amber-700"
           primaryLabel="Open cards"
           primaryValue={String(metrics.expenses.openCardCount)}
           secondaryLabel="Amount"
           secondaryValue={formatAmount(metrics.expenses.openCardAmount)}
+          actions={[
+            {
+              href: '/finance/expenses/plans',
+              label: 'Open Expenses Plan',
+            },
+          ]}
         />
-        <OperationalZoneCard
-          pathname={pathname}
-          zone="payroll"
+        <ZoneHubCard
+          theme={FINANCE_ZONE_HUB_CARD_THEMES.payroll}
           title="Payroll"
           description="Payroll runs, salary, bonus pools"
           icon={Banknote}
-          iconClassName="bg-violet-100 text-violet-700"
           primaryLabel="Open runs"
           primaryValue={String(metrics.payroll.runCount)}
           secondaryLabel="Remaining"
           secondaryValue={formatAmount(metrics.payroll.remainingPayable)}
+          actions={[
+            {
+              href: '/finance/bonuses',
+              label: 'Open Bonus',
+            },
+          ]}
         />
       </div>
     </section>
@@ -75,71 +82,57 @@ export function FinanceZoneHubCards({ metrics }: FinanceZoneHubCardsProps) {
 }
 
 function OverviewZoneCard({ metrics }: { metrics: FinanceZoneHubMetrics['overview'] }) {
+  const theme = FINANCE_ZONE_HUB_CARD_THEMES.overview;
+
   return (
-    <article className="border-border bg-card flex flex-col rounded-2xl border p-5">
-      <div className="flex items-start gap-3">
-        <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
-          <FileChartColumn size={18} aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-foreground font-semibold">Overview</h3>
-          <p className="text-muted-foreground mt-1 text-xs leading-snug">
-            Dashboard, P&amp;L reports, operational journal
-          </p>
-        </div>
-      </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <dt className="text-muted-foreground">Reconciliation alerts</dt>
-          <dd className="text-foreground mt-0.5 font-semibold tabular-nums">
-            {metrics.reconciliationWarningCount}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">You are here</dt>
-          <dd className="text-foreground mt-0.5 font-medium">Dashboard</dd>
-        </div>
-      </dl>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <ZoneSubLink href="/finance/reports" label="Reports" />
-        <ZoneSubLink href="/finance/journal" label="Journal" />
-      </div>
-    </article>
+    <ZoneHubCardShell
+      theme={theme}
+      title="Overview"
+      description="Dashboard, P&amp;L reports, operational journal"
+      icon={FileChartColumn}
+      primaryLabel="Reconciliation alerts"
+      primaryValue={String(metrics.reconciliationWarningCount)}
+      secondaryLabel="You are here"
+      secondaryValue="Dashboard"
+      actions={[
+        { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },
+        { href: '/finance/journal', label: 'Journal', icon: ScrollText },
+      ]}
+    />
   );
 }
 
-type OperationalZoneCardProps = {
-  pathname: string;
-  zone: Exclude<FinanceSectionId, 'overview'>;
+type ZoneHubCardProps = {
+  theme: FinanceZoneHubCardTheme;
   title: string;
   description: string;
   icon: typeof ShoppingCart;
-  iconClassName: string;
   primaryLabel: string;
   primaryValue: string;
   secondaryLabel: string;
   secondaryValue: string;
+  actions: FinanceZoneHubCardAction[];
 };
 
-function OperationalZoneCard({
-  pathname,
-  zone,
+function ZoneHubCard(props: ZoneHubCardProps) {
+  return <ZoneHubCardShell {...props} />;
+}
+
+function ZoneHubCardShell({
+  theme,
   title,
   description,
   icon: Icon,
-  iconClassName,
   primaryLabel,
   primaryValue,
   secondaryLabel,
   secondaryValue,
-}: OperationalZoneCardProps) {
-  const href = useModuleSectionHref('finance', zone, FINANCE_SECTION_DEFAULTS[zone], pathname);
-  const entryLabel = financeZoneEntryLabel(href);
-
+  actions,
+}: ZoneHubCardProps) {
   return (
-    <article className="border-border bg-card flex flex-col rounded-2xl border p-5">
+    <article className="bg-card flex h-full flex-col rounded-2xl p-5 shadow-sm ring-1 shadow-black/[0.04] ring-black/[0.04]">
       <div className="flex items-start gap-3">
-        <div className={cn('rounded-xl p-2.5', iconClassName)}>
+        <div className={cn('rounded-xl p-2.5', theme.iconShell)}>
           <Icon size={18} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -147,37 +140,71 @@ function OperationalZoneCard({
           <p className="text-muted-foreground mt-1 text-xs leading-snug">{description}</p>
         </div>
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <dt className="text-muted-foreground">{primaryLabel}</dt>
-          <dd className="text-foreground mt-0.5 font-semibold tabular-nums">{primaryValue}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">{secondaryLabel}</dt>
-          <dd className="text-foreground mt-0.5 font-semibold tabular-nums">{secondaryValue}</dd>
-        </div>
-      </dl>
-      <Link
-        href={href}
-        className="border-border text-foreground hover:bg-muted/60 mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
-      >
-        Open {entryLabel}
-        <ArrowUpRight size={14} aria-hidden />
-      </Link>
+
+      <div className="border-border/70 mt-4 border-t pt-4">
+        <dl className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+          <MetricCell
+            label={primaryLabel}
+            value={primaryValue}
+            valueClassName={theme.metricValue}
+          />
+          <div className="bg-border h-10 w-px shrink-0" aria-hidden />
+          <MetricCell
+            label={secondaryLabel}
+            value={secondaryValue}
+            valueClassName={theme.metricValue}
+          />
+        </dl>
+      </div>
+
+      <div className="mt-auto flex gap-2 pt-4">
+        {actions.map((action) => (
+          <ZoneHubCardActionLink key={action.href} action={action} theme={theme} />
+        ))}
+      </div>
     </article>
   );
 }
 
-function ZoneSubLink({ href, label }: { href: string; label: string }) {
-  const Icon = label === 'Journal' ? ScrollText : FileChartColumn;
+function MetricCell({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName: string;
+}) {
+  return (
+    <div className="min-w-0 text-center">
+      <dt className="text-muted-foreground text-[11px] leading-tight">{label}</dt>
+      <dd className={cn('mt-1 truncate text-sm font-bold tabular-nums', valueClassName)}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function ZoneHubCardActionLink({
+  action,
+  theme,
+}: {
+  action: FinanceZoneHubCardAction;
+  theme: FinanceZoneHubCardTheme;
+}) {
+  const ActionIcon = action.icon;
+
   return (
     <Link
-      href={href}
-      className="border-border text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors"
+      href={action.href}
+      className={cn(
+        'inline-flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-1 rounded-xl px-2.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors',
+        theme.actionShell,
+      )}
     >
-      <Icon size={12} aria-hidden />
-      {label}
-      <ArrowUpRight size={10} aria-hidden />
+      {ActionIcon ? <ActionIcon size={14} className="shrink-0" aria-hidden /> : null}
+      <span className="min-w-0 truncate">{action.label}</span>
+      <ArrowUpRight size={12} className="shrink-0 opacity-80" aria-hidden />
     </Link>
   );
 }
