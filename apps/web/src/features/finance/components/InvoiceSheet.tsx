@@ -183,16 +183,14 @@ export function InvoiceSheet({
         forceNestedBackdrop={forceNestedBackdrop}
       >
         <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                  {invoice.code}
-                </h2>
-              </div>
+          <div className="min-w-0">
+            <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+              <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
+              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                {invoice.code}
+              </h2>
+              <InvoiceSheetBadge invoice={invoice} />
             </div>
-            <InvoiceSheetBadge invoice={invoice} />
           </div>
         </div>
 

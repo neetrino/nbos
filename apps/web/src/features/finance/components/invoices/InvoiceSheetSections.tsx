@@ -12,7 +12,7 @@ export type InvoiceSheetInvoice = Invoice;
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   if (!money) return null;
-  return <StatusBadge label={money.label} variant={money.variant} />;
+  return <StatusBadge label={money.label} variant={money.variant} className="self-center" />;
 }
 
 export function InvoiceOfficialSection({
