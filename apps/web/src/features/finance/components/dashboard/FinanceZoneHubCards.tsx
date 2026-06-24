@@ -16,11 +16,14 @@ import {
   type FinanceZoneHubCardAction,
   type FinanceZoneHubCardTheme,
 } from '@/features/finance/constants/finance-zone-hub-card-theme';
+import { FINANCE_DASHBOARD_COMPACT_CARD_CLASS } from '@/features/finance/constants/finance-dashboard-card-hover';
 import type { FinanceZoneHubMetrics } from './build-finance-zone-hub-metrics';
 
 type FinanceZoneHubCardsProps = {
   metrics: FinanceZoneHubMetrics;
 };
+
+const ZONE_HUB_CARD_SHELL_CLASS = cn(FINANCE_DASHBOARD_COMPACT_CARD_CLASS, 'flex h-full flex-col');
 
 export function FinanceZoneHubCards({ metrics }: FinanceZoneHubCardsProps) {
   return (
@@ -130,7 +133,7 @@ function ZoneHubCardShell({
   actions,
 }: ZoneHubCardProps) {
   return (
-    <article className="bg-card flex h-full flex-col rounded-2xl p-5 shadow-sm ring-1 shadow-black/[0.04] ring-black/[0.04]">
+    <article className={ZONE_HUB_CARD_SHELL_CLASS}>
       <div className="flex items-start gap-3">
         <div className={cn('rounded-xl p-2.5', theme.iconShell)}>
           <Icon size={18} aria-hidden />

@@ -3,6 +3,10 @@ import { AlertTriangle, ArrowUpRight, CheckCircle2, Landmark, Receipt } from 'lu
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
+  FINANCE_DASHBOARD_COMPACT_CARD_CLASS,
+  FINANCE_DASHBOARD_PANEL_CARD_CLASS,
+} from '@/features/finance/constants/finance-dashboard-card-hover';
+import {
   orderReconciliationDrilldownHref,
   orderReconciliationGapForFinanceWarningCode,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
@@ -56,7 +60,7 @@ export function InvoiceDistribution({ items }: { items: InvoiceStatusItem[] }) {
   const totalCount = items.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Invoice Status</h2>
       <p className="text-muted-foreground mt-1 text-sm">{totalCount} total invoices</p>
 
@@ -71,7 +75,7 @@ export function InvoiceDistribution({ items }: { items: InvoiceStatusItem[] }) {
 
 export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Recent Payments</h2>
       <div className="mt-4 space-y-3">
         {items.length === 0 ? (
@@ -89,7 +93,7 @@ export function ExpenseCardsSnapshot({ buckets }: { buckets: FinanceDashboardExp
   const totalRemaining = buckets.reduce((sum, bucket) => sum + bucket.amount, 0);
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-orange-100 p-2.5 text-orange-700">
@@ -135,7 +139,7 @@ export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayr
   const href = payrollRunsListHref();
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
@@ -169,7 +173,7 @@ export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayr
 
 export function UpcomingInvoices({ items }: { items: UpcomingInvoiceItem[] }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Upcoming Deadlines</h2>
       <div className="mt-4 space-y-3">
         {items.length === 0 ? (
@@ -188,7 +192,7 @@ export function ReconciliationSnapshot({ data }: { data: FinanceDashboardData })
   const paymentCoverage = getPercent(reconciliation.paidAmount, reconciliation.orderAmount);
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Order Reconciliation</h2>
       <p className="text-muted-foreground mt-1 text-sm">
         Read-only coverage across {reconciliation.orderCount} finance orders.
@@ -221,7 +225,7 @@ export function ReconciliationSnapshot({ data }: { data: FinanceDashboardData })
 
 export function FinanceNotes() {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Finance Notes</h2>
       <div className="mt-4 space-y-3 text-sm">
         <p className="text-muted-foreground">
@@ -249,7 +253,7 @@ export function FinanceNotes() {
 
 function KpiCard({ kpi }: { kpi: FinanceKpi }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-5 transition-shadow hover:shadow-sm">
+    <div className={FINANCE_DASHBOARD_COMPACT_CARD_CLASS}>
       <div className="flex items-center justify-between">
         <div className={`rounded-xl p-2.5 ${kpi.iconBg} ${kpi.iconText}`}>
           <kpi.icon size={20} />
