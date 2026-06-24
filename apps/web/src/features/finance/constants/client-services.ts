@@ -32,9 +32,21 @@ export const CLIENT_SERVICE_BILLING_MODELS = [
   { value: 'REMINDER_ONLY', label: 'Reminder Only' },
 ] as const;
 
+/** Compact labels for client service billing model segmented control. */
+export const CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS = [
+  { value: 'WE_PAY', label: 'We pay' },
+  { value: 'REMINDER_ONLY', label: 'Reminder' },
+] as const;
+
 export const CLIENT_SERVICE_PRICING_MODELS = [
   { value: 'FIXED', label: 'Fixed' },
   { value: 'USAGE_BASED', label: 'Usage-based' },
+] as const;
+
+/** Compact labels for client service pricing segmented control. */
+export const CLIENT_SERVICE_PRICING_MODEL_SEGMENTED_OPTIONS = [
+  { value: 'FIXED', label: 'Fixed' },
+  { value: 'USAGE_BASED', label: 'Usage' },
 ] as const;
 
 export const CLIENT_SERVICE_FREQUENCIES = [
@@ -43,6 +55,15 @@ export const CLIENT_SERVICE_FREQUENCIES = [
   { value: 'QUARTERLY', label: 'Quarterly' },
   { value: 'YEARLY', label: 'Yearly' },
   { value: 'MULTI_YEAR', label: 'Multi-year' },
+] as const;
+
+/** Compact labels for client service frequency segmented control. */
+export const CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS = [
+  { value: 'ONE_TIME', label: 'Once' },
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'QUARTERLY', label: 'Quarter' },
+  { value: 'YEARLY', label: 'Yearly' },
+  { value: 'MULTI_YEAR', label: 'Multi-yr' },
 ] as const;
 
 export function clientServiceOptionLabel(

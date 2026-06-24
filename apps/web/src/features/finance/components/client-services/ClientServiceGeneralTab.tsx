@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import {
   Calendar,
+  CalendarDays,
   CircleDot,
   DollarSign,
   FolderKanban,
@@ -10,6 +11,7 @@ import {
   Receipt,
   RefreshCw,
   Tag,
+  Wallet,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -25,21 +27,17 @@ import { useProjectRelationSearch } from '@/components/shared/relation-picker/re
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
-  CLIENT_SERVICE_BILLING_MODELS,
-  CLIENT_SERVICE_FREQUENCIES,
-  CLIENT_SERVICE_PRICING_MODELS,
+  CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS,
+  CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS,
+  CLIENT_SERVICE_PRICING_MODEL_SEGMENTED_OPTIONS,
   CLIENT_SERVICE_STATUS_SEGMENTED_OPTIONS,
   CLIENT_SERVICE_TYPE_SEGMENTED_OPTIONS,
 } from '@/features/finance/constants/client-services';
 import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
+import { EXPENSE_COMPACT_FIELD_WIDTH_CLASS } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
-function mapSelectOptions(options: ReadonlyArray<{ value: string; label: string }>) {
-  return options.map((row) => ({ value: row.value, label: row.label }));
-}
-
-const TAX_OPTIONS = mapSelectOptions(INVOICE_TAX_STATUS_OPTIONS);
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -135,62 +133,65 @@ export function ClientServiceGeneralTab({
         onOpenChange={setBillingOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Billing model"
-            type="select"
-            value={draft.billingModel}
-            options={mapSelectOptions(CLIENT_SERVICE_BILLING_MODELS)}
-            disabled={formDisabled}
-            onValueChange={(billingModel) => billingModel && patchDraft({ billingModel })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Pricing"
-            type="select"
-            value={draft.pricingModel}
-            options={mapSelectOptions(CLIENT_SERVICE_PRICING_MODELS)}
-            disabled={formDisabled}
-            onValueChange={(pricingModel) => pricingModel && patchDraft({ pricingModel })}
-          />
-          <InlineField
-            variant="controlled"
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <DetailSheetFieldSegmented
+              label="Billing model"
+              icon={<Wallet size={12} />}
+              value={draft.billingModel}
+              options={CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(billingModel) => patchDraft({ billingModel })}
+            />
+            <DetailSheetFieldSegmented
+              label="Pricing"
+              icon={<Tag size={12} />}
+              value={draft.pricingModel}
+              options={CLIENT_SERVICE_PRICING_MODEL_SEGMENTED_OPTIONS}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(pricingModel) => patchDraft({ pricingModel })}
+            />
+          </div>
+          <DetailSheetFieldSegmented
             label="Frequency"
-            type="select"
+            icon={<CalendarDays size={12} />}
             value={draft.frequency}
-            options={mapSelectOptions(CLIENT_SERVICE_FREQUENCIES)}
+            options={CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS}
             disabled={formDisabled}
-            onValueChange={(frequency) => frequency && patchDraft({ frequency })}
+            onValueChange={(frequency) => patchDraft({ frequency })}
           />
-          <InlineField
-            variant="controlled"
-            label="Our cost"
-            type="money"
-            value={draft.ourCost}
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(ourCost) => patchDraft({ ourCost })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Client charge"
-            type="money"
-            value={draft.clientCharge}
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(clientCharge) => patchDraft({ clientCharge })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Tax Status"
-            type="select"
-            value={draft.taxStatus}
-            options={TAX_OPTIONS}
-            placeholder="Tax / Tax Free"
-            icon={<Receipt size={12} />}
-            disabled={formDisabled}
-            onValueChange={(taxStatus) => taxStatus && patchDraft({ taxStatus })}
-          />
+          <div className="flex flex-wrap items-start gap-3">
+            <InlineField
+              variant="controlled"
+              label="Our cost"
+              type="money"
+              value={draft.ourCost}
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              onValueChange={(ourCost) => patchDraft({ ourCost })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Client charge"
+              type="money"
+              value={draft.clientCharge}
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              onValueChange={(clientCharge) => patchDraft({ clientCharge })}
+            />
+            <DetailSheetFieldSegmented
+              label="Tax"
+              icon={<Receipt size={12} />}
+              value={draft.taxStatus}
+              options={INVOICE_TAX_STATUS_OPTIONS}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(taxStatus) => patchDraft({ taxStatus })}
+            />
+          </div>
         </div>
       </DetailSheetCollapsibleSection>
 
