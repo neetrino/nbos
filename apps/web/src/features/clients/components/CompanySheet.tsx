@@ -43,6 +43,7 @@ interface CompanySheetProps {
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 function companySaveErrorMessage(err: unknown): string {
@@ -59,6 +60,7 @@ export function CompanySheet({
   onMoveToTrash,
   onRestore,
   onPermanentDelete,
+  forceNestedBackdrop = false,
 }: CompanySheetProps) {
   const searchContacts = useContactSearchOptions();
   const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
@@ -176,6 +178,7 @@ export function CompanySheet({
         open={open}
         onOpenChange={onOpenChange}
         label="Loading company…"
+        forceNestedBackdrop={forceNestedBackdrop}
       />
     );
   }
@@ -186,7 +189,12 @@ export function CompanySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" sourcePageHref={sourcePageHref}>
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        sourcePageHref={sourcePageHref}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">

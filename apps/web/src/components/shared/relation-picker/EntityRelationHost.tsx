@@ -49,12 +49,15 @@ type EntityRelationHostProps = {
   children: ReactNode;
   onEntityChanged?: () => void;
   onRelationCreated?: (event: RelationCreatedEvent) => void;
+  /** Child entity sheets stack above an open parent sheet rail (default). */
+  nested?: boolean;
 };
 
 export function EntityRelationHost({
   children,
   onEntityChanged,
   onRelationCreated,
+  nested = true,
 }: EntityRelationHostProps) {
   const router = useRouter();
   const [contactOpenId, setContactOpenId] = useState<string | null>(null);
@@ -287,6 +290,7 @@ export function EntityRelationHost({
       <ContactSheet
         contact={contactSheet}
         open={contactOpenId !== null}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) {
             setContactOpenId(null);
@@ -303,6 +307,7 @@ export function EntityRelationHost({
       <CompanySheet
         company={companySheet}
         open={companyOpenId !== null}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) {
             setCompanyOpenId(null);
@@ -319,6 +324,7 @@ export function EntityRelationHost({
       <PartnerDetailSheet
         partnerId={partnerId}
         open={Boolean(partnerId)}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) setPartnerId(null);
         }}
@@ -328,6 +334,7 @@ export function EntityRelationHost({
       <EmployeeSheet
         employee={employeeSheet}
         open={employeeOpenId !== null}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) {
             setEmployeeOpenId(null);

@@ -5,7 +5,7 @@ export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.65;
 
 /** Right task sheet — ~65vw on sm+ (tasks list / workspace). */
 export const TASK_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 p-0 shadow-2xl ring-1 ring-black/5 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[65vw] dark:ring-white/10';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[65vw]';
 
 /** Anchor floating rail to the left edge of {@link TASK_SHEET_WIDTH_CLASS}. */
 export const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[65vw]';

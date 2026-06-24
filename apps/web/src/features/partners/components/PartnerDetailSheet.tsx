@@ -34,6 +34,7 @@ interface PartnerDetailSheetProps {
   onMoveToTrash?: (id: string) => void | Promise<void>;
   onRestore?: (id: string) => void | Promise<void>;
   onPermanentDelete?: (id: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function PartnerDetailSheet({
@@ -46,6 +47,7 @@ export function PartnerDetailSheet({
   onMoveToTrash,
   onRestore,
   onPermanentDelete,
+  forceNestedBackdrop = false,
 }: PartnerDetailSheetProps) {
   const {
     entity: partner,
@@ -105,6 +107,7 @@ export function PartnerDetailSheet({
           open={open}
           layout="full"
           showRailActions={Boolean(partner)}
+          forceNestedBackdrop={forceNestedBackdrop}
           sourcePageHref={
             partner ? `/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partner.id)}` : '#'
           }

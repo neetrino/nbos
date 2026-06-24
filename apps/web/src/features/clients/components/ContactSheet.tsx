@@ -41,6 +41,7 @@ interface ContactSheetProps {
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 function contactSaveErrorMessage(err: unknown): string {
@@ -57,6 +58,7 @@ export function ContactSheet({
   onMoveToTrash,
   onRestore,
   onPermanentDelete,
+  forceNestedBackdrop = false,
 }: ContactSheetProps) {
   const [draft, setDraft] = useState<ContactGeneralDraft | null>(null);
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
@@ -136,6 +138,7 @@ export function ContactSheet({
         open={open}
         onOpenChange={onOpenChange}
         label="Loading contact…"
+        forceNestedBackdrop={forceNestedBackdrop}
       />
     );
   }
@@ -148,7 +151,12 @@ export function ContactSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" sourcePageHref={sourcePageHref}>
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        sourcePageHref={sourcePageHref}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
