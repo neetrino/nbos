@@ -144,7 +144,13 @@ export default function FinanceReportsPage() {
     );
   }, [data, query]);
 
-  if (loading) return <LoadingState variant="cards" count={6} />;
+  if (loading) {
+    return (
+      <div className="pb-5">
+        <LoadingState variant="cards" count={6} />
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -157,7 +163,7 @@ export default function FinanceReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-5">
       <section className="border-border bg-card rounded-2xl border p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
@@ -170,7 +176,7 @@ export default function FinanceReportsPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         {companyPnl && reportMatchesSearch(companyPnl.title, query) ? (
           <CompanyPnlSnapshot report={companyPnl} />
         ) : null}
@@ -220,7 +226,7 @@ function hasSnapshotMatch(query: string): boolean {
 
 function ReportDefinitionCard({ definition }: { definition: FinanceReportDefinition }) {
   return (
-    <article className="border-border bg-card rounded-2xl border p-5">
+    <article className="border-border bg-card flex h-full flex-col rounded-2xl border p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-foreground text-lg font-semibold">{definition.title}</p>
