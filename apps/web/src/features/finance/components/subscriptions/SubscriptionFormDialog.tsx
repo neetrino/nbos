@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Receipt, Repeat } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
+import { DetailSheetFieldSegmented } from '@/components/shared';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -195,29 +197,6 @@ export function SubscriptionFormDialog({
               required
             />
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-frequency">Billing frequency</Label>
-              <Select
-                value={form.billingFrequency}
-                onValueChange={(v) =>
-                  setForm({ ...form, billingFrequency: normalizeSelectValue(v) })
-                }
-              >
-                <SelectTrigger id="sub-frequency">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUBSCRIPTION_BILLING_FREQUENCIES.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
               <Label htmlFor="sub-billing-day">Billing day (1–28)</Label>
               <Input
                 id="sub-billing-day"
@@ -229,25 +208,23 @@ export function SubscriptionFormDialog({
                 required
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-tax">Tax status</Label>
-              <Select
-                value={form.taxStatus}
-                onValueChange={(v) => setForm({ ...form, taxStatus: normalizeSelectValue(v) })}
-              >
-                <SelectTrigger id="sub-tax">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAX_STATUSES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
+
+          <DetailSheetFieldSegmented
+            label="Billing frequency"
+            icon={<Repeat size={12} />}
+            value={form.billingFrequency}
+            options={SUBSCRIPTION_BILLING_FREQUENCIES}
+            onValueChange={(billingFrequency) => setForm({ ...form, billingFrequency })}
+          />
+
+          <DetailSheetFieldSegmented
+            label="Tax status"
+            icon={<Receipt size={12} />}
+            value={form.taxStatus}
+            options={TAX_STATUSES}
+            onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
