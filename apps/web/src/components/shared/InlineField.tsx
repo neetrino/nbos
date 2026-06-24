@@ -73,6 +73,8 @@ type InlineFieldControlledProps = {
   hideLabel?: boolean;
   datePickerVariant?: 'compact' | 'extended';
   datePickerMode?: 'date' | 'datetime';
+  fitContent?: boolean;
+  selectMenuTone?: 'default' | 'highlight';
 };
 
 export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
@@ -333,13 +335,22 @@ function InlineFieldUncontrolled({
 
 export function InlineField(props: InlineFieldProps) {
   if (props.variant === 'controlled') {
-    const { datePickerVariant, datePickerMode, hideLabel, ...controlledProps } = props;
+    const {
+      datePickerVariant,
+      datePickerMode,
+      hideLabel,
+      fitContent,
+      selectMenuTone,
+      ...controlledProps
+    } = props;
     return (
       <ControlledInlineField
         {...controlledProps}
         hideLabel={hideLabel}
         datePickerVariant={datePickerVariant}
         datePickerMode={datePickerMode}
+        fitContent={fitContent}
+        selectMenuTone={selectMenuTone}
       />
     );
   }

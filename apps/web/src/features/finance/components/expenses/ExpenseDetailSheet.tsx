@@ -37,7 +37,7 @@ import {
   clearExpenseStageGatePending,
   readExpenseStageGatePending,
 } from '@/features/finance/constants/expense-stage-gate-pending';
-import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
+import { getExpenseStage } from '@/features/finance/constants/finance';
 import { useExpenseDetail } from '@/features/finance/hooks/use-expense-detail';
 import {
   buildExpenseGeneralPatch,
@@ -266,25 +266,20 @@ export function ExpenseDetailSheet({
             {loading && !expense ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : expense ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                    <Receipt className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {generalDraft?.name.trim() || expense.name}
-                    </h2>
-                  </div>
-                  <p className="text-muted-foreground mt-0.5 text-sm tabular-nums">
-                    {formatAmount(parseFloat(expense.amount))}
-                    {stage ? (
-                      <>
-                        <span className="mx-1.5">·</span>
-                        {stage.label}
-                      </>
-                    ) : null}
-                  </p>
+              <div className="min-w-0">
+                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <Receipt className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {generalDraft?.name.trim() || expense.name}
+                  </h2>
+                  {stage ? (
+                    <StatusBadge
+                      label={stage.label}
+                      variant={stage.variant}
+                      className="shrink-0 self-center"
+                    />
+                  ) : null}
                 </div>
-                {stage ? <StatusBadge label={stage.label} variant={stage.variant} /> : null}
               </div>
             ) : null}
           </div>

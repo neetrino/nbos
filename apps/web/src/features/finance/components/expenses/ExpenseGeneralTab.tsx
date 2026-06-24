@@ -3,15 +3,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays,
+  CircleDot,
   DollarSign,
   FolderKanban,
   Layers,
   Receipt,
   StickyNote,
+  Tag,
   Trash2,
 } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetFieldSegmented,
   DetailSheetSection,
   EntityNotesSection,
   InlineField,
@@ -35,10 +38,12 @@ import {
 } from '@/features/finance/constants/expense-stage-gate-highlight';
 import {
   EXPENSE_BACKLOG_REASONS,
-  EXPENSE_FREQUENCIES,
+  EXPENSE_COMPACT_FIELD_WIDTH_CLASS,
+  EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS,
+  EXPENSE_FREQUENCY_SEGMENTED_OPTIONS,
+  EXPENSE_STATUS_SEGMENTED_OPTIONS,
   EXPENSE_TYPES,
   PROJECTS_PAGE_SIZE,
-  SCHEMA_EXPENSE_STATUSES,
   TAX_STATUSES,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
@@ -97,10 +102,10 @@ export function ExpenseGeneralTab({
     return items;
   }, [expense.category]);
 
-  const statusOptions = useMemo((): Array<{ value: string; label: string }> => {
-    const base: Array<{ value: string; label: string }> = EXPENSE_STAGES.filter((s) =>
-      SCHEMA_EXPENSE_STATUSES.has(s.value),
-    ).map((s) => ({ value: s.value, label: s.label }));
+  const statusSegmentedOptions = useMemo((): Array<{ value: string; label: string }> => {
+    const base: Array<{ value: string; label: string }> = EXPENSE_STATUS_SEGMENTED_OPTIONS.map(
+      (s) => ({ value: s.value, label: s.label }),
+    );
     if (!base.some((s) => s.value === expense.status)) {
       const row = EXPENSE_STAGES.find((s) => s.value === expense.status);
       base.push({ value: row?.value ?? expense.status, label: row?.label ?? expense.status });
@@ -162,61 +167,67 @@ export function ExpenseGeneralTab({
             disabled={formDisabled}
             onValueChange={(v) => patchDraft({ name: v })}
           />
-          <InlineField
-            variant="controlled"
-            label="Amount"
-            type="money"
-            value={draft.amount}
-            placeholder="0"
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ amount: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Due date"
-            type="date"
-            value={draft.dueDate}
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ dueDate: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Type"
-            type="select"
-            value={draft.type}
-            options={EXPENSE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ type: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Category"
-            type="select"
-            value={draft.category}
-            options={categoryOptions}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ category: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Frequency"
-            type="select"
-            value={draft.frequency}
-            options={EXPENSE_FREQUENCIES.map((f) => ({ value: f.value, label: f.label }))}
-            icon={<CalendarDays size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ frequency: v })}
-          />
-          <InlineField
-            variant="controlled"
+          <div className="flex flex-wrap items-start gap-3">
+            <InlineField
+              variant="controlled"
+              label="Amount"
+              type="money"
+              value={draft.amount}
+              placeholder="0"
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              onValueChange={(v) => patchDraft({ amount: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Due date"
+              type="date"
+              value={draft.dueDate}
+              disabled={formDisabled}
+              className={EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS}
+              onValueChange={(v) => patchDraft({ dueDate: v })}
+            />
+            <DetailSheetFieldSegmented
+              label="Type"
+              icon={<Tag size={12} />}
+              value={draft.type}
+              options={EXPENSE_TYPES}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(type) => patchDraft({ type })}
+            />
+          </div>
+          <div className="flex flex-wrap items-start gap-3">
+            <InlineField
+              variant="controlled"
+              label="Category"
+              type="select"
+              value={draft.category}
+              options={categoryOptions}
+              disabled={formDisabled}
+              selectMenuTone="highlight"
+              className={EXPENSE_COMPACT_FIELD_WIDTH_CLASS}
+              onValueChange={(v) => v && patchDraft({ category: v })}
+            />
+            <DetailSheetFieldSegmented
+              label="Frequency"
+              icon={<CalendarDays size={12} />}
+              value={draft.frequency}
+              options={EXPENSE_FREQUENCY_SEGMENTED_OPTIONS}
+              disabled={formDisabled}
+              className="min-w-0 flex-1"
+              onValueChange={(frequency) => patchDraft({ frequency })}
+            />
+          </div>
+          <DetailSheetFieldSegmented
             label="Status"
-            type="select"
+            icon={<CircleDot size={12} />}
             value={draft.status}
-            options={statusOptions}
+            options={statusSegmentedOptions}
             disabled={formDisabled}
             className={expenseStageGateFieldClass(gateRequiredFields, EXPENSE_GATE_FIELD_STATUS)}
-            onValueChange={(v) => v && patchDraft({ status: v })}
+            onValueChange={(status) => patchDraft({ status })}
           />
           {draft.status === 'BACKLOG' ? (
             <InlineField
@@ -237,14 +248,13 @@ export function ExpenseGeneralTab({
 
       <DetailSheetSection title="Tax & project" icon={<FolderKanban size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
+          <DetailSheetFieldSegmented
             label="Tax status"
-            type="select"
+            icon={<Receipt size={12} />}
             value={draft.taxStatus}
-            options={TAX_STATUSES.map((t) => ({ value: t.value, label: t.label }))}
+            options={TAX_STATUSES}
             disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ taxStatus: v })}
+            onValueChange={(taxStatus) => patchDraft({ taxStatus })}
           />
           <InlineField
             variant="controlled"

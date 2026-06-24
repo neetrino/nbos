@@ -131,31 +131,66 @@ function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) 
   );
 }
 
-function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Props) {
-  return (
-    <SelectPrimitive.Item
-      data-slot="select-item"
-      className={cn(
-        'relative flex w-full cursor-pointer items-center gap-2 rounded-lg py-2 pr-9 pl-3 text-sm font-medium transition-colors outline-none select-none',
-        'text-foreground/90 hover:bg-muted/70 focus:bg-accent focus:text-accent-foreground',
-        'not-data-[variant=destructive]:focus:**:text-accent-foreground',
+function SelectItem({
+  className,
+  children,
+  showIndicator = true,
+  tone = 'default',
+  ...props
+}: SelectPrimitive.Item.Props & {
+  showIndicator?: boolean;
+  tone?: 'default' | 'highlight';
+}) {
+  const indicatorVisible = showIndicator && tone !== 'highlight';
+
+  const itemClassName = (state: { disabled: boolean; selected: boolean; highlighted: boolean }) => {
+    const userClass = typeof className === 'function' ? className(state) : className;
+
+    if (tone === 'highlight') {
+      return cn(
+        'relative flex w-full cursor-pointer items-center gap-2 rounded-lg py-2 pr-3 pl-3 text-sm font-medium transition-colors outline-none select-none',
         'data-disabled:pointer-events-none data-disabled:opacity-45',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
-        className,
-      )}
+        state.selected
+          ? 'bg-primary text-primary-foreground'
+          : state.highlighted
+            ? 'bg-stone-100 text-foreground dark:bg-stone-900/70'
+            : 'text-foreground/90 hover:bg-stone-100 dark:hover:bg-stone-900/70',
+        userClass,
+      );
+    }
+
+    return cn(
+      'relative flex w-full cursor-pointer items-center gap-2 rounded-lg py-2 pr-9 pl-3 text-sm font-medium transition-colors outline-none select-none',
+      'text-foreground/90 hover:bg-muted/70 focus:bg-accent focus:text-accent-foreground',
+      'not-data-[variant=destructive]:focus:**:text-accent-foreground',
+      'data-disabled:pointer-events-none data-disabled:opacity-45',
+      "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+      '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
+      userClass,
+    );
+  };
+
+  return (
+    <SelectPrimitive.Item
+      data-slot="select-item"
+      data-tone={tone}
+      className={itemClassName}
       {...props}
     >
       <SelectPrimitive.ItemText className="flex min-w-0 flex-1 gap-2 whitespace-nowrap">
         {children}
       </SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator
-        render={
-          <span className="text-primary pointer-events-none absolute right-2.5 flex size-4 items-center justify-center" />
-        }
-      >
-        <CheckIcon className="size-4 shrink-0 stroke-[2.5]" />
-      </SelectPrimitive.ItemIndicator>
+      {indicatorVisible ? (
+        <SelectPrimitive.ItemIndicator
+          render={
+            <span className="text-primary pointer-events-none absolute right-2.5 flex size-4 items-center justify-center" />
+          }
+        >
+          <CheckIcon className="size-4 shrink-0 stroke-[2.5]" />
+        </SelectPrimitive.ItemIndicator>
+      ) : null}
     </SelectPrimitive.Item>
   );
 }

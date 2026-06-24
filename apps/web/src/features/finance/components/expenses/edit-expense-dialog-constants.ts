@@ -11,6 +11,32 @@ export const EXPENSE_FREQUENCIES = [
   { value: 'MULTI_YEAR', label: 'Multi-year' },
 ] as const;
 
+/** Compact labels for expense detail sheet frequency segmented control. */
+export const EXPENSE_FREQUENCY_SEGMENTED_OPTIONS = [
+  { value: 'ONE_TIME', label: 'Once' },
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'QUARTERLY', label: 'Quarter' },
+  { value: 'YEARLY', label: 'Yearly' },
+  { value: 'MULTI_YEAR', label: 'Multi-yr' },
+] as const;
+
+/** Fixed width for compact expense sheet fields (amount, category). */
+export const EXPENSE_COMPACT_FIELD_WIDTH_CLASS = 'w-[10rem] shrink-0';
+
+/** Due date field width in expense detail sheet. */
+export const EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS = 'w-[8.5rem] shrink-0';
+
+/** Compact labels for expense detail sheet status segmented control. */
+export const EXPENSE_STATUS_SEGMENTED_OPTIONS = [
+  { value: 'PLANNED', label: 'Planned' },
+  { value: 'DUE_SOON', label: 'Soon' },
+  { value: 'DUE_NOW', label: 'Now' },
+  { value: 'OVERDUE', label: 'Overdue' },
+  { value: 'ON_HOLD', label: 'Hold' },
+  { value: 'BACKLOG', label: 'Backlog' },
+  { value: 'PAID', label: 'Paid' },
+] as const;
+
 export const TAX_STATUSES = [
   { value: 'TAX', label: 'Tax' },
   { value: 'TAX_FREE', label: 'Tax-free' },
