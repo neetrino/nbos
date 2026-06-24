@@ -50,19 +50,17 @@ export function InvoiceOfficialRequestPanel({
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge label={status.label} variant={status.variant} />
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge label={status.label} variant={status.variant} />
         {invoice.officialInvoiceRequestSent && invoice.officialInvoiceSentAt ? (
-          <p className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-xs">
             Sent {formatOfficialDate(invoice.officialInvoiceSentAt)}
-          </p>
+          </span>
         ) : null}
         {invoice.officialInvoiceCancelledAt && !invoice.officialInvoiceRequestSent ? (
-          <p className="text-muted-foreground text-xs">
-            Cancelled {formatOfficialDate(invoice.officialInvoiceCancelledAt)}
-          </p>
+          <span className="text-muted-foreground text-xs">
+            on {formatOfficialDate(invoice.officialInvoiceCancelledAt)}
+          </span>
         ) : null}
       </div>
 
