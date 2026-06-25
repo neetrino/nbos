@@ -32,8 +32,13 @@ import { buildExpensePlanIntegratedFilterConfigs } from '@/features/finance/comp
 import { ExpensePlansPageSettingsSheet } from '@/features/finance/components/expenses/ExpensePlansPageSettingsSheet';
 import { EXPENSE_PLANS_VIEW_OPTIONS } from '@/features/finance/components/expenses/expense-plans-view-options';
 import { ExpensePlanDetailSheet } from '@/features/finance/components/expenses/ExpensePlanDetailSheet';
+import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
-import { OPEN_EXPENSE_PLAN_QUERY } from '@/features/finance/constants/expense-plan-deep-link';
+import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
+import {
+  expensePlansListWithOpenExpenseHref,
+  OPEN_EXPENSE_PLAN_QUERY,
+} from '@/features/finance/constants/expense-plan-deep-link';
 import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
 import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -329,7 +334,9 @@ export function ExpensePlansPageContent() {
   const showBoardPanel = view === 'board';
 
   const openPlanIdFromUrl = searchParams.get(OPEN_EXPENSE_PLAN_QUERY)?.trim() || null;
-  const sheetOpen = Boolean(openPlanIdFromUrl);
+  const openExpenseIdFromUrl = searchParams.get(OPEN_EXPENSE_QUERY)?.trim() || null;
+  const planSheetOpen = Boolean(openPlanIdFromUrl);
+  const expenseSheetOpen = Boolean(openExpenseIdFromUrl);
   const initialPlan = useMemo(
     () => plans.find((plan) => plan.id === openPlanIdFromUrl) ?? null,
     [openPlanIdFromUrl, plans],
@@ -344,12 +351,33 @@ export function ExpensePlansPageContent() {
     [pathname, router, searchParams],
   );
 
+  const openExpenseDetail = useCallback(
+    (expenseId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_EXPENSE_QUERY, expenseId);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
   const handlePlanSheetOpenChange = useCallback(
     (next: boolean) => {
       if (next) return;
       const params = new URLSearchParams(searchParams.toString());
       if (!params.has(OPEN_EXPENSE_PLAN_QUERY)) return;
       params.delete(OPEN_EXPENSE_PLAN_QUERY);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleExpenseSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has(OPEN_EXPENSE_QUERY)) return;
+      params.delete(OPEN_EXPENSE_QUERY);
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname);
     },
@@ -426,6 +454,7 @@ export function ExpensePlansPageContent() {
             const plan = plans.find((row) => row.id === planId);
             if (plan) openExpensePlanDetail(plan);
           }}
+          onOpenExpense={openExpenseDetail}
         />
       ) : null}
 
@@ -481,10 +510,25 @@ export function ExpensePlansPageContent() {
       <ExpensePlanDetailSheet
         planId={openPlanIdFromUrl}
         initialPlan={initialPlan}
-        open={sheetOpen}
+        open={planSheetOpen}
         onOpenChange={handlePlanSheetOpenChange}
         onPlanUpdated={() => void refreshAll()}
         onPlanDeleted={() => void refreshAll()}
+      />
+
+      <ExpenseDetailSheet
+        expenseId={openExpenseIdFromUrl}
+        open={expenseSheetOpen}
+        onOpenChange={handleExpenseSheetOpenChange}
+        onExpenseUpdated={() => void refreshAll()}
+        onExpenseDeleted={() => void refreshAll()}
+        sourcePageHref={
+          openExpenseIdFromUrl
+            ? expensePlansListWithOpenExpenseHref(openExpenseIdFromUrl, openPlanIdFromUrl)
+            : undefined
+        }
+        forceNestedBackdrop={planSheetOpen}
+        listHrefOptions={{ expensePlanId: openPlanIdFromUrl }}
       />
     </div>
   );

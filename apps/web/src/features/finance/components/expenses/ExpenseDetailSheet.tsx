@@ -65,6 +65,8 @@ export interface ExpenseDetailSheetProps {
   payrollPaymentFocus?: boolean;
   onExpenseUpdated?: (expense: Expense) => void;
   onExpenseDeleted?: (expenseId: string) => void;
+  /** When set, overrides list-route deep link for "open in context" navigation. */
+  sourcePageHref?: string;
   /** Stack above a parent entity sheet (related-item open from tab). */
   forceNestedBackdrop?: boolean;
 }
@@ -80,6 +82,7 @@ export function ExpenseDetailSheet({
   payrollPaymentFocus = false,
   onExpenseUpdated,
   onExpenseDeleted,
+  sourcePageHref: sourcePageHrefOverride,
   forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
   const activeExpenseId = open && expenseId ? expenseId : '';
@@ -246,12 +249,9 @@ export function ExpenseDetailSheet({
 
   if (!expenseId) return null;
 
-  const sourcePageHref = expenseListWithOpenExpenseHref(
-    expenseId,
-    listProjectId,
-    listSort,
-    listHrefOptions,
-  );
+  const sourcePageHref =
+    sourcePageHrefOverride ??
+    expenseListWithOpenExpenseHref(expenseId, listProjectId, listSort, listHrefOptions);
   const stage = expense ? getExpenseStage(expense.status) : null;
 
   return (
