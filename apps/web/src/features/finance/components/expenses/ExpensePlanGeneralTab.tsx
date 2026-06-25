@@ -6,6 +6,7 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
   EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -176,7 +177,7 @@ export function ExpensePlanGeneralTab({
             entityId={plan.id}
             value={draft.notes}
             onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-            placeholder="Optional notes…"
+            placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
             disabled={formDisabled}
           />
         </div>

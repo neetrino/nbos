@@ -5,6 +5,7 @@ import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { LeadCombinedInfoSection } from './LeadCombinedInfoSection';
 import { LeadNotesSection } from './LeadNotesSection';
+import { ENTITY_NOTES_OPTIONAL_PLACEHOLDER } from '@/components/shared';
 
 export interface LeadGeneralTabProps {
   lead: Lead;
@@ -42,6 +43,7 @@ export function LeadGeneralTab({
           assignment: sectionIds.assignment,
         }}
       />
+      <LeadEntityMetaLine createdAt={lead.createdAt} updatedAt={lead.updatedAt} />
       <LeadNotesSection
         id={sectionIds.notes}
         entityId={lead.id}
@@ -49,8 +51,8 @@ export function LeadGeneralTab({
         patchDraft={patchDraft}
         disabled={formDisabled}
         gateRequiredFields={gateRequiredFields}
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
       />
-      <LeadEntityMetaLine createdAt={lead.createdAt} updatedAt={lead.updatedAt} />
     </div>
   );
 }

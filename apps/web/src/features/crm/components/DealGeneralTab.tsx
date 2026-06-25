@@ -20,6 +20,7 @@ import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
 import { DealCombinedInfoSection } from './DealCombinedInfoSection';
+import { DealNotesSection } from './DealNotesSection';
 import { DealMarketingSection } from './DealMarketingSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
@@ -143,7 +144,6 @@ export function DealGeneralTab({
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
       <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
         <DealCombinedInfoSection
-          entityId={deal.id}
           draft={draft}
           patchDraft={patchDraft}
           filteredProductTypeOptions={filteredProductTypeOptions}
@@ -183,6 +183,13 @@ export function DealGeneralTab({
           <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
         </div>
         <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
+        <DealNotesSection
+          entityId={deal.id}
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={formDisabled}
+          gateRequiredFields={gateRequiredFields}
+        />
       </div>
 
       <div aria-hidden className="hidden min-h-0 xl:block" />

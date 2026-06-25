@@ -194,6 +194,8 @@ export {
 export {
   EntityNotesField,
   EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  isOptionalEntityNotesPlaceholder,
   ENTITY_NOTE_ENTITY_TYPES,
   editorHtmlToNotesValue,
   isHtmlNotesValue,

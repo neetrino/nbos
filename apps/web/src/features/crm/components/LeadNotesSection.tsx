@@ -13,6 +13,7 @@ interface LeadNotesSectionProps {
   patchDraft: (partial: Partial<LeadGeneralDraft>) => void;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
+  placeholder?: string;
 }
 
 export function LeadNotesSection({
@@ -22,6 +23,7 @@ export function LeadNotesSection({
   patchDraft,
   disabled = false,
   gateRequiredFields = new Set(),
+  placeholder,
 }: LeadNotesSectionProps) {
   return (
     <EntityNotesSection
@@ -33,7 +35,7 @@ export function LeadNotesSection({
       value={draft.notes}
       onChange={(notes) => patchDraft({ notes })}
       disabled={disabled}
-      placeholder="Add notes about this lead…"
+      placeholder={placeholder}
       shellClassName={cn(leadStageGateFieldClass(gateRequiredFields, 'notes', ''))}
     />
   );

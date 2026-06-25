@@ -1,8 +1,9 @@
 'use client';
 
-import { Building2, Calendar, FileText, MessageCircle, Receipt, Tag, User } from 'lucide-react';
+import { Building2, Calendar, FileText, Receipt, Tag, User } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
 import { EntityNotesSection } from '@/components/shared/entity-notes/EntityNotesSection';
+import { ENTITY_NOTES_OPTIONAL_PLACEHOLDER } from '@/components/shared/entity-notes/entity-notes-optional-placeholder';
 import { InlineField } from '@/components/shared/InlineField';
 import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -186,17 +187,6 @@ export function CompanySheetScrollBody({
               />
             </div>
           </DetailSheetSection>
-
-          <EntityNotesSection
-            title="Notes"
-            icon={<MessageCircle size={12} />}
-            entityType="company"
-            entityId={company.id}
-            value={draft.notes}
-            onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-            placeholder="Internal notes…"
-            disabled={fieldDisabled}
-          />
         </div>
       </div>
 
@@ -205,6 +195,15 @@ export function CompanySheetScrollBody({
         loading={portfolioLoading}
         error={portfolioError}
         onRetry={onPortfolioRetry}
+      />
+
+      <EntityNotesSection
+        entityType="company"
+        entityId={company.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
+        disabled={fieldDisabled}
       />
     </div>
   );

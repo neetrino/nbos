@@ -1,7 +1,12 @@
 'use client';
 
 import { Building2, Calendar, Mail, MessageCircle, Phone, User } from 'lucide-react';
-import { DetailSheetSection, EntityNotesSection, InlineField } from '@/components/shared';
+import {
+  DetailSheetSection,
+  EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  InlineField,
+} from '@/components/shared';
 import { CONTACT_ROLES, LANGUAGES, PREFERRED_CHANNELS } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
@@ -171,17 +176,6 @@ export function ContactSheetScrollBody({
           </div>
         </DetailSheetSection>
 
-        <EntityNotesSection
-          title="Notes"
-          icon={<MessageCircle size={12} />}
-          entityType="contact"
-          entityId={contact.id}
-          value={draft.notes}
-          onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-          placeholder="Preferences, important details…"
-          disabled={fieldDisabled}
-        />
-
         {contact.companies.length > 0 ? (
           <DetailSheetSection
             title={`Companies (${contact.companies.length})`}
@@ -207,6 +201,15 @@ export function ContactSheetScrollBody({
         loading={portfolioLoading}
         error={portfolioError}
         onRetry={onPortfolioRetry}
+      />
+
+      <EntityNotesSection
+        entityType="contact"
+        entityId={contact.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
+        disabled={fieldDisabled}
       />
     </div>
   );

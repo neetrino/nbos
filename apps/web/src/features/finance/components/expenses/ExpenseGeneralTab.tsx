@@ -6,6 +6,7 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
   EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   StatusBadge,
 } from '@/components/shared';
@@ -300,7 +301,7 @@ export function ExpenseGeneralTab({
         entityId={expense.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder="Optional notes…"
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={formDisabled}
       />
     </div>

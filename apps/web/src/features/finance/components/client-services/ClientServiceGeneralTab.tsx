@@ -19,6 +19,7 @@ import {
   DetailSheetCollapsibleSection,
   DetailSheetSection,
   EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -263,15 +264,6 @@ export function ClientServiceGeneralTab({
         </div>
       </DetailSheetCollapsibleSection>
 
-      <EntityNotesSection
-        entityType="generic"
-        entityId={serviceId}
-        value={draft.notes}
-        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder="Optional notes…"
-        disabled={formDisabled}
-      />
-
       <DetailSheetSection title="Proofs">
         <FinanceProofAttachments
           entityType="CLIENT_SERVICE_RECORD"
@@ -280,6 +272,15 @@ export function ClientServiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
+
+      <EntityNotesSection
+        entityType="generic"
+        entityId={serviceId}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
+        disabled={formDisabled}
+      />
     </div>
   );
 }

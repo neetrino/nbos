@@ -1,7 +1,12 @@
 'use client';
 
 import { Building2, Calendar, Mail, Phone, Send, User } from 'lucide-react';
-import { DetailSheetSection, EntityNotesSection, InlineField } from '@/components/shared';
+import {
+  DetailSheetSection,
+  EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  InlineField,
+} from '@/components/shared';
 import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
 import {
   TEAM_SHEET_BODY_CLASS,
@@ -173,7 +178,7 @@ export function EmployeeSheetScrollBody({
         entityId={employeeId}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder="HR notes — visible to HR and leadership"
+        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={saving || !canEdit}
       />
     </div>
