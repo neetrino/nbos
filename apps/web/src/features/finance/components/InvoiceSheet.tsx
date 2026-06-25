@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Trash2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -17,6 +19,7 @@ import { InvoiceSheetStageGateBlockers } from '@/features/finance/components/inv
 import { InvoiceGeneralTab } from '@/features/finance/components/invoices/InvoiceGeneralTab';
 import { InvoicePaymentsTab } from '@/features/finance/components/invoices/InvoicePaymentsTab';
 import { InvoiceHistoryTab } from '@/features/finance/components/invoices/InvoiceHistoryTab';
+import { InvoiceLifecycleConfirmDialog } from '@/features/finance/components/invoices/InvoiceLifecycleConfirmDialog';
 import {
   INVOICE_DETAIL_SHEET_TABS,
   type InvoiceDetailSheetTab,
@@ -32,6 +35,7 @@ import {
 } from '@/features/finance/utils/invoice-general-form-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi } from '@/lib/api/finance';
+import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -71,7 +75,12 @@ export function InvoiceSheet({
   const [generalSnap, setGeneralSnap] = useState<InvoiceGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [lifecycleOpen, setLifecycleOpen] = useState(false);
   const generalDirtyRef = useRef(false);
+
+  useEffect(() => {
+    if (!open) setLifecycleOpen(false);
+  }, [open]);
 
   useEffect(() => {
     setActiveTab('general');
@@ -172,80 +181,107 @@ export function InvoiceSheet({
   }
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
+  const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(invoice) : null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        width="compact"
-        sourcePageHref={sourcePageHref}
-        forceNestedBackdrop={forceNestedBackdrop}
-      >
-        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-          <div className="min-w-0">
-            <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-              <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                {invoice.code}
-              </h2>
-              <InvoiceSheetBadge invoice={invoice} />
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width="compact"
+          sourcePageHref={sourcePageHref}
+          forceNestedBackdrop={forceNestedBackdrop}
+        >
+          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {invoice.code}
+                  </h2>
+                  <InvoiceSheetBadge invoice={invoice} />
+                </div>
+              </div>
+              {lifecycleMode ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    disabled={saving}
+                    onClick={() => setLifecycleOpen(true)}
+                  >
+                    {lifecycleMode === 'delete' ? <Trash2 /> : <XCircle />}
+                    {lifecycleMode === 'delete' ? 'Delete invoice' : 'Cancel invoice'}
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null}
             </div>
           </div>
-        </div>
 
-        {onMoneyStatusChange ? (
-          <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
-            <InvoiceMoneyStagesBar
-              currentStatus={invoice.moneyStatus}
-              onStageClick={(status) => void onMoneyStatusChange(invoice.id, status)}
-            />
-          </div>
-        ) : null}
+          {onMoneyStatusChange ? (
+            <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+              <InvoiceMoneyStagesBar
+                currentStatus={invoice.moneyStatus}
+                onStageClick={(status) => void onMoneyStatusChange(invoice.id, status)}
+              />
+            </div>
+          ) : null}
 
-        <DetailSheetTabBar
-          tabs={INVOICE_DETAIL_SHEET_TABS}
-          activeTab={activeTab}
-          onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
+          <DetailSheetTabBar
+            tabs={INVOICE_DETAIL_SHEET_TABS}
+            activeTab={activeTab}
+            onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
+          />
+
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-5 py-5">
+              <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
+
+              <DetailSheetTabPanel tabKey={activeTab}>
+                {activeTab === 'general' ? (
+                  <InvoiceGeneralTab
+                    invoice={invoice}
+                    gateRequiredFields={gateRequiredFields}
+                    draft={onInvoiceUpdated ? generalDraft : null}
+                    patchDraft={patchGeneralDraft}
+                    formDisabled={saving}
+                    onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                  />
+                ) : null}
+                {activeTab === 'payments' ? (
+                  <InvoicePaymentsTab
+                    invoice={invoice}
+                    gateRequiredFields={gateRequiredFields}
+                    onPaymentRecorded={onPaymentRecorded}
+                  />
+                ) : null}
+                {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+              </DetailSheetTabPanel>
+            </div>
+          </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(onInvoiceUpdated && invoice)}
+            dirty={generalDirty}
+            saving={saving}
+            errorMessage={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+
+      {lifecycleMode && onInvoiceUpdated ? (
+        <InvoiceLifecycleConfirmDialog
+          invoice={invoice}
+          open={lifecycleOpen}
+          onOpenChange={setLifecycleOpen}
+          onInvoiceUpdated={handleInvoiceChange}
+          onInvoiceDeleted={onInvoiceDeleted}
+          forceNestedBackdrop={forceNestedBackdrop}
         />
-
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-5">
-            <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
-
-            <DetailSheetTabPanel tabKey={activeTab}>
-              {activeTab === 'general' ? (
-                <InvoiceGeneralTab
-                  invoice={invoice}
-                  gateRequiredFields={gateRequiredFields}
-                  draft={onInvoiceUpdated ? generalDraft : null}
-                  patchDraft={patchGeneralDraft}
-                  formDisabled={saving}
-                  onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
-                  onInvoiceDeleted={onInvoiceDeleted}
-                />
-              ) : null}
-              {activeTab === 'payments' ? (
-                <InvoicePaymentsTab
-                  invoice={invoice}
-                  gateRequiredFields={gateRequiredFields}
-                  onPaymentRecorded={onPaymentRecorded}
-                />
-              ) : null}
-              {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
-            </DetailSheetTabPanel>
-          </div>
-        </ScrollArea>
-
-        <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(onInvoiceUpdated && invoice)}
-          dirty={generalDirty}
-          saving={saving}
-          errorMessage={generalError}
-          onSave={handleGeneralSave}
-          onCancel={handleGeneralCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+      ) : null}
+    </>
   );
 }

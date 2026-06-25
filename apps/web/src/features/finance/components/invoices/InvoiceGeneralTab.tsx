@@ -12,7 +12,6 @@ import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceManualContextFields } from './InvoiceManualContextFields';
 import { InvoiceMoneyCard } from './InvoiceMoneyCard';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
-import { InvoiceLifecycleActions } from './InvoiceLifecycleActions';
 
 interface InvoiceGeneralTabProps {
   invoice: InvoiceSheetInvoice;
@@ -21,7 +20,6 @@ interface InvoiceGeneralTabProps {
   patchDraft: (partial: Partial<InvoiceGeneralDraft>) => void;
   formDisabled?: boolean;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
-  onInvoiceDeleted?: (invoiceId: string) => void;
 }
 
 export function InvoiceGeneralTab({
@@ -31,7 +29,6 @@ export function InvoiceGeneralTab({
   patchDraft,
   formDisabled = false,
   onInvoiceUpdated,
-  onInvoiceDeleted,
 }: InvoiceGeneralTabProps) {
   const billingFields =
     draft && onInvoiceUpdated ? (
@@ -72,17 +69,6 @@ export function InvoiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
-
-      {onInvoiceUpdated ? (
-        <DetailSheetSection title="Actions">
-          <InvoiceLifecycleActions
-            invoice={invoice}
-            disabled={formDisabled}
-            onInvoiceUpdated={onInvoiceUpdated}
-            onInvoiceDeleted={onInvoiceDeleted}
-          />
-        </DetailSheetSection>
-      ) : null}
     </div>
   );
 }
