@@ -233,7 +233,7 @@ export function ClientServiceDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="medium"
+          width="compact"
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
