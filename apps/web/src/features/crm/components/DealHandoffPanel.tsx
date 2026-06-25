@@ -76,7 +76,7 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
         ? 'Attach contract in Drive (Contract section)'
         : 'Not required for subscription',
     },
-    { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Actions' },
+    { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Quick actions' },
     {
       label: 'Payment received',
       ready: hasPaidInvoice(deal) || deal.wonMode === 'EXCEPTION_FREE',

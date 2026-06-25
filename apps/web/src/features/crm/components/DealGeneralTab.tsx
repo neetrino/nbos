@@ -33,7 +33,6 @@ interface DealGeneralTabProps {
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   formDisabled?: boolean;
   onRefresh?: () => void;
-  onOpenTaskTab?: () => void;
   onOpenDeal?: (id: string) => void;
   gateRequiredFields?: ReadonlySet<string>;
 }
@@ -46,7 +45,6 @@ export function DealGeneralTab({
   patchDraft,
   formDisabled = false,
   onRefresh,
-  onOpenTaskTab,
   onOpenDeal,
   gateRequiredFields = new Set(),
 }: DealGeneralTabProps) {
@@ -136,8 +134,6 @@ export function DealGeneralTab({
   }, []);
 
   const firstOrder = deal.orders?.[0];
-  const projectId = deal.projectId ?? firstOrder?.projectId;
-  const taxStatus = deal.taxStatus ?? 'TAX';
 
   const filteredProductTypeOptions = getFilteredProductTypeOptions(draft, productTypeOptions);
 
@@ -196,14 +192,7 @@ export function DealGeneralTab({
       <div aria-hidden className="hidden min-h-0 xl:block" />
 
       <aside className="flex w-64 shrink-0 flex-col gap-4 xl:w-72">
-        <DealFinanceActionsPanel
-          deal={deal}
-          projectId={projectId}
-          firstOrder={firstOrder}
-          taxStatus={taxStatus}
-          onRefresh={onRefresh}
-          onOpenTaskTab={onOpenTaskTab}
-        />
+        <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
         <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
       </aside>
     </div>
