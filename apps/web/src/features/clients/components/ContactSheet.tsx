@@ -23,6 +23,10 @@ import {
 } from './contact-general-form-state';
 import { ContactSheetScrollBody } from './ContactSheetScrollBody';
 import {
+  CONTACT_SHEET_CONTENT_WIDTH_CLASS,
+  CONTACT_SHEET_RAIL_ANCHOR_CLASS,
+} from './contact-sheet-layout';
+import {
   ClientDetailTabBar,
   ClientPortfolioPanel,
   useClientPortfolioData,
@@ -138,6 +142,8 @@ export function ContactSheet({
         open={open}
         onOpenChange={onOpenChange}
         label="Loading contact…"
+        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
+        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
         forceNestedBackdrop={forceNestedBackdrop}
       />
     );
@@ -154,10 +160,12 @@ export function ContactSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
+        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
+        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
         sourcePageHref={sourcePageHref}
         forceNestedBackdrop={forceNestedBackdrop}
       >
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
               <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">

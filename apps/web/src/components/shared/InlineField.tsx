@@ -172,6 +172,7 @@ function InlineFieldUncontrolled({
           {type === 'select' && options ? (
             <>
               <Select
+                modal={false}
                 open={selectOpen}
                 onOpenChange={(open) => {
                   setSelectOpen(open);

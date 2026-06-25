@@ -40,6 +40,7 @@ export interface SupportCreateTicketDialogProps {
   onDescriptionChange: (value: string) => void;
   onSubmit: () => void;
   submitting: boolean;
+  forceNestedBackdrop?: boolean;
 }
 
 export function SupportCreateTicketDialog({
@@ -61,6 +62,7 @@ export function SupportCreateTicketDialog({
   onDescriptionChange,
   onSubmit,
   submitting,
+  forceNestedBackdrop = false,
 }: SupportCreateTicketDialogProps) {
   const [projectLabel, setProjectLabel] = useState('');
   const [productLabel, setProductLabel] = useState('');
@@ -83,7 +85,7 @@ export function SupportCreateTicketDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>

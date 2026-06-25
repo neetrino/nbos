@@ -23,8 +23,14 @@ const SHEET_FLOATING_RAIL_Z_INDEX = 60;
 /** Nested child sheet stacks above parent floating rail ({@link SHEET_FLOATING_RAIL_Z_INDEX}). */
 const SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS = 'z-[70]';
 
+/** Sheet opened above a nested entity sheet (e.g. contact portfolio at z-70). */
+const SHEET_ABOVE_ENTITY_SHEET_Z_CLASS = 'z-[80]';
+
 /** Nested sheet popup uses z-70; viewport rail sits above the panel seam when nested. */
 const SHEET_NESTED_FLOATING_RAIL_Z_INDEX = 71;
+
+/** Elevated sheet popup uses z-80; rail one step above. */
+const SHEET_ABOVE_ENTITY_SHEET_RAIL_Z_INDEX = 81;
 
 const SHEET_POPUP_BASE_CLASS =
   'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0';
@@ -129,19 +135,24 @@ function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
 function SheetOverlay({
   className,
   stackAboveFloatingRail = false,
+  overlayStackClass,
   ...props
-}: SheetPrimitive.Backdrop.Props & { stackAboveFloatingRail?: boolean }) {
+}: SheetPrimitive.Backdrop.Props & {
+  stackAboveFloatingRail?: boolean;
+  overlayStackClass?: string;
+}) {
+  const elevatedOverlay = stackAboveFloatingRail;
+  const stackClass =
+    overlayStackClass ?? (elevatedOverlay ? SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS : 'z-50');
+
   return (
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
         'fixed inset-0 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0',
-        stackAboveFloatingRail
-          ? cn(
-              SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS,
-              'bg-black/25 supports-backdrop-filter:backdrop-blur-sm',
-            )
-          : 'z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs',
+        elevatedOverlay
+          ? cn(stackClass, 'bg-black/25 supports-backdrop-filter:backdrop-blur-sm')
+          : cn(stackClass, 'bg-black/10 supports-backdrop-filter:backdrop-blur-xs'),
         className,
       )}
       {...props}
@@ -161,6 +172,7 @@ function SheetContent({
   floatingRailTopClassName,
   floatingRailPlacement = 'viewport',
   forceNestedBackdrop = false,
+  stackAboveEntitySheet = false,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left' | 'center';
@@ -173,13 +185,25 @@ function SheetContent({
   /** `viewport` = fixed rail at panel seam (entity sheets). `inset` = inside panel (page settings). */
   floatingRailPlacement?: 'viewport' | 'inset';
   forceNestedBackdrop?: boolean;
+  /** Above nested entity sheets (contact portfolio quick actions). */
+  stackAboveEntitySheet?: boolean;
 }) {
   const floatingRailEnabled = floatingClose && (side === 'right' || side === 'center');
   const centerFloatingRail = floatingClose && side === 'center';
   const rightFloatingRail = floatingClose && side === 'right';
   const insetFloatingRail = rightFloatingRail && floatingRailPlacement === 'inset';
   const viewportFloatingRail = rightFloatingRail && floatingRailPlacement === 'viewport';
-  const nestedStackClass = forceNestedBackdrop ? SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS : 'z-50';
+  const elevatedBackdrop = forceNestedBackdrop || stackAboveEntitySheet;
+  const nestedStackClass = stackAboveEntitySheet
+    ? SHEET_ABOVE_ENTITY_SHEET_Z_CLASS
+    : forceNestedBackdrop
+      ? SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS
+      : 'z-50';
+  const floatingRailZIndex = stackAboveEntitySheet
+    ? SHEET_ABOVE_ENTITY_SHEET_RAIL_Z_INDEX
+    : forceNestedBackdrop
+      ? SHEET_NESTED_FLOATING_RAIL_Z_INDEX
+      : SHEET_FLOATING_RAIL_Z_INDEX;
 
   const popupClassName = cn(
     SHEET_POPUP_BASE_CLASS,
@@ -235,8 +259,9 @@ function SheetContent({
   return (
     <SheetPortal>
       <SheetOverlay
-        forceRender={forceNestedBackdrop}
-        stackAboveFloatingRail={forceNestedBackdrop}
+        forceRender={elevatedBackdrop}
+        stackAboveFloatingRail={elevatedBackdrop}
+        overlayStackClass={nestedStackClass}
       />
       {centerFloatingRail ? (
         <SheetCenterShell
@@ -266,9 +291,7 @@ function SheetContent({
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',
           )}
           style={{
-            zIndex: forceNestedBackdrop
-              ? SHEET_NESTED_FLOATING_RAIL_Z_INDEX
-              : SHEET_FLOATING_RAIL_Z_INDEX,
+            zIndex: floatingRailZIndex,
           }}
         >
           <SheetFloatingRailStack

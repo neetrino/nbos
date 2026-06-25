@@ -153,6 +153,7 @@ export function ControlledInlineField({
             <>
               <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
                 <Select
+                  modal={false}
                   value={str}
                   onValueChange={(v) => {
                     if (v == null || v === '') {

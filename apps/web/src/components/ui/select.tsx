@@ -76,11 +76,12 @@ function SelectContent({
   align = 'start',
   alignOffset = 0,
   alignItemWithTrigger = false,
+  collisionBoundary = 'viewport',
   ...props
 }: SelectPrimitive.Popup.Props &
   Pick<
     SelectPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger'
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger' | 'collisionBoundary'
   >) {
   return (
     <SelectPrimitive.Portal>
@@ -90,6 +91,7 @@ function SelectContent({
         align={align}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
+        collisionBoundary={collisionBoundary}
         className={cn('isolate', PORTAL_DROPDOWN_Z_CLASS)}
       >
         <SelectPrimitive.Popup

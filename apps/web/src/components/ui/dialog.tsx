@@ -23,8 +23,8 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-/** Nested dialog inside a sheet must stack above sheet overlay/popup (z-50). */
-const DIALOG_NESTED_Z_CLASS = 'z-[70]';
+/** Dialog above entity sheet (z-50) and nested sheets (z-70). Dropdowns use z-90. */
+const DIALOG_ABOVE_SHEET_Z_CLASS = 'z-[80]';
 
 function DialogOverlay({
   className,
@@ -36,7 +36,7 @@ function DialogOverlay({
       data-slot="dialog-overlay"
       className={cn(
         'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate bg-black/25 duration-150 supports-backdrop-filter:backdrop-blur-sm',
-        nested ? DIALOG_NESTED_Z_CLASS : 'z-50',
+        nested ? DIALOG_ABOVE_SHEET_Z_CLASS : 'z-50',
         className,
       )}
       {...props}
@@ -58,7 +58,7 @@ function DialogContent({
    */
   forceNestedBackdrop?: boolean;
 }) {
-  const nestedStackClass = forceNestedBackdrop ? DIALOG_NESTED_Z_CLASS : 'z-50';
+  const nestedStackClass = forceNestedBackdrop ? DIALOG_ABOVE_SHEET_Z_CLASS : 'z-50';
 
   return (
     <DialogPortal>

@@ -26,7 +26,19 @@ import { dmReadReceiptMessageId as computeDmReadReceiptMessageId } from './messe
 import { MESSENGER_REMOTE_TYPING_HINT_MS } from './messenger-typing-ui.constants';
 import { useMessengerRealtime } from './useMessengerRealtime';
 
-export function MessengerClient() {
+function messengerShellClass(embedded: boolean): string {
+  return embedded
+    ? 'flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
+    : 'flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+}
+
+function messengerCenterShellClass(embedded: boolean): string {
+  return embedded
+    ? 'flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
+    : 'flex h-[calc(100vh-4rem)] items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+}
+
+export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
   const { me, isLoading: permsLoading, can } = usePermission();
   const canViewMessenger = can('VIEW', 'MESSENGER');
   const canEditMessenger = can('EDIT', 'MESSENGER');
@@ -428,7 +440,7 @@ export function MessengerClient() {
 
   if (permsLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
+      <div className={messengerCenterShellClass(embedded)}>
         <p className="text-sm text-black/50">Loading…</p>
       </div>
     );
@@ -436,7 +448,7 @@ export function MessengerClient() {
 
   if (!canViewMessenger) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
+      <div className={messengerCenterShellClass(embedded)}>
         <p className="text-sm text-black/60">You do not have permission to view Messenger.</p>
       </div>
     );
@@ -444,7 +456,7 @@ export function MessengerClient() {
 
   if (bootError) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
+      <div className={messengerCenterShellClass(embedded)}>
         <p className="text-sm text-red-600">{bootError}</p>
       </div>
     );
@@ -479,7 +491,7 @@ export function MessengerClient() {
       : null;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
+    <div className={messengerShellClass(embedded)}>
       <div className="flex gap-2 border-b border-black/[0.06] bg-white px-4 py-2">
         <button
           type="button"

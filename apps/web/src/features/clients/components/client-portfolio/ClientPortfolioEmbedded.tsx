@@ -144,7 +144,7 @@ export function ClientPortfolioGeneralActions({
   onRetry,
 }: ClientPortfolioGeneralActionsProps) {
   return (
-    <DetailSheetSection title="Quick actions">
+    <DetailSheetSection title="Quick actions" className="overflow-visible">
       {loading ? (
         <div className="space-y-2">
           <Skeleton className="h-9 w-full" />
@@ -152,12 +152,7 @@ export function ClientPortfolioGeneralActions({
           <Skeleton className="h-9 w-full" />
         </div>
       ) : data ? (
-        <ClientPortfolioQuickActions
-          variant={variant}
-          entityId={entityId}
-          data={data}
-          layout="rail"
-        />
+        <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />
       ) : (
         <ClientPortfolioInlineError
           message={error ?? 'Portfolio actions are unavailable.'}
