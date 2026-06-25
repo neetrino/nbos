@@ -1,7 +1,6 @@
 'use client';
 
-import { MessageSquare } from 'lucide-react';
-import { EntityNotesSection } from '@/components/shared';
+import { DetailSheetOptionalDescription } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
@@ -13,7 +12,6 @@ interface LeadNotesSectionProps {
   patchDraft: (partial: Partial<LeadGeneralDraft>) => void;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
-  placeholder?: string;
 }
 
 export function LeadNotesSection({
@@ -23,19 +21,15 @@ export function LeadNotesSection({
   patchDraft,
   disabled = false,
   gateRequiredFields = new Set(),
-  placeholder,
 }: LeadNotesSectionProps) {
   return (
-    <EntityNotesSection
+    <DetailSheetOptionalDescription
       id={id}
-      title="Notes"
-      icon={<MessageSquare size={12} />}
       entityType="lead"
       entityId={entityId}
       value={draft.notes}
       onChange={(notes) => patchDraft({ notes })}
       disabled={disabled}
-      placeholder={placeholder}
       shellClassName={cn(leadStageGateFieldClass(gateRequiredFields, 'notes', ''))}
     />
   );

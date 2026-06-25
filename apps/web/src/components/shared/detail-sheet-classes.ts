@@ -118,6 +118,9 @@ export const DETAIL_SHEET_TAB_LIST_CLASS = 'min-h-0 flex-1 overflow-y-auto';
 /** Wrapper for sheet tab content that should fill the scroll viewport. */
 export const DETAIL_SHEET_TAB_BODY_STRETCH_CLASS = 'flex min-h-full flex-col';
 
+/** Pins optional Description fields to the bottom of {@link DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} bodies. */
+export const DETAIL_SHEET_OPTIONAL_DESCRIPTION_CLASS = 'mt-auto shrink-0';
+
 /** Neutral avatar chip for person pickers (avoids per-role accent colors). */
 export const DETAIL_SHEET_PERSON_AVATAR_CLASS =
   'bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold uppercase';

@@ -16,10 +16,10 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -68,7 +68,7 @@ export function ClientServiceGeneralTab({
   const projectLabel = linkedProject ? `${linkedProject.code} — ${linkedProject.name}` : null;
 
   return (
-    <div className="flex w-full max-w-none flex-col gap-3">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-3`}>
       <DetailSheetCollapsibleSection
         title="Basics"
         icon={<Tag size={12} />}
@@ -273,12 +273,11 @@ export function ClientServiceGeneralTab({
         />
       </DetailSheetSection>
 
-      <EntityNotesSection
+      <DetailSheetOptionalDescription
         entityType="generic"
         entityId={serviceId}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={formDisabled}
       />
     </div>

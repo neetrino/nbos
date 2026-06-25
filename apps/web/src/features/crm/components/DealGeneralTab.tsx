@@ -14,6 +14,7 @@ import {
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
@@ -142,7 +143,7 @@ export function DealGeneralTab({
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
-      <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
+      <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} max-w-[52rem] min-w-0 gap-4`}>
         <DealCombinedInfoSection
           draft={draft}
           patchDraft={patchDraft}

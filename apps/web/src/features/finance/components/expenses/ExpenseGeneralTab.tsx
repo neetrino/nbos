@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   StatusBadge,
 } from '@/components/shared';
@@ -136,7 +136,7 @@ export function ExpenseGeneralTab({
     ) : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col gap-3">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-3`}>
       {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
         <ExpensePlanLinkBanner
           planId={expense.linkedExpensePlan.id}
@@ -296,12 +296,11 @@ export function ExpenseGeneralTab({
         />
       </DetailSheetSection>
 
-      <EntityNotesSection
+      <DetailSheetOptionalDescription
         entityType="expense"
         entityId={expense.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={formDisabled}
       />
     </div>

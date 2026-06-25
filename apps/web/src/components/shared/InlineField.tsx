@@ -75,6 +75,7 @@ type InlineFieldControlledProps = {
   datePickerMode?: 'date' | 'datetime';
   fitContent?: boolean;
   selectMenuTone?: 'default' | 'highlight';
+  displayValue?: ReactNode;
 };
 
 export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
@@ -342,6 +343,7 @@ export function InlineField(props: InlineFieldProps) {
       hideLabel,
       fitContent,
       selectMenuTone,
+      displayValue,
       ...controlledProps
     } = props;
     return (
@@ -352,6 +354,7 @@ export function InlineField(props: InlineFieldProps) {
         datePickerMode={datePickerMode}
         fitContent={fitContent}
         selectMenuTone={selectMenuTone}
+        displayValue={displayValue}
       />
     );
   }

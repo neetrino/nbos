@@ -2,9 +2,9 @@
 
 import { Building2, Calendar, Mail, MessageCircle, Phone, User } from 'lucide-react';
 import {
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
 } from '@/components/shared';
 import { CONTACT_ROLES, LANGUAGES, PREFERRED_CHANNELS } from '../constants/clients';
@@ -52,7 +52,7 @@ export function ContactSheetScrollBody({
   const languageOptions = LANGUAGES.map((l) => ({ value: l.value, label: l.label }));
 
   return (
-    <div className="space-y-6 px-5 py-5">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-5 py-5`}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
@@ -203,12 +203,11 @@ export function ContactSheetScrollBody({
         onRetry={onPortfolioRetry}
       />
 
-      <EntityNotesSection
+      <DetailSheetOptionalDescription
         entityType="contact"
         entityId={contact.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={fieldDisabled}
       />
     </div>

@@ -1,3 +1,5 @@
+import type { StatusVariant } from '@/components/shared/StatusBadge';
+
 export const CLIENT_SERVICE_TYPES = [
   { value: 'DOMAIN', label: 'Domain' },
   { value: 'HOSTING', label: 'Hosting' },
@@ -7,12 +9,12 @@ export const CLIENT_SERVICE_TYPES = [
 ] as const;
 
 export const CLIENT_SERVICE_STATUSES = [
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'SUSPENDED', label: 'Suspended' },
-  { value: 'EXPIRING_SOON', label: 'Expiring soon' },
-  { value: 'EXPIRED', label: 'Expired' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'PENDING', label: 'Pending', variant: 'amber' as StatusVariant },
+  { value: 'ACTIVE', label: 'Active', variant: 'green' as StatusVariant },
+  { value: 'SUSPENDED', label: 'Suspended', variant: 'gray' as StatusVariant },
+  { value: 'EXPIRING_SOON', label: 'Expiring soon', variant: 'red' as StatusVariant },
+  { value: 'EXPIRED', label: 'Expired', variant: 'red' as StatusVariant },
+  { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
 /** Compact labels for client service detail sheet status segmented control. */
@@ -71,4 +73,9 @@ export function clientServiceOptionLabel(
   value: string | null | undefined,
 ): string {
   return options.find((option) => option.value === value)?.label ?? value ?? '-';
+}
+
+export function getClientServiceStatus(value: string | null | undefined) {
+  if (!value) return undefined;
+  return CLIENT_SERVICE_STATUSES.find((status) => status.value === value);
 }

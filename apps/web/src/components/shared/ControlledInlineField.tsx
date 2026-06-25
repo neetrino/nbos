@@ -65,6 +65,8 @@ export interface ControlledInlineFieldProps {
   selectMenuTone?: 'default' | 'highlight';
   /** Field shell width follows content (select, money). */
   fitContent?: boolean;
+  /** Overrides select trigger label (e.g. status badge). */
+  displayValue?: ReactNode;
 }
 
 export function ControlledInlineField({
@@ -84,6 +86,7 @@ export function ControlledInlineField({
   datePickerMode = 'date',
   fitContent = false,
   selectMenuTone = 'default',
+  displayValue,
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
@@ -177,7 +180,8 @@ export function ControlledInlineField({
                       className={fitContent ? 'flex-none' : undefined}
                     >
                       {(selected: string | null) =>
-                        selected ? resolveSelectOptionLabel(selected, options) : null
+                        displayValue ??
+                        (selected ? resolveSelectOptionLabel(selected, options) : null)
                       }
                     </SelectValue>
                   </SelectTrigger>

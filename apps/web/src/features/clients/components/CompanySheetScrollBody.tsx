@@ -2,8 +2,8 @@
 
 import { Building2, Calendar, FileText, Receipt, Tag, User } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
-import { EntityNotesSection } from '@/components/shared/entity-notes/EntityNotesSection';
-import { ENTITY_NOTES_OPTIONAL_PLACEHOLDER } from '@/components/shared/entity-notes/entity-notes-optional-placeholder';
+import { DetailSheetOptionalDescription } from '@/components/shared/DetailSheetOptionalDescription';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
 import { InlineField } from '@/components/shared/InlineField';
 import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -59,7 +59,7 @@ export function CompanySheetScrollBody({
   const typeOptions = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
 
   return (
-    <div className="space-y-6 px-7 py-5">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-7 py-5`}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
@@ -197,12 +197,11 @@ export function CompanySheetScrollBody({
         onRetry={onPortfolioRetry}
       />
 
-      <EntityNotesSection
+      <DetailSheetOptionalDescription
         entityType="company"
         entityId={company.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={fieldDisabled}
       />
     </div>

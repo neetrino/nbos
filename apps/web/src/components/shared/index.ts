@@ -153,6 +153,8 @@ export {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DETAIL_SHEET_OPTIONAL_DESCRIPTION_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
@@ -161,6 +163,10 @@ export {
 } from './detail-sheet-classes';
 export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { toSheetPipelineStages, type SheetPipelineStageSource } from './pipeline-stage-config';
+export {
+  DetailSheetOptionalDescription,
+  DetailSheetOptionalDescriptionField,
+} from './DetailSheetOptionalDescription';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
 export { DetailSheetMetaDate } from './DetailSheetMetaDate';
 export {

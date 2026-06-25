@@ -1,12 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
-import { DollarSign, FileOutput, FolderKanban, Layers, StickyNote } from 'lucide-react';
+import { DollarSign, FileOutput, FolderKanban, Layers } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -69,7 +69,7 @@ export function ExpensePlanGeneralTab({
   }, [plan.frequency]);
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col gap-4">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
       <DetailSheetSection title="Plan" icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <div className="flex items-end gap-3">
@@ -168,20 +168,13 @@ export function ExpensePlanGeneralTab({
         </div>
       </DetailSheetSection>
 
-      <div className="pt-3">
-        <div className="border-border/50 border-t pt-3">
-          <EntityNotesSection
-            title="Notes"
-            icon={<StickyNote size={12} />}
-            entityType="expense"
-            entityId={plan.id}
-            value={draft.notes}
-            onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-            placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
-            disabled={formDisabled}
-          />
-        </div>
-      </div>
+      <DetailSheetOptionalDescription
+        entityType="expense"
+        entityId={plan.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={formDisabled}
+      />
     </div>
   );
 }

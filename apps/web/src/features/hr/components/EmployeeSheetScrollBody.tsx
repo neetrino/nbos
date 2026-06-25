@@ -2,9 +2,9 @@
 
 import { Building2, Calendar, Mail, Phone, Send, User } from 'lucide-react';
 import {
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
   InlineField,
 } from '@/components/shared';
 import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
@@ -42,7 +42,7 @@ export function EmployeeSheetScrollBody({
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }));
 
   return (
-    <div className={TEAM_SHEET_BODY_CLASS}>
+    <div className={`${TEAM_SHEET_BODY_CLASS} ${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS}`}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
@@ -173,12 +173,11 @@ export function EmployeeSheetScrollBody({
         </div>
       </DetailSheetSection>
 
-      <EntityNotesSection
+      <DetailSheetOptionalDescription
         entityType="generic"
         entityId={employeeId}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={saving || !canEdit}
       />
     </div>

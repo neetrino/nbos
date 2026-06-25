@@ -222,7 +222,7 @@ export function ExpensePlanDetailSheet({
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-5 py-5">
+            <div className="min-h-full px-5 py-5">
               {loading && !plan ? (
                 <LoadingState count={3} />
               ) : error ? (

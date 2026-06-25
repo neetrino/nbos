@@ -310,7 +310,7 @@ export function ExpenseDetailSheet({
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-5 py-5">
+            <div className="min-h-full px-5 py-5">
               <ExpenseDetailStageGateBlockers highlight={stageGateHighlight} />
               {loading && !expense ? (
                 <LoadingState count={3} />

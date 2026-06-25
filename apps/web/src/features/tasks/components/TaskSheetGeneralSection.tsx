@@ -1,7 +1,6 @@
 import { Calendar, Copy, User, Users } from 'lucide-react';
 import {
-  EntityNotesField,
-  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  DetailSheetOptionalDescriptionField,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -190,12 +189,11 @@ export function TaskSheetGeneralSection({
 
       <TaskFilesBlock taskId={taskId} />
 
-      <EntityNotesField
+      <DetailSheetOptionalDescriptionField
         entityType="task"
         entityId={taskId}
         value={draft.description}
         onChange={(description) => onPatchDraft({ description })}
-        placeholder={ENTITY_NOTES_OPTIONAL_PLACEHOLDER}
         disabled={disabled}
         shellClassName="[&_.entity-notes-prosemirror]:text-sm"
       />
