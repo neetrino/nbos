@@ -2,16 +2,24 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import {
+  ChevronDown,
   FileText,
   Handshake,
   Headphones,
   Loader2,
   MessageCircle,
   Receipt,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePermission } from '@/lib/permissions';
 import type {
   CompanyPortfolioResponse,
@@ -53,8 +61,14 @@ export interface ClientPortfolioQuickActionsProps {
   data: ContactPortfolioResponse | CompanyPortfolioResponse;
 }
 
-const QUICK_ACTION_BUTTON_HOVER_CLASS =
-  'transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-md hover:shadow-black/[0.08] motion-reduce:transition-none motion-reduce:hover:translate-y-0 active:translate-y-0';
+interface QuickActionItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  enabled: boolean;
+  onClick?: () => void;
+  disabledTitle?: string;
+}
 
 export function ClientPortfolioQuickActions({
   variant,
@@ -138,7 +152,7 @@ export function ClientPortfolioQuickActions({
         label: 'Open drive',
         icon: FileText,
         enabled: !driveOpening,
-        loading: driveOpening,
+        disabledTitle: driveOpening ? 'Loading file…' : undefined,
         onClick: () => void handleOpenDrive(),
       });
     }
@@ -156,21 +170,51 @@ export function ClientPortfolioQuickActions({
   ]);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-nowrap gap-2">
-        <div className="bg-muted h-8 w-24 shrink-0 animate-pulse rounded-md" />
-        <div className="bg-muted h-8 w-28 shrink-0 animate-pulse rounded-md" />
-      </div>
-    );
+    return <QuickActionsTriggerSkeleton />;
   }
+
+  if (actions.length === 0) return null;
 
   return (
     <>
-      <div className="flex flex-nowrap gap-2">
-        {actions.map((action) => (
-          <QuickAction key={action.id} action={action} />
-        ))}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={(props) => (
+            <Button
+              {...props}
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={driveOpening}
+            >
+              {driveOpening ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+              ) : (
+                <Zap size={14} aria-hidden />
+              )}
+              Quick actions
+              <ChevronDown size={14} className="opacity-60" aria-hidden />
+            </Button>
+          )}
+        />
+        <DropdownMenuContent align="end" className="min-w-44">
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <DropdownMenuItem
+                key={action.id}
+                disabled={!action.enabled}
+                title={action.disabledTitle}
+                onClick={() => action.onClick?.()}
+              >
+                <Icon />
+                {action.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <ClientPortfolioQuickActionDialogs
         openDialog={openDialog}
@@ -183,55 +227,22 @@ export function ClientPortfolioQuickActions({
   );
 }
 
-interface QuickActionItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  enabled: boolean;
-  loading?: boolean;
-  onClick?: () => void;
-  disabledTitle?: string;
+export function ClientPortfolioQuickActionsHeader({
+  variant,
+  entityId,
+  data,
+  loading,
+}: {
+  variant: 'contact' | 'company';
+  entityId: string;
+  data: ContactPortfolioResponse | CompanyPortfolioResponse | null;
+  loading: boolean;
+}) {
+  if (loading) return <QuickActionsTriggerSkeleton />;
+  if (!data) return null;
+  return <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />;
 }
 
-function QuickAction({ action }: { action: QuickActionItem }) {
-  const Icon = action.icon;
-  const interactiveClass = cn(
-    buttonVariants({ variant: 'outline', size: 'sm' }),
-    'inline-flex shrink-0 gap-1.5 whitespace-nowrap',
-    QUICK_ACTION_BUTTON_HOVER_CLASS,
-  );
-
-  if (action.onClick && action.enabled) {
-    return (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className={interactiveClass}
-        onClick={action.onClick}
-        disabled={action.loading}
-      >
-        {action.loading ? (
-          <Loader2 size={14} className="animate-spin" aria-hidden />
-        ) : (
-          <Icon size={14} aria-hidden />
-        )}
-        {action.label}
-      </Button>
-    );
-  }
-
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      disabled
-      className="shrink-0 gap-1.5 whitespace-nowrap"
-      title={action.disabledTitle}
-    >
-      <Icon size={14} aria-hidden />
-      {action.label}
-    </Button>
-  );
+function QuickActionsTriggerSkeleton() {
+  return <Skeleton className="h-8 w-[7.5rem] shrink-0 rounded-md" />;
 }

@@ -12,10 +12,7 @@ import { companyTypeNumberLabel } from '../constants/company-type-field-copy';
 import type { Company } from '@/lib/api/clients';
 import type { CompanyPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { CompanyGeneralDraft } from './company-general-form-state';
-import {
-  ClientPortfolioAnalytics,
-  ClientPortfolioGeneralActions,
-} from './client-portfolio/ClientPortfolioEmbedded';
+import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -199,17 +196,6 @@ export function CompanySheetScrollBody({
             onChange={(notes) => patchDraft({ notes: notes ?? '' })}
             placeholder="Internal notes…"
             disabled={fieldDisabled}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <ClientPortfolioGeneralActions
-            variant="company"
-            entityId={company.id}
-            data={portfolioData}
-            loading={portfolioLoading}
-            error={portfolioError}
-            onRetry={onPortfolioRetry}
           />
         </div>
       </div>

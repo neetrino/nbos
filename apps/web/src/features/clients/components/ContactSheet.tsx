@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { RotateCcw, Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
@@ -23,6 +22,7 @@ import {
 } from './contact-general-form-state';
 import { ContactSheetScrollBody } from './ContactSheetScrollBody';
 import {
+  CONTACT_SHEET_BODY_SCROLL_CLASS,
   CONTACT_SHEET_CONTENT_WIDTH_CLASS,
   CONTACT_SHEET_RAIL_ANCHOR_CLASS,
 } from './contact-sheet-layout';
@@ -31,6 +31,7 @@ import {
   ClientPortfolioPanel,
   useClientPortfolioData,
 } from './client-portfolio/ClientPortfolioEmbedded';
+import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
 import type {
   ClientDetailTabId,
   ClientEmbeddedPortfolioTabId,
@@ -166,7 +167,7 @@ export function ContactSheet({
         forceNestedBackdrop={forceNestedBackdrop}
       >
         <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-          <div className="flex flex-wrap items-start gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="min-w-0 flex-1">
               <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                 <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
@@ -181,7 +182,15 @@ export function ContactSheet({
                 ) : null}
               </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {!isTrashView ? (
+                <ClientPortfolioQuickActionsHeader
+                  variant="contact"
+                  entityId={contact.id}
+                  data={portfolio.data}
+                  loading={portfolio.loading}
+                />
+              ) : null}
               {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => onRestore(contact.id)}>
@@ -212,7 +221,7 @@ export function ContactSheet({
 
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
-        <ScrollArea className="min-h-0 flex-1">
+        <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
           <DetailSheetTabPanel tabKey={activeTab}>
             {activeTab === 'general' ? (
               <ContactSheetScrollBody
@@ -238,7 +247,7 @@ export function ContactSheet({
               />
             )}
           </DetailSheetTabPanel>
-        </ScrollArea>
+        </div>
 
         <DetailSheetFormFooter
           visible={!isTrashView && activeTab === 'general' && Boolean(draft)}

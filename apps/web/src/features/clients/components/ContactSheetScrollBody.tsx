@@ -6,10 +6,7 @@ import { CONTACT_ROLES, LANGUAGES, PREFERRED_CHANNELS } from '../constants/clien
 import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { ContactGeneralDraft } from './contact-general-form-state';
-import {
-  ClientPortfolioAnalytics,
-  ClientPortfolioGeneralActions,
-} from './client-portfolio/ClientPortfolioEmbedded';
+import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -203,15 +200,6 @@ export function ContactSheetScrollBody({
             </div>
           </DetailSheetSection>
         ) : null}
-
-        <ClientPortfolioGeneralActions
-          variant="contact"
-          entityId={contact.id}
-          data={portfolioData}
-          loading={portfolioLoading}
-          error={portfolioError}
-          onRetry={onPortfolioRetry}
-        />
       </div>
 
       <ClientPortfolioAnalytics

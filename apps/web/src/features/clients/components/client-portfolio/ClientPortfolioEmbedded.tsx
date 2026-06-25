@@ -11,8 +11,8 @@ import {
   type CompanyPortfolioResponse,
   type ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
-import { ClientPortfolioQuickActions } from './ClientPortfolioQuickActions';
 import { ClientPortfolioTabPanels } from './ClientPortfolioTabPanels';
+import { CONTACT_SHEET_HIDDEN_SCROLLBAR_CLASS } from '../contact-sheet-layout';
 import {
   CLIENT_DETAIL_GENERAL_TAB,
   CLIENT_DETAIL_PORTFOLIO_TABS,
@@ -88,6 +88,7 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
       tabs={tabs.map((tab) => ({ value: tab.id, label: tab.label, icon: tab.icon }))}
       activeTab={activeTab}
       onTabChange={(value) => onSelect(value as ClientDetailTabId)}
+      scrollClassName={CONTACT_SHEET_HIDDEN_SCROLLBAR_CLASS}
     />
   );
 }
@@ -123,43 +124,6 @@ export function ClientPortfolioPanel({
     <div className="space-y-6 px-7 py-5">
       <ClientPortfolioTabPanels tab={tab} data={data} variant={variant} onRetry={onRetry} />
     </div>
-  );
-}
-
-interface ClientPortfolioGeneralActionsProps {
-  variant: 'contact' | 'company';
-  entityId: string;
-  data: PortfolioData | null;
-  loading: boolean;
-  error: string | null;
-  onRetry: () => void;
-}
-
-export function ClientPortfolioGeneralActions({
-  variant,
-  entityId,
-  data,
-  loading,
-  error,
-  onRetry,
-}: ClientPortfolioGeneralActionsProps) {
-  return (
-    <DetailSheetSection title="Quick actions" className="overflow-visible">
-      {loading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-9 w-full" />
-          <Skeleton className="h-9 w-full" />
-          <Skeleton className="h-9 w-full" />
-        </div>
-      ) : data ? (
-        <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />
-      ) : (
-        <ClientPortfolioInlineError
-          message={error ?? 'Portfolio actions are unavailable.'}
-          onRetry={onRetry}
-        />
-      )}
-    </DetailSheetSection>
   );
 }
 
