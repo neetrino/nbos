@@ -1,5 +1,10 @@
 import { Building2, Calendar, CheckCircle2 } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
+import {
+  DELIVERY_BOARD_CARD_DATE_ICON_SIZE,
+  DELIVERY_BOARD_CARD_DATE_ROW_CLASS,
+} from './delivery-board-card-ui.constants';
+import { formatDeliveryBoardCardDate } from './format-delivery-board-card-date';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
 import { getItemLifecycle } from './project-delivery-board-model';
 
@@ -8,7 +13,7 @@ const CANCELLATION_PREVIEW_LEN = 72;
 export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
   const lc = getItemLifecycle(item);
   const closedIso = item.kind === 'PRODUCT' ? item.product.updatedAt : item.extension.updatedAt;
-  const closedLabel = closedIso ? new Date(closedIso).toLocaleDateString() : '—';
+  const closedLabel = closedIso ? formatDeliveryBoardCardDate(closedIso) : '—';
 
   return (
     <div className="mt-2 space-y-1 text-left">
@@ -28,8 +33,8 @@ export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
           </span>
         </p>
       )}
-      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-        <Calendar size={12} />
+      <p className={DELIVERY_BOARD_CARD_DATE_ROW_CLASS}>
+        <Calendar size={DELIVERY_BOARD_CARD_DATE_ICON_SIZE} aria-hidden />
         <span>Closed {closedLabel}</span>
       </p>
       {lc?.resolution === 'DONE' && item.kind === 'PRODUCT' && item.product.clientAcceptedAt && (

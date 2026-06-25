@@ -15,6 +15,8 @@ import {
   getDeliveryLifecycleVariant,
 } from '@/features/projects/constants/projects';
 import { getClosedDeadlineOutcomeLabel } from './delivery-board-closed-filters';
+import { DELIVERY_BOARD_CARD_DATE_LABEL_CLASS } from './delivery-board-card-ui.constants';
+import { formatDeliveryBoardCardDate } from './format-delivery-board-card-date';
 import {
   DELIVERY_STAGE_LABELS,
   getItemKey,
@@ -39,7 +41,7 @@ function getProjectLabel(item: DeliveryBoardItem): string {
 
 function getClosedDisplay(item: DeliveryBoardItem): string {
   const iso = item.kind === 'PRODUCT' ? item.product.updatedAt : item.extension.updatedAt;
-  return iso ? new Date(iso).toLocaleDateString() : '—';
+  return iso ? formatDeliveryBoardCardDate(iso) : '—';
 }
 
 function getActiveStageLabel(item: DeliveryBoardItem): string {
@@ -123,7 +125,7 @@ export function DeliveryBoardItemsTable({
                           '—'
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
+                      <TableCell className={DELIVERY_BOARD_CARD_DATE_LABEL_CLASS}>
                         {getClosedDisplay(item)}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs">

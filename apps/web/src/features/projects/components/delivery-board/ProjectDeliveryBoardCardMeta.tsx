@@ -11,9 +11,15 @@ import {
 } from '@/features/projects/constants/projects';
 import type { DealTypePresentation } from '@/lib/deal-type-visual';
 import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
-import { DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS } from './delivery-board-card-ui.constants';
-import { cn } from '@/lib/utils';
+import {
+  DELIVERY_BOARD_CARD_DATE_ICON_SIZE,
+  DELIVERY_BOARD_CARD_DATE_LABEL_CLASS,
+  DELIVERY_BOARD_CARD_DATE_ROW_CLASS,
+  DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS,
+} from './delivery-board-card-ui.constants';
+import { formatDeliveryBoardCardDate } from './format-delivery-board-card-date';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
+import { cn } from '@/lib/utils';
 
 export type DeliveryBoardCardMetaDensity = 'full' | 'minimal' | 'board';
 
@@ -70,8 +76,10 @@ function ProductBoardMeta({
       {product.deadline ? (
         <BoardMetaLine
           icon={Calendar}
-          label={formatBoardCardDate(product.deadline)}
+          label={formatDeliveryBoardCardDate(product.deadline)}
           metaIconClass={metaIconClass}
+          labelClassName={DELIVERY_BOARD_CARD_DATE_LABEL_CLASS}
+          iconSize={DELIVERY_BOARD_CARD_DATE_ICON_SIZE}
         />
       ) : null}
       {holdCopy ? (
@@ -130,7 +138,11 @@ function ProductCardMeta({
         />
       )}
       {product.deadline && (
-        <LegacyMetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
+        <LegacyMetaLine
+          icon={Calendar}
+          label={formatDeliveryBoardCardDate(product.deadline)}
+          emphasizeDate
+        />
       )}
       {!minimal ? (
         <p className="text-muted-foreground text-xs">
@@ -175,14 +187,6 @@ function ExtensionCardMeta({
   );
 }
 
-function formatBoardCardDate(iso: string): string {
-  const date = new Date(iso);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-}
-
 function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
   if (lifecycle?.workStatus !== 'ON_HOLD') return null;
   const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
@@ -201,25 +205,42 @@ function BoardMetaLine({
   icon: Icon,
   label,
   metaIconClass,
+  labelClassName = 'text-foreground min-w-0 truncate text-xs leading-snug',
+  iconSize = 14,
 }: {
   icon: LucideIcon;
   label: string;
   metaIconClass: string;
+  labelClassName?: string;
+  iconSize?: number;
 }) {
   return (
     <div className="flex items-center gap-2.5">
       <span className={cn(DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS, metaIconClass)}>
-        <Icon size={14} aria-hidden />
+        <Icon size={iconSize} aria-hidden />
       </span>
-      <span className="text-foreground min-w-0 truncate text-xs leading-snug">{label}</span>
+      <span className={labelClassName}>{label}</span>
     </div>
   );
 }
 
-function LegacyMetaLine({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+function LegacyMetaLine({
+  icon: Icon,
+  label,
+  emphasizeDate = false,
+}: {
+  icon: LucideIcon;
+  label: string;
+  emphasizeDate?: boolean;
+}) {
   return (
-    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-      <Icon size={12} />
+    <p
+      className={cn(
+        'flex items-center gap-1.5',
+        emphasizeDate ? DELIVERY_BOARD_CARD_DATE_ROW_CLASS : 'text-muted-foreground text-xs',
+      )}
+    >
+      <Icon size={emphasizeDate ? DELIVERY_BOARD_CARD_DATE_ICON_SIZE : 12} aria-hidden />
       <span className="truncate">{label}</span>
     </p>
   );
