@@ -44,7 +44,7 @@ export function ProductPlanningSection({
   };
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
+    <section className="border-border bg-card/40 w-full min-w-0 rounded-xl border p-4">
       <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Delivery plan
       </h3>

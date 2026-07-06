@@ -77,7 +77,7 @@ export function DealExceptionOrderDialog({
         if (!next) reset();
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Exception order</DialogTitle>
           <DialogDescription>

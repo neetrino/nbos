@@ -4,6 +4,10 @@ export type { EntityNotesSectionProps } from './EntityNotesSection';
 export type { EntityNotesFieldProps } from './entity-notes-field.types';
 export { ENTITY_NOTE_ENTITY_TYPES, type EntityNoteEntityType } from './entity-notes-contract';
 export {
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  isOptionalEntityNotesPlaceholder,
+} from './entity-notes-optional-placeholder';
+export {
   editorHtmlToNotesValue,
   isHtmlNotesValue,
   notesValueToEditorHtml,

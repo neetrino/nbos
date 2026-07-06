@@ -1,21 +1,24 @@
 import Link from 'next/link';
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Landmark, Receipt } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  FINANCE_DASHBOARD_COMPACT_CARD_CLASS,
+  FINANCE_DASHBOARD_PANEL_CARD_CLASS,
+} from '@/features/finance/constants/finance-dashboard-card-hover';
 import {
   orderReconciliationDrilldownHref,
   orderReconciliationGapForFinanceWarningCode,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
-import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import type {
   FinanceDashboardData,
-  FinanceDashboardExpenseBucket,
-  FinanceDashboardPayrollRunsSummary,
   FinanceKpi,
-  InvoiceStatusItem,
-  RecentPaymentItem,
   UpcomingInvoiceItem,
 } from './finance-dashboard-data';
+
+export { ExpenseCardsSnapshot, PayrollRunsSnapshot } from './finance-dashboard-snapshot-panels';
+export { InvoiceDistribution } from './finance-dashboard-invoice-status-panel';
+export { RecentPayments } from './finance-dashboard-recent-payments-panel';
 
 export function DashboardLoadingSkeleton() {
   return (
@@ -32,11 +35,9 @@ export function DashboardLoadingSkeleton() {
         ))}
       </div>
 
-      <Skeleton className="h-28 w-full rounded-2xl" />
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Skeleton className="h-80 rounded-2xl" />
-        <Skeleton className="h-80 rounded-2xl" />
+        <Skeleton className="h-72 rounded-2xl" />
+        <Skeleton className="h-72 rounded-2xl" />
       </div>
     </div>
   );
@@ -52,124 +53,9 @@ export function KpiCards({ kpis }: { kpis: FinanceKpi[] }) {
   );
 }
 
-export function InvoiceDistribution({ items }: { items: InvoiceStatusItem[] }) {
-  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
-
-  return (
-    <div className="border-border bg-card rounded-2xl border p-6">
-      <h2 className="text-foreground text-lg font-semibold">Invoice Status</h2>
-      <p className="text-muted-foreground mt-1 text-sm">{totalCount} total invoices</p>
-
-      <div className="mt-4 space-y-3">
-        {items.map((item) => (
-          <InvoiceStatusRow key={item.label} item={item} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
-  return (
-    <div className="border-border bg-card rounded-2xl border p-6">
-      <h2 className="text-foreground text-lg font-semibold">Recent Payments</h2>
-      <div className="mt-4 space-y-3">
-        {items.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No payments yet.</p>
-        ) : (
-          items.map((item) => <RecentPaymentRow key={item.id} item={item} />)
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function ExpenseCardsSnapshot({ buckets }: { buckets: FinanceDashboardExpenseBucket[] }) {
-  const href = '/finance/expenses';
-  const totalRemaining = buckets.reduce((sum, bucket) => sum + bucket.amount, 0);
-
-  return (
-    <div className="border-border bg-card rounded-2xl border p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-orange-100 p-2.5 text-orange-700">
-            <Receipt size={20} aria-hidden />
-          </div>
-          <div>
-            <h2 className="text-foreground text-lg font-semibold">Outgoing expenses</h2>
-            <p className="text-muted-foreground mt-1 max-w-xl text-sm">
-              Unpaid expense cards by workflow bucket. <span className="font-medium">Due now</span>{' '}
-              uses the explicit <span className="font-mono text-xs">DUE_NOW</span> status; other
-              lanes follow board rules and due dates in the selected period.
-            </p>
-          </div>
-        </div>
-        <Link
-          href={href}
-          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-sm font-medium"
-        >
-          Open expense board
-          <ArrowUpRight size={14} aria-hidden />
-        </Link>
-      </div>
-      {buckets.length === 0 ? (
-        <p className="text-muted-foreground mt-5 text-sm">No open expense cards in this period.</p>
-      ) : (
-        <>
-          <p className="text-foreground mt-5 text-sm font-medium">
-            {formatAmount(totalRemaining)} remaining across{' '}
-            {buckets.reduce((sum, bucket) => sum + bucket.count, 0)} cards
-          </p>
-          <div className="mt-4 space-y-3">
-            {buckets.map((bucket) => (
-              <ExpenseBucketRow key={bucket.key} bucket={bucket} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayrollRunsSummary }) {
-  const href = payrollRunsListHref();
-
-  return (
-    <div className="border-border bg-card rounded-2xl border p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
-            <Landmark size={20} aria-hidden />
-          </div>
-          <div>
-            <h2 className="text-foreground text-lg font-semibold">Payroll runs</h2>
-            <p className="text-muted-foreground mt-1 max-w-xl text-sm">
-              Workspace totals from <span className="font-medium">GET /payroll-runs/stats</span>{' '}
-              (all runs). Not filtered by the invoice period selector above.
-            </p>
-          </div>
-        </div>
-        <Link
-          href={href}
-          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-sm font-medium"
-        >
-          Open payroll
-          <ArrowUpRight size={14} aria-hidden />
-        </Link>
-      </div>
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-4">
-        <Metric label="Runs in scope" value={String(payroll.runCount)} />
-        <Metric label="Total payable" value={formatAmount(payroll.totalPayable)} />
-        <Metric label="Total paid" value={formatAmount(payroll.totalPaid)} />
-        <Metric label="Remaining" value={formatAmount(payroll.totalRemaining)} />
-      </div>
-    </div>
-  );
-}
-
 export function UpcomingInvoices({ items }: { items: UpcomingInvoiceItem[] }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Upcoming Deadlines</h2>
       <div className="mt-4 space-y-3">
         {items.length === 0 ? (
@@ -188,7 +74,7 @@ export function ReconciliationSnapshot({ data }: { data: FinanceDashboardData })
   const paymentCoverage = getPercent(reconciliation.paidAmount, reconciliation.orderAmount);
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Order Reconciliation</h2>
       <p className="text-muted-foreground mt-1 text-sm">
         Read-only coverage across {reconciliation.orderCount} finance orders.
@@ -221,7 +107,7 @@ export function ReconciliationSnapshot({ data }: { data: FinanceDashboardData })
 
 export function FinanceNotes() {
   return (
-    <div className="border-border bg-card rounded-2xl border p-6">
+    <div className={FINANCE_DASHBOARD_PANEL_CARD_CLASS}>
       <h2 className="text-foreground text-lg font-semibold">Finance Notes</h2>
       <div className="mt-4 space-y-3 text-sm">
         <p className="text-muted-foreground">
@@ -249,7 +135,7 @@ export function FinanceNotes() {
 
 function KpiCard({ kpi }: { kpi: FinanceKpi }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-5 transition-shadow hover:shadow-sm">
+    <div className={FINANCE_DASHBOARD_COMPACT_CARD_CLASS}>
       <div className="flex items-center justify-between">
         <div className={`rounded-xl p-2.5 ${kpi.iconBg} ${kpi.iconText}`}>
           <kpi.icon size={20} />
@@ -261,57 +147,6 @@ function KpiCard({ kpi }: { kpi: FinanceKpi }) {
         <p className="text-muted-foreground mt-1 text-sm">{kpi.label}</p>
       </div>
       <p className="text-muted-foreground mt-2 text-xs">{kpi.change}</p>
-    </div>
-  );
-}
-
-function ExpenseBucketRow({ bucket }: { bucket: FinanceDashboardExpenseBucket }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-foreground text-sm">{bucket.label}</span>
-      <div className="flex items-center gap-3">
-        <span className="text-muted-foreground text-sm">{bucket.count}</span>
-        <span className="text-foreground w-28 text-right text-sm font-medium">
-          {formatAmount(bucket.amount)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function InvoiceStatusRow({ item }: { item: InvoiceStatusItem }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <div className={`h-3 w-3 rounded-full ${item.color}`} />
-        <span className="text-foreground text-sm">{item.label}</span>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-muted-foreground text-xs">{item.pct}%</span>
-        <span className="text-muted-foreground text-sm">{item.count}</span>
-        <span className="text-foreground w-28 text-right text-sm font-medium">
-          {formatAmount(item.amount)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function RecentPaymentRow({ item }: { item: RecentPaymentItem }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
-          <p className="text-foreground truncate text-sm">{item.client}</p>
-        </div>
-        <p className="text-muted-foreground ml-5 text-xs">
-          {item.invoice} · {item.dateLabel}
-        </p>
-      </div>
-      <span className="text-foreground shrink-0 text-sm font-medium">
-        {formatAmount(item.amount)}
-      </span>
     </div>
   );
 }

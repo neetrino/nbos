@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosMonthPicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   MANUAL_BONUS_CREATE_STATUSES,
@@ -41,6 +42,8 @@ function employeeLabel(employee: Employee): string {
 function orderLabel(order: Order): string {
   return `${order.code} · ${order.project.code}`;
 }
+
+const FORM_FIELD_GROUP_CLASS = 'space-y-2';
 
 export function CreateManualBonusDialog({
   open,
@@ -159,17 +162,17 @@ export function CreateManualBonusDialog({
         <DialogHeader>
           <DialogTitle>Create bonus</DialogTitle>
         </DialogHeader>
-        <p className="text-muted-foreground text-xs leading-snug">
-          Manual bonus for any employee. Use Marketing type for marketing and support until
-          automated KPI accrual ships. Active status makes the bonus eligible for payroll attach.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="text-muted-foreground text-xs leading-snug">
+            Manual bonus for any employee. Use Marketing type for marketing and support until
+            automated KPI accrual ships. Active status makes the bonus eligible for payroll attach.
+          </p>
           {formError ? (
             <p className="text-destructive text-sm" role="alert">
               {formError}
             </p>
           ) : null}
-          <div>
+          <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Title *</Label>
             <Input
               value={title}
@@ -178,7 +181,7 @@ export function CreateManualBonusDialog({
               placeholder="e.g. Manual support bonus — launch"
             />
           </div>
-          <div>
+          <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Employee *</Label>
             <select
               className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
@@ -194,7 +197,7 @@ export function CreateManualBonusDialog({
               ))}
             </select>
           </div>
-          <div>
+          <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Order (funding anchor) *</Label>
             <select
               className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
@@ -211,7 +214,7 @@ export function CreateManualBonusDialog({
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Type *</Label>
               <select
                 className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
@@ -226,7 +229,7 @@ export function CreateManualBonusDialog({
                 ))}
               </select>
             </div>
-            <div>
+            <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Amount *</Label>
               <Input
                 inputMode="decimal"
@@ -237,7 +240,7 @@ export function CreateManualBonusDialog({
               />
             </div>
           </div>
-          <div>
+          <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Reason *</Label>
             <Input
               value={reason}
@@ -247,7 +250,7 @@ export function CreateManualBonusDialog({
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Status</Label>
               <select
                 className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
@@ -262,13 +265,14 @@ export function CreateManualBonusDialog({
                 ))}
               </select>
             </div>
-            <div>
-              <Label>Earned month</Label>
-              <Input
-                type="month"
+            <div className={FORM_FIELD_GROUP_CLASS}>
+              <Label htmlFor="bonus-earned-month">Earned month</Label>
+              <NbosMonthPicker
+                id="bonus-earned-month"
                 value={payoutMonth}
                 disabled={loading}
-                onChange={(e) => setPayoutMonth(e.target.value)}
+                onChange={setPayoutMonth}
+                aria-label="Earned month"
               />
             </div>
           </div>

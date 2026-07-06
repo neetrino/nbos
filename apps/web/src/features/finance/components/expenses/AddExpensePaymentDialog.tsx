@@ -80,7 +80,7 @@ export function AddExpensePaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Add payment</DialogTitle>
         </DialogHeader>
@@ -91,7 +91,7 @@ export function AddExpensePaymentDialog({
             </p>
           ) : null}
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-2">
               <Label>Amount *</Label>
               <Input
                 inputMode="decimal"
@@ -101,7 +101,7 @@ export function AddExpensePaymentDialog({
                 autoFocus
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Payment date *</Label>
               <NbosDatePicker
                 value={paymentDate}
@@ -110,7 +110,7 @@ export function AddExpensePaymentDialog({
               />
             </div>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Notes</Label>
             <Textarea
               value={notes}

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { RotateCcw, Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
@@ -21,6 +20,11 @@ import {
   type CompanyGeneralDraft,
 } from './company-general-form-state';
 import { CompanySheetScrollBody } from './CompanySheetScrollBody';
+import {
+  CONTACT_SHEET_BODY_SCROLL_CLASS,
+  CONTACT_SHEET_CONTENT_WIDTH_CLASS,
+  CONTACT_SHEET_RAIL_ANCHOR_CLASS,
+} from './contact-sheet-layout';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 import { applyCompanyRelationCreated } from './apply-company-relation-created';
@@ -29,6 +33,7 @@ import {
   ClientPortfolioPanel,
   useClientPortfolioData,
 } from './client-portfolio/ClientPortfolioEmbedded';
+import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
 import type {
   ClientDetailTabId,
   ClientEmbeddedPortfolioTabId,
@@ -43,6 +48,7 @@ interface CompanySheetProps {
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 function companySaveErrorMessage(err: unknown): string {
@@ -59,6 +65,7 @@ export function CompanySheet({
   onMoveToTrash,
   onRestore,
   onPermanentDelete,
+  forceNestedBackdrop = false,
 }: CompanySheetProps) {
   const searchContacts = useContactSearchOptions();
   const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
@@ -176,6 +183,9 @@ export function CompanySheet({
         open={open}
         onOpenChange={onOpenChange}
         label="Loading company…"
+        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
+        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
+        forceNestedBackdrop={forceNestedBackdrop}
       />
     );
   }
@@ -186,35 +196,62 @@ export function CompanySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" sourcePageHref={sourcePageHref}>
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-          <div className="flex flex-wrap items-start gap-2">
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
+        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
+        sourcePageHref={sourcePageHref}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
+        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="min-w-0 flex-1">
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  onBlur={commitNameToDraft}
-                  onKeyDown={handleNameKeyDown}
-                  placeholder="Company name…"
-                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-                />
-              ) : (
-                <h2
-                  onClick={startEditingName}
-                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-                  title="Click to edit company name"
-                >
-                  {draft.name.trim() || company.name}
-                </h2>
-              )}
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
-                {taxStatus && <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />}
+              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                {editingName ? (
+                  <input
+                    ref={nameInputRef}
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    onBlur={commitNameToDraft}
+                    onKeyDown={handleNameKeyDown}
+                    placeholder="Company name…"
+                    className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+                  />
+                ) : (
+                  <h2
+                    onClick={startEditingName}
+                    className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                    title="Click to edit company name"
+                  >
+                    {draft.name.trim() || company.name}
+                  </h2>
+                )}
+                {compType ? (
+                  <StatusBadge
+                    label={compType.label}
+                    variant={compType.variant}
+                    className="shrink-0 self-center"
+                  />
+                ) : null}
+                {taxStatus ? (
+                  <StatusBadge
+                    label={taxStatus.label}
+                    variant={taxStatus.variant}
+                    className="shrink-0 self-center"
+                  />
+                ) : null}
               </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {!isTrashView ? (
+                <ClientPortfolioQuickActionsHeader
+                  variant="company"
+                  entityId={company.id}
+                  data={portfolio.data}
+                  loading={portfolio.loading}
+                />
+              ) : null}
               {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => onRestore(company.id)}>
@@ -245,7 +282,7 @@ export function CompanySheet({
 
         <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
 
-        <ScrollArea className="min-h-0 flex-1">
+        <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
           <DetailSheetTabPanel tabKey={activeTab}>
             {activeTab === 'general' ? (
               <CompanySheetScrollBody
@@ -272,7 +309,7 @@ export function CompanySheet({
               />
             )}
           </DetailSheetTabPanel>
-        </ScrollArea>
+        </div>
 
         <DetailSheetFormFooter
           visible={!isTrashView && activeTab === 'general' && Boolean(draft)}

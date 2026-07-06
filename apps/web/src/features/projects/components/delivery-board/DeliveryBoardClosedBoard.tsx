@@ -3,7 +3,9 @@
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
 import {
   DELIVERY_KANBAN_BOARD_ROW_CLASS,
+  DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
   DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+  deliveryKanbanBoardMinWidthPx,
 } from './delivery-kanban-layout';
 import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
 import { DELIVERY_TERMINAL_COLUMN_COLORS } from './delivery-terminal-kanban.constants';
@@ -44,31 +46,36 @@ export function DeliveryBoardClosedBoard({
 
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
-      <div className={DELIVERY_KANBAN_BOARD_ROW_CLASS}>
-        <TerminalColumn
-          title="Done"
-          hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
-          items={doneItems}
-          showLeftRule={false}
-          busyItemId={busyItemId}
-          onOpenProduct={onOpenProduct}
-          onOpenProductTab={onOpenProductTab}
-          onBoardAction={onBoardAction}
-          onCancel={onCancel}
-          onOpenDetails={onOpenDetails}
-        />
-        <TerminalColumn
-          title="Cancelled"
-          hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
-          items={cancelledItems}
-          showLeftRule
-          busyItemId={busyItemId}
-          onOpenProduct={onOpenProduct}
-          onOpenProductTab={onOpenProductTab}
-          onBoardAction={onBoardAction}
-          onCancel={onCancel}
-          onOpenDetails={onOpenDetails}
-        />
+      <div className={DELIVERY_KANBAN_BOARD_SCROLL_CLASS}>
+        <div
+          className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
+          style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(2)}px` }}
+        >
+          <TerminalColumn
+            title="Done"
+            hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
+            items={doneItems}
+            showLeftRule={false}
+            busyItemId={busyItemId}
+            onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
+            onBoardAction={onBoardAction}
+            onCancel={onCancel}
+            onOpenDetails={onOpenDetails}
+          />
+          <TerminalColumn
+            title="Cancelled"
+            hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
+            items={cancelledItems}
+            showLeftRule
+            busyItemId={busyItemId}
+            onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
+            onBoardAction={onBoardAction}
+            onCancel={onCancel}
+            onOpenDetails={onOpenDetails}
+          />
+        </div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export function ClientServiceSelectField(props: {
   onChange: (value: string | null) => void;
 }) {
   return (
-    <div>
+    <div className="space-y-2">
       <Label>{props.label}</Label>
       <Select value={props.value} onValueChange={props.onChange}>
         <SelectTrigger>
@@ -51,7 +51,7 @@ export function ClientServiceDateInput(props: {
   onChange: (value: string) => void;
 }) {
   return (
-    <div>
+    <div className="space-y-2">
       <Label>{props.label}</Label>
       <NbosDatePicker value={props.value} onChange={props.onChange} aria-label={props.label} />
     </div>

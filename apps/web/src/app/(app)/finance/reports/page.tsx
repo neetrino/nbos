@@ -1,15 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
-import {
-  financeReportStatusClass,
-  financeReportStatusLabel,
-} from '@/features/finance/constants/finance-report-status';
 import {
   CashFlowSnapshot,
   CompanyPnlSnapshot,
@@ -18,6 +13,7 @@ import {
   PayrollReportSnapshot,
   ProjectPnlSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
+import { FinanceReportDefinitionCard } from '@/features/finance/components/reports/finance-report-definition-card';
 import { buildFinanceOverviewHeroSearch } from '@/features/finance/components/overview/build-finance-overview-hero-search';
 import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
@@ -27,7 +23,6 @@ import {
   type CashFlowReport,
   type CompanyPnlReport,
   type ExpensePlanVsActualReport,
-  type FinanceReportDefinition,
   type FinanceReportDefinitionsResponse,
   type FinanceReportQueryParams,
   type MrrSubscriptionRevenueReport,
@@ -144,7 +139,13 @@ export default function FinanceReportsPage() {
     );
   }, [data, query]);
 
-  if (loading) return <LoadingState variant="cards" count={6} />;
+  if (loading) {
+    return (
+      <div className="pb-5">
+        <LoadingState variant="cards" count={6} />
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -157,7 +158,7 @@ export default function FinanceReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-5">
       <section className="border-border bg-card rounded-2xl border p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
@@ -170,7 +171,7 @@ export default function FinanceReportsPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
         {companyPnl && reportMatchesSearch(companyPnl.title, query) ? (
           <CompanyPnlSnapshot report={companyPnl} />
         ) : null}
@@ -190,7 +191,7 @@ export default function FinanceReportsPage() {
           <ProjectPnlSnapshot report={projectPnl} />
         ) : null}
         {filteredDefinitions.map((definition) => (
-          <ReportDefinitionCard key={definition.id} definition={definition} />
+          <FinanceReportDefinitionCard key={definition.id} definition={definition} />
         ))}
       </section>
 
@@ -216,62 +217,4 @@ function hasSnapshotMatch(query: string): boolean {
     'Project P&L',
   ];
   return titles.some((title) => reportMatchesSearch(title, query));
-}
-
-function ReportDefinitionCard({ definition }: { definition: FinanceReportDefinition }) {
-  return (
-    <article className="border-border bg-card rounded-2xl border p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-foreground text-lg font-semibold">{definition.title}</p>
-          <p className="text-muted-foreground mt-1 text-sm">{definition.description}</p>
-        </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${financeReportStatusClass(
-            definition.v1Status,
-          )}`}
-        >
-          {financeReportStatusLabel(definition.v1Status)}
-        </span>
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <InfoBlock title="Phase 3 scope" lines={[definition.phase3Scope]} />
-        <InfoBlock title="Phase 6 deferred" lines={[definition.phase6Deferred]} />
-        <InfoBlock title="Audience" lines={definition.audience} />
-        <InfoBlock title="Source endpoints" lines={definition.sourceEndpoints} />
-        {definition.aggregateEndpoint ? (
-          <InfoBlock title="Aggregate endpoint" lines={[definition.aggregateEndpoint]} />
-        ) : null}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {definition.drillDownHrefs.map((href) => (
-          <Link
-            key={href}
-            href={href}
-            className="border-border text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium"
-          >
-            {href}
-            <ArrowUpRight size={12} aria-hidden />
-          </Link>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function InfoBlock({ title, lines }: { title: string; lines: string[] }) {
-  return (
-    <div>
-      <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{title}</p>
-      <ul className="mt-2 space-y-1">
-        {lines.map((line) => (
-          <li key={line} className="text-foreground text-sm">
-            {line}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }

@@ -253,7 +253,7 @@ export function UnitEconomicsPageContent() {
     (view === 'tree' || view === 'orders' || view === 'cards');
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5 pb-5">
       {!showFilteredEmpty && filteredItems.length > 0 ? (
         <UnitEconomicsSummaryStrip totals={filteredTotals} />
       ) : null}

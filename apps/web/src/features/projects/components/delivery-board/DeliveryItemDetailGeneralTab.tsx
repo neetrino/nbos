@@ -23,6 +23,10 @@ import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSecti
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
 import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 import { DeliveryItemPaymentSummary } from './DeliveryItemLanguagesPanel';
+import {
+  DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
+  DELIVERY_DETAIL_GENERAL_COLUMN_CLASS,
+} from './delivery-item-detail.constants';
 
 interface DeliveryItemDetailGeneralTabProps {
   item: DeliveryBoardItem;
@@ -81,8 +85,8 @@ export function DeliveryItemDetailGeneralTab({
 
   return (
     <div className="space-y-4 px-5 py-4 sm:px-7">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-5">
-        <div className="flex flex-col gap-4">
+      <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
+        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
           <DeliveryItemStageReadinessSection
             kind={kind}
             product={product}
@@ -139,7 +143,7 @@ export function DeliveryItemDetailGeneralTab({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
           {product && productPlan ? (
             <ProductPlanningSection
               entityId={product.id}
@@ -177,7 +181,7 @@ export function DeliveryItemDetailGeneralTab({
           />
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
           <DeliveryAccessInfrastructureSection
             projectId={projectId}
             productId={productId}

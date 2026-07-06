@@ -49,6 +49,10 @@ export interface Product {
     contact?: { id: string; firstName: string; lastName: string } | null;
   };
   pm: ProductEmployee | null;
+  developer?: ProductEmployee | null;
+  designer?: ProductEmployee | null;
+  technicalSpecialist?: ProductEmployee | null;
+  qaLead?: ProductEmployee | null;
   order?: {
     id: string;
     code?: string;

@@ -75,7 +75,7 @@ export function GenerateExpenseCardFromPlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Generate expense card</DialogTitle>
         </DialogHeader>

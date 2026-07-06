@@ -2,10 +2,11 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Calendar, Clock, FileCheck, Wallet } from 'lucide-react';
+import { Calendar, FileCheck, Wallet } from 'lucide-react';
 import {
   AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DetailSheetMetaDate,
   InlineField,
 } from '@/components/shared';
 import { formatAmount, INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
@@ -105,29 +106,13 @@ export function InvoiceMoneyCard({
 
       <div className={cn('mt-4 border-t pt-4', MONEY_METRIC_DIVIDER_CLASS)}>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <InvoiceMoneyMetaDate label="Created" value={formatShortDate(invoice.createdAt)} />
+          <DetailSheetMetaDate label="Created" value={formatShortDate(invoice.createdAt)} />
           {invoice.paidDate ? (
-            <InvoiceMoneyMetaDate label="Paid on" value={formatShortDate(invoice.paidDate)} />
+            <DetailSheetMetaDate label="Paid on" value={formatShortDate(invoice.paidDate)} />
           ) : null}
         </div>
       </div>
     </section>
-  );
-}
-
-function InvoiceMoneyMetaDate({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex min-w-0 items-center gap-1">
-      <span className="text-muted-foreground/70 flex size-6 shrink-0 items-center justify-center">
-        <Clock size={14} aria-hidden />
-      </span>
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-        <span className="text-muted-foreground text-sm font-medium">{label}</span>
-        <span className="border-border bg-muted/20 text-foreground rounded-lg border px-2.5 py-1 text-sm tabular-nums">
-          {value}
-        </span>
-      </div>
-    </div>
   );
 }
 

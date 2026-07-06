@@ -1,28 +1,40 @@
 'use client';
 
-import Link from 'next/link';
+import { useCallback, useMemo, useState } from 'react';
 import {
+  ChevronDown,
   FileText,
   Handshake,
   Headphones,
+  Loader2,
   MessageCircle,
   Receipt,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePermission } from '@/lib/permissions';
 import type {
   CompanyPortfolioResponse,
   ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
+import type { FileAsset } from '@/lib/api/drive';
+import { toast } from 'sonner';
 import {
-  PORTFOLIO_DRIVE_HREF,
-  PORTFOLIO_MESSENGER_HREF,
-  buildPortfolioNewDealHref,
-  buildPortfolioNewInvoiceHref,
-  buildPortfolioNewTicketHref,
-} from '../../constants/client-portfolio-deep-links';
+  ClientPortfolioQuickActionDialogs,
+  type PortfolioQuickActionOverlay,
+} from './client-portfolio-quick-action-dialogs';
+import {
+  loadLatestPortfolioDriveFile,
+  portfolioDriveLoadErrorMessage,
+} from './portfolio-drive-file.util';
 
 function firstProjectId(data: ContactPortfolioResponse | CompanyPortfolioResponse): string | null {
   if (data.scope === 'contact') {
@@ -47,151 +59,190 @@ export interface ClientPortfolioQuickActionsProps {
   variant: 'contact' | 'company';
   entityId: string;
   data: ContactPortfolioResponse | CompanyPortfolioResponse;
-  layout?: 'inline' | 'rail';
-}
-
-export function ClientPortfolioQuickActions({
-  variant,
-  entityId,
-  data,
-  layout = 'inline',
-}: ClientPortfolioQuickActionsProps) {
-  const { can, isLoading } = usePermission();
-  const mask = data.accessMask;
-  const projectId = firstProjectId(data);
-  const dealContactId = primaryContactIdForDeal(variant, entityId, data);
-
-  const canDeal = can('ADD', 'CRM_DEALS');
-  const canInvoice = can('ADD', 'FINANCE_INVOICES') && mask.finance;
-  const canTicket = can('ADD', 'SUPPORT_TICKETS') && mask.support;
-  const canMessenger = can('VIEW', 'MESSENGER') && mask.communication;
-  const canDrive = can('VIEW', 'DRIVE') && mask.files;
-
-  const dealHref = dealContactId ? buildPortfolioNewDealHref(dealContactId) : null;
-  const invoiceHref = projectId ? buildPortfolioNewInvoiceHref(projectId) : null;
-  const ticketHref = projectId ? buildPortfolioNewTicketHref(projectId) : null;
-  const actions = buildQuickActions({
-    canDeal,
-    canInvoice,
-    canTicket,
-    canMessenger,
-    canDrive,
-    dealHref,
-    invoiceHref,
-    ticketHref,
-  });
-
-  if (isLoading) {
-    return (
-      <div className={layout === 'rail' ? 'grid gap-2' : 'flex flex-wrap gap-2'}>
-        <div className="bg-muted h-8 w-24 animate-pulse rounded-md" />
-        <div className="bg-muted h-8 w-28 animate-pulse rounded-md" />
-      </div>
-    );
-  }
-
-  return (
-    <div className={layout === 'rail' ? 'grid gap-2' : 'flex flex-wrap gap-2'}>
-      {actions.map((action) => (
-        <QuickAction key={action.id} action={action} layout={layout} />
-      ))}
-    </div>
-  );
-}
-
-interface BuildQuickActionsOptions {
-  canDeal: boolean;
-  canInvoice: boolean;
-  canTicket: boolean;
-  canMessenger: boolean;
-  canDrive: boolean;
-  dealHref: string | null;
-  invoiceHref: string | null;
-  ticketHref: string | null;
 }
 
 interface QuickActionItem {
   id: string;
   label: string;
   icon: LucideIcon;
-  href: string | null;
+  enabled: boolean;
+  onClick?: () => void;
   disabledTitle?: string;
 }
 
-function buildQuickActions(options: BuildQuickActionsOptions): QuickActionItem[] {
-  const items: QuickActionItem[] = [];
-  if (options.canDeal) {
-    items.push({
-      id: 'new-deal',
-      label: 'New deal',
-      icon: Handshake,
-      href: options.dealHref,
-      disabledTitle: 'Set a primary contact on the company to start a deal from here.',
-    });
+export function ClientPortfolioQuickActions({
+  variant,
+  entityId,
+  data,
+}: ClientPortfolioQuickActionsProps) {
+  const { can, isLoading } = usePermission();
+  const [openDialog, setOpenDialog] = useState<PortfolioQuickActionOverlay | null>(null);
+  const [driveFile, setDriveFile] = useState<FileAsset | null>(null);
+  const [driveOpening, setDriveOpening] = useState(false);
+  const mask = data.accessMask;
+  const projectId = firstProjectId(data);
+  const dealContactId = primaryContactIdForDeal(variant, entityId, data);
+
+  const handleOpenDrive = useCallback(async () => {
+    setDriveOpening(true);
+    try {
+      const latest = await loadLatestPortfolioDriveFile({ variant, entityId });
+      if (!latest) {
+        toast.error('No files linked yet.');
+        return;
+      }
+      setDriveFile(latest);
+      setOpenDialog('drive');
+    } catch (err) {
+      toast.error(portfolioDriveLoadErrorMessage(err));
+    } finally {
+      setDriveOpening(false);
+    }
+  }, [variant, entityId]);
+
+  const handleOpenDialogChange = useCallback((dialog: PortfolioQuickActionOverlay | null) => {
+    setOpenDialog(dialog);
+    if (dialog !== 'drive') setDriveFile(null);
+  }, []);
+
+  const actions = useMemo(() => {
+    const items: QuickActionItem[] = [];
+    if (can('ADD', 'CRM_DEALS')) {
+      items.push({
+        id: 'new-deal',
+        label: 'New deal',
+        icon: Handshake,
+        enabled: Boolean(dealContactId),
+        disabledTitle: 'Set a primary contact on the company to start a deal from here.',
+        onClick: () => setOpenDialog('deal'),
+      });
+    }
+    if (can('ADD', 'FINANCE_INVOICES') && mask.finance) {
+      items.push({
+        id: 'create-invoice',
+        label: 'Create invoice',
+        icon: Receipt,
+        enabled: Boolean(projectId),
+        disabledTitle: 'No project in this portfolio slice; open a project first or create a deal.',
+        onClick: () => setOpenDialog('invoice'),
+      });
+    }
+    if (can('ADD', 'SUPPORT_TICKETS') && mask.support) {
+      items.push({
+        id: 'new-ticket',
+        label: 'New ticket',
+        icon: Headphones,
+        enabled: Boolean(projectId),
+        disabledTitle: 'No project in this portfolio slice.',
+        onClick: () => setOpenDialog('ticket'),
+      });
+    }
+    if (can('VIEW', 'MESSENGER') && mask.communication) {
+      items.push({
+        id: 'open-messenger',
+        label: 'Open messenger',
+        icon: MessageCircle,
+        enabled: true,
+        onClick: () => setOpenDialog('messenger'),
+      });
+    }
+    if (can('VIEW', 'DRIVE') && mask.files) {
+      items.push({
+        id: 'open-drive',
+        label: 'Open drive',
+        icon: FileText,
+        enabled: !driveOpening,
+        disabledTitle: driveOpening ? 'Loading file…' : undefined,
+        onClick: () => void handleOpenDrive(),
+      });
+    }
+    return items;
+  }, [
+    can,
+    dealContactId,
+    driveOpening,
+    handleOpenDrive,
+    mask.communication,
+    mask.files,
+    mask.finance,
+    mask.support,
+    projectId,
+  ]);
+
+  if (isLoading) {
+    return <QuickActionsTriggerSkeleton />;
   }
-  if (options.canInvoice) {
-    items.push({
-      id: 'create-invoice',
-      label: 'Create invoice',
-      icon: Receipt,
-      href: options.invoiceHref,
-      disabledTitle: 'No project in this portfolio slice; open a project first or create a deal.',
-    });
-  }
-  if (options.canTicket) {
-    items.push({
-      id: 'new-ticket',
-      label: 'New ticket',
-      icon: Headphones,
-      href: options.ticketHref,
-      disabledTitle: 'No project in this portfolio slice.',
-    });
-  }
-  if (options.canMessenger) {
-    items.push({
-      id: 'open-messenger',
-      label: 'Open messenger',
-      icon: MessageCircle,
-      href: PORTFOLIO_MESSENGER_HREF,
-    });
-  }
-  if (options.canDrive) {
-    items.push({
-      id: 'open-drive',
-      label: 'Open drive',
-      icon: FileText,
-      href: PORTFOLIO_DRIVE_HREF,
-    });
-  }
-  return items;
+
+  if (actions.length === 0) return null;
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={(props) => (
+            <Button
+              {...props}
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={driveOpening}
+            >
+              {driveOpening ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+              ) : (
+                <Zap size={14} aria-hidden />
+              )}
+              Quick actions
+              <ChevronDown size={14} className="opacity-60" aria-hidden />
+            </Button>
+          )}
+        />
+        <DropdownMenuContent align="end" className="min-w-44">
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <DropdownMenuItem
+                key={action.id}
+                disabled={!action.enabled}
+                title={action.disabledTitle}
+                onClick={() => action.onClick?.()}
+              >
+                <Icon />
+                {action.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ClientPortfolioQuickActionDialogs
+        openDialog={openDialog}
+        onOpenDialogChange={handleOpenDialogChange}
+        dealContactId={dealContactId}
+        projectId={projectId}
+        driveFile={driveFile}
+      />
+    </>
+  );
 }
 
-function QuickAction({ action, layout }: { action: QuickActionItem; layout: 'inline' | 'rail' }) {
-  const Icon = action.icon;
-  const className = cn(
-    buttonVariants({ variant: 'outline', size: 'sm' }),
-    'inline-flex gap-1.5',
-    layout === 'rail' ? 'w-full justify-start' : null,
-  );
-  if (action.href) {
-    return (
-      <Link href={action.href} className={className}>
-        <Icon size={14} aria-hidden />
-        {action.label}
-      </Link>
-    );
-  }
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      disabled
-      className={cn('gap-1.5', layout === 'rail' ? 'w-full justify-start' : null)}
-      title={action.disabledTitle}
-    >
-      <Icon size={14} aria-hidden />
-      {action.label}
-    </Button>
-  );
+export function ClientPortfolioQuickActionsHeader({
+  variant,
+  entityId,
+  data,
+  loading,
+}: {
+  variant: 'contact' | 'company';
+  entityId: string;
+  data: ContactPortfolioResponse | CompanyPortfolioResponse | null;
+  loading: boolean;
+}) {
+  if (loading) return <QuickActionsTriggerSkeleton />;
+  if (!data) return null;
+  return <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />;
+}
+
+function QuickActionsTriggerSkeleton() {
+  return <Skeleton className="h-8 w-[7.5rem] shrink-0 rounded-md" />;
 }

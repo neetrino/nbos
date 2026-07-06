@@ -1,8 +1,6 @@
 'use client';
 
-import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import type {
   ExpensePlanGridCell,
   ExpensePlanGridCellKind,
@@ -18,6 +16,7 @@ interface ExpensePlanCoverageGridProps {
   error: string | null;
   onRetry: () => void;
   onOpenPlan: (planId: string) => void;
+  onOpenExpense: (expenseId: string) => void;
 }
 
 const GRID_YEAR_WINDOW = 3;
@@ -55,10 +54,12 @@ function PlanGridMonthCell({
   planId,
   cell,
   onOpenPlan,
+  onOpenExpense,
 }: {
   planId: string;
   cell: ExpensePlanGridCell;
   onOpenPlan: (planId: string) => void;
+  onOpenExpense: (expenseId: string) => void;
 }) {
   if (cell.kind === 'NA') {
     return <span className="text-muted-foreground">—</span>;
@@ -69,13 +70,16 @@ function PlanGridMonthCell({
 
   if (cell.expenseId) {
     return (
-      <Link
-        href={expenseDetailHref(cell.expenseId)}
+      <button
+        type="button"
         className={`${cls} hover:opacity-90`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenExpense(cell.expenseId);
+        }}
       >
         {label}
-      </Link>
+      </button>
     );
   }
 
@@ -101,6 +105,7 @@ export function ExpensePlanCoverageGrid({
   error,
   onRetry,
   onOpenPlan,
+  onOpenExpense,
 }: ExpensePlanCoverageGridProps) {
   const months = monthLabelsForYear(year);
   const cy = new Date().getFullYear();
@@ -115,8 +120,8 @@ export function ExpensePlanCoverageGrid({
         <div>
           <h2 className="text-foreground text-lg font-semibold">Plan calendar</h2>
           <p className="text-muted-foreground max-w-prose text-sm">
-            Expected amounts by month; paid / open cards link to expenses, empty scheduled cells
-            open the plan.
+            Expected amounts by month; paid / open cards open the expense sheet here, empty
+            scheduled cells open the plan.
           </p>
         </div>
         <label className="flex flex-col gap-1 text-sm">
@@ -181,7 +186,12 @@ export function ExpensePlanCoverageGrid({
                   </td>
                   {row.months.map((cell, idx) => (
                     <td key={idx} className="px-1 py-2 text-center">
-                      <PlanGridMonthCell planId={row.planId} cell={cell} onOpenPlan={onOpenPlan} />
+                      <PlanGridMonthCell
+                        planId={row.planId}
+                        cell={cell}
+                        onOpenPlan={onOpenPlan}
+                        onOpenExpense={onOpenExpense}
+                      />
                     </td>
                   ))}
                   <td className="px-3 py-2 text-right font-bold">

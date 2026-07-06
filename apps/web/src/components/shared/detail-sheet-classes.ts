@@ -18,6 +18,9 @@ export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
 /** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
 export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]';
 
+/** Horizontal anchor for {@code sm:max-w-md} page settings sheets. */
+export const PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS = 'sm:right-[28rem]';
+
 /** Bottom-center sheet height — flush with viewport bottom (mirrors right sheet edge attach). */
 export const SHEET_CENTER_VIEWPORT_HEIGHT_CLASS = 'h-[90vh] max-h-[90vh]';
 
@@ -30,7 +33,7 @@ export const SHEET_CENTER_SHELL_CLASS =
 
 /** Rail column inside {@link SHEET_CENTER_SHELL_CLASS} — clears panel top rounded corner. */
 export const SHEET_CENTER_RAIL_COLUMN_CLASS =
-  'pointer-events-auto flex w-11 shrink-0 flex-col items-end gap-1.5 self-start pt-[1.5rem]';
+  'pointer-events-auto flex shrink-0 flex-col items-end gap-1.5 self-start overflow-visible pt-[1.5rem]';
 
 /** Center sheet panel surface (inside shell — not viewport-fixed). */
 export const SHEET_CENTER_PANEL_SURFACE_CLASS =
@@ -115,6 +118,9 @@ export const DETAIL_SHEET_TAB_LIST_CLASS = 'min-h-0 flex-1 overflow-y-auto';
 /** Wrapper for sheet tab content that should fill the scroll viewport. */
 export const DETAIL_SHEET_TAB_BODY_STRETCH_CLASS = 'flex min-h-full flex-col';
 
+/** Pins optional Description fields to the bottom of {@link DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} bodies. */
+export const DETAIL_SHEET_OPTIONAL_DESCRIPTION_CLASS = 'mt-auto shrink-0';
+
 /** Neutral avatar chip for person pickers (avoids per-role accent colors). */
 export const DETAIL_SHEET_PERSON_AVATAR_CLASS =
   'bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold uppercase';
@@ -151,7 +157,7 @@ export const DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS = [
 export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex w-full min-h-8 items-center gap-1 rounded-xl px-3 py-1',
+  'flex h-10 w-full items-center gap-1 rounded-xl px-3',
 ].join(' ');
 
 /** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
@@ -230,8 +236,9 @@ export const RELATION_PICKER_REPLACE_ZONE_CLASS = [
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'border-border/40 flex w-full min-h-8 min-w-0 items-center gap-1 rounded-xl border border-transparent py-1 pr-1 pl-2.5 text-sm',
-  'focus-within:border-border/50 transition-[border-color]',
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3 pr-1 text-sm',
+  'focus-within:border-border/50',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
@@ -262,7 +269,7 @@ export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'text-muted-foreground hover:text-foreground flex min-h-8 w-full items-center gap-2 rounded-xl px-3 py-1 text-left text-sm',
+  'text-muted-foreground hover:text-foreground flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm',
 ].join(' ');
 
 /** Use on Save / Cancel in detail sheets and sticky form footers. */

@@ -127,7 +127,7 @@ export function PartnerCommissionPolicyCard(props: { partnerId: string }) {
             const raw = draft[dt.value as PartnerCommissionDealType] ?? '';
             const parsed = parseRowPercent(raw);
             return (
-              <div key={dt.value}>
+              <div key={dt.value} className="space-y-1.5">
                 <Label htmlFor={`policy-${dt.value}`}>{dt.label}</Label>
                 <Input
                   id={`policy-${dt.value}`}
@@ -141,7 +141,6 @@ export function PartnerCommissionPolicyCard(props: { partnerId: string }) {
                     }))
                   }
                   aria-invalid={raw.trim() !== '' && parsed === 'invalid'}
-                  className="mt-1"
                 />
               </div>
             );

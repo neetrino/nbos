@@ -5,6 +5,7 @@ import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { LeadCombinedInfoSection } from './LeadCombinedInfoSection';
 import { LeadNotesSection } from './LeadNotesSection';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared';
 
 export interface LeadGeneralTabProps {
   lead: Lead;
@@ -29,7 +30,9 @@ export function LeadGeneralTab({
   sectionIds,
 }: LeadGeneralTabProps) {
   return (
-    <div className="mx-auto flex w-full max-w-[48rem] min-w-0 flex-col gap-4">
+    <div
+      className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-[48rem] min-w-0 gap-4`}
+    >
       <LeadCombinedInfoSection
         lead={lead}
         draft={draft}
@@ -42,6 +45,7 @@ export function LeadGeneralTab({
           assignment: sectionIds.assignment,
         }}
       />
+      <LeadEntityMetaLine createdAt={lead.createdAt} updatedAt={lead.updatedAt} />
       <LeadNotesSection
         id={sectionIds.notes}
         entityId={lead.id}
@@ -50,7 +54,6 @@ export function LeadGeneralTab({
         disabled={formDisabled}
         gateRequiredFields={gateRequiredFields}
       />
-      <LeadEntityMetaLine createdAt={lead.createdAt} updatedAt={lead.updatedAt} />
     </div>
   );
 }

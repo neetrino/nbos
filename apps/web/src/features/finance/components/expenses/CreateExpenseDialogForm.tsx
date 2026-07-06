@@ -40,7 +40,7 @@ export function CreateExpenseDialogForm({
         </p>
       ) : null}
 
-      <div>
+      <div className="space-y-2">
         <Label>Name *</Label>
         <Input
           value={form.name}
@@ -51,7 +51,7 @@ export function CreateExpenseDialogForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div>
+        <div className="space-y-2">
           <Label>Amount *</Label>
           <Input
             inputMode="decimal"
@@ -60,7 +60,7 @@ export function CreateExpenseDialogForm({
             aria-invalid={form.amount.trim() !== '' && !Number.isFinite(parsedAmount)}
           />
         </div>
-        <div>
+        <div className="space-y-2">
           <Label>Due date</Label>
           <NbosDatePicker
             value={form.dueDate}

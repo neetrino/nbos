@@ -39,6 +39,7 @@ export {
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  WORK_SPACE_PRODUCT_CARD_GRID_CLASS,
 } from './navigable-entity-card.constants';
 export {
   ProductNavigableCard,
@@ -152,6 +153,8 @@ export {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DETAIL_SHEET_OPTIONAL_DESCRIPTION_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
@@ -160,7 +163,12 @@ export {
 } from './detail-sheet-classes';
 export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { toSheetPipelineStages, type SheetPipelineStageSource } from './pipeline-stage-config';
+export {
+  DetailSheetOptionalDescription,
+  DetailSheetOptionalDescriptionField,
+} from './DetailSheetOptionalDescription';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
+export { DetailSheetMetaDate } from './DetailSheetMetaDate';
 export {
   DetailSheetCollapsibleSection,
   type DetailSheetCollapsibleSectionProps,
@@ -170,6 +178,7 @@ export {
   EntitySheetFloatingRail,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
   type EntitySheetFloatingRailProps,
 } from './entity-sheet-floating-rail';
 export {
@@ -191,6 +200,8 @@ export {
 export {
   EntityNotesField,
   EntityNotesSection,
+  ENTITY_NOTES_OPTIONAL_PLACEHOLDER,
+  isOptionalEntityNotesPlaceholder,
   ENTITY_NOTE_ENTITY_TYPES,
   editorHtmlToNotesValue,
   isHtmlNotesValue,

@@ -97,7 +97,7 @@ export function CreateProductDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label>Product Name *</Label>
             <Input
               value={form.name}
@@ -107,7 +107,7 @@ export function CreateProductDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-2">
               <Label>Product Category *</Label>
               <Select
                 value={form.productCategory || undefined}
@@ -128,7 +128,7 @@ export function CreateProductDialog({
               </Select>
             </div>
             {form.productCategory && (
-              <div>
+              <div className="space-y-2">
                 <Label>Product Type *</Label>
                 <Select
                   value={form.productType || undefined}
@@ -149,7 +149,7 @@ export function CreateProductDialog({
             )}
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label>Deadline</Label>
             <NbosDatePicker
               value={form.deadline}
@@ -159,7 +159,7 @@ export function CreateProductDialog({
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
               value={form.description}

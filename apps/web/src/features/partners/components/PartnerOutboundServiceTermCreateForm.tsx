@@ -40,7 +40,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
   return (
     <form className="border-border mt-4 grid gap-3 rounded-lg border p-3" onSubmit={onSubmit}>
       <div className="grid gap-2 sm:grid-cols-2">
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="pst-project-id">Project</Label>
           <Select
             value={form.projectId}
@@ -49,7 +49,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
               onFormChange((prev) => ({ ...prev, projectId: value ?? 'none' }))
             }
           >
-            <SelectTrigger id="pst-project-id" className="mt-1.5">
+            <SelectTrigger id="pst-project-id">
               <SelectValue placeholder={projectsLoading ? 'Loading projects…' : 'Optional'} />
             </SelectTrigger>
             <SelectContent>
@@ -77,7 +77,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3">
-        <div>
+        <div className="space-y-1.5">
           <Label>Service type</Label>
           <Select
             value={form.serviceType}
@@ -97,7 +97,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Payment model</Label>
           <Select
             value={form.paymentModel}
@@ -117,7 +117,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="pst-billing-start">Billing start date</Label>
           <NbosDatePicker
             id="pst-billing-start"
@@ -129,7 +129,7 @@ export function PartnerOutboundServiceTermCreateForm(props: {
         </div>
       </div>
 
-      <div>
+      <div className="space-y-1.5">
         <Label htmlFor="pst-notes">Notes</Label>
         <Textarea
           id="pst-notes"

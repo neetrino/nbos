@@ -108,34 +108,59 @@ export function DeliveryAccessInfrastructureSection({
           return (
             <li
               key={slot.slotKey}
-              className="border-border bg-background/60 rounded-lg border px-3 py-2.5"
+              className="border-border bg-background/60 rounded-lg border px-3 py-2.5 text-left"
             >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex min-w-0 items-center gap-2">
-                  {slot.required ? (
-                    <span
-                      title="At least one credential required for this slot"
-                      className="shrink-0 text-amber-600"
-                    >
-                      <Asterisk size={14} strokeWidth={2.5} aria-hidden />
-                    </span>
-                  ) : (
-                    <span className="w-3.5 shrink-0" aria-hidden />
-                  )}
-                  <div className="min-w-0">
-                    <span className="text-sm font-medium">{slot.label}</span>
-                    {requiredMissing ? (
-                      <p className="text-muted-foreground text-xs">Add at least one credential.</p>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    {slot.required ? (
+                      <span
+                        title="At least one credential required for this slot"
+                        className="shrink-0 text-amber-600"
+                      >
+                        <Asterisk size={14} strokeWidth={2.5} aria-hidden />
+                      </span>
                     ) : null}
+                    <div className="min-w-0">
+                      <span className="text-sm font-medium">{slot.label}</span>
+                      {requiredMissing ? (
+                        <p className="text-muted-foreground text-xs">
+                          Add at least one credential.
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <PermissionGate module="CREDENTIALS" action="ADD">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1 text-xs"
+                        onClick={() => setCreateSlot(slot)}
+                      >
+                        <Plus size={14} />
+                        New
+                      </Button>
+                    </PermissionGate>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setPickSlot(slot)}
+                    >
+                      Pick
+                    </Button>
                   </div>
                 </div>
-                <div className="flex min-w-0 flex-1 flex-col items-stretch gap-2 sm:items-end">
+                <div className="flex min-w-0 flex-col gap-2">
                   {slot.bindings.length > 0 ? (
-                    <ul className="flex w-full max-w-full flex-col gap-1.5 sm:max-w-md sm:items-end">
+                    <ul className="flex w-full flex-col gap-1.5">
                       {slot.bindings.map((b) => (
                         <li
                           key={b.bindingId}
-                          className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-end gap-1 rounded-md border border-dashed px-2 py-1.5"
+                          className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-start gap-1 rounded-md border border-dashed px-2 py-1.5"
                         >
                           {b.boundCredential ? (
                             <>
@@ -146,13 +171,13 @@ export function DeliveryAccessInfrastructureSection({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 max-w-[12rem] min-w-0 flex-1 gap-1 px-2 sm:max-w-[14rem] sm:flex-initial"
+                                className="h-8 min-w-0 flex-1 justify-start gap-1 px-2"
                                 onClick={() => {
                                   setSheetCredentialId(b.boundCredential!.id);
                                   setSheetOpen(true);
                                 }}
                               >
-                                <span className="truncate text-sm font-medium">
+                                <span className="truncate text-left text-sm font-medium">
                                   {b.boundCredential.name}
                                 </span>
                                 <ChevronRight size={14} className="shrink-0 opacity-60" />
@@ -191,29 +216,6 @@ export function DeliveryAccessInfrastructureSection({
                       ))}
                     </ul>
                   ) : null}
-                  <div className="flex flex-wrap justify-end gap-1">
-                    <PermissionGate module="CREDENTIALS" action="ADD">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1 text-xs"
-                        onClick={() => setCreateSlot(slot)}
-                      >
-                        <Plus size={14} />
-                        New
-                      </Button>
-                    </PermissionGate>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => setPickSlot(slot)}
-                    >
-                      Pick
-                    </Button>
-                  </div>
                 </div>
               </div>
             </li>

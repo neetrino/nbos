@@ -37,9 +37,16 @@ export function SalaryBoardPayoutLineCard({
       <div className="flex items-start gap-2">
         <User size={14} className="text-muted-foreground mt-0.5 shrink-0" aria-hidden />
         <div className="min-w-0 flex-1">
-          <p className="text-foreground truncate text-sm font-semibold">
-            {employeeDisplayName(entry.employee)}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-foreground min-w-0 truncate text-sm font-semibold">
+              {employeeDisplayName(entry.employee)}
+            </p>
+            <StatusBadge
+              label={lineUi.label}
+              variant={lineUi.variant}
+              className="shrink-0 text-[10px]"
+            />
+          </div>
           <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
             <Calendar size={10} aria-hidden />
             {formatPayrollMonthShort(entry.payrollMonth)}
@@ -54,9 +61,6 @@ export function SalaryBoardPayoutLineCard({
         {formatAmount(remaining)} left
       </p>
       <SalaryBoardSalesKpiStrip summary={entry.cell.salesKpiSummary} />
-      <div className="mt-2 flex flex-wrap gap-1">
-        <StatusBadge label={lineUi.label} variant={lineUi.variant} />
-      </div>
     </KanbanCardShell>
   );
 }

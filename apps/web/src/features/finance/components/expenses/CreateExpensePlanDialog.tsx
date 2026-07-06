@@ -162,7 +162,7 @@ export function CreateExpensePlanDialog({
               {formError}
             </p>
           ) : null}
-          <div>
+          <div className="space-y-2">
             <Label>Name *</Label>
             <Input
               value={form.name}
@@ -172,7 +172,7 @@ export function CreateExpensePlanDialog({
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-2">
               <Label>Category *</Label>
               <Select
                 value={form.category}
@@ -192,7 +192,7 @@ export function CreateExpensePlanDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Expected amount *</Label>
               <Input
                 inputMode="decimal"
@@ -203,7 +203,7 @@ export function CreateExpensePlanDialog({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-2">
               <Label>Frequency</Label>
               <Select
                 value={form.frequency}
@@ -223,7 +223,7 @@ export function CreateExpensePlanDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Next due</Label>
               <NbosDatePicker
                 value={form.nextDueDate}
@@ -232,7 +232,7 @@ export function CreateExpensePlanDialog({
               />
             </div>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Provider</Label>
             <Input
               value={form.provider}
@@ -240,7 +240,7 @@ export function CreateExpensePlanDialog({
               placeholder="Vendor or service name"
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Project</Label>
             <Select
               value={form.projectId}
@@ -272,7 +272,7 @@ export function CreateExpensePlanDialog({
               Auto-generate expense cards (future)
             </Label>
           </div>
-          <div>
+          <div className="space-y-2">
             <Label>Notes</Label>
             <Textarea
               value={form.notes}

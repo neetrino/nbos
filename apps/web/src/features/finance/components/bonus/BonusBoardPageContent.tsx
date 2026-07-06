@@ -383,7 +383,7 @@ export function BonusBoardPageContent() {
           action={null}
         />
       ) : (
-        boardBody
+        <div className="flex min-h-0 flex-1 flex-col">{boardBody}</div>
       )}
 
       <BonusEntryReleasesSheet

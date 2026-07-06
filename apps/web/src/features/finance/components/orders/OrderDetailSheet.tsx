@@ -1,27 +1,28 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { Archive, ShoppingCart, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   EntityDetailSheetContent,
   EntityItemHost,
   ErrorState,
   LoadingState,
-  StatusBadge,
 } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
+import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { ordersApi, type Order } from '@/lib/api/finance';
 import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
+import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
 import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
-import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -41,6 +42,7 @@ export function OrderDetailSheet({
   refreshSignal = 0,
 }: OrderDetailSheetProps) {
   const [activeTab, setActiveTab] = useState<OrderDetailSheetTab>('general');
+  const [lifecycleOpen, setLifecycleOpen] = useState(false);
   const tabScope = `${orderId ?? ''}:${open}`;
   const [trackedTabScope, setTrackedTabScope] = useState(tabScope);
 
@@ -67,6 +69,14 @@ export function OrderDetailSheet({
     void refresh();
   }, [open, orderId, refresh, refreshSignal]);
 
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) setLifecycleOpen(false);
+      onOpenChange(next);
+    },
+    [onOpenChange],
+  );
+
   const fetchOrder = useCallback(async () => {
     await refresh();
   }, [refresh]);
@@ -76,15 +86,22 @@ export function OrderDetailSheet({
     onCreateInvoice(order);
   }, [onCreateInvoice, order]);
 
+  const handleOrderUpdated = useCallback(() => {
+    void refresh();
+  }, [refresh]);
+
+  const handleOrderDeleted = useCallback(() => {
+    handleOpenChange(false);
+  }, [handleOpenChange]);
+
   if (!orderId) return null;
 
-  const statusCfg = order ? ORDER_STATUSES[order.status] : undefined;
   const sourcePageHref = ordersListWithOpenOrderHref(orderId);
-  const total = order ? Number(order.amount ?? order.totalAmount ?? 0) : 0;
+  const lifecycleMode = order ? orderLifecycleAction(order) : null;
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchOrder()}>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -95,7 +112,7 @@ export function OrderDetailSheet({
             {loading && !order ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : order ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="inline-flex max-w-full min-w-0 items-center gap-2">
                     <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
@@ -103,15 +120,15 @@ export function OrderDetailSheet({
                       {getOrderDisplayTitle(order)}
                     </h2>
                   </div>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    {order.code} · {formatAmount(total)}
-                  </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {statusCfg ? (
-                    <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
-                  ) : null}
-                </div>
+                {lifecycleMode ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem variant="destructive" onClick={() => setLifecycleOpen(true)}>
+                      {lifecycleMode === 'delete' ? <Trash2 /> : <Archive />}
+                      {lifecycleMode === 'delete' ? 'Delete order' : 'Close order'}
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -133,14 +150,22 @@ export function OrderDetailSheet({
                   activeTab={activeTab}
                   order={order}
                   onCreateInvoice={handleCreateInvoice}
-                  onOrderUpdated={() => void refresh()}
-                  onOrderDeleted={() => onOpenChange(false)}
                 />
               ) : null}
             </div>
           </ScrollArea>
         </EntityDetailSheetContent>
       </Sheet>
+
+      {order && lifecycleMode ? (
+        <OrderLifecycleConfirmDialog
+          order={order}
+          open={lifecycleOpen}
+          onOpenChange={setLifecycleOpen}
+          onOrderUpdated={handleOrderUpdated}
+          onOrderDeleted={handleOrderDeleted}
+        />
+      ) : null}
     </EntityItemHost>
   );
 }
@@ -149,14 +174,10 @@ function OrderDetailSheetBody({
   activeTab,
   order,
   onCreateInvoice,
-  onOrderUpdated,
-  onOrderDeleted,
 }: {
   activeTab: OrderDetailSheetTab;
   order: Order;
   onCreateInvoice: () => void;
-  onOrderUpdated: (order: Order) => void;
-  onOrderDeleted: () => void;
 }) {
   if (activeTab === 'invoices') {
     return <OrderInvoicesTab order={order} onCreateInvoice={onCreateInvoice} />;
@@ -164,11 +185,5 @@ function OrderDetailSheetBody({
   if (activeTab === 'reconciliation') {
     return <OrderReconciliationTab order={order} />;
   }
-  return (
-    <OrderGeneralTab
-      order={order}
-      onOrderUpdated={onOrderUpdated}
-      onOrderDeleted={onOrderDeleted}
-    />
-  );
+  return <OrderGeneralTab order={order} />;
 }
