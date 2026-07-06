@@ -69,13 +69,14 @@ function PlanGridMonthCell({
   const cls = `inline-block min-w-[2.75rem] rounded px-1.5 py-0.5 text-[10px] font-medium ${cellVisualClasses(cell.kind)}`;
 
   if (cell.expenseId) {
+    const expenseId = cell.expenseId;
     return (
       <button
         type="button"
         className={`${cls} hover:opacity-90`}
         onClick={(e) => {
           e.stopPropagation();
-          onOpenExpense(cell.expenseId);
+          onOpenExpense(expenseId);
         }}
       >
         {label}
