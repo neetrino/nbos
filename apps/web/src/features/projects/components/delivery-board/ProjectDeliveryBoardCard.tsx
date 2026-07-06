@@ -137,7 +137,7 @@ export function ProjectDeliveryBoardCard({
               title={title}
               metaLabel={metaLabel}
               visual={dealTypeVisual}
-              lifecycle={lifecycle}
+              lifecycle={lifecycle ?? null}
             />
             <div
               className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, boardChrome.dividerClass)}
