@@ -168,7 +168,7 @@ export function EditPartnerDialog({
             </p>
           ) : null}
 
-          <div>
+          <div className="space-y-1.5">
             <Label>Name *</Label>
             <Input
               value={form.name}
@@ -179,7 +179,7 @@ export function EditPartnerDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-1.5">
               <Label>Level</Label>
               <Select
                 value={form.level}
@@ -199,7 +199,7 @@ export function EditPartnerDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Direction</Label>
               <Select
                 value={form.direction}
@@ -222,7 +222,7 @@ export function EditPartnerDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-1.5">
               <Label>Default %</Label>
               <Input
                 inputMode="decimal"
@@ -234,7 +234,7 @@ export function EditPartnerDialog({
                 {PARTNER_DEFAULT_PERCENT_MIN}–{PARTNER_DEFAULT_PERCENT_MAX}
               </p>
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Status</Label>
               <Select
                 value={form.status}
@@ -263,7 +263,7 @@ export function EditPartnerDialog({
             onStartDateChange={(startDate) => setForm({ ...form, startDate })}
           />
 
-          <div>
+          <div className="space-y-1.5">
             <Label>Primary contact</Label>
             {contactsError ? (
               <p className="text-destructive mb-1 text-sm" role="alert">
