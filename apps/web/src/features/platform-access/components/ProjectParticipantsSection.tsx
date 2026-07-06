@@ -31,6 +31,7 @@ import { useProjectTeam } from '../hooks/use-project-team';
 import { formatTeamSource } from '../team-member-labels';
 import { ProjectTeamMemberChipRow } from './ProjectTeamMemberChipRow';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
+import { TeamMemberEmployeeStatusBadge } from './TeamMemberEmployeeStatusBadge';
 
 const DEFAULT_PROJECT_TEAM_ROLE = 'MEMBER' as const;
 
@@ -206,9 +207,12 @@ export function ProjectParticipantsSection({
                 {members.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>
-                      <span className="font-medium">
-                        {row.employee.firstName} {row.employee.lastName}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="font-medium">
+                          {row.employee.firstName} {row.employee.lastName}
+                        </span>
+                        <TeamMemberEmployeeStatusBadge status={row.employee.status} />
+                      </div>
                       <span className="text-muted-foreground block text-xs">
                         {row.employee.email}
                       </span>

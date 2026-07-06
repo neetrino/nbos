@@ -72,7 +72,7 @@ export function CreateStandaloneWorkSpaceDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="workspace-name">Name *</Label>
             <Input
               id="workspace-name"
@@ -82,7 +82,7 @@ export function CreateStandaloneWorkSpaceDialog({
               onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
             />
           </div>
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="workspace-description">Description</Label>
             <Textarea
               id="workspace-description"

@@ -17,6 +17,8 @@ import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
 type RelationPickerChipProps = {
   label: string;
+  /** Inline content next to the label (e.g. employee status badge). */
+  labelAddon?: ReactNode;
   subtitle?: string | null;
   icon?: ReactNode;
   entityKind?: RelationEntityKind;
@@ -45,6 +47,7 @@ function relationChipLeading(
 
 export function RelationPickerChip({
   label,
+  labelAddon,
   subtitle,
   icon,
   entityKind,
@@ -60,14 +63,26 @@ export function RelationPickerChip({
 
   const leading = relationChipLeading(entityKind, label, icon);
 
-  const sheetLabel = (
-    <span className="min-w-0">
-      <span className={RELATION_PICKER_SHEET_TARGET_LABEL_CLASS}>{label}</span>
-      {subtitle ? (
-        <span className={RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS}>{subtitle}</span>
-      ) : null}
-    </span>
-  );
+  const sheetLabel =
+    labelAddon && subtitle ? (
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="min-w-0 flex-1">
+          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate')}>{label}</span>
+          <span className={RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS}>{subtitle}</span>
+        </span>
+        <span className="shrink-0">{labelAddon}</span>
+      </span>
+    ) : (
+      <span className="min-w-0">
+        <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate')}>{label}</span>
+          {labelAddon}
+        </span>
+        {subtitle ? (
+          <span className={RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS}>{subtitle}</span>
+        ) : null}
+      </span>
+    );
 
   return (
     <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, disabled && 'opacity-60')}>

@@ -10,6 +10,7 @@ import type {
   SubscriptionGridCellKind,
   SubscriptionGridPayload,
 } from '@/lib/api/finance';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   buildSubscriptionsById,
@@ -38,6 +39,28 @@ interface SubscriptionCoverageGridProps {
 const GRID_YEAR_WINDOW = 3;
 const SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH = '13rem';
 
+const SUBSCRIPTION_STICKY_LABEL_HEADER_CLASS = cn(
+  'border-border text-muted-foreground sticky left-0 z-40 border-r px-3 py-2 text-left font-medium',
+  'bg-white shadow-[4px_0_8px_-4px_rgba(0,0,0,0.12)] dark:bg-card',
+);
+
+const SUBSCRIPTION_STICKY_LABEL_CELL_CLASS = cn(
+  'border-border sticky left-0 z-30 border-r px-2 py-0 align-middle',
+  'bg-white shadow-[4px_0_8px_-4px_rgba(0,0,0,0.12)] dark:bg-card',
+  'cursor-pointer transition-colors group-hover:bg-slate-100 dark:group-hover:bg-muted',
+);
+
+const SUBSCRIPTION_STICKY_TOTAL_LABEL_CLASS = cn(
+  'border-border sticky left-0 z-30 border-r px-3 py-2 font-bold',
+  'bg-muted/40 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.12)]',
+);
+
+const SUBSCRIPTION_SCROLL_CELL_CLASS =
+  'relative z-0 overflow-hidden px-1 py-2 text-center align-middle transition-colors group-hover:bg-slate-50 dark:group-hover:bg-muted/50';
+
+const SUBSCRIPTION_ANNUAL_CELL_CLASS =
+  'relative z-0 px-2 py-2 text-right align-middle font-bold tabular-nums transition-colors group-hover:bg-slate-50 dark:group-hover:bg-muted/50';
+
 function monthLabelsForYear(year: number): { key: number; label: string }[] {
   return Array.from({ length: 12 }, (_, index) => {
     const date = new Date(year, index, 1);
@@ -59,7 +82,7 @@ function cellVisualClasses(kind: SubscriptionGridCellKind): string {
     case 'FORECAST':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/35 dark:text-blue-300';
     case 'SUBSCRIPTION_PENDING':
-      return 'bg-violet-50 text-violet-900 ring-2 ring-violet-400 dark:bg-violet-950/40 dark:text-violet-200';
+      return 'bg-violet-50 text-violet-900 ring-2 ring-inset ring-violet-400 dark:bg-violet-950/40 dark:text-violet-200';
     case 'MISSED':
       return 'text-muted-foreground';
     default:
@@ -93,7 +116,7 @@ export function SubscriptionCoverageGrid({
   );
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-foreground text-lg font-semibold">Subscriptions</h2>
         <label className="flex flex-col gap-1 text-sm">
@@ -124,12 +147,12 @@ export function SubscriptionCoverageGrid({
       {loading ? (
         <div className="border-border bg-muted/30 h-40 animate-pulse rounded-xl border" />
       ) : payload && payload.rows.length > 0 ? (
-        <div className="border-border overflow-x-auto rounded-xl border">
-          <table className="w-full text-xs">
-            <thead className="bg-secondary/50">
+        <div className="border-border isolate min-w-0 overflow-x-auto rounded-xl border">
+          <table className="w-full border-separate border-spacing-0 text-xs">
+            <thead className="bg-muted/40">
               <tr>
                 <th
-                  className="bg-secondary/50 text-muted-foreground sticky left-0 z-10 px-3 py-2 text-left font-medium"
+                  className={SUBSCRIPTION_STICKY_LABEL_HEADER_CLASS}
                   style={{ minWidth: SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH }}
                 >
                   Subscription
@@ -152,9 +175,9 @@ export function SubscriptionCoverageGrid({
                 const subscription = subscriptionsById.get(row.subscriptionId);
                 const currentMonthCell = pickMonthCell(row.months, currentMonthIndex);
                 return (
-                  <tr key={row.subscriptionId} className="hover:bg-secondary/30">
+                  <tr key={row.subscriptionId} className="group">
                     <td
-                      className="bg-card hover:bg-secondary/40 sticky left-0 z-10 cursor-pointer px-2 py-0 align-middle transition-colors"
+                      className={SUBSCRIPTION_STICKY_LABEL_CELL_CLASS}
                       style={{ minWidth: SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH }}
                       onClick={() => onOpenSubscription(row.subscriptionId)}
                     >
@@ -173,11 +196,11 @@ export function SubscriptionCoverageGrid({
                       />
                     </td>
                     {row.months.map((cell, idx) => (
-                      <td key={idx} className="px-1 py-2 text-center align-middle">
+                      <td key={idx} className={SUBSCRIPTION_SCROLL_CELL_CLASS}>
                         <GridMonthCell row={row} cell={cell} amountMonthly={row.amountMonthly} />
                       </td>
                     ))}
-                    <td className="px-2 py-2 text-right align-middle font-bold tabular-nums">
+                    <td className={SUBSCRIPTION_ANNUAL_CELL_CLASS}>
                       <CompactAmount
                         value={row.annualTotal}
                         title={formatAmount(row.annualTotal)}
@@ -186,10 +209,10 @@ export function SubscriptionCoverageGrid({
                   </tr>
                 );
               })}
-              <tr className="bg-secondary/30 font-bold">
-                <td className="bg-secondary/30 sticky left-0 z-10 px-3 py-2">Total</td>
+              <tr className="bg-muted/30 font-bold">
+                <td className={SUBSCRIPTION_STICKY_TOTAL_LABEL_CLASS}>Total</td>
                 {payload.monthTotals.map((total, idx) => (
-                  <td key={idx} className="px-1 py-2 text-center">
+                  <td key={idx} className={SUBSCRIPTION_SCROLL_CELL_CLASS}>
                     {total > 0 ? <CompactAmount value={total} title={formatAmount(total)} /> : '—'}
                   </td>
                 ))}
@@ -235,13 +258,16 @@ function GridMonthCell({
 
   const label = formatAmountDramSuffix(amountMonthly);
   const title = formatAmount(amountMonthly);
-  const cls = `inline-block rounded px-1 py-0.5 text-[10px] font-medium tabular-nums whitespace-nowrap ${cellVisualClasses(cell.kind)}`;
+  const cls = cn(
+    'relative z-0 inline-block rounded px-1 py-0.5 text-[10px] font-medium tabular-nums whitespace-nowrap',
+    cellVisualClasses(cell.kind),
+  );
 
   if (cell.invoiceId) {
     return (
       <Link
         href={openInvoiceWithSubscriptionHref(row.subscriptionId, cell.invoiceId)}
-        className={`${cls} hover:opacity-90`}
+        className={cls}
         title={title}
         onClick={(e) => e.stopPropagation()}
       >

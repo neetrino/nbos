@@ -61,6 +61,12 @@ export interface ControlledInlineFieldProps {
   hideLabel?: boolean;
   datePickerVariant?: NbosDatePickerVariant;
   datePickerMode?: NbosDatePickerMode;
+  /** Select dropdown item styling (`highlight` = blue selected, gray hover, no checkmark). */
+  selectMenuTone?: 'default' | 'highlight';
+  /** Field shell width follows content (select, money). */
+  fitContent?: boolean;
+  /** Overrides select trigger label (e.g. status badge). */
+  displayValue?: ReactNode;
 }
 
 export function ControlledInlineField({
@@ -78,6 +84,9 @@ export function ControlledInlineField({
   hideLabel = false,
   datePickerVariant = 'compact',
   datePickerMode = 'date',
+  fitContent = false,
+  selectMenuTone = 'default',
+  displayValue,
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
@@ -126,7 +135,14 @@ export function ControlledInlineField({
   ) : null;
 
   return (
-    <div className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}>
+    <div
+      className={cn(
+        'group relative',
+        disabled && 'pointer-events-none opacity-60',
+        fitContent && 'w-fit shrink-0',
+        className,
+      )}
+    >
       {hideLabel ? null : (
         <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
           {icon ? <span className="text-muted-foreground/70">{icon}</span> : null}
@@ -136,40 +152,51 @@ export function ControlledInlineField({
 
       {type === 'select' && options
         ? wrapShell(
-            DETAIL_SHEET_FIELD_SHELL_CLASS,
+            cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
             <>
-              <Select
-                value={str}
-                onValueChange={(v) => {
-                  if (v == null || v === '') {
-                    onValueChange('');
-                    return;
-                  }
-                  onValueChange(v);
-                }}
-                disabled={disabled}
-              >
-                <SelectTrigger
-                  size="sm"
-                  className={cn(DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS, showClear && 'pr-1')}
-                >
-                  <SelectValue placeholder={placeholder ?? 'Select...'}>
-                    {(selected: string | null) =>
-                      selected ? resolveSelectOptionLabel(selected, options) : null
+              <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
+                <Select
+                  modal={false}
+                  value={str}
+                  onValueChange={(v) => {
+                    if (v == null || v === '') {
+                      onValueChange('');
+                      return;
                     }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      <span className="flex items-center gap-2">
-                        {opt.icon}
-                        {opt.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    onValueChange(v);
+                  }}
+                  disabled={disabled}
+                >
+                  <SelectTrigger
+                    size="sm"
+                    className={cn(
+                      DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
+                      fitContent && 'w-auto',
+                      showClear && 'pr-1',
+                    )}
+                  >
+                    <SelectValue
+                      placeholder={placeholder ?? 'Select...'}
+                      className={fitContent ? 'flex-none' : undefined}
+                    >
+                      {(selected: string | null) =>
+                        displayValue ??
+                        (selected ? resolveSelectOptionLabel(selected, options) : null)
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
+                        <span className="flex items-center gap-2">
+                          {opt.icon}
+                          {opt.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               {clearButton}
             </>,
           )
@@ -208,13 +235,17 @@ export function ControlledInlineField({
               )
             : type === 'money'
               ? wrapShell(
-                  DETAIL_SHEET_FIELD_SHELL_CLASS,
+                  cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
                   <>
                     <MoneyInput
                       value={str}
                       onChange={onValueChange}
                       disabled={disabled}
-                      className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
+                      className={cn(
+                        DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+                        'min-w-0 truncate text-sm tabular-nums',
+                        fitContent && 'w-auto flex-none',
+                      )}
                       placeholder={placeholder}
                     />
                     {suffix && str !== '' ? (

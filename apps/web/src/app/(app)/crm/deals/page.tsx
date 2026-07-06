@@ -756,6 +756,7 @@ function DealsPipelinePageContent() {
         itemName={deleteConfirm.target?.name ?? ''}
         title="Move deal to Trash?"
         description="The deal will be removed from the active pipeline. Type the deal name to confirm. You can restore it from Trash later."
+        forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

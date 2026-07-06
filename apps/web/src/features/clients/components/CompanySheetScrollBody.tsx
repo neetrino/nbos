@@ -1,8 +1,9 @@
 'use client';
 
-import { Building2, Calendar, FileText, MessageCircle, Receipt, Tag, User } from 'lucide-react';
+import { Building2, Calendar, FileText, Receipt, Tag, User } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
-import { EntityNotesSection } from '@/components/shared/entity-notes/EntityNotesSection';
+import { DetailSheetOptionalDescription } from '@/components/shared/DetailSheetOptionalDescription';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
 import { InlineField } from '@/components/shared/InlineField';
 import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -12,10 +13,7 @@ import { companyTypeNumberLabel } from '../constants/company-type-field-copy';
 import type { Company } from '@/lib/api/clients';
 import type { CompanyPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { CompanyGeneralDraft } from './company-general-form-state';
-import {
-  ClientPortfolioAnalytics,
-  ClientPortfolioGeneralActions,
-} from './client-portfolio/ClientPortfolioEmbedded';
+import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -61,7 +59,7 @@ export function CompanySheetScrollBody({
   const typeOptions = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
 
   return (
-    <div className="space-y-6 px-7 py-5">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-7 py-5`}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
@@ -189,28 +187,6 @@ export function CompanySheetScrollBody({
               />
             </div>
           </DetailSheetSection>
-
-          <EntityNotesSection
-            title="Notes"
-            icon={<MessageCircle size={12} />}
-            entityType="company"
-            entityId={company.id}
-            value={draft.notes}
-            onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-            placeholder="Internal notes…"
-            disabled={fieldDisabled}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <ClientPortfolioGeneralActions
-            variant="company"
-            entityId={company.id}
-            data={portfolioData}
-            loading={portfolioLoading}
-            error={portfolioError}
-            onRetry={onPortfolioRetry}
-          />
         </div>
       </div>
 
@@ -219,6 +195,14 @@ export function CompanySheetScrollBody({
         loading={portfolioLoading}
         error={portfolioError}
         onRetry={onPortfolioRetry}
+      />
+
+      <DetailSheetOptionalDescription
+        entityType="company"
+        entityId={company.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={fieldDisabled}
       />
     </div>
   );

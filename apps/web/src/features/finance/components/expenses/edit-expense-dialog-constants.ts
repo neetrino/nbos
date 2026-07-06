@@ -11,6 +11,29 @@ export const EXPENSE_FREQUENCIES = [
   { value: 'MULTI_YEAR', label: 'Multi-year' },
 ] as const;
 
+/** Fixed width for compact expense sheet fields (amount, category). */
+export const EXPENSE_COMPACT_FIELD_WIDTH_CLASS = 'w-[10rem] shrink-0';
+
+/** Due date field width in expense detail sheet. */
+export const EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS = 'w-[8.5rem] shrink-0';
+
+/** Equal-width rows in expense detail General — fields stretch edge-to-edge. */
+export const EXPENSE_SHEET_FIELD_ROW_3_CLASS = 'grid grid-cols-3 gap-3';
+
+export const EXPENSE_SHEET_FIELD_ROW_2_CLASS = 'grid grid-cols-2 gap-3';
+
+export const EXPENSE_SHEET_FIELD_CELL_CLASS = 'min-w-0 w-full';
+
+export const EXPENSE_STATUS_SEGMENTED_OPTIONS = [
+  { value: 'PLANNED', label: 'Planned' },
+  { value: 'DUE_SOON', label: 'Soon' },
+  { value: 'DUE_NOW', label: 'Now' },
+  { value: 'OVERDUE', label: 'Overdue' },
+  { value: 'ON_HOLD', label: 'Hold' },
+  { value: 'BACKLOG', label: 'Backlog' },
+  { value: 'PAID', label: 'Paid' },
+] as const;
+
 export const TAX_STATUSES = [
   { value: 'TAX', label: 'Tax' },
   { value: 'TAX_FREE', label: 'Tax-free' },

@@ -1,13 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban, Layers, Receipt, RefreshCw, Tag } from 'lucide-react';
+import {
+  Calendar,
+  CalendarDays,
+  CircleDot,
+  DollarSign,
+  FolderKanban,
+  Layers,
+  Receipt,
+  RefreshCw,
+  Tag,
+  Wallet,
+} from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
-  EntityNotesSection,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -22,14 +34,13 @@ import {
   CLIENT_SERVICE_TYPES,
 } from '@/features/finance/constants/client-services';
 import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
+import {
+  EXPENSE_SHEET_FIELD_CELL_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_3_CLASS,
+} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
-function mapSelectOptions(options: ReadonlyArray<{ value: string; label: string }>) {
-  return options.map((row) => ({ value: row.value, label: row.label }));
-}
-
-const TAX_OPTIONS = mapSelectOptions(INVOICE_TAX_STATUS_OPTIONS);
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -57,7 +68,7 @@ export function ClientServiceGeneralTab({
   const projectLabel = linkedProject ? `${linkedProject.code} — ${linkedProject.name}` : null;
 
   return (
-    <div className="flex max-w-[48rem] flex-col gap-4">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-3`}>
       <DetailSheetCollapsibleSection
         title="Basics"
         icon={<Tag size={12} />}
@@ -65,15 +76,6 @@ export function ClientServiceGeneralTab({
         onOpenChange={setBasicsOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Name"
-            type="text"
-            value={draft.name}
-            placeholder="Service name"
-            disabled={formDisabled}
-            onValueChange={(name) => patchDraft({ name })}
-          />
           <RelationPickerField
             label="Project"
             entityKind="project"
@@ -82,38 +84,51 @@ export function ClientServiceGeneralTab({
             placeholder="Search projects…"
             icon={<FolderKanban size={12} />}
             disabled={formDisabled}
+            className="w-full min-w-0"
             onSearch={searchProjects}
             onSelect={(id) => patchDraft({ projectId: id })}
             {...projectPicker}
           />
-          <InlineField
-            variant="controlled"
-            label="Type"
-            type="select"
-            value={draft.type}
-            options={mapSelectOptions(CLIENT_SERVICE_TYPES)}
-            icon={<Layers size={12} />}
-            disabled={formDisabled}
-            onValueChange={(type) => type && patchDraft({ type })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Status"
-            type="select"
-            value={draft.status}
-            options={mapSelectOptions(CLIENT_SERVICE_STATUSES)}
-            disabled={formDisabled}
-            onValueChange={(status) => status && patchDraft({ status })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Provider"
-            type="text"
-            value={draft.provider}
-            placeholder="Optional"
-            disabled={formDisabled}
-            onValueChange={(provider) => patchDraft({ provider })}
-          />
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
+            <InlineField
+              variant="controlled"
+              label="Type"
+              type="select"
+              value={draft.type}
+              options={CLIENT_SERVICE_TYPES.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<Layers size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(type) => type && patchDraft({ type })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Status"
+              type="select"
+              value={draft.status}
+              options={CLIENT_SERVICE_STATUSES.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<CircleDot size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(status) => status && patchDraft({ status })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Provider"
+              type="text"
+              value={draft.provider}
+              placeholder="Optional"
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(provider) => patchDraft({ provider })}
+            />
+          </div>
         </div>
       </DetailSheetCollapsibleSection>
 
@@ -124,62 +139,86 @@ export function ClientServiceGeneralTab({
         onOpenChange={setBillingOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Billing model"
-            type="select"
-            value={draft.billingModel}
-            options={mapSelectOptions(CLIENT_SERVICE_BILLING_MODELS)}
-            disabled={formDisabled}
-            onValueChange={(billingModel) => billingModel && patchDraft({ billingModel })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Pricing"
-            type="select"
-            value={draft.pricingModel}
-            options={mapSelectOptions(CLIENT_SERVICE_PRICING_MODELS)}
-            disabled={formDisabled}
-            onValueChange={(pricingModel) => pricingModel && patchDraft({ pricingModel })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Frequency"
-            type="select"
-            value={draft.frequency}
-            options={mapSelectOptions(CLIENT_SERVICE_FREQUENCIES)}
-            disabled={formDisabled}
-            onValueChange={(frequency) => frequency && patchDraft({ frequency })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Our cost"
-            type="money"
-            value={draft.ourCost}
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(ourCost) => patchDraft({ ourCost })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Client charge"
-            type="money"
-            value={draft.clientCharge}
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(clientCharge) => patchDraft({ clientCharge })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Tax Status"
-            type="select"
-            value={draft.taxStatus}
-            options={TAX_OPTIONS}
-            placeholder="Tax / Tax Free"
-            icon={<Receipt size={12} />}
-            disabled={formDisabled}
-            onValueChange={(taxStatus) => taxStatus && patchDraft({ taxStatus })}
-          />
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
+            <InlineField
+              variant="controlled"
+              label="Billing model"
+              type="select"
+              value={draft.billingModel}
+              options={CLIENT_SERVICE_BILLING_MODELS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<Wallet size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(billingModel) => billingModel && patchDraft({ billingModel })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Pricing"
+              type="select"
+              value={draft.pricingModel}
+              options={CLIENT_SERVICE_PRICING_MODELS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<Tag size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(pricingModel) => pricingModel && patchDraft({ pricingModel })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Frequency"
+              type="select"
+              value={draft.frequency}
+              options={CLIENT_SERVICE_FREQUENCIES.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<CalendarDays size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(frequency) => frequency && patchDraft({ frequency })}
+            />
+          </div>
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
+            <InlineField
+              variant="controlled"
+              label="Our cost"
+              type="money"
+              value={draft.ourCost}
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(ourCost) => patchDraft({ ourCost })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Client charge"
+              type="money"
+              value={draft.clientCharge}
+              icon={<DollarSign size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(clientCharge) => patchDraft({ clientCharge })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Tax"
+              type="select"
+              value={draft.taxStatus}
+              options={INVOICE_TAX_STATUS_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+              }))}
+              icon={<Receipt size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(taxStatus) => taxStatus && patchDraft({ taxStatus })}
+            />
+          </div>
         </div>
       </DetailSheetCollapsibleSection>
 
@@ -190,7 +229,7 @@ export function ClientServiceGeneralTab({
         onOpenChange={setDatesOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
             <InlineField
               variant="controlled"
               label="Start date"
@@ -198,6 +237,7 @@ export function ClientServiceGeneralTab({
               value={draft.startDate}
               icon={<Calendar size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(startDate) => patchDraft({ startDate })}
             />
             <InlineField
@@ -207,28 +247,22 @@ export function ClientServiceGeneralTab({
               value={draft.renewalDate}
               icon={<RefreshCw size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(renewalDate) => patchDraft({ renewalDate })}
             />
+            <label className="flex h-10 min-w-0 items-center gap-2 self-end text-sm">
+              <Checkbox
+                checked={draft.notificationsEnabled}
+                disabled={formDisabled}
+                onCheckedChange={(checked) =>
+                  patchDraft({ notificationsEnabled: checked === true })
+                }
+              />
+              Renewal notifications
+            </label>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={draft.notificationsEnabled}
-              disabled={formDisabled}
-              onCheckedChange={(checked) => patchDraft({ notificationsEnabled: checked === true })}
-            />
-            Renewal notifications
-          </label>
         </div>
       </DetailSheetCollapsibleSection>
-
-      <EntityNotesSection
-        entityType="generic"
-        entityId={serviceId}
-        value={draft.notes}
-        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        placeholder="Optional notes…"
-        disabled={formDisabled}
-      />
 
       <DetailSheetSection title="Proofs">
         <FinanceProofAttachments
@@ -238,6 +272,14 @@ export function ClientServiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
+
+      <DetailSheetOptionalDescription
+        entityType="generic"
+        entityId={serviceId}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={formDisabled}
+      />
     </div>
   );
 }

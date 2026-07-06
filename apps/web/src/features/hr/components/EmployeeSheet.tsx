@@ -63,6 +63,8 @@ interface EmployeeSheetProps {
   selfProfile?: boolean;
   /** Deep link for global My Account sheet (current page + query). */
   selfProfileDeepLinkHref?: string;
+  /** Stack above an already-open entity sheet (dims parent floating rail). */
+  forceNestedBackdrop?: boolean;
 }
 
 function saveErrorMessage(err: unknown): string {
@@ -78,6 +80,7 @@ export function EmployeeSheet({
   canEdit = false,
   selfProfile = false,
   selfProfileDeepLinkHref,
+  forceNestedBackdrop = false,
 }: EmployeeSheetProps) {
   const [draft, setDraft] = useState<EmployeeGeneralDraft | null>(null);
   const [snap, setSnap] = useState<EmployeeGeneralDraft | null>(null);
@@ -212,7 +215,12 @@ export function EmployeeSheet({
   if (!current || !draft || !snap) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <EntityDetailSheetContent open={open} layout="full" width={TEAM_SHEET_WIDTH}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width={TEAM_SHEET_WIDTH}
+          forceNestedBackdrop={forceNestedBackdrop}
+        >
           <p className="text-muted-foreground p-5 text-sm">Loading profile…</p>
         </EntityDetailSheetContent>
       </Sheet>
@@ -240,6 +248,7 @@ export function EmployeeSheet({
         open={open}
         layout="full"
         width={TEAM_SHEET_WIDTH}
+        forceNestedBackdrop={forceNestedBackdrop}
         sourcePageHref={
           selfProfile
             ? (selfProfileDeepLinkHref ?? '/dashboard')
@@ -254,18 +263,24 @@ export function EmployeeSheet({
               >
                 {employeeInitials(current)}
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold">{fullName}</h2>
-                <p className="text-muted-foreground text-xs">
-                  {current.position || current.role.name}
-                  {dept ? ` · ${dept}` : ''}
-                </p>
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                  {statusInfo && (
-                    <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
-                  )}
-                  {levelInfo && <StatusBadge label={levelInfo.label} variant={levelInfo.variant} />}
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold">{fullName}</h2>
+                  <p className="text-muted-foreground text-xs">
+                    {current.position || current.role.name}
+                    {dept ? ` · ${dept}` : ''}
+                  </p>
                 </div>
+                {(statusInfo || levelInfo) && (
+                  <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                    {statusInfo && (
+                      <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
+                    )}
+                    {levelInfo && (
+                      <StatusBadge label={levelInfo.label} variant={levelInfo.variant} />
+                    )}
+                  </div>
+                )}
               </div>
               {!selfProfile && canEdit && current.status !== 'TERMINATED' && (
                 <DetailSheetSettingsMenu>

@@ -24,6 +24,7 @@ interface CreateDealDialogProps {
     contactId?: string;
     contactName?: string;
   };
+  forceNestedBackdrop?: boolean;
 }
 
 export function CreateDealDialog({
@@ -31,6 +32,7 @@ export function CreateDealDialog({
   onOpenChange,
   onCreated,
   prefill,
+  forceNestedBackdrop = false,
 }: CreateDealDialogProps) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
@@ -72,7 +74,7 @@ export function CreateDealDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

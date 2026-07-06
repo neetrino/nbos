@@ -51,12 +51,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'Marketing',
     href: '/marketing',
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
-    children: [
-      { label: 'Marketing Board', href: '/marketing', navSection: 'board' },
-      { label: 'Attribution Review', href: '/marketing/attribution', navSection: 'attribution' },
-      { label: 'Marketing Dashboard', href: '/marketing/dashboard', navSection: 'dashboard' },
-      { label: 'Marketing Settings', href: '/marketing/settings', navSection: 'settings' },
-    ],
   },
   {
     key: 'project-hub',
@@ -87,61 +81,17 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'Finance',
     href: '/finance',
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-    children: [
-      {
-        label: 'Overview',
-        href: '/finance/dashboard',
-        navSection: 'overview',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Revenue',
-        href: '/finance/orders',
-        navSection: 'revenue',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Expenses',
-        href: '/finance/expenses',
-        navSection: 'expenses',
-        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
-      },
-      {
-        label: 'Payroll',
-        href: '/finance/payroll',
-        navSection: 'payroll',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-    ],
   },
   {
     key: 'support',
     label: 'Support',
     href: '/support',
     permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
-    children: [
-      {
-        label: 'Tickets',
-        href: '/support',
-        navSection: 'tickets',
-        permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
-      },
-      {
-        label: 'Change Control',
-        href: '/support/change-control',
-        navSection: 'change-control',
-        permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
-      },
-    ],
   },
   {
     key: 'clients',
     label: 'Clients',
     href: '/clients',
-    children: [
-      { label: 'Companies', href: '/clients/companies', navSection: 'companies' },
-      { label: 'Contacts', href: '/clients/contacts', navSection: 'contacts' },
-    ],
   },
   {
     key: 'partners',

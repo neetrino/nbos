@@ -4,76 +4,71 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { DollarSign, ExternalLink, FolderKanban, Handshake } from 'lucide-react';
 import {
+  DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
   StatusBadge,
 } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { ORDER_STATUSES } from './order-statuses';
-import { OrderLifecycleActions } from './OrderLifecycleActions';
 
 interface OrderGeneralTabProps {
   order: Order;
-  onOrderUpdated?: (order: Order) => void | Promise<void>;
-  onOrderDeleted?: (orderId: string) => void;
 }
 
 function formatShortDate(value: string): string {
   return new Intl.DateTimeFormat('en', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit',
+    day: 'numeric',
   }).format(new Date(value));
 }
 
-export function OrderGeneralTab({ order, onOrderUpdated, onOrderDeleted }: OrderGeneralTabProps) {
+export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
   const statusCfg = ORDER_STATUSES[order.status];
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)] xl:items-start xl:gap-6">
-      <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
+    <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
+      <div className="flex min-w-0 flex-col gap-4">
         <DetailSheetCollapsibleSection
           title="Order"
           icon={<DollarSign size={12} />}
+          titleTrailing={
+            statusCfg ? (
+              <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
+            ) : undefined
+          }
           open={orderOpen}
           onOpenChange={setOrderOpen}
         >
           <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
             <InlineField label="Code" value={order.code} />
             <InlineField label="Title" value={getOrderDisplayTitle(order)} />
-            <InlineField label="Type" value={order.type} />
-            <InlineField label="Payment type" value={order.paymentType} />
-            <InlineField label="Amount" value={formatAmount(total)} />
-            <InlineField label="Currency" value={order.currency} />
-            <InlineField label="Created" value={formatShortDate(order.createdAt)} />
-            {statusCfg ? (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-xs font-medium">Status</span>
-                <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
-              </div>
-            ) : null}
+            <div className="grid grid-cols-2 gap-4">
+              <InlineField label="Type" value={order.type} />
+              <InlineField label="Payment type" value={order.paymentType} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <InlineField label="Amount" value={formatAmount(total)} />
+              <InlineField label="Currency" value={order.currency} />
+            </div>
+            <div className="border-border mt-4 border-t pt-4">
+              <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
+            </div>
           </div>
         </DetailSheetCollapsibleSection>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4">
         <OrderLinkedPanel order={order} />
-        {onOrderUpdated ? (
-          <DetailSheetSection title="Actions">
-            <OrderLifecycleActions
-              order={order}
-              onOrderUpdated={onOrderUpdated}
-              onOrderDeleted={onOrderDeleted}
-            />
-          </DetailSheetSection>
-        ) : null}
       </div>
     </div>
   );

@@ -67,14 +67,17 @@ export function NavigableEntityCard({
               {eyebrow ? (
                 <p className="text-muted-foreground text-[10px] font-medium">{eyebrow}</p>
               ) : null}
-              <h3 className="text-foreground line-clamp-2 text-sm font-semibold">{title}</h3>
-              {badges && badges.length > 0 ? (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {badges.map((badge) => (
-                    <StatusBadge key={badge.label} label={badge.label} variant={badge.variant} />
-                  ))}
-                </div>
-              ) : null}
+              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                <h3 className="text-foreground line-clamp-2 text-sm font-semibold">{title}</h3>
+                {badges?.map((badge) => (
+                  <StatusBadge
+                    key={badge.label}
+                    label={badge.label}
+                    variant={badge.variant}
+                    className="shrink-0 self-center"
+                  />
+                ))}
+              </div>
             </div>
           </div>
           {headerTrailing}

@@ -3,7 +3,6 @@
 import { AlertTriangle, Calendar, Clock, Handshake } from 'lucide-react';
 import type { Subscription, SubscriptionGridCell } from '@/lib/api/finance';
 import { getSubscriptionTypePresentation } from '@/lib/subscription-type-visual';
-import { subscriptionRowAccentClassName } from '@/lib/subscription-status-visual';
 import { monthCellKindLabel } from './subscription-grid-utils';
 import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
 
@@ -35,16 +34,12 @@ export function SubscriptionGridRowLabel({
   onHold,
 }: SubscriptionGridRowLabelProps) {
   const typeKey = subscription?.type ?? fallbackType;
-  const status = subscription?.status ?? fallbackStatus;
   const typeVisual = getSubscriptionTypePresentation(typeKey);
   const TypeIcon = typeVisual.Icon;
-  const rowAccent = subscriptionRowAccentClassName(status, typeVisual);
   const monthHint = currentMonthCell ? monthCellKindLabel(currentMonthCell.kind) : null;
 
   return (
-    <div
-      className={`flex h-full min-h-[3.75rem] w-full items-center gap-2 border-l-4 py-2 pr-1 pl-2 ${rowAccent}`}
-    >
+    <div className="flex h-full min-h-[3.75rem] w-full items-center gap-2 py-2 pr-1 pl-2">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p
           className="text-foreground line-clamp-2 text-sm leading-snug font-semibold"

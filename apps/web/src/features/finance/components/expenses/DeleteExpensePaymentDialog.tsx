@@ -29,6 +29,7 @@ export function DeleteExpensePaymentDialog({
       description="This payment line will be removed from the expense. You can record it again later."
       confirmLabel="Remove"
       isSubmitting={isSubmitting}
+      forceNestedBackdrop
       errorMessage={errorMessage}
       onConfirm={onConfirm}
     />

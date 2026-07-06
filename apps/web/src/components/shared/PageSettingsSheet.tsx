@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 
 export interface PageSettingsSheetProps {
   title: string;
@@ -27,11 +28,22 @@ export function PageSettingsSheet({
   description,
   triggerAriaLabel = 'Page settings',
   children,
-  open,
+  open: openProp,
   onOpenChange,
 }: PageSettingsSheetProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      onOpenChange?.(next);
+      if (openProp === undefined) setUncontrolledOpen(next);
+    },
+    [onOpenChange, openProp],
+  );
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
         render={(props) => (
           <Button
@@ -47,7 +59,13 @@ export function PageSettingsSheet({
           </Button>
         )}
       />
-      <SheetContent side="right" className="flex w-full flex-col gap-0 sm:max-w-md">
+      <SheetContent
+        side="right"
+        floatingClose
+        floatingRailVisible={open}
+        floatingRailAnchorClassName={PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS}
+        className="flex w-full flex-col gap-0 sm:max-w-md"
+      >
         <SheetHeader className="border-border border-b pb-4">
           <SheetTitle>{title}</SheetTitle>
           {description ? <SheetDescription>{description}</SheetDescription> : null}

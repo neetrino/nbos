@@ -44,6 +44,7 @@ import {
   type DealGeneralDraft,
 } from './deal-general-form-state';
 import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
+import { DealSheetQuickActions } from './DealSheetQuickActions';
 import { getDealDisplayTitle } from '../utils/crm-entity-display';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 
@@ -294,38 +295,50 @@ export function DealSheet({
             titleEditHint="Click to edit deal name"
             onStartEditing={startEditing}
             actions={
-              isTrashView && onRestore ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(deal.id)}>
-                    <RotateCcw />
-                    Restore
-                  </DropdownMenuItem>
-                  {onPermanentDelete ? (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onPermanentDelete(deal.id)}
-                    >
-                      <Trash2 />
-                      Delete permanently
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                {!isTrashView ? (
+                  <DealSheetQuickActions
+                    deal={deal}
+                    onRefresh={onRefresh}
+                    onOpenTaskTab={() => setActiveTab('task')}
+                  />
+                ) : null}
+                {isTrashView && onRestore ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem onClick={() => onRestore(deal.id)}>
+                      <RotateCcw />
+                      Restore
                     </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : onMoveToTrash || canCreateExceptionOrder ? (
-                <DetailSheetSettingsMenu>
-                  {canCreateExceptionOrder ? (
-                    <DropdownMenuItem onClick={() => setExceptionDialogOpen(true)}>
-                      <AlertTriangle />
-                      Exception order
-                    </DropdownMenuItem>
-                  ) : null}
-                  {onMoveToTrash ? (
-                    <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(deal.id)}>
-                      <Trash2 />
-                      Move to Trash
-                    </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : null
+                    {onPermanentDelete ? (
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => onPermanentDelete(deal.id)}
+                      >
+                        <Trash2 />
+                        Delete permanently
+                      </DropdownMenuItem>
+                    ) : null}
+                  </DetailSheetSettingsMenu>
+                ) : onMoveToTrash || canCreateExceptionOrder ? (
+                  <DetailSheetSettingsMenu>
+                    {canCreateExceptionOrder ? (
+                      <DropdownMenuItem onClick={() => setExceptionDialogOpen(true)}>
+                        <AlertTriangle />
+                        Exception order
+                      </DropdownMenuItem>
+                    ) : null}
+                    {onMoveToTrash ? (
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => onMoveToTrash(deal.id)}
+                      >
+                        <Trash2 />
+                        Move to Trash
+                      </DropdownMenuItem>
+                    ) : null}
+                  </DetailSheetSettingsMenu>
+                ) : null}
+              </div>
             }
           />
 
@@ -353,7 +366,6 @@ export function DealSheet({
                     patchDraft={patchGeneralDraft}
                     formDisabled={isTrashView}
                     onRefresh={onRefresh}
-                    onOpenTaskTab={() => setActiveTab('task')}
                     onOpenDeal={onOpenDeal}
                     gateRequiredFields={gateRequiredFields}
                   />

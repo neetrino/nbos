@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -13,9 +14,9 @@ import {
   LoadingState,
   StatusBadge,
 } from '@/components/shared';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { ExpensePlanCardsTab } from '@/features/finance/components/expenses/ExpensePlanCardsTab';
 import { ExpensePlanGeneralTab } from '@/features/finance/components/expenses/ExpensePlanGeneralTab';
@@ -179,28 +180,37 @@ export function ExpensePlanDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="compact"
+          width="medium"
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
             {loading && !plan ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : plan ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                     <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
                     <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                       {generalDraft?.name.trim() || plan.name}
                     </h2>
+                    <StatusBadge
+                      label={frequencyLabel}
+                      variant="gray"
+                      className="shrink-0 self-center"
+                    />
                   </div>
-                  <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatAmount(Number(plan.amount))}
-                    <span className="mx-1.5">·</span>
-                    {frequencyLabel}
-                  </p>
                 </div>
-                <StatusBadge label={frequencyLabel} variant="gray" />
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    disabled={saving}
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    <Trash2 />
+                    Delete plan
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
               </div>
             ) : null}
           </div>
@@ -212,7 +222,7 @@ export function ExpensePlanDetailSheet({
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-5 py-5">
+            <div className="min-h-full px-5 py-5">
               {loading && !plan ? (
                 <LoadingState count={3} />
               ) : error ? (
@@ -226,7 +236,6 @@ export function ExpensePlanDetailSheet({
                       patchDraft={patchGeneralDraft}
                       formDisabled={saving}
                       onGenerateClick={() => setGenerateOpen(true)}
-                      onDeleteClick={() => setDeleteOpen(true)}
                     />
                   ) : null}
                   {activeTab === 'cards' ? <ExpensePlanCardsTab plan={plan} /> : null}
@@ -263,6 +272,7 @@ export function ExpensePlanDetailSheet({
         itemName={plan?.name ?? ''}
         title="Delete plan?"
         description="Linked expense cards keep running; only the plan link is cleared."
+        forceNestedBackdrop
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDeletePlan();

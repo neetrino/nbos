@@ -23,6 +23,10 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
+import {
+  PARTNER_SHEET_CONTENT_WIDTH_CLASS,
+  PARTNER_SHEET_RAIL_ANCHOR_CLASS,
+} from '@/features/partners/constants/partner-sheet-layout';
 
 interface PartnerDetailSheetProps {
   partnerId: string | null;
@@ -34,6 +38,7 @@ interface PartnerDetailSheetProps {
   onMoveToTrash?: (id: string) => void | Promise<void>;
   onRestore?: (id: string) => void | Promise<void>;
   onPermanentDelete?: (id: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function PartnerDetailSheet({
@@ -46,6 +51,7 @@ export function PartnerDetailSheet({
   onMoveToTrash,
   onRestore,
   onPermanentDelete,
+  forceNestedBackdrop = false,
 }: PartnerDetailSheetProps) {
   const {
     entity: partner,
@@ -104,7 +110,10 @@ export function PartnerDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
+          contentClassName={PARTNER_SHEET_CONTENT_WIDTH_CLASS}
+          railAnchorClassName={PARTNER_SHEET_RAIL_ANCHOR_CLASS}
           showRailActions={Boolean(partner)}
+          forceNestedBackdrop={forceNestedBackdrop}
           sourcePageHref={
             partner ? `/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partner.id)}` : '#'
           }
@@ -112,9 +121,9 @@ export function PartnerDetailSheet({
           {!partnerId ? null : (
             <>
               <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-                <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="mt-1 inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                    <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                       <Handshake className="text-primary size-5 shrink-0" aria-hidden />
                       <h2 className="text-foreground max-w-[28rem] truncate text-xl font-bold tracking-tight">
                         {showBodyLoading ? '…' : (partner?.name ?? 'Partner')}
@@ -136,7 +145,17 @@ export function PartnerDetailSheet({
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex shrink-0 items-center gap-0.5 pt-0.5">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                    {partner ? (
+                      <PartnerLifecycleStages
+                        layout="inline"
+                        currentStatus={partner.status}
+                        disabled={loading || statusBusy || inTrash}
+                        onStatusSelect={handleStatusSelect}
+                      />
+                    ) : showBodyLoading ? (
+                      <Skeleton className="h-8 w-52" />
+                    ) : null}
                     <DetailSheetSettingsMenu>
                       {!inTrash ? (
                         <DropdownMenuItem
@@ -196,20 +215,6 @@ export function PartnerDetailSheet({
                 </div>
               </div>
 
-              <div className="border-border shrink-0 border-b border-stone-100 dark:border-stone-800">
-                {partner ? (
-                  <PartnerLifecycleStages
-                    currentStatus={partner.status}
-                    disabled={loading || statusBusy || inTrash}
-                    onStatusSelect={handleStatusSelect}
-                  />
-                ) : (
-                  <div className="px-5 py-3">
-                    <Skeleton className="h-9 w-full max-w-md" />
-                  </div>
-                )}
-              </div>
-
               <ScrollArea className="min-h-0 flex-1">
                 <div className="px-7 py-5">
                   {showBodyLoading ? (
@@ -237,6 +242,7 @@ export function PartnerDetailSheet({
           partner={partner}
           open={editOpen}
           onOpenChange={setEditOpen}
+          forceNestedBackdrop
           onSaved={(updated) => {
             patchPartner(updated);
             setEditOpen(false);
@@ -251,6 +257,7 @@ export function PartnerDetailSheet({
         itemName={deleteConfirm.target?.name ?? ''}
         title="Move partner to Trash?"
         description="The partner will be removed from active lists. Linked orders and accruals stay intact; restore from Trash later."
+        forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           deleteConfirm.clear();

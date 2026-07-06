@@ -106,7 +106,11 @@ export default function FinanceDashboardPage() {
   useModuleHeroSlots(moduleHeroSlots);
 
   if (loading) {
-    return <DashboardLoadingSkeleton />;
+    return (
+      <div className="pb-5">
+        <DashboardLoadingSkeleton />
+      </div>
+    );
   }
 
   if (!data) {
@@ -126,24 +130,28 @@ export default function FinanceDashboardPage() {
   const zoneHubMetrics = buildFinanceZoneHubMetrics(data);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-5">
       {showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
 
       {matchesOverviewSearch('Finance zones', query) ? (
         <FinanceZoneHubCards metrics={zoneHubMetrics} />
       ) : null}
 
-      {matchesOverviewSearch('Payroll runs', query) ? (
-        <PayrollRunsSnapshot payroll={data.payrollRuns} />
-      ) : null}
-
-      {matchesOverviewSearch('Expense cards', query) ? (
-        <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
+      {matchesOverviewSearch('Payroll runs', query) ||
+      matchesOverviewSearch('Expense cards', query) ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {matchesOverviewSearch('Payroll runs', query) ? (
+            <PayrollRunsSnapshot payroll={data.payrollRuns} />
+          ) : null}
+          {matchesOverviewSearch('Expense cards', query) ? (
+            <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
+          ) : null}
+        </div>
       ) : null}
 
       {matchesOverviewSearch('Invoice distribution', query) ||
       matchesOverviewSearch('Recent payments', query) ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
           {matchesOverviewSearch('Invoice distribution', query) ? (
             <InvoiceDistribution items={data.invoiceStatusItems} />
           ) : null}

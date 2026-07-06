@@ -18,6 +18,7 @@ interface SubscriptionHoldDialogProps {
   isSubmitting: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void | Promise<void>;
+  forceNestedBackdrop?: boolean;
 }
 
 export function SubscriptionHoldDialog({
@@ -26,12 +27,17 @@ export function SubscriptionHoldDialog({
   isSubmitting,
   onOpenChange,
   onConfirm,
+  forceNestedBackdrop = false,
 }: SubscriptionHoldDialogProps) {
   const code = subscription?.code ?? '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={false}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PauseCircle size={18} className="text-muted-foreground" />

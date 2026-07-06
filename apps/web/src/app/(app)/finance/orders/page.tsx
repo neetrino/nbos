@@ -199,6 +199,7 @@ function OrdersPageInner() {
         order={state.invoiceOrder}
         onOpenChange={state.handleInvoiceDialogOpenChange}
         onCreated={state.refreshOrdersAfterInvoice}
+        forceNestedBackdrop
       />
     </div>
   );

@@ -1,5 +1,9 @@
 import { Calendar, Copy, User, Users } from 'lucide-react';
-import { EntityNotesField, InlineField, RelationPickerField } from '@/components/shared';
+import {
+  DetailSheetOptionalDescriptionField,
+  InlineField,
+  RelationPickerField,
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
@@ -52,16 +56,6 @@ export function TaskSheetGeneralSection({
 
   return (
     <>
-      <EntityNotesField
-        entityType="task"
-        entityId={taskId}
-        value={draft.description}
-        onChange={(description) => onPatchDraft({ description })}
-        placeholder="Description"
-        disabled={disabled}
-        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
-      />
-
       <section className={TASK_SHEET_CARD_CLASS}>
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
@@ -194,6 +188,15 @@ export function TaskSheetGeneralSection({
       </section>
 
       <TaskFilesBlock taskId={taskId} />
+
+      <DetailSheetOptionalDescriptionField
+        entityType="task"
+        entityId={taskId}
+        value={draft.description}
+        onChange={(description) => onPatchDraft({ description })}
+        disabled={disabled}
+        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
+      />
     </>
   );
 }

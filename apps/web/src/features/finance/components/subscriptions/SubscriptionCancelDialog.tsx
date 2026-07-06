@@ -18,6 +18,7 @@ interface SubscriptionCancelDialogProps {
   isSubmitting: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void | Promise<void>;
+  forceNestedBackdrop?: boolean;
 }
 
 export function SubscriptionCancelDialog({
@@ -26,12 +27,17 @@ export function SubscriptionCancelDialog({
   isSubmitting,
   onOpenChange,
   onConfirm,
+  forceNestedBackdrop = false,
 }: SubscriptionCancelDialogProps) {
   const code = subscription?.code ?? '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={false}
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />

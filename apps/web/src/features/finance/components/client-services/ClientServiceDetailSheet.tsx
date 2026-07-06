@@ -17,9 +17,9 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import {
-  CLIENT_SERVICE_STATUSES,
   CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
+  getClientServiceStatus,
 } from '@/features/finance/constants/client-services';
 import {
   clientServiceTaskDefaultDueDate,
@@ -221,9 +221,7 @@ export function ClientServiceDetailSheet({
   const typeLabel = service
     ? clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)
     : undefined;
-  const statusLabel = service
-    ? clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)
-    : undefined;
+  const statusMeta = service ? getClientServiceStatus(service.status) : undefined;
   const isCancelled = service?.status === 'CANCELLED';
   const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
 
@@ -233,38 +231,46 @@ export function ClientServiceDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="medium"
+          width="compact"
           sourcePageHref={sourcePageHref}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
             {loading && !service ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : service ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
-                    <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {service.name}
-                    </h2>
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                  {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
-                  {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
-                  {!isCancelled && onRequestCancel ? (
-                    <DetailSheetSettingsMenu>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        disabled={saving}
-                        onClick={() => onRequestCancel({ id: service.id, name: service.name })}
-                      >
-                        <Ban />
-                        Cancel service
-                      </DropdownMenuItem>
-                    </DetailSheetSettingsMenu>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {service.name}
+                  </h2>
+                  {typeLabel ? (
+                    <StatusBadge
+                      label={typeLabel}
+                      variant="indigo"
+                      className="shrink-0 self-center"
+                    />
+                  ) : null}
+                  {statusMeta ? (
+                    <StatusBadge
+                      label={statusMeta.label}
+                      variant={statusMeta.variant}
+                      className="shrink-0 self-center"
+                    />
                   ) : null}
                 </div>
+                {!isCancelled && onRequestCancel ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      disabled={saving}
+                      onClick={() => onRequestCancel({ id: service.id, name: service.name })}
+                    >
+                      <Ban />
+                      Cancel service
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -276,7 +282,7 @@ export function ClientServiceDetailSheet({
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-5 py-5">
+            <div className="min-h-full px-5 py-5">
               {loading && !service ? (
                 <LoadingState count={3} />
               ) : error ? (

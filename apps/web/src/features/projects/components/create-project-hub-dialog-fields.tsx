@@ -49,7 +49,7 @@ export function CreateProjectHubDialogFields({
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="project-hub-name">Name *</Label>
         <Input
           id="project-hub-name"
@@ -59,7 +59,7 @@ export function CreateProjectHubDialogFields({
           disabled={saving}
         />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="project-hub-description">Description</Label>
         <Textarea
           id="project-hub-description"

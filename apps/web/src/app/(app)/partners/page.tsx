@@ -15,16 +15,13 @@ import {
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
 } from '@/components/shared';
-import {
-  PARTNER_LEVELS,
-  PARTNER_DIRECTIONS,
-  PARTNER_STATUSES,
-} from '@/features/partners/constants/partners';
+import { PARTNER_LEVELS, PARTNER_DIRECTIONS } from '@/features/partners/constants/partners';
 import {
   PARTNERS_DIRECTORY_VIEW_OPTIONS,
   type PartnersDirectoryViewMode,
 } from '@/features/partners/constants/partners-directory-view-options';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
+import { PartnerStatusFilterChips } from '@/features/partners/components/PartnerStatusFilterChips';
 import { PartnerCard } from '@/features/partners/components/PartnerCard';
 import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { PartnersPageSettingsSheet } from '@/features/partners/components/PartnersPageSettingsSheet';
@@ -179,11 +176,6 @@ function PartnersPageContent() {
         label: 'Direction',
         options: PARTNER_DIRECTIONS.map((d) => ({ value: d.value, label: d.label })),
       },
-      {
-        key: 'status',
-        label: 'Status',
-        options: PARTNER_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-      },
     ],
     [],
   );
@@ -193,6 +185,18 @@ function PartnersPageContent() {
     totalSubscriptions: 0,
     avgPayoutPercent: 0,
   };
+
+  const partnersSettingsSheet = (
+    <PartnersPageSettingsSheet
+      listScope={scope}
+      onListScopeChange={setScope}
+      exportDisabled={loading || exportCsvSubmitting}
+      exportInProgress={exportCsvSubmitting}
+      statsExportDisabled={loading || !stats}
+      onExportCsv={handleExportCsv}
+      onExportScopeStatsCsv={handleExportScopeStatsCsv}
+    />
+  );
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -218,15 +222,26 @@ function PartnersPageContent() {
         }
         trailing={
           <>
-            <PartnersPageSettingsSheet
-              listScope={scope}
-              onListScopeChange={setScope}
-              exportDisabled={loading || exportCsvSubmitting}
-              exportInProgress={exportCsvSubmitting}
-              statsExportDisabled={loading || !stats}
-              onExportCsv={handleExportCsv}
-              onExportScopeStatsCsv={handleExportScopeStatsCsv}
-            />
+            {!isTrashView ? (
+              <div className="flex items-center gap-1.5">
+                <PartnerStatusFilterChips
+                  value={filters.status && filters.status !== 'all' ? filters.status : null}
+                  onChange={(status) =>
+                    setFilters((prev) => {
+                      if (!status) {
+                        const { status: _removed, ...rest } = prev;
+                        return rest;
+                      }
+                      return { ...prev, status };
+                    })
+                  }
+                  disabled={loading}
+                />
+                {partnersSettingsSheet}
+              </div>
+            ) : (
+              partnersSettingsSheet
+            )}
             {!isTrashView ? (
               <Button type="button" onClick={() => setCreateOpen(true)}>
                 <Plus size={16} aria-hidden />

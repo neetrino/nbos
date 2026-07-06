@@ -46,6 +46,7 @@ export function DriveDetailPanel({
   onFileDetailRefresh,
   onPermanentDeleteSuccess,
   fileActionGates,
+  stackAboveEntitySheet = false,
 }: {
   file: FileAsset | null;
   open: boolean;
@@ -63,11 +64,13 @@ export function DriveDetailPanel({
   /** After permanent delete: refresh list and close sheet. */
   onPermanentDeleteSuccess?: () => void;
   fileActionGates: DriveFileActionGates;
+  stackAboveEntitySheet?: boolean;
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
       <EntityDetailSheetContent
         open={open}
+        stackAboveEntitySheet={stackAboveEntitySheet}
         contentClassName="w-full gap-0 overflow-hidden p-0 sm:max-w-none sm:data-[side=right]:w-[82vw]"
         railAnchorClassName="sm:right-[82vw]"
         showRailActions={Boolean(file)}

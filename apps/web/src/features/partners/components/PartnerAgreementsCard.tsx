@@ -119,7 +119,7 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           </p>
         ) : null}
 
-        <div>
+        <div className="space-y-1.5">
           <Label>Agreement status</Label>
           <Select
             value={form.agreementStatus}
@@ -127,7 +127,7 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
               if (v) setForm((prev) => ({ ...prev, agreementStatus: v }));
             }}
           >
-            <SelectTrigger className="mt-1.5">
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -141,21 +141,19 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="agr-start">Start date</Label>
             <NbosDatePicker
               id="agr-start"
-              className="mt-1.5"
               value={form.agreementStartDate}
               onChange={(agreementStartDate) => setForm((p) => ({ ...p, agreementStartDate }))}
               aria-label="Agreement start"
             />
           </div>
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="agr-end">End date</Label>
             <NbosDatePicker
               id="agr-end"
-              className="mt-1.5"
               value={form.agreementEndDate}
               onChange={(agreementEndDate) => setForm((p) => ({ ...p, agreementEndDate }))}
               clearable
@@ -164,11 +162,10 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           </div>
         </div>
 
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="agr-terms">Special terms</Label>
           <Textarea
             id="agr-terms"
-            className="mt-1.5"
             rows={3}
             value={form.agreementSpecialTerms}
             onChange={(e) => setForm((p) => ({ ...p, agreementSpecialTerms: e.target.value }))}
