@@ -66,128 +66,126 @@ export function CompanySheetScrollBody({
         </p>
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="space-y-6">
-          <DetailSheetSection title="Company details" icon={<Tag size={12} />}>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-              <InlineField
-                variant="controlled"
-                label="Legal type"
-                type="select"
-                value={draft.type}
-                options={typeOptions}
-                icon={<Tag size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => {
-                  if (v) patchDraft({ type: v });
-                }}
-              />
-              <InlineField
-                label="Tax status"
-                value={taxStatus?.label ?? company.taxStatus}
-                displayValue={
-                  taxStatus ? (
-                    <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />
-                  ) : undefined
-                }
-                icon={<Receipt size={12} />}
-                editable={false}
-              />
-              <InlineField
-                variant="controlled"
-                label={companyTypeNumberLabel(draft.type)}
-                type="text"
-                value={draft.taxId}
-                placeholder="Optional"
-                icon={<FileText size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ taxId: v })}
-              />
-              <InlineField
-                variant="controlled"
-                label="Legal address"
-                type="text"
-                value={draft.legalAddress}
-                placeholder="Address…"
-                icon={<Building2 size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ legalAddress: v })}
-              />
-              <InlineField
-                variant="controlled"
-                label="Phone"
-                type="phone"
-                value={draft.phone}
-                placeholder="+374…"
-                icon={<User size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ phone: v })}
-              />
-              <InlineField
-                variant="controlled"
-                label="Email"
-                type="email"
-                value={draft.email}
-                placeholder="email@…"
-                icon={<User size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ email: v })}
-              />
-              <InlineField
-                variant="controlled"
-                label="Country"
-                type="text"
-                value={draft.country}
-                placeholder="Country"
-                icon={<Building2 size={12} />}
-                disabled={fieldDisabled}
-                onValueChange={(v) => patchDraft({ country: v })}
-              />
-              <InlineField
-                label="Created"
-                value={formatShortDate(company.createdAt)}
-                icon={<Calendar size={12} />}
-                editable={false}
-              />
-            </div>
-          </DetailSheetSection>
+      <div className="flex w-full min-w-0 flex-col gap-6">
+        <DetailSheetSection title="Company details" icon={<Tag size={12} />}>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <InlineField
+              variant="controlled"
+              label="Legal type"
+              type="select"
+              value={draft.type}
+              options={typeOptions}
+              icon={<Tag size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => {
+                if (v) patchDraft({ type: v });
+              }}
+            />
+            <InlineField
+              label="Tax status"
+              value={taxStatus?.label ?? company.taxStatus}
+              displayValue={
+                taxStatus ? (
+                  <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />
+                ) : undefined
+              }
+              icon={<Receipt size={12} />}
+              editable={false}
+            />
+            <InlineField
+              variant="controlled"
+              label={companyTypeNumberLabel(draft.type)}
+              type="text"
+              value={draft.taxId}
+              placeholder="Optional"
+              icon={<FileText size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ taxId: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Legal address"
+              type="text"
+              value={draft.legalAddress}
+              placeholder="Address…"
+              icon={<Building2 size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ legalAddress: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Phone"
+              type="phone"
+              value={draft.phone}
+              placeholder="+374…"
+              icon={<User size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ phone: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Email"
+              type="email"
+              value={draft.email}
+              placeholder="email@…"
+              icon={<User size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ email: v })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Country"
+              type="text"
+              value={draft.country}
+              placeholder="Country"
+              icon={<Building2 size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ country: v })}
+            />
+            <InlineField
+              label="Created"
+              value={formatShortDate(company.createdAt)}
+              icon={<Calendar size={12} />}
+              editable={false}
+            />
+          </div>
+        </DetailSheetSection>
 
-          <DetailSheetSection title="Contacts" icon={<User size={12} />}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <RelationPickerField
-                label="Primary contact"
-                entityKind="contact"
-                value={draft.primaryContactId || null}
-                selectionLabel={draft.primaryContactLabel || null}
-                placeholder="Search contacts…"
-                icon={<User size={12} />}
-                maxResults={25}
-                disabled={fieldDisabled}
-                onSearch={searchContacts}
-                onSelect={(id, label) =>
-                  patchDraft({ primaryContactId: id, primaryContactLabel: label })
-                }
-                {...contactPicker}
-              />
-              <RelationPickerField
-                label="Billing contact"
-                entityKind="contact"
-                value={draft.billingContactId || null}
-                selectionLabel={draft.billingContactLabel || null}
-                placeholder="Optional — clear to match primary"
-                icon={<User size={12} />}
-                maxResults={25}
-                disabled={fieldDisabled}
-                onSearch={searchContacts}
-                onSelect={(id, label) =>
-                  patchDraft({ billingContactId: id, billingContactLabel: label })
-                }
-                onClear={() => patchDraft({ billingContactId: '', billingContactLabel: '' })}
-                {...billingContactPicker}
-              />
-            </div>
-          </DetailSheetSection>
-        </div>
+        <DetailSheetSection title="Contacts" icon={<User size={12} />}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <RelationPickerField
+              label="Primary contact"
+              entityKind="contact"
+              value={draft.primaryContactId || null}
+              selectionLabel={draft.primaryContactLabel || null}
+              placeholder="Search contacts…"
+              icon={<User size={12} />}
+              maxResults={25}
+              disabled={fieldDisabled}
+              onSearch={searchContacts}
+              onSelect={(id, label) =>
+                patchDraft({ primaryContactId: id, primaryContactLabel: label })
+              }
+              {...contactPicker}
+            />
+            <RelationPickerField
+              label="Billing contact"
+              entityKind="contact"
+              value={draft.billingContactId || null}
+              selectionLabel={draft.billingContactLabel || null}
+              placeholder="Optional — clear to match primary"
+              icon={<User size={12} />}
+              maxResults={25}
+              disabled={fieldDisabled}
+              onSearch={searchContacts}
+              onSelect={(id, label) =>
+                patchDraft({ billingContactId: id, billingContactLabel: label })
+              }
+              onClear={() => patchDraft({ billingContactId: '', billingContactLabel: '' })}
+              {...billingContactPicker}
+            />
+          </div>
+        </DetailSheetSection>
       </div>
 
       <ClientPortfolioAnalytics
