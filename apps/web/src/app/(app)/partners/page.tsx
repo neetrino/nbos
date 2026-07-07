@@ -315,16 +315,18 @@ function PartnersPageContent() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={partnersDirectoryCardGridClass(sidebarCollapsed)}>
+        <div className={`${partnersDirectoryCardGridClass(sidebarCollapsed)} pb-6`}>
           {partners.map((partner) => (
             <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
           ))}
         </div>
       ) : (
-        <PartnersTable partners={partners} onOpen={openPartnerSheet} />
+        <div className="pb-6">
+          <PartnersTable partners={partners} onOpen={openPartnerSheet} />
+        </div>
       )}
 
-      {!loading && !error && partners.length > 0 ? (
+      {!loading && !error && partners.length > 0 && listMeta.totalPages > 1 ? (
         <ListPagination meta={listMeta} onPageChange={setPage} className="pb-6" />
       ) : null}
 
