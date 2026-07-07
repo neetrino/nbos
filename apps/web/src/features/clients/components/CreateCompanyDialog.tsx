@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
+import { DetailSheetFieldSegmented } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 import { useRelationPickerActions } from '@/components/shared/relation-picker/use-relation-picker-actions';
@@ -128,13 +129,13 @@ export function CreateCompanyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>New Company</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label>Company Name *</Label>
             <Input
               value={form.name}
@@ -145,7 +146,7 @@ export function CreateCompanyDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-1.5">
               <Label>Type *</Label>
               <Select
                 value={form.type}
@@ -163,28 +164,17 @@ export function CreateCompanyDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Tax Status *</Label>
-              <Select
-                value={form.taxStatus}
-                onValueChange={(v) => setForm({ ...form, taxStatus: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAX_STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <DetailSheetFieldSegmented
+              label="Tax Status *"
+              value={form.taxStatus}
+              options={TAX_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
+              onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
+              ariaLabel="Tax status"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-1.5">
               <Label>Tax ID</Label>
               <Input
                 value={form.taxId}
@@ -192,7 +182,7 @@ export function CreateCompanyDialog({
                 placeholder="Tax ID / VOEN"
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Country</Label>
               <Input
                 value={form.country}
@@ -202,40 +192,41 @@ export function CreateCompanyDialog({
             </div>
           </div>
 
-          <div>
-            <Label>Legal Address</Label>
-            <Input
-              value={form.legalAddress}
-              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-              placeholder="Legal address..."
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Legal Address</Label>
+              <Input
+                value={form.legalAddress}
+                onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
+                placeholder="Legal address..."
+              />
+            </div>
+            <RelationPickerField
+              label="Primary Contact *"
+              entityKind="contact"
+              value={form.primaryContactId || null}
+              selectionLabel={form.primaryContactLabel || null}
+              placeholder="Search by name, phone, email…"
+              icon={<User size={12} />}
+              maxResults={25}
+              onSearch={searchContacts}
+              onSelect={(id, label) =>
+                setForm((prev) => ({
+                  ...prev,
+                  primaryContactId: id,
+                  primaryContactLabel: label,
+                }))
+              }
+              onClear={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  primaryContactId: '',
+                  primaryContactLabel: '',
+                }))
+              }
+              {...primaryContactPicker}
             />
           </div>
-
-          <RelationPickerField
-            label="Primary Contact *"
-            entityKind="contact"
-            value={form.primaryContactId || null}
-            selectionLabel={form.primaryContactLabel || null}
-            placeholder="Search by name, phone, email…"
-            icon={<User size={12} />}
-            maxResults={25}
-            onSearch={searchContacts}
-            onSelect={(id, label) =>
-              setForm((prev) => ({
-                ...prev,
-                primaryContactId: id,
-                primaryContactLabel: label,
-              }))
-            }
-            onClear={() =>
-              setForm((prev) => ({
-                ...prev,
-                primaryContactId: '',
-                primaryContactLabel: '',
-              }))
-            }
-            {...primaryContactPicker}
-          />
 
           <RelationPickerField
             label="Billing Contact"
@@ -264,7 +255,7 @@ export function CreateCompanyDialog({
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="space-y-1.5">
               <Label>Company Phone</Label>
               <Input
                 type="tel"
@@ -272,7 +263,7 @@ export function CreateCompanyDialog({
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Company Email</Label>
               <Input
                 type="email"
@@ -282,7 +273,7 @@ export function CreateCompanyDialog({
             </div>
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea
               value={form.notes}
