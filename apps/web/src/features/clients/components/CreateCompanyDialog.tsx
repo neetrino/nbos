@@ -129,12 +129,12 @@ export function CreateCompanyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px]">
+      <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>New Company</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="space-y-1.5">
             <Label>Company Name *</Label>
             <Input
@@ -145,7 +145,7 @@ export function CreateCompanyDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
               <Label>Type *</Label>
               <Select
@@ -173,7 +173,7 @@ export function CreateCompanyDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
               <Label>Tax ID</Label>
               <Input
@@ -192,7 +192,7 @@ export function CreateCompanyDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
               <Label>Legal Address</Label>
               <Input
@@ -254,7 +254,7 @@ export function CreateCompanyDialog({
             {...billingContactPicker}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
               <Label>Company Phone</Label>
               <Input
