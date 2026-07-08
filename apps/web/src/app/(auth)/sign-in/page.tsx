@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { PublicSiteFooterLinks } from '@/components/legal/public-site-footer-links';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
@@ -159,6 +160,10 @@ function SignInForm() {
             {isSubmitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-8 flex justify-center">
+          <PublicSiteFooterLinks />
+        </div>
       </div>
     </div>
   );

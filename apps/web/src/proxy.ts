@@ -7,7 +7,14 @@ import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/sign-in', '/sign-up', '/accept-invite'];
+const PUBLIC_PATHS = [
+  '/',
+  '/sign-in',
+  '/sign-up',
+  '/accept-invite',
+  '/privacy-policy',
+  '/data-deletion',
+];
 
 function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith('/api/')) return true;
