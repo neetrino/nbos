@@ -1,29 +1,11 @@
 import { createHmac } from 'crypto';
 import { describe, expect, it } from 'vitest';
-import { buildMetaOAuthUrl } from './meta-provider.config';
 import {
   assertSafeMetaHubChallenge,
   normalizeHttpRequestParam,
   parseMetaInboundMessages,
   verifyMetaWebhookSignature,
 } from './meta-webhook.helpers';
-
-describe('buildMetaOAuthUrl', () => {
-  it('builds a Meta OAuth consent URL with scopes', () => {
-    const url = buildMetaOAuthUrl({
-      dialogBaseUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
-      appId: 'app-123',
-      redirectUri: 'http://localhost:4000/api/integrations/meta/oauth/callback',
-      state: 'signed-state',
-      scopes: ['pages_messaging', 'instagram_business_manage_messages'],
-    });
-    expect(url).toContain('client_id=app-123');
-    expect(url).toContain('redirect_uri=');
-    expect(url).toContain('state=signed-state');
-    expect(url).toContain('pages_messaging');
-    expect(url).toContain('instagram_business_manage_messages');
-  });
-});
 
 describe('assertSafeMetaHubChallenge', () => {
   it('accepts token-like challenge strings', () => {

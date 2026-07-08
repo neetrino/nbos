@@ -1,10 +1,18 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@nbos/database';
 import * as jwt from 'jsonwebtoken';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { MetaGraphClient } from './meta-graph.client';
-import { META_OAUTH_SCOPES, MetaProviderConfig, buildMetaOAuthUrl } from './meta-provider.config';
+import { MetaInstagramGraphClient } from './meta-instagram-graph.client';
+import type { MetaOAuthPlatform } from './meta-oauth.platform';
+import {
+  META_FACEBOOK_OAUTH_SCOPES,
+  META_INSTAGRAM_OAUTH_SCOPES,
+  MetaProviderConfig,
+  buildFacebookOAuthUrl,
+  buildInstagramOAuthUrl,
+} from './meta-provider.config';
 import { MetaProviderSecretStore } from './meta-provider-secret.store';
 import type { MetaGraphPage, MetaOAuthErrorReason } from './meta.types';
 
@@ -12,10 +20,12 @@ const STATE_TTL_SECONDS = 600;
 
 interface MetaOAuthState {
   employeeId: string;
+  platform: MetaOAuthPlatform;
 }
 
 @Injectable()
 export class MetaOAuthService {
+  private readonly logger = new Logger(MetaOAuthService.name);
   private readonly jwtSecret: string;
 
   constructor(
@@ -27,17 +37,36 @@ export class MetaOAuthService {
     this.jwtSecret = configService.getOrThrow<string>('JWT_SECRET');
   }
 
-  buildAuthUrl(employeeId: string): string {
+  buildAuthUrl(employeeId: string, platform: MetaOAuthPlatform): string {
     this.requireConfigured();
-    const state = jwt.sign({ employeeId } satisfies MetaOAuthState, this.jwtSecret, {
+    const statePayload: MetaOAuthState = { employeeId, platform };
+    const state = jwt.sign(statePayload, this.jwtSecret, {
       expiresIn: STATE_TTL_SECONDS,
     });
-    return buildMetaOAuthUrl({
-      dialogBaseUrl: this.config.oauthDialogUrl,
-      appId: this.config.appId,
-      redirectUri: this.config.oauthRedirectUri,
+    const redirectUri = this.config.oauthRedirectUri;
+    const authorizeBaseUrl = this.config.authorizeUrlForPlatform(platform);
+    const scopes = this.config.scopesForPlatform(platform);
+
+    this.logger.log(
+      `Meta OAuth start platform=${platform} oauthBaseUrl=${authorizeBaseUrl} scopes=${scopes.join(',')} redirectUri=${redirectUri} statePlatform=${platform}`,
+    );
+
+    if (platform === 'FACEBOOK') {
+      return buildFacebookOAuthUrl({
+        authorizeBaseUrl,
+        clientId: this.config.appId,
+        redirectUri,
+        state,
+        scopes,
+      });
+    }
+
+    return buildInstagramOAuthUrl({
+      authorizeBaseUrl,
+      clientId: this.config.appId,
+      redirectUri,
       state,
-      scopes: META_OAUTH_SCOPES,
+      scopes,
     });
   }
 
@@ -54,9 +83,20 @@ export class MetaOAuthService {
     state: string,
   ): Promise<{ redirectUrl: string; accountCount: number }> {
     this.requireConfigured();
-    const employeeId = this.verifyState(state);
-    const graph = this.createGraphClient();
+    const { employeeId, platform } = this.verifyState(state);
 
+    if (platform === 'INSTAGRAM') {
+      return this.handleInstagramCallback(code, employeeId);
+    }
+
+    return this.handleFacebookCallback(code, employeeId);
+  }
+
+  private async handleFacebookCallback(
+    code: string,
+    employeeId: string,
+  ): Promise<{ redirectUrl: string; accountCount: number }> {
+    const graph = this.createFacebookGraphClient();
     const shortToken = await graph.exchangeCodeForToken(code, this.config.oauthRedirectUri);
     const longToken = await graph.exchangeForLongLivedToken(shortToken.access_token);
     const userAccessToken = longToken.access_token;
@@ -86,6 +126,45 @@ export class MetaOAuthService {
     };
   }
 
+  private async handleInstagramCallback(
+    code: string,
+    employeeId: string,
+  ): Promise<{ redirectUrl: string; accountCount: number }> {
+    const instagramClient = this.createInstagramGraphClient();
+    const shortToken = await instagramClient.exchangeCodeForToken(
+      code,
+      this.config.oauthRedirectUri,
+    );
+    const longToken = await instagramClient.exchangeForLongLivedToken(shortToken.access_token);
+    const accessToken = longToken.access_token;
+    const tokenExpiresAt = longToken.expires_in
+      ? new Date(Date.now() + longToken.expires_in * 1000)
+      : null;
+
+    const profile = await instagramClient.fetchProfile(accessToken);
+    const accountId = profile.id;
+    const displayName = profile.username ? `@${profile.username}` : (profile.name ?? accountId);
+    const scopes = [...META_INSTAGRAM_OAUTH_SCOPES];
+
+    await this.upsertAccount({
+      employeeId,
+      platform: 'INSTAGRAM',
+      displayName,
+      pageId: accountId,
+      instagramBusinessAccountId: accountId,
+      externalAccountId: accountId,
+      tokenExpiresAt,
+      scopes,
+      pageAccessToken: accessToken,
+      userAccessToken: accessToken,
+    });
+
+    return {
+      redirectUrl: this.buildSuccessRedirectUrl(),
+      accountCount: 1,
+    };
+  }
+
   private async upsertPageAccounts(
     employeeId: string,
     page: MetaGraphPage,
@@ -94,7 +173,7 @@ export class MetaOAuthService {
     graph: MetaGraphClient,
   ): Promise<number> {
     let count = 0;
-    const scopes = [...META_OAUTH_SCOPES];
+    const scopes = [...META_FACEBOOK_OAUTH_SCOPES];
     const facebookAccountId = await this.upsertAccount({
       employeeId,
       platform: 'FACEBOOK',
@@ -204,17 +283,35 @@ export class MetaOAuthService {
     return accountId;
   }
 
-  private verifyState(state: string): string {
+  private verifyState(state: string): MetaOAuthState {
     try {
-      const payload = jwt.verify(state, this.jwtSecret) as MetaOAuthState;
-      return payload.employeeId;
-    } catch {
+      const payload = jwt.verify(state, this.jwtSecret) as Partial<MetaOAuthState>;
+      if (!payload.employeeId) {
+        throw new BadRequestException('Invalid or expired OAuth state');
+      }
+      const platform = payload.platform ?? 'FACEBOOK';
+      if (platform !== 'FACEBOOK' && platform !== 'INSTAGRAM') {
+        throw new BadRequestException('Invalid or expired OAuth state');
+      }
+      return { employeeId: payload.employeeId, platform };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new BadRequestException('Invalid or expired OAuth state');
     }
   }
 
-  private createGraphClient(): MetaGraphClient {
+  private createFacebookGraphClient(): MetaGraphClient {
     return new MetaGraphClient(this.config.graphBaseUrl, this.config.appId, this.config.appSecret);
+  }
+
+  private createInstagramGraphClient(): MetaInstagramGraphClient {
+    return new MetaInstagramGraphClient(
+      this.config.instagramGraphBaseUrl,
+      this.config.appId,
+      this.config.appSecret,
+    );
   }
 
   private requireConfigured(): void {

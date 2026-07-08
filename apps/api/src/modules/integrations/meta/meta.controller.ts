@@ -25,6 +25,7 @@ import {
 import { LinkMetaMarketingAccountDto } from './dto/link-meta-marketing-account.dto';
 import { MetaAccountsService } from './meta-accounts.service';
 import { MetaOAuthService } from './meta-oauth.service';
+import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
 import { MetaWebhookService } from './meta-webhook.service';
 import type { HttpRequestParam } from './meta-webhook.helpers';
@@ -43,9 +44,12 @@ export class MetaController {
   @Get('oauth/start')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Start Meta OAuth: returns the Facebook consent URL to open' })
-  startOAuth(@CurrentUser() user: CurrentUserPayload) {
-    return { url: this.oauthService.buildAuthUrl(user.id) };
+  @ApiOperation({
+    summary: 'Start Meta OAuth: returns Facebook or Instagram consent URL to open',
+  })
+  startOAuth(@CurrentUser() user: CurrentUserPayload, @Query('platform') platform: string) {
+    const oauthPlatform = parseMetaOAuthPlatform(platform);
+    return { url: this.oauthService.buildAuthUrl(user.id, oauthPlatform) };
   }
 
   @Public()

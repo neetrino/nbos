@@ -1,15 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { MetaOAuthPlatform } from './meta-oauth.platform';
 
 const DEFAULT_GRAPH_API_VERSION = 'v21.0';
 
-/** Meta OAuth scopes for page + Instagram DM webhook ingestion. */
-export const META_OAUTH_SCOPES = [
+/** Facebook Page / Messenger OAuth scopes (no Instagram scopes). */
+export const META_FACEBOOK_OAUTH_SCOPES = [
   'pages_show_list',
   'pages_manage_metadata',
   'pages_messaging',
+  'pages_read_engagement',
+  'business_management',
+] as const;
+
+/** Instagram Login OAuth scopes (no Facebook Page scopes). */
+export const META_INSTAGRAM_OAUTH_SCOPES = [
   'instagram_business_basic',
   'instagram_business_manage_messages',
+] as const;
+
+const FORBIDDEN_FACEBOOK_SCOPES = [
+  'instagram_business_basic',
+  'instagram_business_manage_messages',
+  'instagram_basic',
+  'instagram_manage_messages',
+] as const;
+
+const FORBIDDEN_INSTAGRAM_SCOPES = [
+  'pages_show_list',
+  'pages_manage_metadata',
+  'pages_messaging',
+  'pages_read_engagement',
   'business_management',
 ] as const;
 
@@ -61,8 +82,16 @@ export class MetaProviderConfig {
     return `https://graph.facebook.com/${this.graphApiVersion}`;
   }
 
-  get oauthDialogUrl(): string {
+  get instagramGraphBaseUrl(): string {
+    return `https://graph.instagram.com/${this.graphApiVersion}`;
+  }
+
+  get facebookOAuthDialogUrl(): string {
     return `https://www.facebook.com/${this.graphApiVersion}/dialog/oauth`;
+  }
+
+  get instagramOAuthAuthorizeUrl(): string {
+    return 'https://www.instagram.com/oauth/authorize';
   }
 
   get integrationsReturnPath(): string {
@@ -76,21 +105,72 @@ export class MetaProviderConfig {
   isWebhookVerifyConfigured(): boolean {
     return Boolean(this.webhookVerifyToken);
   }
+
+  scopesForPlatform(platform: MetaOAuthPlatform): readonly string[] {
+    return platform === 'FACEBOOK' ? META_FACEBOOK_OAUTH_SCOPES : META_INSTAGRAM_OAUTH_SCOPES;
+  }
+
+  authorizeUrlForPlatform(platform: MetaOAuthPlatform): string {
+    return platform === 'FACEBOOK' ? this.facebookOAuthDialogUrl : this.instagramOAuthAuthorizeUrl;
+  }
 }
 
-/** Builds Meta OAuth consent URL (pure helper for tests). */
-export function buildMetaOAuthUrl(params: {
-  dialogBaseUrl: string;
-  appId: string;
+interface BuildOAuthUrlParams {
+  authorizeBaseUrl: string;
+  clientId: string;
   redirectUri: string;
   state: string;
   scopes: readonly string[];
-}): string {
-  const url = new URL(params.dialogBaseUrl);
-  url.searchParams.set('client_id', params.appId);
+}
+
+/** Builds Facebook OAuth consent URL (pure helper for tests). */
+export function buildFacebookOAuthUrl(params: BuildOAuthUrlParams): string {
+  assertFacebookOAuthParams(params.authorizeBaseUrl, params.scopes);
+  return buildOAuthAuthorizeUrl(params);
+}
+
+/** Builds Instagram OAuth consent URL (pure helper for tests). */
+export function buildInstagramOAuthUrl(params: BuildOAuthUrlParams): string {
+  assertInstagramOAuthParams(params.authorizeBaseUrl, params.scopes);
+  return buildOAuthAuthorizeUrl(params);
+}
+
+function buildOAuthAuthorizeUrl(params: BuildOAuthUrlParams): string {
+  const url = new URL(params.authorizeBaseUrl);
+  url.searchParams.set('client_id', params.clientId);
   url.searchParams.set('redirect_uri', params.redirectUri);
   url.searchParams.set('state', params.state);
   url.searchParams.set('scope', params.scopes.join(','));
   url.searchParams.set('response_type', 'code');
   return url.toString();
+}
+
+/** Validates Facebook OAuth URL and scopes before returning to the client. */
+export function assertFacebookOAuthParams(authorizeUrl: string, scopes: readonly string[]): void {
+  if (authorizeUrl.includes('instagram.com')) {
+    throw new BadRequestException('Facebook OAuth URL must not use instagram.com');
+  }
+  for (const scope of scopes) {
+    if (FORBIDDEN_FACEBOOK_SCOPES.includes(scope as (typeof FORBIDDEN_FACEBOOK_SCOPES)[number])) {
+      throw new BadRequestException(`Facebook OAuth must not request Instagram scope "${scope}"`);
+    }
+    if (scope.startsWith('instagram_')) {
+      throw new BadRequestException(`Facebook OAuth must not request Instagram scope "${scope}"`);
+    }
+  }
+}
+
+/** Validates Instagram OAuth URL and scopes before returning to the client. */
+export function assertInstagramOAuthParams(authorizeUrl: string, scopes: readonly string[]): void {
+  if (authorizeUrl.includes('facebook.com')) {
+    throw new BadRequestException('Instagram OAuth URL must not use facebook.com');
+  }
+  for (const scope of scopes) {
+    if (FORBIDDEN_INSTAGRAM_SCOPES.includes(scope as (typeof FORBIDDEN_INSTAGRAM_SCOPES)[number])) {
+      throw new BadRequestException(`Instagram OAuth must not request Facebook scope "${scope}"`);
+    }
+    if (scope.startsWith('pages_')) {
+      throw new BadRequestException(`Instagram OAuth must not request Facebook scope "${scope}"`);
+    }
+  }
 }
