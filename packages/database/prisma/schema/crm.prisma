@@ -71,8 +71,9 @@ model MarketingAccount {
 
   owner      Employee?           @relation("MarketingAccountOwner", fields: [ownerId], references: [id])
   activities MarketingActivity[]
-  leads      Lead[]
-  deals      Deal[]
+  leads                 Lead[]
+  deals                 Deal[]
+  metaConnectedAccounts MetaConnectedAccount[]
 
   @@map("marketing_accounts")
 }
@@ -144,8 +145,9 @@ model Lead {
   sourceContact     Contact?           @relation("LeadSourceContact", fields: [sourceContactId], references: [id])
   marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
   marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
-  deal              Deal?
+  deal               Deal?
   additionalContacts LeadAdditionalContact[]
+  metaProviderEvents MetaProviderEvent[]
 
   @@index([trashedAt])
   @@map("leads")

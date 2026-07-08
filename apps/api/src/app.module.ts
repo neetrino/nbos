@@ -36,6 +36,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { MailModule } from './modules/mail/mail.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { PartnersModule } from './modules/partners/partners.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
@@ -98,6 +99,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     MarketingModule,
     MessengerModule,
     MailModule,
+    IntegrationsModule,
     TechnicalModule,
     SystemListsModule,
     RolesModule,

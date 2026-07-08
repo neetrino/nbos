@@ -202,7 +202,26 @@ NBOS Calendar ←→ Google Calendar API (v3)
 
 ## Instagram / Facebook (Meta Business)
 
-### Назначение
+### MVP (implemented)
+
+NBOS MVP for Meta inbound DMs:
+
+| Capability                | MVP behavior                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| Connect flow              | Platform Admin → Settings → Integrations → Meta OAuth                                          |
+| Storage                   | `MetaConnectedAccount` + encrypted `MetaProviderSecret` (not env)                              |
+| Webhook                   | `GET/POST {BACKEND_URL}/api/integrations/meta/webhook`                                         |
+| Lead creation             | Instagram Direct / Facebook Messenger text → **Lead only**                                     |
+| Attribution               | `source = MARKETING`, `sourceDetail = SMM`, `marketingAccountId` from linked Marketing account |
+| Contact / Deal            | **Not** created on inbound DM; Contact only at Lead → Deal conversion                          |
+| Chat UI / replies         | Out of scope                                                                                   |
+| Open Channels / CRM Inbox | Out of scope for this slice                                                                    |
+
+**Prerequisite:** each connected Meta account must be linked to an active Marketing account (`channel = SMM`) before webhook ingestion creates Leads.
+
+**Env:** `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`, `META_GRAPH_API_VERSION`, `BACKEND_URL` (public API base for OAuth + webhook URLs).
+
+### Назначение (full product vision)
 
 Приём входящих сообщений и лидов из Instagram и Facebook. Клиенты часто обращаются в Neetrino через эти каналы, и входящие сообщения должны попадать в CRM.
 
@@ -218,8 +237,8 @@ NBOS Calendar ←→ Google Calendar API (v3)
 | Функция                          | Описание                                                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **Входящие сообщения**           | Сообщения из Instagram Direct и Facebook Messenger → отображаются в NBOS (раздел «Коммуникации с клиентами») |
-| **Автоматическое создание лида** | Новое сообщение от неизвестного контакта → создаётся Lead в CRM                                              |
-| **Привязка к контакту**          | Если контакт известен → сообщение привязывается к существующему Contact                                      |
+| **Автоматическое создание лида** | Новое сообщение от неизвестного контакта → создаётся Lead в CRM (MVP: без Contact/Deal; без чат UI)          |
+| **Привязка к контакту**          | Фаза 3+ — MVP не создаёт и не привязывает Contact на inbound DM                                              |
 | **Ответ из NBOS**                | Сотрудник отвечает из NBOS → ответ отправляется обратно в Instagram/Facebook                                 |
 | **Источник лида**                | Автоматическая пометка: Lead.source = «Instagram» / «Facebook»                                               |
 
