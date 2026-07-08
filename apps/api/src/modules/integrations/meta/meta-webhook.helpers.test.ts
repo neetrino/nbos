@@ -15,12 +15,13 @@ describe('buildMetaOAuthUrl', () => {
       appId: 'app-123',
       redirectUri: 'http://localhost:4000/api/integrations/meta/oauth/callback',
       state: 'signed-state',
-      scopes: ['pages_messaging', 'instagram_manage_messages'],
+      scopes: ['pages_messaging', 'instagram_business_manage_messages'],
     });
     expect(url).toContain('client_id=app-123');
     expect(url).toContain('redirect_uri=');
     expect(url).toContain('state=signed-state');
     expect(url).toContain('pages_messaging');
+    expect(url).toContain('instagram_business_manage_messages');
   });
 });
 
