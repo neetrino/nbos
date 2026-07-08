@@ -1,0 +1,78 @@
+// ─── INTEGRATIONS (Meta MVP) ────────────────────────────────
+
+enum IntegrationProviderEnum {
+  META
+}
+
+enum MetaPlatformEnum {
+  INSTAGRAM
+  FACEBOOK
+}
+
+enum MetaConnectedAccountStatusEnum {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+model MetaConnectedAccount {
+  id                         String                         @id @default(uuid())
+  provider                   IntegrationProviderEnum        @default(META)
+  platform                   MetaPlatformEnum
+  displayName                String                         @map("display_name")
+  pageId                     String                         @map("page_id")
+  instagramBusinessAccountId String?                        @map("instagram_business_account_id")
+  externalAccountId          String                         @map("external_account_id")
+  marketingAccountId         String?                        @map("marketing_account_id")
+  connectedByUserId          String                         @map("connected_by_user_id")
+  status                     MetaConnectedAccountStatusEnum @default(CONNECTED)
+  tokenExpiresAt             DateTime?                      @map("token_expires_at")
+  scopes                     Json?
+  lastErrorAt                DateTime?                      @map("last_error_at")
+  lastErrorMessage           String?                        @map("last_error_message") @db.Text
+  createdAt                  DateTime                       @default(now()) @map("created_at")
+  updatedAt                  DateTime                       @updatedAt @map("updated_at")
+
+  marketingAccount MarketingAccount? @relation(fields: [marketingAccountId], references: [id], onDelete: SetNull)
+  connectedBy      Employee          @relation("MetaConnectedBy", fields: [connectedByUserId], references: [id], onDelete: Restrict)
+  providerSecret   MetaProviderSecret?
+
+  @@unique([provider, externalAccountId])
+  @@index([marketingAccountId])
+  @@index([status])
+  @@index([pageId])
+  @@index([instagramBusinessAccountId])
+  @@map("meta_connected_accounts")
+}
+
+model MetaProviderSecret {
+  id                    String   @id @default(uuid())
+  metaConnectedAccountId String  @unique @map("meta_connected_account_id")
+  encryptedSecret       String   @map("encrypted_secret") @db.Text
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  metaConnectedAccount MetaConnectedAccount @relation(fields: [metaConnectedAccountId], references: [id], onDelete: Cascade)
+
+  @@map("meta_provider_secrets")
+}
+
+model MetaProviderEvent {
+  id          String                  @id @default(uuid())
+  provider    IntegrationProviderEnum @default(META)
+  eventId     String                  @map("event_id")
+  objectId    String                  @map("object_id")
+  eventType   String?                 @map("event_type")
+  leadId      String?                 @map("lead_id")
+  processedAt DateTime?               @map("processed_at")
+  payload     Json?
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, eventId])
+  @@index([objectId])
+  @@index([leadId])
+  @@map("meta_provider_events")
+}

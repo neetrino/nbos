@@ -98,6 +98,7 @@ model Employee {
   mailThreadsAssigned              EmailThread[]                       @relation("EmailThreadAssignee")
   mailThreadsAssignedBy            EmailThread[]                       @relation("EmailThreadAssignedBy")
   mailThreadsTrashedBy             EmailThread[]                       @relation("EmailThreadTrashedBy")
+  metaConnectedAccounts            MetaConnectedAccount[]              @relation("MetaConnectedBy")
   inAppNotificationsReceived       InAppNotification[]
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]

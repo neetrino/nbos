@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { json, urlencoded } from 'express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
@@ -27,7 +28,16 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
-  app.use(json({ limit: JSON_BODY_LIMIT }));
+  app.use(
+    json({
+      limit: JSON_BODY_LIMIT,
+      verify: (req, _res, buf) => {
+        if (req.url?.includes('/api/integrations/meta/webhook')) {
+          (req as Request & { rawBody?: Buffer }).rawBody = buf;
+        }
+      },
+    }),
+  );
   app.use(urlencoded({ extended: true, limit: URLENCODED_BODY_LIMIT }));
 
   app.useWebSocketAdapter(new SocketIoCorsAdapter(app));

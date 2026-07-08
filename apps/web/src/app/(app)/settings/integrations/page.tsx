@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Cable, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
+import { MetaIntegrationsSection } from '@/features/integrations/components/MetaIntegrationsSection';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const PROVIDERS_KEY = 'INTEGRATION_PROVIDER';
@@ -162,7 +163,7 @@ export default function IntegrationsPage() {
       <div className="space-y-4">
         <PageHero title="Integrations" />
         <p className="text-muted-foreground text-sm">
-          Provider registry, readiness statuses, and required setup lists.
+          External channel connections and provider registry readiness.
         </p>
         <LoadingState />
       </div>
@@ -170,16 +171,20 @@ export default function IntegrationsPage() {
   }
 
   if (error) {
-    return <ErrorState description={error} onRetry={() => void loadAll()} />;
+    return (
+      <div className="space-y-6">
+        <PageHero title="Integrations" />
+        <MetaIntegrationsSection />
+        <ErrorState description={error} onRetry={() => void loadAll()} />
+      </div>
+    );
   }
 
   if (providers.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <PageHero title="Integrations" />
-        <p className="text-muted-foreground text-sm">
-          Provider registry, readiness statuses, and required setup lists.
-        </p>
+        <MetaIntegrationsSection />
         <EmptyState
           icon={Cable}
           title="Integration registry is empty"
@@ -219,11 +224,14 @@ export default function IntegrationsPage() {
         }
       />
       <p className="text-muted-foreground text-sm">
-        Registry of providers with explicit setup checklist and current readiness status.
+        Connect external channels and manage provider registry readiness.
       </p>
 
+      <MetaIntegrationsSection />
+
       <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        <p className="text-muted-foreground text-sm">
+        <h2 className="text-base font-semibold">Provider registry</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
           Status and setup taxonomy is backed by system lists:
           <span className="font-mono"> {PROVIDERS_KEY}</span>,
           <span className="font-mono"> {SETUP_KEY}</span>,
