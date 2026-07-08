@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # NBOS API — Coolify / Docker
 FROM node:22-bookworm-slim AS base
 
@@ -17,6 +18,9 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 FROM base AS builder
 
+# Coolify may inject NODE_ENV=production at build time — keep development here so Nest/TS devDeps install.
+ENV NODE_ENV=development
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
@@ -25,7 +29,9 @@ COPY packages/shared/package.json packages/shared/package.json
 COPY packages/tsconfig/package.json packages/tsconfig/package.json
 COPY packages/eslint-config/package.json packages/eslint-config/package.json
 
-RUN pnpm install --frozen-lockfile --prod=false
+# API subgraph only (~4 workspace projects) — full monorepo install OOMs on small Coolify hosts.
+RUN --mount=type=cache,id=pnpm-api,target=/pnpm/store \
+  pnpm install --frozen-lockfile --prod=false --filter @nbos/api...
 
 COPY . .
 

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # NBOS Web — Coolify / Docker
 FROM node:22-bookworm-slim AS base
 
@@ -18,9 +19,8 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 FROM base AS builder
 
-ENV NODE_ENV=production
-# Typecheck runs in CI; skipping here avoids OOM on memory-constrained build hosts.
-ENV SKIP_NEXT_TYPECHECK=1
+# Install devDependencies (TypeScript, Tailwind); switch to production before `next build`.
+ENV NODE_ENV=development
 
 ARG APP_URL
 ARG BACKEND_URL
@@ -38,11 +38,19 @@ COPY packages/shared/package.json packages/shared/package.json
 COPY packages/tsconfig/package.json packages/tsconfig/package.json
 COPY packages/eslint-config/package.json packages/eslint-config/package.json
 
-RUN pnpm install --frozen-lockfile --prod=false
+# Web subgraph only — skip Nest/Prisma API deps; full monorepo install OOMs on small Coolify hosts.
+RUN --mount=type=cache,id=pnpm-web,target=/pnpm/store \
+  pnpm install --frozen-lockfile --prod=false --filter @nbos/web...
 
 COPY . .
 
+ENV NODE_ENV=production
+# Typecheck runs in CI; skipping here avoids OOM on memory-constrained build hosts.
+ENV SKIP_NEXT_TYPECHECK=1
+
 RUN pnpm build:web
+# Production slice for runner — avoids OOM on COPY of full monorepo node_modules.
+RUN pnpm --filter @nbos/web deploy --prod /prod/web
 
 FROM base AS runner
 
@@ -58,8 +66,10 @@ ENV APP_URL=$APP_URL
 ENV BACKEND_URL=$BACKEND_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-COPY --from=builder /app /app
+WORKDIR /app
+
+COPY --from=builder /prod/web /app
 
 EXPOSE 3000
 
-CMD ["pnpm", "start:web"]
+CMD ["pnpm", "start"]
