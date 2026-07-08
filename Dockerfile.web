@@ -69,6 +69,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 WORKDIR /app
 
 COPY --from=builder /prod/web /app
+# pnpm deploy skips .gitignored build output — next start requires .next at package root.
+COPY --from=builder /app/apps/web/.next ./.next
 
 EXPOSE 3000
 
