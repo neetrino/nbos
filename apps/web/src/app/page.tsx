@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { auth } from '@/auth';
+import { PublicSiteFooterLinks } from '@/components/legal/public-site-footer-links';
 import {
   LayoutDashboard,
   Users,
@@ -227,15 +228,18 @@ export default async function LandingPage() {
 
       {/* Footer */}
       <footer className="border-border/60 border-t py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             {/* eslint-disable-next-line @next/next/no-img-element -- footer logo SVG; fixed dimensions, no next/image benefit */}
             <img src="/logo/logo.svg" alt="NBOS" width={120} height={20} className="h-5 w-auto" />
             NBOS by Neetrino
           </div>
-          <p className="text-muted-foreground text-xs">
-            &copy; {new Date().getFullYear()} Neetrino. All rights reserved.
-          </p>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <PublicSiteFooterLinks />
+            <p className="text-muted-foreground text-xs">
+              &copy; {new Date().getFullYear()} Neetrino. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
