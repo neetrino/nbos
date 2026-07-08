@@ -1,7 +1,11 @@
 import { createHmac } from 'crypto';
 import { describe, expect, it } from 'vitest';
 import { buildMetaOAuthUrl } from './meta-provider.config';
-import { parseMetaInboundMessages, verifyMetaWebhookSignature } from './meta-webhook.helpers';
+import {
+  assertSafeMetaHubChallenge,
+  parseMetaInboundMessages,
+  verifyMetaWebhookSignature,
+} from './meta-webhook.helpers';
 
 describe('buildMetaOAuthUrl', () => {
   it('builds a Meta OAuth consent URL with scopes', () => {
@@ -16,6 +20,23 @@ describe('buildMetaOAuthUrl', () => {
     expect(url).toContain('redirect_uri=');
     expect(url).toContain('state=signed-state');
     expect(url).toContain('pages_messaging');
+  });
+});
+
+describe('assertSafeMetaHubChallenge', () => {
+  it('accepts token-like challenge strings', () => {
+    expect(assertSafeMetaHubChallenge('1234567890')).toBe('1234567890');
+    expect(assertSafeMetaHubChallenge('abcDEF_-+/')).toBe('abcDEF_-+/');
+  });
+
+  it('rejects HTML/script metacharacters and empty values', () => {
+    expect(() => assertSafeMetaHubChallenge('')).toThrow('Invalid hub.challenge format');
+    expect(() => assertSafeMetaHubChallenge('<script>alert(1)</script>')).toThrow(
+      'Invalid hub.challenge format',
+    );
+    expect(() => assertSafeMetaHubChallenge('challenge with spaces')).toThrow(
+      'Invalid hub.challenge format',
+    );
   });
 });
 

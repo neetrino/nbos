@@ -1,6 +1,27 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { MetaMessagingWebhookBody, ParsedMetaInboundMessage } from './meta.types';
 
+/** Max length for Meta `hub.challenge` echoed during webhook verification. */
+export const META_HUB_CHALLENGE_MAX_LENGTH = 512;
+
+/** Token-safe characters Meta uses for `hub.challenge` (no HTML/script metacharacters). */
+const META_HUB_CHALLENGE_PATTERN = /^[A-Za-z0-9+/=_-]+$/;
+
+/**
+ * Validates `hub.challenge` before echoing it in the verification response.
+ * Meta requires a verbatim echo; restrict to safe token-like strings only.
+ */
+export function assertSafeMetaHubChallenge(challenge: string): string {
+  if (
+    challenge.length === 0 ||
+    challenge.length > META_HUB_CHALLENGE_MAX_LENGTH ||
+    !META_HUB_CHALLENGE_PATTERN.test(challenge)
+  ) {
+    throw new Error('Invalid hub.challenge format');
+  }
+  return challenge;
+}
+
 /** Verifies Meta webhook `X-Hub-Signature-256` header against raw request body. */
 export function verifyMetaWebhookSignature(
   rawBody: Buffer | string,

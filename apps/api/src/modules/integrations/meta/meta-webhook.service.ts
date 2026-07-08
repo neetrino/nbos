@@ -2,7 +2,11 @@ import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/c
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
 import { MetaProviderConfig } from './meta-provider.config';
 import type { MetaMessagingWebhookBody } from './meta.types';
-import { parseMetaInboundMessages, verifyMetaWebhookSignature } from './meta-webhook.helpers';
+import {
+  assertSafeMetaHubChallenge,
+  parseMetaInboundMessages,
+  verifyMetaWebhookSignature,
+} from './meta-webhook.helpers';
 
 type RawBodyRequest = { rawBody?: Buffer };
 
@@ -27,7 +31,11 @@ export class MetaWebhookService {
     if (token !== this.config.webhookVerifyToken) {
       throw new ForbiddenException('Invalid verify token');
     }
-    return challenge;
+    try {
+      return assertSafeMetaHubChallenge(challenge);
+    } catch {
+      throw new ForbiddenException('Invalid webhook verification request');
+    }
   }
 
   async handleWebhook(

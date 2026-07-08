@@ -109,8 +109,12 @@ export class MetaController {
     @Query('hub.challenge') challenge: string | undefined,
     @Res() res: Response,
   ) {
-    const verified = this.webhookService.verifySubscription(mode, token, challenge);
-    res.status(HttpStatus.OK).type('text/plain').send(verified);
+    const verifiedChallenge = this.webhookService.verifySubscription(mode, token, challenge);
+    res
+      .status(HttpStatus.OK)
+      .set('Content-Type', 'text/plain; charset=utf-8')
+      .set('X-Content-Type-Options', 'nosniff')
+      .send(verifiedChallenge);
   }
 
   @Public()
