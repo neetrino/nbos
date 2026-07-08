@@ -19,6 +19,8 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 FROM base AS builder
 
 ENV NODE_ENV=production
+# Typecheck runs in CI; skipping here avoids OOM on memory-constrained build hosts.
+ENV SKIP_NEXT_TYPECHECK=1
 
 ARG APP_URL
 ARG BACKEND_URL
