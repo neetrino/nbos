@@ -5,7 +5,7 @@ import { Facebook, Instagram } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { metaIntegrationApi } from '@/lib/api/meta-integration';
+import { metaIntegrationApi, type MetaOAuthPlatform } from '@/lib/api/meta-integration';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 export interface MetaConnectSheetProps {
@@ -18,10 +18,10 @@ const PROVIDER_TILE_CLASS =
 export function MetaConnectSheet({ onClose }: MetaConnectSheetProps) {
   const [loading, setLoading] = useState(false);
 
-  const startConnect = async () => {
+  const startConnect = async (platform: MetaOAuthPlatform) => {
     setLoading(true);
     try {
-      const { url } = await metaIntegrationApi.startOAuth();
+      const { url } = await metaIntegrationApi.startOAuth(platform);
       window.location.href = url;
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not start Meta connection.'));
@@ -34,9 +34,8 @@ export function MetaConnectSheet({ onClose }: MetaConnectSheetProps) {
       <SheetHeader className="border-border shrink-0 border-b px-5 py-4">
         <SheetTitle>Connect Meta</SheetTitle>
         <SheetDescription>
-          Authorize NBOS to receive Instagram Direct and Facebook Messenger messages. Connected
-          pages appear in Integrations; link each to a Marketing account (SMM) before Leads are
-          created.
+          Choose Facebook Messenger or Instagram Direct. Each channel uses its own authorization
+          flow. Link connected accounts to a Marketing account (SMM) before Leads are created.
         </SheetDescription>
       </SheetHeader>
 
@@ -44,34 +43,29 @@ export function MetaConnectSheet({ onClose }: MetaConnectSheetProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           <button
             type="button"
-            onClick={() => void startConnect()}
+            onClick={() => void startConnect('INSTAGRAM')}
             disabled={loading}
             className={PROVIDER_TILE_CLASS}
           >
             <Instagram size={20} className="text-foreground" aria-hidden />
             <span className="text-foreground font-medium">Instagram</span>
             <span className="text-muted-foreground text-xs">
-              Connect Instagram Professional accounts linked to your Facebook Pages.
+              Connect an Instagram professional account to receive Instagram Direct messages.
             </span>
           </button>
           <button
             type="button"
-            onClick={() => void startConnect()}
+            onClick={() => void startConnect('FACEBOOK')}
             disabled={loading}
             className={PROVIDER_TILE_CLASS}
           >
             <Facebook size={20} className="text-foreground" aria-hidden />
             <span className="text-foreground font-medium">Facebook</span>
             <span className="text-muted-foreground text-xs">
-              Connect Facebook Pages for Messenger inbound messages.
+              Connect Facebook Pages to receive Messenger conversations.
             </span>
           </button>
         </div>
-
-        <p className="text-muted-foreground text-xs">
-          One Meta authorization covers all Pages and linked Instagram accounts you select in
-          Facebook.
-        </p>
 
         <div className="flex justify-end">
           <Button type="button" variant="outline" onClick={onClose}>

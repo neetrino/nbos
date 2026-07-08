@@ -1,5 +1,7 @@
 import { api } from '../api';
 
+export type MetaOAuthPlatform = 'FACEBOOK' | 'INSTAGRAM';
+
 export interface MetaConnectedAccount {
   id: string;
   provider: string;
@@ -21,8 +23,10 @@ export interface MetaConnectedAccount {
 }
 
 export const metaIntegrationApi = {
-  async startOAuth(): Promise<{ url: string }> {
-    const resp = await api.get<{ url: string }>('/api/integrations/meta/oauth/start');
+  async startOAuth(platform: MetaOAuthPlatform): Promise<{ url: string }> {
+    const resp = await api.get<{ url: string }>('/api/integrations/meta/oauth/start', {
+      params: { platform },
+    });
     return resp.data;
   },
 
