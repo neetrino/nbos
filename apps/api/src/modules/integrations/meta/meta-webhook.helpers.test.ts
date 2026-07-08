@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildMetaOAuthUrl } from './meta-provider.config';
 import {
   assertSafeMetaHubChallenge,
+  normalizeHttpRequestParam,
   parseMetaInboundMessages,
   verifyMetaWebhookSignature,
 } from './meta-webhook.helpers';
@@ -37,6 +38,20 @@ describe('assertSafeMetaHubChallenge', () => {
     expect(() => assertSafeMetaHubChallenge('challenge with spaces')).toThrow(
       'Invalid hub.challenge format',
     );
+  });
+
+  it('rejects duplicated query params (string[])', () => {
+    expect(() => assertSafeMetaHubChallenge(['1234567890', 'tampered'])).toThrow(
+      'Invalid hub.challenge format',
+    );
+  });
+});
+
+describe('normalizeHttpRequestParam', () => {
+  it('returns scalar strings and rejects arrays', () => {
+    expect(normalizeHttpRequestParam('subscribe')).toBe('subscribe');
+    expect(normalizeHttpRequestParam(undefined)).toBeUndefined();
+    expect(normalizeHttpRequestParam(['a', 'b'])).toBeUndefined();
   });
 });
 

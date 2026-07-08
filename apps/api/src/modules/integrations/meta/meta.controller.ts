@@ -27,6 +27,7 @@ import { MetaAccountsService } from './meta-accounts.service';
 import { MetaOAuthService } from './meta-oauth.service';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
 import { MetaWebhookService } from './meta-webhook.service';
+import type { HttpRequestParam } from './meta-webhook.helpers';
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
 
@@ -104,9 +105,9 @@ export class MetaController {
   @Get('webhook')
   @ApiOperation({ summary: 'Meta webhook verification (hub.challenge)' })
   verifyWebhook(
-    @Query('hub.mode') mode: string | undefined,
-    @Query('hub.verify_token') token: string | undefined,
-    @Query('hub.challenge') challenge: string | undefined,
+    @Query('hub.mode') mode: HttpRequestParam,
+    @Query('hub.verify_token') token: HttpRequestParam,
+    @Query('hub.challenge') challenge: HttpRequestParam,
     @Res() res: Response,
   ) {
     const verifiedChallenge = this.webhookService.verifySubscription(mode, token, challenge);

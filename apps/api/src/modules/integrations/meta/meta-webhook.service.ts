@@ -4,8 +4,10 @@ import { MetaProviderConfig } from './meta-provider.config';
 import type { MetaMessagingWebhookBody } from './meta.types';
 import {
   assertSafeMetaHubChallenge,
+  normalizeHttpRequestParam,
   parseMetaInboundMessages,
   verifyMetaWebhookSignature,
+  type HttpRequestParam,
 } from './meta-webhook.helpers';
 
 type RawBodyRequest = { rawBody?: Buffer };
@@ -18,21 +20,25 @@ export class MetaWebhookService {
   ) {}
 
   verifySubscription(
-    mode: string | undefined,
-    token: string | undefined,
-    challenge: string | undefined,
+    mode: HttpRequestParam,
+    token: HttpRequestParam,
+    challenge: HttpRequestParam,
   ): string {
-    if (mode !== 'subscribe' || !challenge) {
+    const normalizedMode = normalizeHttpRequestParam(mode);
+    const normalizedToken = normalizeHttpRequestParam(token);
+    const normalizedChallenge = normalizeHttpRequestParam(challenge);
+
+    if (normalizedMode !== 'subscribe' || !normalizedChallenge) {
       throw new ForbiddenException('Invalid webhook verification request');
     }
     if (!this.config.isWebhookVerifyConfigured()) {
       throw new ForbiddenException('Webhook verify token is not configured');
     }
-    if (token !== this.config.webhookVerifyToken) {
+    if (normalizedToken !== this.config.webhookVerifyToken) {
       throw new ForbiddenException('Invalid verify token');
     }
     try {
-      return assertSafeMetaHubChallenge(challenge);
+      return assertSafeMetaHubChallenge(normalizedChallenge);
     } catch {
       throw new ForbiddenException('Invalid webhook verification request');
     }

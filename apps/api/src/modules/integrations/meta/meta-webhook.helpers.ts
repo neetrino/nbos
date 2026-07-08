@@ -4,6 +4,20 @@ import type { MetaMessagingWebhookBody, ParsedMetaInboundMessage } from './meta.
 /** Max length for Meta `hub.challenge` echoed during webhook verification. */
 export const META_HUB_CHALLENGE_MAX_LENGTH = 512;
 
+/** Express query values may be string or string[] when duplicated. */
+export type HttpRequestParam = string | string[] | undefined;
+
+/** Rejects duplicated query params; returns a scalar string or undefined. */
+export function normalizeHttpRequestParam(value: HttpRequestParam): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (Array.isArray(value)) {
+    return undefined;
+  }
+  return value;
+}
+
 /** Token-safe characters Meta uses for `hub.challenge` (no HTML/script metacharacters). */
 const META_HUB_CHALLENGE_PATTERN = /^[A-Za-z0-9+/=_-]+$/;
 
@@ -11,15 +25,17 @@ const META_HUB_CHALLENGE_PATTERN = /^[A-Za-z0-9+/=_-]+$/;
  * Validates `hub.challenge` before echoing it in the verification response.
  * Meta requires a verbatim echo; restrict to safe token-like strings only.
  */
-export function assertSafeMetaHubChallenge(challenge: string): string {
+export function assertSafeMetaHubChallenge(challenge: HttpRequestParam): string {
+  const normalizedChallenge = normalizeHttpRequestParam(challenge);
   if (
-    challenge.length === 0 ||
-    challenge.length > META_HUB_CHALLENGE_MAX_LENGTH ||
-    !META_HUB_CHALLENGE_PATTERN.test(challenge)
+    !normalizedChallenge ||
+    normalizedChallenge.length === 0 ||
+    normalizedChallenge.length > META_HUB_CHALLENGE_MAX_LENGTH ||
+    !META_HUB_CHALLENGE_PATTERN.test(normalizedChallenge)
   ) {
     throw new Error('Invalid hub.challenge format');
   }
-  return challenge;
+  return normalizedChallenge;
 }
 
 /** Verifies Meta webhook `X-Hub-Signature-256` header against raw request body. */
