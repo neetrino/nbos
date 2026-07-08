@@ -17,8 +17,6 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 FROM base AS builder
 
-ENV NODE_ENV=production
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
@@ -36,14 +34,18 @@ ENV DIRECT_URL="postgresql://build:build@127.0.0.1:5432/build?schema=public"
 
 RUN pnpm db:generate
 RUN pnpm build:api
+# Production slice only (~460 packages vs full monorepo ~1570) — avoids OOM on COPY to runner.
+RUN pnpm --filter @nbos/api deploy --prod /prod/api
 
 FROM base AS runner
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
-COPY --from=builder /app /app
+WORKDIR /app
+
+COPY --from=builder /prod/api /app
 
 EXPOSE 4000
 
-CMD ["pnpm", "start:api"]
+CMD ["node", "--import", "tsx", "dist/main.js"]

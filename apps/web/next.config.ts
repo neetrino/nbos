@@ -6,6 +6,8 @@ import type { NextConfig } from 'next';
 const MONOREPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
+/** Docker/Coolify builds set this — typecheck runs in CI (`pnpm typecheck`) to avoid OOM during `next build`. */
+const SKIP_NEXT_TYPECHECK = process.env.SKIP_NEXT_TYPECHECK === '1';
 
 /**
  * Content-Security-Policy. `'unsafe-inline'` (scripts/styles) is required by
@@ -72,6 +74,9 @@ function parseAllowedDevOrigins(): string[] {
 const nextConfig: NextConfig = {
   outputFileTracingRoot: MONOREPO_ROOT,
   allowedDevOrigins: parseAllowedDevOrigins(),
+  typescript: {
+    ignoreBuildErrors: SKIP_NEXT_TYPECHECK,
+  },
   turbopack: {
     root: MONOREPO_ROOT,
   },
