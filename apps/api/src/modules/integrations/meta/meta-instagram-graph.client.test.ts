@@ -147,7 +147,7 @@ describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
     vi.unstubAllGlobals();
   });
 
-  it('uses POST with form body and no secrets in the URL', async () => {
+  it('uses GET with query params and no request body', async () => {
     mockFetchJson({
       access_token: 'ig-long-lived-token-test',
       token_type: 'bearer',
@@ -157,19 +157,17 @@ describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
     await createClient().exchangeForLongLivedToken(SHORT_LIVED_TOKEN);
 
     expect(fetch).toHaveBeenCalledTimes(1);
-    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('https://graph.instagram.com/access_token');
-    expect(url).not.toMatch(/[?&]client_secret=/);
-    expect(url).not.toMatch(/[?&]access_token=/);
-    expect(init.method).toBe('POST');
-    expect(init.headers).toMatchObject({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit | undefined];
+    expect(url.startsWith('https://graph.instagram.com/access_token')).toBe(true);
+    expect(url).not.toContain('/v21.0/');
 
-    const body = init.body?.toString() ?? '';
-    expect(body).toContain('grant_type=ig_exchange_token');
-    expect(body).toContain(`client_secret=${APP_SECRET}`);
-    expect(body).toContain(`access_token=${SHORT_LIVED_TOKEN}`);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('grant_type')).toBe('ig_exchange_token');
+    expect(parsedUrl.searchParams.get('client_secret')).toBe(APP_SECRET);
+    expect(parsedUrl.searchParams.get('access_token')).toBe(SHORT_LIVED_TOKEN);
+
+    expect(init?.method).toBe('GET');
+    expect(init?.body).toBeUndefined();
   });
 
   it('returns access_token, token_type, and expires_in on success', async () => {
@@ -189,7 +187,8 @@ describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
     mockFetchJson(
       {
         error: {
-          message: 'Unsupported request - method type: get',
+          message:
+            "Unsupported post request. Object with ID 'access_token' does not exist, cannot be loaded due to missing permissions, or does not support this operation",
           type: 'IGApiException',
           code: 100,
         },
@@ -205,7 +204,6 @@ describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
         upstreamStatus: 400,
         upstreamCode: 100,
         upstreamType: 'IGApiException',
-        message: 'Unsupported request - method type: get',
       },
     );
   });

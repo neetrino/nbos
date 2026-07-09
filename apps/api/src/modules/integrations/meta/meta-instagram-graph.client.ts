@@ -157,18 +157,13 @@ export class MetaInstagramGraphClient {
   }
 
   async exchangeForLongLivedToken(shortLivedToken: string): Promise<MetaGraphTokenResponse> {
-    const body = new URLSearchParams({
-      grant_type: 'ig_exchange_token',
-      client_secret: this.appSecret,
-      access_token: shortLivedToken,
-    });
+    const url = new URL(INSTAGRAM_LONG_LIVED_TOKEN_URL);
+    url.searchParams.set('grant_type', 'ig_exchange_token');
+    url.searchParams.set('client_secret', this.appSecret);
+    url.searchParams.set('access_token', shortLivedToken);
     const raw = await this.fetchJson<MetaGraphTokenResponse>(
-      INSTAGRAM_LONG_LIVED_TOKEN_URL,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      },
+      url.toString(),
+      { method: 'GET' },
       'instagram_long_lived_token',
     );
     if (typeof raw.access_token !== 'string' || raw.access_token.trim().length === 0) {
