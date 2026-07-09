@@ -58,6 +58,14 @@ export class MetaProviderConfig {
     return this.config.get<string>('META_APP_SECRET')?.trim() ?? '';
   }
 
+  get instagramAppId(): string {
+    return this.config.get<string>('INSTAGRAM_APP_ID')?.trim() ?? '';
+  }
+
+  get instagramAppSecret(): string {
+    return this.config.get<string>('INSTAGRAM_APP_SECRET')?.trim() ?? '';
+  }
+
   get webhookVerifyToken(): string {
     return this.config.get<string>('META_WEBHOOK_VERIFY_TOKEN')?.trim() ?? '';
   }
@@ -100,6 +108,10 @@ export class MetaProviderConfig {
 
   isMetaConfigured(): boolean {
     return Boolean(this.appId && this.appSecret);
+  }
+
+  isInstagramConfigured(): boolean {
+    return Boolean(this.instagramAppId && this.instagramAppSecret);
   }
 
   isWebhookVerifyConfigured(): boolean {

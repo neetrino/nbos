@@ -38,7 +38,7 @@ export class MetaOAuthService {
   }
 
   buildAuthUrl(employeeId: string, platform: MetaOAuthPlatform): string {
-    this.requireConfigured();
+    this.requireConfigured(platform);
     const statePayload: MetaOAuthState = { employeeId, platform };
     const state = jwt.sign(statePayload, this.jwtSecret, {
       expiresIn: STATE_TTL_SECONDS,
@@ -47,8 +47,9 @@ export class MetaOAuthService {
     const authorizeBaseUrl = this.config.authorizeUrlForPlatform(platform);
     const scopes = this.config.scopesForPlatform(platform);
 
+    const clientIdSource = platform === 'INSTAGRAM' ? 'INSTAGRAM_APP_ID' : 'META_APP_ID';
     this.logger.log(
-      `Meta OAuth start platform=${platform} oauthBaseUrl=${authorizeBaseUrl} scopes=${scopes.join(',')} redirectUri=${redirectUri} statePlatform=${platform}`,
+      `Meta OAuth start platform=${platform} clientIdSource=${clientIdSource} oauthBaseUrl=${authorizeBaseUrl} scopes=${scopes.join(',')} redirectUri=${redirectUri} statePlatform=${platform}`,
     );
 
     if (platform === 'FACEBOOK') {
@@ -63,7 +64,7 @@ export class MetaOAuthService {
 
     return buildInstagramOAuthUrl({
       authorizeBaseUrl,
-      clientId: this.config.appId,
+      clientId: this.config.instagramAppId,
       redirectUri,
       state,
       scopes,
@@ -82,8 +83,8 @@ export class MetaOAuthService {
     code: string,
     state: string,
   ): Promise<{ redirectUrl: string; accountCount: number }> {
-    this.requireConfigured();
     const { employeeId, platform } = this.verifyState(state);
+    this.requireConfigured(platform);
 
     if (platform === 'INSTAGRAM') {
       return this.handleInstagramCallback(code, employeeId);
@@ -289,10 +290,10 @@ export class MetaOAuthService {
       if (!payload.employeeId) {
         throw new BadRequestException('Invalid or expired OAuth state');
       }
-      const platform = payload.platform ?? 'FACEBOOK';
-      if (platform !== 'FACEBOOK' && platform !== 'INSTAGRAM') {
+      if (payload.platform !== 'FACEBOOK' && payload.platform !== 'INSTAGRAM') {
         throw new BadRequestException('Invalid or expired OAuth state');
       }
+      const platform = payload.platform;
       return { employeeId: payload.employeeId, platform };
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -309,14 +310,25 @@ export class MetaOAuthService {
   private createInstagramGraphClient(): MetaInstagramGraphClient {
     return new MetaInstagramGraphClient(
       this.config.instagramGraphBaseUrl,
-      this.config.appId,
-      this.config.appSecret,
+      this.config.instagramAppId,
+      this.config.instagramAppSecret,
     );
   }
 
-  private requireConfigured(): void {
+  private requireConfigured(platform: MetaOAuthPlatform): void {
+    if (platform === 'INSTAGRAM') {
+      if (!this.config.isInstagramConfigured()) {
+        throw new BadRequestException(
+          'Instagram OAuth is not configured. Set INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET.',
+        );
+      }
+      return;
+    }
+
     if (!this.config.isMetaConfigured()) {
-      throw new BadRequestException('Meta is not configured. Set META_APP_ID and META_APP_SECRET.');
+      throw new BadRequestException(
+        'Facebook OAuth is not configured. Set META_APP_ID and META_APP_SECRET.',
+      );
     }
   }
 
