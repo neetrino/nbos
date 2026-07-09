@@ -2,32 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Facebook, Instagram, MessageCircle } from 'lucide-react';
+import { Copy, Facebook, Instagram, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { MetaAccountList } from '@/features/integrations/components/MetaAccountList';
 import { MetaConnectSheet } from '@/features/integrations/components/MetaConnectSheet';
+import { resolveMetaOAuthErrorPresentation } from '@/features/integrations/meta-oauth-error-messages';
 import { marketingApi, type MarketingAccount } from '@/lib/api/marketing';
 import { metaIntegrationApi, type MetaConnectedAccount } from '@/lib/api/meta-integration';
 import { getApiErrorMessage } from '@/lib/api-errors';
-
-const OAUTH_ERROR_MESSAGES: Record<string, string> = {
-  missing_code: 'Meta authorization was incomplete. No account was connected.',
-  access_denied: 'Meta access was denied. Account was not connected.',
-  invalid_state: 'Meta authorization expired. Please try connecting again.',
-  token_exchange_failed: 'Meta token exchange failed. Check app credentials.',
-  instagram_token_exchange_failed:
-    'Instagram authorization could not be completed. Check the Instagram app credentials and try again.',
-  instagram_long_lived_token_failed:
-    'Instagram authorization could not be completed. Please try connecting again.',
-  instagram_profile_failed:
-    'Instagram account information could not be loaded. Please reconnect the account.',
-  instagram_callback_failed: 'Instagram connection failed. Please try again.',
-  missing_pages: 'No Facebook Pages were found for this Meta account.',
-  not_configured: 'Meta integration is not configured on the server.',
-  unknown: 'Meta connection failed. Please try again.',
-};
+import { PermissionGate } from '@/lib/permissions/PermissionGate';
 
 export function MetaIntegrationsSection() {
   const router = useRouter();
@@ -38,6 +23,11 @@ export function MetaIntegrationsSection() {
   const [loading, setLoading] = useState(true);
   const [connectOpen, setConnectOpen] = useState(false);
   const [oauthHandled, setOauthHandled] = useState(false);
+  const [oauthErrorDetails, setOauthErrorDetails] = useState<{
+    message: string;
+    reason: string;
+    errorId: string | null;
+  } | null>(null);
 
   const loadMeta = useCallback(async () => {
     setLoading(true);
@@ -69,20 +59,33 @@ export function MetaIntegrationsSection() {
     }
     setOauthHandled(true);
     const reason = searchParams.get('reason');
+    const errorId = searchParams.get('error_id');
     if (oauthStatus === 'success') {
       toast.success(
         'Meta account connected. Link a Marketing account (SMM) to enable Lead creation.',
       );
       void loadMeta();
     } else if (oauthStatus === 'error') {
-      toast.error(OAUTH_ERROR_MESSAGES[reason ?? 'unknown'] ?? OAUTH_ERROR_MESSAGES.unknown);
+      const presentation = resolveMetaOAuthErrorPresentation(reason, errorId);
+      setOauthErrorDetails(presentation);
+      toast.error(presentation.message);
     }
     const params = new URLSearchParams(searchParams.toString());
     params.delete('oauth');
     params.delete('reason');
+    params.delete('error_id');
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname);
   }, [oauthHandled, searchParams, pathname, router, loadMeta]);
+
+  const copyErrorId = async (errorId: string) => {
+    try {
+      await navigator.clipboard.writeText(errorId);
+      toast.success('Technical reference copied.');
+    } catch {
+      toast.error('Could not copy technical reference.');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -92,6 +95,14 @@ export function MetaIntegrationsSection() {
           Connect external channels. Meta DMs create CRM Leads when a Marketing account is linked.
         </p>
       </div>
+
+      {oauthErrorDetails ? (
+        <MetaOAuthErrorPanel
+          details={oauthErrorDetails}
+          onCopyErrorId={(id) => void copyErrorId(id)}
+          onDismiss={() => setOauthErrorDetails(null)}
+        />
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <MetaProviderCard
@@ -145,6 +156,80 @@ export function MetaIntegrationsSection() {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+interface MetaOAuthErrorPanelProps {
+  details: {
+    message: string;
+    reason: string;
+    errorId: string | null;
+  };
+  onCopyErrorId: (errorId: string) => void;
+  onDismiss: () => void;
+}
+
+function MetaOAuthErrorPanel({ details, onCopyErrorId, onDismiss }: MetaOAuthErrorPanelProps) {
+  const [showTechnical, setShowTechnical] = useState(false);
+
+  return (
+    <section
+      className="rounded-xl border border-red-200 bg-red-50/70 p-4 dark:border-red-900 dark:bg-red-950/20"
+      role="alert"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <p className="text-sm font-medium text-red-900 dark:text-red-100">{details.message}</p>
+          {details.errorId ? (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-red-800 dark:text-red-200">
+              <span>
+                Technical reference: <span className="font-mono">{details.errorId}</span>
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2"
+                onClick={() => onCopyErrorId(details.errorId!)}
+              >
+                <Copy size={12} aria-hidden />
+                Copy
+              </Button>
+            </div>
+          ) : null}
+          <PermissionGate module="COMPANY" action="EDIT">
+            <div className="space-y-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs"
+                onClick={() => setShowTechnical((open) => !open)}
+              >
+                {showTechnical ? 'Hide technical details' : 'Show technical details'}
+              </Button>
+              {showTechnical ? (
+                <dl className="grid gap-1 text-xs text-red-800 dark:text-red-200">
+                  <div className="flex gap-2">
+                    <dt className="font-medium">Reason code:</dt>
+                    <dd className="font-mono">{details.reason}</dd>
+                  </div>
+                  {details.errorId ? (
+                    <div className="flex gap-2">
+                      <dt className="font-medium">Error ID:</dt>
+                      <dd className="font-mono">{details.errorId}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              ) : null}
+            </div>
+          </PermissionGate>
+        </div>
+        <Button type="button" size="sm" variant="ghost" onClick={onDismiss}>
+          Dismiss
+        </Button>
+      </div>
+    </section>
   );
 }
 

@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import type { MetaGraphTokenResponse } from './meta.types';
 import {
-  MetaInstagramOAuthException,
-  type MetaInstagramOAuthStage,
-} from './meta-instagram-oauth.errors';
+  MetaOAuthCallbackError,
+  formatInstagramPayloadDiagnostic,
+} from './meta-oauth-callback.error';
 
 const INSTAGRAM_TOKEN_URL = 'https://api.instagram.com/oauth/access_token';
 const INSTAGRAM_LONG_LIVED_TOKEN_URL = 'https://graph.instagram.com/access_token';
@@ -26,35 +26,46 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function stageForContext(context: InstagramResponseContext): MetaInstagramOAuthStage {
-  return context === 'token_exchange' ? 'token_exchange' : 'profile';
+function throwResponseParsingError(
+  message: string,
+  context: InstagramResponseContext,
+  payload: unknown,
+): never {
+  throw new MetaOAuthCallbackError({
+    message,
+    publicReason: 'instagram_response_invalid',
+    stage: 'instagram_response_parsing',
+    platform: 'INSTAGRAM',
+    safeDetails: formatInstagramPayloadDiagnostic(payload),
+  });
 }
 
 function unwrapInstagramPayload<T extends Record<string, unknown>>(
   payload: unknown,
   context: InstagramResponseContext,
 ): T {
-  const stage = stageForContext(context);
-
   if (!isRecord(payload)) {
-    throw new MetaInstagramOAuthException(
+    throwResponseParsingError(
       `Instagram ${context} response was not a JSON object`,
-      stage,
+      context,
+      payload,
     );
   }
 
   if (Array.isArray(payload.data)) {
     if (payload.data.length === 0) {
-      throw new MetaInstagramOAuthException(
+      throwResponseParsingError(
         `Instagram ${context} response data envelope was empty`,
-        stage,
+        context,
+        payload,
       );
     }
     const first = payload.data[0];
     if (!isRecord(first)) {
-      throw new MetaInstagramOAuthException(
+      throwResponseParsingError(
         `Instagram ${context} response data item was invalid`,
-        stage,
+        context,
+        payload,
       );
     }
     return first as T;
@@ -63,15 +74,31 @@ function unwrapInstagramPayload<T extends Record<string, unknown>>(
   return payload as T;
 }
 
-function readInstagramErrorMessage(payload: unknown, fallback: string): string {
-  if (
-    isRecord(payload) &&
-    typeof payload.error_message === 'string' &&
-    payload.error_message.trim()
-  ) {
-    return payload.error_message;
-  }
-  return fallback;
+function readInstagramTokenExchangeError(
+  payload: unknown,
+  upstreamStatus: number,
+): MetaOAuthCallbackError {
+  const errorMessage =
+    isRecord(payload) && typeof payload.error_message === 'string' && payload.error_message.trim()
+      ? payload.error_message
+      : 'Instagram token exchange failed';
+  const upstreamCode =
+    isRecord(payload) && payload.code !== undefined && payload.code !== null
+      ? (payload.code as string | number)
+      : undefined;
+  const upstreamType =
+    isRecord(payload) && typeof payload.error_type === 'string' ? payload.error_type : undefined;
+
+  return new MetaOAuthCallbackError({
+    message: errorMessage,
+    publicReason: 'instagram_token_exchange_failed',
+    stage: 'instagram_token_exchange',
+    platform: 'INSTAGRAM',
+    upstreamStatus,
+    upstreamCode,
+    upstreamType,
+    safeDetails: formatInstagramPayloadDiagnostic(payload),
+  });
 }
 
 function hasUserId(value: string | number | undefined | null): value is string | number {
@@ -104,10 +131,7 @@ export class MetaInstagramGraphClient {
     });
     const raw = (await response.json()) as unknown;
     if (!response.ok) {
-      throw new MetaInstagramOAuthException(
-        readInstagramErrorMessage(raw, 'Instagram token exchange failed'),
-        'token_exchange',
-      );
+      throw readInstagramTokenExchangeError(raw, response.status);
     }
 
     const normalized = unwrapInstagramPayload<Record<string, unknown>>(raw, 'token_exchange');
@@ -115,15 +139,17 @@ export class MetaInstagramGraphClient {
     const userId = normalized.user_id;
 
     if (typeof accessToken !== 'string' || accessToken.trim().length === 0) {
-      throw new MetaInstagramOAuthException(
+      throwResponseParsingError(
         'Instagram token exchange did not return access_token',
         'token_exchange',
+        raw,
       );
     }
     if (!hasUserId(userId as string | number | undefined | null)) {
-      throw new MetaInstagramOAuthException(
+      throwResponseParsingError(
         'Instagram token exchange did not return user_id',
         'token_exchange',
+        raw,
       );
     }
 
@@ -135,21 +161,28 @@ export class MetaInstagramGraphClient {
     url.searchParams.set('grant_type', 'ig_exchange_token');
     url.searchParams.set('client_secret', this.appSecret);
     url.searchParams.set('access_token', shortLivedToken);
-    return this.fetchJson<MetaGraphTokenResponse>(url.toString(), undefined, 'long_lived_token');
+    return this.fetchJson<MetaGraphTokenResponse>(
+      url.toString(),
+      undefined,
+      'instagram_long_lived_token',
+    );
   }
 
   async fetchProfile(accessToken: string): Promise<MetaInstagramProfile> {
     const url = new URL(`${this.graphBaseUrl}/me`);
     url.searchParams.set('fields', 'user_id,username,name');
     url.searchParams.set('access_token', accessToken);
-    const raw = await this.fetchJson<unknown>(url.toString(), undefined, 'profile');
+    const raw = await this.fetchJson<unknown>(url.toString(), undefined, 'instagram_profile');
     const profile = unwrapInstagramPayload<Partial<MetaInstagramProfile>>(raw, 'profile');
     const accountId = profile.user_id ?? profile.id;
     if (!accountId) {
-      throw new MetaInstagramOAuthException(
-        'Instagram profile response missing account id',
-        'profile',
-      );
+      throw new MetaOAuthCallbackError({
+        message: 'Instagram profile response missing account id',
+        publicReason: 'instagram_profile_failed',
+        stage: 'instagram_profile',
+        platform: 'INSTAGRAM',
+        safeDetails: formatInstagramPayloadDiagnostic(raw),
+      });
     }
     return { ...profile, id: String(accountId) };
   }
@@ -157,14 +190,37 @@ export class MetaInstagramGraphClient {
   private async fetchJson<T>(
     url: string,
     init?: RequestInit,
-    stage?: MetaInstagramOAuthStage,
+    stage?: 'instagram_long_lived_token' | 'instagram_profile',
   ): Promise<T> {
     const response = await fetch(url, init);
-    const body = (await response.json()) as T & { error?: { message?: string } };
+    const body = (await response.json()) as T & {
+      error?: { message?: string; type?: string; code?: number };
+    };
     if (!response.ok || body.error) {
       const message = body.error?.message ?? 'Instagram Graph API request failed';
-      if (stage) {
-        throw new MetaInstagramOAuthException(message, stage);
+      if (stage === 'instagram_long_lived_token') {
+        throw new MetaOAuthCallbackError({
+          message,
+          publicReason: 'instagram_long_lived_token_failed',
+          stage: 'instagram_long_lived_token',
+          platform: 'INSTAGRAM',
+          upstreamStatus: response.ok ? undefined : response.status,
+          upstreamCode: body.error?.code,
+          upstreamType: body.error?.type,
+          safeDetails: isRecord(body) ? formatInstagramPayloadDiagnostic(body) : undefined,
+        });
+      }
+      if (stage === 'instagram_profile') {
+        throw new MetaOAuthCallbackError({
+          message,
+          publicReason: 'instagram_profile_failed',
+          stage: 'instagram_profile',
+          platform: 'INSTAGRAM',
+          upstreamStatus: response.ok ? undefined : response.status,
+          upstreamCode: body.error?.code,
+          upstreamType: body.error?.type,
+          safeDetails: isRecord(body) ? formatInstagramPayloadDiagnostic(body) : undefined,
+        });
       }
       throw new BadRequestException(message);
     }
