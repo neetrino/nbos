@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   META_FACEBOOK_OAUTH_SCOPES,
   META_INSTAGRAM_OAUTH_SCOPES,
+  MetaProviderConfig,
   assertFacebookOAuthParams,
   assertInstagramOAuthParams,
   buildFacebookOAuthUrl,
@@ -83,5 +84,51 @@ describe('assertInstagramOAuthParams', () => {
         'pages_messaging',
       ]),
     ).toThrow(BadRequestException);
+  });
+});
+
+describe('MetaProviderConfig credential helpers', () => {
+  function createProviderConfig(env: Record<string, string | undefined>): MetaProviderConfig {
+    return new MetaProviderConfig({
+      get: (key: string) => env[key],
+      getOrThrow: (key: string) => {
+        const value = env[key];
+        if (!value) {
+          throw new Error(`${key} is required`);
+        }
+        return value;
+      },
+    } as never);
+  }
+
+  it('isMetaConfigured is true only when META_APP_ID and META_APP_SECRET are set', () => {
+    const configured = createProviderConfig({
+      META_APP_ID: 'facebook-app-1111',
+      META_APP_SECRET: 'facebook-secret-test',
+    });
+    expect(configured.isMetaConfigured()).toBe(true);
+    expect(configured.isInstagramConfigured()).toBe(false);
+  });
+
+  it('isInstagramConfigured is true only when INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET are set', () => {
+    const configured = createProviderConfig({
+      INSTAGRAM_APP_ID: 'instagram-app-4327',
+      INSTAGRAM_APP_SECRET: 'instagram-secret-test',
+    });
+    expect(configured.isInstagramConfigured()).toBe(true);
+    expect(configured.isMetaConfigured()).toBe(false);
+  });
+
+  it('exposes dedicated Instagram getters separate from Facebook appId/appSecret', () => {
+    const configured = createProviderConfig({
+      META_APP_ID: 'facebook-app-1111',
+      META_APP_SECRET: 'facebook-secret-test',
+      INSTAGRAM_APP_ID: 'instagram-app-4327',
+      INSTAGRAM_APP_SECRET: 'instagram-secret-test',
+    });
+    expect(configured.appId).toBe('facebook-app-1111');
+    expect(configured.instagramAppId).toBe('instagram-app-4327');
+    expect(configured.appSecret).toBe('facebook-secret-test');
+    expect(configured.instagramAppSecret).toBe('instagram-secret-test');
   });
 });

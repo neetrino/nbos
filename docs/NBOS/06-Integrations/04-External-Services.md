@@ -219,7 +219,25 @@ NBOS MVP for Meta inbound DMs:
 
 **Prerequisite:** each connected Meta account must be linked to an active Marketing account (`channel = SMM`) before webhook ingestion creates Leads.
 
-**Env:** `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`, `META_GRAPH_API_VERSION`, `BACKEND_URL` (public API base for OAuth + webhook URLs).
+**OAuth callback (shared):** `{BACKEND_URL}/api/integrations/meta/oauth/callback`
+
+**Env — Facebook Messenger OAuth:**
+
+- `META_APP_ID`
+- `META_APP_SECRET`
+
+**Env — Instagram Direct (Instagram Login OAuth):**
+
+- `INSTAGRAM_APP_ID`
+- `INSTAGRAM_APP_SECRET`
+
+**Env — shared Meta webhook / Graph:**
+
+- `META_WEBHOOK_VERIFY_TOKEN`
+- `META_GRAPH_API_VERSION`
+- `BACKEND_URL` (public API base for OAuth + webhook URLs)
+
+Instagram OAuth connection uses dedicated Instagram app credentials. Instagram webhook subscription and platform-specific webhook HMAC verification for the dedicated Instagram Login flow require a separate implementation and verification phase (not part of the credential-routing fix).
 
 ### Назначение (full product vision)
 
