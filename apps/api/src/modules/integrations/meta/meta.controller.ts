@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   Body,
@@ -25,7 +26,7 @@ import {
 } from '../../../common/decorators';
 import { LinkMetaMarketingAccountDto } from './dto/link-meta-marketing-account.dto';
 import { MetaAccountsService } from './meta-accounts.service';
-import { MetaInstagramOAuthException } from './meta-instagram-oauth.errors';
+import { MetaOAuthCallbackError } from './meta-oauth-callback.error';
 import { MetaOAuthService } from './meta-oauth.service';
 import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
@@ -68,20 +69,25 @@ export class MetaController {
   ) {
     const reasonFromQuery = this.mapMetaOAuthError(oauthError, errorReason);
     if (reasonFromQuery !== null) {
-      res.redirect(this.oauthService.buildErrorRedirectUrl(reasonFromQuery));
+      const errorId = randomUUID();
+      this.logOAuthCallbackFailure(null, reasonFromQuery, errorId);
+      res.redirect(this.oauthService.buildErrorRedirectUrl(reasonFromQuery, errorId));
       return;
     }
     if (!code || !state) {
-      res.redirect(this.oauthService.buildErrorRedirectUrl('missing_code'));
+      const errorId = randomUUID();
+      this.logOAuthCallbackFailure(null, 'missing_code', errorId);
+      res.redirect(this.oauthService.buildErrorRedirectUrl('missing_code', errorId));
       return;
     }
     try {
       const { redirectUrl } = await this.oauthService.handleCallback(code, state);
       res.redirect(redirectUrl);
     } catch (error) {
+      const errorId = randomUUID();
       const reason = this.mapCallbackErrorToReason(error);
-      this.logOAuthCallbackFailure(error, reason);
-      res.redirect(this.oauthService.buildErrorRedirectUrl(reason));
+      this.logOAuthCallbackFailure(error, reason, errorId);
+      res.redirect(this.oauthService.buildErrorRedirectUrl(reason, errorId));
     }
   }
 
@@ -156,15 +162,8 @@ export class MetaController {
   }
 
   private mapCallbackErrorToReason(error: unknown): MetaOAuthErrorReason {
-    if (error instanceof MetaInstagramOAuthException) {
-      switch (error.stage) {
-        case 'token_exchange':
-          return 'instagram_token_exchange_failed';
-        case 'long_lived_token':
-          return 'instagram_long_lived_token_failed';
-        case 'profile':
-          return 'instagram_profile_failed';
-      }
+    if (error instanceof MetaOAuthCallbackError) {
+      return error.publicReason;
     }
     if (error instanceof BadRequestException) {
       const response = error.getResponse();
@@ -181,32 +180,54 @@ export class MetaController {
       if (message.includes('not configured')) {
         return 'not_configured';
       }
-      return 'unknown';
+      return 'meta_callback_failed';
     }
     if (error instanceof InternalServerErrorException) {
-      return 'unknown';
+      return 'meta_callback_failed';
     }
     return 'unknown';
   }
 
-  private logOAuthCallbackFailure(error: unknown, reason: MetaOAuthErrorReason): void {
-    const exceptionClass = error instanceof Error ? error.constructor.name : typeof error;
-    const stage = error instanceof MetaInstagramOAuthException ? error.stage : undefined;
-    const sanitizedMessage = this.sanitizeOAuthErrorMessage(error);
-    const status =
+  private logOAuthCallbackFailure(
+    error: unknown,
+    reason: MetaOAuthErrorReason,
+    errorId: string,
+    platformHint?: 'INSTAGRAM' | 'FACEBOOK',
+  ): void {
+    const typed = error instanceof MetaOAuthCallbackError ? error : null;
+    const exceptionName = error instanceof Error ? error.constructor.name : typeof error;
+    const httpStatus =
       error instanceof BadRequestException || error instanceof InternalServerErrorException
         ? error.getStatus()
         : undefined;
 
-    this.logger.warn(
-      `Meta OAuth callback failed reason=${reason} exceptionClass=${exceptionClass}${
-        stage ? ` stage=${stage}` : ''
-      }${status !== undefined ? ` httpStatus=${status}` : ''} message=${sanitizedMessage}`,
-    );
+    const logPayload = {
+      event: 'meta_oauth_callback_failed',
+      errorId,
+      platform: typed?.platform ?? platformHint,
+      stage: typed?.stage,
+      publicReason: reason,
+      exceptionName,
+      httpStatus,
+      upstreamStatus: typed?.upstreamStatus,
+      upstreamCode: typed?.upstreamCode,
+      upstreamType: typed?.upstreamType,
+      safeMessage: this.sanitizeOAuthErrorMessage(error),
+      safeDetails: typed?.safeDetails,
+    };
+
+    this.logger.warn(logPayload);
+
+    if (error instanceof Error && error.stack) {
+      this.logger.debug(`Meta OAuth callback stack errorId=${errorId}`);
+    }
   }
 
   private sanitizeOAuthErrorMessage(error: unknown): string {
-    if (error instanceof MetaInstagramOAuthException || error instanceof BadRequestException) {
+    if (error instanceof MetaOAuthCallbackError) {
+      return error.message;
+    }
+    if (error instanceof BadRequestException) {
       return this.extractErrorMessage(error.getResponse());
     }
     if (error instanceof Error) {

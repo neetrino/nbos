@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { MetaInstagramGraphClient } from './meta-instagram-graph.client';
-import { MetaInstagramOAuthException } from './meta-instagram-oauth.errors';
+import { MetaOAuthCallbackError } from './meta-oauth-callback.error';
 
 const GRAPH_BASE_URL = 'https://graph.instagram.com/v21.0';
 const APP_ID = 'test-instagram-app-id';
@@ -11,9 +11,10 @@ function createClient(): MetaInstagramGraphClient {
   return new MetaInstagramGraphClient(GRAPH_BASE_URL, APP_ID, APP_SECRET);
 }
 
-function mockFetchJson(body: unknown, ok = true): void {
+function mockFetchJson(body: unknown, ok = true, status = ok ? 200 : 400): void {
   vi.mocked(fetch).mockResolvedValue({
     ok,
+    status,
     json: async () => body,
   } as Response);
 }
@@ -43,28 +44,45 @@ describe('MetaInstagramGraphClient.exchangeCodeForToken', () => {
     expect(result.user_id).toBe('123');
   });
 
-  it('rejects an empty data envelope', async () => {
+  it('rejects an empty data envelope with instagram_response_invalid', async () => {
     mockFetchJson({ data: [] });
-    await expect(createClient().exchangeCodeForToken('auth-code', REDIRECT_URI)).rejects.toThrow(
-      MetaInstagramOAuthException,
-    );
-    await expect(createClient().exchangeCodeForToken('auth-code', REDIRECT_URI)).rejects.toThrow(
-      /empty/i,
-    );
+    await expect(
+      createClient().exchangeCodeForToken('auth-code', REDIRECT_URI),
+    ).rejects.toMatchObject({
+      publicReason: 'instagram_response_invalid',
+      stage: 'instagram_response_parsing',
+    });
   });
 
-  it('rejects a response without access_token and user_id', async () => {
+  it('rejects a response without access_token with instagram_response_invalid', async () => {
     mockFetchJson({ data: [{ permissions: 'instagram_business_basic' }] });
-    await expect(createClient().exchangeCodeForToken('auth-code', REDIRECT_URI)).rejects.toThrow(
-      /access_token/i,
-    );
+    await expect(
+      createClient().exchangeCodeForToken('auth-code', REDIRECT_URI),
+    ).rejects.toMatchObject({
+      publicReason: 'instagram_response_invalid',
+      stage: 'instagram_response_parsing',
+    });
   });
 
-  it('rejects a response without user_id', async () => {
-    mockFetchJson({ access_token: 'test-token' });
-    await expect(createClient().exchangeCodeForToken('auth-code', REDIRECT_URI)).rejects.toThrow(
-      /user_id/i,
+  it('maps upstream token exchange failures to instagram_token_exchange_failed', async () => {
+    mockFetchJson(
+      {
+        error_type: 'OAuthException',
+        code: 400,
+        error_message: 'Invalid redirect URI',
+      },
+      false,
+      400,
     );
+    await expect(
+      createClient().exchangeCodeForToken('auth-code', REDIRECT_URI),
+    ).rejects.toMatchObject({
+      publicReason: 'instagram_token_exchange_failed',
+      stage: 'instagram_token_exchange',
+      upstreamStatus: 400,
+      upstreamCode: 400,
+      upstreamType: 'OAuthException',
+    });
   });
 });
 
@@ -101,16 +119,28 @@ describe('MetaInstagramGraphClient.fetchProfile', () => {
     expect(profile.username).toBe('nbos_fallback');
   });
 
-  it('rejects an empty data envelope', async () => {
+  it('rejects an empty data envelope with instagram_response_invalid', async () => {
     mockFetchJson({ data: [] });
-    await expect(createClient().fetchProfile('profile-token')).rejects.toThrow(
-      MetaInstagramOAuthException,
-    );
-    await expect(createClient().fetchProfile('profile-token')).rejects.toThrow(/empty/i);
+    await expect(createClient().fetchProfile('profile-token')).rejects.toMatchObject({
+      publicReason: 'instagram_response_invalid',
+      stage: 'instagram_response_parsing',
+    });
   });
 
   it('rejects a profile response missing user_id and id', async () => {
     mockFetchJson({ username: 'nbos_orphan' });
-    await expect(createClient().fetchProfile('profile-token')).rejects.toThrow(/account id/i);
+    await expect(createClient().fetchProfile('profile-token')).rejects.toMatchObject({
+      publicReason: 'instagram_profile_failed',
+      stage: 'instagram_profile',
+    });
+  });
+});
+
+describe('MetaOAuthCallbackError.fromPrismaPersistence', () => {
+  it('maps prisma persistence failures to instagram_account_save_failed', () => {
+    const error = MetaOAuthCallbackError.fromPrismaPersistence({ code: 'P2002' });
+    expect(error.publicReason).toBe('instagram_account_save_failed');
+    expect(error.stage).toBe('instagram_account_persistence');
+    expect(error.safeDetails).toBe('prisma_code=P2002');
   });
 });

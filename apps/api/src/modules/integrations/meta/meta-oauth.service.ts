@@ -14,6 +14,7 @@ import {
   buildInstagramOAuthUrl,
 } from './meta-provider.config';
 import { MetaProviderSecretStore } from './meta-provider-secret.store';
+import { MetaOAuthCallbackError } from './meta-oauth-callback.error';
 import type { MetaGraphPage, MetaOAuthErrorReason } from './meta.types';
 
 const STATE_TTL_SECONDS = 600;
@@ -75,8 +76,12 @@ export class MetaOAuthService {
     return this.buildIntegrationsRedirectUrl({ oauth: 'success' });
   }
 
-  buildErrorRedirectUrl(reason: MetaOAuthErrorReason): string {
-    return this.buildIntegrationsRedirectUrl({ oauth: 'error', reason });
+  buildErrorRedirectUrl(reason: MetaOAuthErrorReason, errorId?: string): string {
+    const params: Record<string, string> = { oauth: 'error', reason };
+    if (errorId && errorId.trim().length > 0) {
+      params.error_id = errorId;
+    }
+    return this.buildIntegrationsRedirectUrl(params);
   }
 
   async handleCallback(
@@ -147,18 +152,25 @@ export class MetaOAuthService {
     const displayName = profile.username ? `@${profile.username}` : (profile.name ?? accountId);
     const scopes = [...META_INSTAGRAM_OAUTH_SCOPES];
 
-    await this.upsertAccount({
-      employeeId,
-      platform: 'INSTAGRAM',
-      displayName,
-      pageId: accountId,
-      instagramBusinessAccountId: accountId,
-      externalAccountId: accountId,
-      tokenExpiresAt,
-      scopes,
-      pageAccessToken: accessToken,
-      userAccessToken: accessToken,
-    });
+    try {
+      await this.upsertAccount({
+        employeeId,
+        platform: 'INSTAGRAM',
+        displayName,
+        pageId: accountId,
+        instagramBusinessAccountId: accountId,
+        externalAccountId: accountId,
+        tokenExpiresAt,
+        scopes,
+        pageAccessToken: accessToken,
+        userAccessToken: accessToken,
+      });
+    } catch (error) {
+      if (error instanceof MetaOAuthCallbackError) {
+        throw error;
+      }
+      throw MetaOAuthCallbackError.fromPrismaPersistence(error);
+    }
 
     return {
       redirectUrl: this.buildSuccessRedirectUrl(),

@@ -11,7 +11,9 @@ export type MetaOAuthErrorReason =
   | 'instagram_token_exchange_failed'
   | 'instagram_long_lived_token_failed'
   | 'instagram_profile_failed'
-  | 'instagram_callback_failed'
+  | 'instagram_response_invalid'
+  | 'instagram_account_save_failed'
+  | 'meta_callback_failed'
   | 'missing_pages'
   | 'not_configured'
   | 'unknown';
