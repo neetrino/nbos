@@ -136,6 +136,92 @@ describe('MetaInstagramGraphClient.fetchProfile', () => {
   });
 });
 
+describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
+  const SHORT_LIVED_TOKEN = 'ig-short-lived-token-test';
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('uses POST with form body and no secrets in the URL', async () => {
+    mockFetchJson({
+      access_token: 'ig-long-lived-token-test',
+      token_type: 'bearer',
+      expires_in: 5_184_000,
+    });
+
+    await createClient().exchangeForLongLivedToken(SHORT_LIVED_TOKEN);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://graph.instagram.com/access_token');
+    expect(url).not.toMatch(/[?&]client_secret=/);
+    expect(url).not.toMatch(/[?&]access_token=/);
+    expect(init.method).toBe('POST');
+    expect(init.headers).toMatchObject({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+
+    const body = init.body?.toString() ?? '';
+    expect(body).toContain('grant_type=ig_exchange_token');
+    expect(body).toContain(`client_secret=${APP_SECRET}`);
+    expect(body).toContain(`access_token=${SHORT_LIVED_TOKEN}`);
+  });
+
+  it('returns access_token, token_type, and expires_in on success', async () => {
+    mockFetchJson({
+      access_token: 'ig-long-lived-token-test',
+      token_type: 'bearer',
+      expires_in: 5_184_000,
+    });
+
+    const result = await createClient().exchangeForLongLivedToken(SHORT_LIVED_TOKEN);
+    expect(result.access_token).toBe('ig-long-lived-token-test');
+    expect(result.token_type).toBe('bearer');
+    expect(result.expires_in).toBe(5_184_000);
+  });
+
+  it('maps HTTP 400 failures to instagram_long_lived_token_failed', async () => {
+    mockFetchJson(
+      {
+        error: {
+          message: 'Unsupported request - method type: get',
+          type: 'IGApiException',
+          code: 100,
+        },
+      },
+      false,
+      400,
+    );
+
+    await expect(createClient().exchangeForLongLivedToken(SHORT_LIVED_TOKEN)).rejects.toMatchObject(
+      {
+        publicReason: 'instagram_long_lived_token_failed',
+        stage: 'instagram_long_lived_token',
+        upstreamStatus: 400,
+        upstreamCode: 100,
+        upstreamType: 'IGApiException',
+        message: 'Unsupported request - method type: get',
+      },
+    );
+  });
+
+  it('rejects a success response without access_token', async () => {
+    mockFetchJson({ token_type: 'bearer', expires_in: 5_184_000 });
+
+    await expect(createClient().exchangeForLongLivedToken(SHORT_LIVED_TOKEN)).rejects.toMatchObject(
+      {
+        publicReason: 'instagram_response_invalid',
+        stage: 'instagram_response_parsing',
+      },
+    );
+  });
+});
+
 describe('MetaOAuthCallbackError.fromPrismaPersistence', () => {
   it('maps prisma persistence failures to instagram_account_save_failed', () => {
     const error = MetaOAuthCallbackError.fromPrismaPersistence({ code: 'P2002' });
