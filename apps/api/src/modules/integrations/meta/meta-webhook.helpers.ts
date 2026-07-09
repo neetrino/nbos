@@ -56,6 +56,39 @@ export function verifyMetaWebhookSignature(
   return timingSafeEqual(expectedBuf, actualBuf);
 }
 
+/** Collects non-empty webhook app secrets, deduplicated in stable order. */
+export function collectConfiguredWebhookSecrets(secrets: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const configured: string[] = [];
+  for (const secret of secrets) {
+    const trimmed = secret.trim();
+    if (!trimmed || seen.has(trimmed)) {
+      continue;
+    }
+    seen.add(trimmed);
+    configured.push(trimmed);
+  }
+  return configured;
+}
+
+/** Returns true when the signature validates against any configured app secret. */
+export function verifyMetaWebhookSignatureAny(
+  rawBody: Buffer,
+  signatureHeader: string | undefined,
+  secrets: readonly string[],
+): boolean {
+  const configuredSecrets = collectConfiguredWebhookSecrets(secrets);
+  if (configuredSecrets.length === 0 || !signatureHeader) {
+    return false;
+  }
+  for (const secret of configuredSecrets) {
+    if (verifyMetaWebhookSignature(rawBody, signatureHeader, secret)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Parses inbound messaging events from Meta webhook payload. Skips delivery/read/echo. */
 export function parseMetaInboundMessages(
   body: MetaMessagingWebhookBody,

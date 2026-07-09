@@ -4,13 +4,13 @@ import { MetaProviderConfig } from './meta-provider.config';
 import type { MetaMessagingWebhookBody } from './meta.types';
 import {
   assertSafeMetaHubChallenge,
+  collectConfiguredWebhookSecrets,
   normalizeHttpRequestParam,
   parseMetaInboundMessages,
-  verifyMetaWebhookSignature,
+  verifyMetaWebhookSignatureAny,
   type HttpRequestParam,
 } from './meta-webhook.helpers';
-
-type RawBodyRequest = { rawBody?: Buffer };
+import type { MetaWebhookRequest } from './meta-webhook.types';
 
 @Injectable()
 export class MetaWebhookService {
@@ -45,13 +45,19 @@ export class MetaWebhookService {
   }
 
   async handleWebhook(
-    req: RawBodyRequest,
+    req: MetaWebhookRequest,
     signatureHeader: string | undefined,
     body: MetaMessagingWebhookBody,
   ): Promise<void> {
-    if (this.config.appSecret) {
-      const rawBody = req.rawBody ?? Buffer.from(JSON.stringify(body));
-      if (!verifyMetaWebhookSignature(rawBody, signatureHeader, this.config.appSecret)) {
+    const configuredSecrets = collectConfiguredWebhookSecrets([
+      this.config.appSecret,
+      this.config.instagramAppSecret,
+    ]);
+
+    // Optional in local dev when Meta env is unset; verify when any secret is configured.
+    if (configuredSecrets.length > 0) {
+      const rawBody = req.rawBody;
+      if (!rawBody || !verifyMetaWebhookSignatureAny(rawBody, signatureHeader, configuredSecrets)) {
         throw new UnauthorizedException('Invalid webhook signature');
       }
     }

@@ -32,8 +32,10 @@ async function bootstrap() {
     json({
       limit: JSON_BODY_LIMIT,
       verify: (req, _res, buf) => {
-        if (req.url?.includes('/api/integrations/meta/webhook')) {
-          (req as Request & { rawBody?: Buffer }).rawBody = buf;
+        const expressReq = req as Request & { rawBody?: Buffer };
+        const requestUrl = expressReq.originalUrl ?? expressReq.url ?? '';
+        if (requestUrl.includes('/api/integrations/meta/webhook')) {
+          expressReq.rawBody = Buffer.from(buf);
         }
       },
     }),
