@@ -17,7 +17,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import {
   CurrentUser,
   type CurrentUserPayload,
@@ -32,8 +32,7 @@ import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
 import { MetaWebhookService } from './meta-webhook.service';
 import type { HttpRequestParam } from './meta-webhook.helpers';
-
-type RawBodyRequest = Request & { rawBody?: Buffer };
+import type { MetaWebhookRequest } from './meta-webhook.types';
 
 @ApiTags('Integrations / Meta')
 @Controller('integrations/meta')
@@ -138,7 +137,7 @@ export class MetaController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Meta webhook for Instagram/Facebook messaging events' })
   async receiveWebhook(
-    @Req() req: RawBodyRequest,
+    @Req() req: MetaWebhookRequest,
     @Body() body: MetaMessagingWebhookBody,
     @Res() res: Response,
   ) {

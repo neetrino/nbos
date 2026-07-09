@@ -2,10 +2,16 @@ import { createHmac } from 'crypto';
 import { describe, expect, it } from 'vitest';
 import {
   assertSafeMetaHubChallenge,
+  collectConfiguredWebhookSecrets,
   normalizeHttpRequestParam,
   parseMetaInboundMessages,
   verifyMetaWebhookSignature,
+  verifyMetaWebhookSignatureAny,
 } from './meta-webhook.helpers';
+
+function signBody(body: Buffer, secret: string): string {
+  return 'sha256=' + createHmac('sha256', secret).update(body).digest('hex');
+}
 
 describe('assertSafeMetaHubChallenge', () => {
   it('accepts token-like challenge strings', () => {
@@ -42,12 +48,57 @@ describe('verifyMetaWebhookSignature', () => {
   it('accepts a valid signature', () => {
     const secret = 'test-secret';
     const body = Buffer.from('{"object":"page"}');
-    const signature = 'sha256=' + createHmac('sha256', secret).update(body).digest('hex');
+    const signature = signBody(body, secret);
     expect(verifyMetaWebhookSignature(body, signature, secret)).toBe(true);
   });
 
   it('rejects invalid signature', () => {
     expect(verifyMetaWebhookSignature(Buffer.from('{}'), 'sha256=deadbeef', 'secret')).toBe(false);
+  });
+});
+
+describe('collectConfiguredWebhookSecrets', () => {
+  it('removes empty values and deduplicates identical secrets', () => {
+    expect(collectConfiguredWebhookSecrets([' fb ', '', 'fb', 'ig', 'ig'])).toEqual(['fb', 'ig']);
+  });
+});
+
+describe('verifyMetaWebhookSignatureAny', () => {
+  const facebookSecret = 'facebook-secret-test';
+  const instagramSecret = 'instagram-secret-test';
+  const body = Buffer.from('{"object":"page"}');
+
+  it('accepts when any configured secret validates', () => {
+    const signature = signBody(body, instagramSecret);
+    expect(verifyMetaWebhookSignatureAny(body, signature, [facebookSecret, instagramSecret])).toBe(
+      true,
+    );
+  });
+
+  it('rejects when no secret validates', () => {
+    const signature = signBody(body, 'other-secret');
+    expect(verifyMetaWebhookSignatureAny(body, signature, [facebookSecret, instagramSecret])).toBe(
+      false,
+    );
+  });
+
+  it('rejects missing signature header', () => {
+    expect(verifyMetaWebhookSignatureAny(body, undefined, [facebookSecret])).toBe(false);
+  });
+
+  it('rejects when no secrets are configured', () => {
+    const signature = signBody(body, facebookSecret);
+    expect(verifyMetaWebhookSignatureAny(body, signature, ['', '  '])).toBe(false);
+  });
+
+  it('validates against exact raw bytes that differ after JSON re-serialization', () => {
+    const rawBody = Buffer.from('{\n  "object": "instagram",\n  "entry": [ ]\n}\n');
+    const canonicalBody = Buffer.from(JSON.stringify(JSON.parse(rawBody.toString('utf8'))));
+    expect(rawBody.equals(canonicalBody)).toBe(false);
+
+    const signature = signBody(rawBody, instagramSecret);
+    expect(verifyMetaWebhookSignatureAny(rawBody, signature, [instagramSecret])).toBe(true);
+    expect(verifyMetaWebhookSignatureAny(canonicalBody, signature, [instagramSecret])).toBe(false);
   });
 });
 
