@@ -8,6 +8,10 @@ export type MetaOAuthErrorReason =
   | 'access_denied'
   | 'invalid_state'
   | 'token_exchange_failed'
+  | 'instagram_token_exchange_failed'
+  | 'instagram_long_lived_token_failed'
+  | 'instagram_profile_failed'
+  | 'instagram_callback_failed'
   | 'missing_pages'
   | 'not_configured'
   | 'unknown';

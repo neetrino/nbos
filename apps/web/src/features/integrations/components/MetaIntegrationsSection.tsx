@@ -17,6 +17,13 @@ const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   access_denied: 'Meta access was denied. Account was not connected.',
   invalid_state: 'Meta authorization expired. Please try connecting again.',
   token_exchange_failed: 'Meta token exchange failed. Check app credentials.',
+  instagram_token_exchange_failed:
+    'Instagram authorization could not be completed. Check the Instagram app credentials and try again.',
+  instagram_long_lived_token_failed:
+    'Instagram authorization could not be completed. Please try connecting again.',
+  instagram_profile_failed:
+    'Instagram account information could not be loaded. Please reconnect the account.',
+  instagram_callback_failed: 'Instagram connection failed. Please try again.',
   missing_pages: 'No Facebook Pages were found for this Meta account.',
   not_configured: 'Meta integration is not configured on the server.',
   unknown: 'Meta connection failed. Please try again.',

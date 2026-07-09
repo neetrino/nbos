@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   InternalServerErrorException,
+  Logger,
   Param,
   Patch,
   Post,
@@ -24,6 +25,7 @@ import {
 } from '../../../common/decorators';
 import { LinkMetaMarketingAccountDto } from './dto/link-meta-marketing-account.dto';
 import { MetaAccountsService } from './meta-accounts.service';
+import { MetaInstagramOAuthException } from './meta-instagram-oauth.errors';
 import { MetaOAuthService } from './meta-oauth.service';
 import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
@@ -35,6 +37,8 @@ type RawBodyRequest = Request & { rawBody?: Buffer };
 @ApiTags('Integrations / Meta')
 @Controller('integrations/meta')
 export class MetaController {
+  private readonly logger = new Logger(MetaController.name);
+
   constructor(
     private readonly oauthService: MetaOAuthService,
     private readonly accountsService: MetaAccountsService,
@@ -76,6 +80,7 @@ export class MetaController {
       res.redirect(redirectUrl);
     } catch (error) {
       const reason = this.mapCallbackErrorToReason(error);
+      this.logOAuthCallbackFailure(error, reason);
       res.redirect(this.oauthService.buildErrorRedirectUrl(reason));
     }
   }
@@ -151,6 +156,16 @@ export class MetaController {
   }
 
   private mapCallbackErrorToReason(error: unknown): MetaOAuthErrorReason {
+    if (error instanceof MetaInstagramOAuthException) {
+      switch (error.stage) {
+        case 'token_exchange':
+          return 'instagram_token_exchange_failed';
+        case 'long_lived_token':
+          return 'instagram_long_lived_token_failed';
+        case 'profile':
+          return 'instagram_profile_failed';
+      }
+    }
     if (error instanceof BadRequestException) {
       const response = error.getResponse();
       const message = this.extractErrorMessage(response).toLowerCase();
@@ -172,6 +187,32 @@ export class MetaController {
       return 'unknown';
     }
     return 'unknown';
+  }
+
+  private logOAuthCallbackFailure(error: unknown, reason: MetaOAuthErrorReason): void {
+    const exceptionClass = error instanceof Error ? error.constructor.name : typeof error;
+    const stage = error instanceof MetaInstagramOAuthException ? error.stage : undefined;
+    const sanitizedMessage = this.sanitizeOAuthErrorMessage(error);
+    const status =
+      error instanceof BadRequestException || error instanceof InternalServerErrorException
+        ? error.getStatus()
+        : undefined;
+
+    this.logger.warn(
+      `Meta OAuth callback failed reason=${reason} exceptionClass=${exceptionClass}${
+        stage ? ` stage=${stage}` : ''
+      }${status !== undefined ? ` httpStatus=${status}` : ''} message=${sanitizedMessage}`,
+    );
+  }
+
+  private sanitizeOAuthErrorMessage(error: unknown): string {
+    if (error instanceof MetaInstagramOAuthException || error instanceof BadRequestException) {
+      return this.extractErrorMessage(error.getResponse());
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return 'Unknown error';
   }
 
   private extractErrorMessage(response: string | object): string {
