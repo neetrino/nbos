@@ -157,15 +157,30 @@ export class MetaInstagramGraphClient {
   }
 
   async exchangeForLongLivedToken(shortLivedToken: string): Promise<MetaGraphTokenResponse> {
-    const url = new URL(INSTAGRAM_LONG_LIVED_TOKEN_URL);
-    url.searchParams.set('grant_type', 'ig_exchange_token');
-    url.searchParams.set('client_secret', this.appSecret);
-    url.searchParams.set('access_token', shortLivedToken);
-    return this.fetchJson<MetaGraphTokenResponse>(
-      url.toString(),
-      undefined,
+    const body = new URLSearchParams({
+      grant_type: 'ig_exchange_token',
+      client_secret: this.appSecret,
+      access_token: shortLivedToken,
+    });
+    const raw = await this.fetchJson<MetaGraphTokenResponse>(
+      INSTAGRAM_LONG_LIVED_TOKEN_URL,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      },
       'instagram_long_lived_token',
     );
+    if (typeof raw.access_token !== 'string' || raw.access_token.trim().length === 0) {
+      throw new MetaOAuthCallbackError({
+        message: 'Instagram long-lived token exchange did not return access_token',
+        publicReason: 'instagram_response_invalid',
+        stage: 'instagram_response_parsing',
+        platform: 'INSTAGRAM',
+        safeDetails: formatInstagramPayloadDiagnostic(raw),
+      });
+    }
+    return raw;
   }
 
   async fetchProfile(accessToken: string): Promise<MetaInstagramProfile> {
