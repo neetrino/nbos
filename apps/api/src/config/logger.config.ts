@@ -56,12 +56,42 @@ export function sanitizeLoggedRequestUrl(url: string | undefined): string | unde
   return sanitizedQuery.length > 0 ? `${path}?${sanitizedQuery}` : path;
 }
 
+/** Redacts OAuth and token values from logged request query objects without mutating input. */
+export function sanitizeLoggedQuery(
+  query: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!query) {
+    return query;
+  }
+
+  let changed = false;
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(query)) {
+    if ((SENSITIVE_QUERY_PARAMS as readonly string[]).includes(key)) {
+      sanitized[key] = '[REDACTED]';
+      changed = true;
+      continue;
+    }
+    sanitized[key] = value;
+  }
+
+  return changed ? sanitized : query;
+}
+
+type IncomingMessageWithQuery = IncomingMessage & { query?: Record<string, unknown> };
+
 function serializeRequest(req: IncomingMessage): Record<string, unknown> {
   const serialized = stdSerializers.req(req);
   const url = 'url' in serialized ? (serialized.url as string | undefined) : undefined;
+  const expressQuery = (req as IncomingMessageWithQuery).query;
+  const serializedQuery =
+    'query' in serialized ? (serialized.query as Record<string, unknown> | undefined) : undefined;
+  const query = sanitizeLoggedQuery(serializedQuery ?? expressQuery);
   return {
     ...serialized,
     url: sanitizeLoggedRequestUrl(url),
+    ...(query !== undefined ? { query } : {}),
   };
 }
 
