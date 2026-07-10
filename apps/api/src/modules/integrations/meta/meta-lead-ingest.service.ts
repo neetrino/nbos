@@ -15,7 +15,7 @@ import {
   resolveInboundMessageType,
   resolveMessageSentAt,
 } from './meta-lead-ingest.helpers';
-import type { MetaProfileService } from './meta-profile.service';
+import { MetaProfileService } from './meta-profile.service';
 import type { MetaMessagingUserProfile } from './meta-messaging-profile.types';
 import type { ParsedMetaInboundMessage } from './meta.types';
 
