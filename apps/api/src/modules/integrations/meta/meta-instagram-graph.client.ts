@@ -4,7 +4,13 @@ import {
   MetaOAuthCallbackError,
   formatInstagramPayloadDiagnostic,
 } from './meta-oauth-callback.error';
-import { fetchJsonWithTimeout, META_PROFILE_FETCH_TIMEOUT_MS } from './meta-fetch.util';
+import {
+  extractGraphVersionFromBaseUrl,
+  fetchMetaGraphJson,
+  INSTAGRAM_MESSAGING_PROFILE_FIELDS,
+  MetaGraphValidationError,
+  META_PROFILE_FETCH_TIMEOUT_MS,
+} from './meta-fetch.util';
 import type { MetaProfileLookupResult } from './meta-messaging-profile.types';
 
 const INSTAGRAM_TOKEN_URL = 'https://api.instagram.com/oauth/access_token';
@@ -204,15 +210,26 @@ export class MetaInstagramGraphClient {
     senderScopedId: string,
     accessToken: string,
   ): Promise<MetaProfileLookupResult> {
-    const url = new URL(`${this.graphBaseUrl}/${senderScopedId}`);
-    url.searchParams.set('fields', 'name,username,profile_pic');
-    url.searchParams.set('access_token', accessToken);
-    const raw = await fetchJsonWithTimeout(
-      url.toString(),
-      undefined,
-      META_PROFILE_FETCH_TIMEOUT_MS,
-    );
-    return mapInstagramMessagingProfileResult(raw);
+    try {
+      const raw = await fetchMetaGraphJson({
+        target: 'INSTAGRAM',
+        graphVersion: extractGraphVersionFromBaseUrl(this.graphBaseUrl, 'INSTAGRAM'),
+        resourceId: senderScopedId,
+        fields: INSTAGRAM_MESSAGING_PROFILE_FIELDS,
+        accessToken,
+        timeoutMs: META_PROFILE_FETCH_TIMEOUT_MS,
+      });
+      return mapInstagramMessagingProfileResult(raw);
+    } catch (error) {
+      if (error instanceof MetaGraphValidationError) {
+        return {
+          ok: false,
+          errorCode: error.code,
+          errorMessage: 'Invalid Instagram Graph request parameters',
+        };
+      }
+      throw error;
+    }
   }
 
   private async fetchJson<T>(

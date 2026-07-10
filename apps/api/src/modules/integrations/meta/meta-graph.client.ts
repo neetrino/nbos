@@ -1,10 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import type { MetaGraphPage, MetaGraphTokenResponse } from './meta.types';
-import { fetchJsonWithTimeout, META_PROFILE_FETCH_TIMEOUT_MS } from './meta-fetch.util';
+import {
+  extractGraphVersionFromBaseUrl,
+  FACEBOOK_MESSAGING_PROFILE_FIELDS,
+  fetchMetaGraphJson,
+  MetaGraphValidationError,
+  META_PROFILE_FETCH_TIMEOUT_MS,
+} from './meta-fetch.util';
 import type { MetaProfileLookupResult } from './meta-messaging-profile.types';
 
 const PAGE_FIELDS = 'id,name,access_token,instagram_business_account{id,username,name}';
-const MESSAGING_PROFILE_FIELDS = 'first_name,last_name,name,profile_pic';
 
 interface FacebookMessagingProfileResponse {
   first_name?: string;
@@ -58,15 +63,26 @@ export class MetaGraphClient {
     senderScopedId: string,
     pageAccessToken: string,
   ): Promise<MetaProfileLookupResult> {
-    const url = new URL(`${this.graphBaseUrl}/${senderScopedId}`);
-    url.searchParams.set('fields', MESSAGING_PROFILE_FIELDS);
-    url.searchParams.set('access_token', pageAccessToken);
-    const result = await fetchJsonWithTimeout(
-      url.toString(),
-      undefined,
-      META_PROFILE_FETCH_TIMEOUT_MS,
-    );
-    return mapFacebookMessagingProfileResult(result);
+    try {
+      const result = await fetchMetaGraphJson({
+        target: 'FACEBOOK',
+        graphVersion: extractGraphVersionFromBaseUrl(this.graphBaseUrl, 'FACEBOOK'),
+        resourceId: senderScopedId,
+        fields: FACEBOOK_MESSAGING_PROFILE_FIELDS,
+        accessToken: pageAccessToken,
+        timeoutMs: META_PROFILE_FETCH_TIMEOUT_MS,
+      });
+      return mapFacebookMessagingProfileResult(result);
+    } catch (error) {
+      if (error instanceof MetaGraphValidationError) {
+        return {
+          ok: false,
+          errorCode: error.code,
+          errorMessage: 'Invalid Facebook Graph request parameters',
+        };
+      }
+      throw error;
+    }
   }
 
   private async fetchJson<T>(url: string, init?: RequestInit): Promise<T> {

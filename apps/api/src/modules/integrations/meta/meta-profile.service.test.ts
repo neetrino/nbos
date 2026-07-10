@@ -50,7 +50,7 @@ describe('MetaProfileService', () => {
         platform: 'INSTAGRAM',
         scopes: ['instagram_business_basic', 'instagram_business_manage_messages'],
       },
-      'igsid-1',
+      '17841400000000001',
       null,
     );
 
@@ -68,7 +68,7 @@ describe('MetaProfileService', () => {
         platform: 'INSTAGRAM',
         scopes: ['instagram_business_basic'],
       },
-      'igsid-1',
+      '17841400000000001',
       {
         displayName: 'Cached Name',
         username: 'cached_user',
@@ -100,7 +100,7 @@ describe('MetaProfileService', () => {
         platform: 'FACEBOOK',
         scopes: ['pages_messaging'],
       },
-      'psid-1',
+      '1234567890123456',
       {
         displayName: 'Cached Name',
         username: null,
