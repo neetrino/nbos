@@ -4,6 +4,8 @@ import {
   MetaOAuthCallbackError,
   formatInstagramPayloadDiagnostic,
 } from './meta-oauth-callback.error';
+import { fetchJsonWithTimeout, META_PROFILE_FETCH_TIMEOUT_MS } from './meta-fetch.util';
+import type { MetaProfileLookupResult } from './meta-messaging-profile.types';
 
 const INSTAGRAM_TOKEN_URL = 'https://api.instagram.com/oauth/access_token';
 const INSTAGRAM_LONG_LIVED_TOKEN_URL = 'https://graph.instagram.com/access_token';
@@ -20,6 +22,7 @@ export interface MetaInstagramProfile {
   user_id?: string;
   username?: string;
   name?: string;
+  profile_pic?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -197,6 +200,21 @@ export class MetaInstagramGraphClient {
     return { ...profile, id: String(accountId) };
   }
 
+  async fetchMessagingUserProfile(
+    senderScopedId: string,
+    accessToken: string,
+  ): Promise<MetaProfileLookupResult> {
+    const url = new URL(`${this.graphBaseUrl}/${senderScopedId}`);
+    url.searchParams.set('fields', 'name,username,profile_pic');
+    url.searchParams.set('access_token', accessToken);
+    const raw = await fetchJsonWithTimeout(
+      url.toString(),
+      undefined,
+      META_PROFILE_FETCH_TIMEOUT_MS,
+    );
+    return mapInstagramMessagingProfileResult(raw);
+  }
+
   private async fetchJson<T>(
     url: string,
     init?: RequestInit,
@@ -235,5 +253,39 @@ export class MetaInstagramGraphClient {
       throw new BadRequestException(message);
     }
     return body;
+  }
+}
+
+function mapInstagramMessagingProfileResult(result: {
+  ok: boolean;
+  status: number;
+  body: unknown;
+}): MetaProfileLookupResult {
+  if (!result.ok) {
+    const body = result.body as { error?: { message?: string; code?: number } };
+    return {
+      ok: false,
+      errorCode: body.error?.code
+        ? String(body.error.code)
+        : String(result.status || 'fetch_failed'),
+      errorMessage: body.error?.message ?? 'Instagram profile lookup failed',
+    };
+  }
+
+  try {
+    const profile = unwrapInstagramPayload<Partial<MetaInstagramProfile>>(result.body, 'profile');
+    return {
+      ok: true,
+      profile: {
+        displayName: profile.name?.trim() || null,
+        username: profile.username?.trim() || null,
+        firstName: null,
+        lastName: null,
+        profilePictureUrl: profile.profile_pic?.trim() || null,
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Instagram profile response invalid';
+    return { ok: false, errorCode: 'invalid_response', errorMessage: message };
   }
 }

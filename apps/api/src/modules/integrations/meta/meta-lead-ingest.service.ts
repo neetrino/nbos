@@ -1,28 +1,42 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
-import * as jwt from 'jsonwebtoken';
+import { Prisma, PrismaClient, type InputJsonValue, type TransactionClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { LeadsService } from '../../crm/leads/leads.service';
+import {
+  buildMetaLeadNames,
+  isGenericMetaLeadField,
+  type MetaLeadPlatform,
+} from './meta-lead-display';
+import {
+  buildLatestMessagePreview,
+  buildMinimalProviderMetadata,
+  isPrismaSerializationFailure,
+  isPrismaUniqueViolation,
+  META_TX_MAX_RETRIES,
+  resolveInboundMessageType,
+  resolveMessageSentAt,
+} from './meta-lead-ingest.helpers';
+import type { MetaProfileService } from './meta-profile.service';
+import type { MetaMessagingUserProfile } from './meta-messaging-profile.types';
 import type { ParsedMetaInboundMessage } from './meta.types';
 
 const LEAD_SOURCE = 'MARKETING' as const;
 const LEAD_SOURCE_DETAIL = 'SMM' as const;
-const MESSAGE_PREVIEW_MAX = 200;
 
 interface ConnectedAccountForIngest {
   id: string;
-  platform: string;
+  platform: MetaLeadPlatform;
   pageId: string;
   instagramBusinessAccountId: string | null;
   marketingAccountId: string | null;
   displayName: string;
+  scopes: unknown;
 }
 
 @Injectable()
 export class MetaLeadIngestService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly leadsService: LeadsService,
+    private readonly profileService: MetaProfileService,
   ) {}
 
   async ingestMessage(message: ParsedMetaInboundMessage): Promise<void> {
@@ -36,25 +50,205 @@ export class MetaLeadIngestService {
       return;
     }
 
-    const isDuplicate = await this.tryBeginIdempotentEvent(message);
-    if (isDuplicate) {
+    const isDuplicateEvent = await this.tryBeginIdempotentEvent(message);
+    if (isDuplicateEvent) {
       return;
     }
 
-    const lead = await this.leadsService.create({
-      name: this.buildLeadName(message),
-      contactName: this.buildContactName(message),
-      source: LEAD_SOURCE,
-      sourceDetail: LEAD_SOURCE_DETAIL,
-      marketingAccountId: account.marketingAccountId,
-      marketingActivityId: null,
-      notes: this.buildLeadNotes(message, account),
+    const platform = account.platform;
+    const existingIdentity = await this.prisma.metaSenderIdentity.findUnique({
+      where: {
+        platform_metaConnectedAccountId_senderScopedId: {
+          platform,
+          metaConnectedAccountId: account.id,
+          senderScopedId: message.senderId,
+        },
+      },
+    });
+
+    const resolvedProfile = await this.profileService.resolveSenderProfile(
+      account,
+      message.senderId,
+      existingIdentity,
+    );
+
+    const leadId = await this.persistInboundMessage({
+      account,
+      message,
+      platform,
+      resolvedProfile,
     });
 
     await this.prisma.metaProviderEvent.updateMany({
       where: { provider: 'META', eventId: message.eventId },
-      data: { leadId: lead.id, processedAt: new Date() },
+      data: { leadId, processedAt: new Date() },
     });
+  }
+
+  private async persistInboundMessage(params: {
+    account: ConnectedAccountForIngest;
+    message: ParsedMetaInboundMessage;
+    platform: MetaLeadPlatform;
+    resolvedProfile: Awaited<ReturnType<MetaProfileService['resolveSenderProfile']>>;
+  }): Promise<string> {
+    const { account, message, platform, resolvedProfile } = params;
+    const preview = buildLatestMessagePreview(message.messageText);
+    const sentAt = resolveMessageSentAt(message.timestamp);
+    const messageType = resolveInboundMessageType(message.messageText);
+    const providerMetadata = buildMinimalProviderMetadata(message);
+
+    for (let attempt = 0; attempt < META_TX_MAX_RETRIES; attempt += 1) {
+      try {
+        return await this.prisma.$transaction(
+          async (tx) => {
+            const senderIdentity = await tx.metaSenderIdentity.upsert({
+              where: {
+                platform_metaConnectedAccountId_senderScopedId: {
+                  platform,
+                  metaConnectedAccountId: account.id,
+                  senderScopedId: message.senderId,
+                },
+              },
+              create: {
+                platform,
+                metaConnectedAccountId: account.id,
+                senderScopedId: message.senderId,
+                ...resolvedProfile.identityPatch,
+                profileFetchedAt: resolvedProfile.profileFetchedAt,
+                profileFetchStatus: resolvedProfile.profileFetchStatus,
+                lastProfileFetchError: resolvedProfile.lastProfileFetchError,
+              },
+              update: resolvedProfile.fetchedNow
+                ? {
+                    ...resolvedProfile.identityPatch,
+                    profileFetchedAt: resolvedProfile.profileFetchedAt,
+                    profileFetchStatus: resolvedProfile.profileFetchStatus,
+                    lastProfileFetchError: resolvedProfile.lastProfileFetchError,
+                  }
+                : {},
+            });
+
+            const conversation = await tx.metaConversation.upsert({
+              where: {
+                metaConnectedAccountId_senderIdentityId: {
+                  metaConnectedAccountId: account.id,
+                  senderIdentityId: senderIdentity.id,
+                },
+              },
+              create: {
+                metaConnectedAccountId: account.id,
+                senderIdentityId: senderIdentity.id,
+              },
+              update: {},
+            });
+
+            let leadId = conversation.leadId;
+            if (!leadId) {
+              const leadNames = buildMetaLeadNames(platform, resolvedProfile.profile);
+              const lead = await tx.lead.create({
+                data: {
+                  code: await this.generateLeadCode(tx),
+                  name: leadNames.name,
+                  contactName: leadNames.contactName,
+                  source: LEAD_SOURCE,
+                  sourceDetail: LEAD_SOURCE_DETAIL,
+                  marketingAccountId: account.marketingAccountId,
+                },
+                select: { id: true },
+              });
+              leadId = lead.id;
+              await tx.metaConversation.update({
+                where: { id: conversation.id },
+                data: { leadId },
+              });
+            } else if (resolvedProfile.fetchedNow) {
+              await this.maybeEnrichExistingLead(tx, leadId, platform, resolvedProfile.profile);
+            }
+
+            try {
+              await tx.metaMessage.create({
+                data: {
+                  conversationId: conversation.id,
+                  metaConnectedAccountId: account.id,
+                  providerMessageId: message.eventId,
+                  platform,
+                  direction: 'INBOUND',
+                  messageType,
+                  text: message.messageText,
+                  sentAt,
+                  providerMetadata: (providerMetadata ?? undefined) as InputJsonValue | undefined,
+                },
+              });
+            } catch (error) {
+              if (!isPrismaUniqueViolation(error)) {
+                throw error;
+              }
+            }
+
+            await tx.metaConversation.update({
+              where: { id: conversation.id },
+              data: {
+                lastMessageAt: sentAt ?? new Date(),
+                latestMessagePreview: preview,
+              },
+            });
+
+            return leadId;
+          },
+          {
+            isolationLevel: 'Serializable',
+            maxWait: 5000,
+            timeout: 10000,
+          },
+        );
+      } catch (error) {
+        if (isPrismaSerializationFailure(error) && attempt < META_TX_MAX_RETRIES - 1) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw new Error('Meta lead ingest transaction failed after retries');
+  }
+
+  private async maybeEnrichExistingLead(
+    tx: TransactionClient,
+    leadId: string,
+    platform: MetaLeadPlatform,
+    profile: MetaMessagingUserProfile,
+  ): Promise<void> {
+    const lead = await tx.lead.findUnique({
+      where: { id: leadId },
+      select: { name: true, contactName: true },
+    });
+    if (!lead) {
+      return;
+    }
+
+    const leadNames = buildMetaLeadNames(platform, profile);
+    const data: Prisma.LeadUpdateInput = {};
+    if (isGenericMetaLeadField(lead.name, platform)) {
+      data.name = leadNames.name;
+    }
+    if (isGenericMetaLeadField(lead.contactName, platform)) {
+      data.contactName = leadNames.contactName;
+    }
+    if (Object.keys(data).length === 0) {
+      return;
+    }
+    await tx.lead.update({ where: { id: leadId }, data });
+  }
+
+  private async generateLeadCode(tx: TransactionClient): Promise<string> {
+    const year = new Date().getFullYear();
+    const lastLead = await tx.lead.findFirst({
+      where: { code: { startsWith: `L-${year}-` } },
+      orderBy: { code: 'desc' },
+      select: { code: true },
+    });
+    const nextNum = lastLead ? parseInt(lastLead.code.split('-')[2] ?? '0', 10) + 1 : 1;
+    return `L-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private async resolveConnectedAccount(
@@ -78,6 +272,7 @@ export class MetaLeadIngestService {
         instagramBusinessAccountId: true,
         marketingAccountId: true,
         displayName: true,
+        scopes: true,
       },
     });
   }
@@ -134,51 +329,4 @@ export class MetaLeadIngestService {
       throw error;
     }
   }
-
-  private buildContactName(message: ParsedMetaInboundMessage): string {
-    if (message.senderName?.trim()) {
-      return message.senderName.trim();
-    }
-    return message.platform === 'INSTAGRAM' ? 'Instagram user' : 'Facebook user';
-  }
-
-  private buildLeadName(message: ParsedMetaInboundMessage): string {
-    if (message.platform === 'INSTAGRAM') {
-      const handle = message.senderName?.trim();
-      return handle ? `Instagram DM — @${handle.replace(/^@/, '')}` : 'Instagram DM';
-    }
-    const name = message.senderName?.trim();
-    return name ? `Facebook Messenger — ${name}` : 'Facebook Messenger';
-  }
-
-  private buildLeadNotes(
-    message: ParsedMetaInboundMessage,
-    account: ConnectedAccountForIngest,
-  ): string {
-    const preview = message.messageText?.trim().slice(0, MESSAGE_PREVIEW_MAX) ?? '(no text)';
-    const lines = [
-      `Platform: ${message.platform}`,
-      `Sender ID: ${message.senderId}`,
-      `Page ID: ${account.pageId}`,
-      `Connected account: ${account.displayName}`,
-    ];
-    if (account.instagramBusinessAccountId) {
-      lines.push(`Instagram Business Account ID: ${account.instagramBusinessAccountId}`);
-    }
-    lines.push(
-      `Message ID: ${message.eventId}`,
-      `Timestamp: ${message.timestamp ?? 'unknown'}`,
-      `Preview: ${preview}`,
-    );
-    return lines.join('\n');
-  }
-}
-
-function isPrismaUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code: string }).code === 'P2002'
-  );
 }

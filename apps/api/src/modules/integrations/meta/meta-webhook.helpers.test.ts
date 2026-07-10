@@ -127,7 +127,10 @@ describe('parseMetaInboundMessages', () => {
       objectId: 'ig-123',
       platform: 'INSTAGRAM',
       senderId: 'user-1',
+      recipientId: null,
       messageText: 'Hello NBOS',
+      replyToMid: null,
+      attachmentTypes: [],
     });
   });
 });

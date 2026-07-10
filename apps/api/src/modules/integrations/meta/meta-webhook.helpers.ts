@@ -109,16 +109,22 @@ export function parseMetaInboundMessages(
         continue;
       }
       const senderId = event.sender?.id ?? 'unknown';
+      const attachmentTypes = (message.attachments ?? [])
+        .map((item) => item.type?.trim())
+        .filter((type): type is string => Boolean(type));
       results.push({
         eventId: message.mid,
         objectId,
         platform,
         senderId,
+        recipientId: event.recipient?.id ?? null,
         senderName: null,
         messageText: message.text ?? null,
         timestamp: event.timestamp ?? entry.time ?? null,
         pageId: objectId,
         instagramBusinessAccountId: platform === 'INSTAGRAM' ? objectId : null,
+        replyToMid: message.reply_to?.mid ?? null,
+        attachmentTypes,
       });
     }
   }

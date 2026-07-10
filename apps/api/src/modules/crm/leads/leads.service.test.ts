@@ -58,7 +58,7 @@ describe('LeadsService', () => {
       const lead = { id: '1', code: 'L-2026-0001', contactName: 'John' };
       prisma.lead.findUnique.mockResolvedValue(lead);
       const result = await service.findById('1');
-      expect(result).toEqual(lead);
+      expect(result).toEqual({ ...lead, metaConversation: null });
     });
 
     it('throws NotFoundException when not found', async () => {

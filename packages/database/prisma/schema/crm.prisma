@@ -148,6 +148,7 @@ model Lead {
   deal               Deal?
   additionalContacts LeadAdditionalContact[]
   metaProviderEvents MetaProviderEvent[]
+  metaConversation   MetaConversation?
 
   @@index([trashedAt])
   @@map("leads")

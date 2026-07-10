@@ -15,6 +15,17 @@ enum MetaConnectedAccountStatusEnum {
   ERROR
 }
 
+enum MetaMessageDirectionEnum {
+  INBOUND
+  OUTBOUND
+}
+
+enum MetaMessageTypeEnum {
+  TEXT
+  EMPTY
+  UNSUPPORTED
+}
+
 model MetaConnectedAccount {
   id                         String                         @id @default(uuid())
   provider                   IntegrationProviderEnum        @default(META)
@@ -36,6 +47,9 @@ model MetaConnectedAccount {
   marketingAccount MarketingAccount? @relation(fields: [marketingAccountId], references: [id], onDelete: SetNull)
   connectedBy      Employee          @relation("MetaConnectedBy", fields: [connectedByUserId], references: [id], onDelete: Restrict)
   providerSecret   MetaProviderSecret?
+  senderIdentities MetaSenderIdentity[]
+  conversations    MetaConversation[]
+  messages           MetaMessage[]
 
   @@unique([provider, externalAccountId])
   @@index([marketingAccountId])
@@ -75,4 +89,72 @@ model MetaProviderEvent {
   @@index([objectId])
   @@index([leadId])
   @@map("meta_provider_events")
+}
+
+model MetaSenderIdentity {
+  id                    String           @id @default(uuid())
+  platform              MetaPlatformEnum
+  metaConnectedAccountId String          @map("meta_connected_account_id")
+  senderScopedId        String           @map("sender_scoped_id")
+  displayName           String?          @map("display_name")
+  username              String?
+  firstName             String?          @map("first_name")
+  lastName              String?          @map("last_name")
+  profilePictureUrl     String?          @map("profile_picture_url") @db.Text
+  profileFetchedAt      DateTime?        @map("profile_fetched_at")
+  profileFetchStatus    String?          @map("profile_fetch_status")
+  lastProfileFetchError String?          @map("last_profile_fetch_error") @db.Text
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  metaConnectedAccount MetaConnectedAccount @relation(fields: [metaConnectedAccountId], references: [id], onDelete: Cascade)
+  conversations        MetaConversation[]
+
+  @@unique([platform, metaConnectedAccountId, senderScopedId])
+  @@index([metaConnectedAccountId])
+  @@map("meta_sender_identities")
+}
+
+model MetaConversation {
+  id                    String   @id @default(uuid())
+  metaConnectedAccountId String  @map("meta_connected_account_id")
+  senderIdentityId      String   @map("sender_identity_id")
+  leadId                String?  @unique @map("lead_id")
+  lastMessageAt         DateTime? @map("last_message_at")
+  latestMessagePreview  String?  @map("latest_message_preview") @db.VarChar(500)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  metaConnectedAccount MetaConnectedAccount @relation(fields: [metaConnectedAccountId], references: [id], onDelete: Cascade)
+  senderIdentity       MetaSenderIdentity   @relation(fields: [senderIdentityId], references: [id], onDelete: Cascade)
+  lead                 Lead?                @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  messages             MetaMessage[]
+
+  @@unique([metaConnectedAccountId, senderIdentityId])
+  @@index([metaConnectedAccountId, lastMessageAt])
+  @@index([senderIdentityId])
+  @@index([leadId])
+  @@map("meta_conversations")
+}
+
+model MetaMessage {
+  id                    String                   @id @default(uuid())
+  conversationId        String                   @map("conversation_id")
+  metaConnectedAccountId String                  @map("meta_connected_account_id")
+  providerMessageId     String                   @map("provider_message_id")
+  platform              MetaPlatformEnum
+  direction             MetaMessageDirectionEnum
+  messageType           MetaMessageTypeEnum      @map("message_type")
+  text                  String?                  @db.Text
+  sentAt                DateTime?                @map("sent_at")
+  receivedAt            DateTime                 @default(now()) @map("received_at")
+  providerMetadata      Json?                    @map("provider_metadata")
+  createdAt             DateTime                 @default(now()) @map("created_at")
+
+  conversation         MetaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  metaConnectedAccount MetaConnectedAccount @relation(fields: [metaConnectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([platform, metaConnectedAccountId, providerMessageId])
+  @@index([conversationId, receivedAt])
+  @@map("meta_messages")
 }

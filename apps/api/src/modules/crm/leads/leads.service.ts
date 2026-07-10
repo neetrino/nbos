@@ -8,6 +8,10 @@ import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm
 import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 import { leadDetailInclude } from './lead.includes';
+import {
+  mapMetaConversationForLead,
+  metaConversationLeadInclude,
+} from '../../integrations/meta/meta-conversation.dto';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
 import {
@@ -125,6 +129,7 @@ export class LeadsService {
           marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
           marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
           deal: { select: { id: true, code: true, status: true } },
+          ...metaConversationLeadInclude,
         },
         orderBy: {
           [resolveSortField(sortBy, LEAD_SORT_FIELDS, 'createdAt')]:
@@ -137,7 +142,7 @@ export class LeadsService {
     ]);
 
     return {
-      items,
+      items: items.map((lead) => this.mapLeadResponse(lead)),
       meta: {
         total,
         page,
@@ -155,7 +160,17 @@ export class LeadsService {
     if (!lead) {
       throw new NotFoundException(`Lead ${id} not found`);
     }
-    return lead;
+    return this.mapLeadResponse(lead);
+  }
+
+  private mapLeadResponse<T extends Record<string, unknown>>(lead: T) {
+    const { metaConversation, ...rest } = lead as T & {
+      metaConversation?: Parameters<typeof mapMetaConversationForLead>[0];
+    };
+    return {
+      ...rest,
+      metaConversation: mapMetaConversationForLead(metaConversation),
+    };
   }
 
   async create(data: CreateLeadDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {

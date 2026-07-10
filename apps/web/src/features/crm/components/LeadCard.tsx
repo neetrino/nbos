@@ -16,7 +16,11 @@ import { getLeadSource } from '../constants/leadPipeline';
 import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
 import type { Lead } from '@/lib/api/leads';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
-import { getLeadCardMetaLabel, getLeadDisplayTitle } from '../utils/crm-entity-display';
+import {
+  getLeadCardMetaLabel,
+  getLeadDisplayTitle,
+  getLeadLatestMessagePreview,
+} from '../utils/crm-entity-display';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const CLOCK_REFRESH_MS = 60 * 1000;
@@ -57,6 +61,7 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
   const leadVisual = LEAD_ENTITY_VISUAL;
   const title = getLeadDisplayTitle(lead);
   const metaLabel = getLeadCardMetaLabel(lead);
+  const latestMessage = getLeadLatestMessagePreview(lead);
   const LeadIcon = leadVisual.Icon;
   const source = getLeadSource(lead.source);
   const channelLabel = formatMarketingChannelLabel(lead);
@@ -90,6 +95,11 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
           <p className="truncate text-sm leading-snug font-semibold">{title}</p>
           {metaLabel ? (
             <p className="text-muted-foreground mt-0.5 truncate text-xs">{metaLabel}</p>
+          ) : null}
+          {latestMessage ? (
+            <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-snug break-words">
+              {latestMessage}
+            </p>
           ) : null}
         </div>
         <LeadCardMenu

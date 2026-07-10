@@ -1,11 +1,18 @@
 'use client';
 
 import type { Lead } from '@/lib/api/leads';
+import type { LeadMetaConversation } from '@/lib/api/leads';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { LeadCombinedInfoSection } from './LeadCombinedInfoSection';
 import { LeadNotesSection } from './LeadNotesSection';
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared';
+import {
+  getLeadLatestMessagePreview,
+  getLeadMetaPlatformLabel,
+  getLeadCardMetaLabel,
+  getLeadDisplayTitle,
+} from '../utils/crm-entity-display';
 
 export interface LeadGeneralTabProps {
   lead: Lead;
@@ -45,6 +52,9 @@ export function LeadGeneralTab({
           assignment: sectionIds.assignment,
         }}
       />
+      {lead.metaConversation ? (
+        <LeadInboundMetaSummary metaConversation={lead.metaConversation} />
+      ) : null}
       <LeadEntityMetaLine createdAt={lead.createdAt} updatedAt={lead.updatedAt} />
       <LeadNotesSection
         id={sectionIds.notes}
@@ -85,4 +95,26 @@ function formatLeadMetaDate(value: string): string {
     month: 'short',
     year: 'numeric',
   });
+}
+
+function LeadInboundMetaSummary({ metaConversation }: { metaConversation: LeadMetaConversation }) {
+  const leadLike = { metaConversation, name: null, code: '', contactName: '' };
+  const platform = getLeadMetaPlatformLabel(leadLike);
+  const latestMessage = getLeadLatestMessagePreview(leadLike);
+  const subtitle = getLeadCardMetaLabel(leadLike);
+  return (
+    <div className="rounded-lg border border-dashed px-4 py-3">
+      <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+        Inbound message
+      </p>
+      <p className="mt-1 text-sm font-semibold">{getLeadDisplayTitle(leadLike)}</p>
+      {subtitle ? <p className="text-muted-foreground text-xs">{subtitle}</p> : null}
+      {platform ? <p className="text-muted-foreground mt-1 text-xs">{platform}</p> : null}
+      {latestMessage ? (
+        <p className="text-muted-foreground mt-2 line-clamp-2 text-sm break-words">
+          {latestMessage}
+        </p>
+      ) : null}
+    </div>
+  );
 }
