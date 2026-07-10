@@ -74,6 +74,8 @@ export interface MetaMessagingEvent {
     mid?: string;
     text?: string;
     is_echo?: boolean;
+    reply_to?: { mid?: string };
+    attachments?: Array<{ type?: string }>;
   };
   delivery?: unknown;
   read?: unknown;
@@ -85,9 +87,12 @@ export interface ParsedMetaInboundMessage {
   objectId: string;
   platform: 'INSTAGRAM' | 'FACEBOOK';
   senderId: string;
+  recipientId: string | null;
   senderName: string | null;
   messageText: string | null;
   timestamp: number | null;
   pageId: string;
   instagramBusinessAccountId: string | null;
+  replyToMid: string | null;
+  attachmentTypes: string[];
 }

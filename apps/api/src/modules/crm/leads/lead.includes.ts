@@ -1,3 +1,5 @@
+import { metaConversationLeadInclude } from '../../integrations/meta/meta-conversation.dto';
+
 const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
 
 export const leadAdditionalContactsInclude = {
@@ -15,4 +17,5 @@ export const leadDetailInclude = {
   contact: true,
   deal: { select: { id: true, code: true, status: true } },
   ...leadAdditionalContactsInclude,
+  ...metaConversationLeadInclude,
 } as const;

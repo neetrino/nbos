@@ -1,6 +1,17 @@
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
+export interface LeadMetaConversation {
+  platform: 'INSTAGRAM' | 'FACEBOOK';
+  displayName: string | null;
+  username: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  profilePictureUrl: string | null;
+  latestMessagePreview: string | null;
+  lastMessageAt: string | null;
+}
+
 export interface Lead {
   id: string;
   code: string;
@@ -20,6 +31,7 @@ export interface Lead {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  metaConversation?: LeadMetaConversation | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
   sourcePartner: { id: string; name: string } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;

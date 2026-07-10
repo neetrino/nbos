@@ -1,7 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
 import type { MetaGraphPage, MetaGraphTokenResponse } from './meta.types';
+import {
+  extractGraphVersionFromBaseUrl,
+  FACEBOOK_MESSAGING_PROFILE_FIELDS,
+  fetchMetaGraphJson,
+  MetaGraphValidationError,
+  META_PROFILE_FETCH_TIMEOUT_MS,
+} from './meta-fetch.util';
+import type { MetaProfileLookupResult } from './meta-messaging-profile.types';
 
 const PAGE_FIELDS = 'id,name,access_token,instagram_business_account{id,username,name}';
+
+interface FacebookMessagingProfileResponse {
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  profile_pic?: string;
+  error?: { message?: string; code?: number; type?: string };
+}
 
 export class MetaGraphClient {
   constructor(
@@ -43,6 +59,32 @@ export class MetaGraphClient {
     await this.fetchJson(url.toString(), { method: 'POST' });
   }
 
+  async fetchMessagingUserProfile(
+    senderScopedId: string,
+    pageAccessToken: string,
+  ): Promise<MetaProfileLookupResult> {
+    try {
+      const result = await fetchMetaGraphJson({
+        target: 'FACEBOOK',
+        graphVersion: extractGraphVersionFromBaseUrl(this.graphBaseUrl, 'FACEBOOK'),
+        resourceId: senderScopedId,
+        fields: FACEBOOK_MESSAGING_PROFILE_FIELDS,
+        accessToken: pageAccessToken,
+        timeoutMs: META_PROFILE_FETCH_TIMEOUT_MS,
+      });
+      return mapFacebookMessagingProfileResult(result);
+    } catch (error) {
+      if (error instanceof MetaGraphValidationError) {
+        return {
+          ok: false,
+          errorCode: error.code,
+          errorMessage: 'Invalid Facebook Graph request parameters',
+        };
+      }
+      throw error;
+    }
+  }
+
   private async fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     const response = await fetch(url, init);
     const body = (await response.json()) as T & { error?: { message?: string } };
@@ -51,4 +93,31 @@ export class MetaGraphClient {
     }
     return body;
   }
+}
+
+function mapFacebookMessagingProfileResult(result: {
+  ok: boolean;
+  status: number;
+  body: unknown;
+}): MetaProfileLookupResult {
+  const body = result.body as FacebookMessagingProfileResponse;
+  if (!result.ok || body.error) {
+    return {
+      ok: false,
+      errorCode: body.error?.code
+        ? String(body.error.code)
+        : String(result.status || 'fetch_failed'),
+      errorMessage: body.error?.message ?? 'Facebook profile lookup failed',
+    };
+  }
+  return {
+    ok: true,
+    profile: {
+      displayName: body.name?.trim() || null,
+      username: null,
+      firstName: body.first_name?.trim() || null,
+      lastName: body.last_name?.trim() || null,
+      profilePictureUrl: body.profile_pic?.trim() || null,
+    },
+  };
 }

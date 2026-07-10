@@ -220,6 +220,53 @@ describe('MetaInstagramGraphClient.exchangeForLongLivedToken', () => {
   });
 });
 
+describe('MetaInstagramGraphClient.fetchMessagingUserProfile', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('maps Instagram messaging profile fields', async () => {
+    mockFetchJson({
+      data: [
+        {
+          name: 'Karo Gabrielyan',
+          username: 'karo_gabrielyan',
+          profile_pic: 'https://example.com/pic.jpg',
+        },
+      ],
+    });
+
+    const result = await createClient().fetchMessagingUserProfile('17841400000000001', 'ig-token');
+    expect(result).toEqual({
+      ok: true,
+      profile: {
+        displayName: 'Karo Gabrielyan',
+        username: 'karo_gabrielyan',
+        firstName: null,
+        lastName: null,
+        profilePictureUrl: 'https://example.com/pic.jpg',
+      },
+    });
+
+    const [calledUrl, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(new URL(calledUrl).origin).toBe('https://graph.instagram.com');
+    expect(init.redirect).toBe('error');
+  });
+
+  it('returns validation failure for non-numeric senderScopedId', async () => {
+    const result = await createClient().fetchMessagingUserProfile('igsid-1', 'ig-token');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errorCode).toBe('invalid_resource_id');
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
 describe('MetaOAuthCallbackError.fromPrismaPersistence', () => {
   it('maps prisma persistence failures to instagram_account_save_failed', () => {
     const error = MetaOAuthCallbackError.fromPrismaPersistence({ code: 'P2002' });
