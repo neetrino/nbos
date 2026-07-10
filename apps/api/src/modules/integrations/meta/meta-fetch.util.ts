@@ -104,8 +104,10 @@ export function buildMetaGraphUrl(request: MetaGraphRequest): URL {
   validateMetaGraphVersion(request.graphVersion);
   validateMetaGraphFields(request.target, request.fields);
 
+  const encodedGraphVersion = encodeURIComponent(request.graphVersion);
+  const encodedResourceId = encodeURIComponent(request.resourceId);
   const origin = META_GRAPH_TARGET_ORIGIN[request.target];
-  const url = new URL(`/${request.graphVersion}/${request.resourceId}`, origin);
+  const url = new URL(`/${encodedGraphVersion}/${encodedResourceId}`, origin);
   assertAllowedMetaGraphUrl(url, request.target);
   url.searchParams.set('fields', request.fields.join(','));
   url.searchParams.set('access_token', request.accessToken);

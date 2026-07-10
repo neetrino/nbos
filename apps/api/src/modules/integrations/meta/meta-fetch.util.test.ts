@@ -96,6 +96,28 @@ describe('buildMetaGraphUrl', () => {
       }),
     ).toThrow(MetaGraphValidationError);
   });
+
+  it('keeps the same pathname for valid numeric resource IDs after encoding', () => {
+    const url = buildMetaGraphUrl({
+      target: 'FACEBOOK',
+      graphVersion: 'v21.0',
+      resourceId: '17841400000000001',
+      fields: FACEBOOK_MESSAGING_PROFILE_FIELDS,
+      accessToken: ACCESS_TOKEN,
+    });
+    expect(url.pathname).toBe('/v21.0/17841400000000001');
+  });
+
+  it('keeps the same pathname for valid Graph versions after encoding', () => {
+    const url = buildMetaGraphUrl({
+      target: 'INSTAGRAM',
+      graphVersion: 'v22.1',
+      resourceId: '12345',
+      fields: INSTAGRAM_MESSAGING_PROFILE_FIELDS,
+      accessToken: ACCESS_TOKEN,
+    });
+    expect(url.pathname).toBe('/v22.1/12345');
+  });
 });
 
 describe('extractGraphVersionFromBaseUrl', () => {
@@ -211,5 +233,68 @@ describe('fetchMetaGraphJson', () => {
       }),
     ).rejects.toThrow(MetaGraphValidationError);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['12/34', 'slash injection'],
+    ['12%2f34', 'encoded slash injection'],
+    ['12?x=1', 'question-mark injection'],
+    ['12#frag', 'hash injection'],
+  ])('rejects %s before fetch', async (resourceId) => {
+    await expect(
+      fetchMetaGraphJson({
+        target: 'FACEBOOK',
+        graphVersion: 'v21.0',
+        resourceId,
+        fields: FACEBOOK_MESSAGING_PROFILE_FIELDS,
+        accessToken: ACCESS_TOKEN,
+      }),
+    ).rejects.toThrow(MetaGraphValidationError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('rejects arbitrary graph base origins before fetch', async () => {
+    expect(() => extractGraphVersionFromBaseUrl('https://evil.example/v21.0', 'FACEBOOK')).toThrow(
+      MetaGraphValidationError,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('keeps exact Facebook origin on fetch', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ name: 'Test User' }),
+    } as Response);
+
+    await fetchMetaGraphJson({
+      target: 'FACEBOOK',
+      graphVersion: 'v21.0',
+      resourceId: '1234567890',
+      fields: FACEBOOK_MESSAGING_PROFILE_FIELDS,
+      accessToken: ACCESS_TOKEN,
+    });
+
+    const parsed = new URL(String(vi.mocked(fetch).mock.calls[0]?.[0]));
+    expect(parsed.origin).toBe(META_GRAPH_FACEBOOK_ORIGIN);
+  });
+
+  it('keeps exact Instagram origin on fetch', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ username: 'nbos_test' }),
+    } as Response);
+
+    await fetchMetaGraphJson({
+      target: 'INSTAGRAM',
+      graphVersion: 'v21.0',
+      resourceId: '9876543210',
+      fields: INSTAGRAM_MESSAGING_PROFILE_FIELDS,
+      accessToken: ACCESS_TOKEN,
+    });
+
+    const parsed = new URL(String(vi.mocked(fetch).mock.calls[0]?.[0]));
+    expect(parsed.origin).toBe(META_GRAPH_INSTAGRAM_ORIGIN);
   });
 });
