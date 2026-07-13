@@ -113,11 +113,7 @@ export function ExpensesPageMainPanel({
           <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
         )}
         renderCard={(expense: Expense) => (
-          <ExpenseKanbanCard
-            expense={expense}
-            onOpen={onOpenExpense}
-            onRequestDelete={onRequestDelete}
-          />
+          <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
         )}
       />
     );

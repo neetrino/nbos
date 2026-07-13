@@ -2,7 +2,7 @@ import type { ExpenseLedgerPaymentStatus } from '@/lib/api/finance';
 
 export function expenseLedgerPaymentStatusPresentation(status: ExpenseLedgerPaymentStatus): {
   label: string;
-  variant: 'emerald' | 'amber' | 'gray';
+  variant: 'emerald' | 'amber' | 'orange';
 } {
   switch (status) {
     case 'PAID':
@@ -10,6 +10,6 @@ export function expenseLedgerPaymentStatusPresentation(status: ExpenseLedgerPaym
     case 'PARTIAL':
       return { label: 'Partially paid', variant: 'amber' };
     default:
-      return { label: 'Unpaid', variant: 'gray' };
+      return { label: 'Unpaid', variant: 'orange' };
   }
 }

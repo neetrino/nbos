@@ -1,40 +1,40 @@
 'use client';
 
-import { Banknote, FolderKanban, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import type { LucideIcon } from 'lucide-react';
+import { AppWindow, ChevronRight, Clock3 } from 'lucide-react';
+import { KanbanCardShell } from '@/components/shared';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { KanbanCardShell, StatusBadge } from '@/components/shared';
-import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
+  getExpenseCategoryLabel,
+  getExpenseCategoryVisual,
+} from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Expense } from '@/lib/api/finance';
-import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
+import { cn } from '@/lib/utils';
 
 interface ExpenseKanbanCardProps {
   expense: Expense;
   onOpen: (expense: Expense) => void;
-  onRequestDelete: (expense: Expense) => void;
 }
 
-export function ExpenseKanbanCard({ expense, onOpen, onRequestDelete }: ExpenseKanbanCardProps) {
-  const ledgerPresentation =
-    expense.paymentStatus !== undefined
-      ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
-      : null;
-  const hasLedger = expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
-  const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
-
+export function ExpenseKanbanCard({ expense, onOpen }: ExpenseKanbanCardProps) {
   return (
-    <KanbanCardShell padding="none" className="relative">
+    <KanbanCardShell
+      as="article"
+      radius="xl"
+      padding="none"
+      baseShadow="sm"
+      hoverShadow="md"
+      className="group relative overflow-hidden"
+    >
       <div
         role="button"
         tabIndex={0}
-        className="focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 pr-11 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
+        className={cn(
+          'block cursor-pointer space-y-3 p-3.5',
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        )}
         onClick={() => onOpen(expense)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -43,70 +43,124 @@ export function ExpenseKanbanCard({ expense, onOpen, onRequestDelete }: ExpenseK
           }
         }}
       >
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className="inline-flex items-center gap-1 text-xs font-medium"
-            title={payrollLinked ? 'Linked to a payroll run' : undefined}
-          >
-            {payrollLinked ? (
-              <Banknote size={10} className="text-accent shrink-0" aria-hidden />
-            ) : null}
-            {expense.category}
-          </span>
-          <StatusBadge
-            label={expense.type}
-            variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}
-          />
-        </div>
-        <p className="text-sm font-medium">{expense.name}</p>
-        <p className="text-sm font-bold">{formatAmount(parseMoneyAmount(expense.amount))}</p>
-        {ledgerPresentation && hasLedger ? (
-          <div className="flex flex-col gap-1">
-            <p className="text-muted-foreground text-xs tabular-nums">
-              Paid {formatAmount(parseMoneyAmount(expense.paidAmount))} · Left{' '}
-              {formatAmount(parseMoneyAmount(expense.remainingAmount))}
-            </p>
-            <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
-          </div>
-        ) : null}
-        {expense.project ? (
-          <div className="text-muted-foreground flex items-center gap-1 text-xs">
-            <FolderKanban size={10} />
-            {expense.project.name}
-          </div>
-        ) : null}
-      </div>
-      <div className="absolute top-2 right-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={(props) => (
-              <Button
-                {...props}
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Expense actions"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  props.onClick?.(e);
-                }}
-              >
-                <MoreHorizontal size={14} />
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => onRequestDelete(expense)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ExpenseCardHeader expense={expense} />
+        <ExpenseCardMetrics expense={expense} />
+        {expense.project ? <ExpenseCardProjectBar projectName={expense.project.name} /> : null}
       </div>
     </KanbanCardShell>
   );
+}
+
+function ExpenseCardHeader({ expense }: { expense: Expense }) {
+  const categoryVisual = getExpenseCategoryVisual(expense.category);
+  const CategoryIcon = categoryVisual.icon;
+  const categoryLabel = getExpenseCategoryLabel(expense.category);
+  const subtitle = resolveExpenseCardSubtitle(expense);
+  const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
+
+  return (
+    <header className="flex items-start gap-2.5">
+      <div
+        className={cn(
+          'flex size-10 shrink-0 items-center justify-center rounded-xl',
+          categoryVisual.iconShellClassName,
+        )}
+      >
+        <CategoryIcon size={18} aria-hidden />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
+          {categoryLabel}
+          {payrollLinked ? ' · Payroll' : ''}
+        </p>
+        <p className="text-foreground truncate text-base leading-tight font-bold tracking-tight">
+          {expense.name}
+        </p>
+        {subtitle ? (
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
+        ) : null}
+      </div>
+    </header>
+  );
+}
+
+function ExpenseCardMetrics({ expense }: { expense: Expense }) {
+  const paidAmount = parseMoneyAmount(expense.paidAmount ?? 0);
+  const remainingAmount = parseMoneyAmount(expense.remainingAmount ?? expense.amount);
+
+  return (
+    <div className="border-border/60 space-y-3 border-t pt-3">
+      <p className="text-foreground text-lg font-bold tracking-tight tabular-nums">
+        {formatAmount(parseMoneyAmount(expense.amount))}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <ExpenseMetric
+          icon={AppWindow}
+          iconShellClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
+          label="Paid"
+          value={formatAmount(paidAmount)}
+        />
+        <ExpenseMetric
+          icon={Clock3}
+          iconShellClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300"
+          label="Left"
+          value={formatAmount(remainingAmount)}
+          bordered
+        />
+      </div>
+    </div>
+  );
+}
+
+function ExpenseMetric({
+  icon: Icon,
+  iconShellClassName,
+  label,
+  value,
+  bordered = false,
+}: {
+  icon: LucideIcon;
+  iconShellClassName: string;
+  label: string;
+  value: string;
+  bordered?: boolean;
+}) {
+  return (
+    <div className={cn('min-w-0', bordered && 'border-border/60 border-l pl-2')}>
+      <div className="flex items-center gap-1.5">
+        <div
+          className={cn(
+            'flex size-6 shrink-0 items-center justify-center rounded-md',
+            iconShellClassName,
+          )}
+        >
+          <Icon size={12} aria-hidden />
+        </div>
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
+          {label}
+        </p>
+      </div>
+      <p className="text-foreground mt-1 truncate text-sm font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function ExpenseCardProjectBar({ projectName }: { projectName: string }) {
+  return (
+    <div className="bg-muted/60 text-foreground flex items-center gap-2 rounded-xl px-2.5 py-2">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300">
+        <AppWindow size={14} aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{projectName}</span>
+      <ChevronRight size={14} className="shrink-0 text-violet-500" aria-hidden />
+    </div>
+  );
+}
+
+function resolveExpenseCardSubtitle(expense: Expense): string | null {
+  const notes = expense.notes?.trim();
+  if (notes) return notes;
+  if (expense.linkedExpensePlan?.name) return expense.linkedExpensePlan.name;
+  if (expense.type === 'UNPLANNED') return 'Unplanned expense';
+  return null;
 }
