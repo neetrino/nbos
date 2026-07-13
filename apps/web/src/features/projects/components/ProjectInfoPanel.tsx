@@ -38,8 +38,8 @@ export function ProjectInfoPanel({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <ProjectLifecycleActions project={project} onProjectUpdated={onProjectUpdated} />
           <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} />
+          <ProjectLifecycleActions project={project} onProjectUpdated={onProjectUpdated} />
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export function ProjectInfoPanel({
           </DetailInfoSubsection>
         ) : null}
 
-        <DetailInfoSubsection first={!hasDescription} className="shrink-0 pb-3">
+        <DetailInfoSubsection title="Contacts" first={!hasDescription} className="shrink-0 pb-3">
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
         </DetailInfoSubsection>
 

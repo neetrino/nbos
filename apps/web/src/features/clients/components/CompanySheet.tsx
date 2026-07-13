@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { RotateCcw, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Sheet } from '@/components/ui/sheet';
+import { DeleteConfirmDialog } from '@/components/shared/delete-confirm';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
 import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
@@ -50,6 +52,8 @@ interface CompanySheetProps {
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
   forceNestedBackdrop?: boolean;
+  /** Project About: unlink company from this project. */
+  onRemoveParticipant?: () => void | Promise<void>;
 }
 
 function companySaveErrorMessage(err: unknown): string {
@@ -67,6 +71,7 @@ export function CompanySheet({
   onRestore,
   onPermanentDelete,
   forceNestedBackdrop = false,
+  onRemoveParticipant,
 }: CompanySheetProps) {
   const { persistedValue: renderCompany, onOpenChangeComplete } = useSheetPersistedValue(company);
   const hostMounted = useSheetHostMounted(open, renderCompany);
@@ -76,6 +81,8 @@ export function CompanySheet({
   const [snap, setSnap] = useState<CompanyGeneralDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [removeFromProjectOpen, setRemoveFromProjectOpen] = useState(false);
+  const [removingFromProject, setRemovingFromProject] = useState(false);
   const [activeTab, setActiveTab] = useState<ClientDetailTabId>('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -100,6 +107,8 @@ export function CompanySheet({
     if (!open) {
       setEditingName(false);
       setGeneralError(null);
+      setRemoveFromProjectOpen(false);
+      setRemovingFromProject(false);
     }
   }, [open]);
 
@@ -179,6 +188,20 @@ export function CompanySheet({
     }
   };
 
+  const handleRemoveFromProject = useCallback(async () => {
+    if (!onRemoveParticipant) return;
+    setRemovingFromProject(true);
+    try {
+      await onRemoveParticipant();
+      setRemoveFromProjectOpen(false);
+      onOpenChange(false);
+    } catch {
+      // Caller surfaces errors; keep sheet open for retry.
+    } finally {
+      setRemovingFromProject(false);
+    }
+  }, [onOpenChange, onRemoveParticipant]);
+
   if (!hostMounted) return null;
 
   if (!renderCompany || !draft || !snap) {
@@ -249,6 +272,20 @@ export function CompanySheet({
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {onRemoveParticipant ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive shrink-0"
+                  disabled={removingFromProject || saving}
+                  onClick={() => setRemoveFromProjectOpen(true)}
+                  aria-label="Remove company from project"
+                >
+                  <Trash2 className="size-4" />
+                  Remove
+                </Button>
+              ) : null}
               {!isTrashView ? (
                 <ClientPortfolioQuickActionsHeader
                   variant="company"
@@ -328,6 +365,21 @@ export function CompanySheet({
           onCancel={handleGeneralCancel}
         />
       </EntityDetailSheetContent>
+
+      {onRemoveParticipant ? (
+        <DeleteConfirmDialog
+          open={removeFromProjectOpen}
+          onOpenChange={setRemoveFromProjectOpen}
+          level="simple"
+          itemName={draft.name.trim() || renderCompany.name}
+          title="Remove company?"
+          description="The company will be unlinked from this project. You can link it again later."
+          confirmLabel="Remove"
+          isSubmitting={removingFromProject}
+          forceNestedBackdrop
+          onConfirm={() => void handleRemoveFromProject()}
+        />
+      ) : null}
     </Sheet>
   );
 }

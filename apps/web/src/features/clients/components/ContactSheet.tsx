@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { RotateCcw, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Sheet } from '@/components/ui/sheet';
 import {
+  DeleteConfirmDialog,
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabPanel,
@@ -48,6 +50,8 @@ interface ContactSheetProps {
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
   forceNestedBackdrop?: boolean;
+  /** Project About: Remove contact from this project. */
+  onRemoveParticipant?: () => void | Promise<void>;
 }
 
 function contactSaveErrorMessage(err: unknown): string {
@@ -65,6 +69,7 @@ export function ContactSheet({
   onRestore,
   onPermanentDelete,
   forceNestedBackdrop = false,
+  onRemoveParticipant,
 }: ContactSheetProps) {
   const { persistedValue: renderContact, onOpenChangeComplete } = useSheetPersistedValue(contact);
   const hostMounted = useSheetHostMounted(open, renderContact);
@@ -73,6 +78,8 @@ export function ContactSheet({
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const [removeFromProjectOpen, setRemoveFromProjectOpen] = useState(false);
+  const [removingFromProject, setRemovingFromProject] = useState(false);
   const [activeTab, setActiveTab] = useState<ClientDetailTabId>('general');
   const portfolio = useClientPortfolioData({
     variant: 'contact',
@@ -93,6 +100,8 @@ export function ContactSheet({
   useEffect(() => {
     if (!open) {
       setGeneralError(null);
+      setRemoveFromProjectOpen(false);
+      setRemovingFromProject(false);
     }
   }, [open]);
 
@@ -138,6 +147,20 @@ export function ContactSheet({
     setGeneralError(null);
     if (snap) setDraft({ ...snap });
   }, [snap]);
+
+  const handleRemoveFromProject = useCallback(async () => {
+    if (!onRemoveParticipant) return;
+    setRemovingFromProject(true);
+    try {
+      await onRemoveParticipant();
+      setRemoveFromProjectOpen(false);
+      onOpenChange(false);
+    } catch {
+      // Caller surfaces errors; keep sheet open for retry.
+    } finally {
+      setRemovingFromProject(false);
+    }
+  }, [onOpenChange, onRemoveParticipant]);
 
   if (!hostMounted) return null;
 
@@ -189,6 +212,20 @@ export function ContactSheet({
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              {onRemoveParticipant ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive shrink-0"
+                  disabled={removingFromProject || saving}
+                  onClick={() => setRemoveFromProjectOpen(true)}
+                  aria-label="Remove contact from project"
+                >
+                  <Trash2 className="size-4" />
+                  Remove
+                </Button>
+              ) : null}
               {!isTrashView ? (
                 <ClientPortfolioQuickActionsHeader
                   variant="contact"
@@ -267,6 +304,21 @@ export function ContactSheet({
           onCancel={handleGeneralCancel}
         />
       </EntityDetailSheetContent>
+
+      {onRemoveParticipant ? (
+        <DeleteConfirmDialog
+          open={removeFromProjectOpen}
+          onOpenChange={setRemoveFromProjectOpen}
+          level="simple"
+          itemName={displayTitle}
+          title="Remove contact?"
+          description="They will be unlinked from this project. You can add them again later."
+          confirmLabel="Remove"
+          isSubmitting={removingFromProject}
+          forceNestedBackdrop
+          onConfirm={() => void handleRemoveFromProject()}
+        />
+      ) : null}
     </Sheet>
   );
 }

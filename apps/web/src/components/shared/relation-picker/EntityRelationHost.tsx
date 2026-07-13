@@ -71,7 +71,7 @@ export function EntityRelationHost({
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [employeeOpenId, setEmployeeOpenId] = useState<string | null>(null);
   const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
-  const [employeeOpenOptions, setEmployeeOpenOptions] = useState<OpenEntityOptions | null>(null);
+  const [entityOpenOptions, setEntityOpenOptions] = useState<OpenEntityOptions | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
@@ -143,11 +143,13 @@ export function EntityRelationHost({
         return;
       }
       if (kind === 'contact') {
+        setEntityOpenOptions(options ?? null);
         setContactOpenId(id);
         setContactSheet((current) => (current?.id === id ? current : null));
         return;
       }
       if (kind === 'company') {
+        setEntityOpenOptions(options ?? null);
         setCompanyOpenId(id);
         setCompanySheet((current) => (current?.id === id ? current : null));
         return;
@@ -157,7 +159,7 @@ export function EntityRelationHost({
         return;
       }
       if (kind === 'employee') {
-        setEmployeeOpenOptions(options ?? null);
+        setEntityOpenOptions(options ?? null);
         setEmployeeOpenId(id);
         setEmployeeSheet((current) => (current?.id === id ? current : null));
         return;
@@ -297,10 +299,12 @@ export function EntityRelationHost({
         contact={contactSheet}
         open={contactOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setContactOpenId(null);
             setContactSheet(null);
+            setEntityOpenOptions(null);
           }
         }}
         onUpdate={async (id, data) => {
@@ -314,10 +318,12 @@ export function EntityRelationHost({
         company={companySheet}
         open={companyOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setCompanyOpenId(null);
             setCompanySheet(null);
+            setEntityOpenOptions(null);
           }
         }}
         onUpdate={async (id, data) => {
@@ -341,12 +347,12 @@ export function EntityRelationHost({
         employee={employeeSheet}
         open={employeeOpenId !== null}
         forceNestedBackdrop={nested}
-        onRemoveParticipant={employeeOpenOptions?.onRemoveParticipant}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setEmployeeOpenId(null);
             setEmployeeSheet(null);
-            setEmployeeOpenOptions(null);
+            setEntityOpenOptions(null);
           }
         }}
       />

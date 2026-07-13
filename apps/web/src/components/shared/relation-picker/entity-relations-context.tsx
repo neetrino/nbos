@@ -9,7 +9,7 @@ import type {
 
 /** Optional actions when opening an entity sheet from a host surface. */
 export type OpenEntityOptions = {
-  /** Project team: show Remove opposite the name on the employee sheet. */
+  /** Project About: show Remove opposite the name (team / contacts / company). */
   onRemoveParticipant?: () => void | Promise<void>;
 };
 
