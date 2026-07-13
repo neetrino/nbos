@@ -25,7 +25,6 @@ export function SheetCenterShell({
       className={cn(
         SHEET_CENTER_SHELL_CLASS,
         nestedStackClass,
-        'nbos-sheet-popup-transition data-ending-style:opacity-0 data-starting-style:opacity-0',
         floatingRailVisible ? 'opacity-100' : 'opacity-0',
       )}
     >
