@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { MetaAccountList } from '@/features/integrations/components/MetaAccountList';
 import { MetaConnectSheet } from '@/features/integrations/components/MetaConnectSheet';
+import { WhatsAppGatewayIntegrationsCard } from '@/features/integrations/components/WhatsAppGatewayIntegrationsCard';
 import { resolveMetaOAuthErrorPresentation } from '@/features/integrations/meta-oauth-error-messages';
 import { marketingApi, type MarketingAccount } from '@/lib/api/marketing';
 import { metaIntegrationApi, type MetaConnectedAccount } from '@/lib/api/meta-integration';
@@ -125,11 +126,10 @@ export function MetaIntegrationsSection() {
           title="ATS"
           description="Applicant tracking integrations — coming soon."
         />
-        <PlaceholderProviderCard
-          title="WhatsApp"
-          description="WhatsApp Gateway integration — coming soon."
-          icon={MessageCircle}
-        />
+      </div>
+
+      <div className="mt-4">
+        <WhatsAppGatewayIntegrationsCard />
       </div>
 
       <section className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">

@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CheckSquare,
   ChevronDown,
   FileText,
+  MessageCircle,
   Plus,
   Rocket,
   Zap,
@@ -30,6 +31,7 @@ import {
 import { submitDealInvoiceCreation } from '@/features/crm/utils/submit-deal-invoice-creation';
 import type { Deal } from '@/lib/api/deals';
 import { dealsApi } from '@/lib/api/deals';
+import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
@@ -48,6 +50,12 @@ interface QuickActionItem {
   onClick?: () => void;
 }
 
+function resolveDealProductId(deal: Deal): string | null {
+  if (deal.existingProductId) return deal.existingProductId;
+  const orderWithProduct = deal.orders?.find((order) => Boolean(order.productId));
+  return orderWithProduct?.productId ?? null;
+}
+
 export function DealSheetQuickActions({
   deal,
   onRefresh,
@@ -57,14 +65,36 @@ export function DealSheetQuickActions({
   const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
   const [startingEarly, setStartingEarly] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [whatsappBusy, setWhatsappBusy] = useState(false);
+  const [whatsappState, setWhatsappState] = useState<ProductWhatsAppState | null>(null);
   const { creatorId, creatorReady } = useTaskCreatorId();
 
   const firstOrder = deal.orders?.[0];
   const projectId = deal.projectId ?? firstOrder?.projectId;
+  const productId = resolveDealProductId(deal);
   const taxStatus = deal.taxStatus ?? 'TAX';
   const createInvoiceOrder = firstOrder ? dealOrderToCreateInvoiceOrder(deal, firstOrder) : null;
   const canCreateInvoice = canOpenDealCreateInvoiceDialog(deal, taxStatus);
   const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
+
+  useEffect(() => {
+    if (!productId) {
+      setWhatsappState(null);
+      return;
+    }
+    let cancelled = false;
+    void productWhatsAppApi
+      .getState(productId)
+      .then((state) => {
+        if (!cancelled) setWhatsappState(state);
+      })
+      .catch(() => {
+        if (!cancelled) setWhatsappState(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [productId]);
 
   const defaultLinks = useMemo(
     () => (projectId ? getTaskLinks(deal.id, projectId) : undefined),
@@ -101,6 +131,23 @@ export function DealSheetQuickActions({
     }
   }, [canStartEarlyDelivery, deal.id, onRefresh]);
 
+  const handleEnsureWhatsApp = useCallback(async () => {
+    if (!productId || whatsappBusy) return;
+    setWhatsappBusy(true);
+    try {
+      const state = await dealWhatsAppApi.ensure(deal.id);
+      setWhatsappState(state);
+      toast.success('WhatsApp group creation started.');
+      onRefresh?.();
+    } catch (caught) {
+      toast.error(getApiErrorMessage(caught, 'Could not start WhatsApp group creation.'));
+    } finally {
+      setWhatsappBusy(false);
+    }
+  }, [deal.id, onRefresh, productId, whatsappBusy]);
+
+  const bindingStatus = whatsappState?.binding?.status ?? null;
+
   const actions = useMemo(() => {
     const items: QuickActionItem[] = [
       {
@@ -125,6 +172,64 @@ export function DealSheetQuickActions({
       });
     }
 
+    if (!productId) {
+      items.push({
+        id: 'whatsapp-group',
+        label: 'Create WhatsApp group',
+        icon: MessageCircle,
+        enabled: false,
+        disabledTitle: 'Product has not been created yet.',
+      });
+    } else if (bindingStatus === 'ACTIVE') {
+      items.push({
+        id: 'whatsapp-settings',
+        label: 'Open WhatsApp settings',
+        icon: MessageCircle,
+        enabled: true,
+        onClick: () => {
+          const projectHref = projectId
+            ? `/projects/${projectId}/products/${productId}?settings=whatsapp`
+            : `/projects`;
+          router.push(projectHref);
+        },
+      });
+    } else if (bindingStatus === 'PENDING' || bindingStatus === 'CREATING') {
+      items.push({
+        id: 'whatsapp-group',
+        label: 'Creating WhatsApp group...',
+        icon: MessageCircle,
+        enabled: false,
+        disabledTitle: 'WhatsApp group creation is in progress',
+      });
+    } else if (bindingStatus === 'OUTCOME_UNKNOWN' || bindingStatus === 'NEEDS_RECONCILIATION') {
+      items.push({
+        id: 'whatsapp-resolve',
+        label: 'Resolve WhatsApp group',
+        icon: MessageCircle,
+        enabled: true,
+        onClick: () => {
+          if (!projectId) return;
+          router.push(`/projects/${projectId}/products/${productId}?settings=whatsapp`);
+        },
+      });
+    } else if (bindingStatus === 'FAILED') {
+      items.push({
+        id: 'whatsapp-retry',
+        label: 'Retry WhatsApp group creation',
+        icon: MessageCircle,
+        enabled: !whatsappBusy,
+        onClick: () => void handleEnsureWhatsApp(),
+      });
+    } else {
+      items.push({
+        id: 'whatsapp-group',
+        label: 'Create WhatsApp group',
+        icon: MessageCircle,
+        enabled: !whatsappBusy,
+        onClick: () => void handleEnsureWhatsApp(),
+      });
+    }
+
     if (projectId) {
       items.push({
         id: 'create-task',
@@ -146,16 +251,20 @@ export function DealSheetQuickActions({
 
     return items;
   }, [
+    bindingStatus,
     canCreateInvoice,
     canStartEarlyDelivery,
     creatorId,
     creatorReady,
     deal.id,
     depositBootstrap,
+    handleEnsureWhatsApp,
     handleStartEarlyDelivery,
+    productId,
     projectId,
     router,
     startingEarly,
+    whatsappBusy,
   ]);
 
   return (

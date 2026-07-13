@@ -13,20 +13,29 @@ function makeProductTeamSyncMock() {
   };
 }
 
+function makeProductWhatsAppMock() {
+  return {
+    ensureGroupForProduct: vi.fn().mockResolvedValue({}),
+  };
+}
+
 describe('DealWonHandler', () => {
   let prisma: MockPrisma;
   let handler: DealWonHandler;
   let driveDealWonLinks: ReturnType<typeof makeDriveDealWonLinksMock>;
   let productTeamSync: ReturnType<typeof makeProductTeamSyncMock>;
+  let productWhatsApp: ReturnType<typeof makeProductWhatsAppMock>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     driveDealWonLinks = makeDriveDealWonLinksMock();
     productTeamSync = makeProductTeamSyncMock();
+    productWhatsApp = makeProductWhatsAppMock();
     handler = new DealWonHandler(
       prisma as never,
       driveDealWonLinks as never,
       productTeamSync as never,
+      productWhatsApp as never,
     );
   });
 

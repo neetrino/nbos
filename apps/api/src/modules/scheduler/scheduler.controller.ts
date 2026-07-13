@@ -133,4 +133,15 @@ export class SchedulerController {
   async runSupportSlaEscalation() {
     return this.schedulerService.runSupportSlaEscalation();
   }
+
+  @Post('whatsapp-product-groups-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reconcile Product WhatsApp groups (external cron)',
+    description:
+      'Ensures missing Product bindings and requeues durable operations. Skips automatic recreate for OUTCOME_UNKNOWN.',
+  })
+  async runWhatsAppProductGroupsReconcile() {
+    return this.schedulerService.runWhatsAppProductGroupsReconcile();
+  }
 }

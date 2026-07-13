@@ -15,6 +15,8 @@ NBOS Messenger / CRM / Notifications
 
 **Физическое развёртывание (production, согласовано):** логический `WhatsAppWebAdapter` реализуется как **отдельный сервис WhatsApp Gateway**; NBOS вызывает Gateway по HTTPS, Gateway вызывает WAHA по **внутренней** Docker-сети (например `http://waha:3000`). Детали границы ответственности, env и БД Gateway: `06-WhatsApp-Gateway-NBOS-Boundary.md`.
 
+**Product groups (automation):** каждая WhatsApp-группа принадлежит **Product**, не Project. См. `08-Product-WhatsApp-Groups.md`.
+
 Это означает:
 
 - NBOS работает с нашим обычным WhatsApp-аккаунтом;
@@ -41,18 +43,18 @@ NBOS Messenger / CRM / Notifications
 
 ## Что покрывает WhatsAppWebAdapter
 
-| Сценарий                       | Покрывается                                 |
-| ------------------------------ | ------------------------------------------- |
-| Project WhatsApp Groups        | Да                                          |
-| Maintenance communication      | Да                                          |
-| Support communication в группе | Да                                          |
-| Invoice reminders в группу     | Да                                          |
-| Accounting WhatsApp group      | Да                                          |
-| CRM WhatsApp 1:1               | Да, вторичный сценарий                      |
-| Входящие сообщения             | Да, через webhook/events WAHA               |
-| Исходящие сообщения            | Да                                          |
-| Вложения                       | Да, с передачей в Drive                     |
-| Participants / group events    | Да, если поддерживается adapter/WAHA engine |
+| Сценарий                       | Покрывается                                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Project WhatsApp Groups        | Да — **исторический термин**; канон automation: **Product WhatsApp Groups** (одна группа на Product) |
+| Maintenance communication      | Да                                                                                                   |
+| Support communication в группе | Да                                                                                                   |
+| Invoice reminders в группу     | Да                                                                                                   |
+| Accounting WhatsApp group      | Да                                                                                                   |
+| CRM WhatsApp 1:1               | Да, вторичный сценарий                                                                               |
+| Входящие сообщения             | Да, через webhook/events WAHA                                                                        |
+| Исходящие сообщения            | Да                                                                                                   |
+| Вложения                       | Да, с передачей в Drive                                                                              |
+| Participants / group events    | Да, если поддерживается adapter/WAHA engine                                                          |
 
 ## Роль WAHA
 

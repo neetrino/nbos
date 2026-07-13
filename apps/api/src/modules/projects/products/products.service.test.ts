@@ -30,6 +30,10 @@ describe('ProductsService', () => {
     syncProductSeller: vi.fn().mockResolvedValue(undefined),
     syncExtensionAssignee: vi.fn().mockResolvedValue(undefined),
   };
+  const productWhatsApp = {
+    ensureGroupForProduct: vi.fn().mockResolvedValue({}),
+    ensureTechnicalSpecialist: vi.fn().mockResolvedValue({}),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -40,6 +44,8 @@ describe('ProductsService', () => {
     checklistTemplates.assertStageInstancesCompleted.mockClear();
     productTeamSync.syncProductSlots.mockClear();
     productTeamSync.syncProductSeller.mockClear();
+    productWhatsApp.ensureGroupForProduct.mockClear();
+    productWhatsApp.ensureTechnicalSpecialist.mockClear();
     service = new ProductsService(
       prisma as never,
       notifications,
@@ -48,6 +54,7 @@ describe('ProductsService', () => {
       deliveryStageChecklistSync as never,
       checklistTemplates as never,
       productTeamSync as never,
+      productWhatsApp as never,
     );
   });
 

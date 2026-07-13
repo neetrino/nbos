@@ -22,3 +22,4 @@ export * from './employees/employee-offboarding.constants';
 export * from './employees/employee-onboarding.constants';
 export * from './employees/employee-reactivation-access';
 export * from './lifecycle/entity-lifecycle';
+export * from './integrations/whatsapp-phone';

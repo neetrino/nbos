@@ -188,6 +188,10 @@ model Product {
   checklistTemplate         ChecklistTemplate?         @relation(fields: [checklistTemplateId], references: [id], onDelete: SetNull)
   accessSlotBindings        ProductAccessSlotBinding[]
   teamMembers               ProductTeamMember[]
+  whatsappGroupBinding      ProductWhatsAppGroupBinding?
+  whatsappGroupOperations   WhatsAppGroupOperation[]
+  whatsappParticipantSyncs  ProductWhatsAppParticipantSync[]
+  whatsappClientInvitations ProductWhatsAppClientInvitation[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])

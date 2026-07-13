@@ -33,6 +33,7 @@ model Contact {
   projectAdditionalLinks ProjectAdditionalContact[] @relation("ProjectAdditionalContact")
   partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]
+  whatsappClientInvitations ProductWhatsAppClientInvitation[]
 
   @@index([trashedAt])
   @@map("contacts")

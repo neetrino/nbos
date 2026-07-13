@@ -206,6 +206,15 @@ export class DealsController {
     return this.dealsService.findById(id);
   }
 
+  @Post(':id/whatsapp-group/ensure')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Ensure WhatsApp group for the Deal Product (enqueue; does not create Product)',
+  })
+  async ensureWhatsAppGroup(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.dealsService.ensureWhatsAppGroup(id, user.id);
+  }
+
   @Post(':id/restore')
   @ApiOperation({ summary: 'Restore deal from Trash' })
   async restore(@Param('id') id: string) {

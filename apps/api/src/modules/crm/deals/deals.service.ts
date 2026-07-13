@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
@@ -13,6 +19,8 @@ import {
 import type { CreateDealDto, DealForHandoff, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
+import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import { WHATSAPP_ERROR } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
@@ -47,6 +55,7 @@ export class DealsService {
     private readonly dealWonHandler: DealWonHandler,
     private readonly auditService: AuditService,
     private readonly productTeamSync: ProductTeamSyncService,
+    private readonly productWhatsApp: ProductWhatsAppGroupService,
   ) {}
 
   async findAll(params: DealQueryParams) {
@@ -134,6 +143,47 @@ export class DealsService {
       throw new NotFoundException(`Deal ${id} not found`);
     }
     return this.enrichDealForClient(await this.attachHandoffReferences(deal));
+  }
+
+  /**
+   * Resolve Product for Deal WhatsApp action:
+   * 1) existingProductId
+   * 2) Order.productId for this deal
+   * Never Project.products[0].
+   */
+  async ensureWhatsAppGroup(dealId: string, actorId: string) {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id: dealId },
+      select: { id: true, existingProductId: true },
+    });
+    if (!deal) {
+      throw new NotFoundException(`Deal ${dealId} not found`);
+    }
+
+    let productId = deal.existingProductId;
+    if (!productId) {
+      const order = await this.prisma.order.findFirst({
+        where: { dealId, productId: { not: null } },
+        select: { productId: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      productId = order?.productId ?? null;
+    }
+
+    if (!productId) {
+      throw new ConflictException({
+        statusCode: 409,
+        code: WHATSAPP_ERROR.DEAL_PRODUCT_NOT_READY,
+        message: 'Product has not been created yet for this deal',
+      });
+    }
+
+    const state = await this.productWhatsApp.ensureGroupForProduct(productId, {
+      source: 'DEAL_ACTION',
+      contextDealId: dealId,
+      actorId,
+    });
+    return { dealId, ...state };
   }
 
   async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {

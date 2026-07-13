@@ -11,6 +11,7 @@ import { backfillSalesKpiAndPayablesForAllEarnedPeriods } from '../payroll-runs/
 import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
 import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-purge.service';
 import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
+import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 
 interface OverdueResult {
   marked: number;
@@ -33,6 +34,7 @@ export class SchedulerService {
     private readonly salesKpiMonthClose: SalesKpiMonthCloseService,
     private readonly credentialsTrashPurgeService: CredentialsTrashPurgeService,
     private readonly platformTrashPurgeService: PlatformTrashPurgeService,
+    private readonly productWhatsApp: ProductWhatsAppGroupService,
   ) {}
 
   /** Monthly subscription billing (generates invoices). */
@@ -177,6 +179,16 @@ export class SchedulerService {
     const result = await this.supportSlaOrchestrationService.runSlaEscalationScan();
     this.logger.log(
       `Support SLA scan: scanned=${result.scanned}, warnings=${result.warnings}, responseBreaches=${result.responseBreaches}, resolveBreaches=${result.resolveBreaches}`,
+    );
+    return result;
+  }
+
+  /** WhatsApp: ensure Product groups + requeue durable operations (never recreates OUTCOME_UNKNOWN). */
+  async runWhatsAppProductGroupsReconcile() {
+    this.logger.log('Scheduler: WhatsApp product groups reconcile');
+    const result = await this.productWhatsApp.reconcileBatch(50);
+    this.logger.log(
+      `WhatsApp reconcile: productsEnsured=${result.productsEnsured}, operationsRequeued=${result.operationsRequeued}`,
     );
     return result;
   }
