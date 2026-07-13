@@ -1,4 +1,4 @@
-import { AlertTriangle, DollarSign } from 'lucide-react';
+import { AlertTriangle, Building2, DollarSign, Handshake } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -23,17 +23,19 @@ interface InvoicesTableProps {
 export function InvoicesTable({ invoices, boardScope, onInvoiceClick }: InvoicesTableProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
-      <Table>
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow>
-            <TableHead>Invoice</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead>{boardScope === 'CLOSED' ? 'Closed' : 'Status'}</TableHead>
-            <TableHead>Tax</TableHead>
-            <TableHead>Due Date</TableHead>
-            <TableHead>Paid Date</TableHead>
+            <TableHead className="w-[18%]">Invoice</TableHead>
+            <TableHead className="w-[22%]">Company</TableHead>
+            <TableHead className="w-[12%]">Type</TableHead>
+            <TableHead className="w-[12%] text-right">Amount</TableHead>
+            <TableHead className="w-[12%]">
+              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+            </TableHead>
+            <TableHead className="w-[8%]">Tax</TableHead>
+            <TableHead className="w-[8%]">Due Date</TableHead>
+            <TableHead className="w-[8%]">Paid Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,16 +60,23 @@ function InvoiceTableRow({
   return (
     <TableRow className="cursor-pointer" onClick={() => onInvoiceClick(invoice)}>
       <InvoiceCodeCell invoice={invoice} />
-      <TableCell className="text-muted-foreground text-sm">
-        {invoice.company?.name ?? '-'}
+      <TableCell>
+        {invoice.company?.name ? (
+          <span className="grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-x-1.5 text-sm">
+            <Building2 size={14} className="text-muted-foreground shrink-0" aria-hidden />
+            <span className="truncate">{invoice.company.name}</span>
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-sm">—</span>
+        )}
       </TableCell>
-      <TableCell className="text-xs">{invoice.type}</TableCell>
+      <TableCell className="truncate text-xs">{invoice.type}</TableCell>
       <InvoiceAmountCell amount={invoice.amount} />
       <TableCell>{money && <StatusBadge label={money.label} variant={money.variant} />}</TableCell>
       <InvoiceTaxCell taxStatus={invoice.taxStatus} />
       <InvoiceDueDateCell invoice={invoice} />
       <TableCell className="text-xs text-green-600">
-        {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : '-'}
+        {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : '—'}
       </TableCell>
     </TableRow>
   );
@@ -75,17 +84,18 @@ function InvoiceTableRow({
 
 function InvoiceCodeCell({ invoice }: { invoice: Invoice }) {
   const dealTitle = getInvoiceDealTitle(invoice.order);
-  const orderLabel = invoice.order
-    ? dealTitle
-      ? `Deal: ${dealTitle}`
-      : `Order: ${getOrderDisplayTitle(invoice.order)}`
-    : null;
+  const orderFallback = invoice.order && !dealTitle ? getOrderDisplayTitle(invoice.order) : null;
 
   return (
     <TableCell>
-      <div>
-        <p className="font-medium">{invoice.code}</p>
-        {orderLabel ? <p className="text-muted-foreground text-xs">{orderLabel}</p> : null}
+      <div className="min-w-0 space-y-1.5">
+        <p className="truncate font-medium">{invoice.code}</p>
+        {dealTitle || orderFallback ? (
+          <div className="text-muted-foreground grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-x-1.5 text-xs">
+            <Handshake size={14} className="shrink-0" aria-hidden />
+            <span className="truncate">{dealTitle ?? orderFallback}</span>
+          </div>
+        ) : null}
       </div>
     </TableCell>
   );
@@ -94,8 +104,8 @@ function InvoiceCodeCell({ invoice }: { invoice: Invoice }) {
 function InvoiceAmountCell({ amount }: { amount: string }) {
   return (
     <TableCell className="text-right">
-      <span className="flex items-center justify-end gap-1 font-semibold">
-        <DollarSign size={12} className="text-accent" />
+      <span className="inline-flex items-center justify-end gap-1 font-semibold tabular-nums">
+        <DollarSign size={12} className="text-accent shrink-0" aria-hidden />
         {formatAmount(parseFloat(amount))}
       </span>
     </TableCell>
@@ -115,7 +125,7 @@ function InvoiceTaxCell({ taxStatus }: { taxStatus: string }) {
 
 function InvoiceDueDateCell({ invoice }: { invoice: Invoice }) {
   const overdueDays = resolveInvoiceOverdueDays(invoice);
-  const dueLabel = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '-';
+  const dueLabel = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—';
 
   return (
     <TableCell className="text-xs">

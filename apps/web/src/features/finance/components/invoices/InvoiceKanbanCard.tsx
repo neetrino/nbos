@@ -45,18 +45,20 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
         onClick={() => onInvoiceClick(invoice)}
         onKeyDown={(event) => handleCardKeyDown(event, invoice, onInvoiceClick)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className="h-8 w-1 shrink-0 rounded-full bg-sky-400" aria-hidden />
-            <p className="text-foreground truncate text-sm leading-snug font-bold">
-              {invoice.code}
-            </p>
+        <div className="min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="h-3.5 w-1 shrink-0 rounded-full bg-sky-400" aria-hidden />
+              <p className="text-foreground truncate text-sm leading-none font-bold">
+                {invoice.code}
+              </p>
+            </div>
+            <StatusBadge
+              label={typeLabel}
+              variant="blue"
+              className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+            />
           </div>
-          <StatusBadge
-            label={typeLabel}
-            variant="blue"
-            className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
-          />
         </div>
 
         <div className="space-y-2">
@@ -86,7 +88,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
         </div>
 
         {hasMeta ? (
-          <div className="border-border divide-border divide-y border-t">
+          <div className="border-border flex flex-col gap-2.5 border-t pt-3">
             {dealTitle ? (
               <MetaRow
                 icon={<Handshake size={14} aria-hidden />}
@@ -160,9 +162,12 @@ function MetaRow({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5 py-2.5 first:pt-3 last:pb-0">
+    <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
       <span
-        className={cn('flex size-7 shrink-0 items-center justify-center rounded-lg', iconClassName)}
+        className={cn(
+          'flex size-7 items-center justify-center justify-self-start rounded-lg',
+          iconClassName,
+        )}
       >
         {icon}
       </span>

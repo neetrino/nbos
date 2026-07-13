@@ -128,16 +128,14 @@ function OrderRow({
 
 function OrderClientCell({ order }: { order: Order }) {
   return (
-    <div className="space-y-1">
-      <p className="flex items-center gap-1 truncate text-sm">
-        <Building2 size={12} className="text-muted-foreground shrink-0" aria-hidden />
-        <span className="truncate">{order.company?.name ?? '—'}</span>
-      </p>
+    <div className="grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-x-1.5 gap-y-1">
+      <Building2 size={14} className="text-muted-foreground shrink-0" aria-hidden />
+      <span className="truncate text-sm">{order.company?.name ?? '—'}</span>
       {order.project ? (
-        <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-          <FolderKanban size={11} className="shrink-0" aria-hidden />
-          <span className="truncate">{order.project.name}</span>
-        </p>
+        <>
+          <FolderKanban size={14} className="text-muted-foreground shrink-0" aria-hidden />
+          <span className="text-muted-foreground truncate text-xs">{order.project.name}</span>
+        </>
       ) : null}
     </div>
   );

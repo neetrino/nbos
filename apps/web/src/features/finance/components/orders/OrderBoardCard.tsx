@@ -36,21 +36,27 @@ export function OrderBoardCard({ order, onOrderClick }: OrderBoardCardProps) {
         onClick={() => onOrderClick(order)}
         onKeyDown={(event) => handleCardKeyDown(event, order, onOrderClick)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-start gap-2.5">
-            <span className="mt-0.5 h-8 w-1 shrink-0 rounded-full bg-sky-400" aria-hidden />
-            <div className="min-w-0">
-              <p className="text-foreground truncate text-sm leading-snug font-bold">{title}</p>
-              {showCodeSubline ? (
-                <p className="text-muted-foreground mt-0.5 truncate text-xs">{order.code}</p>
-              ) : null}
-            </div>
-          </div>
-          <StatusBadge
-            label={typeLabel}
-            variant="blue"
-            className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+        <div className="flex items-stretch gap-2.5">
+          <span
+            className={cn(
+              'w-1 shrink-0 rounded-full bg-sky-400',
+              showCodeSubline ? 'min-h-8' : 'h-3.5 self-center',
+            )}
+            aria-hidden
           />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-foreground truncate text-sm leading-none font-bold">{title}</p>
+              <StatusBadge
+                label={typeLabel}
+                variant="blue"
+                className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+              />
+            </div>
+            {showCodeSubline ? (
+              <p className="text-muted-foreground mt-0.5 truncate text-xs">{order.code}</p>
+            ) : null}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -69,7 +75,7 @@ export function OrderBoardCard({ order, onOrderClick }: OrderBoardCardProps) {
         </div>
 
         {order.company || order.project ? (
-          <div className="border-border divide-border divide-y border-t">
+          <div className="border-border flex flex-col gap-2.5 border-t pt-3">
             {order.company ? (
               <MetaRow
                 icon={<Building2 size={14} aria-hidden />}
@@ -130,9 +136,12 @@ function MetaRow({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5 py-2.5 first:pt-3 last:pb-0">
+    <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
       <span
-        className={cn('flex size-7 shrink-0 items-center justify-center rounded-lg', iconClassName)}
+        className={cn(
+          'flex size-7 items-center justify-center justify-self-start rounded-lg',
+          iconClassName,
+        )}
       >
         {icon}
       </span>
