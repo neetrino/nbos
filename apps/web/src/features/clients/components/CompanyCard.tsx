@@ -1,9 +1,16 @@
 'use client';
 
-import { Building2, Briefcase, FileText, User } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Briefcase, Building2, FileText, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
-import { CLIENTS_DIRECTORY_CARD_CLASS } from '@/features/clients/constants/clients-directory-card-classes';
+import {
+  CLIENTS_DIRECTORY_METRIC_CELL_CLASS,
+  CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS,
+  COMPANY_CARD_ICON_TILE_CLASS,
+  COMPANY_CARD_STATUS_BADGE_CLASS,
+  COMPANY_DIRECTORY_CARD_CLASS,
+} from '@/features/clients/constants/clients-directory-card-classes';
 import type { Company } from '@/lib/api/clients';
 
 interface CompanyCardProps {
@@ -11,42 +18,67 @@ interface CompanyCardProps {
   onOpen: (company: Company) => void;
 }
 
+interface CompanyCardMetricProps {
+  icon: LucideIcon;
+  value: number;
+  label: string;
+}
+
+function CompanyCardMetric({ icon: Icon, value, label }: CompanyCardMetricProps) {
+  return (
+    <div className={CLIENTS_DIRECTORY_METRIC_CELL_CLASS}>
+      <div className={CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS} aria-hidden>
+        <Icon size={14} />
+      </div>
+      <p className="text-foreground text-base leading-none font-bold tabular-nums">{value}</p>
+      <p className="text-muted-foreground text-[11px] leading-none">{label}</p>
+    </div>
+  );
+}
+
 export function CompanyCard({ company, onOpen }: CompanyCardProps) {
   const compType = getCompanyType(company.type);
   const taxSt = getTaxStatus(company.taxStatus);
+  const contactName = `${company.contact.firstName} ${company.contact.lastName}`.trim();
 
   return (
-    <button type="button" onClick={() => onOpen(company)} className={CLIENTS_DIRECTORY_CARD_CLASS}>
+    <button type="button" onClick={() => onOpen(company)} className={COMPANY_DIRECTORY_CARD_CLASS}>
       <div className="flex items-start gap-3">
-        <div className="bg-primary/5 text-primary group-hover:bg-primary/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors">
-          <Building2 size={18} aria-hidden />
+        <div className={COMPANY_CARD_ICON_TILE_CLASS} aria-hidden>
+          <Building2 size={22} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{company.name}</p>
-          <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
-            <User size={11} aria-hidden />
-            {company.contact.firstName} {company.contact.lastName}
+          <h3 className="text-foreground truncate text-base font-bold tracking-tight">
+            {company.name}
+          </h3>
+          <p className="text-muted-foreground mt-1 flex min-w-0 items-center gap-1.5 text-sm">
+            <User size={13} className="shrink-0" aria-hidden />
+            <span className="truncate">{contactName || 'No linked contact'}</span>
           </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-          {compType ? <StatusBadge label={compType.label} variant={compType.variant} /> : null}
-          {taxSt ? <StatusBadge label={taxSt.label} variant={taxSt.variant} /> : null}
+          {compType || taxSt ? (
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              {compType ? (
+                <StatusBadge
+                  label={compType.label}
+                  variant={compType.variant}
+                  className={COMPANY_CARD_STATUS_BADGE_CLASS}
+                />
+              ) : null}
+              {taxSt ? (
+                <StatusBadge
+                  label={taxSt.label}
+                  variant={taxSt.variant}
+                  className={COMPANY_CARD_STATUS_BADGE_CLASS}
+                />
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {company.taxId && (
-        <p className="text-muted-foreground mt-3 font-mono text-xs">Tax ID: {company.taxId}</p>
-      )}
-
-      <div className="text-muted-foreground mt-4 flex flex-wrap gap-3 border-t pt-3 text-xs">
-        <span className="flex items-center gap-1">
-          <Briefcase size={11} aria-hidden />
-          {company._count.projects} projects
-        </span>
-        <span className="flex items-center gap-1">
-          <FileText size={11} aria-hidden />
-          {company._count.invoices} invoices
-        </span>
+      <div className="border-border mt-5 flex gap-2 border-t pt-4">
+        <CompanyCardMetric icon={Briefcase} value={company._count.projects} label="projects" />
+        <CompanyCardMetric icon={FileText} value={company._count.invoices} label="invoices" />
       </div>
     </button>
   );
