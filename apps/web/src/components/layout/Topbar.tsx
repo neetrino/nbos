@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import { usePermission } from '@/lib/permissions';
 import { AccountMenuDropdown } from '@/components/layout/AccountMenuDropdown';
 import { HeaderQuickNote } from '@/components/layout/HeaderQuickNote';
-import { HeaderSearchButton } from '@/components/layout/HeaderSearchButton';
 import { isHeaderQuickNoteHiddenPath } from '@/components/layout/header-quick-note-constants';
 import {
   HeaderContextBar,
@@ -53,7 +52,6 @@ export function Topbar() {
           </div>
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2 self-center overflow-visible sm:gap-3">
-          <HeaderSearchButton />
           {showQuickNote ? <HeaderQuickNote /> : null}
           <NotificationDropdown />
           <AccountMenuDropdown me={me} />
