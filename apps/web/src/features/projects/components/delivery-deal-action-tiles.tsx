@@ -80,9 +80,10 @@ export function DeliveryDealCardHoverActions({
   className?: string;
 }) {
   return (
-    <ActionTileHoverBar variant="card" className={className}>
+    <ActionTileHoverBar variant="card-footer" className={cn('grid-cols-2', className)}>
       <DeliveryDealTiles
-        size="card"
+        size="stack"
+        fullWidth
         onOpenDeliveryCard={onOpenDeliveryCard}
         onOpenDeal={onOpenDeal}
       />

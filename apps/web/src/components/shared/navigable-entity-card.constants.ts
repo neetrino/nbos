@@ -2,16 +2,44 @@
  * Min card track (~448px) before the grid drops to fewer columns.
  * Wide layouts fit up to 3 columns; narrower areas step down to 2 then 1
  * instead of squeezing card proportions.
+ * `auto-fill` keeps empty tracks so fewer cards stay one-column wide.
  */
 export const NAVIGABLE_ENTITY_CARD_MIN_TRACK = '28rem';
 
-/** Fluid hub-style card grid — max ~3 wide columns, wraps when space is tight. */
+/** Fluid hub-style card grid — max ~3 wide columns; single cards don't stretch full row. */
 export const NAVIGABLE_ENTITY_CARD_GRID_CLASS =
-  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))]';
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,28rem),1fr))]';
 
 /** Elevated shadow ramp for hub/directory entity cards (rest + hover). */
 export const NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS =
   'shadow-[0_8px_24px_-6px_rgb(0_0_0/0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_48px_-12px_rgb(0_0_0/0.28)]';
+
+/** Soft product/extension card elevation (mock-aligned, less lift than hub). */
+export const NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS =
+  'shadow-[0_4px_20px_-4px_rgb(0_0_0/0.08)] transition-shadow hover:shadow-[0_8px_28px_-6px_rgb(0_0_0/0.12)]';
+
+/**
+ * Project detail product/extension cards — ~3 across at typical widths;
+ * more columns as the main column grows (`minmax` ~280px).
+ * `auto-fill` keeps empty tracks so a single card stays one-column wide.
+ */
+export const PRODUCT_DETAIL_CARD_GRID_CLASS =
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))]';
+
+/** Project detail product card — stacked header + stats strip (mock-aligned). */
+export const PRODUCT_DETAIL_CARD_SHELL_CLASS =
+  'group/entity-card border-border bg-card flex h-full flex-col rounded-2xl border';
+
+export const PRODUCT_DETAIL_CARD_ICON_TILE_CLASS =
+  'flex size-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300';
+
+export const PRODUCT_DETAIL_CARD_SECTION_DIVIDER_CLASS = 'border-border border-t';
+
+export const PRODUCT_DETAIL_CARD_STATS_SHELL_CLASS =
+  'bg-muted/50 grid grid-cols-3 divide-x divide-border/80 overflow-hidden rounded-xl';
+
+export const PRODUCT_DETAIL_CARD_STAT_CELL_CLASS =
+  'flex min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-3 text-center';
 
 /** Project Hub directory card — icon tile, code pill, orders pill (mock-aligned). */
 export const PROJECT_HUB_CARD_SHELL_CLASS =
@@ -34,4 +62,4 @@ export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS = NAVIGABLE_ENTITY_CARD_G
 
 /** Work Spaces product tab — slightly wider cards than default hub grid. */
 export const WORK_SPACE_PRODUCT_CARD_GRID_CLASS =
-  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,32rem),1fr))]';
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,32rem),1fr))]';

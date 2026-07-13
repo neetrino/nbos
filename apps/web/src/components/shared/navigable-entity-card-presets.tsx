@@ -350,17 +350,17 @@ export function ProductNavigableCard({ projectId, product }: ProductNavigableCar
       title={product.name}
       badges={statusBadge ? [statusBadge] : undefined}
       metaLines={buildProductCardMeta(product)}
-      footer={
-        <span>
-          {product._count.tasks} tasks · {product._count.extensions} ext. · {product._count.tickets}{' '}
-          tickets
-        </span>
-      }
+      stats={[
+        { value: product._count.tasks, label: 'Tasks' },
+        { value: product._count.extensions, label: 'Ext.' },
+        { value: product._count.tickets, label: 'Tickets' },
+      ]}
       hoverActions={
         <EntityLinkedSheetsHoverActions
           contextHref={`/projects/${projectId}`}
           onOpenDelivery={() => openDeliveryItem(`product-${product.id}`)}
           onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
+          variant="card-footer"
         />
       }
     />

@@ -39,10 +39,14 @@ function ActionTileContent({
   size,
   trailing,
 }: Pick<ActionTileButtonProps, 'label' | 'icon' | 'tone' | 'size' | 'trailing'>) {
+  const isStack = size === 'stack';
+
   return (
     <>
       <span className={actionTileIconVariants({ tone, size })}>{icon}</span>
-      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+      <span
+        className={cn('flex min-w-0 items-center gap-1.5', isStack ? 'justify-center' : 'flex-1')}
+      >
         <span className="truncate">{label}</span>
         {trailing}
       </span>
