@@ -30,10 +30,17 @@ function MetricCell({
 }) {
   return (
     <div className="border-border bg-card rounded-xl border px-3 py-2.5">
-      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+      <p
+        className={cn(
+          'text-[10px] font-semibold tracking-wide uppercase',
+          accentClass ?? 'text-muted-foreground',
+        )}
+      >
         {label}
       </p>
-      <p className={cn('mt-1 text-base font-semibold tabular-nums', accentClass)}>{value}</p>
+      <p className={cn('mt-1 text-base font-bold tabular-nums', accentClass ?? 'text-foreground')}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -197,21 +204,29 @@ export function BonusEntryReleasesSheetSummary({
       ) : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <MetricCell label="Payable" value={formatAmount(payable)} />
+        <MetricCell
+          label="Payable"
+          value={formatAmount(payable)}
+          accentClass="text-violet-700 dark:text-violet-300"
+        />
         <MetricCell
           label="Released"
           value={formatAmount(totals.released)}
-          accentClass="text-teal-700 dark:text-teal-400"
+          accentClass="text-teal-500 dark:text-teal-400"
         />
         <MetricCell
           label="Paid"
           value={formatAmount(totals.paid)}
-          accentClass="text-emerald-700 dark:text-emerald-400"
+          accentClass="text-green-600 dark:text-green-400"
         />
         <MetricCell
           label="Remaining"
           value={formatAmount(totals.remaining)}
-          accentClass={totals.remaining > 0 ? 'text-amber-700 dark:text-amber-400' : undefined}
+          accentClass={
+            totals.remaining > 0
+              ? 'text-amber-500 dark:text-amber-400'
+              : 'text-slate-600 dark:text-slate-300'
+          }
         />
       </div>
 
