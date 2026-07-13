@@ -21,16 +21,16 @@ import {
   parseBonusAmount,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import {
-  FINANCE_LIST_BADGE_CLASS,
-  FINANCE_LIST_CELL_CLASS,
-  FINANCE_LIST_HEAD_CLASS,
-  FINANCE_LIST_ROW_HOVER_CLASS,
-  FINANCE_LIST_SHELL_CLASS,
-  FinanceListAmount,
-  FinanceListIconLabel,
-  FinanceListMutedDash,
-  FinanceListPrimaryCell,
-} from '@/features/finance/components/shared/finance-list-table';
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
+  EntityListAmount,
+  EntityListIconLabel,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -68,15 +68,15 @@ export function BonusBoardListView({
   const statusColumnLabel = boardScope === 'CLOSED' ? 'Outcome' : 'Status';
 
   return (
-    <div className={cn(FINANCE_LIST_SHELL_CLASS, 'min-h-0 flex-1 overflow-auto')}>
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Employee</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{statusColumnLabel}</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Employee</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{statusColumnLabel}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -86,28 +86,28 @@ export function BonusBoardListView({
             return (
               <TableRow
                 key={row.id}
-                className={cn(FINANCE_LIST_ROW_HOVER_CLASS, 'cursor-pointer')}
+                className={cn(ENTITY_LIST_ROW_HOVER_CLASS, 'cursor-pointer')}
                 onClick={() => onOpenReleases(row)}
                 onKeyDown={(event) => handleBonusRowKeyDown(event, row, onOpenReleases)}
                 tabIndex={0}
                 role="button"
                 aria-label={`${employeeDisplayName(row.employee)} · ${projectCode ?? '—'} · bonus`}
               >
-                <TableCell className={FINANCE_LIST_CELL_CLASS}>
-                  <FinanceListPrimaryCell title={employeeDisplayName(row.employee)} />
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListPrimaryCell title={employeeDisplayName(row.employee)} />
                 </TableCell>
-                <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   {projectCode ? (
-                    <FinanceListIconLabel
+                    <EntityListIconLabel
                       icon={FolderKanban}
                       iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
                       label={projectCode}
                     />
                   ) : (
-                    <FinanceListMutedDash />
+                    <EntityListMutedDash />
                   )}
                 </TableCell>
-                <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <span
                     className={cn(
                       'inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium',
@@ -117,15 +117,15 @@ export function BonusBoardListView({
                     {typeCfg.label}
                   </span>
                 </TableCell>
-                <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <StatusBadge
                     label={BONUS_ENTRY_STATUS_LABEL[row.status]}
                     variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
-                    className={FINANCE_LIST_BADGE_CLASS}
+                    className={ENTITY_LIST_BADGE_CLASS}
                   />
                 </TableCell>
-                <TableCell className={FINANCE_LIST_CELL_CLASS}>
-                  <FinanceListAmount amount={parseBonusAmount(row.amount)} />
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListAmount amount={parseBonusAmount(row.amount)} />
                 </TableCell>
               </TableRow>
             );

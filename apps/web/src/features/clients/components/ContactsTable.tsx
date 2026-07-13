@@ -15,7 +15,7 @@ import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
-  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
   EntityListDate,
   EntityListIconLabel,
   EntityListMutedDash,
@@ -31,7 +31,7 @@ interface ContactsTableProps {
 
 export function ContactsTable({ contacts, onOpen }: ContactsTableProps) {
   return (
-    <div className={`${ENTITY_LIST_SHELL_CLASS} min-h-0 flex-1 overflow-auto`}>
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
         <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">

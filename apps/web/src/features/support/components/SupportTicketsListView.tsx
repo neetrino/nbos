@@ -15,7 +15,7 @@ import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
-  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
   EntityListIconLabel,
   EntityListMutedDash,
   EntityListPrimaryCell,
@@ -50,9 +50,9 @@ export function SupportTicketsListView({
   onReopen,
 }: SupportTicketsListViewProps) {
   return (
-    <div className={cn(ENTITY_LIST_SHELL_CLASS, 'min-h-0 flex-1')}>
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
             <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'min-w-[200px]')}>Ticket</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Category</TableHead>

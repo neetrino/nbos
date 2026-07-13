@@ -13,7 +13,7 @@ import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
-  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
   ENTITY_LIST_TYPE_CLASS,
   EntityListAmount,
   EntityListDate,
@@ -35,9 +35,9 @@ export interface DealsListTableProps {
 
 export function DealsListTable({ deals, boardScope, onDealClick }: DealsListTableProps) {
   return (
-    <div className={cn(ENTITY_LIST_SHELL_CLASS, 'min-h-0 flex-1 overflow-auto')}>
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Contact</TableHead>

@@ -4,7 +4,14 @@ import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, parseMoneyAmount } from '@/li
 import { cn } from '@/lib/utils';
 
 /** Shared shell for module list/table views (board|list dual views). */
-export const ENTITY_LIST_SHELL_CLASS = 'border-border bg-card overflow-hidden rounded-xl border';
+export const ENTITY_LIST_SHELL_CLASS = 'border-border bg-card rounded-xl border';
+
+/**
+ * Scrollable list shell — fills remaining height.
+ * Do not pair with `overflow-hidden` (breaks end-of-list scrolling).
+ */
+export const ENTITY_LIST_SCROLL_SHELL_CLASS =
+  'border-border bg-card min-h-0 flex-1 overflow-auto rounded-xl border';
 
 export const ENTITY_LIST_HEAD_CLASS = 'px-4';
 

@@ -237,7 +237,7 @@ function ContactsPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="contacts"
@@ -270,10 +270,12 @@ function ContactsPageContent() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
-          {contacts.map((contact) => (
-            <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
-          ))}
+        <div className={`min-h-0 flex-1 overflow-auto`}>
+          <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+            {contacts.map((contact) => (
+              <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
+            ))}
+          </div>
         </div>
       ) : (
         <ContactsTable contacts={contacts} onOpen={handleRowClick} />

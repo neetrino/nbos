@@ -15,7 +15,7 @@ import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
-  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
   ENTITY_LIST_TYPE_CLASS,
   EntityListDate,
   EntityListIconLabel,
@@ -78,7 +78,7 @@ export function DeliveryBoardItemsTable({
   const isClosed = mode === 'closed';
 
   return (
-    <div className={cn(ENTITY_LIST_SHELL_CLASS, 'min-h-0 flex-1 overflow-auto')}>
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
         <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
