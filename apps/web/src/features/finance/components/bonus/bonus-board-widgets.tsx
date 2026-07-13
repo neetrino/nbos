@@ -96,7 +96,7 @@ export function BonusCard({
         }
       }}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-foreground truncate text-sm font-semibold">
             {employeeDisplayName(row.employee)}
@@ -105,7 +105,7 @@ export function BonusCard({
             {formatAmount(parseBonusAmount(row.amount))}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2">
           <span
             className={`inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
           >
