@@ -1,112 +1,143 @@
 'use client';
 
-import type { KeyboardEvent } from 'react';
-import { AlertTriangle, Building2, FolderKanban, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { AlertTriangle, Building2, CheckCircle2, FolderKanban } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
-import {
-  formatOrderPaidSubline,
-  getOrderCoveragePercents,
-  getOrderTotalAmount,
-} from './order-display-utils';
+import { getOrderCoveragePercents, getOrderTotalAmount } from './order-display-utils';
+
+const COVERAGE_FULL_PERCENT = 100;
 
 interface OrderBoardCardProps {
   order: Order;
   onOrderClick: (order: Order) => void;
-  onCreateInvoice: (order: Order) => void;
 }
 
-export function OrderBoardCard({ order, onOrderClick, onCreateInvoice }: OrderBoardCardProps) {
+export function OrderBoardCard({ order, onOrderClick }: OrderBoardCardProps) {
+  const title = getOrderDisplayTitle(order);
   const total = getOrderTotalAmount(order);
-  const paidSubline = formatOrderPaidSubline(order);
   const percents = getOrderCoveragePercents(order);
   const warnings = order.reconciliation?.warnings ?? [];
-  const typeLabel = order.type.replace(/_/g, ' ');
+  const typeLabel = order.type.replace(/_/g, ' ').toUpperCase();
+  const showCodeSubline = title !== order.code;
 
   return (
-    <KanbanCardShell
-      as="article"
-      radius="lg"
-      padding="none"
-      baseShadow="sm"
-      hoverShadow="md"
-      className="group relative"
-    >
+    <KanbanCardShell as="article" radius="xl" padding="none" baseShadow="sm" hoverShadow="md">
       <div
         role="button"
         tabIndex={0}
         className={cn(
-          'cursor-pointer space-y-2 rounded-lg p-3 pr-10',
+          'cursor-pointer space-y-3 rounded-xl p-4',
           'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
         )}
         onClick={() => onOrderClick(order)}
         onKeyDown={(event) => handleCardKeyDown(event, order, onOrderClick)}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{getOrderDisplayTitle(order)}</p>
-            <p className="text-muted-foreground truncate text-xs">{order.code}</p>
+          <div className="flex min-w-0 items-start gap-2.5">
+            <span className="mt-0.5 h-8 w-1 shrink-0 rounded-full bg-sky-400" aria-hidden />
+            <div className="min-w-0">
+              <p className="text-foreground truncate text-sm leading-snug font-bold">{title}</p>
+              {showCodeSubline ? (
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">{order.code}</p>
+              ) : null}
+            </div>
           </div>
-          <StatusBadge label={typeLabel} variant="gray" />
+          <StatusBadge
+            label={typeLabel}
+            variant="blue"
+            className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+          />
         </div>
 
-        <p className="text-base font-bold tabular-nums">{formatAmount(total)}</p>
-        {paidSubline ? (
-          <p className="text-muted-foreground text-xs tabular-nums">{paidSubline}</p>
-        ) : null}
+        <div className="space-y-2">
+          <p className="text-foreground text-xl leading-none font-bold tabular-nums">
+            {formatAmount(total, order.currency)}
+          </p>
+          {percents ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <CoveragePill label="Inv" percent={percents.invoicedPercent} tone="green" />
+              <CoveragePill label="Paid" percent={percents.paidPercent} tone="blue" />
+              {warnings.length > 0 ? (
+                <AlertTriangle size={12} className="text-amber-600" aria-hidden />
+              ) : null}
+            </div>
+          ) : null}
+        </div>
 
-        {percents ? (
-          <div className="flex flex-wrap items-center gap-1.5">
-            <MiniCoverage label="Inv" percent={percents.invoicedPercent} />
-            <MiniCoverage label="Paid" percent={percents.paidPercent} />
-            {warnings.length > 0 ? (
-              <AlertTriangle size={12} className="text-amber-600" aria-hidden />
+        {order.company || order.project ? (
+          <div className="border-border divide-border divide-y border-t">
+            {order.company ? (
+              <MetaRow
+                icon={<Building2 size={14} aria-hidden />}
+                iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+                label={order.company.name}
+              />
+            ) : null}
+            {order.project ? (
+              <MetaRow
+                icon={<FolderKanban size={14} aria-hidden />}
+                iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+                label={order.project.name}
+              />
             ) : null}
           </div>
         ) : null}
-
-        <div className="text-muted-foreground space-y-1 text-xs">
-          {order.company ? (
-            <p className="flex items-center gap-1 truncate">
-              <Building2 size={11} aria-hidden />
-              {order.company.name}
-            </p>
-          ) : null}
-          {order.project ? (
-            <p className="flex items-center gap-1 truncate">
-              <FolderKanban size={11} aria-hidden />
-              {order.project.name}
-            </p>
-          ) : null}
-        </div>
       </div>
-
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 size-7 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
-        aria-label={`Create invoice for ${getOrderDisplayTitle(order)}`}
-        onClick={(event) => {
-          event.stopPropagation();
-          onCreateInvoice(order);
-        }}
-      >
-        <Plus size={14} aria-hidden />
-      </Button>
     </KanbanCardShell>
   );
 }
 
-function MiniCoverage({ label, percent }: { label: string; percent: number }) {
+const COVERAGE_TONE_CLASS = {
+  green: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+  blue: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
+} as const;
+
+function CoveragePill({
+  label,
+  percent,
+  tone,
+}: {
+  label: string;
+  percent: number;
+  tone: keyof typeof COVERAGE_TONE_CLASS;
+}) {
+  const isComplete = percent >= COVERAGE_FULL_PERCENT;
+
   return (
-    <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums',
+        COVERAGE_TONE_CLASS[tone],
+      )}
+    >
+      {isComplete ? <CheckCircle2 size={11} className="shrink-0" aria-hidden /> : null}
       {label} {percent}%
     </span>
+  );
+}
+
+function MetaRow({
+  icon,
+  iconClassName,
+  label,
+}: {
+  icon: ReactNode;
+  iconClassName: string;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 py-2.5 first:pt-3 last:pb-0">
+      <span
+        className={cn('flex size-7 shrink-0 items-center justify-center rounded-lg', iconClassName)}
+      >
+        {icon}
+      </span>
+      <p className="text-foreground/80 truncate text-xs">{label}</p>
+    </div>
   );
 }
 
