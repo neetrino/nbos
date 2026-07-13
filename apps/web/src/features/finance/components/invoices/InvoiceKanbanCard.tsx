@@ -89,6 +89,14 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
 
         {hasMeta ? (
           <div className="border-border flex flex-col gap-2.5 border-t pt-3">
+            {invoice.dueDate ? (
+              <MetaRow
+                icon={<Calendar size={14} aria-hidden />}
+                iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
+                labelClassName="font-bold text-orange-500 dark:text-orange-400"
+                label={new Date(invoice.dueDate).toLocaleDateString()}
+              />
+            ) : null}
             {dealTitle ? (
               <MetaRow
                 icon={<Handshake size={14} aria-hidden />}
@@ -108,13 +116,6 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
                 icon={<FolderKanban size={14} aria-hidden />}
                 iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
                 label={invoice.project.name}
-              />
-            ) : null}
-            {invoice.dueDate ? (
-              <MetaRow
-                icon={<Calendar size={14} aria-hidden />}
-                iconClassName="bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300"
-                label={new Date(invoice.dueDate).toLocaleDateString()}
               />
             ) : null}
           </div>
@@ -156,10 +157,12 @@ function MetaRow({
   icon,
   iconClassName,
   label,
+  labelClassName,
 }: {
   icon: ReactNode;
   iconClassName: string;
   label: string;
+  labelClassName?: string;
 }) {
   return (
     <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
@@ -171,7 +174,7 @@ function MetaRow({
       >
         {icon}
       </span>
-      <p className="text-foreground/80 truncate text-xs">{label}</p>
+      <p className={cn('text-foreground/80 truncate text-xs', labelClassName)}>{label}</p>
     </div>
   );
 }
