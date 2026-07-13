@@ -162,59 +162,60 @@ export function ExtensionEntityCard({
     >
       <div className="flex min-h-0 flex-1 flex-col p-5">
         <div className="flex min-w-0 items-start gap-3">
-          <div className={PRODUCT_DETAIL_CARD_ICON_TILE_CLASS}>
-            <Puzzle size={22} aria-hidden />
-          </div>
-          <div className="min-w-0 space-y-2">
-            {extension.productName ? (
-              onOpenProduct && extension.productId ? (
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground text-xs leading-none underline-offset-2 hover:underline"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpenProduct(extension.productId!);
-                  }}
-                >
-                  {extension.productName}
-                </button>
-              ) : (
-                <p className="text-muted-foreground text-xs leading-none">
-                  {extension.productName}
-                </p>
-              )
+          <div className="flex w-12 shrink-0 flex-col items-center gap-1.5">
+            <div className={PRODUCT_DETAIL_CARD_ICON_TILE_CLASS}>
+              <Puzzle size={22} aria-hidden />
+            </div>
+            {size ? (
+              <span className="text-muted-foreground text-center text-[10px] leading-none font-medium tracking-wide uppercase">
+                {size.label}
+              </span>
             ) : null}
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex min-h-4 min-w-0 items-center gap-2">
+              {extension.productName ? (
+                onOpenProduct && extension.productId ? (
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:text-foreground min-w-0 truncate text-left text-xs leading-none underline-offset-2 hover:underline"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenProduct(extension.productId!);
+                    }}
+                  >
+                    {extension.productName}
+                  </button>
+                ) : (
+                  <p className="text-muted-foreground min-w-0 truncate text-xs leading-none">
+                    {extension.productName}
+                  </p>
+                )
+              ) : (
+                <span className="min-w-0 flex-1" aria-hidden />
+              )}
+              {statusLabel ? (
+                <StatusBadge
+                  label={statusLabel}
+                  variant={status?.variant ?? 'gray'}
+                  dot
+                  className="ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+                />
+              ) : null}
+            </div>
             <h3 className="text-foreground line-clamp-2 min-h-[2.75rem] text-lg leading-snug font-bold tracking-tight">
               {extension.name}
             </h3>
-            {size ? (
-              <span className="text-muted-foreground text-[11px] font-medium">{size.label}</span>
-            ) : null}
           </div>
         </div>
 
-        {assigneeName || extension.createdAt || statusLabel ? (
+        {assigneeName || extension.createdAt ? (
           <div className={cn(PRODUCT_DETAIL_CARD_SECTION_DIVIDER_CLASS, 'mt-4 space-y-2.5 pt-4')}>
             {assigneeName ? (
               <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm">
                 <User size={15} className="shrink-0" aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{assigneeName}</span>
-                {statusLabel ? (
-                  <StatusBadge
-                    label={statusLabel}
-                    variant={status?.variant ?? 'gray'}
-                    dot
-                    className="ml-auto shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  />
-                ) : null}
               </div>
-            ) : statusLabel ? (
-              <StatusBadge
-                label={statusLabel}
-                variant={status?.variant ?? 'gray'}
-                dot
-                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-              />
             ) : null}
             {extension.createdAt ? (
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -227,24 +228,14 @@ export function ExtensionEntityCard({
           </div>
         ) : null}
 
-        {extension.taskCount != null ? <div className="min-h-4 flex-1" aria-hidden /> : null}
-
-        {extension.taskCount != null ? (
-          <div className={cn(PRODUCT_DETAIL_CARD_SECTION_DIVIDER_CLASS, 'pt-4')}>
-            <div className="bg-muted/50 flex flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-3 text-center">
-              <span className="text-foreground text-base leading-none font-bold tabular-nums">
-                {extension.taskCount}
-              </span>
-              <span className="text-muted-foreground text-[11px] leading-none">Tasks</span>
-            </div>
-          </div>
-        ) : null}
+        <div className="min-h-4 flex-1" aria-hidden />
       </div>
 
       <div className="px-5 pt-0 pb-5">
         <DeliveryDealCardHoverActions
           onOpenDeliveryCard={onOpenDeliveryCard}
           onOpenDeal={onOpenDeal}
+          taskCount={extension.taskCount}
         />
       </div>
     </div>

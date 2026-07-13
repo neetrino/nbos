@@ -73,14 +73,32 @@ export function DeliveryDealPanelActions({
 export function DeliveryDealCardHoverActions({
   onOpenDeliveryCard,
   onOpenDeal,
+  taskCount,
   className,
 }: {
   onOpenDeliveryCard: () => void;
   onOpenDeal?: () => void;
+  /** When set, shows a Tasks tile beside Delivery / Deal. */
+  taskCount?: number | null;
   className?: string;
 }) {
+  const hasTasks = taskCount != null;
+
   return (
-    <ActionTileHoverBar variant="card-footer" className={cn('grid-cols-2', className)}>
+    <ActionTileHoverBar
+      variant="card-footer"
+      className={cn(hasTasks ? 'grid-cols-3' : 'grid-cols-2', className)}
+    >
+      {hasTasks ? (
+        <ActionTileButton
+          label="Tasks"
+          icon={<span className="text-[11px] font-bold tabular-nums">{taskCount}</span>}
+          tone="neutral"
+          size="stack"
+          fullWidth
+          displayOnly
+        />
+      ) : null}
       <DeliveryDealTiles
         size="stack"
         fullWidth

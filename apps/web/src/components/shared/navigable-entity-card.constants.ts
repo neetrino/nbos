@@ -19,12 +19,12 @@ export const NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS =
   'shadow-[0_4px_20px_-4px_rgb(0_0_0/0.08)] transition-shadow hover:shadow-[0_8px_28px_-6px_rgb(0_0_0/0.12)]';
 
 /**
- * Project detail product/extension cards — ~3 across at typical widths;
- * more columns as the main column grows (`minmax` ~280px).
- * `auto-fill` keeps empty tracks so a single card stays one-column wide.
+ * Project detail product/extension cards.
+ * With the narrower About sidebar, lock 3 columns from `lg` so cards stay wider.
+ * Explicit columns keep a single card one-track wide (not full row).
  */
 export const PRODUCT_DETAIL_CARD_GRID_CLASS =
-  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))]';
+  'grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4';
 
 /** Project detail product card — stacked header + stats strip (mock-aligned). */
 export const PRODUCT_DETAIL_CARD_SHELL_CLASS =

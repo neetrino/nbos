@@ -1,7 +1,7 @@
 import { APP_MAIN_CONTENT_MAX_HEIGHT_CLASS } from '@/components/layout/app-layout-constants';
 
-/** Right sidebar width on project detail (+20% vs prior 20rem / 22rem). */
-export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-96 xl:w-[26.4rem]';
+/** Right sidebar (About project) — slightly narrower so product cards fit 3-wide. */
+export const PROJECT_DETAIL_SIDEBAR_CLASS = 'w-full shrink-0 lg:w-80 xl:w-[22rem]';
 
 /** Sticky info panel — flush to viewport right/bottom below topbar + main inset. */
 export const PROJECT_DETAIL_SIDEBAR_STICKY_CLASS = [
@@ -19,7 +19,7 @@ export const PROJECT_DETAIL_SIDEBAR_EDGE_CLASS = [
 export const PROJECT_DETAIL_PAGE_ROW_CLASS =
   'flex min-h-0 flex-1 flex-col gap-6 lg:min-h-[calc(100dvh-5rem)] lg:flex-row lg:gap-0';
 
-export const PROJECT_DETAIL_MAIN_COLUMN_CLASS = 'flex min-w-0 flex-1 flex-col gap-6 lg:pr-6';
+export const PROJECT_DETAIL_MAIN_COLUMN_CLASS = 'flex min-w-0 flex-1 flex-col gap-6 pb-8 lg:pr-6';
 
 export type ProjectDetailViewMode = 'card' | 'list';
 

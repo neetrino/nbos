@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
-import { User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { StatusBadge, type StatusVariant } from './StatusBadge';
 import {
@@ -68,12 +67,7 @@ export function NavigableEntityCard({
   const hasMeta = Boolean(metaLines && metaLines.length > 0);
   const hasStats = Boolean(stats && stats.length > 0);
   const hasFooterContent = hasStats || Boolean(footer);
-  const badgeMetaIndex = hasMeta
-    ? Math.max(
-        0,
-        metaLines!.findIndex((line) => line.icon === User),
-      )
-    : -1;
+  const hasBadges = Boolean(badges && badges.length > 0);
 
   return (
     <div
@@ -89,14 +83,27 @@ export function NavigableEntityCard({
             <div className={PRODUCT_DETAIL_CARD_ICON_TILE_CLASS}>
               <Icon size={22} aria-hidden />
             </div>
-            <div className="min-w-0 space-y-2">
-              {eyebrow ? (
-                <p className="text-muted-foreground text-xs leading-none">{eyebrow}</p>
-              ) : (
-                <p className="text-xs leading-none opacity-0" aria-hidden>
-                  &nbsp;
-                </p>
-              )}
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex min-h-4 min-w-0 items-center gap-2">
+                {eyebrow ? (
+                  <p className="text-muted-foreground min-w-0 flex-1 truncate text-xs leading-none">
+                    {eyebrow}
+                  </p>
+                ) : (
+                  <span className="min-w-0 flex-1" aria-hidden />
+                )}
+                {hasBadges
+                  ? badges!.map((badge) => (
+                      <StatusBadge
+                        key={badge.label}
+                        label={badge.label}
+                        variant={badge.variant}
+                        dot
+                        className="ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+                      />
+                    ))
+                  : null}
+              </div>
               <h3 className="text-foreground line-clamp-2 min-h-[2.75rem] text-lg leading-snug font-bold tracking-tight">
                 {title}
               </h3>
@@ -109,47 +116,25 @@ export function NavigableEntityCard({
           <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">{description}</p>
         ) : null}
 
-        {hasMeta || (badges && badges.length > 0) ? (
+        {hasMeta ? (
           <div
             className={cn(
               PRODUCT_DETAIL_CARD_SECTION_DIVIDER_CLASS,
               'mt-4 flex min-h-[3.25rem] flex-col justify-center gap-2.5 pt-4',
             )}
           >
-            {hasMeta
-              ? metaLines!.map((line, index) => {
-                  const LineIcon = line.icon;
-                  const showBadgesHere = index === badgeMetaIndex && Boolean(badges?.length);
-                  return (
-                    <div
-                      key={line.text}
-                      className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm"
-                    >
-                      {LineIcon ? <LineIcon size={15} className="shrink-0" aria-hidden /> : null}
-                      <span className="min-w-0 flex-1 truncate">{line.text}</span>
-                      {showBadgesHere
-                        ? badges!.map((badge) => (
-                            <StatusBadge
-                              key={badge.label}
-                              label={badge.label}
-                              variant={badge.variant}
-                              dot
-                              className="ml-auto shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                            />
-                          ))
-                        : null}
-                    </div>
-                  );
-                })
-              : badges!.map((badge) => (
-                  <StatusBadge
-                    key={badge.label}
-                    label={badge.label}
-                    variant={badge.variant}
-                    dot
-                    className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                  />
-                ))}
+            {metaLines!.map((line) => {
+              const LineIcon = line.icon;
+              return (
+                <div
+                  key={line.text}
+                  className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm"
+                >
+                  {LineIcon ? <LineIcon size={15} className="shrink-0" aria-hidden /> : null}
+                  <span className="min-w-0 flex-1 truncate">{line.text}</span>
+                </div>
+              );
+            })}
           </div>
         ) : null}
 
