@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AlertTriangle, Calendar, DollarSign, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Calendar, type LucideIcon } from 'lucide-react';
 import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
 import { cn } from '@/lib/utils';
 
@@ -42,7 +42,6 @@ export function FinanceListAmount({
     <span
       className={cn('inline-flex items-center gap-1 text-sm font-semibold tabular-nums', className)}
     >
-      <DollarSign size={14} className="shrink-0 text-sky-500" aria-hidden />
       <span>{formatGroupedNumber(value)}</span>
       <span className="text-foreground/80 font-medium">{currencyLabel}</span>
     </span>

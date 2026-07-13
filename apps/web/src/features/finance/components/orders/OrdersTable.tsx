@@ -1,4 +1,4 @@
-import { Building2, DollarSign, FolderKanban, Plus } from 'lucide-react';
+import { Building2, FileText, FolderKanban, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -9,16 +9,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  FINANCE_LIST_BADGE_CLASS,
+  FINANCE_LIST_CELL_CLASS,
+  FINANCE_LIST_HEAD_CLASS,
+  FINANCE_LIST_ROW_HOVER_CLASS,
+  FINANCE_LIST_SHELL_CLASS,
+  FINANCE_LIST_TYPE_CLASS,
+  FinanceListAmount,
+  FinanceListDate,
+  FinanceListIconLabel,
+  FinanceListIconTile,
+  FinanceListMutedDash,
+  FinanceListPrimaryCell,
+} from '@/features/finance/components/shared/finance-list-table';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
 import { OrderListCoverageCell } from './OrderListCoverageCell';
-import {
-  formatOrderPaidSubline,
-  formatOrderShortDate,
-  getOrderTotalAmount,
-} from './order-display-utils';
+import { formatOrderPaidSubline, getOrderTotalAmount } from './order-display-utils';
 import { ORDER_STATUSES } from './order-statuses';
 
 interface OrdersTableProps {
@@ -35,17 +44,19 @@ export function OrdersTable({
   onCreateInvoice,
 }: OrdersTableProps) {
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
+    <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Coverage</TableHead>
-            <TableHead>{boardScope === 'CLOSED' ? 'Closed' : 'Status'}</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="w-10 text-right">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Order</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Client</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Coverage</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>
+              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+            </TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Created</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} w-10 text-right`}>
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -77,43 +88,45 @@ function OrderRow({
   const statusCfg = ORDER_STATUSES[order.status];
   const total = getOrderTotalAmount(order);
   const paidSubline = formatOrderPaidSubline(order);
-  const typeLabel = order.type.replace(/_/g, ' ');
+  const typeLabel = order.type.replace(/_/g, ' ').toUpperCase();
+  const title = getOrderDisplayTitle(order);
 
   return (
-    <TableRow className="hover:bg-muted/40 cursor-pointer" onClick={() => onOrderClick(order)}>
-      <TableCell className="max-w-[14rem]">
-        <p className="truncate font-medium">{getOrderDisplayTitle(order)}</p>
-        <p className="text-muted-foreground truncate text-xs">
-          {order.code} · {typeLabel}
-        </p>
+    <TableRow className={FINANCE_LIST_ROW_HOVER_CLASS} onClick={() => onOrderClick(order)}>
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} max-w-[16rem]`}>
+        <FinanceListPrimaryCell title={title} subtitle={order.code} subtitleIcon={FileText} />
+        <p className={`${FINANCE_LIST_TYPE_CLASS} mt-1`}>{typeLabel}</p>
       </TableCell>
-      <TableCell className="max-w-[12rem]">
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} max-w-[14rem]`}>
         <OrderClientCell order={order} />
       </TableCell>
-      <TableCell className="text-right">
-        <p className="flex items-center justify-end gap-1 font-semibold tabular-nums">
-          <DollarSign size={12} className="text-accent" aria-hidden />
-          {formatAmount(total)}
-        </p>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListAmount amount={total} currency={order.currency} />
         {paidSubline ? (
-          <p className="text-muted-foreground text-xs tabular-nums">{paidSubline}</p>
+          <p className="text-muted-foreground mt-1 text-xs tabular-nums">{paidSubline}</p>
         ) : null}
       </TableCell>
-      <TableCell className="min-w-[8.5rem]">
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} min-w-[8.5rem]`}>
         <OrderListCoverageCell order={order} />
       </TableCell>
-      <TableCell>
-        {statusCfg ? <StatusBadge label={statusCfg.label} variant={statusCfg.variant} /> : null}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        {statusCfg ? (
+          <StatusBadge
+            label={statusCfg.label}
+            variant={statusCfg.variant}
+            className={FINANCE_LIST_BADGE_CLASS}
+          />
+        ) : null}
       </TableCell>
-      <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
-        {formatOrderShortDate(order.createdAt)}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListDate value={order.createdAt} />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-right`}>
         <Button
           variant="ghost"
           size="icon"
           className="size-8"
-          aria-label={`Create invoice for ${getOrderDisplayTitle(order)}`}
+          aria-label={`Create invoice for ${title}`}
           onClick={(event) => {
             event.stopPropagation();
             onCreateInvoice(order);
@@ -128,14 +141,24 @@ function OrderRow({
 
 function OrderClientCell({ order }: { order: Order }) {
   return (
-    <div className="grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-x-1.5 gap-y-1">
-      <Building2 size={14} className="text-muted-foreground shrink-0" aria-hidden />
-      <span className="truncate text-sm">{order.company?.name ?? '—'}</span>
+    <div className="flex flex-col gap-1.5">
+      {order.company?.name ? (
+        <FinanceListIconLabel
+          icon={Building2}
+          iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+          label={order.company.name}
+        />
+      ) : (
+        <FinanceListMutedDash />
+      )}
       {order.project ? (
-        <>
-          <FolderKanban size={14} className="text-muted-foreground shrink-0" aria-hidden />
+        <span className="flex min-w-0 items-center gap-2">
+          <FinanceListIconTile
+            icon={FolderKanban}
+            className="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+          />
           <span className="text-muted-foreground truncate text-xs">{order.project.name}</span>
-        </>
+        </span>
       ) : null}
     </div>
   );

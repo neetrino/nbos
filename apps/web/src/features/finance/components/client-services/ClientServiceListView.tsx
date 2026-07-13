@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { CalendarClock, DollarSign, Loader2, ServerCog } from 'lucide-react';
+import { useState } from 'react';
+import { FolderKanban, Loader2, ServerCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/table';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { cn } from '@/lib/utils';
-import { formatAmount } from '@/features/finance/constants/finance';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
   CLIENT_SERVICE_TYPES,
@@ -21,6 +20,19 @@ import {
 } from '@/features/finance/constants/client-services';
 import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
+import { formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
+import {
+  FINANCE_LIST_CELL_CLASS,
+  FINANCE_LIST_HEAD_CLASS,
+  FINANCE_LIST_ROW_HOVER_CLASS,
+  FINANCE_LIST_SHELL_CLASS,
+  FINANCE_LIST_TYPE_CLASS,
+  FinanceListAmount,
+  FinanceListDate,
+  FinanceListIconLabel,
+  FinanceListMutedDash,
+  FinanceListPrimaryCell,
+} from '@/features/finance/components/shared/finance-list-table';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
 
@@ -29,21 +41,6 @@ interface ClientServiceListViewProps {
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
   onCreate: () => void;
-}
-
-function formatShortDate(value: string | null): string {
-  if (!value) return '—';
-  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' }).format(
-    new Date(value),
-  );
-}
-
-function ListCellPrimary({ children }: { children: ReactNode }) {
-  return <p className="text-foreground truncate text-sm leading-tight font-medium">{children}</p>;
-}
-
-function ListCellSecondary({ children }: { children: ReactNode }) {
-  return <p className="text-muted-foreground mt-0.5 truncate text-xs leading-tight">{children}</p>;
 }
 
 export function ClientServiceListView({
@@ -73,16 +70,16 @@ export function ClientServiceListView({
   }
 
   return (
-    <div ref={setScrollEl} className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
+    <div ref={setScrollEl} className={cn(FINANCE_LIST_SHELL_CLASS, 'min-h-0 flex-1 overflow-auto')}>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="min-w-[180px]">Service</TableHead>
-            <TableHead className="min-w-[100px]">Kind</TableHead>
-            <TableHead className="min-w-[120px]">Project</TableHead>
-            <TableHead className="min-w-[100px]">Renewal</TableHead>
-            <TableHead className="min-w-[100px] text-right">Cost</TableHead>
-            <TableHead className="min-w-[88px]">Stage</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[180px]`}>Service</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[100px]`}>Kind</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[120px]`}>Project</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[100px]`}>Renewal</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[100px]`}>Cost</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} min-w-[88px]`}>Stage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -90,54 +87,57 @@ export function ClientServiceListView({
             <TableRow
               key={service.id}
               className={cn(
-                'hover:bg-muted/40 cursor-pointer',
+                FINANCE_LIST_ROW_HOVER_CLASS,
+                'cursor-pointer',
                 service.overdue && 'bg-red-50/40 dark:bg-red-950/10',
               )}
               onClick={() => onOpen(service)}
             >
-              <TableCell className="max-w-[240px] py-2.5">
-                <ListCellPrimary>{service.name}</ListCellPrimary>
-                <ListCellSecondary>{service.provider ?? '—'}</ListCellSecondary>
+              <TableCell className={`${FINANCE_LIST_CELL_CLASS} max-w-[240px]`}>
+                <FinanceListPrimaryCell title={service.name} subtitle={service.provider ?? null} />
               </TableCell>
 
-              <TableCell className="max-w-[140px] py-2.5">
-                <ListCellPrimary>
+              <TableCell className={`${FINANCE_LIST_CELL_CLASS} max-w-[140px]`}>
+                <p className="truncate text-sm font-bold">
                   {clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)}
-                </ListCellPrimary>
-                <ListCellSecondary>
+                </p>
+                <p className={`${FINANCE_LIST_TYPE_CLASS} mt-1 normal-case`}>
                   {clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel)}
-                </ListCellSecondary>
+                </p>
               </TableCell>
 
-              <TableCell className="max-w-[160px] py-2.5">
-                <ListCellPrimary>{service.project.code}</ListCellPrimary>
-                <ListCellSecondary>{service.project.name}</ListCellSecondary>
+              <TableCell className={`${FINANCE_LIST_CELL_CLASS} max-w-[160px]`}>
+                <FinanceListIconLabel
+                  icon={FolderKanban}
+                  iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+                  label={service.project.code}
+                  labelClassName="font-bold"
+                />
+                <p className="text-muted-foreground mt-1 truncate pl-8 text-xs">
+                  {service.project.name}
+                </p>
               </TableCell>
 
-              <TableCell className="py-2.5">
-                <span className="text-muted-foreground inline-flex items-center gap-1 text-xs leading-tight whitespace-nowrap">
-                  <CalendarClock size={12} className="shrink-0 opacity-70" aria-hidden />
-                  {formatShortDate(service.renewalDate)}
-                </span>
+              <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                <FinanceListDate value={service.renewalDate} />
               </TableCell>
 
-              <TableCell className="py-2.5 text-right">
-                <ListCellPrimary>
-                  <span className="inline-flex items-center justify-end gap-1 tabular-nums">
-                    <DollarSign size={12} className="text-accent shrink-0" aria-hidden />
-                    {service.ourCost ? formatAmount(Number(service.ourCost)) : '—'}
-                  </span>
-                </ListCellPrimary>
-                {service.clientCharge ? (
-                  <ListCellSecondary>
-                    <span className="block truncate text-right tabular-nums">
-                      {formatAmount(Number(service.clientCharge))}
-                    </span>
-                  </ListCellSecondary>
-                ) : null}
+              <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                {service.ourCost ? (
+                  <div className="space-y-1">
+                    <FinanceListAmount amount={service.ourCost} />
+                    {service.clientCharge ? (
+                      <p className="text-muted-foreground text-xs tabular-nums">
+                        Charge {formatGroupedNumber(parseMoneyAmount(service.clientCharge))}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <FinanceListMutedDash />
+                )}
               </TableCell>
 
-              <TableCell className="py-2.5">
+              <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <ClientServiceStageBadge service={service} emptyLabel="—" />
               </TableCell>
             </TableRow>
@@ -150,7 +150,6 @@ export function ClientServiceListView({
           <Loader2 className="size-4 animate-spin" aria-hidden />
         </div>
       ) : null}
-
       <InfiniteScrollSentinel
         onReach={loadMore}
         disabled={loading || loadingMore || !hasMore}

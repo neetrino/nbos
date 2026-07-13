@@ -1,4 +1,4 @@
-import { AlertTriangle, Building2, Calendar, DollarSign, FileText } from 'lucide-react';
+import { Building2, FileText } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -11,14 +11,21 @@ import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
-import { formatGroupedNumber, parseMoneyAmount, AMD_CURRENCY_SYMBOL } from '@/lib/format/money';
 import type { Invoice } from '@/lib/api/finance';
-
-const LIST_DATE_FORMATTER = new Intl.DateTimeFormat('ru-RU', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-});
+import {
+  FINANCE_LIST_BADGE_CLASS,
+  FINANCE_LIST_CELL_CLASS,
+  FINANCE_LIST_HEAD_CLASS,
+  FINANCE_LIST_ROW_HOVER_CLASS,
+  FINANCE_LIST_SHELL_CLASS,
+  FINANCE_LIST_TYPE_CLASS,
+  FinanceListAmount,
+  FinanceListDate,
+  FinanceListIconLabel,
+  FinanceListMutedDash,
+  FinanceListPrimaryCell,
+  formatFinanceListDate,
+} from '@/features/finance/components/shared/finance-list-table';
 
 interface InvoicesTableProps {
   invoices: Invoice[];
@@ -28,18 +35,20 @@ interface InvoicesTableProps {
 
 export function InvoicesTable({ invoices, boardScope, onInvoiceClick }: InvoicesTableProps) {
   return (
-    <div className="border-border bg-card overflow-hidden rounded-xl border">
+    <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="px-4">Invoice</TableHead>
-            <TableHead className="px-4">Company</TableHead>
-            <TableHead className="px-4">Type</TableHead>
-            <TableHead className="px-4">Amount</TableHead>
-            <TableHead className="px-4">{boardScope === 'CLOSED' ? 'Closed' : 'Status'}</TableHead>
-            <TableHead className="px-4">Tax</TableHead>
-            <TableHead className="px-4">Due Date</TableHead>
-            <TableHead className="px-4">Paid Date</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Invoice</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Company</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>
+              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+            </TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Tax</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Paid Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -61,114 +70,60 @@ function InvoiceTableRow({
 }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   const typeLabel = invoice.type.replace(/_/g, ' ').toUpperCase();
+  const linkedCode = invoice.order?.deal?.code ?? invoice.order?.code ?? null;
 
   return (
-    <TableRow className="hover:bg-muted/40" onClick={() => onInvoiceClick(invoice)}>
-      <InvoiceCodeCell invoice={invoice} />
-      <TableCell className="px-4 py-3">
+    <TableRow className={FINANCE_LIST_ROW_HOVER_CLASS} onClick={() => onInvoiceClick(invoice)}>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListPrimaryCell
+          title={invoice.code}
+          subtitle={linkedCode}
+          subtitleIcon={FileText}
+        />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
         {invoice.company?.name ? (
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400">
-              <Building2 size={13} aria-hidden />
-            </span>
-            <span className="truncate text-sm">{invoice.company.name}</span>
-          </span>
+          <FinanceListIconLabel
+            icon={Building2}
+            iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+            label={invoice.company.name}
+          />
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <FinanceListMutedDash />
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground px-4 py-3 text-xs font-medium tracking-wide">
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} ${FINANCE_LIST_TYPE_CLASS}`}>
         {typeLabel}
       </TableCell>
-      <InvoiceAmountCell amount={invoice.amount} currency={invoice.currency} />
-      <TableCell className="px-4 py-3">
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListAmount amount={invoice.amount} currency={invoice.currency} />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
         {money ? (
           <StatusBadge
             label={money.label}
             variant={money.variant}
-            className="rounded-full px-2.5 text-[11px]"
+            className={FINANCE_LIST_BADGE_CLASS}
           />
         ) : null}
       </TableCell>
-      <InvoiceTaxCell taxStatus={invoice.taxStatus} />
-      <InvoiceDueDateCell invoice={invoice} />
-      <TableCell className="text-muted-foreground px-4 py-3 text-xs">
-        {invoice.paidDate ? formatListDate(invoice.paidDate) : '—'}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <StatusBadge
+          label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Free'}
+          variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
+          className={FINANCE_LIST_BADGE_CLASS}
+        />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListDate value={invoice.dueDate} overdueDays={resolveInvoiceOverdueDays(invoice)} />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        {invoice.paidDate ? (
+          <span className="text-xs">{formatFinanceListDate(invoice.paidDate)}</span>
+        ) : (
+          <FinanceListMutedDash />
+        )}
       </TableCell>
     </TableRow>
   );
-}
-
-function InvoiceCodeCell({ invoice }: { invoice: Invoice }) {
-  const linkedCode = invoice.order?.deal?.code ?? invoice.order?.code ?? null;
-
-  return (
-    <TableCell className="px-4 py-3">
-      <div className="min-w-0 space-y-1">
-        <p className="truncate text-sm font-bold">{invoice.code}</p>
-        {linkedCode ? (
-          <div className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
-            <FileText size={12} className="shrink-0" aria-hidden />
-            <span className="truncate">{linkedCode}</span>
-          </div>
-        ) : null}
-      </div>
-    </TableCell>
-  );
-}
-
-function InvoiceAmountCell({ amount, currency }: { amount: string; currency: string }) {
-  const value = parseMoneyAmount(amount);
-  const currencyLabel = currency === 'AMD' ? AMD_CURRENCY_SYMBOL : currency;
-
-  return (
-    <TableCell className="px-4 py-3">
-      <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
-        <DollarSign size={14} className="shrink-0 text-sky-500" aria-hidden />
-        <span>{formatGroupedNumber(value)}</span>
-        <span className="text-foreground/80 font-medium">{currencyLabel}</span>
-      </span>
-    </TableCell>
-  );
-}
-
-function InvoiceTaxCell({ taxStatus }: { taxStatus: string }) {
-  return (
-    <TableCell className="px-4 py-3">
-      <StatusBadge
-        label={taxStatus === 'TAX' ? 'Tax' : 'Free'}
-        variant={taxStatus === 'TAX' ? 'green' : 'gray'}
-        className="rounded-full px-2.5 text-[11px]"
-      />
-    </TableCell>
-  );
-}
-
-function InvoiceDueDateCell({ invoice }: { invoice: Invoice }) {
-  const overdueDays = resolveInvoiceOverdueDays(invoice);
-
-  return (
-    <TableCell className="px-4 py-3">
-      {invoice.dueDate ? (
-        <div className="space-y-1">
-          <div className="text-foreground flex items-center gap-1.5 text-xs">
-            <Calendar size={12} className="text-muted-foreground shrink-0" aria-hidden />
-            <span>{formatListDate(invoice.dueDate)}</span>
-          </div>
-          {overdueDays > 0 ? (
-            <div className="flex items-center gap-1 text-xs font-medium text-red-500">
-              <AlertTriangle size={11} className="shrink-0" aria-hidden />
-              {overdueDays}d overdue
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <span className="text-muted-foreground text-xs">—</span>
-      )}
-    </TableCell>
-  );
-}
-
-function formatListDate(value: string): string {
-  return LIST_DATE_FORMATTER.format(new Date(value));
 }

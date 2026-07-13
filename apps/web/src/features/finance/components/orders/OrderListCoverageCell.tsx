@@ -47,11 +47,15 @@ export function OrderListCoverageCell({ order }: OrderListCoverageCellProps) {
 function CoveragePill({ label, percent }: { label: string; percent: number }) {
   const tone =
     percent >= 100
-      ? 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300'
+      ? label === 'Paid'
+        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400'
+        : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
       : 'bg-muted text-muted-foreground';
 
   return (
-    <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${tone}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tabular-nums ${tone}`}
+    >
       {label} {percent}%
     </span>
   );

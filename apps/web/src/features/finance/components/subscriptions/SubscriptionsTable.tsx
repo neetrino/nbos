@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Calendar, DollarSign, FileText, FolderKanban, Handshake } from 'lucide-react';
+import { Building2, Calendar, FileText, FolderKanban, Handshake } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -14,12 +14,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { Subscription } from '@/lib/api/finance';
-import {
-  formatAmount,
-  getSubscriptionStatus,
-  getSubscriptionType,
-} from '@/features/finance/constants/finance';
+import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
+import {
+  FINANCE_LIST_BADGE_CLASS,
+  FINANCE_LIST_CELL_CLASS,
+  FINANCE_LIST_HEAD_CLASS,
+  FINANCE_LIST_ROW_HOVER_CLASS,
+  FINANCE_LIST_SHELL_CLASS,
+  FinanceListAmount,
+  FinanceListDate,
+  FinanceListIconLabel,
+  FinanceListMutedDash,
+} from '@/features/finance/components/shared/finance-list-table';
 import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
 import { SubscriptionHoldDialog } from './SubscriptionHoldDialog';
 import { SubscriptionPartnerDialog } from './SubscriptionPartnerDialog';
@@ -54,21 +61,21 @@ export function SubscriptionsTable({
 
   return (
     <>
-      <div className="border-border overflow-hidden rounded-xl border">
+      <div className={FINANCE_LIST_SHELL_CLASS}>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Project</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Partner</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Amount/mo</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Coverage</TableHead>
-              <TableHead>Billing Day</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>Invoices</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Company</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Partner</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount/mo</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Coverage</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Billing Day</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Start Date</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Invoices</TableHead>
+              <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,20 +173,30 @@ function SubscriptionTableRow({
 
   return (
     <TableRow
-      className="hover:bg-muted/40 cursor-pointer"
+      className={FINANCE_LIST_ROW_HOVER_CLASS}
       onClick={() => onOpenSubscription(subscription.id)}
     >
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <FolderKanban size={14} className="text-muted-foreground" />
-          <span className="font-medium">{subscription.project?.name ?? 'N/A'}</span>
-        </div>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListIconLabel
+          icon={FolderKanban}
+          iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+          label={subscription.project?.name ?? 'N/A'}
+          labelClassName="font-bold"
+        />
       </TableCell>
-      <TableCell className="text-muted-foreground text-sm">
-        {subscription.company?.name ?? '-'}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        {subscription.company?.name ? (
+          <FinanceListIconLabel
+            icon={Building2}
+            iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+            label={subscription.company.name}
+          />
+        ) : (
+          <FinanceListMutedDash />
+        )}
       </TableCell>
-      <TableCell>
-        <div className="flex max-w-[200px] flex-col gap-1">
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <div className="flex max-w-[200px] flex-col gap-1.5">
           <span className="truncate text-sm">{subscription.partner?.name ?? '—'}</span>
           <Button
             type="button"
@@ -199,14 +216,14 @@ function SubscriptionTableRow({
       <SubscriptionTypeCell subscriptionType={subscriptionType} />
       <SubscriptionAmountCell amount={subscription.baseMonthlyAmount} />
       <SubscriptionStatusCell subscriptionStatus={subscriptionStatus} />
-      <TableCell className="text-muted-foreground text-xs">
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
         {subscription.coverage?.activeMonthCount ?? 0} months
       </TableCell>
       <SubscriptionBillingCell billingDay={subscription.billingDay} />
-      <TableCell className="text-muted-foreground text-xs">
-        {new Date(subscription.billingStartDate).toLocaleDateString()}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListDate value={subscription.billingStartDate} />
       </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      <TableCell className={FINANCE_LIST_CELL_CLASS} onClick={(event) => event.stopPropagation()}>
         <Link
           href={subscriptionInvoicesDrilldownHref(subscription.id)}
           className="text-primary inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
@@ -236,21 +253,22 @@ function SubscriptionTypeCell({
   subscriptionType?: ReturnType<typeof getSubscriptionType>;
 }) {
   return (
-    <TableCell>
-      {subscriptionType && (
-        <StatusBadge label={subscriptionType.label} variant={subscriptionType.variant} />
-      )}
+    <TableCell className={FINANCE_LIST_CELL_CLASS}>
+      {subscriptionType ? (
+        <StatusBadge
+          label={subscriptionType.label}
+          variant={subscriptionType.variant}
+          className={FINANCE_LIST_BADGE_CLASS}
+        />
+      ) : null}
     </TableCell>
   );
 }
 
 function SubscriptionAmountCell({ amount }: { amount: string }) {
   return (
-    <TableCell className="text-right">
-      <span className="flex items-center justify-end gap-1 font-semibold">
-        <DollarSign size={12} className="text-accent" />
-        {formatAmount(parseFloat(amount))}
-      </span>
+    <TableCell className={FINANCE_LIST_CELL_CLASS}>
+      <FinanceListAmount amount={amount} />
     </TableCell>
   );
 }
@@ -261,19 +279,23 @@ function SubscriptionStatusCell({
   subscriptionStatus?: ReturnType<typeof getSubscriptionStatus>;
 }) {
   return (
-    <TableCell>
-      {subscriptionStatus && (
-        <StatusBadge label={subscriptionStatus.label} variant={subscriptionStatus.variant} />
-      )}
+    <TableCell className={FINANCE_LIST_CELL_CLASS}>
+      {subscriptionStatus ? (
+        <StatusBadge
+          label={subscriptionStatus.label}
+          variant={subscriptionStatus.variant}
+          className={FINANCE_LIST_BADGE_CLASS}
+        />
+      ) : null}
     </TableCell>
   );
 }
 
 function SubscriptionBillingCell({ billingDay }: { billingDay: number }) {
   return (
-    <TableCell className="text-sm">
-      <div className="flex items-center gap-1">
-        <Calendar size={12} className="text-muted-foreground" />
+    <TableCell className={FINANCE_LIST_CELL_CLASS}>
+      <div className="flex items-center gap-1.5 text-sm">
+        <Calendar size={12} className="text-muted-foreground shrink-0" aria-hidden />
         {billingDay}th
       </div>
     </TableCell>
