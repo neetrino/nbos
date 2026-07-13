@@ -7,8 +7,14 @@ import type {
   RelationEntityKind,
 } from './relation-picker.types';
 
+/** Optional actions when opening an entity sheet from a host surface. */
+export type OpenEntityOptions = {
+  /** Project team: show Remove opposite the name on the employee sheet. */
+  onRemoveParticipant?: () => void | Promise<void>;
+};
+
 export type EntityRelationsApi = {
-  openEntity: (kind: RelationEntityKind, id: string) => void;
+  openEntity: (kind: RelationEntityKind, id: string, options?: OpenEntityOptions) => void;
   openCreate: (
     kind: RelationEntityKind,
     searchQuery?: string,

@@ -30,7 +30,11 @@ import { productsApi, type Product } from '@/lib/api/products';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { parseRelationCreateIntent } from './parse-relation-create-intent';
 import { emitRelationCreatedHandlers } from './relation-created-registry';
-import { EntityRelationsProvider, type EntityRelationsApi } from './entity-relations-context';
+import {
+  EntityRelationsProvider,
+  type EntityRelationsApi,
+  type OpenEntityOptions,
+} from './entity-relations-context';
 import { buildRelationCreatePrefill } from './build-relation-create-prefill';
 import type {
   RelationCreateContext,
@@ -67,6 +71,7 @@ export function EntityRelationHost({
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [employeeOpenId, setEmployeeOpenId] = useState<string | null>(null);
   const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
+  const [employeeOpenOptions, setEmployeeOpenOptions] = useState<OpenEntityOptions | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
@@ -132,7 +137,7 @@ export function EntityRelationHost({
   }, [employeeOpenId, employeeSheet?.id]);
 
   const openEntity = useCallback(
-    (kind: RelationEntityKind, id: string) => {
+    (kind: RelationEntityKind, id: string, options?: OpenEntityOptions) => {
       if (kind === 'project') {
         router.push(`/projects/${id}`);
         return;
@@ -152,6 +157,7 @@ export function EntityRelationHost({
         return;
       }
       if (kind === 'employee') {
+        setEmployeeOpenOptions(options ?? null);
         setEmployeeOpenId(id);
         setEmployeeSheet((current) => (current?.id === id ? current : null));
         return;
@@ -335,10 +341,12 @@ export function EntityRelationHost({
         employee={employeeSheet}
         open={employeeOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={employeeOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setEmployeeOpenId(null);
             setEmployeeSheet(null);
+            setEmployeeOpenOptions(null);
           }
         }}
       />

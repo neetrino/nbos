@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { UserCheck, UserX } from 'lucide-react';
+import { Trash2, UserCheck, UserX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -11,6 +12,7 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   type DetailSheetTabItem,
+  DeleteConfirmDialog,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -66,6 +68,8 @@ interface EmployeeSheetProps {
   selfProfileDeepLinkHref?: string;
   /** Stack above an already-open entity sheet (dims parent floating rail). */
   forceNestedBackdrop?: boolean;
+  /** Project team: Remove participant control opposite the name. */
+  onRemoveParticipant?: () => void | Promise<void>;
 }
 
 function saveErrorMessage(err: unknown): string {
@@ -82,6 +86,7 @@ export function EmployeeSheet({
   selfProfile = false,
   selfProfileDeepLinkHref,
   forceNestedBackdrop = false,
+  onRemoveParticipant,
 }: EmployeeSheetProps) {
   const { persistedValue: renderEmployee, onOpenChangeComplete } = useSheetPersistedValue(employee);
   const hostMounted = useSheetHostMounted(open, renderEmployee);
@@ -92,9 +97,11 @@ export function EmployeeSheet({
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [removingParticipant, setRemovingParticipant] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [removeParticipantOpen, setRemoveParticipantOpen] = useState(false);
   const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const canReactivate = useCanReactivateEmployee();
@@ -114,7 +121,11 @@ export function EmployeeSheet({
   }, [employee]);
 
   useEffect(() => {
-    if (!open) setGeneralError(null);
+    if (!open) {
+      setGeneralError(null);
+      setRemovingParticipant(false);
+      setRemoveParticipantOpen(false);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -214,6 +225,20 @@ export function EmployeeSheet({
     await onSaved?.();
   }, [current, onSaved]);
 
+  const handleRemoveParticipant = useCallback(async () => {
+    if (!onRemoveParticipant) return;
+    setRemovingParticipant(true);
+    try {
+      await onRemoveParticipant();
+      setRemoveParticipantOpen(false);
+      onOpenChange(false);
+    } catch {
+      // Caller surfaces toast; keep sheet open for retry.
+    } finally {
+      setRemovingParticipant(false);
+    }
+  }, [onOpenChange, onRemoveParticipant]);
+
   if (!hostMounted) return null;
 
   const displayEmployee = current ?? renderEmployee;
@@ -287,6 +312,20 @@ export function EmployeeSheet({
                     )}
                   </div>
                 )}
+                {onRemoveParticipant ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive ml-auto shrink-0"
+                    disabled={removingParticipant || saving}
+                    onClick={() => setRemoveParticipantOpen(true)}
+                    aria-label="Remove participant"
+                  >
+                    <Trash2 className="size-4" />
+                    Remove
+                  </Button>
+                ) : null}
               </div>
               {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' && (
                 <DetailSheetSettingsMenu>
@@ -377,6 +416,21 @@ export function EmployeeSheet({
         onOpenChange={setReactivateOpen}
         onReactivated={handleReactivateComplete}
       />
+
+      {onRemoveParticipant ? (
+        <DeleteConfirmDialog
+          open={removeParticipantOpen}
+          onOpenChange={setRemoveParticipantOpen}
+          level="simple"
+          itemName={fullName}
+          title="Remove participant?"
+          description="They will lose project team access. You can add them again later."
+          confirmLabel="Remove"
+          isSubmitting={removingParticipant}
+          forceNestedBackdrop
+          onConfirm={() => void handleRemoveParticipant()}
+        />
+      ) : null}
     </Sheet>
   );
 }

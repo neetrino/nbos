@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { Trash2, User, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { User, Users } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
@@ -14,6 +13,7 @@ import {
   RelationPickerField,
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { cn } from '@/lib/utils';
 import {
@@ -55,6 +55,7 @@ export function ProjectParticipantsSection({
 }: ProjectParticipantsSectionProps) {
   const isDense = embedded || compact;
   const { members, loading, error, refetch } = useProjectTeam(projectId, refreshKey);
+  const relations = useEntityRelations();
   const [addingMember, setAddingMember] = useState(false);
   const [busyEmployeeId, setBusyEmployeeId] = useState<string | null>(null);
 
@@ -111,6 +112,7 @@ export function ProjectParticipantsSection({
       await reloadTeam();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to remove');
+      throw err;
     } finally {
       setBusyEmployeeId(null);
     }
@@ -200,52 +202,51 @@ export function ProjectParticipantsSection({
                   <TableHead className="w-36">Role</TableHead>
                   <TableHead className="w-24">Access</TableHead>
                   <TableHead className="w-32">Source</TableHead>
-                  <TableHead className="w-16" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-medium">
-                          {row.employee.firstName} {row.employee.lastName}
-                        </span>
-                        <TeamMemberEmployeeStatusBadge status={row.employee.status} />
-                      </div>
-                      <span className="text-muted-foreground block text-xs">
-                        {row.employee.email}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <ProjectTeamRoleControl
-                        role={row.role as 'ADMIN' | 'MEMBER'}
-                        disabled={busyEmployeeId === row.employeeId}
-                        canManageTeam={canManageTeam}
-                        canAssignAdmin={canAssignAdmin}
-                        onRoleChange={(role) => void handleRoleChange(row.employeeId, role)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-sm">{row.accessLevel}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm capitalize">
-                      {formatTeamSource(row.source)}
-                    </TableCell>
-                    <TableCell>
-                      {canManageTeam ? (
-                        <Button
+                {members.map((row) => {
+                  const fullName = `${row.employee.firstName} ${row.employee.lastName}`.trim();
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <button
                           type="button"
-                          size="icon"
-                          variant="ghost"
-                          aria-label="Remove participant"
-                          disabled={busyEmployeeId === row.employeeId}
-                          onClick={() => void handleRemove(row.employeeId)}
+                          className="text-left transition-colors hover:text-sky-600 dark:hover:text-sky-400"
+                          disabled={busyEmployeeId === row.employeeId || addingMember}
+                          onClick={() =>
+                            relations.openEntity('employee', row.employeeId, {
+                              onRemoveParticipant: canManageTeam
+                                ? () => handleRemove(row.employeeId)
+                                : undefined,
+                            })
+                          }
                         >
-                          <Trash2 size={16} />
-                        </Button>
-                      ) : null}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="font-medium">{fullName}</span>
+                            <TeamMemberEmployeeStatusBadge status={row.employee.status} />
+                          </div>
+                          <span className="text-muted-foreground block text-xs">
+                            {row.employee.email}
+                          </span>
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <ProjectTeamRoleControl
+                          role={row.role as 'ADMIN' | 'MEMBER'}
+                          disabled={busyEmployeeId === row.employeeId}
+                          canManageTeam={canManageTeam}
+                          canAssignAdmin={canAssignAdmin}
+                          onRoleChange={(role) => void handleRoleChange(row.employeeId, role)}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm">{row.accessLevel}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm capitalize">
+                        {formatTeamSource(row.source)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
