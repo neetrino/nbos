@@ -1,14 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Banknote, FolderKanban, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Banknote, FolderKanban } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -47,14 +40,9 @@ import {
 interface ExpensesTableSectionProps {
   expenses: Expense[];
   onOpen: (expense: Expense) => void;
-  onRequestDelete: (expense: Expense) => void;
 }
 
-export function ExpensesTableSection({
-  expenses,
-  onOpen,
-  onRequestDelete,
-}: ExpensesTableSectionProps) {
+export function ExpensesTableSection({ expenses, onOpen }: ExpensesTableSectionProps) {
   return (
     <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
@@ -69,19 +57,11 @@ export function ExpensesTableSection({
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Payroll</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} w-[52px] text-right`}>
-              <span className="sr-only">Actions</span>
-            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {expenses.map((expense) => (
-            <ExpenseTableRow
-              key={expense.id}
-              expense={expense}
-              onOpen={onOpen}
-              onRequestDelete={onRequestDelete}
-            />
+            <ExpenseTableRow key={expense.id} expense={expense} onOpen={onOpen} />
           ))}
         </TableBody>
       </Table>
@@ -92,11 +72,9 @@ export function ExpensesTableSection({
 function ExpenseTableRow({
   expense,
   onOpen,
-  onRequestDelete,
 }: {
   expense: Expense;
   onOpen: (expense: Expense) => void;
-  onRequestDelete: (expense: Expense) => void;
 }) {
   const stage = getExpenseStage(expense.status);
   const categoryVisual = getExpenseCategoryVisual(expense.category);
@@ -190,36 +168,6 @@ function ExpenseTableRow({
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <FinanceListDate value={expense.dueDate} />
-      </TableCell>
-      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-right`}>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={(props) => (
-              <Button
-                {...props}
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="text-muted-foreground"
-                aria-label={`Actions for ${expense.name}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.onClick?.(e);
-                }}
-              >
-                <MoreHorizontal size={14} />
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => onRequestDelete(expense)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </TableCell>
     </TableRow>
   );
