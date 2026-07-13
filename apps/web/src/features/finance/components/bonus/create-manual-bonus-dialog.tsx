@@ -7,6 +7,13 @@ import { Input } from '@/components/ui/input';
 import { NbosMonthPicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   MANUAL_BONUS_CREATE_STATUSES,
   MANUAL_BONUS_DEFAULT_STATUS,
   MANUAL_BONUS_EMPLOYEES_PAGE_SIZE,
@@ -183,51 +190,67 @@ export function CreateManualBonusDialog({
           </div>
           <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Employee *</Label>
-            <select
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-              value={employeeId}
+            <Select
+              value={employeeId || undefined}
               disabled={loading || employeesLoading}
-              onChange={(e) => setEmployeeId(e.target.value)}
+              onValueChange={(value) => {
+                if (value) setEmployeeId(value);
+              }}
             >
-              <option value="">Select employee…</option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>
-                  {employeeLabel(employee)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder={employeesLoading ? 'Loading…' : 'Select employee…'} />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((employee) => (
+                  <SelectItem key={employee.id} value={employee.id}>
+                    {employeeLabel(employee)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className={FORM_FIELD_GROUP_CLASS}>
             <Label>Order (funding anchor) *</Label>
-            <select
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-              value={orderId}
+            <Select
+              value={orderId || undefined}
               disabled={loading || ordersLoading}
-              onChange={(e) => setOrderId(e.target.value)}
+              onValueChange={(value) => {
+                if (value) setOrderId(value);
+              }}
             >
-              <option value="">Select order…</option>
-              {orders.map((order) => (
-                <option key={order.id} value={order.id}>
-                  {orderLabel(order)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder={ordersLoading ? 'Loading…' : 'Select order…'} />
+              </SelectTrigger>
+              <SelectContent>
+                {orders.map((order) => (
+                  <SelectItem key={order.id} value={order.id}>
+                    {orderLabel(order)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Type *</Label>
-              <select
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+              <Select
                 value={type}
                 disabled={loading}
-                onChange={(e) => setType(e.target.value as BonusType)}
+                onValueChange={(value) => {
+                  if (value) setType(value as BonusType);
+                }}
               >
-                {MANUAL_BONUS_TYPE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MANUAL_BONUS_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Amount *</Label>
@@ -252,18 +275,24 @@ export function CreateManualBonusDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Status</Label>
-              <select
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+              <Select
                 value={status}
                 disabled={loading}
-                onChange={(e) => setStatus(e.target.value as BonusStatus)}
+                onValueChange={(value) => {
+                  if (value) setStatus(value as BonusStatus);
+                }}
               >
-                {MANUAL_BONUS_CREATE_STATUSES.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MANUAL_BONUS_CREATE_STATUSES.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className={FORM_FIELD_GROUP_CLASS}>
               <Label htmlFor="bonus-earned-month">Earned month</Label>
