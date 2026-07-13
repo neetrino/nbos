@@ -277,6 +277,8 @@ export function DealSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
+          contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
+          railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
           sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
         >
           <CrmSheetEntityHeader

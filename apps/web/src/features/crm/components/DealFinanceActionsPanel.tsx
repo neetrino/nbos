@@ -26,12 +26,14 @@ export function DealFinanceActionsPanel({ deal, firstOrder }: DealFinanceActions
   const finance = computeFinance(deal);
 
   return (
-    <section className={FINANCE_PANEL_SURFACE_CLASS}>
-      <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
-        <TrendingUp size={12} />
-        Finance
-      </h4>
-      {firstOrder ? <DealOrderCommercialBadges order={firstOrder} /> : null}
+    <section className={cn(FINANCE_PANEL_SURFACE_CLASS, 'flex flex-col gap-4')}>
+      <div className="flex flex-col gap-4">
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
+          <TrendingUp size={12} />
+          Finance
+        </h4>
+        {firstOrder ? <DealOrderCommercialBadges order={firstOrder} /> : null}
+      </div>
       <div className="space-y-2.5 text-sm">
         <FinanceRow
           label="Total"
