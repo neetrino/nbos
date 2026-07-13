@@ -317,6 +317,22 @@ body {
     transform: translate3d(0, 8px, 0);
   }
 
+  .nbos-sheet-popup-transition {
+    transition:
+      opacity var(--motion-duration-base) var(--motion-ease-out),
+      transform var(--motion-duration-base) var(--motion-ease-out);
+  }
+
+  .nbos-sheet-overlay-transition {
+    transition: opacity var(--motion-duration-base) var(--motion-ease-out);
+  }
+
+  .nbos-sheet-rail-transition {
+    transition:
+      opacity var(--motion-duration-base) var(--motion-ease-out),
+      transform var(--motion-duration-base) var(--motion-ease-out);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .detail-sheet-tab-panel-transition {
       transition: none;
@@ -326,6 +342,12 @@ body {
     .detail-sheet-tab-panel-fading {
       opacity: 1;
       transform: none;
+    }
+
+    .nbos-sheet-popup-transition,
+    .nbos-sheet-overlay-transition,
+    .nbos-sheet-rail-transition {
+      transition: none;
     }
   }
 }

@@ -36,6 +36,7 @@ import {
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 export interface ExpensePlanDetailSheetProps {
   planId: string | null;
@@ -54,7 +55,9 @@ export function ExpensePlanDetailSheet({
   onPlanUpdated,
   onPlanDeleted,
 }: ExpensePlanDetailSheetProps) {
-  const activePlanId = open && planId ? planId : '';
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(planId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+  const activePlanId = open && sheetId ? sheetId : '';
   const { plan, loading, error, fetchPlan } = useExpensePlanDetail(activePlanId, {
     open,
     initialPlan,
@@ -169,14 +172,14 @@ export function ExpensePlanDetailSheet({
     }
   }, [onOpenChange, onPlanDeleted, plan]);
 
-  if (!planId) return null;
+  if (!hostMounted) return null;
 
-  const sourcePageHref = expensePlansListWithOpenPlanHref(planId);
+  const sourcePageHref = expensePlansListWithOpenPlanHref(sheetId ?? '');
   const frequencyLabel = plan ? expensePlanFrequencyLabel(plan.frequency) : '';
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"

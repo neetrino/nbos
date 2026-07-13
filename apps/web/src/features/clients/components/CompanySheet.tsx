@@ -38,6 +38,7 @@ import type {
   ClientDetailTabId,
   ClientEmbeddedPortfolioTabId,
 } from './client-portfolio/client-portfolio-tabs';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface CompanySheetProps {
   company: Company | null;
@@ -67,6 +68,9 @@ export function CompanySheet({
   onPermanentDelete,
   forceNestedBackdrop = false,
 }: CompanySheetProps) {
+  const { persistedValue: renderCompany, onOpenChangeComplete } = useSheetPersistedValue(company);
+  const hostMounted = useSheetHostMounted(open, renderCompany);
+
   const searchContacts = useContactSearchOptions();
   const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
   const [snap, setSnap] = useState<CompanyGeneralDraft | null>(null);
@@ -175,13 +179,14 @@ export function CompanySheet({
     }
   };
 
-  if (!open) return null;
+  if (!hostMounted) return null;
 
-  if (!company || !draft || !snap) {
+  if (!renderCompany || !draft || !snap) {
     return (
       <EntityDetailSheetLoadingShell
         open={open}
         onOpenChange={onOpenChange}
+        onOpenChangeComplete={onOpenChangeComplete}
         label="Loading company…"
         contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
         railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
@@ -191,11 +196,11 @@ export function CompanySheet({
   }
 
   const compType = getCompanyType(draft.type);
-  const taxStatus = getTaxStatus(company.taxStatus);
-  const sourcePageHref = `/clients/companies?openId=${encodeURIComponent(company.id)}`;
+  const taxStatus = getTaxStatus(renderCompany.taxStatus);
+  const sourcePageHref = `/clients/companies?openId=${encodeURIComponent(renderCompany.id)}`;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout="full"
@@ -224,7 +229,7 @@ export function CompanySheet({
                     className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
                     title="Click to edit company name"
                   >
-                    {draft.name.trim() || company.name}
+                    {draft.name.trim() || renderCompany.name}
                   </h2>
                 )}
                 {compType ? (
@@ -247,21 +252,21 @@ export function CompanySheet({
               {!isTrashView ? (
                 <ClientPortfolioQuickActionsHeader
                   variant="company"
-                  entityId={company.id}
+                  entityId={renderCompany.id}
                   data={portfolio.data}
                   loading={portfolio.loading}
                 />
               ) : null}
               {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(company.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(renderCompany.id)}>
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
                   {onPermanentDelete ? (
                     <DropdownMenuItem
                       variant="destructive"
-                      onClick={() => onPermanentDelete(company.id)}
+                      onClick={() => onPermanentDelete(renderCompany.id)}
                     >
                       <Trash2 />
                       Delete permanently
@@ -270,7 +275,10 @@ export function CompanySheet({
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(company.id)}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onMoveToTrash(renderCompany.id)}
+                  >
                     <Trash2 />
                     Move to Trash
                   </DropdownMenuItem>
@@ -286,7 +294,7 @@ export function CompanySheet({
           <DetailSheetTabPanel tabKey={activeTab}>
             {activeTab === 'general' ? (
               <CompanySheetScrollBody
-                company={company}
+                company={renderCompany}
                 draft={draft}
                 patchDraft={patchDraft}
                 saving={saving}

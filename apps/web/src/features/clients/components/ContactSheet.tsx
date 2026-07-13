@@ -36,6 +36,7 @@ import type {
   ClientDetailTabId,
   ClientEmbeddedPortfolioTabId,
 } from './client-portfolio/client-portfolio-tabs';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface ContactSheetProps {
   contact: Contact | null;
@@ -65,6 +66,9 @@ export function ContactSheet({
   onPermanentDelete,
   forceNestedBackdrop = false,
 }: ContactSheetProps) {
+  const { persistedValue: renderContact, onOpenChangeComplete } = useSheetPersistedValue(contact);
+  const hostMounted = useSheetHostMounted(open, renderContact);
+
   const [draft, setDraft] = useState<ContactGeneralDraft | null>(null);
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
   const [saving, setSaving] = useState(false);
@@ -135,13 +139,14 @@ export function ContactSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
-  if (!open) return null;
+  if (!hostMounted) return null;
 
-  if (!contact || !draft || !snap) {
+  if (!renderContact || !draft || !snap) {
     return (
       <EntityDetailSheetLoadingShell
         open={open}
         onOpenChange={onOpenChange}
+        onOpenChangeComplete={onOpenChangeComplete}
         label="Loading contact…"
         contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
         railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
@@ -152,12 +157,13 @@ export function ContactSheet({
 
   const role = getContactRole(draft.role);
   const displayTitle =
-    `${draft.firstName} ${draft.lastName}`.trim() || `${contact.firstName} ${contact.lastName}`;
+    `${draft.firstName} ${draft.lastName}`.trim() ||
+    `${renderContact.firstName} ${renderContact.lastName}`;
 
-  const sourcePageHref = `/clients/contacts?openId=${encodeURIComponent(contact.id)}`;
+  const sourcePageHref = `/clients/contacts?openId=${encodeURIComponent(renderContact.id)}`;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout="full"
@@ -186,21 +192,21 @@ export function ContactSheet({
               {!isTrashView ? (
                 <ClientPortfolioQuickActionsHeader
                   variant="contact"
-                  entityId={contact.id}
+                  entityId={renderContact.id}
                   data={portfolio.data}
                   loading={portfolio.loading}
                 />
               ) : null}
               {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(contact.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(renderContact.id)}>
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
                   {onPermanentDelete ? (
                     <DropdownMenuItem
                       variant="destructive"
-                      onClick={() => onPermanentDelete(contact.id)}
+                      onClick={() => onPermanentDelete(renderContact.id)}
                     >
                       <Trash2 />
                       Delete permanently
@@ -209,7 +215,10 @@ export function ContactSheet({
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(contact.id)}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onMoveToTrash(renderContact.id)}
+                  >
                     <Trash2 />
                     Move to Trash
                   </DropdownMenuItem>
@@ -225,7 +234,7 @@ export function ContactSheet({
           <DetailSheetTabPanel tabKey={activeTab}>
             {activeTab === 'general' ? (
               <ContactSheetScrollBody
-                contact={contact}
+                contact={renderContact}
                 draft={draft}
                 patchDraft={patchDraft}
                 saving={saving}

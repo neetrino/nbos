@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { DealSheet } from '@/features/crm/components/DealSheet';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface EntityDealSheetDeepLinkProps {
   dealId: string | null;
@@ -17,8 +18,12 @@ export function EntityDealSheetDeepLink({
   open,
   onOpenChange,
 }: EntityDealSheetDeepLinkProps) {
+  const { persistedValue: renderDealId, onOpenChangeComplete: clearRenderDealId } =
+    useSheetPersistedValue(dealId);
+  const hostMounted = useSheetHostMounted(open, renderDealId);
+
   const [deal, setDeal] = useState<Deal | null>(null);
-  const activeDealId = open && dealId ? dealId : null;
+  const activeDealId = open && renderDealId ? renderDealId : null;
   const [trackedDealId, setTrackedDealId] = useState(activeDealId);
 
   if (activeDealId !== trackedDealId) {
@@ -27,11 +32,11 @@ export function EntityDealSheetDeepLink({
   }
 
   useEffect(() => {
-    if (!open || !dealId) return;
+    if (!open || !renderDealId) return;
 
     let cancelled = false;
     void dealsApi
-      .getById(dealId)
+      .getById(renderDealId)
       .then((loaded) => {
         if (!cancelled) setDeal(loaded);
       })
@@ -45,7 +50,15 @@ export function EntityDealSheetDeepLink({
     return () => {
       cancelled = true;
     };
-  }, [dealId, onOpenChange, open]);
+  }, [renderDealId, onOpenChange, open]);
+
+  const handleOpenChangeComplete = useCallback(
+    (nextOpen: boolean) => {
+      clearRenderDealId(nextOpen);
+      if (!nextOpen) setDeal(null);
+    },
+    [clearRenderDealId],
+  );
 
   const handleUpdate = useCallback(async (id: string, data: Partial<Deal>) => {
     try {
@@ -75,14 +88,14 @@ export function EntityDealSheetDeepLink({
   );
 
   const handleRefresh = useCallback(async () => {
-    if (!dealId) return;
+    if (!renderDealId) return;
     try {
-      const loaded = await dealsApi.getById(dealId);
+      const loaded = await dealsApi.getById(renderDealId);
       setDeal(loaded);
     } catch {
       toast.error('Deal could not be refreshed.');
     }
-  }, [dealId]);
+  }, [renderDealId]);
 
   const handleOpenDeal = useCallback(async (id: string) => {
     try {
@@ -93,13 +106,14 @@ export function EntityDealSheetDeepLink({
     }
   }, []);
 
-  if (!open) return null;
+  if (!hostMounted) return null;
 
   return (
     <DealSheet
       deal={deal}
       open={open}
       onOpenChange={onOpenChange}
+      onOpenChangeComplete={handleOpenChangeComplete}
       onUpdate={handleUpdate}
       onStatusChange={handleStatusChange}
       onRefresh={handleRefresh}

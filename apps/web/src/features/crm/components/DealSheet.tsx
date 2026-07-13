@@ -47,6 +47,7 @@ import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { DealSheetQuickActions } from './DealSheetQuickActions';
 import { getDealDisplayTitle } from '../utils/crm-entity-display';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -81,6 +82,7 @@ interface DealSheetProps {
   blockerNavigation?: DealSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
   stageGateHighlight?: DealSheetStageGateHighlight | null;
+  onOpenChangeComplete?: (open: boolean) => void;
 }
 
 function dealGeneralSaveErrorMessage(err: unknown): string {
@@ -103,7 +105,19 @@ export function DealSheet({
   blockerNavigation = null,
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
+  onOpenChangeComplete,
 }: DealSheetProps) {
+  const { persistedValue: renderDeal, onOpenChangeComplete: clearRenderDeal } =
+    useSheetPersistedValue(deal);
+  const hostMounted = useSheetHostMounted(open, renderDeal);
+  const handleOpenChangeComplete = useCallback(
+    (nextOpen: boolean) => {
+      clearRenderDeal(nextOpen);
+      onOpenChangeComplete?.(nextOpen);
+    },
+    [clearRenderDeal, onOpenChangeComplete],
+  );
+
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -226,31 +240,34 @@ export function DealSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
-  if (!open) return null;
+  if (!hostMounted) return null;
 
-  if (!deal) {
+  if (!renderDeal) {
     return (
       <EntityDetailSheetLoadingShell
         open={open}
         onOpenChange={onOpenChange}
+        onOpenChangeComplete={handleOpenChangeComplete}
         label="Loading deal…"
       />
     );
   }
 
-  const typeVisual = getDealTypePresentation(deal.type);
-  const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);
+  const typeVisual = getDealTypePresentation(renderDeal.type);
+  const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(renderDeal);
   const TypeIcon = typeVisual.Icon;
   const canCreateExceptionOrder =
     !isTrashView &&
-    deal.status !== 'WON' &&
-    deal.status !== 'FAILED' &&
-    (deal.orders?.length ?? 0) === 0 &&
-    (deal.type === 'PRODUCT' || deal.type === 'EXTENSION' || deal.type === 'OUTSOURCE');
+    renderDeal.status !== 'WON' &&
+    renderDeal.status !== 'FAILED' &&
+    (renderDeal.orders?.length ?? 0) === 0 &&
+    (renderDeal.type === 'PRODUCT' ||
+      renderDeal.type === 'EXTENSION' ||
+      renderDeal.type === 'OUTSOURCE');
 
   const startEditing = () => {
     if (isTrashView) return;
-    setNameValue(generalDraft?.name ?? deal.name ?? '');
+    setNameValue(generalDraft?.name ?? renderDeal.name ?? '');
     setEditingName(true);
   };
 
@@ -267,19 +284,23 @@ export function DealSheet({
     }
     if (e.key === 'Escape') {
       setEditingName(false);
-      setNameValue(generalDraft?.name ?? deal.name ?? '');
+      setNameValue(generalDraft?.name ?? renderDeal.name ?? '');
     }
   };
 
   return (
     <EntityItemHost nested onEntityChanged={onRefresh}>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet
+        open={open}
+        onOpenChange={onOpenChange}
+        onOpenChangeComplete={handleOpenChangeComplete}
+      >
         <EntityDetailSheetContent
           open={open}
           layout="full"
           contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
           railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
-          sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
+          sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(renderDeal.id)}`}
         >
           <CrmSheetEntityHeader
             title={headerTitle}
@@ -300,21 +321,21 @@ export function DealSheet({
               <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                 {!isTrashView ? (
                   <DealSheetQuickActions
-                    deal={deal}
+                    deal={renderDeal}
                     onRefresh={onRefresh}
                     onOpenTaskTab={() => setActiveTab('task')}
                   />
                 ) : null}
                 {isTrashView && onRestore ? (
                   <DetailSheetSettingsMenu>
-                    <DropdownMenuItem onClick={() => onRestore(deal.id)}>
+                    <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
                       <RotateCcw />
                       Restore
                     </DropdownMenuItem>
                     {onPermanentDelete ? (
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => onPermanentDelete(deal.id)}
+                        onClick={() => onPermanentDelete(renderDeal.id)}
                       >
                         <Trash2 />
                         Delete permanently
@@ -332,7 +353,7 @@ export function DealSheet({
                     {onMoveToTrash ? (
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => onMoveToTrash(deal.id)}
+                        onClick={() => onMoveToTrash(renderDeal.id)}
                       >
                         <Trash2 />
                         Move to Trash
@@ -347,8 +368,8 @@ export function DealSheet({
           {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
           <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
             <DealPipelineStages
-              currentStatus={deal.status}
-              onStageClick={isTrashView ? () => {} : (key) => onStatusChange(deal.id, key)}
+              currentStatus={renderDeal.status}
+              onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}
             />
           </div>
 
@@ -363,7 +384,7 @@ export function DealSheet({
               <DetailSheetTabPanel tabKey={activeTab}>
                 {activeTab === 'general' && generalDraft ? (
                   <DealGeneralTab
-                    deal={deal}
+                    deal={renderDeal}
                     draft={generalDraft}
                     patchDraft={patchGeneralDraft}
                     formDisabled={isTrashView}
@@ -375,12 +396,12 @@ export function DealSheet({
                 {activeTab === 'history' && <DealHistoryTab />}
                 {activeTab === 'invoice' && (
                   <DealInvoiceTab
-                    deal={deal}
+                    deal={renderDeal}
                     onRefresh={onRefresh}
                     expandCreateFormNonce={invoiceCreateNonce}
                   />
                 )}
-                {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
+                {activeTab === 'task' && <DealTasksTab deal={renderDeal} onRefresh={onRefresh} />}
                 {activeTab === 'calls' && <DealCallsTab />}
               </DetailSheetTabPanel>
             </div>
@@ -397,7 +418,7 @@ export function DealSheet({
         </EntityDetailSheetContent>
       </Sheet>
       <DealExceptionOrderDialog
-        dealId={deal.id}
+        dealId={renderDeal.id}
         open={exceptionDialogOpen}
         onOpenChange={setExceptionDialogOpen}
         onSuccess={() => {

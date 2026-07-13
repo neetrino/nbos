@@ -30,6 +30,7 @@ import {
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
 import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
@@ -59,6 +60,9 @@ export function SubscriptionDetailSheet({
   onOpenChange,
   onSubscriptionUpdated,
 }: SubscriptionDetailSheetProps) {
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(subscriptionId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+
   const {
     entity: subscription,
     setEntity: setSubscription,
@@ -66,8 +70,8 @@ export function SubscriptionDetailSheet({
     error,
     refresh: fetchSubscription,
   } = useEntityDetailHydration({
-    entityId: subscriptionId ?? '',
-    open: open && Boolean(subscriptionId),
+    entityId: sheetId ?? '',
+    open: open && Boolean(sheetId),
     initialEntity: initialSubscription,
     fetchById: subscriptionsApi.getById,
     isDirty: () => generalDirtyRef.current,
@@ -159,20 +163,20 @@ export function SubscriptionDetailSheet({
     if (generalSnap) setGeneralDraft({ ...generalSnap });
   }, [generalSnap]);
 
-  if (!subscriptionId) return null;
+  if (!hostMounted) return null;
 
   const subType = subscription ? getSubscriptionType(subscription.type) : undefined;
   const subStatus = subscription ? getSubscriptionStatus(subscription.status) : undefined;
-  const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(subscriptionId);
+  const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchSubscription()}>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
           sourcePageHref={sourcePageHref}
-          workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
+          workspaceHref={subscriptionWorkspaceHref(sheetId ?? '')}
         >
           <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
             {loading && !subscription ? (

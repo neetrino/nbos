@@ -35,6 +35,7 @@ import {
 import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { getLeadDisplayTitle } from '../utils/crm-entity-display';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import type { ApiFieldError } from '@/lib/api-errors';
 import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
@@ -91,6 +92,9 @@ export function LeadSheet({
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
 }: LeadSheetProps) {
+  const { persistedValue: renderLead, onOpenChangeComplete } = useSheetPersistedValue(lead);
+  const hostMounted = useSheetHostMounted(open, renderLead);
+
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -200,29 +204,30 @@ export function LeadSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
-  if (!open) return null;
+  if (!hostMounted) return null;
 
-  if (!lead) {
+  if (!renderLead) {
     return (
       <EntityDetailSheetLoadingShell
         open={open}
         onOpenChange={onOpenChange}
+        onOpenChangeComplete={onOpenChangeComplete}
         label="Loading lead…"
         width="medium"
       />
     );
   }
 
-  const currentStage = LEAD_STAGES.find((s) => s.key === lead.status);
+  const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
   const leadVisual = LEAD_ENTITY_VISUAL;
-  const headerTitle = generalDraft?.name?.trim() || getLeadDisplayTitle(lead);
+  const headerTitle = generalDraft?.name?.trim() || getLeadDisplayTitle(renderLead);
   const LeadIcon = leadVisual.Icon;
   const nameGateRequired = gateRequiredFields.has('name');
 
   const startEditingName = () => {
     if (isTrashView) return;
-    setNameValue(generalDraft?.name ?? lead.name ?? '');
+    setNameValue(generalDraft?.name ?? renderLead.name ?? '');
     setEditingName(true);
   };
 
@@ -239,17 +244,17 @@ export function LeadSheet({
     }
     if (e.key === 'Escape') {
       setEditingName(false);
-      setNameValue(generalDraft?.name ?? lead.name ?? '');
+      setNameValue(generalDraft?.name ?? renderLead.name ?? '');
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout="full"
         width="medium"
-        sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
+        sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
       >
         <CrmSheetEntityHeader
           title={headerTitle}
@@ -272,22 +277,22 @@ export function LeadSheet({
           )}
           actions={
             <>
-              {!isTrashView && !isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
-                <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
+              {!isTrashView && !isTerminal && renderLead.status === 'MQL' && onConvertToDeal ? (
+                <Button type="button" size="sm" onClick={() => onConvertToDeal(renderLead)}>
                   <ArrowRight size={14} className="mr-1" />
                   Convert to Deal
                 </Button>
               ) : null}
               {isTrashView && onRestore ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(lead.id)}>
+                  <DropdownMenuItem onClick={() => onRestore(renderLead.id)}>
                     <RotateCcw />
                     Restore
                   </DropdownMenuItem>
                   {onPermanentDelete ? (
                     <DropdownMenuItem
                       variant="destructive"
-                      onClick={() => onPermanentDelete(lead.id)}
+                      onClick={() => onPermanentDelete(renderLead.id)}
                     >
                       <Trash2 />
                       Delete permanently
@@ -296,7 +301,10 @@ export function LeadSheet({
                 </DetailSheetSettingsMenu>
               ) : onMoveToTrash ? (
                 <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(lead.id)}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onMoveToTrash(renderLead.id)}
+                  >
                     <Trash2 />
                     Move to Trash
                   </DropdownMenuItem>
@@ -309,8 +317,8 @@ export function LeadSheet({
         {/* ── Pipeline Stages ── */}
         <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
           <LeadPipelineStages
-            currentStatus={lead.status}
-            onStageClick={isTrashView ? () => {} : (key) => onStatusChange(lead.id, key)}
+            currentStatus={renderLead.status}
+            onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderLead.id, key)}
           />
         </div>
 
@@ -326,7 +334,7 @@ export function LeadSheet({
             <DetailSheetTabPanel tabKey={activeTab}>
               {activeTab === 'general' && generalDraft ? (
                 <LeadGeneralTab
-                  lead={lead}
+                  lead={renderLead}
                   draft={generalDraft}
                   patchDraft={patchGeneralDraft}
                   formDisabled={isTrashView}

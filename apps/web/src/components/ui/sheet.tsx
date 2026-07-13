@@ -33,10 +33,10 @@ const SHEET_NESTED_FLOATING_RAIL_Z_INDEX = 71;
 const SHEET_ABOVE_ENTITY_SHEET_RAIL_Z_INDEX = 81;
 
 const SHEET_POPUP_BASE_CLASS =
-  'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0';
+  'bg-background nbos-sheet-popup-transition flex flex-col gap-4 bg-clip-padding text-sm shadow-lg data-ending-style:opacity-0 data-starting-style:opacity-0';
 
 const SHEET_SIDE_EDGE_CLASS =
-  'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-3/4 data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]';
+  'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=left]:data-ending-style:-translate-x-full data-[side=left]:data-starting-style:-translate-x-full data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-3/4 data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=right]:data-ending-style:translate-x-full data-[side=right]:data-starting-style:translate-x-full data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:-translate-y-full data-[side=top]:data-starting-style:-translate-y-full';
 
 const SHEET_FLOATING_RAIL_INSET_CLASS =
   'pointer-events-none absolute z-10 overflow-visible max-sm:top-3 max-sm:-left-12 sm:-left-11';
@@ -85,7 +85,7 @@ function SheetFloatingRailStack({
     <div
       className={cn(
         ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
-        'transition-all duration-200 ease-in-out',
+        'nbos-sheet-rail-transition',
         floatingRailVisible
           ? 'pointer-events-auto translate-x-0 opacity-100'
           : 'pointer-events-none translate-x-[2.5rem] opacity-0',
@@ -149,7 +149,7 @@ function SheetOverlay({
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        'fixed inset-0 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0',
+        'nbos-sheet-overlay-transition fixed inset-0 data-ending-style:opacity-0 data-starting-style:opacity-0',
         elevatedOverlay
           ? cn(stackClass, 'bg-black/25 supports-backdrop-filter:backdrop-blur-sm')
           : cn(stackClass, 'bg-black/10 supports-backdrop-filter:backdrop-blur-xs'),
@@ -282,7 +282,7 @@ function SheetContent({
       {viewportFloatingRail ? (
         <div
           className={cn(
-            'fixed overflow-visible transition-all duration-200 ease-in-out max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
+            'nbos-sheet-rail-transition fixed overflow-visible max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
             SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailTopClassName,
             floatingRailVisible

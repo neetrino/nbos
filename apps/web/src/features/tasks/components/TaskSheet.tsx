@@ -28,6 +28,7 @@ import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
 import { canDeleteTaskDraft, canMoveTaskToTrash, isTaskInTrash } from '../utils/task-draft-delete';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface TaskSheetProps {
   taskId: string | null;
@@ -53,7 +54,16 @@ export function TaskSheet({
   isTrashView = false,
   forceNestedBackdrop,
 }: TaskSheetProps) {
-  const state = useTaskSheetState({ taskId, open, initialTask, onUpdate, onDelete, onRestore });
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(taskId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+  const state = useTaskSheetState({
+    taskId: sheetId,
+    open,
+    initialTask,
+    onUpdate,
+    onDelete,
+    onRestore,
+  });
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -73,7 +83,7 @@ export function TaskSheet({
     if (restored) onOpenChange(false);
   }
 
-  if (!state.task && !state.loading && !state.generalError) return null;
+  if (!hostMounted) return null;
 
   const blockers = task ? buildTaskCompletionBlockers(task) : [];
   const hasExtras =
@@ -84,7 +94,7 @@ export function TaskSheet({
       blockers.length > 0);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         contentClassName={TASK_SHEET_WIDTH_CLASS}
@@ -92,7 +102,11 @@ export function TaskSheet({
         showRailActions={Boolean(state.task)}
         forceNestedBackdrop={forceNestedBackdrop}
         sourcePageHref={
-          state.task ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}` : '#'
+          state.task
+            ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}`
+            : sheetId
+              ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(sheetId)}`
+              : '#'
         }
         workspaceHref={state.task?.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null}
       >

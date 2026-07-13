@@ -3,7 +3,11 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, Loader2, PieChart } from 'lucide-react';
-import { DetailSheetTabBar, EntityDetailSheetContent } from '@/components/shared';
+import {
+  DetailSheetTabBar,
+  DetailSheetTabPanel,
+  EntityDetailSheetContent,
+} from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { UnitEconomicsDrilldownBonusesTable } from '@/features/finance/components/unit-economics/unit-economics-drilldown-bonuses-table';
@@ -160,7 +164,9 @@ export function UnitEconomicsDrilldownSheet({
                 onFocusChange={handleSummaryFocus}
               />
               {detailHasLineItems ? (
-                <DrilldownTabPanel tab={activeTab} detail={displayedDetail} />
+                <DetailSheetTabPanel tabKey={activeTab}>
+                  <DrilldownTabPanel tab={activeTab} detail={displayedDetail} />
+                </DetailSheetTabPanel>
               ) : showLineItemsSkeleton ? (
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   <Loader2 className="size-4 animate-spin" aria-hidden />

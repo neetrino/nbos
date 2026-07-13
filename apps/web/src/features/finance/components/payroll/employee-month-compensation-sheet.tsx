@@ -6,6 +6,7 @@ import { Banknote, Loader2 } from 'lucide-react';
 import {
   DetailSheetSection,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -208,8 +209,11 @@ export function EmployeeMonthCompensationSheet({
                   activeTab={resolvedActiveTab}
                   onTabChange={setActiveTab}
                 />
-                {resolvedActiveTab === 'general' ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                <DetailSheetTabPanel
+                  tabKey={resolvedActiveTab}
+                  className="min-h-0 flex-1 overflow-y-auto"
+                >
+                  {resolvedActiveTab === 'general' ? (
                     <div className="flex flex-col gap-4 pt-2">
                       <EmployeeMonthCompensationSummary detail={detail} readOnly={readOnly} />
                       <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
@@ -220,10 +224,8 @@ export function EmployeeMonthCompensationSheet({
                         <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
                       </DetailSheetSection>
                     </div>
-                  </div>
-                ) : null}
-                {resolvedActiveTab === 'bonuses' ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  ) : null}
+                  {resolvedActiveTab === 'bonuses' ? (
                     <div className="pt-2">
                       <DetailSheetSection
                         title="Bonus breakdown"
@@ -232,15 +234,13 @@ export function EmployeeMonthCompensationSheet({
                         <SalaryMonthBonusBreakdown detail={detail} />
                       </DetailSheetSection>
                     </div>
-                  </div>
-                ) : null}
-                {resolvedActiveTab === 'kpi' && showKpiTab ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  ) : null}
+                  {resolvedActiveTab === 'kpi' && showKpiTab ? (
                     <div className="pt-2">
                       <EmployeeMonthCompensationKpiSection detail={detail} />
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+                </DetailSheetTabPanel>
               </div>
             </>
           ) : null}
