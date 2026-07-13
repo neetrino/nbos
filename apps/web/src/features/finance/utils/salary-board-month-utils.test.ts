@@ -13,7 +13,9 @@ describe('salary-board-month-utils', () => {
   });
 
   it('formats month abbrev', () => {
-    expect(formatPayrollMonthAbbrev('2026-04')).toMatch(/apr/i);
+    expect(formatPayrollMonthAbbrev('2026-04')).toBe('Apr');
+    expect(formatPayrollMonthAbbrev('2026-03')).toBe('Mar');
+    expect(formatPayrollMonthAbbrev('2026-12')).toBe('Dec');
   });
 
   it('sums column payable', () => {
