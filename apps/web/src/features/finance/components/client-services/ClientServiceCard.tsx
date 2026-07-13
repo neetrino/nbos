@@ -1,13 +1,15 @@
 'use client';
 
-import { CalendarClock, FolderKanban } from 'lucide-react';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { Calendar, FolderKanban } from 'lucide-react';
+import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
+import { parseMoneyAmount } from '@/lib/format/money';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
-import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 
@@ -23,53 +25,104 @@ function formatShortDate(value: string | null): string {
   );
 }
 
+/** Kanban card — invoice/orders shell; original client-service fields preserved. */
 export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
   const billingLabel = clientServiceOptionLabel(
     CLIENT_SERVICE_BILLING_MODELS,
     service.billingModel,
   );
+  const amountLabel = service.ourCost ? formatAmount(parseMoneyAmount(service.ourCost)) : '—';
 
   return (
     <KanbanCardShell
+      as="article"
+      radius="xl"
       padding="none"
-      className={cn('relative', service.overdue && 'border-red-300 dark:border-red-900/50')}
+      baseShadow="sm"
+      hoverShadow="md"
+      className={cn(service.overdue && 'border-red-300 dark:border-red-900/50')}
     >
       <div
         role="button"
         tabIndex={0}
         className={cn(
-          'focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none',
+          'cursor-pointer space-y-3 rounded-xl p-4',
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
           service.overdue && 'bg-red-50/60 dark:bg-red-950/20',
         )}
         onClick={() => onOpen(service)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onOpen(service);
-          }
-        }}
+        onKeyDown={(event) => handleCardKeyDown(event, service, onOpen)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-muted-foreground text-xs font-medium">{billingLabel}</span>
-          <ClientServiceStageBadge service={service} />
+        <div className="min-w-0">
+          <p className="text-foreground truncate text-sm leading-snug font-bold">{service.name}</p>
         </div>
 
-        <p className="line-clamp-2 text-sm font-medium">{service.name}</p>
-
-        <p className="text-sm font-bold tabular-nums">
-          {service.ourCost ? formatAmount(Number(service.ourCost)) : '—'}
-        </p>
-
-        <div className="text-muted-foreground flex items-center gap-1 text-xs">
-          <FolderKanban size={10} aria-hidden />
-          <span className="truncate">{service.project.name}</span>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-foreground min-w-0 truncate text-xl leading-none font-bold tabular-nums">
+            {amountLabel}
+          </p>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            <StatusBadge
+              label={billingLabel}
+              variant="blue"
+              className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+            />
+            {service.overdue ? <ClientServiceStageBadge service={service} /> : null}
+          </div>
         </div>
 
-        <div className="text-muted-foreground flex items-center gap-1 text-xs">
-          <CalendarClock size={10} aria-hidden />
-          {formatShortDate(service.renewalDate)}
+        <div className="border-border flex flex-col gap-2.5 border-t pt-3">
+          <MetaRow
+            icon={<Calendar size={14} aria-hidden />}
+            iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
+            labelClassName={
+              service.renewalDate ? 'font-bold text-orange-500 dark:text-orange-400' : undefined
+            }
+            label={formatShortDate(service.renewalDate)}
+          />
+          <MetaRow
+            icon={<FolderKanban size={14} aria-hidden />}
+            iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+            label={service.project.name}
+          />
         </div>
       </div>
     </KanbanCardShell>
   );
+}
+
+function MetaRow({
+  icon,
+  iconClassName,
+  label,
+  labelClassName,
+}: {
+  icon: ReactNode;
+  iconClassName: string;
+  label: string;
+  labelClassName?: string;
+}) {
+  return (
+    <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
+      <span
+        className={cn(
+          'flex size-7 items-center justify-center justify-self-start rounded-lg',
+          iconClassName,
+        )}
+      >
+        {icon}
+      </span>
+      <p className={cn('text-foreground/80 truncate text-xs', labelClassName)}>{label}</p>
+    </div>
+  );
+}
+
+function handleCardKeyDown(
+  event: KeyboardEvent<HTMLDivElement>,
+  service: ClientServiceRecord,
+  onOpen: (service: ClientServiceRecord) => void,
+): void {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  onOpen(service);
 }
