@@ -1,12 +1,6 @@
 'use client';
 
 import { FolderKanban, Hash, Percent } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
-import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
-import {
-  BONUS_ENTRY_STATUS_LABEL,
-  BONUS_ENTRY_STATUS_VARIANT,
-} from '@/features/finance/constants/bonus-board-status-ui';
 import {
   employeeDisplayName,
   projectLabel,
@@ -83,7 +77,6 @@ export function BonusEntryReleasesSheetSummary({
   totals: BonusEntryReleaseTotals;
   releaseCount: number;
 }) {
-  const typeCfg = BONUS_BOARD_TYPE_CONFIG[entry.type];
   const project = projectLabel(entry.project);
   const salesHint = bonusSalesAccrualHint(entry);
   const percent = Number.parseFloat(entry.percent);
@@ -96,20 +89,9 @@ export function BonusEntryReleasesSheetSummary({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${typeCfg.color}`}>
-          {typeCfg.label}
-        </span>
-        <StatusBadge
-          label={BONUS_ENTRY_STATUS_LABEL[entry.status]}
-          variant={BONUS_ENTRY_STATUS_VARIANT[entry.status]}
-        />
-        {entry.payoutMonth ? (
-          <span className="text-muted-foreground text-xs tabular-nums">
-            Payroll · {entry.payoutMonth}
-          </span>
-        ) : null}
-      </div>
+      {entry.payoutMonth ? (
+        <p className="text-muted-foreground text-xs tabular-nums">Payroll · {entry.payoutMonth}</p>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <MetricCell label="Payable" value={formatAmount(payable)} />
