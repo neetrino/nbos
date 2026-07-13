@@ -6,10 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableHeader, TableBody, TableHead, TableRow } from '@/components/ui/table';
 import { EmptyState } from '@/components/shared';
+import {
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+} from '@/components/shared/entity-list-table';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { PermissionGate } from '@/lib/permissions';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import { credentialVaultCheckboxRevealClass } from '@/features/credentials/constants/credential-vault-selection-checkbox';
+import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export type VaultListScope = 'active' | 'trash';
 
@@ -21,8 +26,6 @@ export interface CredentialVaultTableSelectionProps {
   onTogglePage: () => void;
   pageIds: string[];
 }
-
-import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialVaultTableProps {
   credentials: CredentialListItem[];
@@ -90,12 +93,12 @@ export function CredentialVaultTable({
   const bulkSelectionStarted = selection?.selectionActive ?? false;
 
   return (
-    <div className="group/vault-table border-border overflow-hidden rounded-xl border">
+    <div className={`group/vault-table ${ENTITY_LIST_SHELL_CLASS}`}>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="hover:bg-transparent">
             {selection?.enabled ? (
-              <TableHead className="w-10">
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} w-10`}>
                 <div
                   className={credentialVaultCheckboxRevealClass(
                     bulkSelectionStarted,
@@ -112,16 +115,16 @@ export function CredentialVaultTable({
                 </div>
               </TableHead>
             ) : null}
-            <TableHead>Name</TableHead>
-            <TableHead>Login</TableHead>
-            <TableHead>Password</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Risk</TableHead>
-            <TableHead>Access</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Rotation</TableHead>
-            <TableHead>URL</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Login</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Password</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Category</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Risk</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Access</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Rotation</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>URL</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

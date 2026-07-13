@@ -1,5 +1,6 @@
 'use client';
 
+import { FolderKanban } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,14 +10,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/shared';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_TYPE_CLASS,
+  EntityListDate,
+  EntityListIconLabel,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+  StatusBadge,
+} from '@/components/shared';
 import {
   formatDeliveryLifecycleLabel,
   getDeliveryLifecycleVariant,
 } from '@/features/projects/constants/projects';
+import { cn } from '@/lib/utils';
 import { getClosedDeadlineOutcomeLabel } from './delivery-board-closed-filters';
-import { DELIVERY_BOARD_CARD_DATE_LABEL_CLASS } from './delivery-board-card-ui.constants';
-import { formatDeliveryBoardCardDate } from './format-delivery-board-card-date';
 import {
   DELIVERY_STAGE_LABELS,
   getItemKey,
@@ -25,28 +37,31 @@ import {
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 
-function getOwnerLabel(item: DeliveryBoardItem): string {
+const PROJECT_ICON_CLASS =
+  'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400';
+
+function getOwnerLabel(item: DeliveryBoardItem): string | null {
   if (item.kind === 'PRODUCT') {
     const pm = item.product.pm;
-    return pm ? `${pm.firstName} ${pm.lastName}` : '—';
+    return pm ? `${pm.firstName} ${pm.lastName}` : null;
   }
   const assignee = item.extension.assignee;
-  return assignee ? `${assignee.firstName} ${assignee.lastName}` : '—';
+  return assignee ? `${assignee.firstName} ${assignee.lastName}` : null;
 }
 
-function getProjectLabel(item: DeliveryBoardItem): string {
+function getProjectLabel(item: DeliveryBoardItem): string | null {
   const project = item.kind === 'PRODUCT' ? item.product.project : item.extension.project;
-  return project ? `${project.name} (${project.code})` : '—';
+  return project ? `${project.name} (${project.code})` : null;
 }
 
-function getClosedDisplay(item: DeliveryBoardItem): string {
+function getClosedAt(item: DeliveryBoardItem): string | null {
   const iso = item.kind === 'PRODUCT' ? item.product.updatedAt : item.extension.updatedAt;
-  return iso ? formatDeliveryBoardCardDate(iso) : '—';
+  return iso ?? null;
 }
 
-function getActiveStageLabel(item: DeliveryBoardItem): string {
+function getActiveStageLabel(item: DeliveryBoardItem): string | null {
   const stage = getItemLifecycle(item)?.stage;
-  return stage ? DELIVERY_STAGE_LABELS[stage] : '—';
+  return stage ? DELIVERY_STAGE_LABELS[stage] : null;
 }
 
 export interface DeliveryBoardItemsTableProps {
@@ -63,109 +78,149 @@ export function DeliveryBoardItemsTable({
   const isClosed = mode === 'closed';
 
   return (
-    <div className="rounded-xl border">
+    <div className={cn(ENTITY_LIST_SHELL_CLASS, 'min-h-0 flex-1 overflow-auto')}>
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Entity</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>PM / owner</TableHead>
+        <TableHeader className="bg-card sticky top-0 z-10">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Entity</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>PM / owner</TableHead>
             {isClosed ? (
               <>
-                <TableHead>Result</TableHead>
-                <TableHead>Closed</TableHead>
-                <TableHead>Deadline</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Result</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Closed</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Deadline</TableHead>
               </>
             ) : (
               <>
-                <TableHead>Stage</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Stage</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
               </>
             )}
-            <TableHead className="w-[100px]" />
+            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'w-[100px]')} />
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.length === 0 ? (
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               <TableCell
                 colSpan={isClosed ? 8 : 7}
-                className="text-muted-foreground py-8 text-center text-sm"
+                className={cn(ENTITY_LIST_CELL_CLASS, 'text-muted-foreground py-8 text-center')}
               >
                 {isClosed ? 'No closed delivery items match.' : 'No active delivery items match.'}
               </TableCell>
             </TableRow>
           ) : (
-            items.map((item) => {
-              const lc = getItemLifecycle(item);
-              return (
-                <TableRow key={getItemKey(item)}>
-                  <TableCell className="text-xs font-medium">
-                    {item.kind === 'PRODUCT' ? 'Product' : 'Extension'}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate text-sm font-medium">
-                    {getItemLabel(item)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground max-w-[160px] truncate text-xs">
-                    {getProjectLabel(item)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground max-w-[120px] truncate text-xs">
-                    {getOwnerLabel(item)}
-                  </TableCell>
-                  {isClosed ? (
-                    <>
-                      <TableCell>
-                        {lc ? (
-                          <StatusBadge
-                            label={formatDeliveryLifecycleLabel(lc)}
-                            variant={getDeliveryLifecycleVariant(lc)}
-                          />
-                        ) : (
-                          '—'
-                        )}
-                      </TableCell>
-                      <TableCell className={DELIVERY_BOARD_CARD_DATE_LABEL_CLASS}>
-                        {getClosedDisplay(item)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {getClosedDeadlineOutcomeLabel(item)}
-                      </TableCell>
-                    </>
-                  ) : (
-                    <>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {getActiveStageLabel(item)}
-                      </TableCell>
-                      <TableCell>
-                        {lc ? (
-                          <StatusBadge
-                            label={formatDeliveryLifecycleLabel(lc)}
-                            variant={getDeliveryLifecycleVariant(lc)}
-                          />
-                        ) : (
-                          '—'
-                        )}
-                      </TableCell>
-                    </>
-                  )}
-                  <TableCell>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => onOpenDetails(item)}
-                    >
-                      Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })
+            items.map((item) => (
+              <DeliveryBoardItemRow
+                key={getItemKey(item)}
+                item={item}
+                isClosed={isClosed}
+                onOpenDetails={onOpenDetails}
+              />
+            ))
           )}
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+function DeliveryBoardItemRow({
+  item,
+  isClosed,
+  onOpenDetails,
+}: {
+  item: DeliveryBoardItem;
+  isClosed: boolean;
+  onOpenDetails: (item: DeliveryBoardItem) => void;
+}) {
+  const lc = getItemLifecycle(item);
+  const projectLabel = getProjectLabel(item);
+  const ownerLabel = getOwnerLabel(item);
+  const stageLabel = getActiveStageLabel(item);
+  const deadlineLabel = getClosedDeadlineOutcomeLabel(item);
+
+  return (
+    <TableRow className={ENTITY_LIST_ROW_HOVER_CLASS}>
+      <TableCell className={cn(ENTITY_LIST_CELL_CLASS, ENTITY_LIST_TYPE_CLASS)}>
+        {item.kind === 'PRODUCT' ? 'Product' : 'Extension'}
+      </TableCell>
+      <TableCell className={cn(ENTITY_LIST_CELL_CLASS, 'max-w-[200px]')}>
+        <EntityListPrimaryCell title={getItemLabel(item)} />
+      </TableCell>
+      <TableCell className={cn(ENTITY_LIST_CELL_CLASS, 'max-w-[160px]')}>
+        {projectLabel ? (
+          <EntityListIconLabel
+            icon={FolderKanban}
+            iconClassName={PROJECT_ICON_CLASS}
+            label={projectLabel}
+          />
+        ) : (
+          <EntityListMutedDash />
+        )}
+      </TableCell>
+      <TableCell className={cn(ENTITY_LIST_CELL_CLASS, 'max-w-[120px]')}>
+        {ownerLabel ? (
+          <span className="truncate text-sm">{ownerLabel}</span>
+        ) : (
+          <EntityListMutedDash />
+        )}
+      </TableCell>
+      {isClosed ? (
+        <>
+          <TableCell className={ENTITY_LIST_CELL_CLASS}>
+            {lc ? (
+              <StatusBadge
+                label={formatDeliveryLifecycleLabel(lc)}
+                variant={getDeliveryLifecycleVariant(lc)}
+                className={ENTITY_LIST_BADGE_CLASS}
+              />
+            ) : (
+              <EntityListMutedDash />
+            )}
+          </TableCell>
+          <TableCell className={ENTITY_LIST_CELL_CLASS}>
+            <EntityListDate value={getClosedAt(item)} />
+          </TableCell>
+          <TableCell className={ENTITY_LIST_CELL_CLASS}>
+            {deadlineLabel && deadlineLabel !== '—' ? (
+              <span className="text-sm">{deadlineLabel}</span>
+            ) : (
+              <EntityListMutedDash />
+            )}
+          </TableCell>
+        </>
+      ) : (
+        <>
+          <TableCell className={ENTITY_LIST_CELL_CLASS}>
+            {stageLabel ? <span className="text-sm">{stageLabel}</span> : <EntityListMutedDash />}
+          </TableCell>
+          <TableCell className={ENTITY_LIST_CELL_CLASS}>
+            {lc ? (
+              <StatusBadge
+                label={formatDeliveryLifecycleLabel(lc)}
+                variant={getDeliveryLifecycleVariant(lc)}
+                className={ENTITY_LIST_BADGE_CLASS}
+              />
+            ) : (
+              <EntityListMutedDash />
+            )}
+          </TableCell>
+        </>
+      )}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => onOpenDetails(item)}
+        >
+          Details
+        </Button>
+      </TableCell>
+    </TableRow>
   );
 }

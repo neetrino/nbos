@@ -237,7 +237,7 @@ function ContactsPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="contacts"

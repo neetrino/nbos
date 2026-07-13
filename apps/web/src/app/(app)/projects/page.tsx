@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FolderKanban, LayoutGrid, List, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import {
   PageHero,
   PageHeroTabs,
   ViewModeSwitch,
@@ -29,6 +21,7 @@ import {
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import type { ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
+import { ProjectsListTable } from '@/features/projects/components/ProjectsListTable';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
 import type { Project } from '@/lib/api/projects';
@@ -136,48 +129,7 @@ export default function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <div className="border-border overflow-hidden rounded-xl border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead className="text-center">Orders</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow
-                    key={project.id}
-                    className="cursor-pointer"
-                    onClick={() => handleClick(project)}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-accent/10 text-accent rounded-lg p-1.5">
-                          <FolderKanban size={14} />
-                        </div>
-                        <div>
-                          <p className="font-medium">{project.name}</p>
-                          <p className="text-muted-foreground text-xs">{project.code}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {project.contact?.firstName} {project.contact?.lastName}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {project.company?.name ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-center font-medium">
-                      {project._count.orders}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <ProjectsListTable projects={projects} onProjectClick={handleClick} />
         )}
       </DetailSheetTabPanel>
 

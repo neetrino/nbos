@@ -210,9 +210,7 @@ export function WorkSpacesPage() {
           ))}
         </div>
       ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <WorkSpaceListTable workspaces={items} />
-        </div>
+        <WorkSpaceListTable workspaces={items} />
       )}
 
       {!loading && !error && items.length > 0 ? (
