@@ -55,11 +55,10 @@ function ExpenseCardHeader({ expense }: { expense: Expense }) {
   const categoryVisual = getExpenseCategoryVisual(expense.category);
   const CategoryIcon = categoryVisual.icon;
   const categoryLabel = getExpenseCategoryLabel(expense.category);
-  const subtitle = resolveExpenseCardSubtitle(expense);
   const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
 
   return (
-    <header className="flex items-start gap-2.5">
+    <header className="flex items-center gap-2.5">
       <div
         className={cn(
           'flex size-10 shrink-0 items-center justify-center rounded-xl',
@@ -76,9 +75,6 @@ function ExpenseCardHeader({ expense }: { expense: Expense }) {
         <p className="text-foreground truncate text-base leading-tight font-bold tracking-tight">
           {expense.name}
         </p>
-        {subtitle ? (
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
-        ) : null}
       </div>
     </header>
   );
@@ -155,12 +151,4 @@ function ExpenseCardProjectBar({ projectName }: { projectName: string }) {
       <ChevronRight size={14} className="shrink-0 text-violet-500" aria-hidden />
     </div>
   );
-}
-
-function resolveExpenseCardSubtitle(expense: Expense): string | null {
-  const notes = expense.notes?.trim();
-  if (notes) return notes;
-  if (expense.linkedExpensePlan?.name) return expense.linkedExpensePlan.name;
-  if (expense.type === 'UNPLANNED') return 'Unplanned expense';
-  return null;
 }
