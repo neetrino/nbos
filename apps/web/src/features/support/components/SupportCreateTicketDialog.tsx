@@ -97,7 +97,7 @@ export function SupportCreateTicketDialog({
           <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="support-new-title">Title *</Label>
             <Input
               id="support-new-title"
@@ -108,7 +108,7 @@ export function SupportCreateTicketDialog({
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="support-new-category">Category</Label>
               <Select
                 value={category}
@@ -128,7 +128,7 @@ export function SupportCreateTicketDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Label htmlFor="support-new-priority">Priority</Label>
               <Select
                 value={priority}
@@ -188,7 +188,7 @@ export function SupportCreateTicketDialog({
               {...productPicker}
             />
           ) : null}
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label htmlFor="support-new-desc">Description</Label>
             <Textarea
               id="support-new-desc"

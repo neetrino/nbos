@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CalendarClock, RefreshCw } from 'lucide-react';
+import { NbosTimePicker } from '@/components/shared/date-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -162,11 +163,7 @@ export function ReportsSchedulePanel({
               <SelectItem value="MONTHLY">Monthly</SelectItem>
             </SelectContent>
           </Select>
-          <Input
-            type="time"
-            value={timeOfDay}
-            onChange={(event) => setTimeOfDay(event.target.value)}
-          />
+          <NbosTimePicker value={timeOfDay} onChange={setTimeOfDay} />
           {frequency === 'WEEKLY' ? (
             <Select
               value={String(dayOfWeek)}

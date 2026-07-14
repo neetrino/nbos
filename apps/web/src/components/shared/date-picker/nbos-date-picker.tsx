@@ -2,9 +2,7 @@
 
 import { useCallback, useMemo, useState, type RefObject } from 'react';
 import { format } from 'date-fns';
-import { Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
   NBOS_DATE_PICKER_DEFAULT_LOCALE,
@@ -21,6 +19,7 @@ import {
 import { NbosCalendarGrid } from './nbos-calendar-grid';
 import { NbosDatePresetsPanel } from './nbos-date-presets-panel';
 import { NbosDatePickerTrigger } from './nbos-date-picker-trigger';
+import { NbosTimePicker } from './nbos-time-picker';
 
 export type NbosDatePickerVariant = 'compact' | 'extended';
 export type NbosDatePickerMode = 'date' | 'datetime';
@@ -113,15 +112,24 @@ export function NbosDatePicker({
     onChange('');
   }, [onChange]);
 
-  const handleTimeBlur = useCallback(() => {
-    if (!parsed) return;
-    const [hourPart, minutePart] = timeValue.split(':');
-    const hours = Number(hourPart ?? 9);
-    const minutes = Number(minutePart ?? 0);
-    const next = new Date(parsed);
-    next.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
-    onChange(formatDatetimeLocalValue(next));
-  }, [onChange, parsed, timeValue]);
+  const handleTimeChange = useCallback(
+    (nextTime: string) => {
+      setTimeValue(nextTime);
+      if (!parsed) return;
+      const [hourPart, minutePart] = nextTime.split(':');
+      const hours = Number(hourPart ?? 9);
+      const minutes = Number(minutePart ?? 0);
+      const next = new Date(parsed);
+      next.setHours(
+        Number.isFinite(hours) ? hours : 9,
+        Number.isFinite(minutes) ? minutes : 0,
+        0,
+        0,
+      );
+      onChange(formatDatetimeLocalValue(next));
+    },
+    [onChange, parsed],
+  );
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -171,15 +179,8 @@ export function NbosDatePicker({
             onSelectDate={applyDate}
           />
           {mode === 'datetime' ? (
-            <div className="border-border/50 mt-3 flex items-center gap-2 border-t pt-3">
-              <Clock size={16} className="text-primary shrink-0" />
-              <Input
-                type="time"
-                value={timeValue}
-                onChange={(event) => setTimeValue(event.target.value)}
-                onBlur={handleTimeBlur}
-                className="h-9 w-28 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-              />
+            <div className="border-border/50 mt-3 border-t pt-3">
+              <NbosTimePicker value={timeValue} onChange={handleTimeChange} />
             </div>
           ) : null}
           <PickerFooter

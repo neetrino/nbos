@@ -12,3 +12,4 @@ export {
   type NbosDatePickerVariant,
 } from './nbos-date-picker';
 export { NbosMonthPicker, type NbosMonthPickerProps } from './nbos-month-picker';
+export { NbosTimePicker, type NbosTimePickerProps } from './nbos-time-picker';

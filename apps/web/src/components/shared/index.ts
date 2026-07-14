@@ -110,12 +110,14 @@ export {
   NbosDateInput,
   NbosDatePicker,
   NbosMonthPicker,
+  NbosTimePicker,
   type NbosCalendarGridProps,
   type NbosDateInputProps,
   type NbosDatePickerMode,
   type NbosDatePickerProps,
   type NbosDatePickerVariant,
   type NbosMonthPickerProps,
+  type NbosTimePickerProps,
 } from './date-picker';
 export { SearchField, type SearchFieldProps } from './SearchField';
 export {
