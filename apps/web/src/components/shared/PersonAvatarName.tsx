@@ -15,7 +15,12 @@ type PersonSoftAvatarProps = {
 export function PersonSoftAvatar({ name, className }: PersonSoftAvatarProps) {
   return (
     <span
-      className={cn(PERSON_CONTACT_AVATAR_CLASS, employeeAvatarSoftColor(name), className)}
+      className={cn(
+        PERSON_CONTACT_AVATAR_CLASS,
+        'person-soft-avatar',
+        employeeAvatarSoftColor(name),
+        className,
+      )}
       aria-hidden
     >
       {initialsFromEmployeeLabel(name)}
