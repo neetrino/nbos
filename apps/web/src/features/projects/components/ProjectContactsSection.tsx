@@ -10,10 +10,7 @@ import {
   useRegisterRelationCreated,
   type RelationCreatedEvent,
 } from '@/components/shared/relation-picker';
-import {
-  DETAIL_SHEET_SECTION_STRETCH_CLASS,
-  RELATION_PICKER_CHIP_STACK_CLASS,
-} from '@/components/shared';
+import { DETAIL_SHEET_SECTION_STRETCH_CLASS } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { applyProjectContactsRelationCreated } from './apply-project-contacts-relation-created';
@@ -133,7 +130,7 @@ export function ProjectContactsSection({
   if (embedded) {
     return (
       <div className={cn('flex flex-col gap-3', saving && 'opacity-70', className)}>
-        <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
+        <div className="grid grid-cols-2 gap-2">
           {contactCards.map((contact) => (
             <ProjectContactCard
               key={contact.id}

@@ -19,15 +19,15 @@ export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewT
   const gateRequiredFields = new Set<string>();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-6">
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
-      <div className="grid gap-4 xl:grid-cols-12 xl:items-start">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
         <ProductInfoPanel
           product={product}
           gateRequiredFields={gateRequiredFields}
-          className="xl:col-span-7"
+          className="min-w-0 flex-1"
         />
-        <div className="xl:col-span-5">
+        <div className="w-full max-w-md shrink-0">
           <ProductStageGateCard
             product={product}
             gateRequiredFields={gateRequiredFields}

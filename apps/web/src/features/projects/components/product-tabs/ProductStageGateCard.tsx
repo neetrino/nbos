@@ -77,7 +77,7 @@ export function ProductStageGateCard({
   };
 
   return (
-    <section className="bg-card border-border space-y-3 overflow-hidden rounded-xl border p-4">
+    <section className="bg-card border-border space-y-3 rounded-xl border p-4">
       <ProductDoneReadinessPanel readiness={product.doneReadiness} compact />
       <ProductAcceptanceAction
         product={product}
