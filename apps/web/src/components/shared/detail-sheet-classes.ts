@@ -228,10 +228,13 @@ export const RELATION_PICKER_ENTITY_ICON_INLINE_CLASS = [
 
 /** Flex gap + chevron opens the search dropdown. */
 export const RELATION_PICKER_REPLACE_ZONE_CLASS = [
-  'text-muted-foreground/80 hover:text-foreground flex min-w-8 flex-1 items-center justify-end gap-0.5 rounded-md py-0.5 pr-0.5 pl-1 transition-colors',
+  'text-muted-foreground/80 hover:text-foreground flex min-w-8 shrink-0 items-center justify-end gap-0.5 rounded-md py-0.5 pr-0.5 pl-1 transition-colors',
   'hover:bg-muted/25 focus-visible:bg-muted/25',
   DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
 ].join(' ');
+
+/** Stretch unused chip space for non-person entity chips (project, company, …). */
+export const RELATION_PICKER_REPLACE_ZONE_GROW_CLASS = 'min-w-8 flex-1';
 
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
