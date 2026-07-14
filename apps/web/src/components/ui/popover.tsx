@@ -5,13 +5,20 @@ import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
+import { DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS } from './dropdown-chevron';
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
-function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+function PopoverTrigger({ className, ...props }: PopoverPrimitive.Trigger.Props) {
+  return (
+    <PopoverPrimitive.Trigger
+      data-slot="popover-trigger"
+      className={cn(DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS, className)}
+      {...props}
+    />
+  );
 }
 
 function PopoverContent({

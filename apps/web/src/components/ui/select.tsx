@@ -6,6 +6,10 @@ import { Select as SelectPrimitive } from '@base-ui/react/select';
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react';
+import {
+  DROPDOWN_CHEVRON_ICON_CLASS,
+  DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS,
+} from './dropdown-chevron';
 
 const Select = SelectPrimitive.Root;
 
@@ -54,6 +58,7 @@ function SelectTrigger({
         'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg data-[size=sm]:px-2.5 data-[size=sm]:pr-2 data-[size=sm]:text-xs',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS,
         className,
       )}
       {...props}
@@ -61,7 +66,12 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 opacity-80" />
+          <ChevronDownIcon
+            className={cn(
+              'text-muted-foreground pointer-events-none size-4 opacity-80',
+              DROPDOWN_CHEVRON_ICON_CLASS,
+            )}
+          />
         }
       />
     </SelectPrimitive.Trigger>
