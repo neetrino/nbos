@@ -23,7 +23,8 @@ function PopoverTrigger({ className, ...props }: PopoverPrimitive.Trigger.Props)
 
 function PopoverContent({
   className,
-  align = 'center',
+  /** Prefer flush with the trigger’s right edge (form field popovers). */
+  align = 'end',
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 4,

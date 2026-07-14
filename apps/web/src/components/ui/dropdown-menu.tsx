@@ -27,7 +27,7 @@ function DropdownMenuTrigger({ className, ...props }: MenuPrimitive.Trigger.Prop
 }
 
 function DropdownMenuContent({
-  align = 'start',
+  align = 'end',
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 4,

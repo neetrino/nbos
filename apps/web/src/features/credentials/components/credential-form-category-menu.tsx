@@ -56,7 +56,7 @@ export function CredentialFormCategoryMenu({
         {categoryLabel}
         <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[10rem]">
+      <DropdownMenuContent align="end" className="min-w-(--anchor-width)">
         {categoryOptions.map((opt) => (
           <DropdownMenuItem
             key={opt.value}

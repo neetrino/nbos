@@ -72,7 +72,7 @@ export function CredentialFolderTreePicker({
         <span className={cn('min-w-0 truncate', !value && 'text-muted-foreground')}>{label}</span>
         <ChevronDown className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
       </PopoverTrigger>
-      <PopoverContent className="w-[min(22rem,calc(100vw-2rem))] p-2" align="start">
+      <PopoverContent align="end" className="w-(--anchor-width) min-w-(--anchor-width) p-2">
         <button
           type="button"
           className={cn(
