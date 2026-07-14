@@ -162,7 +162,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       )}
     >
       {showFieldHeader ? (
-        <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
+        <div className="text-foreground/85 mb-1.5 flex h-5 items-center justify-between gap-2 text-sm font-medium">
           {label.trim() || icon ? (
             <div className="flex min-w-0 items-center gap-1.5">
               {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
@@ -176,10 +176,10 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
               type="button"
               disabled={disabled}
               onClick={() => setOpen(true)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
               aria-label={`Add ${kindLabel.toLowerCase()}`}
             >
-              <Plus size={16} />
+              <Plus size={14} />
             </button>
           ) : null}
         </div>
