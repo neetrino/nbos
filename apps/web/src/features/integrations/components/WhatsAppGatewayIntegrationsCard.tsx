@@ -5,10 +5,19 @@ import { MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { whatsappGatewayApi, type WhatsAppGatewayConnectionView } from '@/lib/api/whatsapp';
+
+const GATEWAY_DESCRIPTION = 'WhatsApp Web via Gateway → product groups & messaging';
 
 export function WhatsAppGatewayIntegrationsCard() {
   const [view, setView] = useState<WhatsAppGatewayConnectionView | null>(null);
@@ -17,6 +26,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   const [baseUrl, setBaseUrl] = useState('');
   const [apiToken, setApiToken] = useState('');
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +64,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   }
 
   async function test() {
+    setTesting(true);
     try {
       const next = await whatsappGatewayApi.test();
       setView(next);
@@ -61,6 +72,8 @@ export function WhatsAppGatewayIntegrationsCard() {
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'WhatsApp Gateway test failed.'));
       void load();
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -69,100 +82,123 @@ export function WhatsAppGatewayIntegrationsCard() {
     try {
       const next = await whatsappGatewayApi.disconnect();
       setView(next);
+      setBaseUrl('');
+      setApiToken('');
       toast.success('WhatsApp Gateway disconnected.');
+      setSheetOpen(false);
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not disconnect WhatsApp Gateway.'));
     }
   }
 
+  const description = loading
+    ? 'Loading…'
+    : view?.configured
+      ? `Configured · ${view.status}`
+      : GATEWAY_DESCRIPTION;
+
   return (
     <PermissionGate module="COMPANY" action="EDIT">
-      <div className="border-border rounded-xl border p-4">
-        <div className="flex items-start gap-3">
-          <div className="bg-muted rounded-lg p-2">
-            <MessageCircle className="size-5" aria-hidden />
+      <div className="min-w-0">
+        <section className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex items-start gap-3">
+            <MessageCircle size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold">WhatsApp Gateway</h3>
+              <p className="text-muted-foreground mt-1 text-xs">{description}</p>
+              {view?.lastErrorMessage ? (
+                <p className="text-destructive mt-1 truncate text-xs">{view.lastErrorMessage}</p>
+              ) : null}
+              <Button
+                type="button"
+                size="sm"
+                className="mt-3"
+                disabled={loading}
+                onClick={() => setSheetOpen(true)}
+              >
+                {view?.configured ? 'Manage' : 'Connect'}
+              </Button>
+            </div>
           </div>
-          <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="font-semibold">WhatsApp Gateway</h3>
-            <p className="text-muted-foreground text-sm">
-              {loading
-                ? 'Loading…'
-                : view?.configured
-                  ? `Configured · ${view.status}`
-                  : 'Not configured'}
-            </p>
-            {view?.baseUrl ? (
-              <p className="text-muted-foreground truncate text-xs">{view.baseUrl}</p>
-            ) : null}
-            <p className="text-muted-foreground text-xs">
-              Token: {view?.hasToken ? '•••••••• (stored encrypted)' : 'not set'}
-            </p>
-            {view?.lastErrorMessage ? (
-              <p className="text-destructive text-xs">{view.lastErrorMessage}</p>
-            ) : null}
-          </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" size="sm" onClick={() => setSheetOpen(true)}>
-            {view?.configured ? 'Update' : 'Connect'}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={!view?.configured}
-            onClick={() => void test()}
-          >
-            Test connection
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={!view?.configured}
-            onClick={() => void disconnect()}
-          >
-            Disconnect
-          </Button>
-        </div>
-      </div>
+        </section>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>WhatsApp Gateway</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="wa-gateway-url">
-                Gateway URL
-              </label>
-              <Input
-                id="wa-gateway-url"
-                value={baseUrl}
-                onChange={(event) => setBaseUrl(event.target.value)}
-                placeholder="https://wa-gateway.example.com"
-              />
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent side="right" className="w-full overflow-x-hidden sm:max-w-md">
+            <div className="flex h-full min-h-0 min-w-0 flex-col">
+              <SheetHeader className="border-border shrink-0 border-b px-5 py-4 pr-14">
+                <SheetTitle>WhatsApp Gateway</SheetTitle>
+                <SheetDescription>
+                  Connect NBOS to the WhatsApp Gateway (HTTPS URL + API token). Product groups and
+                  messaging go through Gateway → WAHA.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
+                <p className="text-muted-foreground text-sm">
+                  Status: {view?.configured ? view.status : 'Not configured'}
+                  {view?.hasToken ? ' · token stored' : ''}
+                </p>
+                {view?.baseUrl ? (
+                  <p className="text-muted-foreground text-xs break-all">{view.baseUrl}</p>
+                ) : null}
+                {view?.lastErrorMessage ? (
+                  <p className="text-destructive text-xs break-words">{view.lastErrorMessage}</p>
+                ) : null}
+                <div className="min-w-0 space-y-2">
+                  <label className="text-sm font-medium" htmlFor="wa-gateway-url">
+                    Gateway URL
+                  </label>
+                  <Input
+                    id="wa-gateway-url"
+                    className="w-full min-w-0"
+                    value={baseUrl}
+                    onChange={(event) => setBaseUrl(event.target.value)}
+                    placeholder="https://wa-gateway.example.com"
+                    inputMode="url"
+                    autoComplete="url"
+                  />
+                </div>
+                <div className="min-w-0 space-y-2">
+                  <label className="text-sm font-medium" htmlFor="wa-gateway-token">
+                    API token {view?.hasToken ? '(leave blank to keep current)' : ''}
+                  </label>
+                  <Input
+                    id="wa-gateway-token"
+                    className="w-full min-w-0"
+                    type="password"
+                    value={apiToken}
+                    onChange={(event) => setApiToken(event.target.value)}
+                    placeholder="gw_live_…"
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              <SheetFooter className="border-border shrink-0 flex-row flex-wrap gap-2 border-t px-5 py-4 sm:justify-start">
+                <Button type="button" disabled={saving} onClick={() => void save()}>
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!view?.configured || testing}
+                  onClick={() => void test()}
+                >
+                  Test connection
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={!view?.configured}
+                  onClick={() => void disconnect()}
+                >
+                  Disconnect
+                </Button>
+              </SheetFooter>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="wa-gateway-token">
-                API token {view?.hasToken ? '(leave blank to keep current)' : ''}
-              </label>
-              <Input
-                id="wa-gateway-token"
-                type="password"
-                value={apiToken}
-                onChange={(event) => setApiToken(event.target.value)}
-                placeholder="gw_live_…"
-                autoComplete="off"
-              />
-            </div>
-            <Button type="button" disabled={saving} onClick={() => void save()}>
-              Save
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      </div>
     </PermissionGate>
   );
 }

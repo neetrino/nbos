@@ -126,9 +126,6 @@ export function MetaIntegrationsSection() {
           title="ATS"
           description="Applicant tracking integrations — coming soon."
         />
-      </div>
-
-      <div className="mt-4">
         <WhatsAppGatewayIntegrationsCard />
       </div>
 
