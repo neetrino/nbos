@@ -23,6 +23,9 @@ export const FINANCE_CALENDAR_CELL_EMPTY =
 /** Opaque sticky header chrome (salary / plans / subscriptions). */
 export const FINANCE_CALENDAR_STICKY_SURFACE_CLASS = 'bg-muted';
 
+/** Sticky Total column surface — white/card, not muted chrome. */
+export const FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS = 'bg-background';
+
 /** Scrollable calendar shell — scroll works, scrollbar stays hidden. */
 export const FINANCE_CALENDAR_SCROLL_SHELL_CLASS =
   'border-border min-h-0 flex-1 overflow-auto rounded-xl border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';

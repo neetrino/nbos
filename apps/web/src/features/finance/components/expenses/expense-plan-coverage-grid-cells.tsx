@@ -57,23 +57,23 @@ function cellStatusLabel(kind: ExpensePlanGridCellKind): string {
   }
 }
 
-/** Sidebar collapsed → full; open → abbreviated (same as salary calendar totals). */
-export function formatExpensePlanGridAmount(amount: number, sidebarCollapsed: boolean): string {
-  return sidebarCollapsed ? formatAmount(amount) : formatAmountAbbreviated(amount);
+/** `preferFullTotal` → full; else abbreviated (same as salary calendar totals). */
+export function formatExpensePlanGridAmount(amount: number, preferFullTotal: boolean): string {
+  return preferFullTotal ? formatAmount(amount) : formatAmountAbbreviated(amount);
 }
 
 export function ExpensePlanCompactAmount({
   value,
-  sidebarCollapsed,
+  preferFullTotal,
   size = 'sm',
 }: {
   value: number;
-  sidebarCollapsed: boolean;
+  preferFullTotal: boolean;
   size?: 'sm' | 'base';
 }) {
-  const display = formatExpensePlanGridAmount(value, sidebarCollapsed);
+  const display = formatExpensePlanGridAmount(value, preferFullTotal);
   const fullAmount = formatAmount(value);
-  const isCompact = !sidebarCollapsed;
+  const isCompact = !preferFullTotal;
 
   return (
     <div

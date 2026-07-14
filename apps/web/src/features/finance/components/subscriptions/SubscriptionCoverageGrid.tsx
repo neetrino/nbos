@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button';
 import {
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
   FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
+  FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
+import { financeCalendarTotalColClass } from '@/features/finance/constants/finance-calendar-total-display';
+import { useFinanceCalendarPreferFullTotal } from '@/features/finance/hooks/use-finance-calendar-prefer-full-total';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { buildSubscriptionsById } from './subscription-grid-utils';
 import {
@@ -38,8 +41,8 @@ const MAX_SUBSCRIPTION_BOARD_YEAR_OFFSET = 2;
 
 const SUB_LABEL_COL_CLASS = 'w-44 min-w-[11rem]';
 const SUB_MONTH_COL_CLASS = 'w-[4.5rem]';
-const SUB_TOTAL_COL_CLASS = 'w-[99px] min-w-[99px]';
 const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
+const TOTAL_STICKY_SURFACE_CLASS = FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS;
 
 const STICKY_LABEL_HEADER_CLASS = cn(
   'border-border text-muted-foreground sticky top-0 left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
@@ -54,23 +57,14 @@ const STICKY_LABEL_CELL_CLASS = cn(
   'cursor-pointer',
 );
 
-const STICKY_TOTAL_HEADER_CLASS = cn(
-  'border-border text-foreground sticky top-0 right-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase',
-  STICKY_SURFACE_CLASS,
-  SUB_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_HEADER_CLASS =
+  'border-border text-foreground sticky top-0 right-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase';
 
-const STICKY_TOTAL_CELL_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-20 border-l border-b p-1 align-middle text-center',
-  STICKY_SURFACE_CLASS,
-  SUB_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_CELL_CLASS =
+  'border-border text-foreground sticky right-0 z-20 border-l border-b p-1 align-middle text-center';
 
-const STICKY_TOTAL_FOOTER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-30 border-l p-1 align-middle text-center',
-  STICKY_SURFACE_CLASS,
-  SUB_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_FOOTER_CLASS =
+  'border-border text-foreground sticky right-0 z-30 border-l p-1 align-middle text-center';
 
 const SUB_MONTH_HEAD_CLASS = cn(
   'border-border sticky top-0 z-30 border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
@@ -146,6 +140,8 @@ export function SubscriptionCoverageGrid({
   onOpenMonthCell,
 }: SubscriptionCoverageGridProps) {
   const sidebarCollapsed = useAppSidebarCollapsed();
+  const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
+  const totalColClass = financeCalendarTotalColClass(preferFullTotal);
   const subscriptionsById = useMemo(() => buildSubscriptionsById(subscriptions), [subscriptions]);
   const months = monthLabelsForYear(year);
 
@@ -183,7 +179,7 @@ export function SubscriptionCoverageGrid({
           {months.map((month) => (
             <col key={month.key} className={SUB_MONTH_COL_CLASS} />
           ))}
-          <col className={SUB_TOTAL_COL_CLASS} />
+          <col className={totalColClass} />
         </colgroup>
         <thead>
           <tr className={STICKY_SURFACE_CLASS}>
@@ -207,7 +203,9 @@ export function SubscriptionCoverageGrid({
                 <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
               </th>
             ))}
-            <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
+            <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
+              Total
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -240,10 +238,12 @@ export function SubscriptionCoverageGrid({
                     />
                   </td>
                 ))}
-                <td className={STICKY_TOTAL_CELL_CLASS}>
+                <td
+                  className={cn(STICKY_TOTAL_CELL_CLASS, TOTAL_STICKY_SURFACE_CLASS, totalColClass)}
+                >
                   <SubscriptionCompactAmount
                     value={row.annualTotal}
-                    sidebarCollapsed={sidebarCollapsed}
+                    preferFullTotal={preferFullTotal}
                   />
                 </td>
               </tr>
@@ -278,10 +278,17 @@ export function SubscriptionCoverageGrid({
                 )}
               </td>
             ))}
-            <td className={cn(STICKY_TOTAL_FOOTER_CLASS, 'border-t')}>
+            <td
+              className={cn(
+                STICKY_TOTAL_FOOTER_CLASS,
+                STICKY_SURFACE_CLASS,
+                totalColClass,
+                'border-t',
+              )}
+            >
               <SubscriptionCompactAmount
                 value={payload.grandAnnualTotal}
-                sidebarCollapsed={sidebarCollapsed}
+                preferFullTotal={preferFullTotal}
                 size="base"
               />
             </td>

@@ -57,23 +57,23 @@ function cellStatusLabel(kind: SubscriptionGridCellKind): string {
   }
 }
 
-/** Sidebar collapsed → full; open → abbreviated. */
-export function formatSubscriptionGridAmount(amount: number, sidebarCollapsed: boolean): string {
-  return sidebarCollapsed ? formatAmount(amount) : formatAmountAbbreviated(amount);
+/** `preferFullTotal` → full; else abbreviated. */
+export function formatSubscriptionGridAmount(amount: number, preferFullTotal: boolean): string {
+  return preferFullTotal ? formatAmount(amount) : formatAmountAbbreviated(amount);
 }
 
 export function SubscriptionCompactAmount({
   value,
-  sidebarCollapsed,
+  preferFullTotal,
   size = 'sm',
 }: {
   value: number;
-  sidebarCollapsed: boolean;
+  preferFullTotal: boolean;
   size?: 'sm' | 'base';
 }) {
-  const display = formatSubscriptionGridAmount(value, sidebarCollapsed);
+  const display = formatSubscriptionGridAmount(value, preferFullTotal);
   const fullAmount = formatAmount(value);
-  const isCompact = !sidebarCollapsed;
+  const isCompact = !preferFullTotal;
 
   return (
     <div

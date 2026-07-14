@@ -8,7 +8,10 @@ import { Button } from '@/components/ui/button';
 import {
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
   FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
+  FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
+import { financeCalendarTotalColClass } from '@/features/finance/constants/finance-calendar-total-display';
+import { useFinanceCalendarPreferFullTotal } from '@/features/finance/hooks/use-finance-calendar-prefer-full-total';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import {
   EXPENSE_PLAN_CALENDAR_SLOT_CLASS,
@@ -35,8 +38,8 @@ const MAX_PLAN_BOARD_YEAR_OFFSET = 2;
 
 const PLAN_LABEL_COL_CLASS = 'w-44 min-w-[11rem]';
 const PLAN_MONTH_COL_CLASS = 'w-[4.5rem]';
-const PLAN_TOTAL_COL_CLASS = 'w-[99px] min-w-[99px]';
 const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
+const TOTAL_STICKY_SURFACE_CLASS = FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS;
 
 const STICKY_PLAN_HEADER_CLASS = cn(
   'border-border text-muted-foreground sticky top-0 left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
@@ -51,23 +54,14 @@ const STICKY_PLAN_CELL_CLASS = cn(
   'cursor-pointer',
 );
 
-const STICKY_TOTAL_HEADER_CLASS = cn(
-  'border-border text-foreground sticky top-0 right-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase',
-  STICKY_SURFACE_CLASS,
-  PLAN_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_HEADER_CLASS =
+  'border-border text-foreground sticky top-0 right-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase';
 
-const STICKY_TOTAL_CELL_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-20 border-l border-b p-1 align-middle text-center',
-  STICKY_SURFACE_CLASS,
-  PLAN_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_CELL_CLASS =
+  'border-border text-foreground sticky right-0 z-20 border-l border-b p-1 align-middle text-center';
 
-const STICKY_TOTAL_FOOTER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-30 border-l p-1 align-middle text-center',
-  STICKY_SURFACE_CLASS,
-  PLAN_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_FOOTER_CLASS =
+  'border-border text-foreground sticky right-0 z-30 border-l p-1 align-middle text-center';
 
 const PLAN_MONTH_HEAD_CLASS = cn(
   'border-border sticky top-0 z-30 border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
@@ -142,6 +136,8 @@ export function ExpensePlanCoverageGrid({
   onOpenExpense,
 }: ExpensePlanCoverageGridProps) {
   const sidebarCollapsed = useAppSidebarCollapsed();
+  const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
+  const totalColClass = financeCalendarTotalColClass(preferFullTotal);
   const months = monthLabelsForYear(year);
 
   if (error) {
@@ -178,7 +174,7 @@ export function ExpensePlanCoverageGrid({
           {months.map((month) => (
             <col key={month.key} className={PLAN_MONTH_COL_CLASS} />
           ))}
-          <col className={PLAN_TOTAL_COL_CLASS} />
+          <col className={totalColClass} />
         </colgroup>
         <thead>
           <tr className={STICKY_SURFACE_CLASS}>
@@ -200,7 +196,9 @@ export function ExpensePlanCoverageGrid({
                 <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
               </th>
             ))}
-            <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
+            <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
+              Total
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -227,10 +225,12 @@ export function ExpensePlanCoverageGrid({
                   />
                 </td>
               ))}
-              <td className={STICKY_TOTAL_CELL_CLASS}>
+              <td
+                className={cn(STICKY_TOTAL_CELL_CLASS, TOTAL_STICKY_SURFACE_CLASS, totalColClass)}
+              >
                 <ExpensePlanCompactAmount
                   value={row.annualTotal}
-                  sidebarCollapsed={sidebarCollapsed}
+                  preferFullTotal={preferFullTotal}
                 />
               </td>
             </tr>
@@ -264,10 +264,17 @@ export function ExpensePlanCoverageGrid({
                 )}
               </td>
             ))}
-            <td className={cn(STICKY_TOTAL_FOOTER_CLASS, 'border-t')}>
+            <td
+              className={cn(
+                STICKY_TOTAL_FOOTER_CLASS,
+                STICKY_SURFACE_CLASS,
+                totalColClass,
+                'border-t',
+              )}
+            >
               <ExpensePlanCompactAmount
                 value={payload.grandAnnualTotal}
-                sidebarCollapsed={sidebarCollapsed}
+                preferFullTotal={preferFullTotal}
                 size="base"
               />
             </td>
