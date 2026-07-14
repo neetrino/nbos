@@ -78,6 +78,8 @@ export {
 } from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
+export { PersonAvatarName, PersonSoftAvatar, type PersonAvatarSize } from './PersonAvatarName';
+export { PersonContactRow, type PersonContactRowProps } from './PersonContactRow';
 export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';

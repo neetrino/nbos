@@ -2,7 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Crown, Handshake, Percent, RefreshCw, ShieldCheck, ShoppingCart } from 'lucide-react';
-import { StatusBadge, type StatusVariant } from '@/components/shared';
+import { PersonAvatarName, StatusBadge, type StatusVariant } from '@/components/shared';
 import { PartnerDirectionIcon } from '@/features/partners/components/PartnerDirectionIcon';
 import {
   getPartnerDirection,
@@ -63,9 +63,6 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
   const tierBadge = partnerLevelCardBadge(partner.level);
   const orders = partner._count?.orders ?? 0;
   const subs = partner._count?.subscriptions ?? 0;
-  const contactLabel = partner.contact
-    ? `${partner.contact.firstName} ${partner.contact.lastName}`
-    : 'No linked contact';
 
   return (
     <button type="button" onClick={() => onOpen(partner)} className={PARTNERS_DIRECTORY_CARD_CLASS}>
@@ -86,7 +83,14 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
         <h3 className="text-foreground truncate text-base font-bold tracking-tight">
           {partner.name}
         </h3>
-        <p className="text-muted-foreground mt-0.5 truncate text-sm">{contactLabel}</p>
+        {partner.contact ? (
+          <PersonAvatarName
+            name={`${partner.contact.firstName} ${partner.contact.lastName}`.trim()}
+            className="mt-3"
+          />
+        ) : (
+          <p className="text-muted-foreground mt-0.5 truncate text-sm">No linked contact</p>
+        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

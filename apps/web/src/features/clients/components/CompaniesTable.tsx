@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, User } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { StatusBadge } from '@/components/shared';
+import { PersonAvatarName, StatusBadge } from '@/components/shared';
 import {
   ENTITY_LIST_BADGE_CLASS,
   ENTITY_LIST_CELL_CLASS,
@@ -49,6 +49,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
           {companies.map((company) => {
             const compType = getCompanyType(company.type);
             const taxSt = getTaxStatus(company.taxStatus);
+            const contactName = `${company.contact.firstName} ${company.contact.lastName}`.trim();
             return (
               <TableRow
                 key={company.id}
@@ -88,12 +89,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
                   {company.taxId ? company.taxId : <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <User size={12} className="text-muted-foreground" aria-hidden />
-                    <span>
-                      {company.contact.firstName} {company.contact.lastName}
-                    </span>
-                  </div>
+                  {contactName ? <PersonAvatarName name={contactName} /> : <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-center font-medium`}>
                   {company._count.projects}

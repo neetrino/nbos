@@ -1,8 +1,8 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, Building2, FileText, User } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { Briefcase, Building2, FileText } from 'lucide-react';
+import { PersonAvatarName, StatusBadge } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
 import {
   CLIENTS_DIRECTORY_METRIC_CELL_CLASS,
@@ -51,10 +51,6 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
           <h3 className="text-foreground truncate text-base font-bold tracking-tight">
             {company.name}
           </h3>
-          <p className="text-muted-foreground mt-1 flex min-w-0 items-center gap-1.5 text-sm">
-            <User size={13} className="shrink-0" aria-hidden />
-            <span className="truncate">{contactName || 'No linked contact'}</span>
-          </p>
           {compType || taxSt ? (
             <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
               {compType ? (
@@ -75,6 +71,12 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
           ) : null}
         </div>
       </div>
+
+      {contactName ? (
+        <PersonAvatarName name={contactName} className="mt-4" />
+      ) : (
+        <p className="text-muted-foreground mt-4 truncate text-sm">No linked contact</p>
+      )}
 
       <div className="border-border mt-5 flex gap-2 border-t pt-4">
         <CompanyCardMetric icon={Briefcase} value={company._count.projects} label="projects" />

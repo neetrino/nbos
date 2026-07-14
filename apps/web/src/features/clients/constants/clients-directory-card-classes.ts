@@ -32,18 +32,11 @@ export const CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS =
 export const CLIENTS_DIRECTORY_METRIC_CELL_CLASS =
   'border-border flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl border px-2 py-3';
 
-/** Large centered initials avatar on contact directory cards. */
-export const CONTACT_CARD_AVATAR_CLASS =
-  'bg-violet-100 text-violet-700 ring-violet-200/80 dark:bg-violet-950/50 dark:text-violet-400 dark:ring-violet-900/60 flex size-16 shrink-0 items-center justify-center rounded-full text-lg font-bold ring-1';
-
 /** Soft icon tile for phone / email rows. */
 export const CONTACT_CARD_CONTACT_ICON_TILE_CLASS =
   'bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 flex size-8 shrink-0 items-center justify-center rounded-lg';
 
-/** @deprecated Prefer {@link CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS}. */
 export const CONTACT_CARD_METRIC_ICON_TILE_CLASS = CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS;
-
-/** @deprecated Prefer {@link CLIENTS_DIRECTORY_METRIC_CELL_CLASS}. */
 export const CONTACT_CARD_METRIC_CELL_CLASS = CLIENTS_DIRECTORY_METRIC_CELL_CLASS;
 
 export const CONTACT_CARD_ROLE_BADGE_CLASS = 'rounded-full px-2.5 py-1 text-xs';

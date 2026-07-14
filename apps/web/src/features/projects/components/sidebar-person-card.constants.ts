@@ -1,15 +1,10 @@
-/** Shared About-project sidebar person/company card chrome (Team + Contacts). */
-export const SIDEBAR_PERSON_CARD_CLASS =
-  'border-border bg-card group/field flex w-full min-w-0 items-center gap-3 rounded-xl border px-3.5 py-2';
-
-export const SIDEBAR_PERSON_AVATAR_CLASS =
-  'flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold';
-
-export const SIDEBAR_PERSON_OPEN_BTN_CLASS =
-  'outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-1';
-
-export const SIDEBAR_PERSON_META_STACK_CLASS =
-  'flex shrink-0 flex-col items-center justify-center gap-0.5 self-center';
+/** @deprecated Prefer `@/components/shared/person-contact-row.constants`. */
+export {
+  PERSON_CONTACT_ROW_CLASS as SIDEBAR_PERSON_CARD_CLASS,
+  PERSON_CONTACT_AVATAR_CLASS as SIDEBAR_PERSON_AVATAR_CLASS,
+  PERSON_CONTACT_OPEN_BTN_CLASS as SIDEBAR_PERSON_OPEN_BTN_CLASS,
+  PERSON_CONTACT_META_STACK_CLASS as SIDEBAR_PERSON_META_STACK_CLASS,
+} from '@/components/shared/person-contact-row.constants';
 
 /** Role/label text sized like Active status pill, no gray fill. */
 export const SIDEBAR_PERSON_ROLE_LABEL_CLASS =

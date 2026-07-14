@@ -2,11 +2,10 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Handshake, Mail, Phone, Target, User } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { PersonSoftAvatar, StatusBadge } from '@/components/shared';
 import { getContactRole } from '@/features/clients/constants/clients';
 import {
   CONTACT_DIRECTORY_CARD_CLASS,
-  CONTACT_CARD_AVATAR_CLASS,
   CONTACT_CARD_CONTACT_ICON_TILE_CLASS,
   CONTACT_CARD_METRIC_CELL_CLASS,
   CONTACT_CARD_METRIC_ICON_TILE_CLASS,
@@ -28,12 +27,6 @@ interface ContactCardMetricProps {
 interface ContactCardContactRowProps {
   icon: LucideIcon;
   value: string;
-}
-
-function contactInitials(contact: Contact): string {
-  const first = contact.firstName.trim()[0] ?? '';
-  const last = contact.lastName.trim()[0] ?? '';
-  return `${first}${last}`.toUpperCase() || '?';
 }
 
 function contactDisplayName(contact: Contact): string {
@@ -65,6 +58,7 @@ function ContactCardMetric({ icon: Icon, value, label }: ContactCardMetricProps)
 
 export function ContactCard({ contact, onOpen }: ContactCardProps) {
   const role = getContactRole(contact.role);
+  const displayName = contactDisplayName(contact);
   const companiesLabel =
     contact.companies.length > 0
       ? contact.companies.map((c) => c.name).join(', ')
@@ -73,11 +67,9 @@ export function ContactCard({ contact, onOpen }: ContactCardProps) {
   return (
     <button type="button" onClick={() => onOpen(contact)} className={CONTACT_DIRECTORY_CARD_CLASS}>
       <div className="flex flex-col items-center text-center">
-        <div className={CONTACT_CARD_AVATAR_CLASS} aria-hidden>
-          {contactInitials(contact)}
-        </div>
+        <PersonSoftAvatar name={displayName} className="size-16 text-lg" />
         <h3 className="text-foreground mt-3 max-w-full truncate text-base font-bold tracking-tight">
-          {contactDisplayName(contact)}
+          {displayName}
         </h3>
         {role ? (
           <StatusBadge

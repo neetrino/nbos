@@ -1,8 +1,9 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PERSON_PICKER_AVATAR_CLASS } from '@/components/shared/person-contact-row.constants';
+import { employeeAvatarSoftColor } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
-import { RELATION_PICKER_PERSON_AVATAR_CLASS } from '@/components/shared/detail-sheet-classes';
 
 export function initialsFromEmployeeLabel(label: string): string {
   const parts = label.trim().split(/\s+/).filter(Boolean);
@@ -20,17 +21,23 @@ type EmployeePersonAvatarProps = {
   imageUrl?: string;
 };
 
-/** Person avatar with initials fallback (relation chips, pickers, task assignee). */
+/**
+ * Person avatar with soft pastel initials (Projects Contacts language).
+ * Used by relation chips (Creator / Assignee / …) and directory rows.
+ */
 export function EmployeePersonAvatar({ label, className, imageUrl }: EmployeePersonAvatarProps) {
   const initials = initialsFromEmployeeLabel(label);
-  const shellClass = cn(RELATION_PICKER_PERSON_AVATAR_CLASS, className);
+  const tone = employeeAvatarSoftColor(label);
+  const shellClass = cn(PERSON_PICKER_AVATAR_CLASS, tone, className);
   const trimmedImage = imageUrl?.trim();
 
   if (trimmedImage) {
     return (
       <Avatar className={cn(shellClass, 'overflow-hidden p-0')}>
         <AvatarImage src={trimmedImage} alt={label} />
-        <AvatarFallback className="text-xs font-semibold uppercase">{initials}</AvatarFallback>
+        <AvatarFallback className={cn('text-xs font-semibold uppercase', tone)}>
+          {initials}
+        </AvatarFallback>
       </Avatar>
     );
   }

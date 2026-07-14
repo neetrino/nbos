@@ -1,23 +1,10 @@
 'use client';
 
+import { PersonContactRow } from '@/components/shared/PersonContactRow';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { employeeAvatarSoftColor, employeeInitials } from '@/features/hr/utils/employee-display';
 import type { ProjectTeamMemberRow } from '@/lib/api/platform-access';
-import { cn } from '@/lib/utils';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
 import { TeamMemberEmployeeStatusBadge } from './TeamMemberEmployeeStatusBadge';
-
-const TEAM_MEMBER_CARD_CLASS =
-  'border-border bg-card group/field flex w-full min-w-0 items-center gap-3 rounded-xl border px-3.5 py-2';
-
-const TEAM_MEMBER_AVATAR_CLASS =
-  'flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold';
-
-const TEAM_MEMBER_OPEN_BTN_CLASS =
-  'outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-1';
-
-const TEAM_MEMBER_META_STACK_CLASS =
-  'flex shrink-0 flex-col items-center justify-center gap-0.5 self-center';
 
 interface ProjectTeamMemberChipRowProps {
   row: ProjectTeamMemberRow;
@@ -38,61 +25,34 @@ export function ProjectTeamMemberChipRow({
 }: ProjectTeamMemberChipRowProps) {
   const relations = useEntityRelations();
   const name = `${row.employee.firstName} ${row.employee.lastName}`.trim();
-  const initials = employeeInitials(row.employee);
-  const avatarTone = employeeAvatarSoftColor(name);
-
-  const openEmployee = () => {
-    relations.openEntity('employee', row.employeeId, {
-      onRemoveParticipant: canManageTeam ? () => onRemove(row.employeeId) : undefined,
-    });
-  };
 
   return (
-    <article className={cn(TEAM_MEMBER_CARD_CLASS, disabled && 'opacity-60')}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={openEmployee}
-        className={cn(TEAM_MEMBER_OPEN_BTN_CLASS, 'shrink-0 rounded-full')}
-        aria-label={`Open ${name}`}
-      >
-        <span className={cn(TEAM_MEMBER_AVATAR_CLASS, avatarTone)} aria-hidden>
-          {initials}
-        </span>
-      </button>
-
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={openEmployee}
-        className={cn(TEAM_MEMBER_OPEN_BTN_CLASS, 'min-w-0 flex-1 rounded-md text-left')}
-        aria-label={`Open ${name}`}
-      >
-        <span className="text-foreground block truncate text-sm font-semibold">{name}</span>
-        <span className="text-muted-foreground mt-0.5 block truncate text-xs">
-          {row.employee.email}
-        </span>
-      </button>
-
-      <div
-        className={TEAM_MEMBER_META_STACK_CLASS}
-        onMouseDown={(event) => event.stopPropagation()}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <TeamMemberEmployeeStatusBadge
-          status={row.employee.status}
-          dot
-          className="rounded-full px-2 py-0.5"
-        />
-        <ProjectTeamRoleControl
-          role={row.role as 'ADMIN' | 'MEMBER'}
-          disabled={disabled}
-          canManageTeam={canManageTeam}
-          canAssignAdmin={canAssignAdmin}
-          badge
-          onRoleChange={(role) => onRoleChange(row.employeeId, role)}
-        />
-      </div>
-    </article>
+    <PersonContactRow
+      name={name}
+      email={row.employee.email}
+      disabled={disabled}
+      onOpen={() => {
+        relations.openEntity('employee', row.employeeId, {
+          onRemoveParticipant: canManageTeam ? () => onRemove(row.employeeId) : undefined,
+        });
+      }}
+      trailing={
+        <>
+          <TeamMemberEmployeeStatusBadge
+            status={row.employee.status}
+            dot
+            className="rounded-full px-2 py-0.5"
+          />
+          <ProjectTeamRoleControl
+            role={row.role as 'ADMIN' | 'MEMBER'}
+            disabled={disabled}
+            canManageTeam={canManageTeam}
+            canAssignAdmin={canAssignAdmin}
+            badge
+            onRoleChange={(role) => onRoleChange(row.employeeId, role)}
+          />
+        </>
+      }
+    />
   );
 }
