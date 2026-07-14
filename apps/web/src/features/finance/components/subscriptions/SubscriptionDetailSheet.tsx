@@ -10,15 +10,10 @@ import {
   EntityItemHost,
   ErrorState,
   LoadingState,
-  StatusBadge,
 } from '@/components/shared';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import {
-  formatAmount,
-  getSubscriptionStatus,
-  getSubscriptionType,
-} from '@/features/finance/constants/finance';
+import { formatAmount, getSubscriptionType } from '@/features/finance/constants/finance';
 import {
   subscriptionWorkspaceHref,
   subscriptionsListWithOpenSubscriptionHref,
@@ -33,12 +28,14 @@ import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
+import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
 import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
 import { SubscriptionHistoryTab } from './SubscriptionHistoryTab';
 import {
   SUBSCRIPTION_DETAIL_SHEET_TABS,
   type SubscriptionDetailSheetTab,
 } from './subscription-detail-sheet-tabs';
+import { useSubscriptionDetailMutations } from './use-subscription-detail-mutations';
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
@@ -166,7 +163,6 @@ export function SubscriptionDetailSheet({
   if (!hostMounted) return null;
 
   const subType = subscription ? getSubscriptionType(subscription.type) : undefined;
-  const subStatus = subscription ? getSubscriptionStatus(subscription.status) : undefined;
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
 
   return (
@@ -201,11 +197,11 @@ export function SubscriptionDetailSheet({
                     {subscription.project.name}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {subStatus ? (
-                    <StatusBadge label={subStatus.label} variant={subStatus.variant} />
-                  ) : null}
-                </div>
+                <SubscriptionSheetStatusControl
+                  subscription={subscription}
+                  onSubscriptionChange={handleSubscriptionChange}
+                  onError={setActionError}
+                />
               </div>
             ) : null}
           </div>
@@ -259,5 +255,32 @@ export function SubscriptionDetailSheet({
         </EntityDetailSheetContent>
       </Sheet>
     </EntityItemHost>
+  );
+}
+
+function SubscriptionSheetStatusControl({
+  subscription,
+  onSubscriptionChange,
+  onError,
+}: {
+  subscription: Subscription;
+  onSubscriptionChange: (updated: Subscription) => void;
+  onError: (message: string | null) => void;
+}) {
+  const { activatingId, cancellingId, holdingId, handleActivate, handleCancel, handleHold } =
+    useSubscriptionDetailMutations(subscription, onSubscriptionChange, onError);
+
+  return (
+    <SubscriptionGridStatusControl
+      subscription={subscription}
+      activatingId={activatingId}
+      cancellingId={cancellingId}
+      holdingId={holdingId}
+      onActivate={() => void handleActivate()}
+      onCancel={handleCancel}
+      onHold={handleHold}
+      forceNestedBackdrop
+      size="sm"
+    />
   );
 }

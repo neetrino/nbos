@@ -24,6 +24,7 @@ interface SubscriptionsPageContentProps {
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
   onOpenSubscription: (subscriptionId: string) => void;
+  onOpenMonthCell: (args: { subscriptionId: string; invoiceId: string | null }) => void;
 }
 
 export function SubscriptionsPageContent({
@@ -46,6 +47,7 @@ export function SubscriptionsPageContent({
   onCancel,
   onHold,
   onOpenSubscription,
+  onOpenMonthCell,
 }: SubscriptionsPageContentProps) {
   if (listError) return <ErrorState description={listError} onRetry={onListRetry} />;
 
@@ -80,6 +82,7 @@ export function SubscriptionsPageContent({
           onCancel={onCancel}
           onHold={onHold}
           onOpenSubscription={onOpenSubscription}
+          onOpenMonthCell={onOpenMonthCell}
         />
       )}
     </div>
