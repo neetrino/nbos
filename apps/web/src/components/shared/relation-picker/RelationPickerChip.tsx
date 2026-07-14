@@ -12,6 +12,7 @@ import {
   RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
   RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS,
 } from '../detail-sheet-classes';
+import { PERSON_CONTACT_ROW_CLASS } from '../person-contact-row.constants';
 import type { RelationEntityKind } from './relation-picker.types';
 import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
@@ -67,7 +68,9 @@ export function RelationPickerChip({
     labelAddon && subtitle ? (
       <span className="flex min-w-0 items-center gap-3">
         <span className="min-w-0 flex-1">
-          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate')}>{label}</span>
+          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate font-semibold')}>
+            {label}
+          </span>
           <span className={RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS}>{subtitle}</span>
         </span>
         <span className="shrink-0">{labelAddon}</span>
@@ -75,7 +78,9 @@ export function RelationPickerChip({
     ) : (
       <span className="min-w-0">
         <span className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate')}>{label}</span>
+          <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'truncate font-semibold')}>
+            {label}
+          </span>
           {labelAddon}
         </span>
         {subtitle ? (
@@ -85,12 +90,18 @@ export function RelationPickerChip({
     );
 
   return (
-    <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, disabled && 'opacity-60')}>
+    <span
+      className={cn(
+        personLeading ? PERSON_CONTACT_ROW_CLASS : RELATION_PICKER_CHIP_SHELL_CLASS,
+        personLeading && 'gap-2 pr-1',
+        disabled && 'opacity-60',
+      )}
+    >
       {canOpen ? (
         <div
           className={cn(
             RELATION_PICKER_SHEET_TARGET_GROUP_CLASS,
-            (trailing || !canReplace) && 'min-w-0 flex-1',
+            (trailing || !canReplace || personLeading) && 'min-w-0 flex-1',
           )}
         >
           <button
@@ -112,7 +123,8 @@ export function RelationPickerChip({
             onClick={onOpen}
             className={cn(
               RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
-              'min-w-0 shrink cursor-pointer text-left',
+              'min-w-0 cursor-pointer text-left',
+              personLeading ? 'flex-1' : 'shrink',
             )}
             aria-label={`Open ${label}`}
           >
@@ -124,7 +136,8 @@ export function RelationPickerChip({
           className={cn(
             'flex min-w-0 items-center gap-2',
             !canReplace && onClear && 'flex-1',
-            canReplace ? 'shrink' : undefined,
+            canReplace && !personLeading ? 'shrink' : undefined,
+            personLeading && 'min-w-0 flex-1',
           )}
         >
           {leading}
@@ -144,7 +157,7 @@ export function RelationPickerChip({
             event.stopPropagation();
             onReplace?.();
           }}
-          className={RELATION_PICKER_REPLACE_ZONE_CLASS}
+          className={cn(RELATION_PICKER_REPLACE_ZONE_CLASS, personLeading && 'min-w-0 flex-none')}
           aria-label={`Change ${label}`}
         >
           <ChevronDown size={16} className="shrink-0 opacity-80" aria-hidden />

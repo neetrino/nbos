@@ -27,8 +27,6 @@ interface ProjectContactsSectionProps {
   onProjectUpdated: (project: FullProject) => void;
   /** Render inside {@link ProjectInfoPanel} without card chrome. */
   embedded?: boolean;
-  /** Embedded contact cards layout. Default: stack. */
-  contactLayout?: 'stack' | 'grid';
   className?: string;
 }
 
@@ -53,7 +51,6 @@ export function ProjectContactsSection({
   project,
   onProjectUpdated,
   embedded = false,
-  contactLayout = 'stack',
   className,
 }: ProjectContactsSectionProps) {
   const [draft, setDraft] = useState<ProjectContactsDraft>(() =>
@@ -133,9 +130,7 @@ export function ProjectContactsSection({
   if (embedded) {
     return (
       <div className={cn('flex flex-col gap-3', saving && 'opacity-70', className)}>
-        <div
-          className={cn('gap-2', contactLayout === 'grid' ? 'grid grid-cols-2' : 'flex flex-col')}
-        >
+        <div className="flex flex-col gap-2">
           {contactCards.map((contact) => (
             <ProjectContactCard
               key={contact.id}
