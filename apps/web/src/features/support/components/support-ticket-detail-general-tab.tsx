@@ -13,6 +13,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, DetailSheetSection } from '@/components/shared';
@@ -203,20 +210,28 @@ export function SupportTicketDetailGeneralTab({
                   <Label htmlFor={`st-wait-${ticket.id}`} className="sr-only">
                     Waiting overlay
                   </Label>
-                  <select
-                    id={`st-wait-${ticket.id}`}
-                    className="border-border bg-background text-foreground w-full rounded-md border px-2 py-2 text-sm"
+                  <Select
                     value={ticket.waitingState ?? 'NONE'}
-                    onChange={(e) => void updateWaitingState(e.target.value)}
+                    onValueChange={(v) => {
+                      if (v) void updateWaitingState(v);
+                    }}
                     disabled={terminal || waitingBusy}
-                    aria-label="Waiting overlay"
                   >
-                    {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id={`st-wait-${ticket.id}`}
+                      className="w-full"
+                      aria-label="Waiting overlay"
+                    >
+                      <SelectValue placeholder="Waiting overlay" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {ticket.waitingReason ? (
                     <p className="text-muted-foreground line-clamp-3 text-xs">
                       {ticket.waitingReason}

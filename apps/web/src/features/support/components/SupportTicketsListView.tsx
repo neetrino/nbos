@@ -3,6 +3,13 @@
 import { FolderKanban, PanelRight, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -154,19 +161,24 @@ function SupportTicketListRow({
         )}
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <select
-          className="border-border bg-background max-w-[168px] rounded-md border px-2 py-1 text-xs"
+        <Select
           value={ticket.status}
-          onChange={(event) => onStatusSelect(ticket, event.target.value)}
+          onValueChange={(v) => {
+            if (v) onStatusSelect(ticket, v);
+          }}
           disabled={Boolean(actionId?.startsWith('status:'))}
-          aria-label="Ticket status"
         >
-          {TICKET_STATUSES.map((status) => (
-            <option key={status.value} value={status.value}>
-              {status.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="max-w-[168px]" aria-label="Ticket status">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {TICKET_STATUSES.map((status) => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {['RESOLVED', 'CLOSED'].includes(ticket.status) ? (
           <div className="mt-1">
             <Button

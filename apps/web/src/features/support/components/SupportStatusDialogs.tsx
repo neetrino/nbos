@@ -2,6 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -100,18 +107,23 @@ export function SupportStatusDialogs({
           </DialogHeader>
           <div className="space-y-1">
             <Label htmlFor="support-close-reason">Close reason</Label>
-            <select
-              id="support-close-reason"
-              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+            <Select
               value={closeReason}
-              onChange={(event) => onCloseReasonChange(event.target.value)}
+              onValueChange={(v) => {
+                if (v) onCloseReasonChange(v);
+              }}
             >
-              {SUPPORT_TICKET_CLOSE_REASON_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="support-close-reason" className="w-full">
+                <SelectValue placeholder="Close reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORT_TICKET_CLOSE_REASON_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onDismiss}>

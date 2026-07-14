@@ -5,6 +5,13 @@ import { FolderKanban, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -103,33 +110,43 @@ export function SupportCreateTicketDialog({
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label htmlFor="support-new-category">Category</Label>
-              <select
-                id="support-new-category"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+              <Select
                 value={category}
-                onChange={(event) => onCategoryChange(event.target.value)}
+                onValueChange={(v) => {
+                  if (v) onCategoryChange(v);
+                }}
               >
-                {TICKET_CATEGORIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="support-new-category" className="w-full">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TICKET_CATEGORIES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label htmlFor="support-new-priority">Priority</Label>
-              <select
-                id="support-new-priority"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+              <Select
                 value={priority}
-                onChange={(event) => onPriorityChange(event.target.value)}
+                onValueChange={(v) => {
+                  if (v) onPriorityChange(v);
+                }}
               >
-                {TICKET_PRIORITIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="support-new-priority" className="w-full">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TICKET_PRIORITIES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <RelationPickerField

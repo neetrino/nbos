@@ -7,6 +7,13 @@ import type {
   ExpensePlanGridPayload,
 } from '@/lib/api/expense-plans';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ExpensePlanCoverageGridProps {
   year: number;
@@ -127,17 +134,23 @@ export function ExpensePlanCoverageGrid({
         </div>
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground">Year</span>
-          <select
-            value={year}
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="border-border bg-background h-9 rounded-md border px-2 text-sm"
+          <Select
+            value={String(year)}
+            onValueChange={(v) => {
+              if (v) onYearChange(Number(v));
+            }}
           >
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-[7.5rem]">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
       </div>
 

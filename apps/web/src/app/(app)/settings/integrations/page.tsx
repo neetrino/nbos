@@ -3,6 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Cable, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
@@ -247,20 +254,24 @@ export default function IntegrationsPage() {
                     <h3 className="text-sm font-semibold">{provider.label}</h3>
                     <p className="text-muted-foreground font-mono text-xs">{provider.code}</p>
                   </div>
-                  <select
-                    className="rounded-md border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-950"
+                  <Select
                     value={status}
                     disabled={savingProvider === provider.code}
-                    onChange={(event) =>
-                      void setProviderStatus(provider.code, event.target.value as RegistryStatus)
-                    }
+                    onValueChange={(v) => {
+                      if (v) void setProviderStatus(provider.code, v as RegistryStatus);
+                    }}
                   >
-                    {STATUS_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger size="sm" className="w-auto min-w-[10rem]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="mt-3">
