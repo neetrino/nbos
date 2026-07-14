@@ -49,14 +49,14 @@ export function MarketingCrmWhereSettingsSection({
               }
             >
               <p className="text-muted-foreground font-mono text-xs">{row.channel}</p>
-              <div>
+              <div className="space-y-1.5">
                 <Label>Label</Label>
                 <Input
                   value={rowDraft.label}
                   onChange={(e) => onDraftChange(row.channel, { label: e.target.value })}
                 />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <Label>Sort order</Label>
                 <Input
                   type="number"

@@ -102,7 +102,7 @@ export default function MarketingPage() {
         onSubmit={handleCreate}
         className="border-border bg-card grid gap-4 rounded-2xl border p-5 lg:grid-cols-6"
       >
-        <div className="lg:col-span-2">
+        <div className="space-y-1.5 lg:col-span-2">
           <Label>Activity title</Label>
           <Input
             value={form.title}
@@ -110,7 +110,7 @@ export default function MarketingPage() {
             placeholder="Instagram Spring Promo"
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Channel</Label>
           <Select
             value={form.channel}
@@ -128,7 +128,7 @@ export default function MarketingPage() {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Type</Label>
           <Select
             value={form.type}
@@ -146,7 +146,7 @@ export default function MarketingPage() {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <NbosMoneyInput
             label="Budget"
             value={form.budget}
@@ -160,7 +160,7 @@ export default function MarketingPage() {
             {saving ? 'Adding...' : 'Add'}
           </Button>
         </div>
-        <div className="lg:col-span-6">
+        <div className="space-y-1.5 lg:col-span-6">
           <Label>Description</Label>
           <Textarea
             value={form.description}
