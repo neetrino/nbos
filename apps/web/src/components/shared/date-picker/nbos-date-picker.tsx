@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
-  NBOS_DATE_PICKER_COMPACT_WIDTH_PX,
   NBOS_DATE_PICKER_DEFAULT_LOCALE,
   NBOS_DATE_PICKER_EXTENDED_WIDTH_PX,
 } from './date-picker-constants';
@@ -62,7 +61,7 @@ export function NbosDatePicker({
   embedded = false,
   iconButtonShell = false,
   popoverAnchorRef,
-  popoverAlign = 'start',
+  popoverAlign = 'end',
 }: NbosDatePickerProps) {
   const parsed = useMemo(
     () => (mode === 'datetime' ? parseDatetimeLocalValue(value) : parseIsoDateValue(value)),
@@ -72,6 +71,16 @@ export function NbosDatePicker({
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => parsed ?? new Date());
   const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '09:00'));
+
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setOpen(nextOpen);
+      if (!nextOpen) return;
+      setViewMonth(parsed ?? new Date());
+      if (parsed) setTimeValue(format(parsed, 'HH:mm'));
+    },
+    [parsed],
+  );
 
   const displayText = useMemo(() => {
     if (iconButtonShell) return formatDateDisplayShort(parsed, locale);
@@ -114,11 +123,8 @@ export function NbosDatePicker({
     onChange(formatDatetimeLocalValue(next));
   }, [onChange, parsed, timeValue]);
 
-  const popoverWidth =
-    variant === 'extended' ? NBOS_DATE_PICKER_EXTENDED_WIDTH_PX : NBOS_DATE_PICKER_COMPACT_WIDTH_PX;
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
         disabled={disabled}
         className={cn('w-full min-w-0 border-0 bg-transparent p-0 shadow-none', className)}
@@ -143,9 +149,18 @@ export function NbosDatePicker({
         anchor={popoverAnchorRef}
         className={cn(
           'gap-0 rounded-2xl p-4 shadow-xl',
-          variant === 'extended' ? 'flex flex-row' : 'flex flex-col',
+          variant === 'extended'
+            ? 'flex flex-row'
+            : 'flex w-(--anchor-width) min-w-[17.5rem] flex-col',
         )}
-        style={{ width: popoverWidth, maxWidth: 'min(100vw - 2rem, 100%)' }}
+        style={
+          variant === 'extended'
+            ? {
+                width: NBOS_DATE_PICKER_EXTENDED_WIDTH_PX,
+                maxWidth: 'min(100vw - 2rem, 100%)',
+              }
+            : { maxWidth: 'min(100vw - 2rem, 100%)' }
+        }
       >
         <div className={cn('min-w-0 flex-1', variant === 'extended' && 'pr-1')}>
           <NbosCalendarGrid

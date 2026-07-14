@@ -27,7 +27,6 @@ import {
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
-import { SubscriptionDetailActions } from './SubscriptionDetailActions';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
 import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
 import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
@@ -199,18 +198,11 @@ export function SubscriptionDetailSheet({
                     {subscription.project.name}
                   </p>
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-2">
-                  <SubscriptionDetailActions
-                    subscription={subscription}
-                    onSubscriptionChange={handleSubscriptionChange}
-                    onError={setActionError}
-                  />
-                  <SubscriptionSheetStatusControl
-                    subscription={subscription}
-                    onSubscriptionChange={handleSubscriptionChange}
-                    onError={setActionError}
-                  />
-                </div>
+                <SubscriptionSheetStatusControl
+                  subscription={subscription}
+                  onSubscriptionChange={handleSubscriptionChange}
+                  onError={setActionError}
+                />
               </div>
             ) : null}
           </div>

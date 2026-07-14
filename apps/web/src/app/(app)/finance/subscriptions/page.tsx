@@ -256,12 +256,6 @@ function SubscriptionsPageInner() {
         mutationError={page.mutationError}
         onDismissMutationError={page.clearMutationError}
         onListRetry={page.fetchSubscriptions}
-        activatingId={page.activatingId}
-        cancellingId={page.cancellingId}
-        holdingId={page.holdingId}
-        onActivate={page.handleActivate}
-        onCancel={page.handleCancel}
-        onHold={page.handleHold}
         onOpenSubscription={openSubscriptionDetail}
         onOpenMonthCell={handleOpenMonthCell}
       />

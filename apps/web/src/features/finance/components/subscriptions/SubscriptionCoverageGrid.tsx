@@ -35,12 +35,6 @@ interface SubscriptionCoverageGridProps {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
-  activatingId: string | null;
-  cancellingId: string | null;
-  holdingId: string | null;
-  onActivate: (subscription: Subscription) => void;
-  onCancel: (subscription: Subscription) => Promise<void>;
-  onHold: (subscription: Subscription) => Promise<void>;
   onOpenSubscription: (subscriptionId: string) => void;
   onOpenMonthCell: (args: { subscriptionId: string; invoiceId: string | null }) => void;
 }
@@ -102,12 +96,6 @@ export function SubscriptionCoverageGrid({
   loading,
   error,
   onRetry,
-  activatingId,
-  cancellingId,
-  holdingId,
-  onActivate,
-  onCancel,
-  onHold,
   onOpenSubscription,
   onOpenMonthCell,
 }: SubscriptionCoverageGridProps) {
@@ -192,12 +180,6 @@ export function SubscriptionCoverageGrid({
                         fallbackStatus={row.subscriptionStatus}
                         fallbackType={subscription?.type ?? row.subscriptionType}
                         currentMonthCell={currentMonthCell}
-                        activatingId={activatingId}
-                        cancellingId={cancellingId}
-                        holdingId={holdingId}
-                        onActivate={onActivate}
-                        onCancel={onCancel}
-                        onHold={onHold}
                       />
                     </td>
                     {row.months.map((cell, idx) => (

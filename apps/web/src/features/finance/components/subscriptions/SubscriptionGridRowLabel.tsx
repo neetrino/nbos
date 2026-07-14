@@ -1,11 +1,13 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { AlertTriangle, Calendar, Clock, Handshake } from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
+import { FINANCE_LIST_BADGE_CLASS } from '@/components/shared/entity-list-table';
+import { getSubscriptionStatus } from '@/features/finance/constants/finance';
 import type { Subscription, SubscriptionGridCell } from '@/lib/api/finance';
 import { getSubscriptionTypePresentation } from '@/lib/subscription-type-visual';
 import { monthCellKindLabel } from './subscription-grid-utils';
-import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
 
 interface SubscriptionGridRowLabelProps {
   projectName: string;
@@ -13,17 +15,11 @@ interface SubscriptionGridRowLabelProps {
   fallbackStatus: string;
   fallbackType: string;
   currentMonthCell: SubscriptionGridCell | null;
-  activatingId: string | null;
-  cancellingId: string | null;
-  holdingId: string | null;
-  onActivate: (subscription: Subscription) => void;
-  onCancel: (subscription: Subscription) => Promise<void>;
-  onHold: (subscription: Subscription) => Promise<void>;
 }
 
 const TITLE_CLASS = 'text-foreground truncate text-sm leading-snug font-semibold whitespace-nowrap';
-/** Approx. status chip + gap reserved when measuring short titles. */
-const STATUS_BESIDE_RESERVE_PX = 92;
+/** Approx. status badge + gap reserved when measuring short titles. */
+const STATUS_BESIDE_RESERVE_PX = 88;
 
 function useStatusBesideTitle(projectName: string): {
   rootRef: RefObject<HTMLDivElement | null>;
@@ -50,18 +46,6 @@ function useStatusBesideTitle(projectName: string): {
   }, [projectName]);
 
   return { rootRef, measureRef, statusBesideTitle };
-}
-
-function StatusSlot({ children }: { children: ReactNode }) {
-  return (
-    <div
-      className="flex shrink-0 items-center"
-      onClick={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      {children}
-    </div>
-  );
 }
 
 function RowMetaIcons({
@@ -124,30 +108,21 @@ function RowMetaIcons({
 export function SubscriptionGridRowLabel({
   projectName,
   subscription,
+  fallbackStatus,
   fallbackType,
   currentMonthCell,
-  activatingId,
-  cancellingId,
-  holdingId,
-  onActivate,
-  onCancel,
-  onHold,
 }: SubscriptionGridRowLabelProps) {
   const typeVisual = getSubscriptionTypePresentation(subscription?.type ?? fallbackType);
+  const statusMeta = getSubscriptionStatus(subscription?.status ?? fallbackStatus);
   const { rootRef, measureRef, statusBesideTitle } = useStatusBesideTitle(projectName);
 
-  const statusControl =
-    subscription != null ? (
-      <SubscriptionGridStatusControl
-        subscription={subscription}
-        activatingId={activatingId}
-        cancellingId={cancellingId}
-        holdingId={holdingId}
-        onActivate={onActivate}
-        onCancel={onCancel}
-        onHold={onHold}
-      />
-    ) : null;
+  const statusBadge = statusMeta ? (
+    <StatusBadge
+      label={statusMeta.label}
+      variant={statusMeta.variant}
+      className={`shrink-0 ${FINANCE_LIST_BADGE_CLASS}`}
+    />
+  ) : null;
 
   return (
     <div
@@ -165,7 +140,7 @@ export function SubscriptionGridRowLabel({
         <p className={`min-w-0 flex-1 ${TITLE_CLASS}`} title={projectName}>
           {projectName}
         </p>
-        {statusBesideTitle && statusControl ? <StatusSlot>{statusControl}</StatusSlot> : null}
+        {statusBesideTitle ? statusBadge : null}
       </div>
       <div className="flex min-w-0 items-center justify-between gap-1.5">
         <RowMetaIcons
@@ -173,7 +148,7 @@ export function SubscriptionGridRowLabel({
           typeVisual={typeVisual}
           currentMonthCell={currentMonthCell}
         />
-        {!statusBesideTitle && statusControl ? <StatusSlot>{statusControl}</StatusSlot> : null}
+        {!statusBesideTitle ? statusBadge : null}
       </div>
     </div>
   );

@@ -17,12 +17,6 @@ interface SubscriptionsPageContentProps {
   mutationError: string | null;
   onDismissMutationError: () => void;
   onListRetry: () => void;
-  activatingId: string | null;
-  cancellingId: string | null;
-  holdingId: string | null;
-  onActivate: (subscription: Subscription) => void;
-  onCancel: (subscription: Subscription) => Promise<void>;
-  onHold: (subscription: Subscription) => Promise<void>;
   onOpenSubscription: (subscriptionId: string) => void;
   onOpenMonthCell: (args: { subscriptionId: string; invoiceId: string | null }) => void;
 }
@@ -40,12 +34,6 @@ export function SubscriptionsPageContent({
   mutationError,
   onDismissMutationError,
   onListRetry,
-  activatingId,
-  cancellingId,
-  holdingId,
-  onActivate,
-  onCancel,
-  onHold,
   onOpenSubscription,
   onOpenMonthCell,
 }: SubscriptionsPageContentProps) {
@@ -75,12 +63,6 @@ export function SubscriptionsPageContent({
           loading={gridLoading || (listLoading && subscriptions.length === 0)}
           error={gridError}
           onRetry={onGridRetry}
-          activatingId={activatingId}
-          cancellingId={cancellingId}
-          holdingId={holdingId}
-          onActivate={onActivate}
-          onCancel={onCancel}
-          onHold={onHold}
           onOpenSubscription={onOpenSubscription}
           onOpenMonthCell={onOpenMonthCell}
         />

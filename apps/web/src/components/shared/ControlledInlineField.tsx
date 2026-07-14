@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -90,6 +90,7 @@ export function ControlledInlineField({
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
+  const dateFieldShellRef = useRef<HTMLDivElement>(null);
   const externalIcon =
     hideLabel && icon ? (
       <span className={DETAIL_SHEET_FIELD_LEADING_ICON_CLASS} aria-hidden>
@@ -150,126 +151,154 @@ export function ControlledInlineField({
         </div>
       )}
 
-      {type === 'select' && options
-        ? wrapShell(
-            cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
-            <>
-              <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
-                <Select
-                  modal={false}
-                  value={str}
-                  onValueChange={(v) => {
-                    if (v == null || v === '') {
-                      onValueChange('');
-                      return;
-                    }
-                    onValueChange(v);
-                  }}
-                  disabled={disabled}
-                >
-                  <SelectTrigger
-                    size="sm"
-                    className={cn(
-                      DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
-                      fitContent && 'w-auto',
-                      showClear && 'pr-1',
-                    )}
-                  >
-                    <SelectValue
-                      placeholder={placeholder ?? 'Select...'}
-                      className={fitContent ? 'flex-none' : undefined}
-                    >
-                      {(selected: string | null) =>
-                        displayValue ??
-                        (selected ? resolveSelectOptionLabel(selected, options) : null)
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
-                        <span className="flex items-center gap-2">
-                          {opt.icon}
-                          {opt.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {clearButton}
-            </>,
-          )
-        : type === 'textarea'
-          ? wrapShell(
-              cn(DETAIL_SHEET_FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2'),
-              <Textarea
+      {type === 'select' && options ? (
+        wrapShell(
+          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
+          <>
+            <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
+              <Select
+                modal={false}
                 value={str}
-                onChange={(e) => onValueChange(e.target.value)}
-                rows={3}
+                onValueChange={(v) => {
+                  if (v == null || v === '') {
+                    onValueChange('');
+                    return;
+                  }
+                  onValueChange(v);
+                }}
                 disabled={disabled}
-                className={cn(
-                  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-                  'max-h-none min-h-[72px] resize-none py-1 text-sm',
-                )}
-                placeholder={placeholder}
+              >
+                <SelectTrigger
+                  size="sm"
+                  className={cn(
+                    DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
+                    fitContent && 'w-auto',
+                    showClear && 'pr-1',
+                  )}
+                >
+                  <SelectValue
+                    placeholder={placeholder ?? 'Select...'}
+                    className={fitContent ? 'flex-none' : undefined}
+                  >
+                    {(selected: string | null) =>
+                      displayValue ??
+                      (selected ? resolveSelectOptionLabel(selected, options) : null)
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
+                      <span className="flex items-center gap-2">
+                        {opt.icon}
+                        {opt.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {clearButton}
+          </>,
+        )
+      ) : type === 'textarea' ? (
+        wrapShell(
+          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2'),
+          <Textarea
+            value={str}
+            onChange={(e) => onValueChange(e.target.value)}
+            rows={3}
+            disabled={disabled}
+            className={cn(
+              DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+              'max-h-none min-h-[72px] resize-none py-1 text-sm',
+            )}
+            placeholder={placeholder}
+            aria-label={label}
+          />,
+          'start',
+        )
+      ) : type === 'date' ? (
+        externalIcon ? (
+          <div className={cn(DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS, 'items-center')}>
+            {externalIcon}
+            <div
+              ref={dateFieldShellRef}
+              className={cn('min-w-0 flex-1', DETAIL_SHEET_FIELD_SHELL_CLASS)}
+            >
+              <NbosDatePicker
+                value={str}
+                onChange={onValueChange}
+                variant={datePickerVariant}
+                mode={datePickerMode}
+                disabled={disabled}
+                clearable={clearable}
+                placeholder={placeholder ?? 'Select date…'}
+                embedded
+                className="min-w-0 flex-1"
                 aria-label={label}
-              />,
-              'start',
-            )
-          : type === 'date'
-            ? wrapShell(
-                DETAIL_SHEET_FIELD_SHELL_CLASS,
-                <NbosDatePicker
-                  value={str}
-                  onChange={onValueChange}
-                  variant={datePickerVariant}
-                  mode={datePickerMode}
-                  disabled={disabled}
-                  clearable={clearable}
-                  placeholder={placeholder ?? 'Select date…'}
-                  embedded
-                  className="min-w-0 flex-1"
-                  aria-label={label}
-                />,
-              )
-            : type === 'money'
-              ? wrapShell(
-                  cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
-                  <>
-                    <MoneyInput
-                      value={str}
-                      onChange={onValueChange}
-                      disabled={disabled}
-                      className={cn(
-                        DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-                        'min-w-0 truncate text-sm tabular-nums',
-                        fitContent && 'w-auto flex-none',
-                      )}
-                      placeholder={placeholder}
-                    />
-                    {suffix && str !== '' ? (
-                      <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
-                    ) : null}
-                  </>,
-                )
-              : wrapShell(
-                  DETAIL_SHEET_FIELD_SHELL_CLASS,
-                  <>
-                    <Input
-                      type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
-                      value={str}
-                      onChange={(e) => onValueChange(e.target.value)}
-                      disabled={disabled}
-                      className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
-                      placeholder={placeholder}
-                      aria-label={label}
-                    />
-                    {suffix && str !== '' ? (
-                      <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
-                    ) : null}
-                  </>,
-                )}
+                popoverAnchorRef={dateFieldShellRef}
+                popoverAlign="end"
+              />
+            </div>
+          </div>
+        ) : (
+          <div ref={dateFieldShellRef} className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
+            <NbosDatePicker
+              value={str}
+              onChange={onValueChange}
+              variant={datePickerVariant}
+              mode={datePickerMode}
+              disabled={disabled}
+              clearable={clearable}
+              placeholder={placeholder ?? 'Select date…'}
+              embedded
+              className="min-w-0 flex-1"
+              aria-label={label}
+              popoverAnchorRef={dateFieldShellRef}
+              popoverAlign="end"
+            />
+          </div>
+        )
+      ) : type === 'money' ? (
+        wrapShell(
+          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
+          <>
+            <MoneyInput
+              value={str}
+              onChange={onValueChange}
+              disabled={disabled}
+              className={cn(
+                DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+                'min-w-0 truncate text-sm tabular-nums',
+                fitContent && 'w-auto flex-none',
+              )}
+              placeholder={placeholder}
+            />
+            {suffix && str !== '' ? (
+              <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
+            ) : null}
+          </>,
+        )
+      ) : (
+        wrapShell(
+          DETAIL_SHEET_FIELD_SHELL_CLASS,
+          <>
+            <Input
+              type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
+              value={str}
+              onChange={(e) => onValueChange(e.target.value)}
+              disabled={disabled}
+              className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
+              placeholder={placeholder}
+              aria-label={label}
+            />
+            {suffix && str !== '' ? (
+              <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
+            ) : null}
+          </>,
+        )
+      )}
     </div>
   );
 }
