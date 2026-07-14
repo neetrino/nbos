@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
-import { ArrowRight, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
+import { ArrowRight, Ban, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -308,6 +308,12 @@ export function LeadSheet({
                     <Trash2 />
                     Move to Trash
                   </DropdownMenuItem>
+                  {renderLead.status !== 'SPAM' ? (
+                    <DropdownMenuItem onClick={() => void onStatusChange(renderLead.id, 'SPAM')}>
+                      <Ban />
+                      Mark as Spam
+                    </DropdownMenuItem>
+                  ) : null}
                 </DetailSheetSettingsMenu>
               ) : null}
             </>

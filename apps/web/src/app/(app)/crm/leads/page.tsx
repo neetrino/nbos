@@ -531,13 +531,7 @@ function LeadsPipelinePageContent() {
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
             columns={kanbanColumns}
-            renderCard={(lead) => (
-              <LeadCard
-                lead={lead}
-                onClick={handleCardClick}
-                onStatusChange={requestStatusChange}
-              />
-            )}
+            renderCard={(lead) => <LeadCard lead={lead} onClick={handleCardClick} />}
             getItemId={(lead) => lead.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
