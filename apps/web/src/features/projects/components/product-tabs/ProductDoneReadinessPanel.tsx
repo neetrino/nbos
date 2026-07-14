@@ -76,11 +76,11 @@ function ReadinessIssueList({
   bordered: boolean;
 }) {
   return (
-    <div className={cn('mt-2.5', bordered && 'border-border border-t pt-2.5')}>
-      <p className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+    <div className={cn('mt-3', bordered && 'border-border border-t pt-3')}>
+      <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-widest uppercase">
         {title}
       </p>
-      <ul className="mt-1 space-y-1">
+      <ul className="space-y-1.5">
         {items.map((item) => (
           <li key={item.code} className="flex items-start gap-1.5 text-xs">
             <span className={getToneClass(tone)}>
