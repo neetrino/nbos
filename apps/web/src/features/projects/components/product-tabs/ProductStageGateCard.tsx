@@ -11,8 +11,6 @@ import {
 import { ProductLifecycleActions } from './ProductLifecycleActions';
 import { ProductAcceptanceAction } from './ProductAcceptanceAction';
 import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
-import { DeliveryStageTimelineStrip } from './DeliveryStageTimelineCard';
-import { OverviewPanel } from './product-overview-ui';
 
 interface ProductStageGateCardProps {
   product: FullProduct;
@@ -29,7 +27,6 @@ export function ProductStageGateCard({
   const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
-  const lifecycle = product.deliveryLifecycle;
 
   const handleResume = async () => {
     setUpdating(true);
@@ -80,12 +77,7 @@ export function ProductStageGateCard({
   };
 
   return (
-    <OverviewPanel
-      title="Stage Gate"
-      hint="Delivery pipeline, readiness checks, and lifecycle controls"
-      bodyClassName="space-y-3"
-    >
-      {lifecycle ? <DeliveryStageTimelineStrip lifecycle={lifecycle} /> : null}
+    <section className="bg-card border-border space-y-3 overflow-hidden rounded-xl border p-4">
       <ProductDoneReadinessPanel readiness={product.doneReadiness} compact />
       <ProductAcceptanceAction
         product={product}
@@ -112,7 +104,7 @@ export function ProductStageGateCard({
         }}
         onConfirm={handleLifecycleAction}
       />
-    </OverviewPanel>
+    </section>
   );
 }
 

@@ -25,9 +25,9 @@ export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewT
         <ProductInfoPanel
           product={product}
           gateRequiredFields={gateRequiredFields}
-          className="xl:col-span-4"
+          className="xl:col-span-7"
         />
-        <div className="xl:col-span-8">
+        <div className="xl:col-span-5">
           <ProductStageGateCard
             product={product}
             gateRequiredFields={gateRequiredFields}
