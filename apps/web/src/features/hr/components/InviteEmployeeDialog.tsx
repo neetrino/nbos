@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TEAM_SHEET_FIELD_CLASS } from '@/features/hr/constants/team-sheet-layout';
 import {
   departmentsApi,
   invitationsApi,
@@ -121,7 +122,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className={TEAM_SHEET_FIELD_CLASS}>
             <Label htmlFor="invite-email">Email *</Label>
             <Input
               id="invite-email"
@@ -134,7 +135,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
             />
           </div>
 
-          <div>
+          <div className={TEAM_SHEET_FIELD_CLASS}>
             <Label>Role *</Label>
             <Select
               value={form.roleId}
@@ -155,7 +156,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
             {rolesError && <p className="text-destructive mt-1 text-xs">{rolesError}</p>}
           </div>
 
-          <div>
+          <div className={TEAM_SHEET_FIELD_CLASS}>
             <Label>Department (optional)</Label>
             <Select
               value={form.departmentId || 'none'}
