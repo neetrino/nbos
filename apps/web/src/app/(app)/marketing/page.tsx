@@ -154,8 +154,16 @@ export default function MarketingPage() {
             placeholder="AMD"
           />
         </div>
-        <div className="flex items-end">
-          <Button type="submit" disabled={saving || !form.title.trim()} className="w-full">
+        <div className="space-y-1.5">
+          <Label className="invisible select-none" aria-hidden>
+            Add
+          </Label>
+          <Button
+            type="submit"
+            size="form"
+            disabled={saving || !form.title.trim()}
+            className="w-full"
+          >
             <Plus size={16} />
             {saving ? 'Adding...' : 'Add'}
           </Button>
