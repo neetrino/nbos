@@ -148,7 +148,12 @@ export function ProductInfoPanel({
             {projectLoading ? (
               <LoadingState count={2} />
             ) : project ? (
-              <ProjectContactsSection embedded project={project} onProjectUpdated={setProject} />
+              <ProjectContactsSection
+                embedded
+                contactLayout="grid"
+                project={project}
+                onProjectUpdated={setProject}
+              />
             ) : (
               <p className="text-muted-foreground text-xs">Could not load project contacts.</p>
             )}
