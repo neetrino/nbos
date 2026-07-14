@@ -28,6 +28,7 @@ export interface DealOrder {
   status: string;
   totalAmount: number | null;
   projectId: string;
+  productId?: string | null;
   paymentMode?: OrderPaymentMode;
   deliveryStartMode?: OrderDeliveryStartMode;
   invoices: DealInvoice[];

@@ -120,6 +120,8 @@ model Employee {
   employeeAccessOverridesCreated     EmployeeAccessOverride[]            @relation("EmployeeAccessOverrideCreatedBy")
   resourceAccessGrants               ResourceAccessGrant[]               @relation("ResourceAccessGrantEmployee")
   resourceAccessGrantsGranted        ResourceAccessGrant[]               @relation("ResourceAccessGrantGrantedBy")
+  whatsappGroupOperationsRequested   WhatsAppGroupOperation[]            @relation("WhatsAppGroupOperationRequestedBy")
+  whatsappParticipantSyncs           ProductWhatsAppParticipantSync[]    @relation("ProductWhatsAppParticipantSyncEmployee")
 
   @@map("employees")
 }

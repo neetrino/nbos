@@ -4,6 +4,7 @@ import { ChecklistTemplatesModule } from '../../checklist-templates/checklist-te
 import { PartnerAccrualModule } from '../../finance/partner-accrual/partner-accrual.module';
 import { NotificationModule } from '../../notifications/notification.module';
 import { PlatformAccessModule } from '../../platform-access/platform-access.module';
+import { WhatsAppGatewayModule } from '../../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { ProductsService } from './products.service';
 import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
 
@@ -18,6 +19,7 @@ import { ProductAccessSlotBindingsService } from './product-access-slot-bindings
     AuditModule,
     ChecklistTemplatesModule,
     PlatformAccessModule,
+    WhatsAppGatewayModule,
   ],
   providers: [ProductsService, ProductAccessSlotBindingsService],
   exports: [ProductsService, ProductAccessSlotBindingsService],

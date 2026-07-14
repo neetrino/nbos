@@ -302,7 +302,7 @@
 | **WhatsApp**         | Для внешних групп/клиентов    | Project groups, finance reminders, support updates |
 | **Email**            | Fallback + важные документы   | Договоры, официальные письма                       |
 
-**WhatsApp:** клиентская доставка по этим сценариям — преимущественно **сообщение в Project WhatsApp Group** (или связанный finance/support external conversation) через **Notification Engine** → `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA. Это не каноническая модель «одобренные заранее client templates» Meta Cloud API. Подробнее: `01-WhatsApp-Integration.md`, `06-WhatsApp-Gateway-NBOS-Boundary.md`, модуль Notifications — `../02-Modules/13-Notifications/01-Notifications-System.md`.
+**WhatsApp:** клиентская доставка по этим сценариям — преимущественно **сообщение в Product WhatsApp Group** (или связанный finance/support external conversation) через **Notification Engine** → `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA. Product ownership: одна группа на Product — см. `08-Product-WhatsApp-Groups.md`. Это не каноническая модель «одобренные заранее client templates» Meta Cloud API. Подробнее: `01-WhatsApp-Integration.md`, `06-WhatsApp-Gateway-NBOS-Boundary.md`, модуль Notifications — `../02-Modules/13-Notifications/01-Notifications-System.md`.
 
 **Email:** строка **Email** в таблице — **transactional / system email** канала Notification Engine. **NBOS Mail** (подключённые ящики, threads, ответы из Mail UI) — отдельный продуктовый модуль: `../02-Modules/17-Mail/00-Mail-Overview.md`.
 

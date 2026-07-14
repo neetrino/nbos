@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import {
   PrismaClient,
@@ -49,6 +50,7 @@ import {
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
+import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -139,6 +141,8 @@ type ProductSlotSyncRow = {
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
@@ -148,6 +152,7 @@ export class ProductsService {
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
     private readonly productTeamSync: ProductTeamSyncService,
+    private readonly productWhatsApp: ProductWhatsAppGroupService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -415,11 +420,12 @@ export class ProductsService {
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
     await this.syncProductTeamAccess(product);
+    await this.enqueueWhatsAppGroup(product.id, 'PRODUCT_CREATED');
     return attachProductDeliveryLifecycle(product);
   }
 
   async update(id: string, data: UpdateProductDto) {
-    await this.findById(id);
+    const previous = await this.findById(id);
     const product = await this.prisma.product.update({
       where: { id },
       data: {
@@ -460,6 +466,14 @@ export class ProductsService {
       },
     });
     await this.syncProductTeamAccess(product);
+    if (
+      data.technicalSpecialistId !== undefined &&
+      data.technicalSpecialistId !== previous.technicalSpecialistId &&
+      product.status === 'DEVELOPMENT' &&
+      data.technicalSpecialistId
+    ) {
+      await this.enqueueTechnicalSpecialist(product.id);
+    }
     return attachProductDeliveryLifecycle(product);
   }
 
@@ -499,6 +513,7 @@ export class ProductsService {
         } as InputJsonValue,
       });
     }
+    await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, actorId);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -518,6 +533,7 @@ export class ProductsService {
       include: { project: { select: { id: true, code: true, name: true } } },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -550,6 +566,11 @@ export class ProductsService {
       include: { project: { select: { id: true, code: true, name: true } } },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.maybeEnqueueTechnicalSpecialist(
+      updatedProduct,
+      nextStatus as ProductStatusEnum,
+      undefined,
+    );
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -678,6 +699,42 @@ export class ProductsService {
       projectId: product.projectId,
       sellerId,
     });
+  }
+
+  private async enqueueWhatsAppGroup(
+    productId: string,
+    source: 'PRODUCT_CREATED' | 'MANUAL_RETRY',
+  ): Promise<void> {
+    try {
+      await this.productWhatsApp.ensureGroupForProduct(productId, { source });
+    } catch (error) {
+      this.logger.warn(
+        `WhatsApp ensureGroupForProduct failed for ${productId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  private async maybeEnqueueTechnicalSpecialist(
+    product: { id: string; technicalSpecialistId?: string | null; status?: string },
+    targetStatus: ProductStatusEnum,
+    actorId?: string,
+  ): Promise<void> {
+    if (targetStatus !== 'DEVELOPMENT') return;
+    await this.enqueueTechnicalSpecialist(product.id, actorId);
+  }
+
+  private async enqueueTechnicalSpecialist(productId: string, actorId?: string): Promise<void> {
+    try {
+      await this.productWhatsApp.ensureTechnicalSpecialist(productId, actorId);
+    } catch (error) {
+      this.logger.warn(
+        `WhatsApp ensureTechnicalSpecialist failed for ${productId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   private async loadLinkedProductSellerId(productId: string): Promise<string | null> {

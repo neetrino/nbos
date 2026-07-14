@@ -249,6 +249,8 @@ model Deal {
   salesBonusEntries    BonusEntry[]          @relation("DealSalesBonusEntries")
   partnerReferralTerms PartnerReferralTerms?
   additionalContacts   DealAdditionalContact[]
+  whatsappGroupsCreatedFrom ProductWhatsAppGroupBinding[] @relation("ProductWhatsAppGroupCreatedFromDeal")
+  whatsappGroupOperations   WhatsAppGroupOperation[]      @relation("WhatsAppGroupOperationContextDeal")
 
   @@index([trashedAt])
   @@map("deals")

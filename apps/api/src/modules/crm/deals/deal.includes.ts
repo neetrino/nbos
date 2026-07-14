@@ -26,6 +26,7 @@ export const dealOrderSelect = {
   status: true,
   totalAmount: true,
   projectId: true,
+  productId: true,
   paymentMode: true,
   deliveryStartMode: true,
   invoices: {
