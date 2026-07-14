@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
+  FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
   FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
   FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
@@ -238,18 +239,25 @@ export function ExpensePlanCoverageGrid({
           ))}
         </tbody>
         <tfoot>
-          <tr className={cn(STICKY_SURFACE_CLASS, 'font-medium')}>
+          <tr className="font-medium">
             <td
               className={cn(
-                'border-border text-muted-foreground sticky left-0 z-20 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
-                STICKY_SURFACE_CLASS,
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                'border-border text-muted-foreground left-0 z-50 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
                 PLAN_LABEL_COL_CLASS,
               )}
             >
               Month total
             </td>
             {payload.monthTotals.map((total, idx) => (
-              <td key={idx} className={cn(PLAN_MONTH_CELL_CLASS, 'border-t', STICKY_SURFACE_CLASS)}>
+              <td
+                key={idx}
+                className={cn(
+                  FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                  PLAN_MONTH_COL_CLASS,
+                  'border-border z-40 border-t p-1 text-center align-middle',
+                )}
+              >
                 {total > 0 ? (
                   <div
                     className={cn(
@@ -267,10 +275,10 @@ export function ExpensePlanCoverageGrid({
             ))}
             <td
               className={cn(
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
                 STICKY_TOTAL_FOOTER_CLASS,
-                STICKY_SURFACE_CLASS,
+                'z-50 border-t',
                 totalColClass,
-                'border-t',
               )}
             >
               <ExpensePlanCompactAmount

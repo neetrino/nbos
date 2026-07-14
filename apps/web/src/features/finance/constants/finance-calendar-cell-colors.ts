@@ -26,6 +26,13 @@ export const FINANCE_CALENDAR_STICKY_SURFACE_CLASS = 'bg-muted';
 /** Sticky Total column surface — white/card, not muted chrome. */
 export const FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS = 'bg-background';
 
+/**
+ * Sticky Month total cells — opaque + box-shadow seals so `border-collapse`
+ * seams do not let row content show through while scrolling.
+ */
+export const FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS =
+  'sticky bottom-0 bg-muted [box-shadow:0_-2px_0_0_var(--color-muted),0_2px_0_0_var(--color-muted),-2px_0_0_0_var(--color-muted),2px_0_0_0_var(--color-muted)]';
+
 /** Month total amount card — violet accent on muted footer chrome. */
 export const FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS =
   'flex items-center justify-center truncate rounded-md border border-violet-200/80 bg-violet-100 px-0.5 text-sm font-bold text-violet-900 tabular-nums dark:border-violet-800/50 dark:bg-violet-900/35 dark:text-violet-200';

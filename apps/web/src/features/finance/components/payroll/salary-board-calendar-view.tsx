@@ -31,6 +31,7 @@ import {
   FINANCE_CALENDAR_CELL_EMPTY,
   FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
+  FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
   FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
 import { financeCalendarTotalColClass } from '@/features/finance/constants/finance-calendar-total-display';
@@ -235,11 +236,11 @@ export function SalaryBoardCalendarView({
           })}
         </tbody>
         <tfoot>
-          <tr className={cn(STICKY_SURFACE_CLASS, 'font-medium')}>
+          <tr className="font-medium">
             <td
               className={cn(
-                'border-border text-muted-foreground border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
-                STICKY_SURFACE_CLASS,
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                'border-border text-muted-foreground z-50 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
                 SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
               )}
             >
@@ -251,8 +252,9 @@ export function SalaryBoardCalendarView({
                 <td
                   key={`total-${col.payrollMonth}`}
                   className={cn(
-                    'border-border border-t px-1 py-2 text-center',
-                    STICKY_SURFACE_CLASS,
+                    FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                    SALARY_CALENDAR_MONTH_COL_CLASS,
+                    'border-border z-40 border-t px-1 py-2 text-center',
                   )}
                 >
                   {columnTotal > 0 ? (
@@ -273,10 +275,10 @@ export function SalaryBoardCalendarView({
             })}
             <td
               className={cn(
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
                 STICKY_TOTAL_FOOTER_CLASS,
-                STICKY_SURFACE_CLASS,
+                'z-50 border-t',
                 totalColClass,
-                'border-t',
               )}
             >
               <SalaryBoardCalendarTotalAmount
