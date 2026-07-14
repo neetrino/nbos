@@ -46,18 +46,20 @@ interface SubscriptionCoverageGridProps {
 }
 
 const GRID_YEAR_WINDOW = 3;
-const SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH = '13rem';
-const SUBSCRIPTION_MONTH_COL_CLASS = 'w-[4.5rem] min-w-[4.5rem]';
+/** Compact sticky label by viewport — titles truncate; avoids forcing page scroll. */
+const SUBSCRIPTION_LABEL_COLUMN_WIDTH = 'clamp(10.5rem, 14vw, 13rem)';
+const SUBSCRIPTION_ANNUAL_COLUMN_WIDTH = '3.75rem';
+const SUBSCRIPTION_MONTH_COL_CLASS = 'min-w-0';
 
 const SUBSCRIPTION_STICKY_LABEL_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  'border-border text-muted-foreground sticky top-0 left-0 z-50 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
   'bg-white shadow-[4px_0_8px_-4px_rgba(0,0,0,0.12)] dark:bg-card',
 );
 
 const SUBSCRIPTION_STICKY_LABEL_CELL_CLASS = cn(
   'border-border sticky left-0 z-30 border-r border-b px-2 py-2 align-middle',
   'bg-white shadow-[4px_0_8px_-4px_rgba(0,0,0,0.12)] dark:bg-card',
-  'cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-muted/40',
+  'cursor-pointer',
 );
 
 const SUBSCRIPTION_STICKY_TOTAL_LABEL_CLASS = cn(
@@ -71,10 +73,14 @@ const SUBSCRIPTION_MONTH_CELL_CLASS = cn(
 );
 
 const SUBSCRIPTION_ANNUAL_CELL_CLASS =
-  'border-border relative z-0 border-b px-2 py-2 text-right align-middle text-sm font-bold tabular-nums';
+  'border-border relative z-0 max-w-0 overflow-hidden border-b px-1 py-2 text-center align-middle text-xs font-bold tabular-nums bg-white dark:bg-card';
+
+const SUBSCRIPTION_ANNUAL_HEAD_CLASS =
+  'border-border text-muted-foreground sticky top-0 z-30 overflow-hidden border-b px-1 py-1.5 text-center text-[10px] font-semibold tracking-wide uppercase bg-white dark:bg-card';
 
 const SUBSCRIPTION_MONTH_HEAD_CLASS = cn(
-  'border-border text-muted-foreground border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  'border-border text-muted-foreground sticky top-0 z-30 border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  'bg-white dark:bg-card',
   SUBSCRIPTION_MONTH_COL_CLASS,
 );
 
@@ -117,28 +123,25 @@ export function SubscriptionCoverageGrid({
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-foreground text-lg font-semibold">Subscriptions</h2>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground">Year</span>
-          <Select
-            value={String(year)}
-            onValueChange={(v) => {
-              if (v) onYearChange(Number(v));
-            }}
-          >
-            <SelectTrigger className="w-[7.5rem]">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((y) => (
-                <SelectItem key={y} value={String(y)}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </label>
+        <Select
+          value={String(year)}
+          onValueChange={(v) => {
+            if (v) onYearChange(Number(v));
+          }}
+        >
+          <SelectTrigger className="w-[7.5rem]" aria-label="Year">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {yearOptions.map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {error ? (
@@ -153,24 +156,24 @@ export function SubscriptionCoverageGrid({
       {loading ? (
         <div className="border-border bg-muted/30 h-40 animate-pulse rounded-xl border" />
       ) : payload && payload.rows.length > 0 ? (
-        <div className="border-border isolate min-h-0 min-w-0 flex-1 overflow-x-auto rounded-xl border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <table className="w-full border-separate border-spacing-0 text-xs">
+        <div className="border-border isolate min-h-0 min-w-0 flex-1 overflow-auto rounded-xl border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <table className="w-full table-fixed border-separate border-spacing-0 text-xs">
+            <colgroup>
+              <col style={{ width: SUBSCRIPTION_LABEL_COLUMN_WIDTH }} />
+              {months.map((month) => (
+                <col key={month.key} />
+              ))}
+              <col style={{ width: SUBSCRIPTION_ANNUAL_COLUMN_WIDTH }} />
+            </colgroup>
             <thead>
               <tr className="dark:bg-card bg-white">
-                <th
-                  className={SUBSCRIPTION_STICKY_LABEL_HEADER_CLASS}
-                  style={{ minWidth: SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH }}
-                >
-                  Subscription
-                </th>
+                <th className={SUBSCRIPTION_STICKY_LABEL_HEADER_CLASS}>Subscription</th>
                 {months.map((month) => (
                   <th key={month.key} className={SUBSCRIPTION_MONTH_HEAD_CLASS}>
                     {month.label}
                   </th>
                 ))}
-                <th className="border-border text-muted-foreground dark:bg-card border-b bg-white px-2 py-1.5 text-right text-[10px] font-semibold tracking-wide uppercase">
-                  Annual
-                </th>
+                <th className={SUBSCRIPTION_ANNUAL_HEAD_CLASS}>Annual</th>
               </tr>
             </thead>
             <tbody>
@@ -178,13 +181,9 @@ export function SubscriptionCoverageGrid({
                 const subscription = subscriptionsById.get(row.subscriptionId);
                 const currentMonthCell = pickMonthCell(row.months, currentMonthIndex);
                 return (
-                  <tr
-                    key={row.subscriptionId}
-                    className="dark:bg-card dark:hover:bg-muted/20 bg-white hover:bg-slate-50/80"
-                  >
+                  <tr key={row.subscriptionId} className="dark:bg-card bg-white">
                     <td
                       className={SUBSCRIPTION_STICKY_LABEL_CELL_CLASS}
-                      style={{ minWidth: SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH }}
                       onClick={() => onOpenSubscription(row.subscriptionId)}
                     >
                       <SubscriptionGridRowLabel
@@ -217,10 +216,7 @@ export function SubscriptionCoverageGrid({
                       </td>
                     ))}
                     <td className={SUBSCRIPTION_ANNUAL_CELL_CLASS}>
-                      <SubscriptionCompactAmount
-                        value={row.annualTotal}
-                        sidebarCollapsed={sidebarCollapsed}
-                      />
+                      <SubscriptionCompactAmount value={row.annualTotal} sidebarCollapsed={false} />
                     </td>
                   </tr>
                 );
@@ -235,23 +231,22 @@ export function SubscriptionCoverageGrid({
                     {total > 0 ? (
                       <div
                         className={cn(
-                          'flex items-center justify-center text-sm font-bold tabular-nums',
+                          'flex items-center justify-center truncate px-0.5 text-sm font-bold tabular-nums',
                           SUBSCRIPTION_CALENDAR_SLOT_CLASS,
-                          !sidebarCollapsed && 'truncate px-0.5',
                         )}
-                        title={sidebarCollapsed ? undefined : formatAmount(total)}
+                        title={formatAmount(total)}
                       >
-                        {formatSubscriptionGridAmount(total, sidebarCollapsed)}
+                        {formatSubscriptionGridAmount(total, false)}
                       </div>
                     ) : (
                       <SubscriptionEmptyMonthCell />
                     )}
                   </td>
                 ))}
-                <td className="dark:bg-card bg-white px-2 py-2 text-right text-sm font-bold tabular-nums">
+                <td className={cn(SUBSCRIPTION_ANNUAL_CELL_CLASS, 'border-b-0')}>
                   <SubscriptionCompactAmount
                     value={payload.grandAnnualTotal}
-                    sidebarCollapsed={sidebarCollapsed}
+                    sidebarCollapsed={false}
                   />
                 </td>
               </tr>

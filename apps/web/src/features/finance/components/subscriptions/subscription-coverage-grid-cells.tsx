@@ -4,11 +4,11 @@ import { formatAmount, formatAmountAbbreviated } from '@/features/finance/consta
 import type { SubscriptionGridCell, SubscriptionGridCellKind } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
-/** Same slot size as `/finance/salary` calendar cells. */
-export const SUBSCRIPTION_CALENDAR_SLOT_CLASS = 'h-16 w-full';
+/** Compact month card height for the subscription grid. */
+export const SUBSCRIPTION_CALENDAR_SLOT_CLASS = 'h-12 w-full';
 
 const MONTH_CELL_BLOCK_CLASS =
-  'flex w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border px-1 py-1.5 text-center transition-colors';
+  'flex w-full flex-col items-center justify-center gap-0 overflow-hidden rounded-md border px-0.5 py-0.5 text-center transition-colors';
 
 function cellVisualClasses(kind: SubscriptionGridCellKind): string {
   switch (kind) {
@@ -63,7 +63,10 @@ export function SubscriptionCompactAmount({
   const fullAmount = formatAmount(value);
   const isCompact = !sidebarCollapsed;
   return (
-    <span className="tabular-nums" title={isCompact ? fullAmount : undefined}>
+    <span
+      className="block max-w-full truncate tabular-nums"
+      title={isCompact ? fullAmount : undefined}
+    >
       {formatSubscriptionGridAmount(value, sidebarCollapsed)}
     </span>
   );

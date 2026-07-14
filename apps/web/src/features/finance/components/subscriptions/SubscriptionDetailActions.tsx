@@ -12,7 +12,7 @@ interface SubscriptionDetailActionsProps {
   onError: (message: string | null) => void;
 }
 
-/** Partner action for the detail aside — status changes live on the sheet header control. */
+/** Partner action — rendered next to status in the subscription sheet header. */
 export function SubscriptionDetailActions({
   subscription,
   onSubscriptionChange,
@@ -22,12 +22,10 @@ export function SubscriptionDetailActions({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => setPartnerOpen(true)}>
-          <Handshake size={14} />
-          Partner
-        </Button>
-      </div>
+      <Button type="button" variant="outline" size="sm" onClick={() => setPartnerOpen(true)}>
+        <Handshake size={14} />
+        Partner
+      </Button>
 
       <SubscriptionPartnerDialog
         subscription={subscription}
