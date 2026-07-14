@@ -29,6 +29,7 @@ import type {
 import { cn } from '@/lib/utils';
 import {
   FINANCE_CALENDAR_CELL_EMPTY,
+  FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
   FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
@@ -257,7 +258,7 @@ export function SalaryBoardCalendarView({
                   {columnTotal > 0 ? (
                     <div
                       className={cn(
-                        'border-border bg-muted/20 flex items-center justify-center truncate rounded-md border px-0.5 text-sm font-bold tabular-nums',
+                        FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
                         SALARY_CALENDAR_SLOT_CLASS,
                       )}
                       title={formatAmount(columnTotal)}
