@@ -1,6 +1,38 @@
 import { describe, expect, it, vi } from 'vitest';
-import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
+import { assertHttpsBaseUrl, WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import { WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
+
+describe('assertHttpsBaseUrl', () => {
+  it('accepts HTTPS URL without trailing slash', () => {
+    expect(assertHttpsBaseUrl('https://wa-gateway.test', false)).toBe('https://wa-gateway.test');
+  });
+
+  it('strips one trailing slash', () => {
+    expect(assertHttpsBaseUrl('https://wa-gateway.test/', false)).toBe('https://wa-gateway.test');
+  });
+
+  it('strips multiple trailing slashes', () => {
+    expect(assertHttpsBaseUrl('https://wa-gateway.test///', false)).toBe('https://wa-gateway.test');
+  });
+
+  it('allows HTTP localhost when enabled', () => {
+    expect(assertHttpsBaseUrl('http://localhost:3001/', true)).toBe('http://localhost:3001');
+  });
+
+  it('trims surrounding whitespace before validation', () => {
+    expect(assertHttpsBaseUrl('  https://wa-gateway.test/  ', false)).toBe(
+      'https://wa-gateway.test',
+    );
+  });
+
+  it('rejects invalid URL', () => {
+    expect(() => assertHttpsBaseUrl('not-a-url', false)).toThrow(WhatsAppGatewayHttpError);
+  });
+
+  it('rejects HTTP non-localhost even when localhost is allowed', () => {
+    expect(() => assertHttpsBaseUrl('http://example.com', true)).toThrow(WhatsAppGatewayHttpError);
+  });
+});
 
 describe('WhatsAppGatewayClient', () => {
   const client = new WhatsAppGatewayClient();

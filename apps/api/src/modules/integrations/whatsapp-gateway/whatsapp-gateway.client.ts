@@ -185,7 +185,12 @@ export class WhatsAppGatewayClient {
 }
 
 export function assertHttpsBaseUrl(baseUrl: string, allowHttpLocalhost: boolean): string {
-  const trimmed = baseUrl.trim().replace(/\/+$/, '');
+  const normalized = baseUrl.trim();
+  let endIndex = normalized.length;
+  while (endIndex > 0 && normalized.charCodeAt(endIndex - 1) === 47) {
+    endIndex -= 1;
+  }
+  const trimmed = normalized.slice(0, endIndex);
   let parsed: URL;
   try {
     parsed = new URL(trimmed);
