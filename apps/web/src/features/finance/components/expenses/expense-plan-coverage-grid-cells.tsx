@@ -10,59 +10,59 @@ import {
   FINANCE_CALENDAR_CELL_ORANGE,
 } from '@/features/finance/constants/finance-calendar-cell-colors';
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
-import type { SubscriptionGridCell, SubscriptionGridCellKind } from '@/lib/api/finance';
+import type { ExpensePlanGridCell, ExpensePlanGridCellKind } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
 
-/** Same slot size as expense-plans / salary calendar cells. */
-export const SUBSCRIPTION_CALENDAR_SLOT_CLASS = 'h-16 w-full';
+/** Same slot size as `/finance/salary` calendar cells. */
+export const EXPENSE_PLAN_CALENDAR_SLOT_CLASS = 'h-16 w-full';
 
 const MONTH_CELL_BLOCK_CLASS =
   'flex w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border px-1 py-1.5 text-center transition-colors';
 
-function cellVisualClasses(kind: SubscriptionGridCellKind): string {
+function cellVisualClasses(kind: ExpensePlanGridCellKind): string {
   switch (kind) {
     case 'PAID':
       return FINANCE_CALENDAR_CELL_GREEN;
-    case 'PENDING_INVOICE':
-      return FINANCE_CALENDAR_CELL_AMBER;
-    case 'OVERDUE_INVOICE':
+    case 'PARTIAL':
       return FINANCE_CALENDAR_CELL_ORANGE;
-    case 'FORECAST':
+    case 'OVERDUE':
+      return FINANCE_CALENDAR_CELL_ORANGE;
+    case 'OPEN':
       return FINANCE_CALENDAR_CELL_BLUE;
-    case 'SUBSCRIPTION_PENDING':
+    case 'DUE':
       return FINANCE_CALENDAR_CELL_AMBER;
-    case 'MISSED':
+    case 'FORECAST':
       return FINANCE_CALENDAR_CELL_MUTED;
     default:
       return 'border-border bg-muted/20 text-muted-foreground';
   }
 }
 
-function cellStatusLabel(kind: SubscriptionGridCellKind): string {
+function cellStatusLabel(kind: ExpensePlanGridCellKind): string {
   switch (kind) {
     case 'PAID':
       return 'Paid';
-    case 'PENDING_INVOICE':
-      return 'Invoice';
-    case 'OVERDUE_INVOICE':
+    case 'PARTIAL':
+      return 'Partial';
+    case 'OVERDUE':
       return 'Overdue';
+    case 'OPEN':
+      return 'Open';
+    case 'DUE':
+      return 'Due';
     case 'FORECAST':
       return 'Forecast';
-    case 'SUBSCRIPTION_PENDING':
-      return 'Pending';
-    case 'MISSED':
-      return 'Missed';
     default:
       return '';
   }
 }
 
-/** Sidebar collapsed → full; open → abbreviated. */
-export function formatSubscriptionGridAmount(amount: number, sidebarCollapsed: boolean): string {
+/** Sidebar collapsed → full; open → abbreviated (same as salary calendar totals). */
+export function formatExpensePlanGridAmount(amount: number, sidebarCollapsed: boolean): string {
   return sidebarCollapsed ? formatAmount(amount) : formatAmountAbbreviated(amount);
 }
 
-export function SubscriptionCompactAmount({
+export function ExpensePlanCompactAmount({
   value,
   sidebarCollapsed,
   size = 'sm',
@@ -71,7 +71,7 @@ export function SubscriptionCompactAmount({
   sidebarCollapsed: boolean;
   size?: 'sm' | 'base';
 }) {
-  const display = formatSubscriptionGridAmount(value, sidebarCollapsed);
+  const display = formatExpensePlanGridAmount(value, sidebarCollapsed);
   const fullAmount = formatAmount(value);
   const isCompact = !sidebarCollapsed;
 
@@ -79,7 +79,7 @@ export function SubscriptionCompactAmount({
     <div
       className={cn(
         'flex w-full items-center justify-center text-center',
-        size === 'sm' && SUBSCRIPTION_CALENDAR_SLOT_CLASS,
+        size === 'sm' && EXPENSE_PLAN_CALENDAR_SLOT_CLASS,
       )}
       title={isCompact ? fullAmount : undefined}
     >
@@ -107,29 +107,27 @@ export function SubscriptionCompactAmount({
   );
 }
 
-export function SubscriptionEmptyMonthCell() {
+export function ExpensePlanEmptyMonthCell() {
   return (
-    <div className={cn(FINANCE_CALENDAR_CELL_EMPTY, SUBSCRIPTION_CALENDAR_SLOT_CLASS)} aria-hidden>
+    <div className={cn(FINANCE_CALENDAR_CELL_EMPTY, EXPENSE_PLAN_CALENDAR_SLOT_CLASS)} aria-hidden>
       —
     </div>
   );
 }
 
-export function SubscriptionGridMonthCell({
+export function ExpensePlanGridMonthCell({
   cell,
-  amountMonthly,
   onOpen,
 }: {
-  cell: SubscriptionGridCell;
-  amountMonthly: number;
+  cell: ExpensePlanGridCell;
   onOpen: () => void;
 }) {
   if (cell.kind === 'NA') {
-    return <SubscriptionEmptyMonthCell />;
+    return <ExpensePlanEmptyMonthCell />;
   }
 
-  const fullAmount = formatAmount(amountMonthly);
-  const amountLabel = formatAmountAbbreviated(amountMonthly);
+  const fullAmount = formatAmount(cell.amount);
+  const amountLabel = formatAmountAbbreviated(cell.amount);
   const statusLabel = cellStatusLabel(cell.kind);
 
   return (
@@ -137,7 +135,7 @@ export function SubscriptionGridMonthCell({
       type="button"
       className={cn(
         MONTH_CELL_BLOCK_CLASS,
-        SUBSCRIPTION_CALENDAR_SLOT_CLASS,
+        EXPENSE_PLAN_CALENDAR_SLOT_CLASS,
         cellVisualClasses(cell.kind),
       )}
       title={fullAmount}

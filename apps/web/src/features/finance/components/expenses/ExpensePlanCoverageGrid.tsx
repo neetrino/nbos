@@ -1,19 +1,23 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type {
-  ExpensePlanGridCell,
-  ExpensePlanGridCellKind,
-  ExpensePlanGridPayload,
-} from '@/lib/api/expense-plans';
+import type { ExpensePlanGridPayload } from '@/lib/api/expense-plans';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
+  FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
+} from '@/features/finance/constants/finance-calendar-cell-colors';
+import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
+import {
+  EXPENSE_PLAN_CALENDAR_SLOT_CLASS,
+  ExpensePlanCompactAmount,
+  ExpensePlanEmptyMonthCell,
+  ExpensePlanGridMonthCell,
+  formatExpensePlanGridAmount,
+} from './expense-plan-coverage-grid-cells';
+import { ExpensePlanGridRowLabel } from './ExpensePlanGridRowLabel';
 
 interface ExpensePlanCoverageGridProps {
   year: number;
@@ -26,7 +30,52 @@ interface ExpensePlanCoverageGridProps {
   onOpenExpense: (expenseId: string) => void;
 }
 
-const GRID_YEAR_WINDOW = 3;
+const MIN_PLAN_BOARD_YEAR = 2020;
+const MAX_PLAN_BOARD_YEAR_OFFSET = 2;
+
+const PLAN_LABEL_COL_CLASS = 'w-44 min-w-[11rem]';
+const PLAN_MONTH_COL_CLASS = 'w-[4.5rem]';
+const PLAN_TOTAL_COL_CLASS = 'w-[99px] min-w-[99px]';
+const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
+
+const STICKY_PLAN_HEADER_CLASS = cn(
+  'border-border text-muted-foreground sticky top-0 left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  STICKY_SURFACE_CLASS,
+  PLAN_LABEL_COL_CLASS,
+);
+
+const STICKY_PLAN_CELL_CLASS = cn(
+  'border-border text-foreground sticky left-0 z-20 border-r border-b px-3 py-2',
+  STICKY_SURFACE_CLASS,
+  PLAN_LABEL_COL_CLASS,
+  'cursor-pointer',
+);
+
+const STICKY_TOTAL_HEADER_CLASS = cn(
+  'border-border text-foreground sticky top-0 right-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase',
+  STICKY_SURFACE_CLASS,
+  PLAN_TOTAL_COL_CLASS,
+);
+
+const STICKY_TOTAL_CELL_CLASS = cn(
+  'border-border text-foreground sticky right-0 z-20 border-l border-b p-1 align-middle text-center',
+  STICKY_SURFACE_CLASS,
+  PLAN_TOTAL_COL_CLASS,
+);
+
+const STICKY_TOTAL_FOOTER_CLASS = cn(
+  'border-border text-foreground sticky right-0 z-30 border-l p-1 align-middle text-center',
+  STICKY_SURFACE_CLASS,
+  PLAN_TOTAL_COL_CLASS,
+);
+
+const PLAN_MONTH_HEAD_CLASS = cn(
+  'border-border sticky top-0 z-30 border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  STICKY_SURFACE_CLASS,
+  PLAN_MONTH_COL_CLASS,
+);
+
+const PLAN_MONTH_CELL_CLASS = cn('border-border border-b p-1 align-middle', PLAN_MONTH_COL_CLASS);
 
 function monthLabelsForYear(year: number): { key: number; label: string }[] {
   return Array.from({ length: 12 }, (_, index) => {
@@ -38,70 +87,47 @@ function monthLabelsForYear(year: number): { key: number; label: string }[] {
   });
 }
 
-function cellVisualClasses(kind: ExpensePlanGridCellKind): string {
-  switch (kind) {
-    case 'PAID':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/35 dark:text-green-300';
-    case 'PARTIAL':
-      return 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200';
-    case 'OVERDUE':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/35 dark:text-red-300';
-    case 'OPEN':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/35 dark:text-blue-300';
-    case 'DUE':
-      return 'bg-orange-100 text-orange-900 dark:bg-orange-900/30 dark:text-orange-200';
-    case 'FORECAST':
-      return 'border-border text-muted-foreground border border-dashed bg-transparent';
-    default:
-      return 'text-muted-foreground';
-  }
-}
-
-function PlanGridMonthCell({
-  planId,
-  cell,
-  onOpenPlan,
-  onOpenExpense,
+function PlanCalendarYearControl({
+  year,
+  onYearChange,
 }: {
-  planId: string;
-  cell: ExpensePlanGridCell;
-  onOpenPlan: (planId: string) => void;
-  onOpenExpense: (expenseId: string) => void;
+  year: number;
+  onYearChange: (year: number) => void;
 }) {
-  if (cell.kind === 'NA') {
-    return <span className="text-muted-foreground">—</span>;
-  }
-
-  const label = formatAmount(cell.amount);
-  const cls = `inline-block min-w-[2.75rem] rounded px-1.5 py-0.5 text-[10px] font-medium ${cellVisualClasses(cell.kind)}`;
-
-  if (cell.expenseId) {
-    const expenseId = cell.expenseId;
-    return (
-      <button
-        type="button"
-        className={`${cls} hover:opacity-90`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenExpense(expenseId);
-        }}
-      >
-        {label}
-      </button>
-    );
-  }
+  const maxYear = new Date().getFullYear() + MAX_PLAN_BOARD_YEAR_OFFSET;
 
   return (
-    <button
-      type="button"
-      className={`${cls} hover:opacity-90`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onOpenPlan(planId);
-      }}
+    <div
+      className="border-border bg-muted/30 inline-flex items-center gap-1 rounded-full border p-1"
+      role="group"
+      aria-label="Calendar year"
     >
-      {label}
-    </button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="size-7 rounded-full"
+        aria-label="Previous year"
+        disabled={year <= MIN_PLAN_BOARD_YEAR}
+        onClick={() => onYearChange(year - 1)}
+      >
+        <ChevronLeft className="size-4" aria-hidden />
+      </Button>
+      <span className="text-foreground min-w-[3rem] px-1 text-center text-sm font-semibold tabular-nums">
+        {year}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="size-7 rounded-full"
+        aria-label="Next year"
+        disabled={year >= maxYear}
+        onClick={() => onYearChange(year + 1)}
+      >
+        <ChevronRight className="size-4" aria-hidden />
+      </Button>
+    </div>
   );
 }
 
@@ -115,121 +141,139 @@ export function ExpensePlanCoverageGrid({
   onOpenPlan,
   onOpenExpense,
 }: ExpensePlanCoverageGridProps) {
+  const sidebarCollapsed = useAppSidebarCollapsed();
   const months = monthLabelsForYear(year);
-  const cy = new Date().getFullYear();
-  const yearOptions = Array.from(
-    { length: GRID_YEAR_WINDOW * 2 + 1 },
-    (_, i) => cy - GRID_YEAR_WINDOW + i,
-  );
+
+  if (error) {
+    return (
+      <div className="border-border bg-destructive/10 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
+        <span>{error}</span>
+        <Button type="button" variant="outline" size="sm" onClick={() => void onRetry()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="border-border bg-muted/30 h-40 animate-pulse rounded-xl border" />;
+  }
+
+  if (!payload || payload.rows.length === 0) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        No expense plans for this year with the current filters.
+      </p>
+    );
+  }
 
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-foreground text-lg font-semibold">Plan calendar</h2>
-          <p className="text-muted-foreground max-w-prose text-sm">
-            Expected amounts by month; paid / open cards open the expense sheet here, empty
-            scheduled cells open the plan.
-          </p>
-        </div>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground">Year</span>
-          <Select
-            value={String(year)}
-            onValueChange={(v) => {
-              if (v) onYearChange(Number(v));
-            }}
-          >
-            <SelectTrigger className="w-[7.5rem]">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((y) => (
-                <SelectItem key={y} value={String(y)}>
-                  {y}
-                </SelectItem>
+    <div
+      className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
+      aria-label={`Expense plan calendar ${year}`}
+    >
+      <table className="w-full table-fixed border-collapse text-sm">
+        <colgroup>
+          <col className={PLAN_LABEL_COL_CLASS} />
+          {months.map((month) => (
+            <col key={month.key} className={PLAN_MONTH_COL_CLASS} />
+          ))}
+          <col className={PLAN_TOTAL_COL_CLASS} />
+        </colgroup>
+        <thead>
+          <tr className={STICKY_SURFACE_CLASS}>
+            <th className={cn(STICKY_PLAN_HEADER_CLASS, 'py-2 normal-case')}>
+              <div
+                className={cn(
+                  'flex w-full gap-1',
+                  sidebarCollapsed
+                    ? 'flex-row items-center justify-between'
+                    : 'flex-col items-start gap-1.5',
+                )}
+              >
+                <span className="text-[10px] font-semibold tracking-wide uppercase">Plan</span>
+                <PlanCalendarYearControl year={year} onYearChange={onYearChange} />
+              </div>
+            </th>
+            {months.map((month) => (
+              <th key={month.key} className={PLAN_MONTH_HEAD_CLASS}>
+                <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
+              </th>
+            ))}
+            <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {payload.rows.map((row) => (
+            <tr key={row.planId} className="hover:bg-muted/15">
+              <td className={STICKY_PLAN_CELL_CLASS} onClick={() => onOpenPlan(row.planId)}>
+                <ExpensePlanGridRowLabel
+                  planName={row.planName}
+                  frequency={row.frequency}
+                  projectLabel={row.projectLabel}
+                />
+              </td>
+              {row.months.map((cell, idx) => (
+                <td key={idx} className={PLAN_MONTH_CELL_CLASS}>
+                  <ExpensePlanGridMonthCell
+                    cell={cell}
+                    onOpen={() => {
+                      if (cell.expenseId) {
+                        onOpenExpense(cell.expenseId);
+                        return;
+                      }
+                      onOpenPlan(row.planId);
+                    }}
+                  />
+                </td>
               ))}
-            </SelectContent>
-          </Select>
-        </label>
-      </div>
-
-      {error ? (
-        <div className="border-border bg-destructive/10 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
-          <span>{error}</span>
-          <Button type="button" variant="outline" size="sm" onClick={() => void onRetry()}>
-            Retry
-          </Button>
-        </div>
-      ) : null}
-
-      {loading ? (
-        <div className="border-border bg-muted/30 h-40 animate-pulse rounded-xl border" />
-      ) : payload && payload.rows.length > 0 ? (
-        <div className="border-border overflow-x-auto rounded-xl border">
-          <table className="w-full text-xs">
-            <thead className="bg-secondary/50">
-              <tr>
-                <th className="bg-secondary/50 text-muted-foreground sticky left-0 z-10 px-3 py-2 text-left font-medium">
-                  Plan
-                </th>
-                {months.map((month) => (
-                  <th
-                    key={month.key}
-                    className="text-muted-foreground min-w-[3.25rem] px-1 py-2 text-center font-medium"
+              <td className={STICKY_TOTAL_CELL_CLASS}>
+                <ExpensePlanCompactAmount
+                  value={row.annualTotal}
+                  sidebarCollapsed={sidebarCollapsed}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className={cn(STICKY_SURFACE_CLASS, 'font-medium')}>
+            <td
+              className={cn(
+                'border-border text-muted-foreground sticky left-0 z-20 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
+                STICKY_SURFACE_CLASS,
+                PLAN_LABEL_COL_CLASS,
+              )}
+            >
+              Month total
+            </td>
+            {payload.monthTotals.map((total, idx) => (
+              <td key={idx} className={cn(PLAN_MONTH_CELL_CLASS, 'border-t', STICKY_SURFACE_CLASS)}>
+                {total > 0 ? (
+                  <div
+                    className={cn(
+                      'border-border bg-muted/20 flex items-center justify-center truncate rounded-md border px-0.5 text-sm font-bold tabular-nums',
+                      EXPENSE_PLAN_CALENDAR_SLOT_CLASS,
+                    )}
+                    title={formatAmount(total)}
                   >
-                    {month.label}
-                  </th>
-                ))}
-                <th className="text-muted-foreground px-3 py-2 text-right font-medium">Annual</th>
-              </tr>
-            </thead>
-            <tbody className="divide-border divide-y">
-              {payload.rows.map((row) => (
-                <tr key={row.planId} className="hover:bg-secondary/30">
-                  <td
-                    className="bg-card sticky left-0 z-10 cursor-pointer px-3 py-2 font-medium"
-                    onClick={() => onOpenPlan(row.planId)}
-                  >
-                    <div>
-                      <p>{row.planName}</p>
-                      {row.projectLabel ? (
-                        <p className="text-muted-foreground text-[10px]">{row.projectLabel}</p>
-                      ) : null}
-                    </div>
-                  </td>
-                  {row.months.map((cell, idx) => (
-                    <td key={idx} className="px-1 py-2 text-center">
-                      <PlanGridMonthCell
-                        planId={row.planId}
-                        cell={cell}
-                        onOpenPlan={onOpenPlan}
-                        onOpenExpense={onOpenExpense}
-                      />
-                    </td>
-                  ))}
-                  <td className="px-3 py-2 text-right font-bold">
-                    {formatAmount(row.annualTotal)}
-                  </td>
-                </tr>
-              ))}
-              <tr className="bg-secondary/30 font-bold">
-                <td className="bg-secondary/30 sticky left-0 z-10 px-3 py-2">Total</td>
-                {payload.monthTotals.map((total, idx) => (
-                  <td key={idx} className="px-1 py-2 text-center">
-                    {total > 0 ? formatAmount(total) : '—'}
-                  </td>
-                ))}
-                <td className="px-3 py-2 text-right">{formatAmount(payload.grandAnnualTotal)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-sm">
-          No expense plans for this year with the current filters.
-        </p>
-      )}
-    </section>
+                    {formatExpensePlanGridAmount(total, false)}
+                  </div>
+                ) : (
+                  <ExpensePlanEmptyMonthCell />
+                )}
+              </td>
+            ))}
+            <td className={cn(STICKY_TOTAL_FOOTER_CLASS, 'border-t')}>
+              <ExpensePlanCompactAmount
+                value={payload.grandAnnualTotal}
+                sidebarCollapsed={sidebarCollapsed}
+                size="base"
+              />
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   );
 }

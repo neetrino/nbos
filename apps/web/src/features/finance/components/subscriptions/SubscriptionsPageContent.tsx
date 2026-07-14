@@ -55,17 +55,19 @@ export function SubscriptionsPageContent({
       ) : showEmpty ? (
         <SubscriptionsEmptyState />
       ) : (
-        <SubscriptionCoverageGrid
-          year={gridYear}
-          onYearChange={onGridYearChange}
-          payload={gridPayload}
-          subscriptions={subscriptions}
-          loading={gridLoading || (listLoading && subscriptions.length === 0)}
-          error={gridError}
-          onRetry={onGridRetry}
-          onOpenSubscription={onOpenSubscription}
-          onOpenMonthCell={onOpenMonthCell}
-        />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <SubscriptionCoverageGrid
+            year={gridYear}
+            onYearChange={onGridYearChange}
+            payload={gridPayload}
+            subscriptions={subscriptions}
+            loading={gridLoading || (listLoading && subscriptions.length === 0)}
+            error={gridError}
+            onRetry={onGridRetry}
+            onOpenSubscription={onOpenSubscription}
+            onOpenMonthCell={onOpenMonthCell}
+          />
+        </div>
       )}
     </div>
   );

@@ -342,13 +342,20 @@ export function ExpensePlansPageContent() {
     [openPlanIdFromUrl, plans],
   );
 
-  const openExpensePlanDetail = useCallback(
-    (plan: ExpensePlan) => {
+  const openExpensePlanDetailById = useCallback(
+    (planId: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set(OPEN_EXPENSE_PLAN_QUERY, plan.id);
+      params.set(OPEN_EXPENSE_PLAN_QUERY, planId);
       router.push(`${pathname}?${params.toString()}`);
     },
     [pathname, router, searchParams],
+  );
+
+  const openExpensePlanDetail = useCallback(
+    (plan: ExpensePlan) => {
+      openExpensePlanDetailById(plan.id);
+    },
+    [openExpensePlanDetailById],
   );
 
   const openExpenseDetail = useCallback(
@@ -443,19 +450,18 @@ export function ExpensePlansPageContent() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       {showGridPanel ? (
-        <ExpensePlanCoverageGrid
-          year={gridYear}
-          onYearChange={handleGridYearChange}
-          payload={gridPayload}
-          loading={gridLoading}
-          error={gridError}
-          onRetry={() => void fetchGrid()}
-          onOpenPlan={(planId) => {
-            const plan = plans.find((row) => row.id === planId);
-            if (plan) openExpensePlanDetail(plan);
-          }}
-          onOpenExpense={openExpenseDetail}
-        />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <ExpensePlanCoverageGrid
+            year={gridYear}
+            onYearChange={handleGridYearChange}
+            payload={gridPayload}
+            loading={gridLoading}
+            error={gridError}
+            onRetry={() => void fetchGrid()}
+            onOpenPlan={openExpensePlanDetailById}
+            onOpenExpense={openExpenseDetail}
+          />
+        </div>
       ) : null}
 
       {showBoardPanel || showListPanel ? (
