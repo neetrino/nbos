@@ -21,7 +21,6 @@ import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
 import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
-import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 import { DeliveryItemPaymentSummary } from './DeliveryItemLanguagesPanel';
 import {
   DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
@@ -98,26 +97,62 @@ export function DeliveryItemDetailGeneralTab({
             disabled={planningDisabled}
             gateRequiredFields={gateRequiredFields}
           />
-          {kind === 'PRODUCT' && productPlan && product ? (
+          <DeliveryItemCommercialSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            financeTabHref={financeTabHref}
+            projectHubHref={projectHubHref}
+            sourcePageHref={sourcePageHref}
+            credentialsTabHref={credentialsTabHref}
+            gateRequiredFields={gateRequiredFields}
+          />
+        </div>
+
+        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+          {product && productPlan ? (
+            <ProductPlanningSection
+              entityId={product.id}
+              draft={productPlan}
+              onDraftChange={onProductPlanChange}
+              disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
+            />
+          ) : null}
+          {extension && extensionPlan ? (
+            <ExtensionPlanningSection
+              extension={extension}
+              draft={extensionPlan}
+              onDraftChange={onExtensionPlanChange}
+              disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
+            />
+          ) : null}
+          {kind === 'PRODUCT' && product ? (
             <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemLanguagesMultiselect
-                value={productPlan.languages}
-                onChange={(languages) => onProductPlanChange({ ...productPlan, languages })}
-                disabled={planningDisabled}
-              />
               <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
             </section>
           ) : null}
           {kind === 'EXTENSION' && extension ? (
             <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemLanguagesMultiselect
-                value={extension.product.languages ?? []}
-                readOnly
-                disabled={planningDisabled}
-              />
               <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
             </section>
           ) : null}
+          <DeliveryItemKeyWorkLinksSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            workSpaceHref={workSpaceHref}
+            gateRequiredFields={gateRequiredFields}
+          />
+        </div>
+
+        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+          <DeliveryAccessInfrastructureSection
+            projectId={projectId}
+            productId={productId}
+            onRefreshDetail={onRefreshDetail}
+          />
           <DeliveryItemStageReadinessSection
             kind={kind}
             product={product}
@@ -141,53 +176,6 @@ export function DeliveryItemDetailGeneralTab({
               }}
             />
           </div>
-        </div>
-
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          {product && productPlan ? (
-            <ProductPlanningSection
-              entityId={product.id}
-              draft={productPlan}
-              onDraftChange={onProductPlanChange}
-              disabled={planningDisabled}
-              gateRequiredFields={gateRequiredFields}
-            />
-          ) : null}
-          {extension && extensionPlan ? (
-            <ExtensionPlanningSection
-              extension={extension}
-              draft={extensionPlan}
-              onDraftChange={onExtensionPlanChange}
-              disabled={planningDisabled}
-              gateRequiredFields={gateRequiredFields}
-            />
-          ) : null}
-          <DeliveryItemCommercialSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            financeTabHref={financeTabHref}
-            projectHubHref={projectHubHref}
-            sourcePageHref={sourcePageHref}
-            credentialsTabHref={credentialsTabHref}
-            gateRequiredFields={gateRequiredFields}
-          />
-          <DeliveryItemKeyWorkLinksSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            workSpaceHref={workSpaceHref}
-            gateRequiredFields={gateRequiredFields}
-          />
-        </div>
-
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryAccessInfrastructureSection
-            projectId={projectId}
-            productId={productId}
-            productCredentialsHref={credentialsTabHref}
-            onRefreshDetail={onRefreshDetail}
-          />
           <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
         </div>
       </div>

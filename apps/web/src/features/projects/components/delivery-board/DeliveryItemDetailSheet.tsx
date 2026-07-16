@@ -40,7 +40,11 @@ import {
 } from './delivery-stage-gate-highlight';
 import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
-import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
+import {
+  DELIVERY_DETAIL_SHEET_CONTENT_CLASS,
+  DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  type DeliveryDetailTabId,
+} from './delivery-item-detail.constants';
 import {
   extensionToDeliveryBoardItem,
   productToDeliveryBoardItem,
@@ -364,6 +368,8 @@ export function DeliveryItemDetailSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
+        contentClassName={DELIVERY_DETAIL_SHEET_CONTENT_CLASS}
+        railAnchorClassName={DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
         showRailActions={Boolean(headerProps)}
         sourcePageHref={headerProps?.sourcePageHref ?? '#'}
         workspaceHref={headerProps?.workSpaceHref}

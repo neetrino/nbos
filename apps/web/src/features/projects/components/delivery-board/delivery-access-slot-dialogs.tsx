@@ -8,6 +8,7 @@ import {
 } from '@/lib/api/products';
 import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { toast } from 'sonner';
+import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
 
 function toastCreateAndBindSuccess(meta: ProductAccessSlotBindMeta | undefined) {
   if (
@@ -15,7 +16,9 @@ function toastCreateAndBindSuccess(meta: ProductAccessSlotBindMeta | undefined) 
     meta.requestedSlotKey === UNIVERSAL_ACCESS_SLOT_KEY &&
     meta.effectiveSlotKey !== UNIVERSAL_ACCESS_SLOT_KEY
   ) {
-    toast.success(`Saved to Credentials — filed under ${meta.effectiveSlotLabel}`);
+    toast.success(
+      `Saved to Credentials — filed under ${formatDeliveryAccessSlotLabel(meta.effectiveSlotLabel)}`,
+    );
     return;
   }
   toast.success('Saved to Credentials and linked');
@@ -46,8 +49,8 @@ export function CreateAccessSlotCredentialDialog({
       vaultScope="project"
       projectId={projectId}
       productId={productId}
-      title={`New credential — ${slot.label}`}
-      initialName={slot.label}
+      title={`New credential — ${formatDeliveryAccessSlotLabel(slot.label)}`}
+      initialName={formatDeliveryAccessSlotLabel(slot.label)}
       allowedCategories={slot.allowedCategories}
       initialCredentialType={slot.defaultCredentialType ?? 'LOGIN_PASSWORD'}
       submitLabel="Save & link"

@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
+import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 
 export function ProductPlanningSection({
   entityId,
@@ -116,6 +117,13 @@ export function ProductPlanningSection({
           value={draft.description}
           onChange={(description) => patchDraft({ description: description ?? '' })}
           placeholder="Plan, milestones, client context…"
+          disabled={disabled}
+        />
+      </div>
+      <div className="mt-3">
+        <DeliveryItemLanguagesMultiselect
+          value={draft.languages}
+          onChange={(languages) => patchDraft({ languages })}
           disabled={disabled}
         />
       </div>

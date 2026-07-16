@@ -2,11 +2,11 @@
 
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import { EntityNotesField, InlineField } from '@/components/shared';
-import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
+import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 
 function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
   const line = extension.product.productType ?? '';
@@ -44,7 +44,7 @@ export function ExtensionPlanningSection({
         <ClipboardList size={13} aria-hidden />
         Extension plan
       </h3>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
+      <div className="flex min-w-0 flex-col gap-3">
         <InlineField
           variant="controlled"
           label="Extension name"
@@ -66,15 +66,8 @@ export function ExtensionPlanningSection({
             if (v) patchDraft({ size: v });
           }}
         />
-        <div className="md:col-span-2">
-          <ExtensionPlanProductLine extension={extension} />
-        </div>
-        <div
-          className={cn(
-            'md:col-span-2',
-            deliveryStageGateFieldClass(gateRequiredFields, 'description', ''),
-          )}
-        >
+        <ExtensionPlanProductLine extension={extension} />
+        <div className={deliveryStageGateFieldClass(gateRequiredFields, 'description', '')}>
           <EntityNotesField
             entityType="generic"
             entityId={extension.id}
@@ -84,6 +77,11 @@ export function ExtensionPlanningSection({
             disabled={disabled}
           />
         </div>
+        <DeliveryItemLanguagesMultiselect
+          value={extension.product.languages ?? []}
+          readOnly
+          disabled={disabled}
+        />
       </div>
     </section>
   );

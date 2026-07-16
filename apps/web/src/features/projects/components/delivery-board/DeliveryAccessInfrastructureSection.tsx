@@ -1,20 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Asterisk, ChevronRight, KeyRound, Loader2, Plus, Unlink } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
 import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
+import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
 
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
   productId: string;
-  productCredentialsHref: string;
   onRefreshDetail: () => void;
   /** Optional right column (languages, payment summary, etc.) inside the same card. */
   setupPanel?: React.ReactNode;
@@ -23,7 +21,6 @@ interface DeliveryAccessInfrastructureSectionProps {
 export function DeliveryAccessInfrastructureSection({
   projectId,
   productId,
-  productCredentialsHref,
   onRefreshDetail,
   setupPanel,
 }: DeliveryAccessInfrastructureSectionProps) {
@@ -105,7 +102,9 @@ export function DeliveryAccessInfrastructureSection({
                       </span>
                     ) : null}
                     <div className="min-w-0">
-                      <span className="text-sm font-medium">{slot.label}</span>
+                      <span className="text-sm font-medium">
+                        {formatDeliveryAccessSlotLabel(slot.label)}
+                      </span>
                       {requiredMissing ? (
                         <p className="text-muted-foreground text-xs">
                           Add at least one credential.
@@ -138,9 +137,6 @@ export function DeliveryAccessInfrastructureSection({
                       >
                         {b.boundCredential ? (
                           <>
-                            <Badge variant="outline" className="shrink-0 font-normal">
-                              {b.boundCredential.category}
-                            </Badge>
                             <Button
                               type="button"
                               variant="ghost"
@@ -156,20 +152,6 @@ export function DeliveryAccessInfrastructureSection({
                               </span>
                               <ChevronRight size={14} className="shrink-0 opacity-60" />
                             </Button>
-                            <PermissionGate module="CREDENTIALS" action="EDIT">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs"
-                                onClick={() => {
-                                  setSheetCredentialId(b.boundCredential!.id);
-                                  setSheetOpen(true);
-                                }}
-                              >
-                                Edit
-                              </Button>
-                            </PermissionGate>
                           </>
                         ) : (
                           <span className="text-muted-foreground text-xs">
@@ -204,23 +186,10 @@ export function DeliveryAccessInfrastructureSection({
 
   return (
     <section className="border-border bg-card/40 flex flex-col gap-5 rounded-xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
-          <KeyRound size={14} aria-hidden />
-          Access & infrastructure
-        </h3>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Link
-            href={productCredentialsHref}
-            className="text-primary text-xs font-medium hover:underline"
-          >
-            Product credentials →
-          </Link>
-          <Link href="/credentials" className="text-muted-foreground text-xs hover:underline">
-            All credentials
-          </Link>
-        </div>
-      </div>
+      <h3 className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+        <KeyRound size={14} aria-hidden />
+        Access & infrastructure
+      </h3>
 
       {setupPanel ? (
         <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
