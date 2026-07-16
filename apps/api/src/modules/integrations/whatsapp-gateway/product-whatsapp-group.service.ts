@@ -73,6 +73,31 @@ export class ProductWhatsAppGroupService {
         orderBy: { createdAt: 'desc' },
       });
       if (activeOp) {
+        // Re-enqueue durable PENDING/QUEUED ops (e.g. after Redis was down).
+        // Stale PROCESSING is recovered as FAILED so Retry can run.
+        if (activeOp.status === 'PENDING' || activeOp.status === 'QUEUED') {
+          await this.enqueueExisting(activeOp.id, activeOp.dedupeKey, false);
+        } else if (this.isStaleProcessing(activeOp.startedAt)) {
+          await this.prisma.whatsAppGroupOperation.update({
+            where: { id: activeOp.id },
+            data: {
+              status: 'FAILED',
+              failedAt: new Date(),
+              errorCode: WHATSAPP_ERROR.PRODUCT_GROUP_CREATE_FAILED,
+              errorMessage:
+                'Create stuck in PROCESSING after Gateway failure; reset for manual retry',
+            },
+          });
+          await this.prisma.productWhatsAppGroupBinding.updateMany({
+            where: { productId, status: { in: ['PENDING', 'CREATING'] } },
+            data: {
+              status: 'FAILED',
+              lastErrorCode: WHATSAPP_ERROR.PRODUCT_GROUP_CREATE_FAILED,
+              lastErrorMessage:
+                'Create stuck in PROCESSING after Gateway failure; reset for manual retry',
+            },
+          });
+        }
         return this.getProductWhatsAppState(productId);
       }
     }
@@ -602,6 +627,14 @@ export class ProductWhatsAppGroupService {
 
   previewGroupName(projectName: string, productName: string): string {
     return buildProductWhatsAppGroupName(projectName, productName);
+  }
+
+  /** PROCESSING longer than this is treated as a stuck worker lock. */
+  private static readonly STALE_PROCESSING_MS = 5 * 60 * 1000;
+
+  private isStaleProcessing(startedAt: Date | null | undefined): boolean {
+    if (!startedAt) return true;
+    return Date.now() - startedAt.getTime() > ProductWhatsAppGroupService.STALE_PROCESSING_MS;
   }
 
   private async enqueueExisting(operationId: string, dedupeKey: string, resetFailed: boolean) {

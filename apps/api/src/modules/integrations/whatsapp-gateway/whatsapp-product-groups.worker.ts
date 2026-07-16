@@ -27,7 +27,11 @@ import {
   WHATSAPP_PRODUCT_GROUP_JOB_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
 } from './whatsapp-gateway.constants';
-import { isUnknownCreateOutcome, WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
+import {
+  isRetryableGatewayError,
+  isUnknownCreateOutcome,
+  WhatsAppGatewayHttpError,
+} from './whatsapp-gateway.errors';
 import { ProductWhatsAppParticipantResolver } from './product-whatsapp-participant.resolver';
 import {
   buildWhatsAppClientInviteMessage,
@@ -65,6 +69,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     );
     this.worker.on('failed', (job, error) => {
       this.logger.error(`WhatsApp job failed operationId=${job?.data.operationId}`, error);
+      void this.onJobExhausted(job, error);
     });
   }
 
@@ -122,16 +127,16 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         await this.markOutcomeUnknown(operation.id, error.code, error.message);
         return;
       }
-      if (
-        error instanceof WhatsAppGatewayHttpError &&
-        (error.code === 'WHATSAPP_NOT_CONNECTED' ||
-          error.code === 'UNAUTHORIZED' ||
-          error.code === 'INVALID_TOKEN' ||
-          error.status === 400)
-      ) {
+      if (error instanceof WhatsAppGatewayHttpError && isRetryableGatewayError(error.code)) {
+        await this.releaseProcessingForRetry(operation.id, error);
+        throw error;
+      }
+      if (error instanceof WhatsAppGatewayHttpError) {
         await this.markFailed(operation.id, error.code, error.message);
         return;
       }
+      // Unknown/transient (network after client wrap should already be WhatsAppGatewayHttpError).
+      await this.releaseProcessingForRetry(operation.id, error);
       throw error;
     }
   }
@@ -763,7 +768,10 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     });
     if (operation.type === 'CREATE_PRODUCT_GROUP') {
       await this.prisma.productWhatsAppGroupBinding.updateMany({
-        where: { productId: operation.productId, status: { in: ['PENDING', 'CREATING'] } },
+        where: {
+          productId: operation.productId,
+          status: { in: ['PENDING', 'CREATING'] },
+        },
         data: {
           status: 'FAILED',
           lastErrorCode: code,
@@ -790,5 +798,52 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         errorMessage: message,
       },
     });
+  }
+
+  /**
+   * After a transient Gateway/WAHA failure the row must leave PROCESSING,
+   * otherwise BullMQ retries cannot re-acquire the lock (stuck forever).
+   */
+  private async releaseProcessingForRetry(operationId: string, error: unknown): Promise<void> {
+    const code =
+      error instanceof WhatsAppGatewayHttpError ? error.code : WHATSAPP_ERROR.GATEWAY_UNAVAILABLE;
+    const message = error instanceof Error ? error.message : 'Transient WhatsApp failure';
+    await this.prisma.whatsAppGroupOperation.updateMany({
+      where: { id: operationId, status: 'PROCESSING' },
+      data: {
+        status: 'QUEUED',
+        errorCode: code,
+        errorMessage: message,
+      },
+    });
+  }
+
+  private async onJobExhausted(
+    job: Job<WhatsAppProductGroupJobPayload> | undefined,
+    error: Error,
+  ): Promise<void> {
+    if (!job?.data.operationId) return;
+    const maxAttempts = job.opts.attempts ?? 1;
+    if (job.attemptsMade < maxAttempts) return;
+
+    const code =
+      error instanceof WhatsAppGatewayHttpError
+        ? error.code
+        : WHATSAPP_ERROR.PRODUCT_GROUP_CREATE_FAILED;
+    try {
+      const operation = await this.prisma.whatsAppGroupOperation.findUnique({
+        where: { id: job.data.operationId },
+      });
+      if (!operation) return;
+      if (['SUCCEEDED', 'SKIPPED', 'OUTCOME_UNKNOWN', 'FAILED'].includes(operation.status)) {
+        return;
+      }
+      await this.markFailed(operation.id, code, error.message);
+    } catch (markError) {
+      this.logger.error(
+        `Failed to mark exhausted WhatsApp operation ${job.data.operationId}`,
+        markError,
+      );
+    }
   }
 }
