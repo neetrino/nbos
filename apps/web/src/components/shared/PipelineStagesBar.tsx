@@ -122,6 +122,11 @@ interface PipelineStagesBarProps {
   /** Fills all segments through the last stage (e.g. WON, PAID, Lead Won). */
   fillToEndStatuses?: readonly string[];
   disabled?: boolean;
+  /**
+   * Extra space between chevron segments beyond the default arrow overlap (px).
+   * `0` = interlocking (Delivery). Higher values open a slight gap.
+   */
+  segmentGapPx?: number;
   /** When set, only matching segments accept clicks (terminal outcomes may stay visible but gated). */
   canClickStage?: (stageKey: string, index: number) => boolean;
   onStageClick: (stageKey: string) => void;
@@ -133,6 +138,7 @@ export function PipelineStagesBar({
   currentStatus,
   fillToEndStatuses = [],
   disabled = false,
+  segmentGapPx = 0,
   canClickStage,
   onStageClick,
 }: PipelineStagesBarProps) {
@@ -192,7 +198,7 @@ export function PipelineStagesBar({
             }
             style={{
               height: BAR_HEIGHT_PX,
-              marginLeft: isFirst ? 0 : -ARROW_W,
+              marginLeft: isFirst ? 0 : -ARROW_W + segmentGapPx,
               zIndex: total - index,
             }}
           >

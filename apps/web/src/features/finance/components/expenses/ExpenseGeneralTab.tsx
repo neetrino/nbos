@@ -12,20 +12,11 @@ import {
 } from '@/components/shared';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
-import {
-  EXPENSE_CATEGORIES,
-  EXPENSE_STAGES,
-  formatAmount,
-} from '@/features/finance/constants/finance';
+import { EXPENSE_CATEGORIES, formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
-import {
-  EXPENSE_GATE_FIELD_STATUS,
-  expenseStageGateFieldClass,
-} from '@/features/finance/constants/expense-stage-gate-highlight';
 import {
   EXPENSE_BACKLOG_REASONS,
   EXPENSE_FREQUENCIES,
@@ -49,7 +40,6 @@ interface ExpenseGeneralTabProps {
   expense: Expense;
   draft: ExpenseGeneralDraft;
   patchDraft: (partial: Partial<ExpenseGeneralDraft>) => void;
-  gateRequiredFields: ReadonlySet<string>;
   formDisabled?: boolean;
 }
 
@@ -57,7 +47,6 @@ export function ExpenseGeneralTab({
   expense,
   draft,
   patchDraft,
-  gateRequiredFields,
   formDisabled = false,
 }: ExpenseGeneralTabProps) {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -87,17 +76,6 @@ export function ExpenseGeneralTab({
     }
     return items;
   }, [expense.category]);
-
-  const statusOptions = useMemo((): Array<{ value: string; label: string }> => {
-    const items: Array<{ value: string; label: string }> = EXPENSE_STAGES.map((s) => ({
-      value: s.value,
-      label: s.label,
-    }));
-    if (!items.some((s) => s.value === expense.status)) {
-      items.push({ value: expense.status, label: expense.status });
-    }
-    return items;
-  }, [expense.status]);
 
   const frequencyOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = EXPENSE_FREQUENCIES.map((f) => ({
@@ -197,7 +175,7 @@ export function ExpenseGeneralTab({
               onValueChange={(v) => v && patchDraft({ type: v })}
             />
           </div>
-          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
               label="Category"
@@ -220,22 +198,8 @@ export function ExpenseGeneralTab({
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && patchDraft({ frequency: v })}
             />
-            <InlineField
-              variant="controlled"
-              label="Status"
-              type="select"
-              value={draft.status}
-              options={statusOptions}
-              disabled={formDisabled}
-              selectMenuTone="highlight"
-              className={cn(
-                EXPENSE_SHEET_FIELD_CELL_CLASS,
-                expenseStageGateFieldClass(gateRequiredFields, EXPENSE_GATE_FIELD_STATUS),
-              )}
-              onValueChange={(v) => v && patchDraft({ status: v })}
-            />
           </div>
-          {draft.status === 'BACKLOG' ? (
+          {expense.status === 'BACKLOG' || draft.status === 'BACKLOG' ? (
             <InlineField
               variant="controlled"
               label="Backlog reason"

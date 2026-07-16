@@ -10,13 +10,11 @@ import {
   DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
-  StatusBadge,
 } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
-import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderGeneralTabProps {
   order: Order;
@@ -31,7 +29,6 @@ function formatShortDate(value: string): string {
 }
 
 export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
-  const statusCfg = ORDER_STATUSES[order.status];
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
 
@@ -41,11 +38,6 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
         <DetailSheetCollapsibleSection
           title="Order"
           icon={<DollarSign size={12} />}
-          titleTrailing={
-            statusCfg ? (
-              <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
-            ) : undefined
-          }
           open={orderOpen}
           onOpenChange={setOrderOpen}
         >

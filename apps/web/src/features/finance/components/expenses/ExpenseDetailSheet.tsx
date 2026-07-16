@@ -11,7 +11,6 @@ import {
   EntityDetailSheetContent,
   ErrorState,
   LoadingState,
-  StatusBadge,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -22,10 +21,12 @@ import { DeleteExpenseDialog } from '@/features/finance/components/expenses/Dele
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { ExpenseDetailStageGateBlockers } from '@/features/finance/components/expenses/ExpenseDetailStageGateBlockers';
 import { ExpenseGeneralTab } from '@/features/finance/components/expenses/ExpenseGeneralTab';
+import { ExpensePipelineStages } from '@/features/finance/components/expenses/ExpensePipelineStages';
 import {
   EXPENSE_DETAIL_SHEET_TABS,
   type ExpenseDetailSheetTab,
 } from '@/features/finance/components/expenses/expense-detail-sheet-tabs';
+import { useExpenseSheetStatusChange } from '@/features/finance/components/expenses/use-expense-sheet-status-change';
 import {
   expenseListWithOpenExpenseHref,
   type ExpenseListHrefOptions,
@@ -39,7 +40,6 @@ import {
   clearExpenseStageGatePending,
   readExpenseStageGatePending,
 } from '@/features/finance/constants/expense-stage-gate-pending';
-import { getExpenseStage } from '@/features/finance/constants/finance';
 import { useExpenseDetail } from '@/features/finance/hooks/use-expense-detail';
 import {
   buildExpenseGeneralPatch,
@@ -168,6 +168,11 @@ export function ExpenseDetailSheet({
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
   }, []);
 
+  const syncDraftStatus = useCallback((status: string) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, status } : null));
+    setGeneralSnap((prev) => (prev ? { ...prev, status } : null));
+  }, []);
+
   const generalDirty =
     generalDraft != null && generalSnap != null && isExpenseGeneralDirty(generalDraft, generalSnap);
   generalDirtyRef.current = generalDirty;
@@ -184,6 +189,15 @@ export function ExpenseDetailSheet({
     },
     [onExpenseUpdated, setExpense],
   );
+
+  const { statusBusy, handleStatusChange } = useExpenseSheetStatusChange({
+    expense,
+    onExpenseUpdated,
+    setExpense,
+    setLocalStageGate,
+    setActiveTab,
+    syncDraftStatus,
+  });
 
   const handleGeneralSave = useCallback(() => {
     if (!expense || !generalDraft || !generalSnap) return;
@@ -255,8 +269,6 @@ export function ExpenseDetailSheet({
   const sourcePageHref =
     sourcePageHrefOverride ??
     expenseListWithOpenExpenseHref(sheetId ?? '', listProjectId, listSort, listHrefOptions);
-  const stage = expense ? getExpenseStage(expense.status) : null;
-
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -278,13 +290,6 @@ export function ExpenseDetailSheet({
                     <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                       {generalDraft?.name.trim() || expense.name}
                     </h2>
-                    {stage ? (
-                      <StatusBadge
-                        label={stage.label}
-                        variant={stage.variant}
-                        className="shrink-0 self-center"
-                      />
-                    ) : null}
                   </div>
                 </div>
                 {lifecycleMode ? (
@@ -306,6 +311,16 @@ export function ExpenseDetailSheet({
             ) : null}
           </div>
 
+          {expense ? (
+            <div className="shrink-0 pb-3">
+              <ExpensePipelineStages
+                currentStatus={expense.status}
+                disabled={saving || statusBusy}
+                onSelect={(status) => void handleStatusChange(status)}
+              />
+            </div>
+          ) : null}
+
           <DetailSheetTabBar
             tabs={EXPENSE_DETAIL_SHEET_TABS}
             activeTab={activeTab}
@@ -326,7 +341,6 @@ export function ExpenseDetailSheet({
                       expense={expense}
                       draft={generalDraft}
                       patchDraft={patchGeneralDraft}
-                      gateRequiredFields={gateRequiredFields}
                       formDisabled={saving}
                     />
                   ) : null}

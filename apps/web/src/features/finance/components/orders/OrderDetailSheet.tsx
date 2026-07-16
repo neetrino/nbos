@@ -13,6 +13,7 @@ import {
   EntityItemHost,
   ErrorState,
   LoadingState,
+  StatusBadge,
 } from '@/components/shared';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
@@ -25,6 +26,7 @@ import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
 import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
+import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -103,6 +105,7 @@ export function OrderDetailSheet({
 
   const sourcePageHref = ordersListWithOpenOrderHref(sheetId ?? '');
   const lifecycleMode = order ? orderLifecycleAction(order) : null;
+  const statusCfg = order ? ORDER_STATUSES[order.status] : undefined;
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchOrder()}>
@@ -123,11 +126,14 @@ export function OrderDetailSheet({
             ) : order ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                     <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
                     <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                       {getOrderDisplayTitle(order)}
                     </h2>
+                    {statusCfg ? (
+                      <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
+                    ) : null}
                   </div>
                 </div>
                 {lifecycleMode ? (
@@ -190,11 +196,9 @@ function OrderDetailSheetBody({
   order: Order;
   onCreateInvoice: () => void;
 }) {
+  if (activeTab === 'general') return <OrderGeneralTab order={order} />;
   if (activeTab === 'invoices') {
     return <OrderInvoicesTab order={order} onCreateInvoice={onCreateInvoice} />;
   }
-  if (activeTab === 'reconciliation') {
-    return <OrderReconciliationTab order={order} />;
-  }
-  return <OrderGeneralTab order={order} />;
+  return <OrderReconciliationTab order={order} />;
 }
