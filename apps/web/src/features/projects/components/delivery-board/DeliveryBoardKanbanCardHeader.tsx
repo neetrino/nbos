@@ -1,7 +1,9 @@
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import type { DealTypePresentation } from '@/lib/deal-type-visual';
 import { DeliveryCardReadinessPanel } from './DeliveryCardReadinessPanel';
-import { DELIVERY_BOARD_CARD_KIND_ICON_CLASS } from './delivery-board-card-ui.constants';
+import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
+import { DELIVERY_BOARD_CARD_ACCENT_BAR_CLASS } from './delivery-board-card-ui.constants';
+import { cn } from '@/lib/utils';
 
 export function DeliveryBoardKanbanCardHeader({
   title,
@@ -14,16 +16,14 @@ export function DeliveryBoardKanbanCardHeader({
   visual: DealTypePresentation;
   lifecycle: DeliveryLifecycleProjection | null;
 }) {
-  const Icon = visual.Icon;
+  const chrome = getDeliveryBoardCardChrome(visual);
 
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-start gap-2.5">
       <span
-        className={`${DELIVERY_BOARD_CARD_KIND_ICON_CLASS} ${visual.iconWrapClassName}`}
-        title={visual.label}
-      >
-        <Icon size={18} aria-hidden />
-      </span>
+        className={cn(DELIVERY_BOARD_CARD_ACCENT_BAR_CLASS, chrome.readinessFillClass)}
+        aria-hidden
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm leading-tight font-semibold">{title}</p>
         {metaLabel ? (

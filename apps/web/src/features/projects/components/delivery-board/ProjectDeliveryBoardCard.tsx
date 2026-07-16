@@ -23,8 +23,10 @@ import {
 } from '@/features/projects/constants/projects';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import { DeliveryBoardKanbanCardHeader } from './DeliveryBoardKanbanCardHeader';
-import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
-import { DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS } from './delivery-board-card-ui.constants';
+import {
+  DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS,
+  DELIVERY_BOARD_KANBAN_CARD_SHELL_CLASS,
+} from './delivery-board-card-ui.constants';
 import {
   getItemId,
   getItemLifecycle,
@@ -114,7 +116,6 @@ export function ProjectDeliveryBoardCard({
     : undefined;
 
   const projectId = getProjectId(item);
-  const boardChrome = getDeliveryBoardCardChrome(dealTypeVisual);
   const canShowHoverActions =
     kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && Boolean(projectId);
 
@@ -132,8 +133,12 @@ export function ProjectDeliveryBoardCard({
       hoverShadow="md"
       transition="all"
       shellClassName={cn(
-        kanbanMinimal ? 'group/kanban-card relative w-full text-left' : 'group w-full text-left',
-        dealTypeVisual.cardShellClassName,
+        kanbanMinimal
+          ? cn(
+              'group/kanban-card relative w-full text-left',
+              DELIVERY_BOARD_KANBAN_CARD_SHELL_CLASS,
+            )
+          : cn('group w-full text-left', dealTypeVisual.cardShellClassName),
       )}
       onPointerEnter={() => {
         if (canShowHoverActions) setHoverActionsVisible(true);
@@ -162,7 +167,7 @@ export function ProjectDeliveryBoardCard({
               lifecycle={lifecycle ?? null}
             />
             <div
-              className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, boardChrome.dividerClass)}
+              className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
               aria-hidden
             />
             <DeliveryCardMeta item={item} metaDensity="board" visual={dealTypeVisual} />
