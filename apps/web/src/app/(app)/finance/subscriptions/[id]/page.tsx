@@ -35,7 +35,6 @@ export default function SubscriptionDetailPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -49,7 +48,6 @@ export default function SubscriptionDetailPage() {
       const data = await subscriptionsApi.getById(id);
       setSubscription(data);
       setError(null);
-      setActionError(null);
     } catch (caught) {
       setSubscription(null);
       setError(
@@ -96,7 +94,6 @@ export default function SubscriptionDetailPage() {
 
   const handleSubscriptionChange = useCallback((updated: Subscription) => {
     setSubscription(updated);
-    setActionError(null);
     generalDirtyRef.current = false;
     const next = createSubscriptionGeneralDraft(updated);
     setGeneralDraft(next);
@@ -209,14 +206,7 @@ export default function SubscriptionDetailPage() {
           draft={generalDraft}
           patchDraft={patchGeneralDraft}
           formDisabled={saving}
-          onSubscriptionChange={handleSubscriptionChange}
-          onActionError={setActionError}
         />
-        {actionError ? (
-          <p className="text-destructive mt-4 text-sm" role="alert">
-            {actionError}
-          </p>
-        ) : null}
       </div>
 
       <DetailSheetFormFooter

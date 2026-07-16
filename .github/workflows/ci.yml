@@ -59,20 +59,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      # Workspace stays on pnpm 8; its `pnpm audit` still hits npm's retired
+      # /security/audits endpoint (410). pnpm 11 uses /advisories/bulk, but only
+      # if packageManager is also 11 — otherwise it re-execs the pinned 8.x.
       - name: Audit dependencies (fail on high/critical)
-        run: pnpm audit --audit-level=high
+        env:
+          PNPM_AUDIT_VERSION: '11.13.1'
+        run: |
+          node <<'EOF'
+          const fs = require('node:fs');
+          const pkgPath = 'package.json';
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          pkg.packageManager = `pnpm@${process.env.PNPM_AUDIT_VERSION}`;
+          fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+          EOF
+          npx --yes "pnpm@${PNPM_AUDIT_VERSION}" audit --audit-level=high
 
   secret-scan:
     name: Secret scan (gitleaks)

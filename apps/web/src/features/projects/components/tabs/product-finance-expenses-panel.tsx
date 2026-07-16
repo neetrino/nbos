@@ -89,7 +89,6 @@ export function ProductFinanceExpensesPanel({
         kanbanScope={kanbanScope}
         fromBacklog={fromBacklog}
         onOpenExpense={handleOpenExpense}
-        onRequestDelete={handleOpenExpense}
         onAddFirstExpense={handleAddFirstExpense}
         onKanbanMove={pageVariant === 'backlog' ? undefined : onKanbanMove}
       />
