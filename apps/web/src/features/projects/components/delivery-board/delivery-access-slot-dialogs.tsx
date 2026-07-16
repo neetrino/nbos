@@ -42,6 +42,7 @@ export function CreateAccessSlotCredentialDialog({
     <CredentialFormSheet
       open={open}
       onOpenChange={onOpenChange}
+      forceNestedBackdrop
       vaultScope="project"
       projectId={projectId}
       productId={productId}

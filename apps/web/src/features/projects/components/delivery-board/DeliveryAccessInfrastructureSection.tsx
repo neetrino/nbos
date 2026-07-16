@@ -239,6 +239,7 @@ export function DeliveryAccessInfrastructureSection({
           setSheetOpen(o);
           if (!o) setSheetCredentialId(null);
         }}
+        forceNestedBackdrop
         credentialId={sheetCredentialId}
         vaultScope="project"
         projectId={projectId}

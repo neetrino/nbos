@@ -36,7 +36,7 @@ export function CredentialTypeChangeDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Change credential type?</DialogTitle>
         </DialogHeader>
