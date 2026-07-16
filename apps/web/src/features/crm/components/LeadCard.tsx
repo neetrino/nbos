@@ -1,15 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { Phone, Mail, User, Calendar, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Phone, Mail, User, Calendar } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { getLeadSource } from '../constants/leadPipeline';
@@ -53,11 +45,9 @@ function getCurrentTimeSnapshot(): number {
 interface LeadCardProps {
   lead: Lead;
   onClick: (lead: Lead) => void;
-  onStatusChange: (id: string, status: string) => void;
-  onConvertToDeal?: (lead: Lead) => void;
 }
 
-export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: LeadCardProps) {
+export function LeadCard({ lead, onClick }: LeadCardProps) {
   const leadVisual = LEAD_ENTITY_VISUAL;
   const title = getLeadDisplayTitle(lead);
   const metaLabel = getLeadCardMetaLabel(lead);
@@ -102,12 +92,13 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
             </p>
           ) : null}
         </div>
-        <LeadCardMenu
-          lead={lead}
-          onClick={onClick}
-          onStatusChange={onStatusChange}
-          onConvertToDeal={onConvertToDeal}
-        />
+        {source ? (
+          <StatusBadge
+            label={`${source.icon} ${source.label}`}
+            variant="default"
+            className="h-5 shrink-0 self-start px-1.5 py-0 text-[10px] leading-none"
+          />
+        ) : null}
       </div>
 
       <div className="mt-2.5 space-y-1">
@@ -127,13 +118,6 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
 
       <div className="mt-3 flex items-end justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          {source ? (
-            <StatusBadge
-              label={`${source.icon} ${source.label}`}
-              variant="default"
-              className="text-[9px]"
-            />
-          ) : null}
           {channelLabel ? (
             <span className="text-muted-foreground truncate text-[10px]">{channelLabel}</span>
           ) : null}
@@ -165,52 +149,5 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
         </div>
       </div>
     </KanbanCardShell>
-  );
-}
-
-function LeadCardMenu({
-  lead,
-  onClick,
-  onStatusChange,
-  onConvertToDeal,
-}: {
-  lead: Lead;
-  onClick: (lead: Lead) => void;
-  onStatusChange: (id: string, status: string) => void;
-  onConvertToDeal?: (lead: Lead) => void;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={(props) => (
-          <Button
-            {...props}
-            variant="ghost"
-            size="icon-xs"
-            className="opacity-0 group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              props.onClick?.(e);
-            }}
-          >
-            <MoreHorizontal size={14} />
-          </Button>
-        )}
-      />
-      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => onClick(lead)}>View details</DropdownMenuItem>
-        {lead.status === 'MQL' ? (
-          <DropdownMenuItem onClick={() => onConvertToDeal?.(lead)}>
-            Convert to deal
-          </DropdownMenuItem>
-        ) : null}
-        <DropdownMenuSeparator />
-        {lead.status !== 'SPAM' ? (
-          <DropdownMenuItem onClick={() => onStatusChange(lead.id, 'SPAM')}>
-            Mark as spam
-          </DropdownMenuItem>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

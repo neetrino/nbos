@@ -1,6 +1,10 @@
 'use client';
 
 import { TableRow, TableCell } from '@/components/ui/table';
+import {
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+} from '@/components/shared/entity-list-table';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { CredentialVaultTableRowCells } from '@/features/credentials/components/credential-vault-table-row-cells';
 import { CredentialVaultTableUrlCell } from '@/features/credentials/components/credential-vault-table-row-actions';
@@ -9,7 +13,6 @@ import {
   credentialVaultCheckboxRevealClass,
   isCredentialVaultCheckboxTarget,
 } from '@/features/credentials/constants/credential-vault-selection-checkbox';
-
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
 export interface CredentialVaultTableRowProps {
@@ -41,7 +44,7 @@ export function CredentialVaultTableRow({
 }: CredentialVaultTableRowProps) {
   return (
     <TableRow
-      className="group cursor-pointer"
+      className={`group cursor-pointer ${ENTITY_LIST_ROW_HOVER_CLASS}`}
       onClick={(event) => {
         if (isCredentialVaultCheckboxTarget(event.target)) return;
         onOpenCredential(cred.id);
@@ -49,7 +52,7 @@ export function CredentialVaultTableRow({
     >
       {selectionEnabled ? (
         <TableCell
-          className="w-10"
+          className={`${ENTITY_LIST_CELL_CLASS} w-10`}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >
@@ -75,7 +78,7 @@ export function CredentialVaultTableRow({
         onCopySecret={onCopySecret}
         onSetFavorite={onSetFavorite}
       />
-      <TableCell onClick={(e) => e.stopPropagation()}>
+      <TableCell className={ENTITY_LIST_CELL_CLASS} onClick={(e) => e.stopPropagation()}>
         <CredentialVaultTableUrlCell cred={cred} isTrashList={isTrashList} />
       </TableCell>
     </TableRow>

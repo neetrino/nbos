@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ErrorState, LoadingState, PageHero } from '@/components/shared';
 import { BonusPolicyEditorCard } from '@/features/my-company/bonus-policies/bonus-policy-editor-card';
@@ -139,18 +146,24 @@ export default function BonusPoliciesPage() {
               </label>
               <label className="space-y-1 text-sm">
                 <span className="text-muted-foreground">Template</span>
-                <select
-                  className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                <Select
                   value={newTemplate}
                   disabled={creating}
-                  onChange={(e) => setNewTemplate(e.target.value)}
+                  onValueChange={(v) => {
+                    if (v) setNewTemplate(v);
+                  }}
                 >
-                  {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </label>
               <label className="space-y-1 text-sm md:col-span-2">
                 <span className="text-muted-foreground">Scope (optional)</span>

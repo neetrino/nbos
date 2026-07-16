@@ -51,6 +51,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 import { expensesApi, type Expense } from '@/lib/api/finance';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 export interface ExpenseDetailSheetProps {
   expenseId: string | null;
@@ -85,7 +86,9 @@ export function ExpenseDetailSheet({
   sourcePageHref: sourcePageHrefOverride,
   forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
-  const activeExpenseId = open && expenseId ? expenseId : '';
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(expenseId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+  const activeExpenseId = open && sheetId ? sheetId : '';
   const { expense, setExpense, loading, error, fetchExpense } = useExpenseDetail(activeExpenseId, {
     open,
     initialExpense,
@@ -247,16 +250,16 @@ export function ExpenseDetailSheet({
     }
   }, [expense, handleExpenseChange, lifecycleMode, onExpenseDeleted, onOpenChange]);
 
-  if (!expenseId) return null;
+  if (!hostMounted) return null;
 
   const sourcePageHref =
     sourcePageHrefOverride ??
-    expenseListWithOpenExpenseHref(expenseId, listProjectId, listSort, listHrefOptions);
+    expenseListWithOpenExpenseHref(sheetId ?? '', listProjectId, listSort, listHrefOptions);
   const stage = expense ? getExpenseStage(expense.status) : null;
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"

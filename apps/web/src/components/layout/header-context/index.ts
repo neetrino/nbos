@@ -10,6 +10,7 @@ export { HeaderContextNav } from './HeaderContextNav';
 export { HeaderModuleTitle, type HeaderModuleTitleProps } from './HeaderModuleTitle';
 export {
   HeaderContextProvider,
+  HeaderModuleTitleLockedContext,
   useHeaderContext,
   useHeaderContextLayout,
   useHeaderContextResolved,

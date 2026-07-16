@@ -21,7 +21,7 @@ export default function ReportsLayout({ children }: { children: ReactNode }) {
             <PageHeroNavLinks items={zoneNav} ariaLabel="Reports section navigation" />
           ) : null
         }
-        className="flex h-[calc(100dvh-7rem)] min-h-0 flex-col gap-5"
+        className="flex h-full min-h-0 flex-col gap-5"
       >
         {children}
       </ModuleHeroSlotProvider>

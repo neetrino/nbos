@@ -1,7 +1,14 @@
 'use client';
 
-import { PanelRight, RotateCcw } from 'lucide-react';
+import { FolderKanban, PanelRight, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -10,7 +17,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { StatusBadge } from '@/components/shared';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
+  EntityListIconLabel,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+  StatusBadge,
+} from '@/components/shared';
 import {
   TICKET_STATUSES,
   getTicketCategory,
@@ -19,6 +36,10 @@ import {
 } from '@/features/support/constants/support';
 import { isSupportInteractiveTarget } from '@/features/support/utils/is-support-interactive-target';
 import type { SupportTicket } from '@/lib/api/support';
+import { cn } from '@/lib/utils';
+
+const PROJECT_ICON_CLASS =
+  'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400';
 
 export interface SupportTicketsListViewProps {
   tickets: SupportTicket[];
@@ -36,17 +57,19 @@ export function SupportTicketsListView({
   onReopen,
 }: SupportTicketsListViewProps) {
   return (
-    <div className="border-border min-h-0 flex-1 overflow-hidden rounded-xl border">
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="min-w-[200px]">Ticket</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>SLA</TableHead>
-            <TableHead>Assignee</TableHead>
-            <TableHead className="hidden lg:table-cell">Project</TableHead>
+        <TableHeader className="bg-card sticky top-0 z-10">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'min-w-[200px]')}>Ticket</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Category</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Priority</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>SLA</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Assignee</TableHead>
+            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'hidden lg:table-cell')}>
+              Project
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -82,10 +105,13 @@ function SupportTicketListRow({
   const category = getTicketCategory(ticket.category);
   const priority = getTicketPriority(ticket.priority);
   const sla = getTicketSlaState(ticket.slaState.state);
+  const assigneeLabel = ticket.assignee
+    ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
+    : null;
 
   return (
     <TableRow
-      className="hover:bg-muted/50 cursor-pointer"
+      className={cn(ENTITY_LIST_ROW_HOVER_CLASS, 'cursor-pointer')}
       onClick={(event) => {
         if (isSupportInteractiveTarget(event.target)) {
           return;
@@ -93,12 +119,9 @@ function SupportTicketListRow({
         onOpenDetail(ticket.id);
       }}
     >
-      <TableCell>
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="font-medium">{ticket.title}</p>
-            <p className="text-muted-foreground text-xs">{ticket.code}</p>
-          </div>
+          <EntityListPrimaryCell title={ticket.title} subtitle={ticket.code} />
           <Button
             type="button"
             variant="outline"
@@ -115,26 +138,47 @@ function SupportTicketListRow({
           </Button>
         </div>
       </TableCell>
-      <TableCell>
-        {category ? <StatusBadge label={category.label} variant={category.variant} /> : null}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {category ? (
+          <StatusBadge
+            label={category.label}
+            variant={category.variant}
+            className={ENTITY_LIST_BADGE_CLASS}
+          />
+        ) : (
+          <EntityListMutedDash />
+        )}
       </TableCell>
-      <TableCell>
-        {priority ? <StatusBadge label={priority.label} variant={priority.variant} /> : null}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {priority ? (
+          <StatusBadge
+            label={priority.label}
+            variant={priority.variant}
+            className={ENTITY_LIST_BADGE_CLASS}
+          />
+        ) : (
+          <EntityListMutedDash />
+        )}
       </TableCell>
-      <TableCell>
-        <select
-          className="border-border bg-background max-w-[168px] rounded-md border px-2 py-1 text-xs"
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        <Select
           value={ticket.status}
-          onChange={(event) => onStatusSelect(ticket, event.target.value)}
+          onValueChange={(v) => {
+            if (v) onStatusSelect(ticket, v);
+          }}
           disabled={Boolean(actionId?.startsWith('status:'))}
-          aria-label="Ticket status"
         >
-          {TICKET_STATUSES.map((status) => (
-            <option key={status.value} value={status.value}>
-              {status.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="max-w-[168px]" aria-label="Ticket status">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {TICKET_STATUSES.map((status) => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {['RESOLVED', 'CLOSED'].includes(ticket.status) ? (
           <div className="mt-1">
             <Button
@@ -151,12 +195,30 @@ function SupportTicketListRow({
           </div>
         ) : null}
       </TableCell>
-      <TableCell>{sla ? <StatusBadge label={sla.label} variant={sla.variant} /> : null}</TableCell>
-      <TableCell className="text-sm">
-        {ticket.assignee ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}` : '—'}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {sla ? (
+          <StatusBadge
+            label={sla.label}
+            variant={sla.variant}
+            className={ENTITY_LIST_BADGE_CLASS}
+          />
+        ) : (
+          <EntityListMutedDash />
+        )}
       </TableCell>
-      <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-        {ticket.project?.name ?? '—'}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {assigneeLabel ? <span className="text-sm">{assigneeLabel}</span> : <EntityListMutedDash />}
+      </TableCell>
+      <TableCell className={cn(ENTITY_LIST_CELL_CLASS, 'hidden lg:table-cell')}>
+        {ticket.project?.name ? (
+          <EntityListIconLabel
+            icon={FolderKanban}
+            iconClassName={PROJECT_ICON_CLASS}
+            label={ticket.project.name}
+          />
+        ) : (
+          <EntityListMutedDash />
+        )}
       </TableCell>
     </TableRow>
   );

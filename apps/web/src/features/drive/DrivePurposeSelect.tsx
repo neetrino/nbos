@@ -1,5 +1,12 @@
 'use client';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatDriveLabel } from './drive-format';
 import type { DriveLibraryOption } from './drive-options';
 
@@ -20,19 +27,25 @@ export function DrivePurposeSelect({
   return (
     <label className="flex flex-col gap-1 text-xs">
       <span className="text-muted-foreground font-medium">Purpose</span>
-      <select
-        className="border-input bg-background h-8 rounded-md border px-2 text-xs"
+      <Select
         value={value}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
+        onValueChange={(v) => {
+          if (v) onChange(v);
+        }}
       >
-        {purposes.map((purpose) => (
-          <option key={purpose} value={purpose}>
-            {formatDriveLabel(purpose)}
-          </option>
-        ))}
-        <option value="OTHER">{formatDriveLabel('OTHER')}</option>
-      </select>
+        <SelectTrigger size="sm" className="w-full">
+          <SelectValue placeholder="Purpose" />
+        </SelectTrigger>
+        <SelectContent>
+          {purposes.map((purpose) => (
+            <SelectItem key={purpose} value={purpose}>
+              {formatDriveLabel(purpose)}
+            </SelectItem>
+          ))}
+          <SelectItem value="OTHER">{formatDriveLabel('OTHER')}</SelectItem>
+        </SelectContent>
+      </Select>
     </label>
   );
 }

@@ -138,63 +138,63 @@ export function DealGeneralTab({
   const filteredProductTypeOptions = getFilteredProductTypeOptions(draft, productTypeOptions);
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
-      <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} max-w-[52rem] min-w-0 gap-4`}>
-        <DealCombinedInfoSection
-          draft={draft}
-          patchDraft={patchDraft}
-          filteredProductTypeOptions={filteredProductTypeOptions}
-          searchProjects={searchProjects}
-          searchProducts={searchProducts}
-          searchCompanies={searchCompanies}
-          disabled={formDisabled}
-          gateRequiredFields={gateRequiredFields}
-        />
-        <DealOfferContractSection
-          dealId={deal.id}
-          gateRequiredFields={gateRequiredFields}
-          onFilesChanged={onRefresh}
-        />
-        <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
-          <DealContactTeamSection
-            deal={deal}
+    <div className="@container/deal-general">
+      <div className="grid grid-cols-1 gap-5 @[64rem]/deal-general:grid-cols-[minmax(0,48rem)_auto] @[64rem]/deal-general:items-start @[64rem]/deal-general:gap-6">
+        <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} max-w-[48rem] min-w-0 gap-4`}>
+          <DealCombinedInfoSection
             draft={draft}
             patchDraft={patchDraft}
-            searchEmployees={searchEmployees}
+            filteredProductTypeOptions={filteredProductTypeOptions}
+            searchProjects={searchProjects}
+            searchProducts={searchProducts}
+            searchCompanies={searchCompanies}
             disabled={formDisabled}
             gateRequiredFields={gateRequiredFields}
-            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
-          <DealMarketingSection
-            deal={deal}
+          <DealOfferContractSection
+            dealId={deal.id}
+            gateRequiredFields={gateRequiredFields}
+            onFilesChanged={onRefresh}
+          />
+          <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
+            <DealContactTeamSection
+              deal={deal}
+              draft={draft}
+              patchDraft={patchDraft}
+              searchEmployees={searchEmployees}
+              disabled={formDisabled}
+              gateRequiredFields={gateRequiredFields}
+              sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
+            />
+            <DealMarketingSection
+              deal={deal}
+              draft={draft}
+              patchDraft={patchDraft}
+              searchAttributionOptions={searchAttributionOptions}
+              searchPartners={searchPartners}
+              searchContacts={searchContacts}
+              onRefresh={onRefresh}
+              disabled={formDisabled}
+              gateRequiredFields={gateRequiredFields}
+              sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
+            />
+            <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
+          </div>
+          <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
+          <DealNotesSection
+            entityId={deal.id}
             draft={draft}
             patchDraft={patchDraft}
-            searchAttributionOptions={searchAttributionOptions}
-            searchPartners={searchPartners}
-            searchContacts={searchContacts}
-            onRefresh={onRefresh}
             disabled={formDisabled}
             gateRequiredFields={gateRequiredFields}
-            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
-          <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
         </div>
-        <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
-        <DealNotesSection
-          entityId={deal.id}
-          draft={draft}
-          patchDraft={patchDraft}
-          disabled={formDisabled}
-          gateRequiredFields={gateRequiredFields}
-        />
+
+        <aside className="flex w-full shrink-0 flex-col gap-4 @[64rem]/deal-general:w-72">
+          <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
+          <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
+        </aside>
       </div>
-
-      <div aria-hidden className="hidden min-h-0 xl:block" />
-
-      <aside className="flex w-64 shrink-0 flex-col gap-4 xl:w-72">
-        <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
-        <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
-      </aside>
     </div>
   );
 }

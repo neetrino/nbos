@@ -50,7 +50,6 @@ import {
   EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
   EXPENSE_PAYROLL_SOURCE_PAYROLL,
 } from '@/features/finance/constants/expense-payroll-filter';
-import { expenseLifecycleAction } from '@/features/finance/utils/expense-lifecycle';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import {
   EXPENSE_BOARD_SCOPE_FILTER_KEY,
@@ -114,9 +113,6 @@ export function ExpensesPageContent({
   const [view, handleViewChange] = useExpensesBoardViewMode();
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [createOpen, setCreateOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
-  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const projectFilterOptions = useExpenseProjectFilterOptions();
@@ -324,34 +320,6 @@ export function ExpensesPageContent({
     [expenses, fetchExpenses, handleExpenseKanbanMove],
   );
 
-  const handleConfirmDeleteExpense = async () => {
-    if (!deleteTarget) return;
-    const mode = expenseLifecycleAction(deleteTarget);
-    if (!mode) return;
-    setDeleteError(null);
-    setDeleteSubmitting(true);
-    try {
-      if (mode === 'delete') {
-        await expensesApi.delete(deleteTarget.id);
-      } else {
-        await expensesApi.cancel(deleteTarget.id);
-      }
-      setDeleteTarget(null);
-      await fetchExpenses();
-    } catch (caught) {
-      setDeleteError(
-        getApiErrorMessage(
-          caught,
-          mode === 'delete'
-            ? 'Expense could not be deleted. Check your connection and try again.'
-            : 'Expense could not be cancelled. Check your connection and try again.',
-        ),
-      );
-    } finally {
-      setDeleteSubmitting(false);
-    }
-  };
-
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
@@ -533,10 +501,6 @@ export function ExpensesPageContent({
         kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
         fromBacklog={pageVariant === 'backlog'}
         onOpenExpense={handleExpenseClick}
-        onRequestDelete={(row) => {
-          setDeleteError(null);
-          setDeleteTarget(row);
-        }}
         onAddFirstExpense={() => setCreateOpen(true)}
         onKanbanMove={
           pageVariant === 'default' && view === 'kanban' ? onKanbanStatusMove : undefined
@@ -569,16 +533,6 @@ export function ExpensesPageContent({
             handleExpenseClick(created);
           });
         }}
-        deleteTarget={deleteTarget}
-        deleteSubmitting={deleteSubmitting}
-        deleteError={deleteError}
-        onDeleteOpenChange={(open) => {
-          if (!open) {
-            setDeleteTarget(null);
-            setDeleteError(null);
-          }
-        }}
-        onConfirmDeleteExpense={handleConfirmDeleteExpense}
       />
     </div>
   );

@@ -55,7 +55,7 @@ export function MessengerSidebar({
   const filteredDm = dmPeers.filter((u) => u.name.toLowerCase().includes(q));
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-r border-black/[0.06] bg-white">
+    <aside className="flex min-h-0 w-72 shrink-0 flex-col border-r border-black/[0.06] bg-white">
       <div className="p-3">
         <div className="relative">
           <Search size={15} className="absolute top-1/2 left-2.5 -translate-y-1/2 text-black/30" />

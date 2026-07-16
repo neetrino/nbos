@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import {
   payrollRunStatusUi,
@@ -17,6 +16,10 @@ import {
 } from '@/features/finance/constants/payroll-run-status-ui';
 import { formatPayrollMonthLabel } from '@/features/finance/utils/salary-board-month-utils';
 import { PayrollRunsPaidProgressBar } from '@/features/finance/components/payroll/payroll-runs-paid-progress';
+import {
+  FINANCE_LIST_SHELL_CLASS,
+  FinanceListAmount,
+} from '@/features/finance/components/shared/finance-list-table';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +52,7 @@ export function PayrollRunsListTable(props: {
   const router = useRouter();
 
   return (
-    <div className="border-border overflow-x-auto rounded-xl border">
+    <div className={cn(FINANCE_LIST_SHELL_CLASS, 'overflow-x-auto')}>
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -116,17 +119,20 @@ export function PayrollRunsListTable(props: {
                 <TableCell
                   className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
                 >
-                  {formatAmount(payable)}
+                  <FinanceListAmount amount={payable} className="justify-end" />
                 </TableCell>
                 <TableCell
                   className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums`}
                 >
-                  {formatAmount(paid)}
+                  <FinanceListAmount amount={paid} className="justify-end" />
                 </TableCell>
                 <TableCell
                   className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm font-semibold tabular-nums`}
                 >
-                  {formatAmount(payrollRunRemainingMajorUnits(row.totalPayable, row.totalPaid))}
+                  <FinanceListAmount
+                    amount={payrollRunRemainingMajorUnits(row.totalPayable, row.totalPaid)}
+                    className="justify-end"
+                  />
                 </TableCell>
               </TableRow>
             );
@@ -146,13 +152,13 @@ export function PayrollRunsListTable(props: {
               {pageTotals.materialized}
             </TableCell>
             <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(pageTotals.payable)}
+              <FinanceListAmount amount={pageTotals.payable} className="justify-end" />
             </TableCell>
             <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(pageTotals.paid)}
+              <FinanceListAmount amount={pageTotals.paid} className="justify-end" />
             </TableCell>
             <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(pageTotals.remaining)}
+              <FinanceListAmount amount={pageTotals.remaining} className="justify-end" />
             </TableCell>
           </TableRow>
         </tfoot>

@@ -8,6 +8,8 @@ import {
 import {
   PROJECTS_HUB_PAGE_SIZE,
   PROJECTS_HUB_SEARCH_DEBOUNCE_MS,
+  PROJECTS_HUB_SORT_BY,
+  PROJECTS_HUB_SORT_ORDER,
 } from '@/features/projects/constants/projects-hub-page-constants';
 
 const emptyMeta = () => ({
@@ -71,6 +73,8 @@ export function useProjectsHubDirectory() {
         page,
         pageSize: PROJECTS_HUB_PAGE_SIZE,
         search: debouncedSearch || undefined,
+        sortBy: PROJECTS_HUB_SORT_BY,
+        sortOrder: PROJECTS_HUB_SORT_ORDER,
         ...(scope ? { scope } : {}),
       });
       setItems(data.items);

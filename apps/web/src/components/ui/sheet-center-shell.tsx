@@ -25,7 +25,6 @@ export function SheetCenterShell({
       className={cn(
         SHEET_CENTER_SHELL_CLASS,
         nestedStackClass,
-        'transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0',
         floatingRailVisible ? 'opacity-100' : 'opacity-0',
       )}
     >

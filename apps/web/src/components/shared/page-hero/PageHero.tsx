@@ -1,7 +1,10 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
-import { useHeaderModuleTitle } from '@/components/layout/header-context';
+import { useRef, useContext, type ReactNode } from 'react';
+import {
+  HeaderModuleTitleLockedContext,
+  useHeaderModuleTitle,
+} from '@/components/layout/header-context';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
@@ -53,7 +56,9 @@ function PageHeroInner({
 }: PageHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const toolsRowRef = useRef<HTMLDivElement>(null);
-  useHeaderModuleTitle(syncModuleTitle ? (title ?? null) : null, syncModuleTitle);
+  const moduleTitleLocked = useContext(HeaderModuleTitleLockedContext);
+  const shouldSyncModuleTitle = syncModuleTitle && !moduleTitleLocked;
+  useHeaderModuleTitle(shouldSyncModuleTitle ? (title ?? null) : null, shouldSyncModuleTitle);
 
   const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);

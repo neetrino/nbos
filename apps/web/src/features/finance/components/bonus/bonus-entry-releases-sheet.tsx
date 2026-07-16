@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Gift, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EntityDetailSheetContent } from '@/components/shared';
-import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import { Sheet } from '@/components/ui/sheet';
 import { BonusEntryAuditPanel } from '@/features/finance/components/bonus/bonus-entry-audit-panel';
 import { BonusEntryPlannedAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-planned-adjust-block';
 import { BonusEntryPayableAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-payable-adjust-block';
@@ -18,6 +18,11 @@ import {
   employeeDisplayName,
   parseBonusAmount,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
+import {
+  BONUS_ENTRY_STATUS_LABEL,
+  BONUS_ENTRY_STATUS_VARIANT,
+} from '@/features/finance/constants/bonus-board-status-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { computeBonusEntryReleaseTotals } from '@/features/finance/utils/bonus-entry-release-totals';
 import { bonusEntryPayableCeiling } from '@/features/finance/utils/bonus-entry-payable';
@@ -58,16 +63,39 @@ export function BonusEntryReleasesSheet({
         className="gap-0"
         forceNestedBackdrop={forceNestedBackdrop}
       >
-        <SheetHeader>
-          <SheetTitle>Bonus entry</SheetTitle>
-          <SheetDescription>
-            {entry
-              ? `${employeeDisplayName(entry.employee)} · ${formatAmount(parseBonusAmount(entry.amount))} planned`
-              : 'Select a bonus from the board.'}
-          </SheetDescription>
-        </SheetHeader>
+        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                <Gift className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                  Bonus entry
+                </h2>
+              </div>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {entry
+                  ? `${employeeDisplayName(entry.employee)} · ${formatAmount(parseBonusAmount(entry.amount))} planned`
+                  : 'Select a bonus from the board.'}
+              </p>
+            </div>
+            {entry ? (
+              <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                <span
+                  className={`self-center rounded-md px-2 py-0.5 text-xs font-medium ${BONUS_BOARD_TYPE_CONFIG[entry.type].color}`}
+                >
+                  {BONUS_BOARD_TYPE_CONFIG[entry.type].label}
+                </span>
+                <StatusBadge
+                  label={BONUS_ENTRY_STATUS_LABEL[entry.status]}
+                  variant={BONUS_ENTRY_STATUS_VARIANT[entry.status]}
+                  className="self-center"
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-6">
           {loading && !entry ? (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />

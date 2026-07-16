@@ -141,7 +141,7 @@ export function MessengerThread({
     !messages.some((m) => m.id === channelReadReceipt.anchorId);
 
   return (
-    <div className="flex flex-1 flex-col bg-white">
+    <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
         {active.type === 'channel' && (
           <>
@@ -171,7 +171,7 @@ export function MessengerThread({
         )}
       </div>
 
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto py-4">
+      <div ref={scrollAreaRef} className="min-h-0 flex-1 overflow-y-auto py-4">
         {messagesLoading ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-sm text-black/40">Loading messages…</p>

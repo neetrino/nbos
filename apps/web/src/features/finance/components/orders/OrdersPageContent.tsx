@@ -92,14 +92,7 @@ function OrdersListOrBoard({
   onCreateInvoice: (order: Order) => void;
 }) {
   if (view === 'board') {
-    return (
-      <OrdersBoardView
-        orders={orders}
-        boardScope={boardScope}
-        onOrderClick={onOrderClick}
-        onCreateInvoice={onCreateInvoice}
-      />
-    );
+    return <OrdersBoardView orders={orders} boardScope={boardScope} onOrderClick={onOrderClick} />;
   }
 
   return (

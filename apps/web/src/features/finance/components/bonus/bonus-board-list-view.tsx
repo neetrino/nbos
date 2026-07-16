@@ -1,6 +1,6 @@
 'use client';
 
-import { Gift } from 'lucide-react';
+import { Gift, FolderKanban } from 'lucide-react';
 import { type KeyboardEvent } from 'react';
 import { EmptyState, StatusBadge } from '@/components/shared';
 import {
@@ -20,31 +20,20 @@ import {
   employeeDisplayName,
   parseBonusAmount,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
-import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
+  EntityListAmount,
+  EntityListIconLabel,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
-
-const LIST_EDGE_START = 'px-0 pl-6';
-const LIST_EDGE_END = 'px-0 pr-6';
-const LIST_ROW_CELL = 'px-0 py-3 align-middle';
-const LIST_HEAD_CELL = cn(LIST_ROW_CELL, 'h-auto font-medium');
-const LIST_BADGE_SIZE_CLASS = 'px-2.5 py-1 text-xs';
-const LIST_TYPE_BADGE_CLASS = cn('inline-flex rounded-md font-medium', LIST_BADGE_SIZE_CLASS);
-const LIST_EMPLOYEE_COLUMN = 'w-[28%]';
-const LIST_BLOCK_COLUMN = 'w-[18%]';
-const LIST_AMOUNT_COLUMN = 'w-[18%]';
-const LIST_EMPLOYEE_HEAD = cn(LIST_HEAD_CELL, LIST_EMPLOYEE_COLUMN, LIST_EDGE_START, 'text-left');
-const LIST_EMPLOYEE_CELL = cn(LIST_ROW_CELL, LIST_EMPLOYEE_COLUMN, LIST_EDGE_START, 'font-medium');
-const LIST_BLOCK_COLUMN_HEAD = cn(LIST_HEAD_CELL, LIST_BLOCK_COLUMN, 'text-center');
-const LIST_BLOCK_COLUMN_CELL = cn(LIST_ROW_CELL, LIST_BLOCK_COLUMN, 'text-center');
-const LIST_AMOUNT_COLUMN_HEAD = cn(LIST_HEAD_CELL, LIST_AMOUNT_COLUMN, LIST_EDGE_END, 'text-right');
-const LIST_AMOUNT_COLUMN_CELL = cn(
-  LIST_ROW_CELL,
-  LIST_AMOUNT_COLUMN,
-  LIST_EDGE_END,
-  'text-right text-sm font-semibold tabular-nums',
-);
 
 function handleBonusRowKeyDown(
   event: KeyboardEvent<HTMLTableRowElement>,
@@ -79,55 +68,64 @@ export function BonusBoardListView({
   const statusColumnLabel = boardScope === 'CLOSED' ? 'Outcome' : 'Status';
 
   return (
-    <div className="border-border bg-card min-h-0 flex-1 overflow-auto rounded-xl border">
-      <Table className="w-full table-fixed">
+    <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
+      <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className={LIST_EMPLOYEE_HEAD}>Employee</TableHead>
-            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>Project</TableHead>
-            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>Type</TableHead>
-            <TableHead className={LIST_BLOCK_COLUMN_HEAD}>{statusColumnLabel}</TableHead>
-            <TableHead className={LIST_AMOUNT_COLUMN_HEAD}>Amount</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Employee</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{statusColumnLabel}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => {
             const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
-            const projectCode = row.project?.code ?? '—';
+            const projectCode = row.project?.code ?? null;
             return (
               <TableRow
                 key={row.id}
-                className="bg-card hover:bg-muted/40 cursor-pointer border-b"
+                className={cn(ENTITY_LIST_ROW_HOVER_CLASS, 'cursor-pointer')}
                 onClick={() => onOpenReleases(row)}
                 onKeyDown={(event) => handleBonusRowKeyDown(event, row, onOpenReleases)}
                 tabIndex={0}
                 role="button"
-                aria-label={`${employeeDisplayName(row.employee)} · ${projectCode} · ${formatAmount(parseBonusAmount(row.amount))}`}
+                aria-label={`${employeeDisplayName(row.employee)} · ${projectCode ?? '—'} · bonus`}
               >
-                <TableCell className={LIST_EMPLOYEE_CELL}>
-                  {employeeDisplayName(row.employee)}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListPrimaryCell title={employeeDisplayName(row.employee)} />
                 </TableCell>
-                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
-                  <div className="flex justify-center">{projectCode}</div>
-                </TableCell>
-                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
-                  <div className="flex justify-center">
-                    <span className={cn(LIST_TYPE_BADGE_CLASS, typeCfg.color)}>
-                      {typeCfg.label}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className={LIST_BLOCK_COLUMN_CELL}>
-                  <div className="flex justify-center">
-                    <StatusBadge
-                      label={BONUS_ENTRY_STATUS_LABEL[row.status]}
-                      variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
-                      className={LIST_BADGE_SIZE_CLASS}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {projectCode ? (
+                    <EntityListIconLabel
+                      icon={FolderKanban}
+                      iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+                      label={projectCode}
                     />
-                  </div>
+                  ) : (
+                    <EntityListMutedDash />
+                  )}
                 </TableCell>
-                <TableCell className={LIST_AMOUNT_COLUMN_CELL}>
-                  {formatAmount(parseBonusAmount(row.amount))}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <span
+                    className={cn(
+                      'inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium',
+                      typeCfg.color,
+                    )}
+                  >
+                    {typeCfg.label}
+                  </span>
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <StatusBadge
+                    label={BONUS_ENTRY_STATUS_LABEL[row.status]}
+                    variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
+                    className={ENTITY_LIST_BADGE_CLASS}
+                  />
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListAmount amount={parseBonusAmount(row.amount)} />
                 </TableCell>
               </TableRow>
             );

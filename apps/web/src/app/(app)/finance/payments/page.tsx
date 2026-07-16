@@ -1,28 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
+import { CreditCard } from 'lucide-react';
 import {
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
-  StatusBadge,
   useModuleHeroSlots,
 } from '@/components/shared';
-import {
-  getFinancePeriodParams,
-  type FinancePeriod,
-  formatAmount,
-} from '@/features/finance/constants/finance';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import {
   buildFinancePeriodFilterConfig,
@@ -30,6 +17,7 @@ import {
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
+import { PaymentsListTable } from '@/features/finance/components/payments/PaymentsListTable';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
 import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
 import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
@@ -170,77 +158,7 @@ export default function PaymentsPage() {
           description="Payments appear when invoices are marked as paid"
         />
       ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Payment Date</TableHead>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead>Confirmed By</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {payments.map((payment) => (
-                <TableRow key={payment.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <Calendar size={13} className="text-muted-foreground" />
-                      {new Date(payment.paymentDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {payment.invoice ? (
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <FileText size={12} className="text-muted-foreground" />
-                        <span>{payment.invoice.code}</span>
-                        {payment.invoice.type ? (
-                          <StatusBadge label={payment.invoice.type} variant="blue" />
-                        ) : null}
-                      </div>
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {payment.project ? (
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <FolderKanban size={12} className="text-muted-foreground" />
-                        {payment.project.name}
-                      </div>
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {payment.company?.name ?? '—'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="flex items-center justify-end gap-1 font-semibold text-green-600">
-                      <DollarSign size={12} />
-                      {formatAmount(parseFloat(payment.amount))}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
-                    {payment.paymentMethod ?? '—'}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {payment.confirmer
-                      ? `${payment.confirmer.firstName} ${payment.confirmer.lastName}`
-                      : '—'}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <PaymentsListTable payments={payments} />
       )}
     </div>
   );

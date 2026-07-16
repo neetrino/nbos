@@ -4,6 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { StatusBadge } from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
@@ -215,20 +222,24 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
         </div>
       </div>
 
-      <label className="block space-y-1 text-sm">
+      <label className="block max-w-md space-y-1 text-sm">
         <span className="text-muted-foreground">Employee</span>
-        <select
-          className="border-input bg-background w-full max-w-md rounded-md border px-3 py-2 text-sm"
-          value={selectedId}
-          onChange={(e) => setSelectedId(e.target.value)}
+        <Select
+          value={selectedId || 'none'}
+          onValueChange={(v) => setSelectedId(!v || v === 'none' ? '' : v)}
         >
-          <option value="">Select employee…</option>
-          {employees.map((e) => (
-            <option key={e.id} value={e.id}>
-              {employeeLabel(e)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select employee…" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select employee…</SelectItem>
+            {employees.map((e) => (
+              <SelectItem key={e.id} value={e.id}>
+                {employeeLabel(e)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </label>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
@@ -274,19 +285,23 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
           <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-2">
             <label className="space-y-1 text-sm">
               <span className="text-muted-foreground">Bonus policy</span>
-              <select
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                value={bonusPolicyId}
+              <Select
+                value={bonusPolicyId || 'none'}
                 disabled={busy || activeBonusPolicies.length === 0}
-                onChange={(e) => setBonusPolicyId(e.target.value)}
+                onValueChange={(v) => setBonusPolicyId(!v || v === 'none' ? '' : v)}
               >
-                <option value="">None</option>
-                {activeBonusPolicies.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {activeBonusPolicies.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES ? (
                 <p className="text-muted-foreground text-xs">
                   Percentages are edited under{' '}
@@ -325,19 +340,23 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
             </label>
             <label className="space-y-1 text-sm">
               <span className="text-muted-foreground">KPI gate policy</span>
-              <select
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                value={kpiPolicyId}
+              <Select
+                value={kpiPolicyId || 'none'}
                 disabled={busy || activeKpiPolicies.length === 0}
-                onChange={(e) => setKpiPolicyId(e.target.value)}
+                onValueChange={(v) => setKpiPolicyId(!v || v === 'none' ? '' : v)}
               >
-                <option value="">None</option>
-                {activeKpiPolicies.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {activeKpiPolicies.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {selectedKpiPolicy != null && selectedKpiPolicy.scorecardMetrics.length > 0 ? (
                 <p className="text-muted-foreground text-xs">
                   Scorecard:{' '}

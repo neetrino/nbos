@@ -109,7 +109,10 @@ export function DeliveryItemLanguagesMultiselect({
           </span>
           <ChevronDown className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
         </PopoverTrigger>
-        <PopoverContent className="max-h-72 w-[min(20rem,calc(100vw-2rem))] p-2" align="start">
+        <PopoverContent
+          align="end"
+          className="max-h-72 w-(--anchor-width) min-w-(--anchor-width) p-2"
+        >
           <ul className="max-h-56 space-y-0.5 overflow-y-auto pr-0.5">
             {PRODUCT_LANGUAGE_OPTIONS.map((opt) => {
               const checked = selected.has(opt.value);

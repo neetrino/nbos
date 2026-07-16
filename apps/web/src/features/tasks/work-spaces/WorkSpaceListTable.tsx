@@ -12,6 +12,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_TYPE_CLASS,
+  EntityListIconTile,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import type { WorkSpace } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
 import {
@@ -26,23 +35,29 @@ interface WorkSpaceListTableProps {
 
 export function WorkSpaceListTable({ workspaces }: WorkSpaceListTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Work space</TableHead>
-          <TableHead className="hidden sm:table-cell">Type</TableHead>
-          <TableHead className="hidden md:table-cell">Mode</TableHead>
-          <TableHead className="hidden lg:table-cell">Context</TableHead>
-          <TableHead className="hidden text-center sm:table-cell">Tasks</TableHead>
-          <TableHead className="w-[1%] text-right"> </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {workspaces.map((workspace) => (
-          <WorkSpaceListRow key={workspace.id} workspace={workspace} />
-        ))}
-      </TableBody>
-    </Table>
+    <div className={ENTITY_LIST_SHELL_CLASS}>
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Work space</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden sm:table-cell`}>Type</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden md:table-cell`}>Mode</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden lg:table-cell`}>
+              Context
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden text-center sm:table-cell`}>
+              Tasks
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} w-[1%] text-right`}> </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {workspaces.map((workspace) => (
+            <WorkSpaceListRow key={workspace.id} workspace={workspace} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
@@ -52,37 +67,43 @@ function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
   const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
   const RowIcon = isProductDelivery ? Package : FolderKanban;
+  const iconClassName = isProductDelivery
+    ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
+    : 'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400';
   const codeLabel = workspace.project?.code ?? (workspace.scrumEnabled ? 'Scrum' : 'Kanban');
 
   return (
     <TableRow
-      className="cursor-pointer"
+      className={`${ENTITY_LIST_ROW_HOVER_CLASS} cursor-pointer`}
       onClick={() => router.push(`/work-spaces/${workspace.id}`)}
     >
-      <TableCell className="max-w-[min(100%,320px)]">
-        <div className="flex items-center gap-3">
-          <div className="bg-accent/10 text-accent rounded-lg p-1.5">
-            <RowIcon size={14} aria-hidden />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate font-medium">{workspace.name}</p>
-            <p className="text-muted-foreground text-xs">{codeLabel}</p>
-          </div>
-        </div>
+      <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[min(100%,320px)]`}>
+        <span className="flex min-w-0 items-center gap-2">
+          <EntityListIconTile icon={RowIcon} className={iconClassName} />
+          <EntityListPrimaryCell title={workspace.name} subtitle={codeLabel} />
+        </span>
       </TableCell>
-      <TableCell className="text-muted-foreground hidden text-sm sm:table-cell">
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} ${ENTITY_LIST_TYPE_CLASS} hidden sm:table-cell`}
+      >
         {getWorkSpaceTypeLabel(workspace.type)}
       </TableCell>
-      <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground hidden text-sm md:table-cell`}
+      >
         {workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
       </TableCell>
-      <TableCell className="text-muted-foreground hidden max-w-xs truncate text-sm lg:table-cell">
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground hidden max-w-xs truncate text-sm lg:table-cell`}
+      >
         {getWorkSpaceContextLabel(workspace)}
       </TableCell>
-      <TableCell className="hidden text-center font-medium tabular-nums sm:table-cell">
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} hidden text-center font-medium tabular-nums sm:table-cell`}
+      >
         {taskCount}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-right`}>
         {contextHref ? (
           <Link
             href={contextHref}
@@ -90,7 +111,7 @@ function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
             onClick={(event) => event.stopPropagation()}
           >
             <span className="hidden xl:inline">Context</span>
-            <ArrowUpRight size={14} className="xl:hidden" />
+            <ArrowUpRight size={14} className="xl:hidden" aria-hidden />
           </Link>
         ) : null}
       </TableCell>

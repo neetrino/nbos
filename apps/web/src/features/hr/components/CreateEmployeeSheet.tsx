@@ -15,6 +15,7 @@ import {
 import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
 import { EMPLOYEE_LEVELS } from '@/features/hr/constants/hr';
 import {
+  TEAM_SHEET_FIELD_CLASS,
   TEAM_SHEET_FIELD_GRID_CLASS,
   TEAM_SHEET_FOOTER_CLASS,
   TEAM_SHEET_HEADER_CLASS,
@@ -139,7 +140,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
           ) : (
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label htmlFor="emp-first">First name *</Label>
                   <Input
                     id="emp-first"
@@ -148,7 +149,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     disabled={saving}
                   />
                 </div>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label htmlFor="emp-last">Last name *</Label>
                   <Input
                     id="emp-last"
@@ -158,18 +159,29 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="emp-email">Work email *</Label>
-                <Input
-                  id="emp-email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                  disabled={saving}
-                />
+              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
+                  <Label htmlFor="emp-email">Work email *</Label>
+                  <Input
+                    id="emp-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                    disabled={saving}
+                  />
+                </div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
+                  <Label htmlFor="emp-phone">Phone</Label>
+                  <Input
+                    id="emp-phone"
+                    value={form.phone}
+                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                    disabled={saving}
+                  />
+                </div>
               </div>
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label>Platform role *</Label>
                   <Select
                     value={form.roleId}
@@ -188,7 +200,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label>Level</Label>
                   <Select
                     value={form.level || 'none'}
@@ -212,7 +224,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                 </div>
               </div>
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label>Primary department</Label>
                   <Select
                     value={form.departmentId || 'none'}
@@ -237,7 +249,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className={TEAM_SHEET_FIELD_CLASS}>
                   <Label htmlFor="emp-position">Position / seat</Label>
                   <Input
                     id="emp-position"
@@ -246,15 +258,6 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     disabled={saving}
                   />
                 </div>
-              </div>
-              <div>
-                <Label htmlFor="emp-phone">Phone</Label>
-                <Input
-                  id="emp-phone"
-                  value={form.phone}
-                  onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                  disabled={saving}
-                />
               </div>
             </div>
           )}

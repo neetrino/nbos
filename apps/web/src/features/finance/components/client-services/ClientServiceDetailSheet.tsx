@@ -9,6 +9,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityItemHost,
   ErrorState,
@@ -36,6 +37,7 @@ import {
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
@@ -82,6 +84,9 @@ export function ClientServiceDetailSheet({
   onSaved,
   onRequestCancel,
 }: ClientServiceDetailSheetProps) {
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(serviceId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+
   const { creatorId, creatorReady } = useTaskCreatorId();
   const {
     entity: service,
@@ -90,8 +95,8 @@ export function ClientServiceDetailSheet({
     error,
     refresh: fetchService,
   } = useEntityDetailHydration({
-    entityId: serviceId ?? '',
-    open: open && Boolean(serviceId),
+    entityId: sheetId ?? '',
+    open: open && Boolean(sheetId),
     initialEntity: initialService,
     fetchById: clientServicesApi.getById,
     isDirty: () => dirtyRef.current,
@@ -216,18 +221,18 @@ export function ClientServiceDetailSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
-  if (!serviceId) return null;
+  if (!hostMounted) return null;
 
   const typeLabel = service
     ? clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)
     : undefined;
   const statusMeta = service ? getClientServiceStatus(service.status) : undefined;
   const isCancelled = service?.status === 'CANCELLED';
-  const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
+  const sourcePageHref = clientServicesListWithOpenServiceHref(sheetId ?? '');
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchService()}>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -288,20 +293,22 @@ export function ClientServiceDetailSheet({
               ) : error ? (
                 <ErrorState description={error} onRetry={() => void fetchService()} />
               ) : service && draft ? (
-                <ClientServiceDetailSheetBody
-                  activeTab={activeTab}
-                  serviceId={serviceId}
-                  service={service}
-                  draft={draft}
-                  patchDraft={patchDraft}
-                  projects={projects}
-                  saving={saving}
-                  readOnly={isCancelled}
-                  canCreateTask={canCreateTask && !isCancelled}
-                  onCreateInvoice={() => setInvoiceOpen(true)}
-                  onCreateExpense={() => setExpenseOpen(true)}
-                  onCreateTask={() => setQuickCreateTaskOpen(true)}
-                />
+                <DetailSheetTabPanel tabKey={activeTab}>
+                  <ClientServiceDetailSheetBody
+                    activeTab={activeTab}
+                    serviceId={sheetId ?? service.id}
+                    service={service}
+                    draft={draft}
+                    patchDraft={patchDraft}
+                    projects={projects}
+                    saving={saving}
+                    readOnly={isCancelled}
+                    canCreateTask={canCreateTask && !isCancelled}
+                    onCreateInvoice={() => setInvoiceOpen(true)}
+                    onCreateExpense={() => setExpenseOpen(true)}
+                    onCreateTask={() => setQuickCreateTaskOpen(true)}
+                  />
+                </DetailSheetTabPanel>
               ) : null}
             </div>
           </ScrollArea>

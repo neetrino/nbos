@@ -35,7 +35,6 @@ interface ExpensesPageMainPanelProps {
   /** Backlog route: list-only deferred queue. */
   fromBacklog?: boolean;
   onOpenExpense: (expense: Expense) => void;
-  onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
   onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
   onOpenQuickCreate?: () => void;
@@ -50,7 +49,6 @@ export function ExpensesPageMainPanel({
   kanbanScope = 'active',
   fromBacklog = false,
   onOpenExpense,
-  onRequestDelete,
   onAddFirstExpense,
   onKanbanMove,
   onOpenQuickCreate,
@@ -113,20 +111,10 @@ export function ExpensesPageMainPanel({
           <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
         )}
         renderCard={(expense: Expense) => (
-          <ExpenseKanbanCard
-            expense={expense}
-            onOpen={onOpenExpense}
-            onRequestDelete={onRequestDelete}
-          />
+          <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
         )}
       />
     );
   }
-  return (
-    <ExpensesTableSection
-      expenses={expenses}
-      onOpen={onOpenExpense}
-      onRequestDelete={onRequestDelete}
-    />
-  );
+  return <ExpensesTableSection expenses={expenses} onOpen={onOpenExpense} />;
 }

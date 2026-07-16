@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
@@ -25,9 +24,11 @@ import {
   type ClientsDirectoryViewMode,
 } from '@/features/clients/constants/clients-directory-view-options';
 import { COMPANY_TYPES, TAX_STATUSES } from '@/features/clients/constants/clients';
+import { clientsDirectoryCardGridClass } from '@/features/clients/constants/clients-directory-card-classes';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
+import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { companiesApi, type Company } from '@/lib/api/clients';
 import { toast } from 'sonner';
 
@@ -37,6 +38,7 @@ function CompaniesPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const sidebarCollapsed = useAppSidebarCollapsed();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -271,7 +273,7 @@ function CompaniesPageContent() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+        <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
           {companies.map((company) => (
             <CompanyCard key={company.id} company={company} onOpen={handleRowClick} />
           ))}

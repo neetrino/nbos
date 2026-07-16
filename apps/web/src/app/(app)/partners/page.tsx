@@ -11,7 +11,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
+  ListPagination,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
 } from '@/components/shared';
@@ -23,6 +23,7 @@ import {
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { PartnerStatusFilterChips } from '@/features/partners/components/PartnerStatusFilterChips';
 import { PartnerCard } from '@/features/partners/components/PartnerCard';
+import { partnersDirectoryCardGridClass } from '@/features/partners/constants/partners-directory-card-classes';
 import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { PartnersPageSettingsSheet } from '@/features/partners/components/PartnersPageSettingsSheet';
 import { PartnersTable } from '@/features/partners/components/PartnersTable';
@@ -38,15 +39,25 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
 import { useListScope } from '@/hooks/use-list-scope';
+import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { toast } from 'sonner';
 
-const PARTNERS_LIST_PAGE_SIZE = 100;
+const PARTNERS_LIST_PAGE_SIZE = 12;
+
+const emptyPartnersListMeta = () => ({
+  total: 0,
+  page: 1,
+  pageSize: PARTNERS_LIST_PAGE_SIZE,
+  totalPages: 0,
+});
 
 function PartnersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const openPartnerId = searchParams.get(PARTNER_OPEN_QUERY)?.trim() || null;
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [listMeta, setListMeta] = useState(emptyPartnersListMeta);
+  const [page, setPage] = useState(1);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +67,7 @@ function PartnersPageContent() {
   const [createOpen, setCreateOpen] = useState(false);
   const permanentDeleteConfirm = useDeleteConfirm();
   const [purging, setPurging] = useState(false);
+  const sidebarCollapsed = useAppSidebarCollapsed();
 
   const closePartnerSheetOnScopeChange = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
@@ -100,7 +112,7 @@ function PartnersPageContent() {
     setLoading(true);
     try {
       const params: PartnerListParams = {
-        page: 1,
+        page,
         pageSize: PARTNERS_LIST_PAGE_SIZE,
         ...buildPartnerListApiParams({ search, filters, scope }),
       };
@@ -109,6 +121,7 @@ function PartnersPageContent() {
         partnersApi.getStats(),
       ]);
       setPartners(listRes.items);
+      setListMeta(listRes.meta);
       setStats(statsRes);
       setError(null);
     } catch (caught) {
@@ -121,6 +134,10 @@ function PartnersPageContent() {
     } finally {
       setLoading(false);
     }
+  }, [page, search, filters, scope]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, filters, scope]);
 
   const handleMoveToTrash = useCallback(
@@ -298,14 +315,20 @@ function PartnersPageContent() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+        <div className={`${partnersDirectoryCardGridClass(sidebarCollapsed)} pb-6`}>
           {partners.map((partner) => (
             <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
           ))}
         </div>
       ) : (
-        <PartnersTable partners={partners} onOpen={openPartnerSheet} />
+        <div className="pb-6">
+          <PartnersTable partners={partners} onOpen={openPartnerSheet} />
+        </div>
       )}
+
+      {!loading && !error && partners.length > 0 && listMeta.totalPages > 1 ? (
+        <ListPagination meta={listMeta} onPageChange={setPage} className="pb-6" />
+      ) : null}
 
       <PartnerDetailSheet
         partnerId={openPartnerId}

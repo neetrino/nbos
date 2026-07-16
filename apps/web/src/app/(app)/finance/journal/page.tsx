@@ -1,13 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Lock, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { Label } from '@/components/ui/label';
 import { IntegratedSearchFilters, NbosDatePicker, useModuleHeroSlots } from '@/components/shared';
 import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
+import {
+  FinanceJournalEntriesTable,
+  FinanceJournalPeriodsTable,
+} from '@/features/finance/components/journal/FinanceJournalListTables';
 import { financeJournalPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
@@ -17,16 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { ErrorState, LoadingState } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import {
   financeJournalApi,
   type FinancePostingPeriod,
@@ -192,74 +187,11 @@ export default function FinanceJournalPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <div className="border-border rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Period</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Entries</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {periods.map((period) => (
-              <TableRow key={period.id}>
-                <TableCell className="font-medium">{period.monthKey}</TableCell>
-                <TableCell>{period.status}</TableCell>
-                <TableCell className="text-right">{period._count.journalEntries}</TableCell>
-                <TableCell className="text-right">
-                  {period.status === 'OPEN' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void handleClosePeriod(period.monthKey)}
-                    >
-                      <Lock size={14} className="mr-1" />
-                      Close
-                    </Button>
-                  ) : (
-                    '—'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="border-border rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Booked</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Basis</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Functional</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEntries.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>{entry.bookedAt.slice(0, 10)}</TableCell>
-                <TableCell>
-                  {entry.sourceType}
-                  <span className="text-muted-foreground block text-xs">
-                    {entry.sourceId.slice(0, 8)}
-                  </span>
-                </TableCell>
-                <TableCell>{entry.recognitionBasis}</TableCell>
-                <TableCell>{entry.description ?? '—'}</TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {formatAmount(Number(entry.functionalAmount))}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <FinanceJournalPeriodsTable
+        periods={periods}
+        onClosePeriod={(monthKey) => void handleClosePeriod(monthKey)}
+      />
+      <FinanceJournalEntriesTable entries={filteredEntries} />
 
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent>

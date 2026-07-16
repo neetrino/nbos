@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { Layers, User, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { RelationPickerField } from '@/components/shared';
 import {
@@ -77,52 +84,68 @@ export function SupportTicketDetailTriageFields({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="st-cat">Category</Label>
-          <select
-            id="st-cat"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+          <Select
             value={draft.category}
-            onChange={(e) => onPatchDraft({ category: e.target.value })}
+            onValueChange={(v) => {
+              if (v) onPatchDraft({ category: v });
+            }}
             disabled={terminal}
           >
-            {TICKET_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="st-cat" className="w-full">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {TICKET_CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1">
           <Label htmlFor="st-pri">Priority</Label>
-          <select
-            id="st-pri"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+          <Select
             value={draft.priority}
-            onChange={(e) => onPatchDraft({ priority: e.target.value })}
+            onValueChange={(v) => {
+              if (v) onPatchDraft({ priority: v });
+            }}
             disabled={terminal}
           >
-            {TICKET_PRIORITIES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="st-pri" className="w-full">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              {TICKET_PRIORITIES.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1 sm:col-span-2">
           <Label htmlFor="st-cov">Coverage decision</Label>
-          <select
-            id="st-cov"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-            value={draft.coverageDecision}
-            onChange={(e) => onPatchDraft({ coverageDecision: e.target.value })}
+          <Select
+            value={draft.coverageDecision || 'none'}
+            onValueChange={(v) => {
+              if (!v) return;
+              onPatchDraft({ coverageDecision: v === 'none' ? '' : v });
+            }}
             disabled={terminal}
           >
-            <option value="">Not decided</option>
-            {TICKET_COVERAGE_DECISIONS.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="st-cov" className="w-full">
+              <SelectValue placeholder="Not decided" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Not decided</SelectItem>
+              {TICKET_COVERAGE_DECISIONS.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="min-w-0">
           <RelationPickerField

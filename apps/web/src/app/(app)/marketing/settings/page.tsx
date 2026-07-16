@@ -185,7 +185,7 @@ export default function MarketingSettingsPage() {
         onSubmit={handleCreate}
         className="border-border bg-card grid gap-4 rounded-2xl border p-5 md:grid-cols-5"
       >
-        <div>
+        <div className="space-y-1.5">
           <Label>Channel</Label>
           <Select
             value={form.channel}
@@ -203,7 +203,7 @@ export default function MarketingSettingsPage() {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Account name</Label>
           <Input
             value={form.name}
@@ -211,7 +211,7 @@ export default function MarketingSettingsPage() {
             placeholder="List.am Account 1"
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Identifier</Label>
           <Input
             value={form.identifier}
@@ -219,7 +219,7 @@ export default function MarketingSettingsPage() {
             placeholder="@page or account id"
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label>Phone</Label>
           <Input
             value={form.phone}
@@ -227,8 +227,16 @@ export default function MarketingSettingsPage() {
             placeholder="+374..."
           />
         </div>
-        <div className="flex items-end">
-          <Button type="submit" disabled={saving || !form.name.trim()} className="w-full">
+        <div className="space-y-1.5">
+          <Label className="invisible select-none" aria-hidden>
+            Add
+          </Label>
+          <Button
+            type="submit"
+            size="form"
+            disabled={saving || !form.name.trim()}
+            className="w-full"
+          >
             <Plus size={16} />
             {saving ? 'Adding...' : 'Add account'}
           </Button>

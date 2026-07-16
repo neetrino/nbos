@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, User } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { StatusBadge } from '@/components/shared';
+import { PersonAvatarName, StatusBadge } from '@/components/shared';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+  EntityListDate,
+  EntityListIconTile,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
 import type { Company } from '@/lib/api/clients';
 
@@ -20,57 +31,76 @@ interface CompaniesTableProps {
 
 export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
+    <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Company</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Tax Status</TableHead>
-            <TableHead>Tax ID</TableHead>
-            <TableHead>Primary Contact</TableHead>
-            <TableHead className="text-center">Projects</TableHead>
-            <TableHead className="text-center">Invoices</TableHead>
-            <TableHead>Created</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Company</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Tax Status</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Tax ID</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Primary Contact</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Projects</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Invoices</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Created</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {companies.map((company) => {
             const compType = getCompanyType(company.type);
             const taxSt = getTaxStatus(company.taxStatus);
+            const contactName = `${company.contact.firstName} ${company.contact.lastName}`.trim();
             return (
-              <TableRow key={company.id} className="cursor-pointer" onClick={() => onOpen(company)}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/5 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
-                      <Building2 size={16} aria-hidden />
-                    </div>
-                    <span className="font-medium">{company.name}</span>
-                  </div>
+              <TableRow
+                key={company.id}
+                className={`${ENTITY_LIST_ROW_HOVER_CLASS} cursor-pointer`}
+                onClick={() => onOpen(company)}
+              >
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <EntityListIconTile
+                      icon={Building2}
+                      className="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+                    />
+                    <EntityListPrimaryCell title={company.name} />
+                  </span>
                 </TableCell>
-                <TableCell>
-                  {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {compType ? (
+                    <StatusBadge
+                      label={compType.label}
+                      variant={compType.variant}
+                      className={ENTITY_LIST_BADGE_CLASS}
+                    />
+                  ) : null}
                 </TableCell>
-                <TableCell>
-                  {taxSt && <StatusBadge label={taxSt.label} variant={taxSt.variant} />}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {taxSt ? (
+                    <StatusBadge
+                      label={taxSt.label}
+                      variant={taxSt.variant}
+                      className={ENTITY_LIST_BADGE_CLASS}
+                    />
+                  ) : null}
                 </TableCell>
-                <TableCell className="text-muted-foreground font-mono text-xs">
-                  {company.taxId ?? '—'}
+                <TableCell
+                  className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground font-mono text-xs`}
+                >
+                  {company.taxId ? company.taxId : <EntityListMutedDash />}
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <User size={12} className="text-muted-foreground" aria-hidden />
-                    <span>
-                      {company.contact.firstName} {company.contact.lastName}
-                    </span>
-                  </div>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {contactName ? <PersonAvatarName name={contactName} /> : <EntityListMutedDash />}
                 </TableCell>
-                <TableCell className="text-center font-medium">{company._count.projects}</TableCell>
-                <TableCell className="text-muted-foreground text-center">
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-center font-medium`}>
+                  {company._count.projects}
+                </TableCell>
+                <TableCell
+                  className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-center`}
+                >
                   {company._count.invoices}
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs">
-                  {new Date(company.createdAt).toLocaleDateString()}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListDate value={company.createdAt} />
                 </TableCell>
               </TableRow>
             );

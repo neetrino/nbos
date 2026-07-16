@@ -17,13 +17,8 @@ interface SubscriptionsPageContentProps {
   mutationError: string | null;
   onDismissMutationError: () => void;
   onListRetry: () => void;
-  activatingId: string | null;
-  cancellingId: string | null;
-  holdingId: string | null;
-  onActivate: (subscription: Subscription) => void;
-  onCancel: (subscription: Subscription) => Promise<void>;
-  onHold: (subscription: Subscription) => Promise<void>;
   onOpenSubscription: (subscriptionId: string) => void;
+  onOpenMonthCell: (args: { subscriptionId: string; invoiceId: string | null }) => void;
 }
 
 export function SubscriptionsPageContent({
@@ -39,13 +34,8 @@ export function SubscriptionsPageContent({
   mutationError,
   onDismissMutationError,
   onListRetry,
-  activatingId,
-  cancellingId,
-  holdingId,
-  onActivate,
-  onCancel,
-  onHold,
   onOpenSubscription,
+  onOpenMonthCell,
 }: SubscriptionsPageContentProps) {
   if (listError) return <ErrorState description={listError} onRetry={onListRetry} />;
 
@@ -65,22 +55,19 @@ export function SubscriptionsPageContent({
       ) : showEmpty ? (
         <SubscriptionsEmptyState />
       ) : (
-        <SubscriptionCoverageGrid
-          year={gridYear}
-          onYearChange={onGridYearChange}
-          payload={gridPayload}
-          subscriptions={subscriptions}
-          loading={gridLoading || (listLoading && subscriptions.length === 0)}
-          error={gridError}
-          onRetry={onGridRetry}
-          activatingId={activatingId}
-          cancellingId={cancellingId}
-          holdingId={holdingId}
-          onActivate={onActivate}
-          onCancel={onCancel}
-          onHold={onHold}
-          onOpenSubscription={onOpenSubscription}
-        />
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <SubscriptionCoverageGrid
+            year={gridYear}
+            onYearChange={onGridYearChange}
+            payload={gridPayload}
+            subscriptions={subscriptions}
+            loading={gridLoading || (listLoading && subscriptions.length === 0)}
+            error={gridError}
+            onRetry={onGridRetry}
+            onOpenSubscription={onOpenSubscription}
+            onOpenMonthCell={onOpenMonthCell}
+          />
+        </div>
       )}
     </div>
   );

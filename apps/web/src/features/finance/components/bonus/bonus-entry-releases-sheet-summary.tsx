@@ -1,16 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { FolderKanban, Hash, Percent } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
-import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
-import {
-  BONUS_ENTRY_STATUS_LABEL,
-  BONUS_ENTRY_STATUS_VARIANT,
-} from '@/features/finance/constants/bonus-board-status-ui';
-import {
-  employeeDisplayName,
-  projectLabel,
-} from '@/features/finance/components/bonus/bonus-board-widgets';
+import { employeeDisplayName } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import {
@@ -21,6 +14,10 @@ import {
 import type { BonusEntryReleaseTotals } from '@/features/finance/utils/bonus-entry-release-totals';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
+
+const ACCENT_ICON_SHELL =
+  'bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300';
+const ACCENT_TEXT = 'text-violet-600 dark:text-violet-400';
 
 function MetricCell({
   label,
@@ -33,10 +30,17 @@ function MetricCell({
 }) {
   return (
     <div className="border-border bg-card rounded-xl border px-3 py-2.5">
-      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+      <p
+        className={cn(
+          'text-[10px] font-semibold tracking-wide uppercase',
+          accentClass ?? 'text-muted-foreground',
+        )}
+      >
         {label}
       </p>
-      <p className={cn('mt-1 text-base font-semibold tabular-nums', accentClass)}>{value}</p>
+      <p className={cn('mt-1 text-base font-bold tabular-nums', accentClass ?? 'text-foreground')}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -74,6 +78,110 @@ function ReleaseProgressBar({ totals }: { totals: BonusEntryReleaseTotals }) {
   );
 }
 
+function BonusEntryIdentityCard({ entry }: { entry: BonusEntryListRow }) {
+  const percent = Number.parseFloat(entry.percent);
+  const showPercent = Number.isFinite(percent) && percent > 0;
+  const salesHint = bonusSalesAccrualHint(entry);
+  const projectCode = entry.project?.code?.trim() || null;
+  const projectName = entry.project?.name?.trim() || null;
+
+  return (
+    <section className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+      <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
+        <h3 className="text-foreground min-w-0 truncate text-lg font-bold tracking-tight">
+          {employeeDisplayName(entry.employee)}
+        </h3>
+        {projectCode || projectName ? (
+          <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5">
+            <span
+              className={cn(
+                'flex size-6 shrink-0 items-center justify-center rounded-md',
+                ACCENT_ICON_SHELL,
+              )}
+            >
+              <FolderKanban size={13} aria-hidden />
+            </span>
+            {projectCode ? (
+              <span className="text-foreground text-sm font-medium tabular-nums">
+                {projectCode}
+              </span>
+            ) : null}
+            {projectCode && projectName ? (
+              <span className="text-muted-foreground text-xs" aria-hidden>
+                ·
+              </span>
+            ) : null}
+            {projectName ? (
+              <span
+                className={cn(
+                  'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                  'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
+                )}
+              >
+                {projectName}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div
+        className={cn(
+          'border-border grid border-t',
+          showPercent ? 'divide-border grid-cols-2 divide-x' : 'grid-cols-1',
+        )}
+      >
+        <BonusIdentityDetailRow icon={Hash} label="Order" value={entry.order.code} />
+        {showPercent ? (
+          <BonusIdentityDetailRow
+            icon={Percent}
+            label="Percentage"
+            value={
+              <>
+                <span className={cn('font-bold', ACCENT_TEXT)}>{percent}%</span>
+                <span className="text-foreground"> of order basis</span>
+              </>
+            }
+          />
+        ) : null}
+      </div>
+
+      {salesHint ? (
+        <p className="text-muted-foreground border-border border-t px-4 py-3 text-xs leading-snug">
+          {salesHint}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function BonusIdentityDetailRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 px-4 py-3">
+      <span
+        className={cn(
+          'flex size-9 shrink-0 items-center justify-center rounded-full',
+          ACCENT_ICON_SHELL,
+        )}
+      >
+        <Icon size={16} aria-hidden />
+      </span>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="text-foreground mt-0.5 truncate text-sm font-bold tabular-nums">{value}</p>
+      </div>
+    </div>
+  );
+}
+
 export function BonusEntryReleasesSheetSummary({
   entry,
   totals,
@@ -83,11 +191,6 @@ export function BonusEntryReleasesSheetSummary({
   totals: BonusEntryReleaseTotals;
   releaseCount: number;
 }) {
-  const typeCfg = BONUS_BOARD_TYPE_CONFIG[entry.type];
-  const project = projectLabel(entry.project);
-  const salesHint = bonusSalesAccrualHint(entry);
-  const percent = Number.parseFloat(entry.percent);
-  const showPercent = Number.isFinite(percent) && percent > 0;
   const autoPayable = bonusEntryAutoPayable(entry);
   const adjustment = bonusEntryPayableAdjustment(entry);
   const payable = bonusEntryPayableCeiling(entry);
@@ -96,37 +199,34 @@ export function BonusEntryReleasesSheetSummary({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${typeCfg.color}`}>
-          {typeCfg.label}
-        </span>
-        <StatusBadge
-          label={BONUS_ENTRY_STATUS_LABEL[entry.status]}
-          variant={BONUS_ENTRY_STATUS_VARIANT[entry.status]}
-        />
-        {entry.payoutMonth ? (
-          <span className="text-muted-foreground text-xs tabular-nums">
-            Payroll · {entry.payoutMonth}
-          </span>
-        ) : null}
-      </div>
+      {entry.payoutMonth ? (
+        <p className="text-muted-foreground text-xs tabular-nums">Payroll · {entry.payoutMonth}</p>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <MetricCell label="Payable" value={formatAmount(payable)} />
+        <MetricCell
+          label="Payable"
+          value={formatAmount(payable)}
+          accentClass="text-violet-700 dark:text-violet-300"
+        />
         <MetricCell
           label="Released"
           value={formatAmount(totals.released)}
-          accentClass="text-teal-700 dark:text-teal-400"
+          accentClass="text-teal-500 dark:text-teal-400"
         />
         <MetricCell
           label="Paid"
           value={formatAmount(totals.paid)}
-          accentClass="text-emerald-700 dark:text-emerald-400"
+          accentClass="text-green-600 dark:text-green-400"
         />
         <MetricCell
           label="Remaining"
           value={formatAmount(totals.remaining)}
-          accentClass={totals.remaining > 0 ? 'text-amber-700 dark:text-amber-400' : undefined}
+          accentClass={
+            totals.remaining > 0
+              ? 'text-amber-500 dark:text-amber-400'
+              : 'text-slate-600 dark:text-slate-300'
+          }
         />
       </div>
 
@@ -151,26 +251,7 @@ export function BonusEntryReleasesSheetSummary({
 
       <ReleaseProgressBar totals={totals} />
 
-      <div className="border-border bg-muted/30 space-y-2 rounded-xl border px-3 py-3 text-xs">
-        <p className="text-foreground font-medium">{employeeDisplayName(entry.employee)}</p>
-        {project ? (
-          <p className="text-muted-foreground flex items-center gap-1.5">
-            <FolderKanban size={12} className="shrink-0" aria-hidden />
-            {project}
-          </p>
-        ) : null}
-        <p className="text-muted-foreground flex items-center gap-1.5">
-          <Hash size={12} className="shrink-0" aria-hidden />
-          Order {entry.order.code}
-        </p>
-        {showPercent ? (
-          <p className="text-muted-foreground flex items-center gap-1.5">
-            <Percent size={12} className="shrink-0" aria-hidden />
-            {percent}% of order basis
-          </p>
-        ) : null}
-        {salesHint ? <p className="text-muted-foreground leading-snug">{salesHint}</p> : null}
-      </div>
+      <BonusEntryIdentityCard entry={entry} />
 
       <p className="text-muted-foreground text-xs">
         {releaseCount === 0

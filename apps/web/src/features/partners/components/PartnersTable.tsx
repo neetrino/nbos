@@ -9,6 +9,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import { PartnerDirectionIcon } from '@/features/partners/components/PartnerDirectionIcon';
 import {
   getPartnerDirection,
@@ -25,17 +33,17 @@ interface PartnersTableProps {
 
 export function PartnersTable({ partners, onOpen }: PartnersTableProps) {
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
+    <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Partner</TableHead>
-            <TableHead>Level</TableHead>
-            <TableHead>Direction</TableHead>
-            <TableHead>Default %</TableHead>
-            <TableHead>Orders</TableHead>
-            <TableHead>Subscriptions</TableHead>
-            <TableHead>Status</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Partner</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Level</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Direction</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Default %</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Orders</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Subscriptions</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -45,36 +53,58 @@ export function PartnersTable({ partners, onOpen }: PartnersTableProps) {
             const st = getPartnerStatus(partner.status);
             const orders = partner._count?.orders ?? 0;
             const subs = partner._count?.subscriptions ?? 0;
+            const contactSubtitle = partner.contact
+              ? `${partner.contact.firstName} ${partner.contact.lastName}`
+              : null;
 
             return (
-              <TableRow key={partner.id} className="cursor-pointer" onClick={() => onOpen(partner)}>
-                <TableCell>
-                  <div>
-                    <p className="font-medium">{partner.name}</p>
-                    {partner.contact ? (
-                      <p className="text-muted-foreground text-xs">
-                        {partner.contact.firstName} {partner.contact.lastName}
-                      </p>
-                    ) : null}
-                  </div>
+              <TableRow
+                key={partner.id}
+                className={`${ENTITY_LIST_ROW_HOVER_CLASS} cursor-pointer`}
+                onClick={() => onOpen(partner)}
+              >
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <EntityListPrimaryCell title={partner.name} subtitle={contactSubtitle} />
                 </TableCell>
-                <TableCell>
-                  {tier && <StatusBadge label={tier.label} variant={tier.variant} />}
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {tier ? (
+                    <StatusBadge
+                      label={tier.label}
+                      variant={tier.variant}
+                      className={ENTITY_LIST_BADGE_CLASS}
+                    />
+                  ) : null}
                 </TableCell>
-                <TableCell>
-                  {dir && (
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {dir ? (
                     <div className="flex items-center gap-1">
                       <PartnerDirectionIcon direction={partner.direction} />
-                      <StatusBadge label={dir.label} variant={dir.variant} />
+                      <StatusBadge
+                        label={dir.label}
+                        variant={dir.variant}
+                        className={ENTITY_LIST_BADGE_CLASS}
+                      />
                     </div>
-                  )}
+                  ) : null}
                 </TableCell>
-                <TableCell className="text-sm font-medium tabular-nums">
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-sm font-medium tabular-nums`}>
                   {formatPartnerPercent(partner.defaultPercent)}
                 </TableCell>
-                <TableCell className="text-sm tabular-nums">{orders}</TableCell>
-                <TableCell className="text-sm tabular-nums">{subs}</TableCell>
-                <TableCell>{st && <StatusBadge label={st.label} variant={st.variant} />}</TableCell>
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-sm tabular-nums`}>
+                  {orders}
+                </TableCell>
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-sm tabular-nums`}>
+                  {subs}
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {st ? (
+                    <StatusBadge
+                      label={st.label}
+                      variant={st.variant}
+                      className={ENTITY_LIST_BADGE_CLASS}
+                    />
+                  ) : null}
+                </TableCell>
               </TableRow>
             );
           })}

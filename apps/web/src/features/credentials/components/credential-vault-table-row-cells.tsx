@@ -3,6 +3,13 @@
 import { FolderKanban, KeyRound, Star } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
+import {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  EntityListDate,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+} from '@/components/shared/entity-list-table';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getAccessLevel } from '@/features/credentials/constants/credentials';
@@ -32,7 +39,7 @@ function previewCellFallback(cred: CredentialListItem, itemIndex: number) {
   if (model.infoOnly && itemIndex === 0) {
     return <CredentialVaultPreviewStrip credential={cred} itemIndex={0} />;
   }
-  return <span className="text-muted-foreground text-sm">—</span>;
+  return <EntityListMutedDash />;
 }
 
 export function CredentialVaultTableRowCells({
@@ -67,7 +74,7 @@ export function CredentialVaultTableRowCells({
           itemIndex={0}
         />
       ) : (
-        <span className="text-muted-foreground text-sm">—</span>
+        <EntityListMutedDash />
       );
     }
     return (
@@ -83,7 +90,7 @@ export function CredentialVaultTableRowCells({
 
   return (
     <>
-      <TableCell>
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <div className="flex items-center gap-2">
           {onSetFavorite ? (
             <Button
@@ -106,53 +113,67 @@ export function CredentialVaultTableRowCells({
               <Star className={cn('size-4', cred.isFavorite ? 'fill-current' : null)} />
             </Button>
           ) : null}
-          <KeyRound size={14} className="text-muted-foreground" />
-          <span className="font-medium">{cred.name}</span>
+          <KeyRound size={14} className="text-muted-foreground shrink-0" aria-hidden />
+          <EntityListPrimaryCell title={cred.name} />
         </div>
         {primaryFolder && folderBadge ? (
           <div className={cn('mt-1', onSetFavorite ? 'pl-16' : 'pl-6')}>
-            <CredentialVaultMetaBadge item={folderBadge} />
+            <CredentialVaultMetaBadge item={folderBadge} className={ENTITY_LIST_BADGE_CLASS} />
           </div>
         ) : null}
       </TableCell>
-      <TableCell className="max-w-[180px]" onClick={(e) => e.stopPropagation()}>
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} max-w-[180px]`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {renderPreviewCell(0)}
       </TableCell>
-      <TableCell className="max-w-[140px]" onClick={(e) => e.stopPropagation()}>
+      <TableCell
+        className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {renderPreviewCell(1)}
       </TableCell>
-      <TableCell>
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {categoryBadge ? (
-          <CredentialVaultMetaBadge item={categoryBadge} className="text-xs" />
+          <CredentialVaultMetaBadge item={categoryBadge} className={ENTITY_LIST_BADGE_CLASS} />
         ) : (
           <span className="text-xs">{category.label}</span>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground text-xs">
+      <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
         {formatCredentialTypeLabel(cred.credentialType)}
       </TableCell>
-      <TableCell>
-        {criticalityBadge ? <CredentialVaultMetaBadge item={criticalityBadge} /> : null}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {criticalityBadge ? (
+          <CredentialVaultMetaBadge item={criticalityBadge} className={ENTITY_LIST_BADGE_CLASS} />
+        ) : null}
       </TableCell>
-      <TableCell>
-        {access && accessBadge ? <CredentialVaultMetaBadge item={accessBadge} /> : null}
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+        {access && accessBadge ? (
+          <CredentialVaultMetaBadge item={accessBadge} className={ENTITY_LIST_BADGE_CLASS} />
+        ) : null}
       </TableCell>
-      <TableCell>
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {cred.project ? (
           <div className="text-muted-foreground flex items-center gap-1 text-xs">
-            <FolderKanban size={10} />
+            <FolderKanban size={10} aria-hidden />
             {cred.project.name}
           </div>
         ) : (
-          '—'
+          <EntityListMutedDash />
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <div className="flex flex-col gap-1">
-          <span className="text-muted-foreground text-xs">
-            {cred.nextRotationAt ? new Date(cred.nextRotationAt).toLocaleDateString() : 'No date'}
-          </span>
-          {healthBadge && <StatusBadge label={healthBadge.label} variant={healthBadge.variant} />}
+          <EntityListDate value={cred.nextRotationAt} emptyLabel="No date" />
+          {healthBadge ? (
+            <StatusBadge
+              label={healthBadge.label}
+              variant={healthBadge.variant}
+              className={ENTITY_LIST_BADGE_CLASS}
+            />
+          ) : null}
         </div>
       </TableCell>
     </>

@@ -6,6 +6,7 @@ import { Menu as MenuPrimitive } from '@base-ui/react/menu';
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 import { ChevronRightIcon, CheckIcon } from 'lucide-react';
+import { DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS } from './dropdown-chevron';
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
@@ -15,12 +16,18 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
   return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
+function DropdownMenuTrigger({ className, ...props }: MenuPrimitive.Trigger.Props) {
+  return (
+    <MenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      className={cn(DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS, className)}
+      {...props}
+    />
+  );
 }
 
 function DropdownMenuContent({
-  align = 'start',
+  align = 'end',
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 4,
