@@ -27,6 +27,15 @@ import type {
   SalaryBoardResponse,
 } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
+import {
+  FINANCE_CALENDAR_CELL_EMPTY,
+  FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
+  FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
+  FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+  FINANCE_CALENDAR_STICKY_SURFACE_CLASS,
+} from '@/features/finance/constants/finance-calendar-cell-colors';
+import { financeCalendarTotalColClass } from '@/features/finance/constants/finance-calendar-total-display';
+import { useFinanceCalendarPreferFullTotal } from '@/features/finance/hooks/use-finance-calendar-prefer-full-total';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 
 const MIN_SALARY_BOARD_YEAR = 2020;
@@ -35,40 +44,32 @@ const SALARY_CALENDAR_SLOT_CLASS = 'h-16 w-full';
 
 const SALARY_CALENDAR_EMPLOYEE_COL_CLASS = 'w-44 min-w-[11rem]';
 const SALARY_CALENDAR_MONTH_COL_CLASS = 'w-[4.5rem]';
-const SALARY_CALENDAR_TOTAL_COL_CLASS = 'w-[99px] min-w-[99px]';
+const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
 
+/** Sticky only on the top header row (months scroll vertically under it). */
 const STICKY_EMPLOYEE_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky left-0 z-20 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wide',
-  'bg-muted/40',
+  'border-border text-muted-foreground sticky top-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  STICKY_SURFACE_CLASS,
   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
 );
 
 const STICKY_EMPLOYEE_CELL_CLASS = cn(
-  'border-border text-foreground sticky left-0 z-10 border-r border-b px-3 py-2',
-  'bg-muted/40',
+  'border-border text-foreground border-r border-b px-3 py-2',
   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
 );
 
-const STICKY_TOTAL_HEADER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-20 border-l border-b px-1 py-1.5 text-center text-sm font-bold uppercase tracking-wide',
-  'bg-muted/40',
-  SALARY_CALENDAR_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_HEADER_CLASS =
+  'border-border text-foreground sticky top-0 z-40 border-l border-b px-1 py-1.5 text-center text-sm font-bold tracking-wide uppercase';
 
-const STICKY_TOTAL_CELL_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-10 border-l border-b p-1 align-middle text-center',
-  'bg-muted/40',
-  SALARY_CALENDAR_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_CELL_CLASS =
+  'border-border text-foreground border-l border-b p-1 align-middle text-center';
 
-const STICKY_TOTAL_FOOTER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-10 border-l p-1 align-middle text-center',
-  'bg-muted/40',
-  SALARY_CALENDAR_TOTAL_COL_CLASS,
-);
+const STICKY_TOTAL_FOOTER_CLASS =
+  'border-border text-foreground border-l border-t p-1 align-middle text-center';
 
 const SALARY_CALENDAR_MONTH_HEAD_CLASS = cn(
-  'border-border border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  'border-border sticky top-0 z-30 border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  STICKY_SURFACE_CLASS,
   SALARY_CALENDAR_MONTH_COL_CLASS,
 );
 
@@ -77,23 +78,23 @@ const SALARY_CALENDAR_MONTH_CELL_CLASS = cn(
   SALARY_CALENDAR_MONTH_COL_CLASS,
 );
 
-/** Sidebar closed → full amount; open → compact `2M` / `200K`. */
-function formatSalaryCalendarTotalAmount(amount: number, sidebarCollapsed: boolean): string {
-  return sidebarCollapsed ? formatAmount(amount) : formatAmountAbbreviated(amount);
+/** `preferFullTotal` → full amount; else compact `2M` / `200K`. */
+function formatSalaryCalendarTotalAmount(amount: number, preferFullTotal: boolean): string {
+  return preferFullTotal ? formatAmount(amount) : formatAmountAbbreviated(amount);
 }
 
 function SalaryBoardCalendarTotalAmount({
   amount,
-  sidebarCollapsed,
+  preferFullTotal,
   size = 'sm',
 }: {
   amount: number;
-  sidebarCollapsed: boolean;
+  preferFullTotal: boolean;
   size?: 'sm' | 'base';
 }) {
-  const display = formatSalaryCalendarTotalAmount(amount, sidebarCollapsed);
+  const display = formatSalaryCalendarTotalAmount(amount, preferFullTotal);
   const fullAmount = formatAmount(amount);
-  const isCompact = !sidebarCollapsed;
+  const isCompact = !preferFullTotal;
 
   return (
     <div
@@ -143,10 +144,12 @@ export function SalaryBoardCalendarView({
   const columnCount = data.columns.length;
   const filteredGrandTotal = sumSalaryBoardRowsTotal(rows, columnCount);
   const sidebarCollapsed = useAppSidebarCollapsed();
+  const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
+  const totalColClass = financeCalendarTotalColClass(preferFullTotal);
 
   return (
     <div
-      className="border-border min-h-0 flex-1 overflow-x-auto rounded-xl border"
+      className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
       aria-label={`Salary calendar ${calendarYear}`}
     >
       <table className="w-full table-fixed border-collapse text-sm">
@@ -155,10 +158,10 @@ export function SalaryBoardCalendarView({
           {data.columns.map((col) => (
             <col key={col.payrollMonth} className={SALARY_CALENDAR_MONTH_COL_CLASS} />
           ))}
-          <col className={SALARY_CALENDAR_TOTAL_COL_CLASS} />
+          <col className={totalColClass} />
         </colgroup>
         <thead>
-          <tr className="bg-muted/40">
+          <tr className={STICKY_SURFACE_CLASS}>
             <th className={cn(STICKY_EMPLOYEE_HEADER_CLASS, 'py-2 normal-case')}>
               <div
                 className={cn(
@@ -180,7 +183,9 @@ export function SalaryBoardCalendarView({
                 <SalaryBoardCalendarMonthHeader column={col} />
               </th>
             ))}
-            <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
+            <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
+              Total
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -220,10 +225,10 @@ export function SalaryBoardCalendarView({
                     </td>
                   );
                 })}
-                <td className={STICKY_TOTAL_CELL_CLASS}>
+                <td className={cn(STICKY_TOTAL_CELL_CLASS, totalColClass)}>
                   <SalaryBoardCalendarTotalAmount
                     amount={rowTotal}
-                    sidebarCollapsed={sidebarCollapsed}
+                    preferFullTotal={preferFullTotal}
                   />
                 </td>
               </tr>
@@ -231,11 +236,11 @@ export function SalaryBoardCalendarView({
           })}
         </tbody>
         <tfoot>
-          <tr className="bg-muted/30 font-medium">
+          <tr className="font-medium">
             <td
               className={cn(
-                'border-border text-muted-foreground sticky left-0 z-10 border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
-                'bg-muted/40',
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                'border-border text-muted-foreground z-50 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
                 SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
               )}
             >
@@ -246,17 +251,39 @@ export function SalaryBoardCalendarView({
               return (
                 <td
                   key={`total-${col.payrollMonth}`}
-                  className="border-border px-1 py-2 text-center text-sm font-bold tabular-nums"
-                  title={sidebarCollapsed ? undefined : formatAmount(columnTotal)}
+                  className={cn(
+                    FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                    SALARY_CALENDAR_MONTH_COL_CLASS,
+                    'border-border z-40 border-t px-1 py-2 text-center',
+                  )}
                 >
-                  {formatSalaryCalendarTotalAmount(columnTotal, sidebarCollapsed)}
+                  {columnTotal > 0 ? (
+                    <div
+                      className={cn(
+                        FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
+                        SALARY_CALENDAR_SLOT_CLASS,
+                      )}
+                      title={formatAmount(columnTotal)}
+                    >
+                      {formatSalaryCalendarTotalAmount(columnTotal, false)}
+                    </div>
+                  ) : (
+                    <SalaryBoardCalendarEmptyCell />
+                  )}
                 </td>
               );
             })}
-            <td className={STICKY_TOTAL_FOOTER_CLASS}>
+            <td
+              className={cn(
+                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                STICKY_TOTAL_FOOTER_CLASS,
+                'z-50 border-t',
+                totalColClass,
+              )}
+            >
               <SalaryBoardCalendarTotalAmount
                 amount={filteredGrandTotal}
-                sidebarCollapsed={sidebarCollapsed}
+                preferFullTotal={preferFullTotal}
                 size="base"
               />
             </td>
@@ -313,13 +340,7 @@ function SalaryBoardCalendarYearControl({
 
 function SalaryBoardCalendarEmptyCell() {
   return (
-    <div
-      className={cn(
-        'border-border bg-muted/20 text-muted-foreground flex items-center justify-center rounded-md border border-dashed text-xs',
-        SALARY_CALENDAR_SLOT_CLASS,
-      )}
-      aria-hidden
-    >
+    <div className={cn(FINANCE_CALENDAR_CELL_EMPTY, SALARY_CALENDAR_SLOT_CLASS)} aria-hidden>
       —
     </div>
   );

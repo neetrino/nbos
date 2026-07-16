@@ -46,7 +46,7 @@ export function DealContactTeamSection({
       icon={<User size={12} />}
       className={sectionClassName}
     >
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
+      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 sm:items-stretch sm:gap-0">
         <div className="min-w-0 space-y-4 sm:pr-5">
           <RelationPickerField
             label="Seller"
@@ -105,7 +105,7 @@ export function DealContactTeamSection({
           />
         </div>
 
-        <div className={`min-w-0 space-y-4 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+        <div className={`min-w-0 space-y-4 sm:h-full ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
           <RelationPickerField
             label="Contacts"
             entityKind="contact"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { RelationCreatePrefill } from '@/components/shared/relation-picker';
+import { DetailSheetFieldSegmented } from '@/components/shared';
 import {
   Dialog,
   DialogContent,
@@ -100,14 +101,14 @@ export function CreateContactDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>New Contact</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1.5">
               <Label>First Name *</Label>
               <Input
                 value={form.firstName}
@@ -116,7 +117,7 @@ export function CreateContactDialog({
                 autoFocus
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Last Name *</Label>
               <Input
                 value={form.lastName}
@@ -126,8 +127,8 @@ export function CreateContactDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1.5">
               <Label>Phone *</Label>
               <Input
                 type="tel"
@@ -136,7 +137,7 @@ export function CreateContactDialog({
                 placeholder="+374 XX XXXXXX"
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Email</Label>
               <Input
                 type="email"
@@ -147,29 +148,16 @@ export function CreateContactDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Contact Type *</Label>
-              <Select
-                value={form.role}
-                onValueChange={(v) => setForm({ ...form, role: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTACT_ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <DetailSheetFieldSegmented
+            label="Contact Type *"
+            value={form.role}
+            options={CONTACT_ROLES.map((role) => ({ value: role.value, label: role.label }))}
+            onValueChange={(role) => setForm({ ...form, role })}
+            ariaLabel="Contact type"
+          />
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1.5">
               <Label>WhatsApp</Label>
               <Input
                 value={form.whatsapp}
@@ -177,7 +165,7 @@ export function CreateContactDialog({
                 placeholder="+374..."
               />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Telegram</Label>
               <Input
                 value={form.telegram}
@@ -187,8 +175,8 @@ export function CreateContactDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1.5">
               <Label>Preferred Channel</Label>
               <Select
                 value={form.preferredChannel}
@@ -206,7 +194,7 @@ export function CreateContactDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Language</Label>
               <Select
                 value={form.language}
@@ -226,7 +214,7 @@ export function CreateContactDialog({
             </div>
           </div>
 
-          <div>
+          <div className="space-y-1.5">
             <Label>Notes</Label>
             <Textarea
               value={form.notes}

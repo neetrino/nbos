@@ -8,6 +8,7 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityItemHost,
   ErrorState,
@@ -17,6 +18,7 @@ import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-
 import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { ordersApi, type Order } from '@/lib/api/finance';
 import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
@@ -41,9 +43,12 @@ export function OrderDetailSheet({
   onCreateInvoice,
   refreshSignal = 0,
 }: OrderDetailSheetProps) {
+  const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(orderId);
+  const hostMounted = useSheetHostMounted(open, sheetId);
+
   const [activeTab, setActiveTab] = useState<OrderDetailSheetTab>('general');
   const [lifecycleOpen, setLifecycleOpen] = useState(false);
-  const tabScope = `${orderId ?? ''}:${open}`;
+  const tabScope = `${sheetId ?? ''}:${open}`;
   const [trackedTabScope, setTrackedTabScope] = useState(tabScope);
 
   if (trackedTabScope !== tabScope) {
@@ -57,17 +62,17 @@ export function OrderDetailSheet({
     error,
     refresh,
   } = useEntityDetailHydration({
-    entityId: orderId ?? '',
-    open: open && Boolean(orderId),
+    entityId: sheetId ?? '',
+    open: open && Boolean(sheetId),
     initialEntity: initialOrder,
     fetchById: ordersApi.getById,
     loadErrorMessage: 'Order could not be loaded.',
   });
 
   useEffect(() => {
-    if (!open || !orderId || refreshSignal === 0) return;
+    if (!open || !sheetId || refreshSignal === 0) return;
     void refresh();
-  }, [open, orderId, refresh, refreshSignal]);
+  }, [open, sheetId, refresh, refreshSignal]);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -94,14 +99,18 @@ export function OrderDetailSheet({
     handleOpenChange(false);
   }, [handleOpenChange]);
 
-  if (!orderId) return null;
+  if (!hostMounted) return null;
 
-  const sourcePageHref = ordersListWithOpenOrderHref(orderId);
+  const sourcePageHref = ordersListWithOpenOrderHref(sheetId ?? '');
   const lifecycleMode = order ? orderLifecycleAction(order) : null;
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchOrder()}>
-      <Sheet open={open} onOpenChange={handleOpenChange}>
+      <Sheet
+        open={open}
+        onOpenChange={handleOpenChange}
+        onOpenChangeComplete={onOpenChangeComplete}
+      >
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -146,11 +155,13 @@ export function OrderDetailSheet({
               ) : error && !order ? (
                 <ErrorState description={error} onRetry={() => void fetchOrder()} />
               ) : order ? (
-                <OrderDetailSheetBody
-                  activeTab={activeTab}
-                  order={order}
-                  onCreateInvoice={handleCreateInvoice}
-                />
+                <DetailSheetTabPanel tabKey={activeTab}>
+                  <OrderDetailSheetBody
+                    activeTab={activeTab}
+                    order={order}
+                    onCreateInvoice={handleCreateInvoice}
+                  />
+                </DetailSheetTabPanel>
               ) : null}
             </div>
           </ScrollArea>

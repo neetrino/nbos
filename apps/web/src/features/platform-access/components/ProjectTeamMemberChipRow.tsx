@@ -1,6 +1,6 @@
 'use client';
 
-import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
+import { PersonContactRow } from '@/components/shared/PersonContactRow';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import type { ProjectTeamMemberRow } from '@/lib/api/platform-access';
 import { ProjectTeamRoleControl } from './ProjectTeamRoleControl';
@@ -12,7 +12,7 @@ interface ProjectTeamMemberChipRowProps {
   canManageTeam: boolean;
   canAssignAdmin: boolean;
   onRoleChange: (employeeId: string, role: 'ADMIN' | 'MEMBER') => void;
-  onRemove: (employeeId: string) => void;
+  onRemove: (employeeId: string) => Promise<void>;
 }
 
 export function ProjectTeamMemberChipRow({
@@ -27,28 +27,32 @@ export function ProjectTeamMemberChipRow({
   const name = `${row.employee.firstName} ${row.employee.lastName}`.trim();
 
   return (
-    <RelationPickerChip
-      label={name}
-      labelAddon={
-        <TeamMemberEmployeeStatusBadge
-          status={row.employee.status}
-          className="shrink-0 px-1.5 py-0 text-[10px]"
-        />
-      }
-      subtitle={row.employee.email}
-      entityKind="employee"
+    <PersonContactRow
+      name={name}
+      email={row.employee.email}
       disabled={disabled}
-      onOpen={() => void relations.openEntity('employee', row.employeeId)}
+      onOpen={() => {
+        relations.openEntity('employee', row.employeeId, {
+          onRemoveParticipant: canManageTeam ? () => onRemove(row.employeeId) : undefined,
+        });
+      }}
       trailing={
-        <ProjectTeamRoleControl
-          role={row.role as 'ADMIN' | 'MEMBER'}
-          disabled={disabled}
-          canManageTeam={canManageTeam}
-          canAssignAdmin={canAssignAdmin}
-          onRoleChange={(role) => onRoleChange(row.employeeId, role)}
-        />
+        <>
+          <TeamMemberEmployeeStatusBadge
+            status={row.employee.status}
+            dot
+            className="rounded-full px-2 py-0.5"
+          />
+          <ProjectTeamRoleControl
+            role={row.role as 'ADMIN' | 'MEMBER'}
+            disabled={disabled}
+            canManageTeam={canManageTeam}
+            canAssignAdmin={canAssignAdmin}
+            badge
+            onRoleChange={(role) => onRoleChange(row.employeeId, role)}
+          />
+        </>
       }
-      onClear={canManageTeam && !disabled ? () => void onRemove(row.employeeId) : undefined}
     />
   );
 }

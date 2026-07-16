@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatAmount } from '@/features/finance/constants/finance';
+import { StatusBadge } from '@/components/shared';
 import {
   salaryLineListRowClass,
   salaryLineStatusBoardUi,
@@ -23,10 +23,16 @@ import {
   formatPayrollMonthLabel,
   parseSalaryBoardAmount,
 } from '@/features/finance/utils/salary-board-month-utils';
+import {
+  FINANCE_LIST_BADGE_CLASS,
+  FINANCE_LIST_CELL_CLASS,
+  FINANCE_LIST_HEAD_CLASS,
+  FINANCE_LIST_SHELL_CLASS,
+  FinanceListAmount,
+  FinanceListPrimaryCell,
+} from '@/features/finance/components/shared/finance-list-table';
 import { cn } from '@/lib/utils';
 
-const SALARY_LIST_ROW_CELL_CLASS = 'px-4 py-4 align-middle';
-const SALARY_LIST_HEAD_CELL_CLASS = 'px-4 py-3';
 const SALARY_LIST_FOOTER_CELL_CLASS = 'text-foreground px-4 py-3 text-sm font-bold tabular-nums';
 const SALARY_LIST_FOOTER_LABEL_CLASS =
   'text-muted-foreground px-4 py-3 text-xs font-semibold uppercase tracking-wide';
@@ -91,15 +97,15 @@ export function SalaryBoardListView({
   };
 
   return (
-    <div className="border-border overflow-x-auto rounded-xl border">
+    <div className={cn(FINANCE_LIST_SHELL_CLASS, 'overflow-x-auto')}>
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className={SALARY_LIST_HEAD_CELL_CLASS}>Employee</TableHead>
-            <TableHead className={SALARY_LIST_HEAD_CELL_CLASS}>Status</TableHead>
-            <TableHead className={`${SALARY_LIST_HEAD_CELL_CLASS} text-right`}>Payable</TableHead>
-            <TableHead className={`${SALARY_LIST_HEAD_CELL_CLASS} text-right`}>Paid</TableHead>
-            <TableHead className={`${SALARY_LIST_HEAD_CELL_CLASS} text-right`}>Remaining</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Employee</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Payable</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Paid</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Remaining</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -122,13 +128,13 @@ export function SalaryBoardListView({
               Filtered ({footerTotals.lineCount})
             </TableCell>
             <TableCell className={`${SALARY_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(footerTotals.payable)}
+              <FinanceListAmount amount={footerTotals.payable} className="justify-end" />
             </TableCell>
             <TableCell className={`${SALARY_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(footerTotals.paid)}
+              <FinanceListAmount amount={footerTotals.paid} className="justify-end" />
             </TableCell>
             <TableCell className={`${SALARY_LIST_FOOTER_CELL_CLASS} text-right`}>
-              {formatAmount(footerTotals.remaining)}
+              <FinanceListAmount amount={footerTotals.remaining} className="justify-end" />
             </TableCell>
           </TableRow>
         </tfoot>
@@ -170,36 +176,37 @@ function SalaryBoardListEntryRow({
 
   return (
     <TableRow
-      className={cn('cursor-pointer', salaryLineListRowClass(entry.cell.lineStatus))}
+      className={cn(
+        'hover:bg-muted/40 cursor-pointer',
+        salaryLineListRowClass(entry.cell.lineStatus),
+      )}
       onClick={() => onOpenMonth(entry.salaryLineId)}
       onKeyDown={(event) => handleSalaryListRowKeyDown(event, entry.salaryLineId, onOpenMonth)}
       tabIndex={0}
       role="button"
       aria-label={`${employeeDisplayName(entry.employee)} · ${lineUi.label}`}
     >
-      <TableCell className={SALARY_LIST_ROW_CELL_CLASS}>
-        <span className="text-base font-semibold">{employeeDisplayName(entry.employee)}</span>
-        {entry.employee.position ? (
-          <p className="mt-0.5 truncate text-xs opacity-80">{entry.employee.position}</p>
-        ) : null}
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListPrimaryCell
+          title={employeeDisplayName(entry.employee)}
+          subtitle={entry.employee.position ?? null}
+        />
       </TableCell>
-      <TableCell className={SALARY_LIST_ROW_CELL_CLASS}>
-        <span className="text-xs font-semibold tracking-wide uppercase">{lineUi.label}</span>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <StatusBadge
+          label={lineUi.label}
+          variant={lineUi.variant}
+          className={FINANCE_LIST_BADGE_CLASS}
+        />
       </TableCell>
-      <TableCell
-        className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
-      >
-        {formatAmount(payable)}
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-right`}>
+        <FinanceListAmount amount={payable} className="justify-end" />
       </TableCell>
-      <TableCell
-        className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums opacity-90`}
-      >
-        {formatAmount(paid)}
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-right`}>
+        <FinanceListAmount amount={paid} className="justify-end" />
       </TableCell>
-      <TableCell
-        className={`${SALARY_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
-      >
-        {formatAmount(remaining)}
+      <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-right`}>
+        <FinanceListAmount amount={remaining} className="justify-end" />
       </TableCell>
     </TableRow>
   );

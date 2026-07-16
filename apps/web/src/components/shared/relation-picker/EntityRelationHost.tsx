@@ -30,7 +30,11 @@ import { productsApi, type Product } from '@/lib/api/products';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { parseRelationCreateIntent } from './parse-relation-create-intent';
 import { emitRelationCreatedHandlers } from './relation-created-registry';
-import { EntityRelationsProvider, type EntityRelationsApi } from './entity-relations-context';
+import {
+  EntityRelationsProvider,
+  type EntityRelationsApi,
+  type OpenEntityOptions,
+} from './entity-relations-context';
 import { buildRelationCreatePrefill } from './build-relation-create-prefill';
 import type {
   RelationCreateContext,
@@ -67,6 +71,7 @@ export function EntityRelationHost({
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [employeeOpenId, setEmployeeOpenId] = useState<string | null>(null);
   const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
+  const [entityOpenOptions, setEntityOpenOptions] = useState<OpenEntityOptions | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
@@ -132,17 +137,19 @@ export function EntityRelationHost({
   }, [employeeOpenId, employeeSheet?.id]);
 
   const openEntity = useCallback(
-    (kind: RelationEntityKind, id: string) => {
+    (kind: RelationEntityKind, id: string, options?: OpenEntityOptions) => {
       if (kind === 'project') {
         router.push(`/projects/${id}`);
         return;
       }
       if (kind === 'contact') {
+        setEntityOpenOptions(options ?? null);
         setContactOpenId(id);
         setContactSheet((current) => (current?.id === id ? current : null));
         return;
       }
       if (kind === 'company') {
+        setEntityOpenOptions(options ?? null);
         setCompanyOpenId(id);
         setCompanySheet((current) => (current?.id === id ? current : null));
         return;
@@ -152,6 +159,7 @@ export function EntityRelationHost({
         return;
       }
       if (kind === 'employee') {
+        setEntityOpenOptions(options ?? null);
         setEmployeeOpenId(id);
         setEmployeeSheet((current) => (current?.id === id ? current : null));
         return;
@@ -291,10 +299,12 @@ export function EntityRelationHost({
         contact={contactSheet}
         open={contactOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setContactOpenId(null);
             setContactSheet(null);
+            setEntityOpenOptions(null);
           }
         }}
         onUpdate={async (id, data) => {
@@ -308,10 +318,12 @@ export function EntityRelationHost({
         company={companySheet}
         open={companyOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setCompanyOpenId(null);
             setCompanySheet(null);
+            setEntityOpenOptions(null);
           }
         }}
         onUpdate={async (id, data) => {
@@ -335,10 +347,12 @@ export function EntityRelationHost({
         employee={employeeSheet}
         open={employeeOpenId !== null}
         forceNestedBackdrop={nested}
+        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
         onOpenChange={(next) => {
           if (!next) {
             setEmployeeOpenId(null);
             setEmployeeSheet(null);
+            setEntityOpenOptions(null);
           }
         }}
       />

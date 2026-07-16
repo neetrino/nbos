@@ -5,7 +5,6 @@ import { Calendar, DollarSign, Handshake, Layers, Receipt, Repeat } from 'lucide
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
-  DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
   InlineField,
 } from '@/components/shared';
@@ -16,7 +15,6 @@ import {
 } from '@/features/finance/constants/finance';
 import type { SubscriptionGeneralDraft } from '@/features/finance/utils/subscription-general-form-state';
 import { partnersApi } from '@/lib/api/partners';
-import { SubscriptionDetailActions } from './SubscriptionDetailActions';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
 import type { Subscription } from '@/lib/api/finance';
 
@@ -25,17 +23,15 @@ interface SubscriptionGeneralTabProps {
   draft: SubscriptionGeneralDraft;
   patchDraft: (partial: Partial<SubscriptionGeneralDraft>) => void;
   formDisabled?: boolean;
-  onSubscriptionChange: (updated: Subscription) => void;
-  onActionError: (message: string | null) => void;
 }
+
+const BILLING_FIELD_PAIR_CLASS = 'grid grid-cols-1 gap-4 sm:grid-cols-2';
 
 export function SubscriptionGeneralTab({
   subscription,
   draft,
   patchDraft,
   formDisabled = false,
-  onSubscriptionChange,
-  onActionError,
 }: SubscriptionGeneralTabProps) {
   const [partnerOptions, setPartnerOptions] = useState<Array<{ value: string; label: string }>>([]);
 
@@ -72,15 +68,15 @@ export function SubscriptionGeneralTab({
   );
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
-      <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
-        <DetailSheetCollapsibleSection
-          title="Billing"
-          icon={<DollarSign size={12} />}
-          open={billingOpen}
-          onOpenChange={setBillingOpen}
-        >
-          <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+    <div className="flex min-w-0 flex-col gap-4">
+      <DetailSheetCollapsibleSection
+        title="Billing"
+        icon={<DollarSign size={12} />}
+        open={billingOpen}
+        onOpenChange={setBillingOpen}
+      >
+        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
               label="Type"
@@ -101,6 +97,8 @@ export function SubscriptionGeneralTab({
               disabled={formDisabled}
               onValueChange={(v) => patchDraft({ baseMonthlyAmount: v })}
             />
+          </div>
+          <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
               label="Frequency"
@@ -124,6 +122,8 @@ export function SubscriptionGeneralTab({
               disabled={formDisabled}
               onValueChange={(v) => patchDraft({ billingDay: v })}
             />
+          </div>
+          <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
               label="Tax"
@@ -134,6 +134,19 @@ export function SubscriptionGeneralTab({
               disabled={formDisabled}
               onValueChange={(v) => v && patchDraft({ taxStatus: v })}
             />
+            <InlineField
+              variant="controlled"
+              label="Partner"
+              type="select"
+              value={draft.partnerId}
+              options={partnerSelectOptions}
+              icon={<Handshake size={12} />}
+              clearable
+              disabled={formDisabled}
+              onValueChange={onPartnerChange}
+            />
+          </div>
+          <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
               label="Started"
@@ -153,43 +166,19 @@ export function SubscriptionGeneralTab({
               disabled={formDisabled}
               onValueChange={(v) => patchDraft({ endDate: v })}
             />
-            <InlineField
-              variant="controlled"
-              label="Partner"
-              type="select"
-              value={draft.partnerId}
-              options={partnerSelectOptions}
-              icon={<Handshake size={12} />}
-              clearable
-              disabled={formDisabled}
-              onValueChange={onPartnerChange}
-            />
-            <label className="text-muted-foreground flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox
-                checked={draft.notificationsEnabled}
-                disabled={formDisabled}
-                onCheckedChange={(checked) =>
-                  patchDraft({ notificationsEnabled: checked === true })
-                }
-              />
-              Billing notifications
-            </label>
           </div>
-        </DetailSheetCollapsibleSection>
-      </div>
+          <label className="text-muted-foreground flex cursor-pointer items-center gap-2 text-sm">
+            <Checkbox
+              checked={draft.notificationsEnabled}
+              disabled={formDisabled}
+              onCheckedChange={(checked) => patchDraft({ notificationsEnabled: checked === true })}
+            />
+            Billing notifications
+          </label>
+        </div>
+      </DetailSheetCollapsibleSection>
 
-      <div aria-hidden className="hidden min-h-0 xl:block" />
-
-      <aside
-        className={`flex w-64 shrink-0 flex-col gap-4 xl:w-72 ${DETAIL_SHEET_SECTION_STRETCH_CLASS}`}
-      >
-        <SubscriptionDetailActions
-          subscription={subscription}
-          onSubscriptionChange={onSubscriptionChange}
-          onError={onActionError}
-        />
-        <SubscriptionDetailLinkedPanel subscription={subscription} />
-      </aside>
+      <SubscriptionDetailLinkedPanel subscription={subscription} />
     </div>
   );
 }

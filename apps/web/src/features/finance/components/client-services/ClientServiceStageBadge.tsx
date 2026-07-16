@@ -8,16 +8,30 @@ import {
   clientServiceStageVariant,
 } from '@/features/finance/constants/client-service-payment-stage';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
+import { cn } from '@/lib/utils';
 
 interface ClientServiceStageBadgeProps {
   service: Pick<ClientServiceRecord, 'paymentStage' | 'overdue'>;
   emptyLabel?: string;
+  className?: string;
 }
 
-export function ClientServiceStageBadge({ service, emptyLabel }: ClientServiceStageBadgeProps) {
+const STAGE_BADGE_CLASS = 'rounded-full px-2.5 text-[10px] font-semibold tracking-wide';
+
+export function ClientServiceStageBadge({
+  service,
+  emptyLabel,
+  className,
+}: ClientServiceStageBadgeProps) {
+  const badgeClass = cn(STAGE_BADGE_CLASS, className);
+
   if (service.overdue) {
     return (
-      <StatusBadge label={CLIENT_SERVICE_OVERDUE_LABEL} variant={CLIENT_SERVICE_OVERDUE_VARIANT} />
+      <StatusBadge
+        label={CLIENT_SERVICE_OVERDUE_LABEL}
+        variant={CLIENT_SERVICE_OVERDUE_VARIANT}
+        className={badgeClass}
+      />
     );
   }
   if (!service.paymentStage) {
@@ -27,6 +41,7 @@ export function ClientServiceStageBadge({ service, emptyLabel }: ClientServiceSt
     <StatusBadge
       label={clientServiceStageLabel(service.paymentStage)}
       variant={clientServiceStageVariant(service.paymentStage)}
+      className={badgeClass}
     />
   );
 }

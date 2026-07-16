@@ -36,6 +36,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi } from '@/lib/api/finance';
 import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -70,6 +71,9 @@ export function InvoiceSheet({
   stageGateHighlight = null,
   forceNestedBackdrop,
 }: InvoiceSheetProps) {
+  const { persistedValue: renderInvoice, onOpenChangeComplete } = useSheetPersistedValue(invoice);
+  const hostMounted = useSheetHostMounted(open, renderInvoice);
+
   const [activeTab, setActiveTab] = useState<InvoiceDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<InvoiceGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<InvoiceGeneralDraft | null>(null);
@@ -155,10 +159,11 @@ export function InvoiceSheet({
     [stageGateHighlight],
   );
 
-  if (!invoice) {
-    if (!open) return null;
+  if (!hostMounted) return null;
+
+  if (!renderInvoice) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -180,12 +185,12 @@ export function InvoiceSheet({
     );
   }
 
-  const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
-  const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(invoice) : null;
+  const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
+  const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(renderInvoice) : null;
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -199,9 +204,9 @@ export function InvoiceSheet({
                 <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                   <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
                   <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {invoice.code}
+                    {renderInvoice.code}
                   </h2>
-                  <InvoiceSheetBadge invoice={invoice} />
+                  <InvoiceSheetBadge invoice={renderInvoice} />
                 </div>
               </div>
               {lifecycleMode ? (
@@ -222,8 +227,8 @@ export function InvoiceSheet({
           {onMoneyStatusChange ? (
             <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
               <InvoiceMoneyStagesBar
-                currentStatus={invoice.moneyStatus}
-                onStageClick={(status) => void onMoneyStatusChange(invoice.id, status)}
+                currentStatus={renderInvoice.moneyStatus}
+                onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
               />
             </div>
           ) : null}
@@ -241,7 +246,7 @@ export function InvoiceSheet({
               <DetailSheetTabPanel tabKey={activeTab}>
                 {activeTab === 'general' ? (
                   <InvoiceGeneralTab
-                    invoice={invoice}
+                    invoice={renderInvoice}
                     gateRequiredFields={gateRequiredFields}
                     draft={onInvoiceUpdated ? generalDraft : null}
                     patchDraft={patchGeneralDraft}
@@ -251,7 +256,7 @@ export function InvoiceSheet({
                 ) : null}
                 {activeTab === 'payments' ? (
                   <InvoicePaymentsTab
-                    invoice={invoice}
+                    invoice={renderInvoice}
                     gateRequiredFields={gateRequiredFields}
                     onPaymentRecorded={onPaymentRecorded}
                   />
@@ -262,7 +267,7 @@ export function InvoiceSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(onInvoiceUpdated && invoice)}
+            visible={activeTab === 'general' && Boolean(onInvoiceUpdated && renderInvoice)}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}
@@ -274,7 +279,7 @@ export function InvoiceSheet({
 
       {lifecycleMode && onInvoiceUpdated ? (
         <InvoiceLifecycleConfirmDialog
-          invoice={invoice}
+          invoice={renderInvoice}
           open={lifecycleOpen}
           onOpenChange={setLifecycleOpen}
           onInvoiceUpdated={handleInvoiceChange}

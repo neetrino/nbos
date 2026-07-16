@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge } from '@/components/shared';
 import { bonusPolicyTemplateLabel } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
@@ -70,16 +77,22 @@ export function BonusPolicyEditorCard({
         </label>
         <label className="space-y-1 text-sm">
           <span className="text-muted-foreground">Status</span>
-          <select
-            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+          <Select
             value={status}
             disabled={saving}
-            onChange={(e) => setStatus(e.target.value as BonusPolicyStatus)}
+            onValueChange={(v) => {
+              if (v) setStatus(v as BonusPolicyStatus);
+            }}
           >
-            <option value="ACTIVE">Active</option>
-            <option value="DRAFT">Draft</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="ARCHIVED">Archived</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
         <label className="space-y-1 text-sm md:col-span-2">
           <span className="text-muted-foreground">Scope (optional)</span>

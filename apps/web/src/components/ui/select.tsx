@@ -6,6 +6,10 @@ import { Select as SelectPrimitive } from '@base-ui/react/select';
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react';
+import {
+  DROPDOWN_CHEVRON_ICON_CLASS,
+  DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS,
+} from './dropdown-chevron';
 
 const Select = SelectPrimitive.Root;
 
@@ -54,6 +58,7 @@ function SelectTrigger({
         'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg data-[size=sm]:px-2.5 data-[size=sm]:pr-2 data-[size=sm]:text-xs',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS,
         className,
       )}
       {...props}
@@ -61,7 +66,12 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 opacity-80" />
+          <ChevronDownIcon
+            className={cn(
+              'text-muted-foreground pointer-events-none size-4 opacity-80',
+              DROPDOWN_CHEVRON_ICON_CLASS,
+            )}
+          />
         }
       />
     </SelectPrimitive.Trigger>
@@ -73,7 +83,8 @@ function SelectContent({
   children,
   side = 'bottom',
   sideOffset = 8,
-  align = 'start',
+  /** Flush with the field’s right edge (form selects). */
+  align = 'end',
   alignOffset = 0,
   alignItemWithTrigger = false,
   ...props
@@ -101,7 +112,8 @@ function SelectContent({
             'data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
             'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
             PORTAL_DROPDOWN_Z_CLASS,
-            'relative isolate max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 backdrop-blur-md duration-150',
+            // Match trigger width so left/right edges sit flush with the form field.
+            'relative isolate max-h-(--available-height) w-(--anchor-width) min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl p-1.5 backdrop-blur-md duration-150',
             'data-[align-trigger=true]:animate-none',
             className,
           )}

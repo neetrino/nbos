@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { PageHero, EmptyState } from '@/components/shared';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { notificationsApi, type NotificationAdminRuleDto } from '@/lib/api/notifications';
 
 const RULE_CHANNELS = ['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP'] as const;
@@ -83,17 +90,23 @@ export default function ModuleSettingsPage() {
               >
                 {rule.enabled ? 'Enabled' : 'Disabled'}
               </button>
-              <select
+              <Select
                 value={rule.priority}
-                onChange={(e) => void patchRule(rule.code, { priority: e.target.value })}
-                className="border-border bg-background rounded-md border px-2 py-1 text-xs"
+                onValueChange={(v) => {
+                  if (v) void patchRule(rule.code, { priority: v });
+                }}
               >
-                {RULE_PRIORITIES.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger size="sm" className="w-auto min-w-[6rem]">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RULE_PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {RULE_CHANNELS.map((channel) => {
                 const on = rule.channels.includes(channel);
                 const next = on

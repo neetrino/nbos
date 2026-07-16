@@ -2,8 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import { CalendarClock, RefreshCw } from 'lucide-react';
+import { NbosTimePicker } from '@/components/shared/date-picker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   reportsApi,
   type ReportDefinition,
@@ -109,17 +117,23 @@ export function ReportsSchedulePanel({
       <div className="bg-background/50 mt-5 rounded-2xl border p-4">
         <p className="mb-3 font-medium">Create schedule</p>
         <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
-          <select
+          <Select
             value={selectedReportKey}
-            onChange={(event) => setReportKey(event.target.value)}
-            className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            onValueChange={(v) => {
+              if (v) setReportKey(v);
+            }}
           >
-            {definitions.map((definition) => (
-              <option key={definition.key} value={definition.key}>
-                {definition.title}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Report" />
+            </SelectTrigger>
+            <SelectContent>
+              {definitions.map((definition) => (
+                <SelectItem key={definition.key} value={definition.key}>
+                  {definition.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             type="email"
             value={recipientEmail}
@@ -134,46 +148,60 @@ export function ReportsSchedulePanel({
         </div>
 
         <div className="mt-3 grid gap-3 lg:grid-cols-[180px_160px_minmax(0,1fr)]">
-          <select
+          <Select
             value={frequency}
-            onChange={(event) => setFrequency(event.target.value as ReportScheduleFrequency)}
-            className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            onValueChange={(v) => {
+              if (v) setFrequency(v as ReportScheduleFrequency);
+            }}
           >
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-          </select>
-          <Input
-            type="time"
-            value={timeOfDay}
-            onChange={(event) => setTimeOfDay(event.target.value)}
-          />
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="DAILY">Daily</SelectItem>
+              <SelectItem value="WEEKLY">Weekly</SelectItem>
+              <SelectItem value="MONTHLY">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+          <NbosTimePicker value={timeOfDay} onChange={setTimeOfDay} />
           {frequency === 'WEEKLY' ? (
-            <select
-              value={dayOfWeek}
-              onChange={(event) => setDayOfWeek(Number(event.target.value))}
-              className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            <Select
+              value={String(dayOfWeek)}
+              onValueChange={(v) => {
+                if (v) setDayOfWeek(Number(v));
+              }}
             >
-              {WEEKDAYS.map((day) => (
-                <option key={day.value} value={day.value}>
-                  {day.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Weekday" />
+              </SelectTrigger>
+              <SelectContent>
+                {WEEKDAYS.map((day) => (
+                  <SelectItem key={day.value} value={String(day.value)}>
+                    {day.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : null}
           {frequency === 'MONTHLY' ? (
             <div>
-              <select
-                value={dayOfMonth}
-                onChange={(event) => setDayOfMonth(Number(event.target.value))}
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+              <Select
+                value={String(dayOfMonth)}
+                onValueChange={(v) => {
+                  if (v) setDayOfMonth(Number(v));
+                }}
               >
-                {Array.from({ length: 28 }, (_, index) => index + 1).map((day) => (
-                  <option key={day} value={day}>
-                    Day {day}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Day of month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 28 }, (_, index) => index + 1).map((day) => (
+                    <SelectItem key={day} value={String(day)}>
+                      Day {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-muted-foreground mt-1 text-xs">
                 Monthly report schedules use days 1-28 so February and short months are never
                 skipped.

@@ -7,6 +7,7 @@ import {
   type MessengerWsDmPeerReadPayload,
 } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions/PermissionContext';
+import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { employeesApi } from '@/lib/api/employees';
 import {
   messengerApi,
@@ -29,19 +30,20 @@ import { useMessengerRealtime } from './useMessengerRealtime';
 function messengerShellClass(embedded: boolean): string {
   return embedded
     ? 'flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
-    : 'flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+    : 'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
 }
 
 function messengerCenterShellClass(embedded: boolean): string {
   return embedded
     ? 'flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
-    : 'flex h-[calc(100vh-4rem)] items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+    : 'flex h-full min-h-0 flex-1 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
 }
 
 export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
   const { me, isLoading: permsLoading, can } = usePermission();
   const canViewMessenger = can('VIEW', 'MESSENGER');
   const canEditMessenger = can('EDIT', 'MESSENGER');
+  useHeaderModuleTitle('Messenger', !embedded);
 
   const [channels, setChannels] = useState<MessengerChannelRow[]>([]);
   const [conversations, setConversations] = useState<MessengerDmConversationRow[]>([]);

@@ -8,7 +8,8 @@ export type ActionTileHoverBarVariant =
   | 'row'
   | 'kanban-card'
   | 'project-hub-card'
-  | 'project-hub-card-footer';
+  | 'project-hub-card-footer'
+  | 'card-footer';
 
 const HOVER_REVEAL_BY_VARIANT: Record<ActionTileHoverBarVariant, string> = {
   card: [
@@ -33,6 +34,8 @@ const HOVER_REVEAL_BY_VARIANT: Record<ActionTileHoverBarVariant, string> = {
   ].join(' '),
   /** Parent toggles visibility — bar stays interactive when shown. */
   'project-hub-card-footer': '',
+  /** Always-visible equal-width footer tiles on product cards. */
+  'card-footer': 'grid w-full grid-cols-3 gap-2',
 };
 
 function stopCardClick(event: MouseEvent) {
@@ -47,15 +50,17 @@ interface ActionTileHoverBarProps {
 }
 
 export function ActionTileHoverBar({ variant, children, className }: ActionTileHoverBarProps) {
+  const isFooterGrid = variant === 'card-footer';
+
   return (
     <div
       onPointerDown={stopCardClick}
       onClick={stopCardClick}
       className={cn(
-        'flex flex-wrap justify-end gap-2',
+        isFooterGrid ? null : 'flex flex-wrap justify-end gap-2',
         variant === 'row'
           ? 'shrink-0 items-center'
-          : variant === 'project-hub-card' || variant === 'project-hub-card-footer'
+          : variant === 'project-hub-card' || variant === 'project-hub-card-footer' || isFooterGrid
             ? ''
             : 'mt-2',
         HOVER_REVEAL_BY_VARIANT[variant],

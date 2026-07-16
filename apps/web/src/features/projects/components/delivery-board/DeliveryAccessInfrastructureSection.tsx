@@ -101,16 +101,16 @@ export function DeliveryAccessInfrastructureSection({
       );
     }
     return (
-      <ul className="space-y-2">
+      <ul className="flex flex-col gap-4">
         {slots.map((slot) => {
           const filledCount = slot.bindings.filter((b) => b.boundCredential !== null).length;
           const requiredMissing = slot.required && filledCount === 0;
           return (
             <li
               key={slot.slotKey}
-              className="border-border bg-background/60 rounded-lg border px-3 py-2.5 text-left"
+              className="border-border bg-background/60 rounded-lg border px-3 py-3 text-left"
             >
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-1.5">
                     {slot.required ? (
@@ -154,69 +154,67 @@ export function DeliveryAccessInfrastructureSection({
                     </Button>
                   </div>
                 </div>
-                <div className="flex min-w-0 flex-col gap-2">
-                  {slot.bindings.length > 0 ? (
-                    <ul className="flex w-full flex-col gap-1.5">
-                      {slot.bindings.map((b) => (
-                        <li
-                          key={b.bindingId}
-                          className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-start gap-1 rounded-md border border-dashed px-2 py-1.5"
-                        >
-                          {b.boundCredential ? (
-                            <>
-                              <Badge variant="outline" className="shrink-0 font-normal">
-                                {b.boundCredential.category}
-                              </Badge>
+                {slot.bindings.length > 0 ? (
+                  <ul className="flex w-full flex-col gap-2">
+                    {slot.bindings.map((b) => (
+                      <li
+                        key={b.bindingId}
+                        className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-start gap-1 rounded-md border border-dashed px-2 py-1.5"
+                      >
+                        {b.boundCredential ? (
+                          <>
+                            <Badge variant="outline" className="shrink-0 font-normal">
+                              {b.boundCredential.category}
+                            </Badge>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 min-w-0 flex-1 justify-start gap-1 px-2"
+                              onClick={() => {
+                                setSheetCredentialId(b.boundCredential!.id);
+                                setSheetOpen(true);
+                              }}
+                            >
+                              <span className="truncate text-left text-sm font-medium">
+                                {b.boundCredential.name}
+                              </span>
+                              <ChevronRight size={14} className="shrink-0 opacity-60" />
+                            </Button>
+                            <PermissionGate module="CREDENTIALS" action="EDIT">
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="h-8 min-w-0 flex-1 justify-start gap-1 px-2"
+                                className="h-8 text-xs"
                                 onClick={() => {
                                   setSheetCredentialId(b.boundCredential!.id);
                                   setSheetOpen(true);
                                 }}
                               >
-                                <span className="truncate text-left text-sm font-medium">
-                                  {b.boundCredential.name}
-                                </span>
-                                <ChevronRight size={14} className="shrink-0 opacity-60" />
+                                Edit
                               </Button>
-                              <PermissionGate module="CREDENTIALS" action="EDIT">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 text-xs"
-                                  onClick={() => {
-                                    setSheetCredentialId(b.boundCredential!.id);
-                                    setSheetOpen(true);
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                              </PermissionGate>
-                            </>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">
-                              Archived credential — remove link to replace.
-                            </span>
-                          )}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-muted-foreground h-8 px-2"
-                            title="Unlink"
-                            onClick={() => void handleUnbind(b.bindingId)}
-                          >
-                            <Unlink size={14} />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+                            </PermissionGate>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">
+                            Archived credential — remove link to replace.
+                          </span>
+                        )}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground h-8 px-2"
+                          title="Unlink"
+                          onClick={() => void handleUnbind(b.bindingId)}
+                        >
+                          <Unlink size={14} />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </li>
           );
@@ -230,8 +228,8 @@ export function DeliveryAccessInfrastructureSection({
   }
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <section className="border-border bg-card/40 flex flex-col gap-4 rounded-xl border p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase">
           <KeyRound size={14} className="opacity-70" aria-hidden />
           Access & infrastructure
@@ -250,9 +248,9 @@ export function DeliveryAccessInfrastructureSection({
       </div>
 
       {setupPanel ? (
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
           <div className="min-w-0">{renderSlotBody()}</div>
-          <div className="border-border min-w-0 space-y-4 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+          <div className="border-border flex min-w-0 flex-col gap-4 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
             {setupPanel}
           </div>
         </div>

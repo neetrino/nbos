@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Banknote, Loader2, Wallet } from 'lucide-react';
+import { Banknote, Loader2 } from 'lucide-react';
 import {
   DetailSheetSection,
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -18,14 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
-import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
-import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
 import { EmployeeMonthCompensationKpiSummaryLine } from '@/features/finance/components/payroll/employee-month-compensation-kpi-summary-line';
+import { EmployeeMonthCompensationSummary } from '@/features/finance/components/payroll/employee-month-compensation-summary';
 import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
 import { WalletMonthSheetHints } from '@/features/finance/components/payroll/wallet-month-sheet-hints';
 import {
@@ -50,75 +49,6 @@ function formatPaymentDate(iso: string): string {
 
 function employeeName(detail: SalaryLineMonthDetail): string {
   return `${detail.employee.firstName} ${detail.employee.lastName}`.trim();
-}
-
-function SummaryGrid({ detail, readOnly }: { detail: SalaryLineMonthDetail; readOnly: boolean }) {
-  const lineUi = salaryLineStatusBoardUi(detail.salaryLine.status);
-  const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
-  const base = parseAmount(detail.salaryLine.baseSalary);
-  const bonuses = parseAmount(detail.salaryLine.bonusesTotal);
-  const total = parseAmount(detail.salaryLine.totalPayable);
-  const paid = parseAmount(detail.salaryLine.paidAmount);
-  const remaining = parseAmount(detail.salaryLine.remainingAmount);
-  const carry = detail.pendingPayrollCarryOver ? parseAmount(detail.pendingPayrollCarryOver) : null;
-
-  return (
-    <DetailSheetSection title="Month summary" icon={<Wallet className="size-4" aria-hidden />}>
-      <div className="flex flex-wrap items-center gap-2 pb-4">
-        <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
-        <StatusBadge label={lineUi.label} variant={lineUi.variant} />
-        <span className="text-muted-foreground text-xs">{phaseUi.description}</span>
-      </div>
-      <dl className="flex flex-col gap-2 text-sm">
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted-foreground">Base salary</dt>
-          <dd className="font-medium tabular-nums">{formatAmount(base)}</dd>
-        </div>
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted-foreground">Bonuses</dt>
-          <dd className="font-medium tabular-nums">{formatAmount(bonuses)}</dd>
-        </div>
-        {carry != null && carry > 0 ? (
-          <div className="flex items-baseline justify-between gap-4">
-            <dt className="text-muted-foreground">Pending carry-over</dt>
-            <dd className="font-medium tabular-nums">{formatAmount(carry)}</dd>
-          </div>
-        ) : null}
-        <div className="border-border flex items-baseline justify-between gap-4 border-t pt-2">
-          <dt className="text-foreground font-semibold">Total payable</dt>
-          <dd className="text-foreground text-base font-semibold tabular-nums">
-            {formatAmount(total)}
-          </dd>
-        </div>
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted-foreground">Paid</dt>
-          <dd className="font-medium tabular-nums">{formatAmount(paid)}</dd>
-        </div>
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted-foreground">Remaining</dt>
-          <dd className="font-medium tabular-nums">{formatAmount(remaining)}</dd>
-        </div>
-      </dl>
-      <p className="text-muted-foreground pt-3 text-xs">
-        {readOnly ? (
-          <>
-            Payroll month <span className="text-foreground font-medium">{detail.payrollMonth}</span>
-          </>
-        ) : (
-          <>
-            Payroll run{' '}
-            <Link
-              href={`/finance/payroll/${detail.payrollRun.id}`}
-              className="text-primary hover:underline"
-            >
-              {detail.payrollMonth}
-            </Link>{' '}
-            · {PAYROLL_RUN_STATUS_LABEL[detail.payrollRun.status]}
-          </>
-        )}
-      </p>
-    </DetailSheetSection>
-  );
 }
 
 function ExpensePaymentsSection({
@@ -247,14 +177,18 @@ export function EmployeeMonthCompensationSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" width="wide" className="gap-0">
+      <EntityDetailSheetContent
+        open={open}
+        layout="auxiliary"
+        className="gap-0"
+        contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[50vw]"
+        railAnchorClassName="sm:right-[50vw]"
+      >
         <SheetHeader>
           <SheetTitle>
             {readOnly ? 'Your month compensation' : 'Employee month compensation'}
           </SheetTitle>
-          <SheetDescription>
-            {detail ? `${employeeName(detail)} · ${detail.payrollMonth}` : emptyHint}
-          </SheetDescription>
+          <SheetDescription>{detail ? employeeName(detail) : emptyHint}</SheetDescription>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
@@ -275,10 +209,13 @@ export function EmployeeMonthCompensationSheet({
                   activeTab={resolvedActiveTab}
                   onTabChange={setActiveTab}
                 />
-                {resolvedActiveTab === 'general' ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                <DetailSheetTabPanel
+                  tabKey={resolvedActiveTab}
+                  className="min-h-0 flex-1 overflow-y-auto"
+                >
+                  {resolvedActiveTab === 'general' ? (
                     <div className="flex flex-col gap-4 pt-2">
-                      <SummaryGrid detail={detail} readOnly={readOnly} />
+                      <EmployeeMonthCompensationSummary detail={detail} readOnly={readOnly} />
                       <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
                       <DetailSheetSection
                         title={readOnly ? 'Payments' : 'Pay Now / payments'}
@@ -287,10 +224,8 @@ export function EmployeeMonthCompensationSheet({
                         <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
                       </DetailSheetSection>
                     </div>
-                  </div>
-                ) : null}
-                {resolvedActiveTab === 'bonuses' ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  ) : null}
+                  {resolvedActiveTab === 'bonuses' ? (
                     <div className="pt-2">
                       <DetailSheetSection
                         title="Bonus breakdown"
@@ -299,15 +234,13 @@ export function EmployeeMonthCompensationSheet({
                         <SalaryMonthBonusBreakdown detail={detail} />
                       </DetailSheetSection>
                     </div>
-                  </div>
-                ) : null}
-                {resolvedActiveTab === 'kpi' && showKpiTab ? (
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                  ) : null}
+                  {resolvedActiveTab === 'kpi' && showKpiTab ? (
                     <div className="pt-2">
                       <EmployeeMonthCompensationKpiSection detail={detail} />
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+                </DetailSheetTabPanel>
               </div>
             </>
           ) : null}

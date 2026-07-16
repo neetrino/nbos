@@ -19,15 +19,9 @@ interface OrdersBoardViewProps {
   orders: Order[];
   boardScope: BoardLifecycleScope;
   onOrderClick: (order: Order) => void;
-  onCreateInvoice: (order: Order) => void;
 }
 
-export function OrdersBoardView({
-  orders,
-  boardScope,
-  onOrderClick,
-  onCreateInvoice,
-}: OrdersBoardViewProps) {
+export function OrdersBoardView({ orders, boardScope, onOrderClick }: OrdersBoardViewProps) {
   const lanes = useMemo(() => groupOrdersByStatus(orders), [orders]);
   const visibleKeys = getBoardStageKeys(ORDER_BOARD_STAGES, boardScope);
 
@@ -62,13 +56,7 @@ export function OrdersBoardView({
             getAmount={(order) => String(getOrderTotalAmount(order))}
           />
         )}
-        renderCard={(order) => (
-          <OrderBoardCard
-            order={order}
-            onOrderClick={onOrderClick}
-            onCreateInvoice={onCreateInvoice}
-          />
-        )}
+        renderCard={(order) => <OrderBoardCard order={order} onOrderClick={onOrderClick} />}
       />
     </div>
   );

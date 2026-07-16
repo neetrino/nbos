@@ -12,7 +12,7 @@ export function formatPayrollMonthLabel(payrollMonth: string): string {
   return `${formatPayrollMonthShort(payrollMonth)} ${parts[1]}`;
 }
 
-/** Short month label, e.g. `2026-04` → `Apr`. */
+/** Short English month label, e.g. `2026-04` → `Apr`. */
 export function formatPayrollMonthAbbrev(payrollMonth: string): string {
   const match = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
   const yearPart = match?.[1];
@@ -21,7 +21,7 @@ export function formatPayrollMonthAbbrev(payrollMonth: string): string {
   const year = Number.parseInt(yearPart, 10);
   const month = Number.parseInt(monthPart, 10) - 1;
   if (!Number.isFinite(year) || month < 0 || month > 11) return payrollMonth;
-  return new Intl.DateTimeFormat(undefined, { month: 'short' }).format(new Date(year, month, 1));
+  return new Intl.DateTimeFormat('en', { month: 'short' }).format(new Date(year, month, 1));
 }
 
 /** Month label without year, e.g. `2026-04` → `April`. */

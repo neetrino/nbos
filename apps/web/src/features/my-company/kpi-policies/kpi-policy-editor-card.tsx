@@ -3,6 +3,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared';
 import type { KpiPolicyRow } from '@/lib/api/kpi-policies';
 import { KpiGateBandEditor } from './kpi-gate-band-editor';
@@ -82,16 +89,22 @@ export function KpiPolicyEditorCard({
         </label>
         <label className="space-y-1 text-sm">
           <span className="text-muted-foreground">Status</span>
-          <select
-            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+          <Select
             value={status}
             disabled={saving}
-            onChange={(e) => setStatus(e.target.value as KpiPolicyRow['status'])}
+            onValueChange={(v) => {
+              if (v) setStatus(v as KpiPolicyRow['status']);
+            }}
           >
-            <option value="ACTIVE">Active</option>
-            <option value="DRAFT">Draft</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="ARCHIVED">Archived</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
       </div>
       <div className="mb-4 max-w-xs">

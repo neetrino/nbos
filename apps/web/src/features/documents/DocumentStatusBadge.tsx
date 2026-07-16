@@ -3,7 +3,9 @@
 import { StatusBadge } from '@/components/shared';
 import { DOCUMENT_STATUS_LABEL, documentStatusVariant } from './documents.constants';
 
-export function DocumentStatusBadge({ status }: { status: string }) {
+export function DocumentStatusBadge({ status, className }: { status: string; className?: string }) {
   const label = DOCUMENT_STATUS_LABEL[status] ?? status;
-  return <StatusBadge variant={documentStatusVariant(status)} label={label} />;
+  return (
+    <StatusBadge variant={documentStatusVariant(status)} label={label} className={className} />
+  );
 }

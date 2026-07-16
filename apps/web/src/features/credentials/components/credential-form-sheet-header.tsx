@@ -27,7 +27,7 @@ const SHEET_TITLE_INPUT_CLASS = cn(
   'focus-visible:border-0 focus-visible:ring-0',
 );
 const TITLE_CLUSTER_MAX_CLASS = 'max-w-[calc(100%-5.5rem)]';
-const ACCESS_SCOPE_BADGE_CLASS = 'h-5 shrink-0 px-1.5 py-0 text-[10px] leading-none';
+const ACCESS_SCOPE_BADGE_CLASS = 'h-5 shrink-0 self-center px-1.5 py-0 text-[10px] leading-none';
 
 export interface CredentialFormSheetHeaderProps {
   isCreate: boolean;

@@ -13,13 +13,13 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  StatusBadge,
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
+import { DealsListTable } from '@/features/crm/components/DealsListTable';
 import {
   DealSheet,
   type DealSheetBlockerNavigation,
@@ -31,12 +31,7 @@ import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTra
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
-import {
-  DEAL_STAGES,
-  DEAL_TYPES,
-  getDealStage,
-  formatAmount,
-} from '@/features/crm/constants/dealPipeline';
+import { DEAL_STAGES, DEAL_TYPES } from '@/features/crm/constants/dealPipeline';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
@@ -53,7 +48,6 @@ import { ClientsDirectorySettingsSheet } from '@/features/clients/components/cli
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
 import { dealsApi, type Deal } from '@/lib/api/deals';
-import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import {
   getApiErrorMessage,
   isBusinessTransitionApiError,
@@ -64,14 +58,6 @@ import {
   resolveDealSheetIntentFromBlockerAction,
   type DealSheetBlockerIntent,
 } from '@/features/shared/blocker-actions';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
 import { toast } from 'sonner';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
@@ -613,73 +599,11 @@ function DealsPipelinePageContent() {
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
-          <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Stage</TableHead>
-                  {boardScope === 'CLOSED' ? <TableHead>Closed</TableHead> : null}
-                  <TableHead>Seller</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayDeals.map((deal) => {
-                  const stage = getDealStage(deal.status);
-                  const dealTypeVisual = getDealTypePresentation(deal.type);
-                  return (
-                    <TableRow
-                      key={deal.id}
-                      className="cursor-pointer"
-                      onClick={() => handleCardClick(deal)}
-                    >
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{deal.name || deal.code}</p>
-                          <p className="text-muted-foreground text-xs">{deal.code}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
-                      </TableCell>
-                      <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
-                      <TableCell>
-                        <StatusBadge
-                          label={dealTypeVisual.label}
-                          variant={dealTypeVisual.badgeVariant}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {stage && (
-                          <StatusBadge
-                            label={stage.label}
-                            variant={stage.variant}
-                            dot
-                            dotColor={stage.color}
-                          />
-                        )}
-                      </TableCell>
-                      {boardScope === 'CLOSED' ? (
-                        <TableCell className="text-muted-foreground text-xs">
-                          {new Date(deal.updatedAt).toLocaleDateString()}
-                        </TableCell>
-                      ) : null}
-                      <TableCell className="text-muted-foreground">
-                        {deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : '—'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(deal.createdAt).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <DealsListTable
+            deals={displayDeals}
+            boardScope={boardScope as BoardLifecycleScope}
+            onDealClick={handleCardClick}
+          />
         </div>
       )}
 

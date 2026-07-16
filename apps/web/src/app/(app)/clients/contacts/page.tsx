@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   useModuleHeroSlots,
   IntegratedSearchFilters,
   ViewModeSwitch,
@@ -25,18 +24,20 @@ import {
   type ClientsDirectoryViewMode,
 } from '@/features/clients/constants/clients-directory-view-options';
 import { CONTACT_ROLES } from '@/features/clients/constants/clients';
+import { clientsDirectoryCardGridClass } from '@/features/clients/constants/clients-directory-card-classes';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
+import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { toast } from 'sonner';
-
 const OPEN_CONTACT_QUERY = 'openId';
 
 function ContactsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const sidebarCollapsed = useAppSidebarCollapsed();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -237,7 +238,7 @@ function ContactsPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="contacts"
@@ -270,10 +271,12 @@ function ContactsPageContent() {
           }
         />
       ) : view === 'grid' ? (
-        <div className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
-          {contacts.map((contact) => (
-            <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
-          ))}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
+            {contacts.map((contact) => (
+              <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
+            ))}
+          </div>
         </div>
       ) : (
         <ContactsTable contacts={contacts} onOpen={handleRowClick} />

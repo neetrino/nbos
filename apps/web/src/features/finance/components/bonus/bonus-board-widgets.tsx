@@ -74,7 +74,6 @@ export function BonusCard({
   onOpenReleases?: (entry: BonusEntryListRow) => void;
 }) {
   const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
-  const projectCode = row.project?.code;
   const canOpen = Boolean(onOpenReleases);
 
   return (
@@ -97,30 +96,27 @@ export function BonusCard({
         }
       }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-foreground min-w-0 truncate text-sm font-semibold">
-          {employeeDisplayName(row.employee)}
-        </p>
-        <span
-          className={`inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
-        >
-          {typeCfg.label}
-        </span>
-      </div>
-
-      <p className="text-foreground mt-2 text-base font-bold tabular-nums">
-        {formatAmount(parseBonusAmount(row.amount))}
-      </p>
-
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <StatusBadge
-          label={BONUS_ENTRY_STATUS_LABEL[row.status]}
-          variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
-          className="text-[10px]"
-        />
-        {projectCode ? (
-          <span className="text-muted-foreground text-[10px] font-medium">{projectCode}</span>
-        ) : null}
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground truncate text-sm font-semibold">
+            {employeeDisplayName(row.employee)}
+          </p>
+          <p className="text-foreground mt-2 text-base font-bold tabular-nums">
+            {formatAmount(parseBonusAmount(row.amount))}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end justify-center gap-2">
+          <span
+            className={`inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
+          >
+            {typeCfg.label}
+          </span>
+          <StatusBadge
+            label={BONUS_ENTRY_STATUS_LABEL[row.status]}
+            variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
+            className="text-[10px]"
+          />
+        </div>
       </div>
     </KanbanCardShell>
   );

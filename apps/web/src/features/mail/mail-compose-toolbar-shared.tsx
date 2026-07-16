@@ -2,12 +2,21 @@
 
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
   ENTITY_NOTES_TOOLBAR_BTN_ACTIVE_CLASS,
   ENTITY_NOTES_TOOLBAR_DIVIDER_CLASS,
   ENTITY_NOTES_TOOLBAR_GROUP_CLASS,
 } from '@/components/shared/entity-notes/entity-notes-field-classes';
+
+const SELECT_NONE_VALUE = 'none';
 
 export function ComposeToolbarBtn({
   label,
@@ -98,18 +107,27 @@ export function ComposeToolbarSelect({
   options: ReadonlyArray<{ label: string; value: string }>;
 }) {
   return (
-    <select
-      aria-label={label}
+    <Select
+      value={value || SELECT_NONE_VALUE}
+      onValueChange={(v) => {
+        if (!v) return;
+        onChange(v === SELECT_NONE_VALUE ? '' : v);
+      }}
       disabled={disabled}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className="border-border/60 bg-muted/20 text-foreground hover:bg-muted/30 h-8 max-w-[7.5rem] min-w-0 truncate rounded-lg border px-2 text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30"
     >
-      {options.map((option) => (
-        <option key={option.value || '__default'} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger size="sm" className="max-w-[7.5rem]" aria-label={label}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem
+            key={option.value || SELECT_NONE_VALUE}
+            value={option.value || SELECT_NONE_VALUE}
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

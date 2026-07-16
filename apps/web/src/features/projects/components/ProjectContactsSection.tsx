@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Building2, User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
 import {
@@ -14,6 +14,8 @@ import { DETAIL_SHEET_SECTION_STRETCH_CLASS } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { applyProjectContactsRelationCreated } from './apply-project-contacts-relation-created';
+import { ProjectCompanyCard } from './ProjectCompanyCard';
+import { ProjectContactCard, type ProjectContactCardModel } from './ProjectContactCard';
 import {
   buildProjectContactsPatch,
   projectContactsDraftFromProject,
@@ -25,13 +27,33 @@ interface ProjectContactsSectionProps {
   onProjectUpdated: (project: FullProject) => void;
   /** Render inside {@link ProjectInfoPanel} without card chrome. */
   embedded?: boolean;
+  /** Embedded contact cards layout. Default: stack (About project). */
+  contactLayout?: 'stack' | 'grid';
   className?: string;
+}
+
+function buildContactCards(
+  project: FullProject,
+  draft: ProjectContactsDraft,
+): ProjectContactCardModel[] {
+  const emailById = new Map<string, string | null>();
+  for (const row of project.additionalContacts ?? []) {
+    emailById.set(row.contact.id, row.contact.email);
+  }
+
+  return draft.contactIds.map((id) => ({
+    id,
+    name: draft.contactLabels[id] ?? id,
+    email: emailById.get(id) ?? null,
+    isPrimary: project.contact?.id === id,
+  }));
 }
 
 export function ProjectContactsSection({
   project,
   onProjectUpdated,
   embedded = false,
+  contactLayout = 'stack',
   className,
 }: ProjectContactsSectionProps) {
   const [draft, setDraft] = useState<ProjectContactsDraft>(() =>
@@ -47,6 +69,8 @@ export function ProjectContactsSection({
   useEffect(() => {
     setDraft(projectContactsDraftFromProject(project));
   }, [project]);
+
+  const contactCards = useMemo(() => buildContactCards(project, draft), [project, draft]);
 
   const persistDraft = useCallback(
     async (next: ProjectContactsDraft) => {
@@ -86,21 +110,94 @@ export function ProjectContactsSection({
     [persistDraft],
   );
 
+  const handleRemoveContact = useCallback(
+    async (contactId: string) => {
+      const nextIds = draft.contactIds.filter((id) => id !== contactId);
+      const nextLabels = { ...draft.contactLabels };
+      delete nextLabels[contactId];
+      const next = { ...draft, contactIds: nextIds, contactLabels: nextLabels };
+      setDraft(next);
+      await persistDraft(next);
+    },
+    [draft, persistDraft],
+  );
+
+  const handleRemoveCompany = useCallback(async () => {
+    const next = { ...draft, companyId: null, companyLabel: null };
+    setDraft(next);
+    await persistDraft(next);
+  }, [draft, persistDraft]);
+
   useRegisterRelationCreated(handleRelationCreated);
+
+  if (embedded) {
+    return (
+      <div className={cn('flex flex-col gap-3', saving && 'opacity-70', className)}>
+        <div
+          className={cn('gap-2', contactLayout === 'grid' ? 'grid grid-cols-2' : 'flex flex-col')}
+        >
+          {contactCards.map((contact) => (
+            <ProjectContactCard
+              key={contact.id}
+              contact={contact}
+              disabled={saving}
+              onRemove={handleRemoveContact}
+            />
+          ))}
+        </div>
+        <RelationPickerField
+          label=""
+          entityKind="contact"
+          multiple
+          selectionDisplay="none"
+          value={draft.contactIds}
+          selectionLabels={draft.contactLabels}
+          placeholder="Search or create contact…"
+          icon={<User size={12} />}
+          disabled={saving}
+          onSearch={contactSearch}
+          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+          {...contactsPicker}
+        />
+
+        {draft.companyId && draft.companyLabel ? (
+          <ProjectCompanyCard
+            companyId={draft.companyId}
+            name={draft.companyLabel}
+            disabled={saving}
+            onRemove={handleRemoveCompany}
+          />
+        ) : (
+          <RelationPickerField
+            label=""
+            entityKind="company"
+            selectionDisplay="none"
+            value={draft.companyId}
+            selectionLabel={draft.companyLabel}
+            placeholder="Search company…"
+            icon={<Building2 size={12} />}
+            disabled={saving}
+            onSearch={companySearch}
+            onSelect={(id, label) => patchDraft({ companyId: id, companyLabel: label })}
+            onClear={() => patchDraft({ companyId: null, companyLabel: null })}
+            {...companyPicker}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
-        !embedded && [
-          DETAIL_SHEET_SECTION_STRETCH_CLASS,
-          'bg-card border-border space-y-4 rounded-xl border p-5',
-        ],
+        DETAIL_SHEET_SECTION_STRETCH_CLASS,
+        'bg-card border-border space-y-4 rounded-xl border p-5',
         saving && 'opacity-70',
         className,
       )}
     >
-      {!embedded && <h3 className="text-sm font-semibold">Client contacts</h3>}
-      <div className={cn('flex flex-col gap-3', !embedded && 'flex-1 gap-4')}>
+      <h3 className="text-sm font-semibold">Client contacts</h3>
+      <div className="flex flex-1 flex-col gap-4">
         <RelationPickerField
           label="Contacts"
           entityKind="contact"

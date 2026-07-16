@@ -1,23 +1,22 @@
 'use client';
 
-import { AlertTriangle, Calendar, Clock, Handshake } from 'lucide-react';
-import type { Subscription, SubscriptionGridCell } from '@/lib/api/finance';
-import { getSubscriptionTypePresentation } from '@/lib/subscription-type-visual';
-import { monthCellKindLabel } from './subscription-grid-utils';
-import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
+import { StatusBadge } from '@/components/shared';
+import { FINANCE_LIST_BADGE_CLASS } from '@/components/shared/entity-list-table';
+import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
+import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionGridRowLabelProps {
   projectName: string;
   subscription: Subscription | undefined;
   fallbackStatus: string;
   fallbackType: string;
-  currentMonthCell: SubscriptionGridCell | null;
-  activatingId: string | null;
-  cancellingId: string | null;
-  holdingId: string | null;
-  onActivate: (subscription: Subscription) => void;
-  onCancel: (subscription: Subscription) => Promise<void>;
-  onHold: (subscription: Subscription) => Promise<void>;
+}
+
+function projectInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
 }
 
 export function SubscriptionGridRowLabel({
@@ -25,87 +24,38 @@ export function SubscriptionGridRowLabel({
   subscription,
   fallbackStatus,
   fallbackType,
-  currentMonthCell,
-  activatingId,
-  cancellingId,
-  holdingId,
-  onActivate,
-  onCancel,
-  onHold,
 }: SubscriptionGridRowLabelProps) {
-  const typeKey = subscription?.type ?? fallbackType;
-  const typeVisual = getSubscriptionTypePresentation(typeKey);
-  const TypeIcon = typeVisual.Icon;
-  const monthHint = currentMonthCell ? monthCellKindLabel(currentMonthCell.kind) : null;
+  const statusMeta = getSubscriptionStatus(subscription?.status ?? fallbackStatus);
+  const typeMeta = getSubscriptionType(subscription?.type ?? fallbackType);
+  const subtitle = typeMeta?.label ?? null;
 
   return (
-    <div className="flex h-full min-h-[3.75rem] w-full items-center gap-2 py-2 pr-1 pl-2">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p
-          className="text-foreground line-clamp-2 text-sm leading-snug font-semibold"
-          title={projectName}
-        >
-          {projectName}
-        </p>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span
-            className={`inline-flex rounded-md p-1 ${typeVisual.iconWrapClassName}`}
-            title={typeVisual.label}
-          >
-            <TypeIcon size={12} aria-hidden />
-          </span>
-          {subscription ? (
-            <span
-              className="text-muted-foreground inline-flex items-center gap-0.5 text-[10px]"
-              title={`Billing day ${subscription.billingDay}`}
-            >
-              <Calendar size={10} aria-hidden />
-              {subscription.billingDay}
-            </span>
-          ) : null}
-          {subscription?.partner?.name ? (
-            <span
-              className="text-muted-foreground inline-flex items-center gap-0.5 text-[10px]"
-              title={subscription.partner.name}
-            >
-              <Handshake size={10} aria-hidden />
-            </span>
-          ) : null}
-          {currentMonthCell?.kind === 'OVERDUE_INVOICE' ? (
-            <span
-              className="text-destructive inline-flex items-center gap-0.5 text-[10px] font-medium"
-              title={monthHint ?? undefined}
-            >
-              <AlertTriangle size={10} aria-hidden />
-            </span>
-          ) : null}
-          {currentMonthCell?.kind === 'PENDING_INVOICE' ? (
-            <span
-              className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300"
-              title={monthHint ?? undefined}
-            >
-              <Clock size={10} aria-hidden />
-            </span>
+    <div className="flex items-center gap-2.5">
+      <span
+        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+        aria-hidden
+      >
+        {projectInitials(projectName)}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <div className="truncate font-medium" title={projectName}>
+            {projectName}
+          </div>
+          {statusMeta ? (
+            <StatusBadge
+              label={statusMeta.label}
+              variant={statusMeta.variant}
+              className={`shrink-0 ${FINANCE_LIST_BADGE_CLASS}`}
+            />
           ) : null}
         </div>
+        {subtitle ? (
+          <div className="text-muted-foreground truncate text-xs" title={subtitle}>
+            {subtitle}
+          </div>
+        ) : null}
       </div>
-      {subscription ? (
-        <div
-          className="flex shrink-0 items-center self-stretch py-0.5"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <SubscriptionGridStatusControl
-            subscription={subscription}
-            activatingId={activatingId}
-            cancellingId={cancellingId}
-            holdingId={holdingId}
-            onActivate={onActivate}
-            onCancel={onCancel}
-            onHold={onHold}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }

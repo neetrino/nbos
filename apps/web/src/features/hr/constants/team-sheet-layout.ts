@@ -9,6 +9,9 @@ export const TEAM_SHEET_BODY_CLASS = 'space-y-4 px-5 py-4';
 
 export const TEAM_SHEET_FIELD_GRID_CLASS = 'grid grid-cols-2 gap-x-4 gap-y-3';
 
+/** Label → control stack inside create/detail team sheets. */
+export const TEAM_SHEET_FIELD_CLASS = 'space-y-1.5';
+
 /** Tighter section card padding inside employee sheets. */
 export const TEAM_SHEET_SECTION_CLASS = 'p-4 [&_h4]:mb-3';
 

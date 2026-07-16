@@ -1,7 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
+import {
+  DetailSheetFormFooter,
+  DetailSheetTabPanel,
+  EntityDetailSheetContent,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,6 +53,7 @@ import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -79,6 +84,9 @@ export function DeliveryItemDetailSheet({
   boardMutations,
   stageGateHighlight = null,
 }: DeliveryItemDetailSheetProps) {
+  const { persistedValue: renderItem, onOpenChangeComplete } = useSheetPersistedValue(item);
+  const hostMounted = useSheetHostMounted(open, renderItem);
+
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [extension, setExtension] = useState<FullExtension | null>(null);
   const [loading, setLoading] = useState(false);
@@ -349,8 +357,10 @@ export function DeliveryItemDetailSheet({
     if (extensionSnap) setExtensionPlan(extensionSnap);
   }, [productSnap, extensionSnap]);
 
+  if (!hostMounted) return null;
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout="full"
@@ -358,7 +368,7 @@ export function DeliveryItemDetailSheet({
         sourcePageHref={headerProps?.sourcePageHref ?? '#'}
         workspaceHref={headerProps?.workSpaceHref}
       >
-        {!item ? null : (
+        {!renderItem ? null : (
           <>
             <DeliveryItemDetailHeader
               title={displayTitle}
@@ -386,7 +396,7 @@ export function DeliveryItemDetailSheet({
                   size="sm"
                   variant="secondary"
                   disabled={busy}
-                  onClick={() => void boardMutations.handleBoardAction(item, 'RESUME')}
+                  onClick={() => void boardMutations.handleBoardAction(renderItem, 'RESUME')}
                 >
                   Resume
                 </Button>
@@ -404,63 +414,69 @@ export function DeliveryItemDetailSheet({
             <DeliveryItemDetailTabBar panel={panel} onSelect={setPanel} />
 
             <ScrollArea className="min-h-0 flex-1">
-              {detailHydrating && panel === 'general' ? (
-                <div className="space-y-4 px-7 py-6">
-                  <Skeleton className="h-32 w-full" />
-                  <Skeleton className="h-48 w-full" />
-                </div>
-              ) : panel === 'general' && item && headerProps ? (
-                <DeliveryItemDetailGeneralTab
-                  item={item}
-                  product={product}
-                  extension={extension}
-                  lifecycle={lifecycle}
-                  workSpaceHref={headerProps.workSpaceHref}
-                  sourcePageHref={headerProps.sourcePageHref}
-                  credentialsTabHref={credentialsTabHref}
-                  projectHubHref={projectHubHref}
-                  financeTabHref={financeTabHref}
-                  onRefreshDetail={refreshDetailAndBoard}
-                  productPlan={productPlan}
-                  onProductPlanChange={setProductPlan}
-                  extensionPlan={extensionPlan}
-                  onExtensionPlanChange={setExtensionPlan}
-                  planningDisabled={planningSaving || Boolean(lifecycle?.isTerminal)}
-                  gateRequiredFields={gateRequiredFields}
-                  stageGateActionBlockers={stageGateActionBlockers}
-                />
-              ) : detailHydrating && panel !== 'general' ? (
-                <div className="space-y-4 px-7 py-6">
-                  <Skeleton className="h-40 w-full" />
-                </div>
-              ) : panel !== 'general' && headerProps && item ? (
-                <DeliveryItemDetailSecondaryPanels
-                  view={panel}
-                  auditEntityType={item.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
-                  auditEntityId={item.kind === 'PRODUCT' ? item.product.id : item.extension.id}
-                  financeTabHref={financeTabHref}
-                  projectHubHref={projectHubHref}
-                  workSpaceHref={headerProps.workSpaceHref}
-                  bonusOrderId={product?.order?.id ?? extension?.order?.id ?? seedOrderId ?? null}
-                  openDealHref={
-                    product?.order?.deal?.id != null
-                      ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
-                      : extension?.order?.deal?.id != null
-                        ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
-                        : seedDeal?.id != null
-                          ? `/crm/deals?openDealId=${encodeURIComponent(seedDeal.id)}`
-                          : null
-                  }
-                  dealCode={
-                    product?.order?.deal?.code ??
-                    extension?.order?.deal?.code ??
-                    seedDeal?.code ??
-                    null
-                  }
-                />
-              ) : (
-                <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
-              )}
+              <DetailSheetTabPanel tabKey={panel}>
+                {detailHydrating && panel === 'general' ? (
+                  <div className="space-y-4 px-7 py-6">
+                    <Skeleton className="h-32 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                  </div>
+                ) : panel === 'general' && renderItem && headerProps ? (
+                  <DeliveryItemDetailGeneralTab
+                    item={renderItem}
+                    product={product}
+                    extension={extension}
+                    lifecycle={lifecycle}
+                    workSpaceHref={headerProps.workSpaceHref}
+                    sourcePageHref={headerProps.sourcePageHref}
+                    credentialsTabHref={credentialsTabHref}
+                    projectHubHref={projectHubHref}
+                    financeTabHref={financeTabHref}
+                    onRefreshDetail={refreshDetailAndBoard}
+                    productPlan={productPlan}
+                    onProductPlanChange={setProductPlan}
+                    extensionPlan={extensionPlan}
+                    onExtensionPlanChange={setExtensionPlan}
+                    planningDisabled={planningSaving || Boolean(lifecycle?.isTerminal)}
+                    gateRequiredFields={gateRequiredFields}
+                    stageGateActionBlockers={stageGateActionBlockers}
+                  />
+                ) : detailHydrating && panel !== 'general' ? (
+                  <div className="space-y-4 px-7 py-6">
+                    <Skeleton className="h-40 w-full" />
+                  </div>
+                ) : panel !== 'general' && headerProps && renderItem ? (
+                  <DeliveryItemDetailSecondaryPanels
+                    view={panel}
+                    auditEntityType={renderItem.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
+                    auditEntityId={
+                      renderItem.kind === 'PRODUCT'
+                        ? renderItem.product.id
+                        : renderItem.extension.id
+                    }
+                    financeTabHref={financeTabHref}
+                    projectHubHref={projectHubHref}
+                    workSpaceHref={headerProps.workSpaceHref}
+                    bonusOrderId={product?.order?.id ?? extension?.order?.id ?? seedOrderId ?? null}
+                    openDealHref={
+                      product?.order?.deal?.id != null
+                        ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
+                        : extension?.order?.deal?.id != null
+                          ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
+                          : seedDeal?.id != null
+                            ? `/crm/deals?openDealId=${encodeURIComponent(seedDeal.id)}`
+                            : null
+                    }
+                    dealCode={
+                      product?.order?.deal?.code ??
+                      extension?.order?.deal?.code ??
+                      seedDeal?.code ??
+                      null
+                    }
+                  />
+                ) : (
+                  <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
+                )}
+              </DetailSheetTabPanel>
             </ScrollArea>
 
             <DetailSheetFormFooter

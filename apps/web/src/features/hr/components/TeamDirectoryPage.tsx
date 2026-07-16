@@ -26,8 +26,10 @@ import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDia
 import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
 import { TeamEmployeeTable } from '@/features/hr/components/TeamEmployeeTable';
 import { TeamStatusChips } from '@/features/hr/components/TeamStatusChips';
+import { teamDirectoryCardGridClass } from '@/features/hr/constants/team-directory';
 import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import { useTeamDirectory } from '@/features/hr/hooks/use-team-directory';
+import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { invalidateEmployeeDirectoryCaches } from '@/lib/employees';
 import { PermissionGate, usePermission } from '@/lib/permissions';
@@ -55,6 +57,7 @@ function TeamDirectoryPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const sidebarCollapsed = useAppSidebarCollapsed();
   const { can } = usePermission();
   const canEdit = can('EDIT', 'COMPANY');
 
@@ -254,7 +257,7 @@ function TeamDirectoryPageContent() {
   const showInitialLoading = loading && employees.length === 0;
 
   return (
-    <>
+    <div className="flex flex-col gap-6 pb-6">
       <TeamStatusChips
         activeStatus={quickStatus}
         onStatusChange={handleQuickStatus}
@@ -289,7 +292,7 @@ function TeamDirectoryPageContent() {
       ) : (
         <div className={cn('flex flex-col gap-4', refreshing && 'opacity-80')}>
           {view === 'grid' ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className={teamDirectoryCardGridClass(sidebarCollapsed)}>
               {employees.map((emp) => (
                 <TeamEmployeeCard key={emp.id} employee={emp} onOpen={openSheet} />
               ))}
@@ -327,7 +330,7 @@ function TeamDirectoryPageContent() {
           }
         }}
       />
-    </>
+    </div>
   );
 }
 

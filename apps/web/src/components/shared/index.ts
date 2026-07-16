@@ -26,6 +26,22 @@ export {
   type IntegratedSearchFiltersProps,
 } from './IntegratedSearchFilters';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
+export {
+  ENTITY_LIST_BADGE_CLASS,
+  ENTITY_LIST_CELL_CLASS,
+  ENTITY_LIST_HEAD_CLASS,
+  ENTITY_LIST_ROW_HOVER_CLASS,
+  ENTITY_LIST_SCROLL_SHELL_CLASS,
+  ENTITY_LIST_SHELL_CLASS,
+  ENTITY_LIST_TYPE_CLASS,
+  EntityListAmount,
+  EntityListDate,
+  EntityListIconLabel,
+  EntityListIconTile,
+  EntityListMutedDash,
+  EntityListPrimaryCell,
+  formatEntityListDate,
+} from './entity-list-table';
 export { ActionTileButton, type ActionTileButtonProps } from './ActionTileButton';
 export { ActionTileHoverBar, type ActionTileHoverBarVariant } from './ActionTileHoverBar';
 export { EntityLinkedSheetsHoverActions } from './EntityLinkedSheetsHoverActions';
@@ -33,12 +49,20 @@ export {
   NavigableEntityCard,
   type NavigableEntityCardBadge,
   type NavigableEntityCardMetaLine,
+  type NavigableEntityCardStat,
   type NavigableEntityCardProps,
 } from './NavigableEntityCard';
 export {
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
+  NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS,
+  PRODUCT_DETAIL_CARD_GRID_CLASS,
+  PRODUCT_DETAIL_CARD_ICON_TILE_CLASS,
+  PRODUCT_DETAIL_CARD_SECTION_DIVIDER_CLASS,
+  PRODUCT_DETAIL_CARD_SHELL_CLASS,
+  PRODUCT_DETAIL_CARD_STAT_CELL_CLASS,
+  PRODUCT_DETAIL_CARD_STATS_SHELL_CLASS,
   WORK_SPACE_PRODUCT_CARD_GRID_CLASS,
 } from './navigable-entity-card.constants';
 export {
@@ -54,6 +78,8 @@ export {
 } from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
+export { PersonAvatarName, PersonSoftAvatar, type PersonAvatarSize } from './PersonAvatarName';
+export { PersonContactRow, type PersonContactRowProps } from './PersonContactRow';
 export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
@@ -84,12 +110,14 @@ export {
   NbosDateInput,
   NbosDatePicker,
   NbosMonthPicker,
+  NbosTimePicker,
   type NbosCalendarGridProps,
   type NbosDateInputProps,
   type NbosDatePickerMode,
   type NbosDatePickerProps,
   type NbosDatePickerVariant,
   type NbosMonthPickerProps,
+  type NbosTimePickerProps,
 } from './date-picker';
 export { SearchField, type SearchFieldProps } from './SearchField';
 export {

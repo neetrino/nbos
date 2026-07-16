@@ -1,14 +1,21 @@
 'use client';
 
-import { Handshake, Percent, ShoppingCart, User } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import type { LucideIcon } from 'lucide-react';
+import { Crown, Handshake, Percent, RefreshCw, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { PersonAvatarName, StatusBadge, type StatusVariant } from '@/components/shared';
 import { PartnerDirectionIcon } from '@/features/partners/components/PartnerDirectionIcon';
 import {
   getPartnerDirection,
   getPartnerLevel,
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
-import { PARTNERS_DIRECTORY_CARD_CLASS } from '@/features/partners/constants/partners-directory-card-classes';
+import {
+  PARTNER_CARD_AVATAR_CLASS,
+  PARTNER_CARD_STAT_ICON_TILE_GREEN_CLASS,
+  PARTNER_CARD_STAT_ICON_TILE_MUTED_CLASS,
+  PARTNER_CARD_STATUS_BADGE_CLASS,
+  PARTNERS_DIRECTORY_CARD_CLASS,
+} from '@/features/partners/constants/partners-directory-card-classes';
 import { formatPartnerPercent } from '@/features/partners/utils/partner-detail-format';
 import type { Partner } from '@/lib/api/partners';
 
@@ -17,53 +24,115 @@ interface PartnerCardProps {
   onOpen: (partner: Partner) => void;
 }
 
+interface PartnerCardStatRowProps {
+  icon: LucideIcon;
+  iconTileClassName: string;
+  value: string;
+  label: string;
+}
+
+function PartnerCardStatRow({
+  icon: Icon,
+  iconTileClassName,
+  value,
+  label,
+}: PartnerCardStatRowProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={iconTileClassName} aria-hidden>
+        <Icon size={15} />
+      </div>
+      <p className="text-muted-foreground min-w-0 text-sm">
+        <span className="text-foreground font-semibold tabular-nums">{value}</span> {label}
+      </p>
+    </div>
+  );
+}
+
+function partnerLevelCardBadge(level: string) {
+  if (level === 'PREMIUM') {
+    return { variant: 'amber' as StatusVariant, icon: <Crown size={12} aria-hidden /> };
+  }
+  return { variant: 'violet' as StatusVariant, icon: <ShieldCheck size={12} aria-hidden /> };
+}
+
 export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
   const tier = getPartnerLevel(partner.level);
   const dir = getPartnerDirection(partner.direction);
   const st = getPartnerStatus(partner.status);
+  const tierBadge = partnerLevelCardBadge(partner.level);
   const orders = partner._count?.orders ?? 0;
   const subs = partner._count?.subscriptions ?? 0;
 
   return (
     <button type="button" onClick={() => onOpen(partner)} className={PARTNERS_DIRECTORY_CARD_CLASS}>
-      <div className="flex items-start gap-3">
-        <div className="bg-accent/15 text-accent group-hover:bg-accent/20 flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors">
-          <Handshake size={18} aria-hidden />
+      <div className="flex items-start justify-between gap-3">
+        <div className={PARTNER_CARD_AVATAR_CLASS}>
+          <Handshake size={20} aria-hidden />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{partner.name}</p>
-          {partner.contact ? (
-            <p className="text-muted-foreground mt-0.5 flex items-center gap-1 truncate text-xs">
-              <User size={11} aria-hidden />
-              {partner.contact.firstName} {partner.contact.lastName}
-            </p>
-          ) : (
-            <p className="text-muted-foreground mt-0.5 text-xs">No linked contact</p>
-          )}
-        </div>
-        {st && <StatusBadge label={st.label} variant={st.variant} />}
+        {st ? (
+          <StatusBadge
+            label={st.label}
+            variant={st.variant}
+            className={PARTNER_CARD_STATUS_BADGE_CLASS}
+          />
+        ) : null}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {tier && <StatusBadge label={tier.label} variant={tier.variant} />}
-        {dir && (
-          <div className="flex items-center gap-1">
-            <PartnerDirectionIcon direction={partner.direction} />
-            <StatusBadge label={dir.label} variant={dir.variant} />
-          </div>
+      <div className="mt-4 min-w-0">
+        <h3 className="text-foreground truncate text-base font-bold tracking-tight">
+          {partner.name}
+        </h3>
+        {partner.contact ? (
+          <PersonAvatarName
+            name={`${partner.contact.firstName} ${partner.contact.lastName}`.trim()}
+            className="mt-3"
+          />
+        ) : (
+          <p className="text-muted-foreground mt-0.5 truncate text-sm">No linked contact</p>
         )}
       </div>
 
-      <div className="text-muted-foreground mt-4 flex flex-wrap gap-3 border-t pt-3 text-xs">
-        <span className="flex items-center gap-1 tabular-nums">
-          <Percent size={11} aria-hidden />
-          {formatPartnerPercent(partner.defaultPercent)} default
-        </span>
-        <span className="flex items-center gap-1 tabular-nums">
-          <ShoppingCart size={11} aria-hidden />
-          {orders} orders
-        </span>
-        <span className="tabular-nums">{subs} subscriptions</span>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {tier ? (
+          <StatusBadge
+            label={tier.label}
+            variant={tierBadge.variant}
+            icon={tierBadge.icon}
+            className="rounded-md"
+          />
+        ) : null}
+        {dir ? (
+          <StatusBadge
+            label={dir.label}
+            variant={dir.variant}
+            icon={<PartnerDirectionIcon direction={partner.direction} />}
+            className="rounded-md"
+          />
+        ) : null}
+      </div>
+
+      <div className="border-border mt-5 border-t pt-4">
+        <div className="space-y-3">
+          <PartnerCardStatRow
+            icon={Percent}
+            iconTileClassName={PARTNER_CARD_STAT_ICON_TILE_GREEN_CLASS}
+            value={formatPartnerPercent(partner.defaultPercent)}
+            label="default"
+          />
+          <PartnerCardStatRow
+            icon={ShoppingCart}
+            iconTileClassName={PARTNER_CARD_STAT_ICON_TILE_MUTED_CLASS}
+            value={String(orders)}
+            label="orders"
+          />
+          <PartnerCardStatRow
+            icon={RefreshCw}
+            iconTileClassName={PARTNER_CARD_STAT_ICON_TILE_GREEN_CLASS}
+            value={String(subs)}
+            label="subscriptions"
+          />
+        </div>
       </div>
     </button>
   );

@@ -29,7 +29,7 @@ import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-r
 const PINNED_DROP_VISIBLE = 'pinned-drop-visible';
 const PINNED_DROP_HIDDEN = 'pinned-drop-hidden';
 
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0';
+const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*]:min-w-0';
 
 interface PinnedActionsProps {
   actions: PinnedAction[];

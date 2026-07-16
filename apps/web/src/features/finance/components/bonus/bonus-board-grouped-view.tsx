@@ -29,6 +29,7 @@ export function BonusBoardEmployeeView({
       groups={groups}
       emptyLabel="No entries for employees in this scope."
       onOpenReleases={onOpenReleases}
+      cardsPerRow={2}
     />
   );
 }
@@ -46,6 +47,7 @@ export function BonusBoardProductView({
       groups={groups}
       emptyLabel="No entries for projects in this scope."
       onOpenReleases={onOpenReleases}
+      cardsPerRow={2}
     />
   );
 }
@@ -63,6 +65,7 @@ export function BonusBoardPayrollMonthView({
       groups={groups}
       emptyLabel="No entries for payroll months in this scope."
       onOpenReleases={onOpenReleases}
+      cardsPerRow={2}
     />
   );
 }
@@ -71,10 +74,12 @@ function GroupedBonusView({
   groups,
   emptyLabel,
   onOpenReleases,
+  cardsPerRow = 1,
 }: {
   groups: BonusBoardEntryGroup[];
   emptyLabel: string;
   onOpenReleases: (entry: BonusEntryListRow) => void;
+  cardsPerRow?: 1 | 2;
 }) {
   if (groups.length === 0) {
     return (
@@ -92,9 +97,15 @@ function GroupedBonusView({
               {group.entries.length} · {formatAmount(sumBonusEntryAmounts(group.entries))}
             </span>
           </div>
-          <ul className="mt-3 flex flex-col gap-2">
+          <ul
+            className={
+              cardsPerRow === 2
+                ? 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2'
+                : 'mt-3 flex flex-col gap-2'
+            }
+          >
             {group.entries.map((entry) => (
-              <li key={entry.id}>
+              <li key={entry.id} className="min-w-0">
                 <BonusCard row={entry} onOpenReleases={onOpenReleases} />
               </li>
             ))}

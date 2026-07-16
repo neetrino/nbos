@@ -1,28 +1,16 @@
 import { useMemo } from 'react';
-import { AlertTriangle, Building2, Calendar, FolderKanban, Handshake } from 'lucide-react';
-import {
-  KanbanBoard,
-  KanbanCardShell,
-  KanbanColumnMoneyTotal,
-  StatusBadge,
-} from '@/components/shared';
+import { KanbanBoard, KanbanColumnMoneyTotal } from '@/components/shared';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
 } from '@/features/shared/kanban-terminal-drop';
-import {
-  formatAmount,
-  INVOICE_MONEY_STAGES,
-  INVOICE_TYPES,
-} from '@/features/finance/constants/finance';
-import { parseMoneyAmount } from '@/lib/format/money';
+import { INVOICE_MONEY_STAGES } from '@/features/finance/constants/finance';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
-import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
-import { getInvoiceDealTitle } from '@/features/finance/utils/order-display';
 import { createInvoiceKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Invoice } from '@/lib/api/finance';
+import { InvoiceKanbanCard } from './InvoiceKanbanCard';
 
 interface InvoiceKanbanProps {
   invoices: Invoice[];
@@ -100,84 +88,5 @@ export function InvoiceKanban({
         <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
       )}
     />
-  );
-}
-
-function InvoiceKanbanCard({
-  invoice,
-  onInvoiceClick,
-}: {
-  invoice: Invoice;
-  onInvoiceClick: (invoice: Invoice) => void;
-}) {
-  const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
-  const overdueDays = resolveInvoiceOverdueDays(invoice);
-  const dealTitle = getInvoiceDealTitle(invoice.order);
-
-  return (
-    <KanbanCardShell
-      hoverSurface="muted30"
-      className="cursor-pointer space-y-1.5"
-      onClick={() => onInvoiceClick(invoice)}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
-        {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
-      </div>
-      <p className="text-foreground text-sm font-bold tabular-nums">
-        {formatAmount(parseMoneyAmount(invoice.amount))}
-      </p>
-      {type ? <StatusBadge label={type.label} variant="blue" /> : null}
-      {dealTitle ? <InvoiceDeal name={dealTitle} /> : null}
-      {invoice.company && <InvoiceCompany name={invoice.company.name} />}
-      {invoice.project && <InvoiceProject name={invoice.project.name} />}
-      {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}
-      {overdueDays > 0 && <InvoiceOverdueDays days={overdueDays} />}
-    </KanbanCardShell>
-  );
-}
-
-function InvoiceDeal({ name }: { name: string }) {
-  return (
-    <div className="text-muted-foreground flex items-center gap-1 text-xs">
-      <Handshake size={10} />
-      {name}
-    </div>
-  );
-}
-
-function InvoiceCompany({ name }: { name: string }) {
-  return (
-    <div className="text-muted-foreground flex items-center gap-1 text-xs">
-      <Building2 size={10} />
-      {name}
-    </div>
-  );
-}
-
-function InvoiceDueDate({ dueDate }: { dueDate: string }) {
-  return (
-    <div className="text-muted-foreground flex items-center gap-1 text-xs">
-      <Calendar size={10} />
-      {new Date(dueDate).toLocaleDateString()}
-    </div>
-  );
-}
-
-function InvoiceProject({ name }: { name: string }) {
-  return (
-    <div className="text-muted-foreground flex items-center gap-1 text-xs">
-      <FolderKanban size={10} />
-      {name}
-    </div>
-  );
-}
-
-function InvoiceOverdueDays({ days }: { days: number }) {
-  return (
-    <div className="flex items-center gap-1 text-xs font-medium text-red-500">
-      <AlertTriangle size={10} />
-      {days}d overdue
-    </div>
   );
 }

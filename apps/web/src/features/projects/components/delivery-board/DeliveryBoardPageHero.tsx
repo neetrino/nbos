@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { LayoutGrid, LayoutList } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   IntegratedSearchFilters,
@@ -36,16 +36,16 @@ const PIPELINE_TABS = [
 
 const PIPELINE_VIEW_OPTIONS: ViewModeOption<'LIST' | 'BOARD'>[] = [
   {
-    value: 'LIST',
-    label: 'List',
-    icon: <LayoutList className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Table view',
-  },
-  {
     value: 'BOARD',
     label: 'Board',
     icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
     ariaLabel: 'Board view',
+  },
+  {
+    value: 'LIST',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
   },
 ];
 

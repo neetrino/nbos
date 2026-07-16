@@ -40,6 +40,9 @@ interface SubscriptionGridStatusControlProps {
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
+  /** Use when the control sits inside a detail sheet (nested dialogs). */
+  forceNestedBackdrop?: boolean;
+  size?: 'xs' | 'sm';
 }
 
 export function SubscriptionGridStatusControl({
@@ -50,6 +53,8 @@ export function SubscriptionGridStatusControl({
   onActivate,
   onCancel,
   onHold,
+  forceNestedBackdrop = false,
+  size = 'xs',
 }: SubscriptionGridStatusControlProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [holdOpen, setHoldOpen] = useState(false);
@@ -78,9 +83,13 @@ export function SubscriptionGridStatusControl({
               {...triggerProps}
               type="button"
               variant="outline"
-              size="xs"
+              size={size}
               disabled={isBusy}
-              className={`h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${statusClass}`}
+              className={
+                size === 'sm'
+                  ? `h-8 shrink-0 gap-1 border px-2.5 text-xs font-semibold ${statusClass}`
+                  : `h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${statusClass}`
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 triggerProps.onClick?.(e);
@@ -91,7 +100,7 @@ export function SubscriptionGridStatusControl({
               }}
             >
               {label}
-              <ChevronDown size={12} aria-hidden />
+              <ChevronDown size={size === 'sm' ? 14 : 12} aria-hidden />
             </Button>
           )}
         />
@@ -145,6 +154,7 @@ export function SubscriptionGridStatusControl({
         open={cancelOpen}
         isSubmitting={isCancelling}
         onOpenChange={setCancelOpen}
+        forceNestedBackdrop={forceNestedBackdrop}
         onConfirm={async () => {
           try {
             await onCancel(subscription);
@@ -159,6 +169,7 @@ export function SubscriptionGridStatusControl({
         open={holdOpen}
         isSubmitting={isHolding}
         onOpenChange={setHoldOpen}
+        forceNestedBackdrop={forceNestedBackdrop}
         onConfirm={async () => {
           try {
             await onHold(subscription);

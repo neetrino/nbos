@@ -30,6 +30,7 @@ export function AppLayout({ children }: AppLayoutProps) {
    */
   const autoCollapsedRef = useRef(false);
   const isDocumentsRoute = pathname.startsWith('/documents');
+  const isMessengerRoute = pathname.startsWith('/messenger');
 
   useEffect(() => {
     if (isDocumentsRoute && !autoCollapsedRef.current) {
@@ -62,7 +63,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Topbar />
                 <main
                   className={cn(
-                    'bg-background flex-1 overflow-y-auto overscroll-contain',
+                    'bg-background flex min-h-0 flex-1 flex-col overscroll-contain',
+                    isMessengerRoute ? 'overflow-hidden' : 'overflow-y-auto',
                     APP_MAIN_CONTENT_INSET,
                   )}
                 >

@@ -10,6 +10,10 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  HeaderModuleTitleLockedContext,
+  useHeaderModuleTitle,
+} from '@/components/layout/header-context';
+import {
   MODULE_SHELL_BRIDGE_HERO_GAP,
   MODULE_SHELL_BRIDGE_HERO_PULL,
 } from '@/components/shared/module-shell/module-shell-surface';
@@ -69,29 +73,33 @@ export function ModuleHeroSlotProvider({
   }, []);
 
   const contextValue = useMemo(() => ({ setSlots }), [setSlots]);
+  useHeaderModuleTitle(title);
 
   return (
-    <ModuleHeroSlotContext.Provider value={contextValue}>
-      <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
-        <div
-          className={cn(
-            'shrink-0',
-            linkToHeaderTab && [MODULE_SHELL_BRIDGE_HERO_PULL, MODULE_SHELL_BRIDGE_HERO_GAP],
-          )}
-        >
-          <PageHero
-            title={title}
-            tabs={slots.tabs ?? tabs}
-            search={slots.search}
-            viewMode={slots.viewMode}
-            trailing={slots.trailing}
-            secondaryTabs={slots.secondaryTabs}
-            className={linkToHeaderTab ? '!mt-0' : undefined}
-          />
+    <HeaderModuleTitleLockedContext.Provider value={true}>
+      <ModuleHeroSlotContext.Provider value={contextValue}>
+        <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
+          <div
+            className={cn(
+              'shrink-0',
+              linkToHeaderTab && [MODULE_SHELL_BRIDGE_HERO_PULL, MODULE_SHELL_BRIDGE_HERO_GAP],
+            )}
+          >
+            <PageHero
+              title={title}
+              syncModuleTitle={false}
+              tabs={slots.tabs ?? tabs}
+              search={slots.search}
+              viewMode={slots.viewMode}
+              trailing={slots.trailing}
+              secondaryTabs={slots.secondaryTabs}
+              className={linkToHeaderTab ? '!mt-0' : undefined}
+            />
+          </div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
         </div>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
-      </div>
-    </ModuleHeroSlotContext.Provider>
+      </ModuleHeroSlotContext.Provider>
+    </HeaderModuleTitleLockedContext.Provider>
   );
 }
 

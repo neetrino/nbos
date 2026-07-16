@@ -115,7 +115,6 @@ export function ProductFinanceSectionContent({
             orders={displayOrders}
             boardScope={boardScope}
             onOrderClick={handleOpenOrder}
-            onCreateInvoice={() => undefined}
           />
         )}
         <OrderDetailSheet

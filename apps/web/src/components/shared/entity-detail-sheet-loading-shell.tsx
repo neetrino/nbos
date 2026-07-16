@@ -3,11 +3,13 @@
 import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 /** Minimal sheet chrome while an entity hydrates by id. */
 export function EntityDetailSheetLoadingShell({
   open,
   onOpenChange,
+  onOpenChangeComplete: onOpenChangeCompleteProp,
   label,
   layout = 'full',
   width,
@@ -18,6 +20,7 @@ export function EntityDetailSheetLoadingShell({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenChangeComplete?: (open: boolean) => void;
   label: string;
   layout?: 'full' | 'auxiliary';
   width?: 'compact' | 'medium' | 'wide';
@@ -26,10 +29,18 @@ export function EntityDetailSheetLoadingShell({
   forceNestedBackdrop?: boolean;
   stackAboveEntitySheet?: boolean;
 }) {
-  if (!open) return null;
+  const { persistedValue: renderOpen, onOpenChangeComplete: clearRenderOpen } =
+    useSheetPersistedValue(open ? true : null);
+  const hostMounted = useSheetHostMounted(open, renderOpen);
+  if (!hostMounted) return null;
+
+  const handleOpenChangeComplete = (nextOpen: boolean) => {
+    clearRenderOpen(nextOpen);
+    onOpenChangeCompleteProp?.(nextOpen);
+  };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={handleOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout={layout}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { UserCheck, UserX } from 'lucide-react';
+import { Trash2, UserCheck, UserX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -11,6 +12,7 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   type DetailSheetTabItem,
+  DeleteConfirmDialog,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -52,6 +54,7 @@ import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
 import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
+import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
 interface EmployeeSheetProps {
   employee: Employee | null;
@@ -65,6 +68,8 @@ interface EmployeeSheetProps {
   selfProfileDeepLinkHref?: string;
   /** Stack above an already-open entity sheet (dims parent floating rail). */
   forceNestedBackdrop?: boolean;
+  /** Project team: Remove participant control opposite the name. */
+  onRemoveParticipant?: () => void | Promise<void>;
 }
 
 function saveErrorMessage(err: unknown): string {
@@ -81,16 +86,22 @@ export function EmployeeSheet({
   selfProfile = false,
   selfProfileDeepLinkHref,
   forceNestedBackdrop = false,
+  onRemoveParticipant,
 }: EmployeeSheetProps) {
+  const { persistedValue: renderEmployee, onOpenChangeComplete } = useSheetPersistedValue(employee);
+  const hostMounted = useSheetHostMounted(open, renderEmployee);
+
   const [draft, setDraft] = useState<EmployeeGeneralDraft | null>(null);
   const [snap, setSnap] = useState<EmployeeGeneralDraft | null>(null);
   const [current, setCurrent] = useState<Employee | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [removingParticipant, setRemovingParticipant] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [reactivateOpen, setReactivateOpen] = useState(false);
+  const [removeParticipantOpen, setRemoveParticipantOpen] = useState(false);
   const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const canReactivate = useCanReactivateEmployee();
@@ -110,7 +121,11 @@ export function EmployeeSheet({
   }, [employee]);
 
   useEffect(() => {
-    if (!open) setGeneralError(null);
+    if (!open) {
+      setGeneralError(null);
+      setRemovingParticipant(false);
+      setRemoveParticipantOpen(false);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -210,11 +225,27 @@ export function EmployeeSheet({
     await onSaved?.();
   }, [current, onSaved]);
 
-  if (!open) return null;
+  const handleRemoveParticipant = useCallback(async () => {
+    if (!onRemoveParticipant) return;
+    setRemovingParticipant(true);
+    try {
+      await onRemoveParticipant();
+      setRemoveParticipantOpen(false);
+      onOpenChange(false);
+    } catch {
+      // Caller surfaces toast; keep sheet open for retry.
+    } finally {
+      setRemovingParticipant(false);
+    }
+  }, [onOpenChange, onRemoveParticipant]);
 
-  if (!current || !draft || !snap) {
+  if (!hostMounted) return null;
+
+  const displayEmployee = current ?? renderEmployee;
+
+  if (!displayEmployee || !draft || !snap) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
@@ -227,23 +258,23 @@ export function EmployeeSheet({
     );
   }
 
-  const fullName = employeeFullName(current);
-  const levelInfo = getEmployeeLevel(current.level ?? '');
-  const statusInfo = getEmployeeStatus(current.status);
-  const dept = employeePrimaryDepartment(current);
+  const fullName = employeeFullName(displayEmployee);
+  const levelInfo = getEmployeeLevel(displayEmployee.level ?? '');
+  const statusInfo = getEmployeeStatus(displayEmployee.status);
+  const dept = employeePrimaryDepartment(displayEmployee);
 
   const employeeTabs: DetailSheetTabItem[] = [
     { value: 'general', label: 'General' },
     { value: 'departments', label: 'Departments' },
   ];
-  if (current.status === 'TERMINATED') {
+  if (displayEmployee.status === 'TERMINATED') {
     employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
   } else if (hasOnboardingChecklist) {
     employeeTabs.push({ value: 'onboarding', label: 'Onboarding' });
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
         open={open}
         layout="full"
@@ -252,7 +283,7 @@ export function EmployeeSheet({
         sourcePageHref={
           selfProfile
             ? (selfProfileDeepLinkHref ?? '/dashboard')
-            : `${TEAM_PAGE_HREF}?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(current.id)}`
+            : `${TEAM_PAGE_HREF}?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(displayEmployee.id)}`
         }
       >
         <div className="flex h-full min-h-0 flex-col">
@@ -261,13 +292,13 @@ export function EmployeeSheet({
               <div
                 className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${employeeAvatarColor(fullName)}`}
               >
-                {employeeInitials(current)}
+                {employeeInitials(displayEmployee)}
               </div>
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold">{fullName}</h2>
                   <p className="text-muted-foreground text-xs">
-                    {current.position || current.role.name}
+                    {displayEmployee.position || displayEmployee.role.name}
                     {dept ? ` · ${dept}` : ''}
                   </p>
                 </div>
@@ -281,8 +312,22 @@ export function EmployeeSheet({
                     )}
                   </div>
                 )}
+                {onRemoveParticipant ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive ml-auto shrink-0"
+                    disabled={removingParticipant || saving}
+                    onClick={() => setRemoveParticipantOpen(true)}
+                    aria-label="Remove participant"
+                  >
+                    <Trash2 className="size-4" />
+                    Remove
+                  </Button>
+                ) : null}
               </div>
-              {!selfProfile && canEdit && current.status !== 'TERMINATED' && (
+              {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' && (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"
@@ -293,7 +338,7 @@ export function EmployeeSheet({
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               )}
-              {!selfProfile && canReactivate && current.status === 'TERMINATED' && (
+              {!selfProfile && canReactivate && displayEmployee.status === 'TERMINATED' && (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                     <UserCheck className="mr-2 size-4" />
@@ -310,20 +355,20 @@ export function EmployeeSheet({
             <DetailSheetTabPanel tabKey={activeTab}>
               {activeTab === 'general' ? (
                 <EmployeeSheetScrollBody
-                  employeeId={current.id}
+                  employeeId={displayEmployee.id}
                   draft={draft}
                   patchDraft={patchDraft}
                   roles={roles}
                   saving={saving}
-                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  canEdit={canEdit && displayEmployee.status !== 'TERMINATED'}
                   generalError={generalError}
                 />
               ) : null}
               {activeTab === 'departments' ? (
                 <EmployeeDepartmentsPanel
-                  employee={current}
+                  employee={displayEmployee}
                   departments={departments}
-                  canEdit={canEdit && current.status !== 'TERMINATED'}
+                  canEdit={canEdit && displayEmployee.status !== 'TERMINATED'}
                   onUpdated={(emp) => {
                     setCurrent(emp);
                     const next = createEmployeeGeneralDraft(emp);
@@ -333,19 +378,19 @@ export function EmployeeSheet({
                   }}
                 />
               ) : null}
-              {activeTab === 'offboarding' && current.status === 'TERMINATED' ? (
-                <EmployeeOffboardingPanel employeeId={current.id} canEdit={canEdit} />
+              {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
+                <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />
               ) : null}
               {activeTab === 'onboarding' &&
-              current.status !== 'TERMINATED' &&
+              displayEmployee.status !== 'TERMINATED' &&
               hasOnboardingChecklist ? (
-                <EmployeeOnboardingPanel employeeId={current.id} canEdit={canEdit} />
+                <EmployeeOnboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />
               ) : null}
             </DetailSheetTabPanel>
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={canEdit && current.status !== 'TERMINATED'}
+            visible={canEdit && displayEmployee.status !== 'TERMINATED'}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}
@@ -357,7 +402,7 @@ export function EmployeeSheet({
       </EntityDetailSheetContent>
 
       <TerminateEmployeeDialog
-        employeeId={current.id}
+        employeeId={displayEmployee.id}
         employeeName={fullName}
         open={terminateOpen}
         onOpenChange={setTerminateOpen}
@@ -365,12 +410,27 @@ export function EmployeeSheet({
       />
 
       <ReactivateEmployeeDialog
-        employeeId={current.id}
+        employeeId={displayEmployee.id}
         employeeName={fullName}
         open={reactivateOpen}
         onOpenChange={setReactivateOpen}
         onReactivated={handleReactivateComplete}
       />
+
+      {onRemoveParticipant ? (
+        <DeleteConfirmDialog
+          open={removeParticipantOpen}
+          onOpenChange={setRemoveParticipantOpen}
+          level="simple"
+          itemName={fullName}
+          title="Remove participant?"
+          description="They will lose project team access. You can add them again later."
+          confirmLabel="Remove"
+          isSubmitting={removingParticipant}
+          forceNestedBackdrop
+          onConfirm={() => void handleRemoveParticipant()}
+        />
+      ) : null}
     </Sheet>
   );
 }

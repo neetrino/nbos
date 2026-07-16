@@ -3,6 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -66,35 +73,47 @@ export function SupportTechnicalContextDialog({
           <div className="space-y-3">
             <div className="space-y-1">
               <Label htmlFor="support-tech-asset">Asset</Label>
-              <select
-                id="support-tech-asset"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-                value={assetId}
-                onChange={(event) => onAssetIdChange(event.target.value)}
+              <Select
+                value={assetId || 'none'}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  onAssetIdChange(v === 'none' ? '' : v);
+                }}
               >
-                <option value="">None</option>
-                {profile?.assets.map((asset) => (
-                  <option key={asset.id} value={asset.id}>
-                    {asset.type} — {asset.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="support-tech-asset" className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {profile?.assets.map((asset) => (
+                    <SelectItem key={asset.id} value={asset.id}>
+                      {asset.type} — {asset.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
               <Label htmlFor="support-tech-env">Environment</Label>
-              <select
-                id="support-tech-env"
-                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-                value={environmentId}
-                onChange={(event) => onEnvironmentIdChange(event.target.value)}
+              <Select
+                value={environmentId || 'none'}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  onEnvironmentIdChange(v === 'none' ? '' : v);
+                }}
               >
-                <option value="">None</option>
-                {profile?.environments.map((env) => (
-                  <option key={env.id} value={env.id}>
-                    {env.kind} — {env.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="support-tech-env" className="w-full">
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {profile?.environments.map((env) => (
+                    <SelectItem key={env.id} value={env.id}>
+                      {env.kind} — {env.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         )}

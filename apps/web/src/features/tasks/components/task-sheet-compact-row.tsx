@@ -65,7 +65,7 @@ export const TASK_SHEET_COMPACT_FIELD_CLASS = [
   '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
   '[&>div:last-child]:w-full [&>div:last-child]:max-w-[15.5rem]',
   '[&_.w-full]:w-full',
-  '[&_span.rounded-xl]:min-h-8 [&_span.rounded-xl]:py-1',
+  '[&_.person-soft-avatar]:size-8 [&_.person-soft-avatar]:text-[10px]',
   '[&_button_span.block.truncate]:overflow-visible',
   '[&_button_span.block.truncate]:whitespace-nowrap',
 ].join(' ');

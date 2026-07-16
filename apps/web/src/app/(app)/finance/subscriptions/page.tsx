@@ -30,10 +30,9 @@ import { buildSubscriptionPageQueries } from '@/features/finance/utils/build-sub
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { SubscriptionFormDialog } from '@/features/finance/components/subscriptions/SubscriptionFormDialog';
 import { SubscriptionDetailSheet } from '@/features/finance/components/subscriptions/SubscriptionDetailSheet';
-import {
-  OPEN_SUBSCRIPTION_QUERY,
-  subscriptionsListWithOpenSubscriptionHref,
-} from '@/features/finance/constants/subscription-deep-link';
+import { SubscriptionPageInvoiceSheetHost } from '@/features/finance/components/subscriptions/SubscriptionPageInvoiceSheetHost';
+import { useSubscriptionPageSheetNav } from '@/features/finance/components/subscriptions/use-subscription-page-sheet-nav';
+import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import type { Subscription } from '@/lib/api/finance';
 import type { FilterConfig } from '@/components/shared/FilterBar';
 
@@ -56,7 +55,14 @@ function SubscriptionsPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
-  const openSubscriptionIdFromUrl = searchParams.get(OPEN_SUBSCRIPTION_QUERY)?.trim() || null;
+  const {
+    openSubscriptionIdFromUrl,
+    openInvoiceIdFromUrl,
+    openSubscriptionDetail,
+    handleOpenMonthCell,
+    handleSubscriptionSheetOpenChange,
+    handleInvoiceSheetOpenChange,
+  } = useSubscriptionPageSheetNav();
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
   const initialSubscription = useMemo(
@@ -115,31 +121,6 @@ function SubscriptionsPageInner() {
       page.setFilters((prev) => ({ ...prev, [key]: value }));
     },
     [partnerIdFromUrl, pathname, router, page],
-  );
-
-  const openSubscriptionDetail = useCallback(
-    (subscriptionId: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(OPEN_SUBSCRIPTION_QUERY, subscriptionId);
-      router.push(`${pathname ?? '/finance/subscriptions'}?${params.toString()}`);
-    },
-    [pathname, router, searchParams],
-  );
-
-  const handleSubscriptionSheetOpenChange = useCallback(
-    (next: boolean) => {
-      if (next) return;
-      const params = new URLSearchParams(searchParams.toString());
-      if (!params.has(OPEN_SUBSCRIPTION_QUERY)) return;
-      params.delete(OPEN_SUBSCRIPTION_QUERY);
-      const qs = params.toString();
-      router.replace(
-        qs
-          ? `${pathname ?? '/finance/subscriptions'}?${qs}`
-          : (pathname ?? '/finance/subscriptions'),
-      );
-    },
-    [pathname, router, searchParams],
   );
 
   const handleSubscriptionCreated = useCallback(
@@ -275,13 +256,8 @@ function SubscriptionsPageInner() {
         mutationError={page.mutationError}
         onDismissMutationError={page.clearMutationError}
         onListRetry={page.fetchSubscriptions}
-        activatingId={page.activatingId}
-        cancellingId={page.cancellingId}
-        holdingId={page.holdingId}
-        onActivate={page.handleActivate}
-        onCancel={page.handleCancel}
-        onHold={page.handleHold}
         onOpenSubscription={openSubscriptionDetail}
+        onOpenMonthCell={handleOpenMonthCell}
       />
 
       <SubscriptionDetailSheet
@@ -290,6 +266,16 @@ function SubscriptionsPageInner() {
         open={Boolean(openSubscriptionIdFromUrl)}
         onOpenChange={handleSubscriptionSheetOpenChange}
         onSubscriptionUpdated={() => {
+          void page.fetchSubscriptions();
+          subscriptionGrid.retry();
+        }}
+      />
+
+      <SubscriptionPageInvoiceSheetHost
+        invoiceId={openInvoiceIdFromUrl}
+        open={Boolean(openInvoiceIdFromUrl)}
+        onOpenChange={handleInvoiceSheetOpenChange}
+        onMutated={() => {
           void page.fetchSubscriptions();
           subscriptionGrid.retry();
         }}

@@ -44,6 +44,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     onCreate,
   } = props;
 
+  const selectionDisplay = props.selectionDisplay ?? 'chips';
   const multiple = isMultiProps(props);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -145,8 +146,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
 
   const searchPlaceholder = placeholder ?? `Search ${kindLabel.toLowerCase()}s…`;
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
+  const showSelectionChips = selectionDisplay === 'chips';
   const showFieldHeader =
-    Boolean(label.trim()) || Boolean(icon) || (multiple && multiChipCount > 0 && !open);
+    Boolean(label.trim()) ||
+    Boolean(icon) ||
+    (multiple && multiChipCount > 0 && !open && showSelectionChips);
 
   return (
     <div
@@ -158,7 +162,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       )}
     >
       {showFieldHeader ? (
-        <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
+        <div className="text-foreground/85 mb-1.5 flex h-5 items-center justify-between gap-2 text-sm font-medium">
           {label.trim() || icon ? (
             <div className="flex min-w-0 items-center gap-1.5">
               {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
@@ -167,15 +171,15 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           ) : (
             <span aria-hidden />
           )}
-          {multiple && multiChipCount > 0 && !open ? (
+          {multiple && multiChipCount > 0 && !open && showSelectionChips ? (
             <button
               type="button"
               disabled={disabled}
               onClick={() => setOpen(true)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
               aria-label={`Add ${kindLabel.toLowerCase()}`}
             >
-              <Plus size={16} />
+              <Plus size={14} />
             </button>
           ) : null}
         </div>
@@ -218,6 +222,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           onOpen={() => setOpen(true)}
           onOpenSelected={onOpenSelected}
           entityKind={entityKind}
+          selectionDisplay={selectionDisplay}
         />
       )}
     </div>
@@ -232,6 +237,7 @@ function ClosedRelationPicker({
   onOpen,
   onOpenSelected,
   entityKind,
+  selectionDisplay,
 }: {
   props: RelationPickerFieldProps;
   multiple: boolean;
@@ -240,7 +246,22 @@ function ClosedRelationPicker({
   onOpen: () => void;
   onOpenSelected?: (id: string) => void;
   entityKind: RelationEntityKind;
+  selectionDisplay: 'chips' | 'none';
 }) {
+  if (selectionDisplay === 'none') {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onOpen}
+        className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, multiple && 'border-dashed')}
+      >
+        <Search size={14} className="shrink-0 opacity-70" />
+        <span>{placeholder}</span>
+      </button>
+    );
+  }
+
   if (multiple && isMultiProps(props)) {
     const chips = props.value.map((id) => ({
       id,

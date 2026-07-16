@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetTabBar,
+  DetailSheetTabPanel,
   EntityDetailSheetContent,
   EntityItemHost,
   LoadingState,
@@ -234,7 +235,7 @@ export function ProductBonusPoolSheet({
                   {detailLoading && activeTab === 'general' ? (
                     <LoadingState count={3} />
                   ) : (
-                    tabContent
+                    <DetailSheetTabPanel tabKey={activeTab}>{tabContent}</DetailSheetTabPanel>
                   )}
                 </div>
               </ScrollArea>

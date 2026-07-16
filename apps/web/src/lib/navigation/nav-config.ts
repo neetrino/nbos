@@ -106,26 +106,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'COMPANY', action: 'VIEW' },
     children: [
       {
-        label: 'Org Structure',
-        href: '/my-company',
-        permission: { module: 'COMPANY', action: 'VIEW' },
-      },
-      {
-        label: 'Team',
-        href: '/my-company/team',
-        permission: { module: 'COMPANY', action: 'VIEW' },
-      },
-      {
-        label: 'Departments',
-        href: '/my-company/departments',
-        permission: { module: 'COMPANY', action: 'VIEW' },
-      },
-      {
-        label: 'Roles & Seats',
-        href: '/my-company/roles-seats',
-        permission: { module: 'COMPANY', action: 'VIEW' },
-      },
-      {
         label: 'Compensation',
         href: '/my-company/compensation',
         permission: { module: 'FINANCE_SALARY', action: 'VIEW' },

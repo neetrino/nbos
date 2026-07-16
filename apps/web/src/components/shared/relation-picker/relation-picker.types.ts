@@ -44,6 +44,11 @@ type RelationPickerBaseProps = {
   onOpenSelected?: (id: string) => void;
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
   onCreate?: (searchQuery: string) => void;
+  /**
+   * When `none`, selected chips/company row are not rendered (host shows custom cards).
+   * Search still tracks current selection ids.
+   */
+  selectionDisplay?: 'chips' | 'none';
 };
 
 export type RelationPickerSingleProps = RelationPickerBaseProps & {
