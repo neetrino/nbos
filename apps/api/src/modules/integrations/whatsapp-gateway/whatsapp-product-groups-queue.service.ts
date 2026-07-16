@@ -77,7 +77,8 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
           state === 'waiting' ||
           state === 'active' ||
           state === 'delayed' ||
-          state === 'paused'
+          state === 'prioritized' ||
+          state === 'waiting-children'
         ) {
           return true;
         }
