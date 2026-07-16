@@ -198,7 +198,7 @@ export function PipelineStagesBar({
           >
             <StageSegmentSvg
               filled={filled}
-              isCurrent={isCurrent}
+              emphasizeCurrent={isCurrent && hoverIdx === null}
               isFirst={isFirst}
               isLast={isLast}
               bg={bg}
@@ -219,14 +219,14 @@ export function PipelineStagesBar({
 
 function StageSegmentSvg({
   filled,
-  isCurrent,
+  emphasizeCurrent,
   isFirst,
   isLast,
   bg,
   ownColor,
 }: {
   filled: boolean;
-  isCurrent: boolean;
+  emphasizeCurrent: boolean;
   isFirst: boolean;
   isLast: boolean;
   bg: string;
@@ -247,8 +247,8 @@ function StageSegmentSvg({
       <path
         d={path}
         fill={bg}
-        stroke={isCurrent ? ownColor : filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
-        strokeWidth={isCurrent ? '1.5' : '0.5'}
+        stroke={emphasizeCurrent ? ownColor : filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
+        strokeWidth={emphasizeCurrent ? '1.5' : '0.5'}
         vectorEffect="non-scaling-stroke"
         className="transition-[fill] duration-[250ms] ease-in-out"
       />
