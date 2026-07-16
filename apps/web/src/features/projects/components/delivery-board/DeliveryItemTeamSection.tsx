@@ -127,8 +127,8 @@ export function DeliveryItemTeamSection({
 
   return (
     <section className="border-border bg-card/40 rounded-xl border p-4">
-      <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase">
-        <User size={13} className="opacity-70" aria-hidden />
+      <h3 className="text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+        <User size={13} aria-hidden />
         Team
       </h3>
       <div className="space-y-3">

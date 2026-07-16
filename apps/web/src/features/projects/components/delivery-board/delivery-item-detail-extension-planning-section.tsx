@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Package, Tag } from 'lucide-react';
+import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import { EntityNotesField, InlineField } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
@@ -40,7 +40,8 @@ export function ExtensionPlanningSection({
 
   return (
     <section className="border-border bg-card/40 rounded-xl border p-4">
-      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
+      <h3 className="text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+        <ClipboardList size={13} aria-hidden />
         Extension plan
       </h3>
       <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">

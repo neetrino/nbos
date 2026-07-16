@@ -228,10 +228,10 @@ export function DeliveryAccessInfrastructureSection({
   }
 
   return (
-    <section className="border-border bg-card/40 flex flex-col gap-4 rounded-xl border p-4">
+    <section className="border-border bg-card/40 flex flex-col gap-5 rounded-xl border p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase">
-          <KeyRound size={14} className="opacity-70" aria-hidden />
+        <h3 className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+          <KeyRound size={14} aria-hidden />
           Access & infrastructure
         </h3>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

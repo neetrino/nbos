@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Calendar, Layers, Package, Tag } from 'lucide-react';
+import { Calendar, ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import {
-  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
+  DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   EntityNotesField,
   InlineField,
@@ -44,12 +44,13 @@ export function ProductPlanningSection({
   };
 
   return (
-    <section className="border-border bg-card/40 w-full min-w-0 rounded-xl border p-4">
-      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 w-full max-w-full min-w-0 rounded-xl border p-4">
+      <h3 className="text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+        <ClipboardList size={13} aria-hidden />
         Delivery plan
       </h3>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
-        <div className="min-w-0 space-y-3 sm:pr-5">
+      <div className="flex min-w-0 flex-col">
+        <div className="min-w-0 space-y-3">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
           <InlineField
             variant="controlled"
@@ -73,7 +74,7 @@ export function ProductPlanningSection({
             onValueChange={(v) => patchDraft({ deadline: v })}
           />
         </div>
-        <div className={`min-w-0 space-y-3 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+        <div className={cn('mt-5 min-w-0 space-y-3', DETAIL_SHEET_PANEL_DIVIDER_CLASS)}>
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Product</p>
           <InlineField
             variant="controlled"

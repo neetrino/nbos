@@ -87,29 +87,6 @@ export function DeliveryItemDetailGeneralTab({
     <div className="space-y-4 px-5 py-4 sm:px-7">
       <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryItemStageReadinessSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            lifecycle={lifecycle}
-            checklistProgress={checklistProgress}
-            gateRequiredFields={gateRequiredFields}
-            stageGateActionBlockers={stageGateActionBlockers}
-          />
-          <div
-            className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}
-          >
-            <DeliveryStageChecklistPanel
-              ownerEntityType={kind}
-              ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
-              lifecycle={lifecycle}
-              onChanged={onRefreshDetail}
-              floatingNav={{
-                sourcePageHref,
-                workspaceHref: workSpaceHref,
-              }}
-            />
-          </div>
           <DeliveryItemTeamSection
             kind={kind}
             product={product}
@@ -141,6 +118,29 @@ export function DeliveryItemDetailGeneralTab({
               <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
             </section>
           ) : null}
+          <DeliveryItemStageReadinessSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            lifecycle={lifecycle}
+            checklistProgress={checklistProgress}
+            gateRequiredFields={gateRequiredFields}
+            stageGateActionBlockers={stageGateActionBlockers}
+          />
+          <div
+            className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}
+          >
+            <DeliveryStageChecklistPanel
+              ownerEntityType={kind}
+              ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
+              lifecycle={lifecycle}
+              onChanged={onRefreshDetail}
+              floatingNav={{
+                sourcePageHref,
+                workspaceHref: workSpaceHref,
+              }}
+            />
+          </div>
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
