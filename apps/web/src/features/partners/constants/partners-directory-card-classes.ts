@@ -1,6 +1,6 @@
 import { NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS } from '@/components/shared/navigable-entity-card.constants';
 
-/** Partner directory card shell — mock-aligned elevated profile card. */
+/** Partner directory card shell — same track size behavior as clients/companies. */
 export const PARTNERS_DIRECTORY_CARD_CLASS = [
   'border-border bg-card hover:border-accent/40 focus-visible:ring-ring group flex w-full flex-col rounded-2xl border p-5 text-left focus-visible:ring-2 focus-visible:outline-none',
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
@@ -21,7 +21,7 @@ export const PARTNER_CARD_STATUS_BADGE_CLASS = 'rounded-full px-2.5 py-1 text-xs
 const PARTNERS_DIRECTORY_CARD_GRID_BASE_CLASS =
   'grid w-full min-w-0 gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
-/** 4 cards per row when sidebar is open; 5 when collapsed. */
+/** 4 cards per row when sidebar is open; 5 when collapsed — matches clients/companies. */
 export function partnersDirectoryCardGridClass(sidebarCollapsed: boolean): string {
   return [
     PARTNERS_DIRECTORY_CARD_GRID_BASE_CLASS,
