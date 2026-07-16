@@ -117,7 +117,7 @@ export function OrderDetailSheet({
           width="medium"
           sourcePageHref={sourcePageHref}
         >
-          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             {loading && !order ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : order ? (

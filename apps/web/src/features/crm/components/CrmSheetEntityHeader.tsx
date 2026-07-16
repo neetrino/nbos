@@ -43,7 +43,7 @@ export function CrmSheetEntityHeader({
   titleClassName,
 }: CrmSheetEntityHeaderProps) {
   return (
-    <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+    <div className="bg-background shrink-0 px-7 pt-5 pb-3">
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <div

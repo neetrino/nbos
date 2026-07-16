@@ -279,7 +279,7 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'shrink-0 px-5 pb-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 

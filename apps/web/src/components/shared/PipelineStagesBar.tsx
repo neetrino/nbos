@@ -10,9 +10,110 @@ export interface PipelineStageConfig {
 
 const ARROW_W = 8;
 const BAR_HEIGHT_PX = 36;
+/** Corner round on chevron segments (viewBox units). */
+const SEGMENT_CORNER_RADIUS = 5;
 const DEFAULT_STAGE_COLOR = '#d4d4d4';
-const INACTIVE_SEGMENT_FILL = '#f0f0f0';
-const INACTIVE_TEXT_COLOR = '#888';
+const INACTIVE_SEGMENT_FILL = '#e5e5e5';
+const INACTIVE_TEXT_COLOR = '#737373';
+
+type StagePathPoint = { x: number; y: number };
+
+function stageSegmentPoints(isFirst: boolean, isLast: boolean): StagePathPoint[] {
+  const h = BAR_HEIGHT_PX;
+  const mid = h / 2;
+  const rightShoulder = 100 - ARROW_W;
+
+  if (isFirst) {
+    return [
+      { x: 0, y: 0 },
+      { x: rightShoulder, y: 0 },
+      { x: 100, y: mid },
+      { x: rightShoulder, y: h },
+      { x: 0, y: h },
+    ];
+  }
+  if (isLast) {
+    return [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: h },
+      { x: 0, y: h },
+      { x: ARROW_W, y: mid },
+    ];
+  }
+  return [
+    { x: 0, y: 0 },
+    { x: rightShoulder, y: 0 },
+    { x: 100, y: mid },
+    { x: rightShoulder, y: h },
+    { x: 0, y: h },
+    { x: ARROW_W, y: mid },
+  ];
+}
+
+/** Polygon path with quadratic rounds; sharpCorners stay square (outer bar edges). */
+function roundedPolygonPath(
+  points: readonly StagePathPoint[],
+  radius: number,
+  sharpCorners: ReadonlySet<number> = new Set(),
+): string {
+  const count = points.length;
+  if (count < 3) return '';
+
+  const parts: string[] = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const prev = points[(index - 1 + count) % count];
+    const curr = points[index];
+    const next = points[(index + 1) % count];
+    if (!prev || !curr || !next) continue;
+
+    if (sharpCorners.has(index)) {
+      if (index === 0) {
+        parts.push(`M${curr.x},${curr.y}`);
+      } else {
+        parts.push(`L${curr.x},${curr.y}`);
+      }
+      continue;
+    }
+
+    const toPrevX = prev.x - curr.x;
+    const toPrevY = prev.y - curr.y;
+    const toNextX = next.x - curr.x;
+    const toNextY = next.y - curr.y;
+    const lenPrev = Math.hypot(toPrevX, toPrevY);
+    const lenNext = Math.hypot(toNextX, toNextY);
+    if (lenPrev === 0 || lenNext === 0) continue;
+
+    const trimPrev = Math.min(radius, lenPrev / 2);
+    const trimNext = Math.min(radius, lenNext / 2);
+    const startX = curr.x + (toPrevX / lenPrev) * trimPrev;
+    const startY = curr.y + (toPrevY / lenPrev) * trimPrev;
+    const endX = curr.x + (toNextX / lenNext) * trimNext;
+    const endY = curr.y + (toNextY / lenNext) * trimNext;
+
+    if (index === 0) {
+      parts.push(`M${startX},${startY}`);
+    } else {
+      parts.push(`L${startX},${startY}`);
+    }
+    parts.push(`Q${curr.x},${curr.y} ${endX},${endY}`);
+  }
+
+  parts.push('Z');
+  return parts.join(' ');
+}
+
+function stageSegmentPath(isFirst: boolean, isLast: boolean): string {
+  const points = stageSegmentPoints(isFirst, isLast);
+  // First: square left edge. Last: square right edge. Chevrons stay rounded.
+  const sharpCorners = isFirst
+    ? new Set([0, points.length - 1])
+    : isLast
+      ? new Set([1, 2])
+      : new Set<number>();
+  return roundedPolygonPath(points, SEGMENT_CORNER_RADIUS, sharpCorners);
+}
 
 interface PipelineStagesBarProps {
   stages: readonly PipelineStageConfig[];
@@ -100,12 +201,11 @@ export function PipelineStagesBar({
               isCurrent={isCurrent}
               isFirst={isFirst}
               isLast={isLast}
-              isFuture={isFuture}
               bg={bg}
               ownColor={ownColor}
             />
             <span
-              className="relative z-10 flex h-full items-center justify-center truncate px-1 text-[10px] leading-none font-semibold"
+              className="text-s relative z-10 flex h-full items-center justify-center truncate px-1 leading-none font-semibold"
               style={{ color: textColor, transition: 'color 250ms ease' }}
             >
               {stage.shortLabel}
@@ -122,7 +222,6 @@ function StageSegmentSvg({
   isCurrent,
   isFirst,
   isLast,
-  isFuture,
   bg,
   ownColor,
 }: {
@@ -130,25 +229,19 @@ function StageSegmentSvg({
   isCurrent: boolean;
   isFirst: boolean;
   isLast: boolean;
-  isFuture: boolean;
   bg: string;
   ownColor: string;
 }) {
   const h = BAR_HEIGHT_PX;
-  const path = isFirst
-    ? `M0,0 L${100 - ARROW_W},0 L100,${h / 2} L${100 - ARROW_W},${h} L0,${h} Z`
-    : isLast
-      ? `M0,0 L100,0 L100,${h} L0,${h} L${ARROW_W},${h / 2} Z`
-      : `M0,0 L${100 - ARROW_W},0 L100,${h / 2} L${100 - ARROW_W},${h} L0,${h} L${ARROW_W},${h / 2} Z`;
+  const path = stageSegmentPath(isFirst, isLast);
 
   return (
     <svg
-      className="absolute inset-0"
+      className="absolute inset-0 overflow-visible"
       width="100%"
       height={h}
       preserveAspectRatio="none"
       viewBox={`0 0 100 ${h}`}
-      style={{ overflow: 'visible' }}
       aria-hidden
     >
       <path
@@ -157,19 +250,8 @@ function StageSegmentSvg({
         stroke={isCurrent ? ownColor : filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
         strokeWidth={isCurrent ? '1.5' : '0.5'}
         vectorEffect="non-scaling-stroke"
-        style={{ transition: 'fill 250ms ease' }}
+        className="transition-[fill] duration-[250ms] ease-in-out"
       />
-      {isFuture ? (
-        <rect
-          x={isFirst ? 0 : ARROW_W}
-          y={h - 3}
-          width={isLast ? 100 : isFirst ? 100 - ARROW_W : 100 - ARROW_W * 2}
-          height="3"
-          fill={ownColor}
-          rx="0.5"
-          style={{ transition: 'opacity 250ms ease' }}
-        />
-      ) : null}
     </svg>
   );
 }

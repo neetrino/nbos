@@ -43,9 +43,9 @@ export function DetailSheetTabBar({
               role="tab"
               aria-selected={isActive}
               onClick={() => onTabChange(tab.value)}
-              className={pillTabButtonClass(isActive)}
+              className={cn(pillTabButtonClass(isActive), 'text-[15px]')}
             >
-              {Icon ? <Icon size={16} aria-hidden /> : null}
+              {Icon ? <Icon size={17} aria-hidden /> : null}
               {tab.label}
             </button>
           );

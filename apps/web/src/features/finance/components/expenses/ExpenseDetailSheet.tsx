@@ -267,7 +267,7 @@ export function ExpenseDetailSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             {loading && !expense ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : expense ? (

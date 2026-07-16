@@ -269,7 +269,7 @@ export function SupportTicketDetailSheet({
           workspaceHref={workspaceHref}
         >
           <div className="border-border flex h-full min-h-0 flex-col border-l">
-            <div className="border-border bg-background shrink-0 border-b px-7 pt-5 pb-3">
+            <div className="bg-background shrink-0 px-7 pt-5 pb-3">
               {loading && !ticket ? (
                 <p className="text-muted-foreground text-sm">Loading…</p>
               ) : ticket ? (

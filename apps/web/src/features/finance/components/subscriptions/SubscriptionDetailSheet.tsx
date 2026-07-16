@@ -175,7 +175,7 @@ export function SubscriptionDetailSheet({
           sourcePageHref={sourcePageHref}
           workspaceHref={subscriptionWorkspaceHref(sheetId ?? '')}
         >
-          <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
             {loading && !subscription ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : subscription ? (

@@ -385,7 +385,7 @@ export function DeliveryItemDetailSheet({
             />
 
             {lifecycle?.isTerminal ? (
-              <div className="border-border bg-muted/40 shrink-0 border-b px-7 py-2.5">
+              <div className="bg-muted/40 shrink-0 px-7 py-2.5">
                 <p className="text-muted-foreground text-sm">
                   {lifecycle.resolution === 'DONE'
                     ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
@@ -395,7 +395,7 @@ export function DeliveryItemDetailSheet({
             ) : null}
 
             {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
-              <div className="border-border flex shrink-0 items-center justify-between gap-3 border-b bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
+              <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
                 <p className="text-muted-foreground text-sm">Delivery is paused.</p>
                 <Button
                   type="button"
@@ -409,7 +409,7 @@ export function DeliveryItemDetailSheet({
               </div>
             ) : null}
 
-            <div className="border-border shrink-0 border-b border-stone-100 dark:border-stone-800">
+            <div className="shrink-0 pb-3">
               <DeliveryPipelineStages
                 lifecycle={lifecycle}
                 disabled={busy || !boardMutations}

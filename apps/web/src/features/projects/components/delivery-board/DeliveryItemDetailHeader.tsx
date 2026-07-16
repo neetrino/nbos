@@ -91,7 +91,7 @@ export function DeliveryItemDetailHeader({
   };
 
   return (
-    <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+    <div className="bg-background shrink-0 px-7 pt-5 pb-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="mt-1 inline-flex max-w-full min-w-0 items-center gap-2">

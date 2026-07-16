@@ -120,7 +120,7 @@ export function PartnerDetailSheet({
         >
           {!partnerId ? null : (
             <>
-              <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+              <div className="bg-background shrink-0 px-7 pt-5 pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">

@@ -198,7 +198,7 @@ export function InvoiceSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
@@ -225,7 +225,7 @@ export function InvoiceSheet({
           </div>
 
           {onMoneyStatusChange ? (
-            <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+            <div className="shrink-0 px-5 pt-2.5 pb-3">
               <InvoiceMoneyStagesBar
                 currentStatus={renderInvoice.moneyStatus}
                 onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
