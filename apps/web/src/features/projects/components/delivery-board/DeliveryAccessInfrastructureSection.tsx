@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Asterisk, ChevronRight, KeyRound, Loader2, Plus, Unlink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -9,10 +9,7 @@ import { CredentialFormSheet } from '@/features/credentials/components/credentia
 import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
-import {
-  CreateAccessSlotCredentialDialog,
-  PickAccessSlotCredentialDialog,
-} from './delivery-access-slot-dialogs';
+import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
 
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
@@ -21,16 +18,6 @@ interface DeliveryAccessInfrastructureSectionProps {
   onRefreshDetail: () => void;
   /** Optional right column (languages, payment summary, etc.) inside the same card. */
   setupPanel?: React.ReactNode;
-}
-
-function linkedCredentialIdsFromSlots(slots: ProductAccessSlotRow[]): string[] {
-  const ids: string[] = [];
-  for (const s of slots) {
-    for (const b of s.bindings) {
-      if (b.boundCredential?.id) ids.push(b.boundCredential.id);
-    }
-  }
-  return ids;
 }
 
 export function DeliveryAccessInfrastructureSection({
@@ -44,11 +31,7 @@ export function DeliveryAccessInfrastructureSection({
   const [loading, setLoading] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [pickSlot, setPickSlot] = useState<ProductAccessSlotRow | null>(null);
   const [createSlot, setCreateSlot] = useState<ProductAccessSlotRow | null>(null);
-
-  const excludedCredentialIds = useMemo(() => linkedCredentialIdsFromSlots(slots), [slots]);
-
   const load = useCallback(async () => {
     if (!productId.trim()) {
       setSlots([]);
@@ -135,23 +118,15 @@ export function DeliveryAccessInfrastructureSection({
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
-                        className="h-8 gap-1 text-xs"
+                        size="icon-sm"
+                        className="size-8"
+                        title="New credential"
+                        aria-label="New credential"
                         onClick={() => setCreateSlot(slot)}
                       >
                         <Plus size={14} />
-                        New
                       </Button>
                     </PermissionGate>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => setPickSlot(slot)}
-                    >
-                      Pick
-                    </Button>
                   </div>
                 </div>
                 {slot.bindings.length > 0 ? (
@@ -273,24 +248,6 @@ export function DeliveryAccessInfrastructureSection({
           onRefreshDetail();
         }}
       />
-
-      {pickSlot ? (
-        <PickAccessSlotCredentialDialog
-          open
-          onOpenChange={(o) => {
-            if (!o) setPickSlot(null);
-          }}
-          projectId={projectId}
-          productId={productId}
-          slot={pickSlot}
-          excludedCredentialIds={excludedCredentialIds}
-          onBound={() => {
-            setPickSlot(null);
-            void load();
-            onRefreshDetail();
-          }}
-        />
-      ) : null}
 
       {createSlot ? (
         <CreateAccessSlotCredentialDialog
