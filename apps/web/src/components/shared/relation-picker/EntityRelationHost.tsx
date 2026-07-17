@@ -360,6 +360,7 @@ export function EntityRelationHost({
       <CreateContactDialog
         open={createKind === 'contact'}
         prefill={createPrefill}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) closeCreate();
         }}
@@ -369,6 +370,7 @@ export function EntityRelationHost({
       <CreateCompanyDialog
         open={createKind === 'company'}
         defaultName={createPrefill?.name}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) closeCreate();
         }}
@@ -378,6 +380,7 @@ export function EntityRelationHost({
       <CreateProjectHubDialog
         open={createKind === 'project'}
         defaultName={createPrefill?.name}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) closeCreate();
         }}
@@ -387,6 +390,7 @@ export function EntityRelationHost({
       <CreatePartnerDialog
         open={createKind === 'partner'}
         defaultName={createPrefill?.name}
+        forceNestedBackdrop={nested}
         onOpenChange={(next) => {
           if (!next) closeCreate();
         }}
@@ -398,6 +402,7 @@ export function EntityRelationHost({
           open={createKind === 'product'}
           projectId={createPrefill.projectId}
           defaultName={createPrefill.name}
+          forceNestedBackdrop={nested}
           onOpenChange={(next) => {
             if (!next) closeCreate();
           }}

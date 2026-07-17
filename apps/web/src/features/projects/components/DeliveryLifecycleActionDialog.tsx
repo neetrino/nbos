@@ -54,7 +54,7 @@ export function DeliveryLifecycleActionDialog({
         onOpenChange(open);
       }}
     >
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent className="sm:max-w-md" showCloseButton={false} forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isPause ? (
@@ -84,15 +84,20 @@ export function DeliveryLifecycleActionDialog({
               />
             </label>
           )}
-          <label className="space-y-1.5 text-xs font-medium">
-            Reason
+          <div className="mb-2 flex flex-col gap-3">
+            <label htmlFor="delivery-lifecycle-reason" className="text-s font-medium">
+              Reason
+            </label>
             <Textarea
+              id="delivery-lifecycle-reason"
               value={reason}
               disabled={isSubmitting}
+              rows={2}
               placeholder={isPause ? 'Waiting for client feedback...' : 'Client cancelled scope...'}
+              className="min-h-16 rounded-lg px-2.5 py-2 text-sm"
               onChange={(event) => setReason(event.target.value)}
             />
-          </label>
+          </div>
           {error && <p className="text-destructive text-xs">{error}</p>}
         </div>
 

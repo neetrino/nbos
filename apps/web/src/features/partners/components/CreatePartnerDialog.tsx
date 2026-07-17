@@ -39,6 +39,8 @@ interface CreatePartnerDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: (partner?: Partner) => void;
   defaultName?: string;
+  /** When opened above an entity sheet floating rail. */
+  forceNestedBackdrop?: boolean;
 }
 
 export function CreatePartnerDialog({
@@ -46,6 +48,7 @@ export function CreatePartnerDialog({
   onOpenChange,
   onCreated,
   defaultName = '',
+  forceNestedBackdrop = false,
 }: CreatePartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
@@ -160,7 +163,10 @@ export function CreatePartnerDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]"
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <DialogHeader>
           <DialogTitle>New Partner</DialogTitle>
         </DialogHeader>
