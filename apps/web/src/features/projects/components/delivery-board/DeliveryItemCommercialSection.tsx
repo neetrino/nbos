@@ -36,7 +36,7 @@ const COMMERCIAL_ROW_CLASS = 'border-border flex items-center gap-3 border-b py-
 
 const COMMERCIAL_ACTION_BTN_CLASS = cn(
   buttonVariants({ variant: 'default', size: 'sm' }),
-  'inline-flex w-full items-center gap-2 rounded-xl',
+  'relative inline-flex h-8 w-full shrink-0 items-center justify-center rounded-xl px-3 pr-8 text-xs',
 );
 
 interface DeliveryItemCommercialSectionProps {
@@ -103,9 +103,11 @@ function CommercialNavLink({
 }) {
   return (
     <Link href={href} className={COMMERCIAL_ACTION_BTN_CLASS}>
-      {icon}
-      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
-      <ExternalLink className="size-3.5 shrink-0 opacity-50" aria-hidden />
+      <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
+        <span className="inline-flex shrink-0">{icon}</span>
+        <span className="leading-none">{label}</span>
+      </span>
+      <ExternalLink className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
     </Link>
   );
 }
@@ -128,9 +130,11 @@ function CommercialNavButton({
       disabled={disabled}
       className={cn(COMMERCIAL_ACTION_BTN_CLASS, disabled && 'pointer-events-none opacity-50')}
     >
-      {icon}
-      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
-      <ChevronRight className="size-3.5 shrink-0 opacity-50" aria-hidden />
+      <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
+        <span className="inline-flex shrink-0">{icon}</span>
+        <span className="leading-none">{label}</span>
+      </span>
+      <ChevronRight className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
     </button>
   );
 }
@@ -175,7 +179,7 @@ export function DeliveryItemCommercialSection({
           Client & order
         </h3>
 
-        <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="min-w-0">
             {contact ? (
               <CommercialInfoRow
@@ -226,7 +230,8 @@ export function DeliveryItemCommercialSection({
             ) : null}
           </div>
 
-          <nav className="border-border flex min-w-0 flex-col gap-1.5 border-t pt-3 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
+          {/* Absolute on sm so stack height matches the left column (last button bottom = last left row). */}
+          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3 sm:absolute sm:inset-y-0 sm:right-0 sm:w-[calc(50%-0.625rem)] sm:justify-between sm:gap-0 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
             {dealId ? (
               <CommercialNavButton
                 label={`Open deal ${getDealDisplayTitle(deal!)}`}
