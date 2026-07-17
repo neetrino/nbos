@@ -10,7 +10,6 @@ import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter
 import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
 import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
-import { EntityDetailSheetLoadingShell } from '@/components/shared/entity-detail-sheet-loading-shell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getCompanyType, getTaxStatus } from '../constants/clients';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
@@ -204,23 +203,13 @@ export function CompanySheet({
 
   if (!hostMounted) return null;
 
-  if (!renderCompany || !draft || !snap) {
-    return (
-      <EntityDetailSheetLoadingShell
-        open={open}
-        onOpenChange={onOpenChange}
-        onOpenChangeComplete={onOpenChangeComplete}
-        label="Loading company…"
-        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
-        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
-        forceNestedBackdrop={forceNestedBackdrop}
-      />
-    );
-  }
-
-  const compType = getCompanyType(draft.type);
-  const taxStatus = getTaxStatus(renderCompany.taxStatus);
-  const sourcePageHref = `/clients/companies?openId=${encodeURIComponent(renderCompany.id)}`;
+  const isHydrated = Boolean(renderCompany && draft && snap);
+  const compType = draft ? getCompanyType(draft.type) : undefined;
+  const taxStatus = renderCompany ? getTaxStatus(renderCompany.taxStatus) : undefined;
+  const sourcePageHref = renderCompany
+    ? `/clients/companies?openId=${encodeURIComponent(renderCompany.id)}`
+    : '/clients/companies';
+  const displayName = draft?.name.trim() || renderCompany?.name || 'Company';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -231,147 +220,160 @@ export function CompanySheet({
         railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
         sourcePageHref={sourcePageHref}
         forceNestedBackdrop={forceNestedBackdrop}
+        showRailActions={isHydrated}
       >
-        <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                {editingName ? (
-                  <input
-                    ref={nameInputRef}
-                    value={nameValue}
-                    onChange={(e) => setNameValue(e.target.value)}
-                    onBlur={commitNameToDraft}
-                    onKeyDown={handleNameKeyDown}
-                    placeholder="Company name…"
-                    className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-                  />
-                ) : (
-                  <h2
-                    onClick={startEditingName}
-                    className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-                    title="Click to edit company name"
-                  >
-                    {draft.name.trim() || renderCompany.name}
-                  </h2>
-                )}
-                {compType ? (
-                  <StatusBadge
-                    label={compType.label}
-                    variant={compType.variant}
-                    className="shrink-0 self-center"
-                  />
-                ) : null}
-                {taxStatus ? (
-                  <StatusBadge
-                    label={taxStatus.label}
-                    variant={taxStatus.variant}
-                    className="shrink-0 self-center"
-                  />
-                ) : null}
+        {!isHydrated || !renderCompany || !draft || !snap ? (
+          <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
+            Loading company…
+          </div>
+        ) : (
+          <>
+            <div className="bg-background shrink-0 px-5 pt-5 pb-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                    {editingName ? (
+                      <input
+                        ref={nameInputRef}
+                        value={nameValue}
+                        onChange={(e) => setNameValue(e.target.value)}
+                        onBlur={commitNameToDraft}
+                        onKeyDown={handleNameKeyDown}
+                        placeholder="Company name…"
+                        className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+                      />
+                    ) : (
+                      <h2
+                        onClick={startEditingName}
+                        className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                        title="Click to edit company name"
+                      >
+                        {displayName}
+                      </h2>
+                    )}
+                    {compType ? (
+                      <StatusBadge
+                        label={compType.label}
+                        variant={compType.variant}
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
+                    {taxStatus ? (
+                      <StatusBadge
+                        label={taxStatus.label}
+                        variant={taxStatus.variant}
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                  {onRemoveParticipant ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive shrink-0"
+                      disabled={removingFromProject || saving}
+                      onClick={() => setRemoveFromProjectOpen(true)}
+                      aria-label="Remove company from project"
+                    >
+                      <Trash2 className="size-4" />
+                      Remove
+                    </Button>
+                  ) : null}
+                  {!isTrashView ? (
+                    <ClientPortfolioQuickActionsHeader
+                      variant="company"
+                      entityId={renderCompany.id}
+                      data={portfolio.data}
+                      loading={portfolio.loading}
+                    />
+                  ) : null}
+                  {isTrashView && onRestore ? (
+                    <DetailSheetSettingsMenu>
+                      <DropdownMenuItem onClick={() => onRestore(renderCompany.id)}>
+                        <RotateCcw />
+                        Restore
+                      </DropdownMenuItem>
+                      {onPermanentDelete ? (
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => onPermanentDelete(renderCompany.id)}
+                        >
+                          <Trash2 />
+                          Delete permanently
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DetailSheetSettingsMenu>
+                  ) : onMoveToTrash ? (
+                    <DetailSheetSettingsMenu>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => onMoveToTrash(renderCompany.id)}
+                      >
+                        <Trash2 />
+                        Move to Trash
+                      </DropdownMenuItem>
+                    </DetailSheetSettingsMenu>
+                  ) : null}
+                </div>
               </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-              {onRemoveParticipant ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive shrink-0"
-                  disabled={removingFromProject || saving}
-                  onClick={() => setRemoveFromProjectOpen(true)}
-                  aria-label="Remove company from project"
-                >
-                  <Trash2 className="size-4" />
-                  Remove
-                </Button>
-              ) : null}
-              {!isTrashView ? (
-                <ClientPortfolioQuickActionsHeader
-                  variant="company"
-                  entityId={renderCompany.id}
-                  data={portfolio.data}
-                  loading={portfolio.loading}
-                />
-              ) : null}
-              {isTrashView && onRestore ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(renderCompany.id)}>
-                    <RotateCcw />
-                    Restore
-                  </DropdownMenuItem>
-                  {onPermanentDelete ? (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onPermanentDelete(renderCompany.id)}
-                    >
-                      <Trash2 />
-                      Delete permanently
-                    </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : onMoveToTrash ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => onMoveToTrash(renderCompany.id)}
-                  >
-                    <Trash2 />
-                    Move to Trash
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              ) : null}
+
+            <ClientDetailTabBar
+              activeTab={activeTab}
+              tabs={portfolio.tabs}
+              onSelect={setActiveTab}
+            />
+
+            <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
+              <DetailSheetTabPanel tabKey={activeTab}>
+                {activeTab === 'general' ? (
+                  <CompanySheetScrollBody
+                    company={renderCompany}
+                    draft={draft}
+                    patchDraft={patchDraft}
+                    saving={saving}
+                    readOnly={isTrashView}
+                    generalError={generalError}
+                    portfolioData={portfolio.data}
+                    portfolioLoading={portfolio.loading}
+                    portfolioError={portfolio.error}
+                    searchContacts={searchContacts}
+                    onPortfolioRetry={portfolio.reload}
+                  />
+                ) : (
+                  <ClientPortfolioPanel
+                    tab={activeTab as ClientEmbeddedPortfolioTabId}
+                    data={portfolio.data}
+                    loading={portfolio.loading}
+                    error={portfolio.error}
+                    variant="company"
+                    onRetry={portfolio.reload}
+                  />
+                )}
+              </DetailSheetTabPanel>
             </div>
-          </div>
-        </div>
 
-        <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
-
-        <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
-          <DetailSheetTabPanel tabKey={activeTab}>
-            {activeTab === 'general' ? (
-              <CompanySheetScrollBody
-                company={renderCompany}
-                draft={draft}
-                patchDraft={patchDraft}
-                saving={saving}
-                readOnly={isTrashView}
-                generalError={generalError}
-                portfolioData={portfolio.data}
-                portfolioLoading={portfolio.loading}
-                portfolioError={portfolio.error}
-                searchContacts={searchContacts}
-                onPortfolioRetry={portfolio.reload}
-              />
-            ) : (
-              <ClientPortfolioPanel
-                tab={activeTab as ClientEmbeddedPortfolioTabId}
-                data={portfolio.data}
-                loading={portfolio.loading}
-                error={portfolio.error}
-                variant="company"
-                onRetry={portfolio.reload}
-              />
-            )}
-          </DetailSheetTabPanel>
-        </div>
-
-        <DetailSheetFormFooter
-          visible={!isTrashView && activeTab === 'general' && Boolean(draft)}
-          dirty={generalDirty}
-          saving={saving}
-          errorMessage={generalError}
-          onSave={() => void handleGeneralSave()}
-          onCancel={handleGeneralCancel}
-        />
+            <DetailSheetFormFooter
+              visible={!isTrashView && activeTab === 'general' && Boolean(draft)}
+              dirty={generalDirty}
+              saving={saving}
+              errorMessage={generalError}
+              onSave={() => void handleGeneralSave()}
+              onCancel={handleGeneralCancel}
+            />
+          </>
+        )}
       </EntityDetailSheetContent>
 
-      {onRemoveParticipant ? (
+      {onRemoveParticipant && renderCompany && draft ? (
         <DeleteConfirmDialog
           open={removeFromProjectOpen}
           onOpenChange={setRemoveFromProjectOpen}
           level="simple"
-          itemName={draft.name.trim() || renderCompany.name}
+          itemName={displayName}
           title="Remove company?"
           description="The company will be unlinked from this project. You can link it again later."
           confirmLabel="Remove"

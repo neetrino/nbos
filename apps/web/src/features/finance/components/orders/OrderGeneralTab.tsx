@@ -1,16 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { DollarSign, ExternalLink, FolderKanban, Handshake } from 'lucide-react';
+import { Building2, DollarSign, FolderKanban, Handshake, User } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetEntityLinkCard,
   DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
 } from '@/components/shared';
-import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
+import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
@@ -62,56 +63,56 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
 }
 
 function OrderLinkedPanel({ order }: { order: Order }) {
-  return (
-    <DetailSheetSection title="Linked">
-      <div className="space-y-2 text-sm">
-        <LinkRow
-          icon={FolderKanban}
-          value={order.project.name}
-          href={`/projects/${order.projectId}`}
-        />
-        {order.company ? (
-          <p className="text-muted-foreground">
-            Company: <span className="text-foreground font-medium">{order.company.name}</span>
-          </p>
-        ) : null}
-        {order.contact ? (
-          <p className="text-muted-foreground">
-            Contact:{' '}
-            <span className="text-foreground font-medium">
-              {order.contact.firstName} {order.contact.lastName}
-            </span>
-          </p>
-        ) : null}
-        {order.deal ? (
-          <LinkRow
-            icon={Handshake}
-            value={getOrderDisplayTitle(order)}
-            href={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(order.deal.id)}`}
-          />
-        ) : null}
-      </div>
-    </DetailSheetSection>
-  );
-}
+  const relations = useEntityRelations();
+  const [dealSheetOpen, setDealSheetOpen] = useState(false);
+  const contactName = order.contact
+    ? `${order.contact.firstName} ${order.contact.lastName}`.trim()
+    : null;
+  const dealId = order.deal?.id ?? null;
 
-function LinkRow({
-  icon: Icon,
-  value,
-  href,
-}: {
-  icon: typeof FolderKanban;
-  value: string;
-  href: string;
-}) {
   return (
-    <Link
-      href={href}
-      className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
-    >
-      <Icon size={14} aria-hidden />
-      {value}
-      <ExternalLink size={12} className="opacity-70" aria-hidden />
-    </Link>
+    <>
+      <DetailSheetSection title="Linked">
+        <div className="flex flex-col gap-2">
+          <DetailSheetEntityLinkCard
+            href={`/projects/${order.projectId}`}
+            label="Project"
+            title={order.project.name}
+            icon={FolderKanban}
+          />
+          {order.company ? (
+            <DetailSheetEntityLinkCard
+              label="Company"
+              title={order.company.name}
+              icon={Building2}
+              onOpen={() => relations.openEntity('company', order.company!.id)}
+            />
+          ) : null}
+          {order.contact && contactName ? (
+            <DetailSheetEntityLinkCard
+              label="Contact"
+              title={contactName}
+              icon={User}
+              onOpen={() => relations.openEntity('contact', order.contact!.id)}
+            />
+          ) : null}
+          {dealId && order.deal ? (
+            <DetailSheetEntityLinkCard
+              label="Deal"
+              title={order.deal.name?.trim() || order.deal.code}
+              icon={Handshake}
+              onOpen={() => setDealSheetOpen(true)}
+            />
+          ) : null}
+        </div>
+      </DetailSheetSection>
+
+      <EntityDealSheetDeepLink
+        dealId={dealSheetOpen ? dealId : null}
+        open={dealSheetOpen && Boolean(dealId)}
+        onOpenChange={setDealSheetOpen}
+        forceNestedBackdrop
+      />
+    </>
   );
 }
