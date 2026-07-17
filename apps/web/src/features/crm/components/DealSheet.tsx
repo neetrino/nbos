@@ -35,6 +35,10 @@ import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import {
+  DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  DEAL_DETAIL_SHEET_WIDTH_CLASS,
+} from '@/features/crm/constants/deal-sheet-layout';
 import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
 import type { ApiFieldError } from '@/lib/api-errors';
 import {
@@ -253,8 +257,8 @@ export function DealSheet({
         onOpenChangeComplete={handleOpenChangeComplete}
         label="Loading deal…"
         forceNestedBackdrop={forceNestedBackdrop}
-        contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
-        railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
+        contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
+        railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
       />
     );
   }
@@ -305,8 +309,8 @@ export function DealSheet({
           open={open}
           layout="full"
           forceNestedBackdrop={forceNestedBackdrop}
-          contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
-          railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
+          contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
+          railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
           sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(renderDeal.id)}`}
         >
           <CrmSheetEntityHeader
