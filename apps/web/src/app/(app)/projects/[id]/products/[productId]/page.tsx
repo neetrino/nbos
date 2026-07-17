@@ -187,12 +187,12 @@ function ProductDetailPageContent() {
               </TabsTrigger>
             ))}
             <EntityDriveNavAction href={driveHref} variant="tab" hideLabelOnMobile />
-            <ProductSettingsSheet
-              productId={product.id}
-              open={settingsOpen}
-              onOpenChange={setSettingsOpen}
-            />
           </TabsList>
+          <ProductSettingsSheet
+            productId={product.id}
+            open={settingsOpen}
+            onOpenChange={setSettingsOpen}
+          />
         </div>
 
         <TabsContent value="overview" className="mt-5">
