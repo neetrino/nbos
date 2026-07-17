@@ -215,23 +215,21 @@ export function PartnerDetailSheet({
                 </div>
               </div>
 
-              <ScrollArea className="min-h-0 flex-1">
-                <div className="px-7 py-5">
-                  {showBodyLoading ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-40 w-full" />
-                      <Skeleton className="h-32 w-full" />
-                    </div>
-                  ) : partner ? (
-                    <PartnerDetailTabs
-                      key={partner.id}
-                      partner={partner}
-                      onPartnerUpdated={patchPartner}
-                      accrualsReloadKey={accrualsReloadKey}
-                    />
-                  ) : null}
-                </div>
-              </ScrollArea>
+              {showBodyLoading ? (
+                <ScrollArea className="min-h-0 flex-1">
+                  <div className="space-y-4 px-7 py-5">
+                    <Skeleton className="h-40 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                  </div>
+                </ScrollArea>
+              ) : partner ? (
+                <PartnerDetailTabs
+                  key={partner.id}
+                  partner={partner}
+                  onPartnerUpdated={patchPartner}
+                  accrualsReloadKey={accrualsReloadKey}
+                />
+              ) : null}
             </>
           )}
         </EntityDetailSheetContent>

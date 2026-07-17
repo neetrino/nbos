@@ -9,6 +9,7 @@ import { PartnerAnalyticsCard } from '@/features/partners/components/PartnerAnal
 import { PartnerCommissionPolicyCard } from '@/features/partners/components/PartnerCommissionPolicyCard';
 import { PartnerOutboundServicesCard } from '@/features/partners/components/PartnerOutboundServicesCard';
 import { PartnerOverviewTab } from '@/features/partners/components/PartnerOverviewTab';
+import { PARTNER_SHEET_TAB_BAR_SCROLL_CLASS } from '@/features/partners/constants/partner-sheet-layout';
 import type { Partner } from '@/lib/api/partners';
 
 export const PARTNER_DETAIL_TAB_IDS = [
@@ -44,16 +45,16 @@ export function PartnerDetailTabs(props: {
   const [panel, setPanel] = useState<PartnerDetailTabId>('overview');
 
   return (
-    <div className="w-full">
+    <div className="flex min-h-0 w-full flex-1 flex-col">
       <DetailSheetTabBar
         tabs={PARTNER_DETAIL_TAB_ITEMS}
         activeTab={panel}
         onTabChange={(value) => setPanel(value as PartnerDetailTabId)}
-        className="flex-wrap"
-        scrollClassName="flex-wrap"
+        className="px-7"
+        scrollClassName={PARTNER_SHEET_TAB_BAR_SCROLL_CLASS}
       />
 
-      <div className="pt-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-7 pt-4 pb-5">
         {panel === 'overview' ? <PartnerOverviewTab partner={partner} /> : null}
         {panel === 'commission' ? <PartnerCommissionPolicyCard partnerId={partner.id} /> : null}
         {panel === 'payouts' ? (
