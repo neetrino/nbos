@@ -56,13 +56,13 @@ export function CredentialFormCategoryMenu({
         {categoryLabel}
         <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-(--anchor-width)">
+      <DropdownMenuContent align="end" className="w-max min-w-(--anchor-width)">
         {categoryOptions.map((opt) => (
           <DropdownMenuItem
             key={opt.value}
             onClick={() => onCategoryChange(opt.value)}
             className={cn(
-              'gap-2',
+              'gap-2 whitespace-nowrap',
               opt.value === category ? 'bg-accent text-accent-foreground' : undefined,
             )}
           >
