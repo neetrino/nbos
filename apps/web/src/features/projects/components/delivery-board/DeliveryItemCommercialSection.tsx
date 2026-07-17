@@ -102,10 +102,10 @@ function CommercialNavLink({
   icon: ReactNode;
 }) {
   return (
-    <Link href={href} className={COMMERCIAL_ACTION_BTN_CLASS}>
+    <Link href={href} className={COMMERCIAL_ACTION_BTN_CLASS} title={label}>
       <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
         <span className="inline-flex shrink-0">{icon}</span>
-        <span className="leading-none">{label}</span>
+        <span className="min-w-0 truncate leading-none">{label}</span>
       </span>
       <ExternalLink className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
     </Link>
@@ -128,11 +128,12 @@ function CommercialNavButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      title={label}
       className={cn(COMMERCIAL_ACTION_BTN_CLASS, disabled && 'pointer-events-none opacity-50')}
     >
       <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
         <span className="inline-flex shrink-0">{icon}</span>
-        <span className="leading-none">{label}</span>
+        <span className="min-w-0 truncate leading-none">{label}</span>
       </span>
       <ChevronRight className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
     </button>
@@ -180,7 +181,7 @@ export function DeliveryItemCommercialSection({
           Client & order
         </h3>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="flex flex-col gap-4">
           <div className="min-w-0">
             {contact ? (
               <CommercialInfoRow
@@ -231,7 +232,7 @@ export function DeliveryItemCommercialSection({
             ) : null}
           </div>
 
-          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
+          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3">
             {dealId ? (
               <CommercialNavButton
                 label={`Open deal ${getDealDisplayTitle(deal!)}`}

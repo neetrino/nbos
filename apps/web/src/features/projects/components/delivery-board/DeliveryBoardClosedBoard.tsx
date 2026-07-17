@@ -52,9 +52,9 @@ export function DeliveryBoardClosedBoard({
           style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(2)}px` }}
         >
           <TerminalColumn
-            title="Done"
-            hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
-            items={doneItems}
+            title="Cancelled"
+            hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
+            items={cancelledItems}
             showLeftRule={false}
             busyItemId={busyItemId}
             onOpenProduct={onOpenProduct}
@@ -64,9 +64,9 @@ export function DeliveryBoardClosedBoard({
             onOpenDetails={onOpenDetails}
           />
           <TerminalColumn
-            title="Cancelled"
-            hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
-            items={cancelledItems}
+            title="Done"
+            hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
+            items={doneItems}
             showLeftRule
             busyItemId={busyItemId}
             onOpenProduct={onOpenProduct}

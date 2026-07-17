@@ -27,8 +27,8 @@ export function useDeliveryBoardClosedHeroFilterConfigs(
         key: 'result',
         label: 'Result',
         options: [
-          { value: 'DONE', label: 'Done' },
           { value: 'CANCELLED', label: 'Cancelled' },
+          { value: 'DONE', label: 'Done' },
         ],
       },
     ],

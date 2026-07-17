@@ -19,7 +19,6 @@ import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessS
 import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
-import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
 import {
   DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
@@ -105,6 +104,12 @@ export function DeliveryItemDetailGeneralTab({
             />
           ) : null}
 
+          <DeliveryAccessInfrastructureSection
+            projectId={projectId}
+            productId={productId}
+            onRefreshDetail={onRefreshDetail}
+          />
+
           <DeliveryItemTeamSection
             kind={kind}
             product={product}
@@ -116,33 +121,18 @@ export function DeliveryItemDetailGeneralTab({
             disabled={planningDisabled}
             gateRequiredFields={gateRequiredFields}
           />
-
-          <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-            <DeliveryItemCommercialSection
-              kind={kind}
-              product={product}
-              extension={extension}
-              financeTabHref={financeTabHref}
-              projectHubHref={projectHubHref}
-              sourcePageHref={sourcePageHref}
-              credentialsTabHref={credentialsTabHref}
-              gateRequiredFields={gateRequiredFields}
-            />
-            <DeliveryItemKeyWorkLinksSection
-              kind={kind}
-              product={product}
-              extension={extension}
-              workSpaceHref={workSpaceHref}
-              gateRequiredFields={gateRequiredFields}
-            />
-          </div>
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryAccessInfrastructureSection
-            projectId={projectId}
-            productId={productId}
-            onRefreshDetail={onRefreshDetail}
+          <DeliveryItemCommercialSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            financeTabHref={financeTabHref}
+            projectHubHref={projectHubHref}
+            sourcePageHref={sourcePageHref}
+            credentialsTabHref={credentialsTabHref}
+            gateRequiredFields={gateRequiredFields}
           />
           <DeliveryItemStageReadinessSection
             kind={kind}
