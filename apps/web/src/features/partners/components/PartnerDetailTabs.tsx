@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BarChart3, FileText, Handshake, LayoutGrid, Percent, Wallet } from 'lucide-react';
 import { DetailSheetTabBar } from '@/components/shared/DetailSheetTabBar';
+import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
 import { PartnerAgreementsCard } from '@/features/partners/components/PartnerAgreementsCard';
 import { PartnerAnalyticsCard } from '@/features/partners/components/PartnerAnalyticsCard';
@@ -55,18 +56,20 @@ export function PartnerDetailTabs(props: {
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-7 pt-4 pb-5">
-        {panel === 'overview' ? <PartnerOverviewTab partner={partner} /> : null}
-        {panel === 'commission' ? <PartnerCommissionPolicyCard partnerId={partner.id} /> : null}
-        {panel === 'payouts' ? (
-          <PartnerAccrualsCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
-        ) : null}
-        {panel === 'outbound' ? (
-          <PartnerOutboundServicesCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
-        ) : null}
-        {panel === 'agreements' ? (
-          <PartnerAgreementsCard partner={partner} onSaved={onPartnerUpdated} />
-        ) : null}
-        {panel === 'analytics' ? <PartnerAnalyticsCard partnerId={partner.id} /> : null}
+        <DetailSheetTabPanel tabKey={panel}>
+          {panel === 'overview' ? <PartnerOverviewTab partner={partner} /> : null}
+          {panel === 'commission' ? <PartnerCommissionPolicyCard partnerId={partner.id} /> : null}
+          {panel === 'payouts' ? (
+            <PartnerAccrualsCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
+          ) : null}
+          {panel === 'outbound' ? (
+            <PartnerOutboundServicesCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
+          ) : null}
+          {panel === 'agreements' ? (
+            <PartnerAgreementsCard partner={partner} onSaved={onPartnerUpdated} />
+          ) : null}
+          {panel === 'analytics' ? <PartnerAnalyticsCard partnerId={partner.id} /> : null}
+        </DetailSheetTabPanel>
       </div>
     </div>
   );
