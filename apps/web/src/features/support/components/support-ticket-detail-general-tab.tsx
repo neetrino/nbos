@@ -2,15 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
-import {
-  AlertTriangle,
-  CheckSquare,
-  ExternalLink,
-  FilePlus2,
-  Headphones,
-  RotateCcw,
-  Server,
-} from 'lucide-react';
+import { CheckSquare, ExternalLink, FilePlus2, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -52,10 +44,6 @@ export interface SupportTicketDetailGeneralTabProps {
   onOpenCreateTask: () => void;
   onListInvalidate: () => void;
   onReloadTicket: () => Promise<void>;
-  onRequestResolve: (ticket: SupportTicket) => void;
-  onRequestClose: (ticket: SupportTicket) => void;
-  onRequestEscalate: (ticket: SupportTicket) => void;
-  onRequestTechnical: (ticket: SupportTicket) => void;
 }
 
 export function SupportTicketDetailGeneralTab({
@@ -71,10 +59,6 @@ export function SupportTicketDetailGeneralTab({
   onOpenCreateTask,
   onListInvalidate,
   onReloadTicket,
-  onRequestResolve,
-  onRequestClose,
-  onRequestEscalate,
-  onRequestTechnical,
 }: SupportTicketDetailGeneralTabProps) {
   const terminal = ['RESOLVED', 'CLOSED'].includes(ticket.status);
   const executionTasks = ticket.executionTasks ?? [];
@@ -143,68 +127,6 @@ export function SupportTicketDetailGeneralTab({
             </div>
 
             <div className="flex flex-col gap-4 xl:col-span-5">
-              <DetailSheetSection title="Quick actions">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={terminal}
-                    onClick={() => onRequestEscalate(ticket)}
-                  >
-                    <AlertTriangle size={14} />
-                    Escalate
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={terminal}
-                    onClick={() => onRequestTechnical(ticket)}
-                  >
-                    <Server size={14} />
-                    Technical
-                  </Button>
-                  {terminal ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        void (async () => {
-                          await supportApi.reopen(ticket.id);
-                          await onReloadTicket();
-                          onListInvalidate();
-                        })();
-                      }}
-                    >
-                      <RotateCcw size={14} />
-                      Reopen
-                    </Button>
-                  ) : null}
-                  {!terminal ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRequestResolve(ticket)}
-                    >
-                      Mark resolved
-                    </Button>
-                  ) : null}
-                  {ticket.status === 'RESOLVED' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRequestClose(ticket)}
-                    >
-                      Close
-                    </Button>
-                  ) : null}
-                </div>
-              </DetailSheetSection>
-
               <DetailSheetSection title="Waiting overlay">
                 <div className="space-y-2">
                   <Label htmlFor={`st-wait-${ticket.id}`} className="sr-only">
