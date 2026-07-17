@@ -10,7 +10,6 @@ import {
 } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import { ProductLifecycleActions } from './ProductLifecycleActions';
 import { ProductAcceptanceAction } from './ProductAcceptanceAction';
-import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 
 interface ProductStageGateCardProps {
   product: FullProduct;
@@ -78,7 +77,6 @@ export function ProductStageGateCard({
 
   return (
     <section className="bg-card border-border space-y-3 rounded-xl border p-4">
-      <ProductDoneReadinessPanel readiness={product.doneReadiness} compact />
       <ProductAcceptanceAction
         product={product}
         disabled={updating}

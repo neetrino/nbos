@@ -1,38 +1,68 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
+import { LoadingState } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
+import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
-import { ProductStageGateCard } from './ProductStageGateCard';
+import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
 import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
   product: FullProduct;
-  onStatusChange: () => void;
 }
 
-export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewTabProps) {
+export function ProductOverviewTab({ product }: ProductOverviewTabProps) {
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
   ).length;
   const gateRequiredFields = new Set<string>();
+  const [project, setProject] = useState<FullProject | null>(null);
+  const [projectLoading, setProjectLoading] = useState(true);
+
+  const loadProject = useCallback(async () => {
+    setProjectLoading(true);
+    try {
+      const data = await projectsApi.getById(product.projectId);
+      setProject(data);
+    } catch {
+      setProject(null);
+    } finally {
+      setProjectLoading(false);
+    }
+  }, [product.projectId]);
+
+  useEffect(() => {
+    void loadProject();
+  }, [loadProject]);
 
   return (
     <div className="space-y-4 pb-6">
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start">
         <ProductInfoPanel
           product={product}
           gateRequiredFields={gateRequiredFields}
-          className="min-w-0 flex-1"
+          className="w-full min-w-0"
         />
-        <div className="w-full max-w-md shrink-0">
-          <ProductStageGateCard
-            product={product}
-            gateRequiredFields={gateRequiredFields}
-            onStatusChange={onStatusChange}
-          />
+        <div className="w-full min-w-0">
+          <div className="bg-card border-border rounded-xl border p-4">
+            <p className="mb-3 text-sm font-semibold">Contacts</p>
+            {projectLoading ? (
+              <LoadingState count={1} />
+            ) : project ? (
+              <ProjectContactsSection
+                embedded
+                contactLayout="grid"
+                project={project}
+                onProjectUpdated={setProject}
+              />
+            ) : (
+              <p className="text-muted-foreground text-xs">Could not load contacts.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

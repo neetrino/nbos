@@ -196,7 +196,7 @@ function ProductDetailPageContent() {
         </div>
 
         <TabsContent value="overview" className="mt-5">
-          <ProductOverviewTab product={product} onStatusChange={fetchProduct} />
+          <ProductOverviewTab product={product} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">

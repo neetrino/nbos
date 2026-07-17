@@ -29,6 +29,12 @@ interface ProjectContactsSectionProps {
   embedded?: boolean;
   /** Embedded contact cards layout. Default: stack (About project). */
   contactLayout?: 'stack' | 'grid';
+  /** Show linked contact cards. Default true. */
+  showContactCards?: boolean;
+  /** Show search / create contact field. Default true. */
+  showContactSearch?: boolean;
+  /** Show company card / search. Default true. */
+  showCompany?: boolean;
   className?: string;
 }
 
@@ -54,6 +60,9 @@ export function ProjectContactsSection({
   onProjectUpdated,
   embedded = false,
   contactLayout = 'stack',
+  showContactCards = true,
+  showContactSearch = true,
+  showCompany = true,
   className,
 }: ProjectContactsSectionProps) {
   const [draft, setDraft] = useState<ProjectContactsDraft>(() =>
@@ -133,56 +142,63 @@ export function ProjectContactsSection({
   if (embedded) {
     return (
       <div className={cn('flex flex-col gap-3', saving && 'opacity-70', className)}>
-        <div
-          className={cn('gap-2', contactLayout === 'grid' ? 'grid grid-cols-2' : 'flex flex-col')}
-        >
-          {contactCards.map((contact) => (
-            <ProjectContactCard
-              key={contact.id}
-              contact={contact}
+        {showCompany ? (
+          draft.companyId && draft.companyLabel ? (
+            <ProjectCompanyCard
+              companyId={draft.companyId}
+              name={draft.companyLabel}
               disabled={saving}
-              onRemove={handleRemoveContact}
+              onRemove={handleRemoveCompany}
             />
-          ))}
-        </div>
-        <RelationPickerField
-          label=""
-          entityKind="contact"
-          multiple
-          selectionDisplay="none"
-          value={draft.contactIds}
-          selectionLabels={draft.contactLabels}
-          placeholder="Search or create contact…"
-          icon={<User size={12} />}
-          disabled={saving}
-          onSearch={contactSearch}
-          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
-          {...contactsPicker}
-        />
+          ) : (
+            <RelationPickerField
+              label=""
+              entityKind="company"
+              selectionDisplay="none"
+              value={draft.companyId}
+              selectionLabel={draft.companyLabel}
+              placeholder="Search company…"
+              icon={<Building2 size={12} />}
+              disabled={saving}
+              onSearch={companySearch}
+              onSelect={(id, label) => patchDraft({ companyId: id, companyLabel: label })}
+              onClear={() => patchDraft({ companyId: null, companyLabel: null })}
+              {...companyPicker}
+            />
+          )
+        ) : null}
 
-        {draft.companyId && draft.companyLabel ? (
-          <ProjectCompanyCard
-            companyId={draft.companyId}
-            name={draft.companyLabel}
-            disabled={saving}
-            onRemove={handleRemoveCompany}
-          />
-        ) : (
+        {showContactSearch ? (
           <RelationPickerField
             label=""
-            entityKind="company"
+            entityKind="contact"
+            multiple
             selectionDisplay="none"
-            value={draft.companyId}
-            selectionLabel={draft.companyLabel}
-            placeholder="Search company…"
-            icon={<Building2 size={12} />}
+            value={draft.contactIds}
+            selectionLabels={draft.contactLabels}
+            placeholder="Search or create contact…"
+            icon={<User size={12} />}
             disabled={saving}
-            onSearch={companySearch}
-            onSelect={(id, label) => patchDraft({ companyId: id, companyLabel: label })}
-            onClear={() => patchDraft({ companyId: null, companyLabel: null })}
-            {...companyPicker}
+            onSearch={contactSearch}
+            onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+            {...contactsPicker}
           />
-        )}
+        ) : null}
+
+        {showContactCards && contactCards.length > 0 ? (
+          <div
+            className={cn('gap-2', contactLayout === 'grid' ? 'grid grid-cols-2' : 'flex flex-col')}
+          >
+            {contactCards.map((contact) => (
+              <ProjectContactCard
+                key={contact.id}
+                contact={contact}
+                disabled={saving}
+                onRemove={handleRemoveContact}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
     );
   }

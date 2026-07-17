@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LoadingState, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
@@ -14,13 +13,11 @@ import {
 } from '@/features/projects/components/product-tabs/product-overview-ui';
 import { productStageGateFieldClass } from '@/features/projects/product-stage-gate-highlight';
 import type { FullProduct } from '@/lib/api/products';
-import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { DeliveryDealPanelActions } from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import { DetailInfoSubsection } from './detail-info-subsection';
-import { ProjectContactsSection } from './ProjectContactsSection';
 
 interface ProductInfoPanelProps {
   product: FullProduct;
@@ -33,25 +30,6 @@ export function ProductInfoPanel({
   gateRequiredFields,
   className,
 }: ProductInfoPanelProps) {
-  const [project, setProject] = useState<FullProject | null>(null);
-  const [projectLoading, setProjectLoading] = useState(true);
-
-  const loadProject = useCallback(async () => {
-    setProjectLoading(true);
-    try {
-      const data = await projectsApi.getById(product.projectId);
-      setProject(data);
-    } catch {
-      setProject(null);
-    } finally {
-      setProjectLoading(false);
-    }
-  }, [product.projectId]);
-
-  useEffect(() => {
-    void loadProject();
-  }, [loadProject]);
-
   const description = product.description?.trim();
   const hasDescription = Boolean(description);
   const forceDescription = gateRequiredFields.has('description');
@@ -144,20 +122,6 @@ export function ProductInfoPanel({
               value={new Date(product.createdAt).toLocaleDateString()}
             />
           </OverviewMetaGrid>
-          <div className="mt-4">
-            {projectLoading ? (
-              <LoadingState count={2} />
-            ) : project ? (
-              <ProjectContactsSection
-                embedded
-                contactLayout="grid"
-                project={project}
-                onProjectUpdated={setProject}
-              />
-            ) : (
-              <p className="text-muted-foreground text-xs">Could not load project contacts.</p>
-            )}
-          </div>
         </DetailInfoSubsection>
 
         <DetailInfoSubsection title="Product team" className="mt-4 pt-6">
