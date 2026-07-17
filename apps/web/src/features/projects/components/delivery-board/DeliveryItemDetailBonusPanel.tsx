@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2, LayoutGrid, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EntityNavPillLink } from '@/components/shared';
 import { bonusesApi, type BonusEntryListRow, type BonusReleaseRow } from '@/lib/api/bonus';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -239,12 +239,7 @@ function BonusPanelNoOrder({ financeTabHref }: { financeTabHref: string }) {
       <p className="text-muted-foreground text-sm">
         Bonus entries are tied to a finance order. This delivery line has no linked order yet.
       </p>
-      <Link
-        href={financeTabHref}
-        className="text-primary inline-block text-sm font-semibold hover:underline"
-      >
-        Open Finance tab →
-      </Link>
+      <EntityNavPillLink href={financeTabHref} label="Open Finance tab" icon={Wallet} />
     </div>
   );
 }
@@ -262,16 +257,9 @@ function BonusPanelEmptyList({
         No bonus entries for order <span className="font-mono text-xs">{orderId.slice(0, 8)}…</span>{' '}
         yet. Accruals appear when finance and delivery events create them.
       </p>
-      <div className="flex flex-wrap gap-x-4 gap-y-2">
-        <Link
-          href="/finance/bonuses"
-          className="text-primary text-sm font-semibold hover:underline"
-        >
-          Open Bonus Board →
-        </Link>
-        <Link href={financeTabHref} className="text-primary text-sm font-semibold hover:underline">
-          Finance tab →
-        </Link>
+      <div className="flex flex-wrap gap-2">
+        <EntityNavPillLink href="/finance/bonuses" label="Open Bonus Board" icon={LayoutGrid} />
+        <EntityNavPillLink href={financeTabHref} label="Finance tab" icon={Wallet} />
       </div>
     </div>
   );
@@ -326,16 +314,9 @@ function BonusPanelList({
           )}
         </Button>
       ) : null}
-      <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
-        <Link
-          href="/finance/bonuses"
-          className="text-primary text-sm font-semibold hover:underline"
-        >
-          Full Bonus Board →
-        </Link>
-        <Link href={financeTabHref} className="text-primary text-sm font-semibold hover:underline">
-          Finance tab →
-        </Link>
+      <div className="flex flex-wrap gap-2 pt-1">
+        <EntityNavPillLink href="/finance/bonuses" label="Full Bonus Board" icon={LayoutGrid} />
+        <EntityNavPillLink href={financeTabHref} label="Finance tab" icon={Wallet} />
       </div>
     </div>
   );

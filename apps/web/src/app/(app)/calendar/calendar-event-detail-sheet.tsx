@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { FileText, FolderKanban, Package, User } from 'lucide-react';
 import {
   calendarApi,
   type CalendarEventProjection,
@@ -12,7 +12,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS, EntityNavPillLink } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { CLIENT_CONTACT_OPEN_QUERY } from './calendar-ui-constants';
 
@@ -36,46 +36,42 @@ function formatRange(startIso: string, endIso: string, isAllDay: boolean): strin
 }
 
 function MeetingDetailLinks({ m }: { m: CalendarMeetingDetail }) {
-  const links: Array<{ href: string; label: string }> = [];
+  const links: Array<{ href: string; label: string; icon: typeof FileText }> = [];
   if (m.dealId) {
     links.push({
       href: `/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(m.dealId)}`,
       label: 'Open deal',
+      icon: FileText,
     });
   }
   if (m.projectId) {
     links.push({
       href: `/projects/${encodeURIComponent(m.projectId)}`,
       label: 'Open project',
+      icon: FolderKanban,
     });
   }
   if (m.productId && m.projectId) {
     links.push({
       href: `/projects/${encodeURIComponent(m.projectId)}/products/${encodeURIComponent(m.productId)}`,
       label: 'Open product',
+      icon: Package,
     });
   }
   if (m.contactId) {
     links.push({
       href: `/clients/contacts?${CLIENT_CONTACT_OPEN_QUERY}=${encodeURIComponent(m.contactId)}`,
       label: 'Open contact',
+      icon: User,
     });
   }
   if (links.length === 0) return null;
   return (
     <div className="border-border mt-4 border-t pt-4">
-      <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
-        Links
-      </p>
-      <div className="flex flex-wrap gap-2">
+      <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>Links</p>
+      <div className="flex flex-col items-start gap-2">
         {links.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="text-primary hover:text-primary/80 text-sm font-medium underline-offset-4 hover:underline"
-          >
-            {l.label}
-          </Link>
+          <EntityNavPillLink key={l.href} href={l.href} label={l.label} icon={l.icon} />
         ))}
       </div>
     </div>
