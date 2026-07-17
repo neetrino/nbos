@@ -36,8 +36,8 @@ const SHEET_STAGES = toSheetPipelineStages([
     label: ACTIVE_SHORT[key],
     shortLabel: ACTIVE_SHORT[key],
   })),
-  { key: EXPENSE_PIPELINE_PAID_KEY, label: 'Paid', shortLabel: 'Paid' },
   { key: EXPENSE_PIPELINE_CANCEL_KEY, label: 'Cancel', shortLabel: 'Cancel' },
+  { key: EXPENSE_PIPELINE_PAID_KEY, label: 'Paid', shortLabel: 'Paid' },
 ]);
 
 function canClickExpenseStage(stageKey: string, currentStatus: string): boolean {
