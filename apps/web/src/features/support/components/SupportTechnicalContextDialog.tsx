@@ -54,7 +54,7 @@ export function SupportTechnicalContextDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Technical context</DialogTitle>
           <DialogDescription>
