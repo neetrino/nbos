@@ -10,6 +10,7 @@ import {
   Phone,
   CheckSquare,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import {
   DetailSheetFormFooter,
@@ -17,7 +18,6 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
-  EntityDetailSheetLoadingShell,
   EntityItemHost,
 } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
@@ -26,6 +26,7 @@ import { applyDealRelationCreated } from './apply-deal-relation-created';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
 import { DealPipelineStages } from './DealPipelineStages';
 import { DealExceptionOrderDialog } from './DealExceptionOrderDialog';
 import { DealGeneralTab } from './DealGeneralTab';
@@ -249,20 +250,129 @@ export function DealSheet({
 
   if (!hostMounted) return null;
 
-  if (!renderDeal) {
-    return (
-      <EntityDetailSheetLoadingShell
+  return (
+    <EntityItemHost nested onEntityChanged={onRefresh}>
+      <Sheet
         open={open}
         onOpenChange={onOpenChange}
         onOpenChangeComplete={handleOpenChangeComplete}
-        label="Loading deal…"
-        forceNestedBackdrop={forceNestedBackdrop}
-        contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
-        railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
-      />
-    );
-  }
+      >
+        {!renderDeal ? (
+          <EntityDetailSheetContent
+            open={open}
+            layout="full"
+            forceNestedBackdrop={forceNestedBackdrop}
+            contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
+            railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+          >
+            <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Loading deal…
+            </div>
+          </EntityDetailSheetContent>
+        ) : (
+          <EntityDetailSheetContent
+            open={open}
+            layout="full"
+            forceNestedBackdrop={forceNestedBackdrop}
+            contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
+            railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+            sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(renderDeal.id)}`}
+          >
+            <DealSheetBody
+              renderDeal={renderDeal}
+              isTrashView={isTrashView}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              editingName={editingName}
+              nameValue={nameValue}
+              setNameValue={setNameValue}
+              setEditingName={setEditingName}
+              nameInputRef={nameInputRef}
+              generalDraft={generalDraft}
+              generalDirty={generalDirty}
+              generalError={generalError}
+              gateRequiredFields={gateRequiredFields}
+              invoiceCreateNonce={invoiceCreateNonce}
+              onStatusChange={onStatusChange}
+              onRefresh={onRefresh}
+              onOpenDeal={onOpenDeal}
+              onRestore={onRestore}
+              onPermanentDelete={onPermanentDelete}
+              onMoveToTrash={onMoveToTrash}
+              patchGeneralDraft={patchGeneralDraft}
+              handleGeneralSave={handleGeneralSave}
+              handleGeneralCancel={handleGeneralCancel}
+              onOpenExceptionDialog={() => setExceptionDialogOpen(true)}
+            />
+          </EntityDetailSheetContent>
+        )}
+      </Sheet>
+      {renderDeal ? (
+        <DealExceptionOrderDialog
+          dealId={renderDeal.id}
+          open={exceptionDialogOpen}
+          onOpenChange={setExceptionDialogOpen}
+          onSuccess={() => {
+            onRefresh?.();
+          }}
+        />
+      ) : null}
+    </EntityItemHost>
+  );
+}
 
+function DealSheetBody({
+  renderDeal,
+  isTrashView,
+  activeTab,
+  setActiveTab,
+  editingName,
+  nameValue,
+  setNameValue,
+  setEditingName,
+  nameInputRef,
+  generalDraft,
+  generalDirty,
+  generalError,
+  gateRequiredFields,
+  invoiceCreateNonce,
+  onStatusChange,
+  onRefresh,
+  onOpenDeal,
+  onRestore,
+  onPermanentDelete,
+  onMoveToTrash,
+  patchGeneralDraft,
+  handleGeneralSave,
+  handleGeneralCancel,
+  onOpenExceptionDialog,
+}: {
+  renderDeal: Deal;
+  isTrashView: boolean;
+  activeTab: string;
+  setActiveTab: Dispatch<SetStateAction<string>>;
+  editingName: boolean;
+  nameValue: string;
+  setNameValue: Dispatch<SetStateAction<string>>;
+  setEditingName: Dispatch<SetStateAction<boolean>>;
+  nameInputRef: RefObject<HTMLInputElement | null>;
+  generalDraft: DealGeneralDraft | null;
+  generalDirty: boolean;
+  generalError: string | null;
+  gateRequiredFields: ReadonlySet<string>;
+  invoiceCreateNonce: number;
+  onStatusChange: (id: string, status: string) => Promise<void>;
+  onRefresh?: () => void;
+  onOpenDeal?: (id: string) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
+  onMoveToTrash?: (id: string) => void;
+  patchGeneralDraft: (partial: Partial<DealGeneralDraft>) => void;
+  handleGeneralSave: () => void;
+  handleGeneralCancel: () => void;
+  onOpenExceptionDialog: () => void;
+}) {
   const typeVisual = getDealTypePresentation(renderDeal.type);
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(renderDeal);
   const TypeIcon = typeVisual.Icon;
@@ -299,143 +409,119 @@ export function DealSheet({
   };
 
   return (
-    <EntityItemHost nested onEntityChanged={onRefresh}>
-      <Sheet
-        open={open}
-        onOpenChange={onOpenChange}
-        onOpenChangeComplete={handleOpenChangeComplete}
-      >
-        <EntityDetailSheetContent
-          open={open}
-          layout="full"
-          forceNestedBackdrop={forceNestedBackdrop}
-          contentClassName={DEAL_DETAIL_SHEET_WIDTH_CLASS}
-          railAnchorClassName={DEAL_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
-          sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(renderDeal.id)}`}
-        >
-          <CrmSheetEntityHeader
-            title={headerTitle}
-            entityLabel={typeVisual.label}
-            EntityIcon={TypeIcon}
-            headerIconClassName={typeVisual.headerIconClassName}
-            headerBadgeClassName={typeVisual.headerBadgeClassName}
-            editing={editingName}
-            nameValue={nameValue}
-            onNameValueChange={setNameValue}
-            onCommitName={commitNameToDraft}
-            onNameKeyDown={handleNameKeyDown}
-            nameInputRef={nameInputRef}
-            namePlaceholder="Deal name..."
-            titleEditHint="Click to edit deal name"
-            onStartEditing={startEditing}
-            actions={
-              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                {!isTrashView ? (
-                  <DealSheetQuickActions
-                    deal={renderDeal}
-                    onRefresh={onRefresh}
-                    onOpenTaskTab={() => setActiveTab('task')}
-                  />
+    <>
+      <CrmSheetEntityHeader
+        title={headerTitle}
+        entityLabel={typeVisual.label}
+        EntityIcon={TypeIcon}
+        headerIconClassName={typeVisual.headerIconClassName}
+        headerBadgeClassName={typeVisual.headerBadgeClassName}
+        editing={editingName}
+        nameValue={nameValue}
+        onNameValueChange={setNameValue}
+        onCommitName={commitNameToDraft}
+        onNameKeyDown={handleNameKeyDown}
+        nameInputRef={nameInputRef}
+        namePlaceholder="Deal name..."
+        titleEditHint="Click to edit deal name"
+        onStartEditing={startEditing}
+        actions={
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+            {!isTrashView ? (
+              <DealSheetQuickActions
+                deal={renderDeal}
+                onRefresh={onRefresh}
+                onOpenTaskTab={() => setActiveTab('task')}
+              />
+            ) : null}
+            {isTrashView && onRestore ? (
+              <DetailSheetSettingsMenu>
+                <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
+                  <RotateCcw />
+                  Restore
+                </DropdownMenuItem>
+                {onPermanentDelete ? (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onPermanentDelete(renderDeal.id)}
+                  >
+                    <Trash2 />
+                    Delete permanently
+                  </DropdownMenuItem>
                 ) : null}
-                {isTrashView && onRestore ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
-                      <RotateCcw />
-                      Restore
-                    </DropdownMenuItem>
-                    {onPermanentDelete ? (
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => onPermanentDelete(renderDeal.id)}
-                      >
-                        <Trash2 />
-                        Delete permanently
-                      </DropdownMenuItem>
-                    ) : null}
-                  </DetailSheetSettingsMenu>
-                ) : onMoveToTrash || canCreateExceptionOrder ? (
-                  <DetailSheetSettingsMenu>
-                    {canCreateExceptionOrder ? (
-                      <DropdownMenuItem onClick={() => setExceptionDialogOpen(true)}>
-                        <AlertTriangle />
-                        Exception order
-                      </DropdownMenuItem>
-                    ) : null}
-                    {onMoveToTrash ? (
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => onMoveToTrash(renderDeal.id)}
-                      >
-                        <Trash2 />
-                        Move to Trash
-                      </DropdownMenuItem>
-                    ) : null}
-                  </DetailSheetSettingsMenu>
+              </DetailSheetSettingsMenu>
+            ) : onMoveToTrash || canCreateExceptionOrder ? (
+              <DetailSheetSettingsMenu>
+                {canCreateExceptionOrder ? (
+                  <DropdownMenuItem onClick={onOpenExceptionDialog}>
+                    <AlertTriangle />
+                    Exception order
+                  </DropdownMenuItem>
                 ) : null}
-              </div>
-            }
-          />
-
-          {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
-          <div className="shrink-0 pb-3">
-            <DealPipelineStages
-              currentStatus={renderDeal.status}
-              onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}
-            />
+                {onMoveToTrash ? (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onMoveToTrash(renderDeal.id)}
+                  >
+                    <Trash2 />
+                    Move to Trash
+                  </DropdownMenuItem>
+                ) : null}
+              </DetailSheetSettingsMenu>
+            ) : null}
           </div>
-
-          <DetailSheetTabBar
-            tabs={TABS}
-            activeTab={activeTab}
-            onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
-          />
-
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
-              <DetailSheetTabPanel tabKey={activeTab}>
-                {activeTab === 'general' && generalDraft ? (
-                  <DealGeneralTab
-                    deal={renderDeal}
-                    draft={generalDraft}
-                    patchDraft={patchGeneralDraft}
-                    formDisabled={isTrashView}
-                    onRefresh={onRefresh}
-                    onOpenDeal={onOpenDeal}
-                    gateRequiredFields={gateRequiredFields}
-                  />
-                ) : null}
-                {activeTab === 'history' && <DealHistoryTab />}
-                {activeTab === 'invoice' && (
-                  <DealInvoiceTab
-                    deal={renderDeal}
-                    onRefresh={onRefresh}
-                    expandCreateFormNonce={invoiceCreateNonce}
-                  />
-                )}
-                {activeTab === 'task' && <DealTasksTab deal={renderDeal} onRefresh={onRefresh} />}
-                {activeTab === 'calls' && <DealCallsTab />}
-              </DetailSheetTabPanel>
-            </div>
-          </ScrollArea>
-
-          <DetailSheetFormFooter
-            visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
-            dirty={generalDirty}
-            saving={false}
-            errorMessage={generalError}
-            onSave={handleGeneralSave}
-            onCancel={handleGeneralCancel}
-          />
-        </EntityDetailSheetContent>
-      </Sheet>
-      <DealExceptionOrderDialog
-        dealId={renderDeal.id}
-        open={exceptionDialogOpen}
-        onOpenChange={setExceptionDialogOpen}
-        onSuccess={() => {
-          onRefresh?.();
-        }}
+        }
       />
-    </EntityItemHost>
+
+      <div className="shrink-0 pb-3">
+        <DealPipelineStages
+          currentStatus={renderDeal.status}
+          onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}
+        />
+      </div>
+
+      <DetailSheetTabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
+      />
+
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="px-7 py-5">
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' && generalDraft ? (
+              <DealGeneralTab
+                deal={renderDeal}
+                draft={generalDraft}
+                patchDraft={patchGeneralDraft}
+                formDisabled={isTrashView}
+                onRefresh={onRefresh}
+                onOpenDeal={onOpenDeal}
+                gateRequiredFields={gateRequiredFields}
+              />
+            ) : null}
+            {activeTab === 'history' && <DealHistoryTab />}
+            {activeTab === 'invoice' && (
+              <DealInvoiceTab
+                deal={renderDeal}
+                onRefresh={onRefresh}
+                expandCreateFormNonce={invoiceCreateNonce}
+              />
+            )}
+            {activeTab === 'task' && <DealTasksTab deal={renderDeal} onRefresh={onRefresh} />}
+            {activeTab === 'calls' && <DealCallsTab />}
+          </DetailSheetTabPanel>
+        </div>
+      </ScrollArea>
+
+      <DetailSheetFormFooter
+        visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
+        dirty={generalDirty}
+        saving={false}
+        errorMessage={generalError}
+        onSave={handleGeneralSave}
+        onCancel={handleGeneralCancel}
+      />
+    </>
   );
 }
