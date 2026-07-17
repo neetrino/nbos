@@ -8,8 +8,8 @@ const INVOICE_PIPELINE_MONEY_STAGES = [
   { key: 'AWAITING_PAYMENT', label: 'Awaiting payment', shortLabel: 'Awaiting' },
   { key: 'OVERDUE', label: 'Overdue', shortLabel: 'Overdue' },
   { key: 'ON_HOLD', label: 'On hold', shortLabel: 'Hold' },
-  { key: 'PAID', label: 'Paid', shortLabel: 'Paid' },
   { key: 'CANCELLED', label: 'Cancelled', shortLabel: 'Cancelled' },
+  { key: 'PAID', label: 'Paid', shortLabel: 'Paid' },
 ] as const;
 
 const STAGE_HEX: Record<string, string> = {
@@ -22,6 +22,9 @@ const STAGE_HEX: Record<string, string> = {
 };
 
 const SHEET_STAGES = toSheetPipelineStages(INVOICE_PIPELINE_MONEY_STAGES);
+
+/** Slight open gap between chevrons (same rhythm as expense sheet pipeline). */
+const INVOICE_PIPELINE_SEGMENT_GAP_PX = 4;
 
 interface InvoiceMoneyStagesBarProps {
   currentStatus: string;
@@ -41,6 +44,7 @@ export function InvoiceMoneyStagesBar({
       currentStatus={currentStatus}
       fillToEndStatuses={['PAID']}
       disabled={disabled}
+      segmentGapPx={INVOICE_PIPELINE_SEGMENT_GAP_PX}
       onStageClick={onStageClick}
     />
   );
