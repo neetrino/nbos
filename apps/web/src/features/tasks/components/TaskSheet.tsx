@@ -2,7 +2,6 @@
 
 import { CheckSquare, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DeleteConfirmDialog,
@@ -142,7 +141,7 @@ export function TaskSheet({
             <TaskSheetSplitLayout
               detail={
                 <>
-                  <ScrollArea className="min-h-0 min-w-0 flex-1 overflow-hidden [&_[data-slot=scroll-area-viewport]]:min-w-0 [&_[data-slot=scroll-area-viewport]]:overflow-x-hidden">
+                  <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div className="min-w-0 space-y-3 px-4 py-4 sm:px-5">
                       {state.generalError && (
                         <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
@@ -221,7 +220,7 @@ export function TaskSheet({
                         </div>
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
 
                   <TaskSheetStickyFooter
                     dirty={state.generalDirty}

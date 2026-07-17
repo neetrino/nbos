@@ -86,7 +86,7 @@ const SHEET_SIDE_PANEL_MOTION_CLASS = {
 } as const;
 
 const SHEET_POPUP_BASE_CLASS =
-  'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg';
+  'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg outline-none';
 
 const SHEET_SIDE_EDGE_CLASS =
   'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-3/4 data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b';
