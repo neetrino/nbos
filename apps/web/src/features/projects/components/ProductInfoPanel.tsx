@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
@@ -82,6 +83,8 @@ export function ProductInfoPanel({
           <OverviewMetaGrid>
             <OverviewMetaTile
               label="Stage"
+              icon={Layers}
+              iconTone="purple"
               value={
                 stageStatus ? (
                   <StatusBadge label={stageStatus.label} variant={stageStatus.variant} />
@@ -93,21 +96,29 @@ export function ProductInfoPanel({
             {product.pm ? (
               <OverviewMetaTile
                 label="PM"
+                icon={User}
+                iconTone="sky"
                 value={`${product.pm.firstName} ${product.pm.lastName}`}
               />
             ) : null}
             <OverviewMetaTile
               label="Deadline"
+              icon={Calendar}
+              iconTone="amber"
               className={productStageGateFieldClass(gateRequiredFields, 'deadline', undefined)}
               value={product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
             />
             <OverviewMetaTile
               label="Order"
+              icon={Wallet}
+              iconTone="emerald"
               className={productStageGateFieldClass(gateRequiredFields, 'order', undefined)}
               value={product.order ? 'Linked' : '—'}
             />
             <OverviewMetaTile
               label="Project"
+              icon={FolderKanban}
+              iconTone="blue"
               value={
                 <Link
                   href={`/projects/${product.projectId}`}
@@ -119,6 +130,8 @@ export function ProductInfoPanel({
             />
             <OverviewMetaTile
               label="Created"
+              icon={CalendarPlus}
+              iconTone="slate"
               value={new Date(product.createdAt).toLocaleDateString()}
             />
           </OverviewMetaGrid>
