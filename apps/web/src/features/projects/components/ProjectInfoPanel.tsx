@@ -43,7 +43,7 @@ export function ProjectInfoPanel({
         </div>
       </div>
 
-      <div className="mt-4 flex min-h-0 flex-1 flex-col">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
         {hasDescription ? (
           <DetailInfoSubsection first>
             <ProjectDetailsFields project={project} />
