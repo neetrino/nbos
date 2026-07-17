@@ -12,6 +12,8 @@ export interface DetailSheetTabItem {
   value: string;
   label: string;
   icon?: LucideIcon;
+  /** Optional button class (e.g. `ml-auto` to pin last tab to the trailing edge). */
+  className?: string;
 }
 
 export interface DetailSheetTabBarProps {
@@ -43,7 +45,7 @@ export function DetailSheetTabBar({
               role="tab"
               aria-selected={isActive}
               onClick={() => onTabChange(tab.value)}
-              className={cn(pillTabButtonClass(isActive), 'text-[15px]')}
+              className={cn(pillTabButtonClass(isActive), 'text-[15px]', tab.className)}
             >
               {Icon ? <Icon size={17} aria-hidden /> : null}
               {tab.label}
