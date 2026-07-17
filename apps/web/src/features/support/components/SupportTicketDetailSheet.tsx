@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetTabBar,
@@ -284,7 +283,7 @@ export function SupportTicketDetailSheet({
           sourcePageHref={sourcePageHref}
           workspaceHref={workspaceHref}
         >
-          <div className="border-border flex h-full min-h-0 flex-col border-l">
+          <div className="border-border flex min-h-0 flex-1 flex-col overflow-hidden border-l">
             <div className="bg-background shrink-0 px-7 pt-5 pb-3">
               {loading && !ticket ? (
                 <p className="text-muted-foreground text-sm">Loading…</p>
@@ -362,7 +361,7 @@ export function SupportTicketDetailSheet({
             {error ? <p className="text-destructive shrink-0 px-6 py-2 text-sm">{error}</p> : null}
 
             {ticket && draft ? (
-              <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <DetailSheetTabBar
                   tabs={supportTicketTabs}
                   activeTab={activeTab}
@@ -373,7 +372,10 @@ export function SupportTicketDetailSheet({
                   }}
                 />
 
-                <DetailSheetTabPanel tabKey={activeTab}>
+                <DetailSheetTabPanel
+                  tabKey={activeTab}
+                  className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                >
                   {activeTab === 'general' ? (
                     <SupportTicketDetailGeneralTab
                       ticket={ticket}
@@ -395,9 +397,9 @@ export function SupportTicketDetailSheet({
                   ) : null}
 
                   {activeTab === 'activity' ? (
-                    <ScrollArea className="min-h-0 flex-1">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
                       <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
-                    </ScrollArea>
+                    </div>
                   ) : null}
                 </DetailSheetTabPanel>
               </div>

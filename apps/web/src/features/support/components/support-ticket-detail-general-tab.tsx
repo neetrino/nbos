@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, DetailSheetSection } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
@@ -97,8 +96,8 @@ export function SupportTicketDetailGeneralTab({
   }, [meId, onListInvalidate, onReloadTicket, ticket.id]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <ScrollArea className="min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="space-y-4 px-5 py-4 sm:px-7">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:gap-5">
             <div className="flex flex-col gap-4 xl:col-span-8">
@@ -146,7 +145,10 @@ export function SupportTicketDetailGeneralTab({
                     >
                       <SelectValue placeholder="Waiting overlay" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent
+                      align="start"
+                      className="w-auto min-w-[min(100vw-2rem,12rem)] p-1.5"
+                    >
                       {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
@@ -239,7 +241,7 @@ export function SupportTicketDetailGeneralTab({
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
       <DetailSheetFormFooter
         visible
         dirty={dirty}
