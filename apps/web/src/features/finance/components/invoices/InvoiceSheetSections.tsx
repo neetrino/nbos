@@ -1,6 +1,17 @@
+'use client';
+
 import { FileText, Building2, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
-import { DetailSheetSection, InlineField, StatusBadge } from '@/components/shared';
+import {
+  DetailSheetEntityLinkCard,
+  DetailSheetEntityLinkGrid,
+  DetailSheetSection,
+  StatusBadge,
+} from '@/components/shared';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
+import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
+import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
@@ -34,36 +45,90 @@ export function InvoiceOfficialSection({
 }
 
 export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const relations = useEntityRelations();
+  const deal = invoice.order?.deal ?? null;
   const dealTitle = getInvoiceDealTitle(invoice.order);
-  const links = [
-    dealTitle
-      ? { icon: Handshake, label: 'Deal', value: dealTitle }
-      : invoice.order
-        ? { icon: FileText, label: 'Order', value: getOrderDisplayTitle(invoice.order) }
-        : null,
-    invoice.company ? { icon: Building2, label: 'Company', value: invoice.company.name } : null,
-    invoice.project ? { icon: FolderKanban, label: 'Project', value: invoice.project.name } : null,
-    invoice.contact
+  const cards = [
+    deal && dealTitle
       ? {
-          icon: User,
-          label: 'Contact',
-          value: `${invoice.contact.firstName} ${invoice.contact.lastName}`,
+          key: `deal-${deal.id}`,
+          icon: Handshake,
+          label: 'Deal',
+          title: dealTitle,
+          href: `/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`,
+        }
+      : invoice.order
+        ? {
+            key: `order-${invoice.order.id}`,
+            icon: FileText,
+            label: 'Order',
+            title: getOrderDisplayTitle(invoice.order),
+            href: ordersListWithOpenOrderHref(invoice.order.id),
+          }
+        : null,
+    invoice.project
+      ? {
+          key: `project-${invoice.project.id}`,
+          icon: FolderKanban,
+          label: 'Project',
+          title: invoice.project.name,
+          href: `/projects/${invoice.project.id}`,
         }
       : null,
     invoice.subscriptionId
-      ? { icon: Repeat, label: 'Subscription', value: invoice.subscriptionId }
+      ? {
+          key: `sub-${invoice.subscriptionId}`,
+          icon: Repeat,
+          label: 'Subscription',
+          title: invoice.subscriptionId.slice(0, 8),
+          href: subscriptionsListWithOpenSubscriptionHref(invoice.subscriptionId),
+        }
       : null,
-  ].filter((row): row is { icon: typeof FileText; label: string; value: string } => row != null);
+  ].filter(
+    (
+      row,
+    ): row is {
+      key: string;
+      icon: typeof FileText;
+      label: string;
+      title: string;
+      href: string;
+    } => row != null,
+  );
 
-  if (links.length === 0) return null;
+  const hasCompany = Boolean(invoice.company);
+  const hasContact = Boolean(invoice.contact);
+  if (cards.length === 0 && !hasCompany && !hasContact) return null;
 
   return (
     <DetailSheetSection title="Linked">
-      <div className="space-y-3">
-        {links.map((row) => (
-          <LinkedEntity key={`${row.label}-${row.value}`} {...row} />
+      <DetailSheetEntityLinkGrid>
+        {cards.map((row) => (
+          <DetailSheetEntityLinkCard
+            key={row.key}
+            href={row.href}
+            icon={row.icon}
+            label={row.label}
+            title={row.title}
+          />
         ))}
-      </div>
+        {invoice.company ? (
+          <DetailSheetEntityLinkCard
+            icon={Building2}
+            label="Company"
+            title={invoice.company.name}
+            onOpen={() => relations.openEntity('company', invoice.company!.id)}
+          />
+        ) : null}
+        {invoice.contact ? (
+          <DetailSheetEntityLinkCard
+            icon={User}
+            label="Contact"
+            title={`${invoice.contact.firstName} ${invoice.contact.lastName}`.trim()}
+            onOpen={() => relations.openEntity('contact', invoice.contact!.id)}
+          />
+        ) : null}
+      </DetailSheetEntityLinkGrid>
     </DetailSheetSection>
   );
 }
@@ -146,27 +211,5 @@ function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) 
         <p className="text-muted-foreground font-mono text-xs">{invoice.govInvoiceId}</p>
       ) : null}
     </div>
-  );
-}
-
-function LinkedEntity({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof FileText;
-  label: string;
-  value: string;
-}) {
-  return (
-    <InlineField
-      variant="controlled"
-      label={label}
-      type="text"
-      value={value}
-      icon={<Icon size={12} />}
-      disabled
-      onValueChange={() => undefined}
-    />
   );
 }

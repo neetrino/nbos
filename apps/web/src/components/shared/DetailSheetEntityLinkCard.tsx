@@ -9,6 +9,8 @@ interface DetailSheetEntityLinkCardBase {
   label: string;
   title: string;
   icon: LucideIcon;
+  /** Optional secondary line under the title (counts, meta). */
+  description?: string;
   className?: string;
 }
 
@@ -20,6 +22,7 @@ type DetailSheetEntityLinkCardProps =
 export function DetailSheetEntityLinkCard({
   label,
   title,
+  description,
   icon: Icon,
   className,
   ...action
@@ -37,6 +40,9 @@ export function DetailSheetEntityLinkCard({
           {label}
         </p>
         <p className="text-foreground truncate text-sm font-medium">{title}</p>
+        {description ? (
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">{description}</p>
+        ) : null}
       </div>
       <TrailingIcon
         size={14}

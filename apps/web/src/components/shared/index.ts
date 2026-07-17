@@ -79,6 +79,7 @@ export {
 export { EmptyState } from './EmptyState';
 export { EntityNavPillLink } from './EntityNavPillLink';
 export { DetailSheetEntityLinkCard } from './DetailSheetEntityLinkCard';
+export { DetailSheetEntityLinkGrid } from './DetailSheetEntityLinkGrid';
 export { ErrorState } from './ErrorState';
 export { PersonAvatarName, PersonSoftAvatar, type PersonAvatarSize } from './PersonAvatarName';
 export { PersonContactRow, type PersonContactRowProps } from './PersonContactRow';

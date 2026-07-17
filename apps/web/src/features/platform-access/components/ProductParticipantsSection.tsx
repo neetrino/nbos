@@ -9,7 +9,10 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  PersonContactRow,
+  PersonSoftAvatar,
 } from '@/components/shared';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import {
   Table,
   TableBody,
@@ -27,6 +30,23 @@ interface ProductParticipantsSectionProps {
   /** Inside {@link ProductInfoPanel} — minimal rows, no card chrome. */
   embedded?: boolean;
   className?: string;
+}
+
+function memberDisplayName(row: ProductTeamMemberRow): string {
+  return `${row.employee.firstName} ${row.employee.lastName}`.trim();
+}
+
+function MemberSlotMeta({ row }: { row: ProductTeamMemberRow }) {
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-0.5">
+      <span className="text-xs capitalize">{formatProductSlot(row.slot)}</span>
+      {row.isPrimary && row.slot ? (
+        <Badge variant="outline" className="text-[10px]">
+          primary
+        </Badge>
+      ) : null}
+    </div>
+  );
 }
 
 export function ProductParticipantsSection({
@@ -104,6 +124,8 @@ function TeamBody({
   onRetry: () => void;
   embedded: boolean;
 }) {
+  const relations = useEntityRelations();
+
   if (error) {
     return <ErrorState description={error} onRetry={onRetry} />;
   }
@@ -132,27 +154,15 @@ function TeamBody({
 
   if (embedded) {
     return (
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {members.map((row) => (
-          <div
+          <PersonContactRow
             key={row.id}
-            className="bg-muted/30 flex items-start justify-between gap-2 rounded-lg px-2.5 py-2"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">
-                {row.employee.firstName} {row.employee.lastName}
-              </p>
-              <p className="text-muted-foreground truncate text-[11px]">{row.employee.email}</p>
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-0.5">
-              <span className="text-xs capitalize">{formatProductSlot(row.slot)}</span>
-              {row.isPrimary && row.slot ? (
-                <Badge variant="outline" className="text-[10px]">
-                  primary
-                </Badge>
-              ) : null}
-            </div>
-          </div>
+            name={memberDisplayName(row)}
+            email={row.employee.email}
+            onOpen={() => relations.openEntity('employee', row.employee.id)}
+            trailing={<MemberSlotMeta row={row} />}
+          />
         ))}
       </div>
     );
@@ -169,28 +179,40 @@ function TeamBody({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {members.map((row) => (
-          <TableRow key={row.id}>
-            <TableCell>
-              <span className="font-medium">
-                {row.employee.firstName} {row.employee.lastName}
-              </span>
-              <span className="text-muted-foreground block text-xs">{row.employee.email}</span>
-            </TableCell>
-            <TableCell>
-              <span className="capitalize">{formatProductSlot(row.slot)}</span>
-              {row.isPrimary && row.slot ? (
-                <Badge variant="outline" className="ml-1 text-xs">
-                  primary
-                </Badge>
-              ) : null}
-            </TableCell>
-            <TableCell className="text-sm">{row.accessLevel}</TableCell>
-            <TableCell className="text-muted-foreground text-sm capitalize">
-              {formatTeamSource(row.source)}
-            </TableCell>
-          </TableRow>
-        ))}
+        {members.map((row) => {
+          const name = memberDisplayName(row);
+          return (
+            <TableRow key={row.id}>
+              <TableCell>
+                <button
+                  type="button"
+                  className="flex min-w-0 items-center gap-3 text-left"
+                  onClick={() => relations.openEntity('employee', row.employee.id)}
+                >
+                  <PersonSoftAvatar name={name} className="size-8 text-[10px]" />
+                  <span className="min-w-0">
+                    <span className="block font-medium">{name}</span>
+                    <span className="text-muted-foreground block text-xs">
+                      {row.employee.email}
+                    </span>
+                  </span>
+                </button>
+              </TableCell>
+              <TableCell>
+                <span className="capitalize">{formatProductSlot(row.slot)}</span>
+                {row.isPrimary && row.slot ? (
+                  <Badge variant="outline" className="ml-1 text-xs">
+                    primary
+                  </Badge>
+                ) : null}
+              </TableCell>
+              <TableCell className="text-sm">{row.accessLevel}</TableCell>
+              <TableCell className="text-muted-foreground text-sm capitalize">
+                {formatTeamSource(row.source)}
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
