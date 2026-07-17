@@ -21,7 +21,6 @@ import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
 import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
-import { DeliveryItemPaymentSummary } from './DeliveryItemLanguagesPanel';
 import {
   DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
   DELIVERY_DETAIL_GENERAL_COLUMN_CLASS,
@@ -91,6 +90,7 @@ export function DeliveryItemDetailGeneralTab({
               entityId={product.id}
               draft={productPlan}
               onDraftChange={onProductPlanChange}
+              paymentType={product.order?.paymentType}
               disabled={planningDisabled}
               gateRequiredFields={gateRequiredFields}
             />
@@ -128,16 +128,6 @@ export function DeliveryItemDetailGeneralTab({
               credentialsTabHref={credentialsTabHref}
               gateRequiredFields={gateRequiredFields}
             />
-            {kind === 'PRODUCT' && product ? (
-              <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-                <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
-              </section>
-            ) : null}
-            {kind === 'EXTENSION' && extension ? (
-              <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-                <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
-              </section>
-            ) : null}
             <DeliveryItemKeyWorkLinksSection
               kind={kind}
               product={product}

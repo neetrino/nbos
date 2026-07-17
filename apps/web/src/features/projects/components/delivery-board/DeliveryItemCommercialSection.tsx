@@ -175,7 +175,8 @@ export function DeliveryItemCommercialSection({
           commercialGateClass,
         )}
       >
-        <h3 className="text-muted-foreground mb-1 text-[10px] font-semibold tracking-wider uppercase">
+        <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+          <Package size={13} aria-hidden />
           Client & order
         </h3>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Calendar, ClipboardList, Layers, Package, Tag } from 'lucide-react';
+import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   EntityNotesField,
@@ -21,12 +21,14 @@ export function ProductPlanningSection({
   entityId,
   draft,
   onDraftChange,
+  paymentType,
   disabled = false,
   gateRequiredFields = new Set<string>(),
 }: {
   entityId: string;
   draft: ProductPlanSnapshot;
   onDraftChange: (next: ProductPlanSnapshot) => void;
+  paymentType?: string | null;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }) {
@@ -43,6 +45,8 @@ export function ProductPlanningSection({
     onDraftChange({ ...draft, ...partial });
   };
 
+  const paymentLabel = paymentType?.replace(/_/g, ' ') ?? '—';
+
   return (
     <section className="border-border bg-card w-full max-w-full min-w-0 rounded-xl border p-4 shadow-sm">
       <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
@@ -54,12 +58,10 @@ export function ProductPlanningSection({
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
           <InlineField
             variant="controlled"
-            label="Product name"
-            value={draft.name}
-            icon={<Package size={12} />}
-            placeholder="Name…"
-            disabled={disabled}
-            onValueChange={(v) => patchDraft({ name: v })}
+            label="Payment"
+            value={paymentLabel}
+            icon={<Wallet size={12} />}
+            disabled
           />
           <InlineField
             variant="controlled"
