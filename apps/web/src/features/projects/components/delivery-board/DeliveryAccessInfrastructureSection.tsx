@@ -83,8 +83,6 @@ export function DeliveryAccessInfrastructureSection({
     return (
       <ul className="flex flex-col gap-4">
         {slots.map((slot) => {
-          const filledCount = slot.bindings.filter((b) => b.boundCredential !== null).length;
-          const requiredMissing = slot.required && filledCount === 0;
           return (
             <li
               key={slot.slotKey}
@@ -105,11 +103,6 @@ export function DeliveryAccessInfrastructureSection({
                       <span className="text-sm font-medium">
                         {formatDeliveryAccessSlotLabel(slot.label)}
                       </span>
-                      {requiredMissing ? (
-                        <p className="text-muted-foreground text-xs">
-                          Add at least one credential.
-                        </p>
-                      ) : null}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
