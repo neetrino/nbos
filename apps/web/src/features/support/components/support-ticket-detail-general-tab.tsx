@@ -101,7 +101,7 @@ export function SupportTicketDetailGeneralTab({
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-4 px-5 py-4 sm:px-7">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:gap-5">
-            <div className="flex flex-col gap-4 xl:col-span-7">
+            <div className="flex flex-col gap-4 xl:col-span-8">
               <DetailSheetSection title="Case & triage" icon={<Headphones size={12} />}>
                 <div className="space-y-4">
                   <SupportTicketDetailTriageFields
@@ -126,7 +126,7 @@ export function SupportTicketDetailGeneralTab({
               </DetailSheetSection>
             </div>
 
-            <div className="flex flex-col gap-4 xl:col-span-5">
+            <div className="flex flex-col gap-4 xl:col-span-4">
               <DetailSheetSection title="Waiting overlay">
                 <div className="space-y-2">
                   <Label htmlFor={`st-wait-${ticket.id}`} className="sr-only">
