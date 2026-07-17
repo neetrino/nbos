@@ -35,6 +35,7 @@ interface OrderDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onCreateInvoice: (order: Order) => void;
   refreshSignal?: number;
+  forceNestedBackdrop?: boolean;
 }
 
 export function OrderDetailSheet({
@@ -44,6 +45,7 @@ export function OrderDetailSheet({
   onOpenChange,
   onCreateInvoice,
   refreshSignal = 0,
+  forceNestedBackdrop = false,
 }: OrderDetailSheetProps) {
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(orderId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -119,6 +121,7 @@ export function OrderDetailSheet({
           layout="full"
           width="medium"
           sourcePageHref={sourcePageHref}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
           <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             {loading && !order ? (

@@ -83,6 +83,8 @@ interface DealSheetProps {
   onBlockerNavigationConsumed?: () => void;
   stageGateHighlight?: DealSheetStageGateHighlight | null;
   onOpenChangeComplete?: (open: boolean) => void;
+  /** Stack above an already-open entity sheet (e.g. Delivery detail). */
+  forceNestedBackdrop?: boolean;
 }
 
 function dealGeneralSaveErrorMessage(err: unknown): string {
@@ -106,6 +108,7 @@ export function DealSheet({
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
   onOpenChangeComplete,
+  forceNestedBackdrop = false,
 }: DealSheetProps) {
   const { persistedValue: renderDeal, onOpenChangeComplete: clearRenderDeal } =
     useSheetPersistedValue(deal);
@@ -249,6 +252,9 @@ export function DealSheet({
         onOpenChange={onOpenChange}
         onOpenChangeComplete={handleOpenChangeComplete}
         label="Loading deal…"
+        forceNestedBackdrop={forceNestedBackdrop}
+        contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
+        railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
       />
     );
   }
@@ -298,6 +304,7 @@ export function DealSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
+          forceNestedBackdrop={forceNestedBackdrop}
           contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(68rem,calc(100vw-2rem-2.75rem))]"
           railAnchorClassName="sm:right-[min(68rem,calc(100vw-2rem-2.75rem))]"
           sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(renderDeal.id)}`}
