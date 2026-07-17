@@ -171,7 +171,7 @@ export function DeliveryItemCommercialSection({
     <>
       <section
         className={cn(
-          'border-border bg-card rounded-xl border px-4 pt-4 pb-2 shadow-sm',
+          'border-border bg-card rounded-xl border px-4 py-4 shadow-sm',
           commercialGateClass,
         )}
       >
@@ -180,7 +180,7 @@ export function DeliveryItemCommercialSection({
           Client & order
         </h3>
 
-        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="min-w-0">
             {contact ? (
               <CommercialInfoRow
@@ -231,8 +231,7 @@ export function DeliveryItemCommercialSection({
             ) : null}
           </div>
 
-          {/* Absolute on sm so stack height matches the left column (last button bottom = last left row). */}
-          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3 sm:absolute sm:inset-y-0 sm:right-0 sm:w-[calc(50%-0.625rem)] sm:justify-between sm:gap-0 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
+          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
             {dealId ? (
               <CommercialNavButton
                 label={`Open deal ${getDealDisplayTitle(deal!)}`}
