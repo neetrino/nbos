@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS, StatusBadge } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
 import {
   buildTaskCompletionBlockers,
@@ -24,9 +25,7 @@ export function TaskCompletionRulesPanel({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h4 className="text-muted-foreground text-xs font-medium tracking-wide">
-          Completion Rules
-        </h4>
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Completion Rules</h4>
         {rules.length > 0 && blockers.length === 0 && <StatusBadge label="Ready" variant="green" />}
         {blockers.length > 0 && <StatusBadge label="Blocked" variant="red" />}
       </div>

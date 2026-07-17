@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ChevronRight, FolderKanban, Hash, Package } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { bonusPoolKindLabel } from '@/features/finance/utils/bonus-pool-display';
 import {
   bonusPoolScopeEntityHref,
@@ -64,7 +65,7 @@ export function BonusPoolSheetScopeLinks({
 
   return (
     <div className="space-y-2">
-      <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Scope</p>
+      <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Scope</p>
       <div className="space-y-2">
         {parsed ? (
           <ScopeLinkRow

@@ -1,7 +1,9 @@
 'use client';
 
 import { FINANCE_PROOF_PURPOSES, type FinanceProofPurpose } from '@nbos/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { EntityAttachmentBlock } from '@/features/drive/EntityAttachmentBlock';
+import { cn } from '@/lib/utils';
 
 interface FinanceProofAttachmentsProps {
   entityType: 'INVOICE' | 'PAYMENT' | 'EXPENSE' | 'CLIENT_SERVICE_RECORD';
@@ -21,7 +23,7 @@ export function FinanceProofAttachments({
   return (
     <section className="space-y-3">
       {title ? (
-        <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
           {title}
         </h4>
       ) : null}

@@ -1,11 +1,13 @@
 'use client';
 
 import { AlertTriangle, CheckCircle2, Circle } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
 import { formatDeliveryLifecycleLabel } from '@/features/projects/constants/projects';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import {
   buildExtensionStageReadinessRows,
   buildProductStageReadinessRows,
@@ -47,7 +49,7 @@ export function DeliveryItemStageReadinessSection({
   if (!lifecycle || rows.length === 0) {
     return (
       <section className="border-border bg-card/40 rounded-xl border p-4">
-        <h3 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
           Stage readiness
         </h3>
         <p className="text-muted-foreground text-sm">No stage requirement rows for this state.</p>
@@ -66,7 +68,7 @@ export function DeliveryItemStageReadinessSection({
       )}
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
           Stage readiness
         </h3>
         <p className="text-muted-foreground text-xs">

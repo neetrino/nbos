@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   EntityNotesField,
   InlineField,
@@ -49,7 +50,7 @@ export function ProductPlanningSection({
 
   return (
     <section className="border-border bg-card w-full max-w-full min-w-0 rounded-xl border p-4 shadow-sm">
-      <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
         <ClipboardList size={13} aria-hidden />
         Delivery plan
       </h3>

@@ -1,9 +1,14 @@
 'use client';
 
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
-import { EntityNotesField, InlineField } from '@/components/shared';
+import {
+  EntityNotesField,
+  InlineField,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+} from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
+import { cn } from '@/lib/utils';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
@@ -40,7 +45,7 @@ export function ExtensionPlanningSection({
 
   return (
     <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
         <ClipboardList size={13} aria-hidden />
         Extension plan
       </h3>

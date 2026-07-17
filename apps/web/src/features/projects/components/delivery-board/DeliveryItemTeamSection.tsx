@@ -5,7 +5,10 @@ import { RelationPickerField } from '@/components/shared';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import { RELATION_PICKER_EMPTY_TRIGGER_CLASS } from '@/components/shared/detail-sheet-classes';
+import {
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct, ProductEmployee } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
@@ -139,7 +142,7 @@ export function DeliveryItemTeamSection({
 
   return (
     <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
         <User size={13} aria-hidden />
         Team
       </h3>

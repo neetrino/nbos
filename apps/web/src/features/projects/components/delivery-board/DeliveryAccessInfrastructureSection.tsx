@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Asterisk, ChevronRight, KeyRound, Loader2, Plus, Unlink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
@@ -181,7 +182,7 @@ export function DeliveryAccessInfrastructureSection({
 
   return (
     <section className="border-border bg-card/40 flex flex-col gap-3 rounded-xl border p-3">
-      <h3 className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+      <h3 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
         <KeyRound size={14} aria-hidden />
         Access & infrastructure
       </h3>

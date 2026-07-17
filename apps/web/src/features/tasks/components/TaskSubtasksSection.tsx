@@ -1,4 +1,6 @@
 import { Checkbox } from '@/components/ui/checkbox';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
 
 interface TaskSubtasksSectionProps {
@@ -14,7 +16,7 @@ export function TaskSubtasksSection({ task }: TaskSubtasksSectionProps) {
 
   return (
     <div>
-      <h4 className="text-muted-foreground mb-2 text-xs font-medium uppercase">
+      <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
         Subtasks ({completedCount}/{task.subtasks.length})
       </h4>
       <div className="space-y-1">

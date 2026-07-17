@@ -139,8 +139,8 @@ export function DealGeneralTab({
 
   return (
     <div className="@container/deal-general">
-      <div className="grid grid-cols-1 gap-5 @[64rem]/deal-general:grid-cols-[minmax(0,48rem)_auto] @[64rem]/deal-general:items-start @[64rem]/deal-general:gap-6">
-        <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} max-w-[48rem] min-w-0 gap-4`}>
+      <div className="grid grid-cols-1 gap-5 @[64rem]/deal-general:grid-cols-[minmax(0,1fr)_auto] @[64rem]/deal-general:items-start @[64rem]/deal-general:gap-6">
+        <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} min-w-0 gap-4`}>
           <DealCombinedInfoSection
             draft={draft}
             patchDraft={patchDraft}

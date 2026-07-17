@@ -13,7 +13,7 @@ import {
   UserCircle,
   Wallet,
 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS, StatusBadge } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -175,7 +175,7 @@ export function DeliveryItemCommercialSection({
           commercialGateClass,
         )}
       >
-        <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
           <Package size={13} aria-hidden />
           Client & order
         </h3>

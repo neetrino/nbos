@@ -79,11 +79,11 @@ export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = 'sm:right-[36re
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
   'rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent';
 
-/** Section heading style (uppercase micro label). */
+/** Section heading style (uppercase micro label) — primary blue, matches Delivery. */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
-  'text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase';
+  'text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase';
 
-/** Sub-label inside a merged multi-column section. */
+/** Sub-label inside a merged multi-column section (not primary — stays muted). */
 export const DETAIL_SHEET_SUBSECTION_LABEL_CLASS =
   'text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase';
 

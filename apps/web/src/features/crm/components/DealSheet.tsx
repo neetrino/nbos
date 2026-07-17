@@ -373,7 +373,7 @@ export function DealSheet({
           />
 
           {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
-          <div className="shrink-0 px-5 pt-2.5 pb-3">
+          <div className="shrink-0 pb-3">
             <DealPipelineStages
               currentStatus={renderDeal.status}
               onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}

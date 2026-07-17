@@ -321,7 +321,7 @@ export function LeadSheet({
         />
 
         {/* ── Pipeline Stages ── */}
-        <div className="shrink-0 px-5 pt-2.5 pb-3">
+        <div className="shrink-0 pb-3">
           <LeadPipelineStages
             currentStatus={renderLead.status}
             onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderLead.id, key)}

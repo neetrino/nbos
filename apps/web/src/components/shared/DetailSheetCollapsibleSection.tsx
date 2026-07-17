@@ -36,7 +36,7 @@ export function DetailSheetCollapsibleSection({
         <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 rounded-lg outline-none select-none">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-              {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
+              {icon ? <span className="text-primary">{icon}</span> : null}
               {title}
             </h4>
             {titleTrailing}

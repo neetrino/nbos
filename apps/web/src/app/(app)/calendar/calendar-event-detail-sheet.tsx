@@ -12,6 +12,8 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { CLIENT_CONTACT_OPEN_QUERY } from './calendar-ui-constants';
 
 export interface CalendarEventDetailSheetProps {
@@ -62,7 +64,7 @@ function MeetingDetailLinks({ m }: { m: CalendarMeetingDetail }) {
   if (links.length === 0) return null;
   return (
     <div className="border-border mt-4 border-t pt-4">
-      <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+      <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
         Links
       </p>
       <div className="flex flex-wrap gap-2">
