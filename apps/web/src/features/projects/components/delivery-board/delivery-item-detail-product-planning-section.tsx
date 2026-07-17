@@ -18,6 +18,9 @@ import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state'
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 
+/** Wider than the narrow field trigger so long type labels fit in the menu. */
+const PRODUCT_TYPE_SELECT_MENU_CLASS = 'w-max min-w-[14rem] max-w-[min(20rem,calc(100vw-2rem))]';
+
 export function ProductPlanningSection({
   entityId,
   draft,
@@ -104,6 +107,7 @@ export function ProductPlanningSection({
             options={typeOptions}
             icon={<Tag size={12} />}
             disabled={disabled}
+            selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
             onValueChange={(v) => {
               if (v) patchDraft({ productType: v });
             }}
