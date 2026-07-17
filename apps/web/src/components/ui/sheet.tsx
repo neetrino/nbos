@@ -32,6 +32,59 @@ const SHEET_NESTED_FLOATING_RAIL_Z_INDEX = 71;
 /** Elevated sheet popup uses z-80; rail one step above. */
 const SHEET_ABOVE_ENTITY_SHEET_RAIL_Z_INDEX = 81;
 
+/** Matches `--motion-duration-base` (280ms) — panel, overlay, and left rail stay in sync. */
+const SHEET_MOTION_DURATION_CLASS = 'duration-300';
+
+/**
+ * Same enter/exit travel for right panel + viewport rail (not `100%` of each box —
+ * that made the rail arrive on a different path).
+ */
+const SHEET_RIGHT_SHARED_SLIDE_CLASS =
+  '[--tw-enter-translate-x:100vw] [--tw-exit-translate-x:100vw]';
+
+const SHEET_OVERLAY_MOTION_CLASS = cn(
+  'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
+  SHEET_MOTION_DURATION_CLASS,
+  'ease-out',
+);
+
+const SHEET_CENTER_PANEL_MOTION_CLASS = cn(
+  'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
+  'data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+  SHEET_MOTION_DURATION_CLASS,
+  'ease-out',
+);
+
+const SHEET_RIGHT_PANEL_MOTION_CLASS = cn(
+  'data-open:animate-in data-open:fade-in-0',
+  'data-closed:animate-out data-closed:fade-out-0',
+  SHEET_RIGHT_SHARED_SLIDE_CLASS,
+  SHEET_MOTION_DURATION_CLASS,
+  'ease-out',
+);
+
+const SHEET_SIDE_PANEL_MOTION_CLASS = {
+  right: SHEET_RIGHT_PANEL_MOTION_CLASS,
+  left: cn(
+    'data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-left',
+    'data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-left',
+    SHEET_MOTION_DURATION_CLASS,
+    'ease-out',
+  ),
+  top: cn(
+    'data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-top',
+    'data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-top',
+    SHEET_MOTION_DURATION_CLASS,
+    'ease-out',
+  ),
+  bottom: cn(
+    'data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom',
+    'data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom',
+    SHEET_MOTION_DURATION_CLASS,
+    'ease-out',
+  ),
+} as const;
+
 const SHEET_POPUP_BASE_CLASS =
   'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg';
 
@@ -62,7 +115,6 @@ function SheetFloatingRailInset({
     >
       <SheetFloatingRailStack
         floatingRail={floatingRail}
-        floatingRailVisible
         showClose={showClose}
         className="pointer-events-auto"
       />
@@ -72,25 +124,15 @@ function SheetFloatingRailInset({
 
 function SheetFloatingRailStack({
   floatingRail,
-  floatingRailVisible = true,
   showClose = true,
   className,
 }: {
   floatingRail?: React.ReactNode;
-  floatingRailVisible?: boolean;
   showClose?: boolean;
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
-        floatingRailVisible
-          ? 'pointer-events-auto translate-x-0 opacity-100'
-          : 'pointer-events-none translate-x-[2.5rem] opacity-0',
-        className,
-      )}
-    >
+    <div className={cn(ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS, className)}>
       {showClose ? (
         <SheetPrimitive.Close
           data-slot="sheet-close-floating"
@@ -149,6 +191,7 @@ function SheetOverlay({
       data-slot="sheet-overlay"
       className={cn(
         'fixed inset-0',
+        SHEET_OVERLAY_MOTION_CLASS,
         elevatedOverlay
           ? cn(stackClass, 'bg-black/25 supports-backdrop-filter:backdrop-blur-sm')
           : cn(stackClass, 'bg-black/10 supports-backdrop-filter:backdrop-blur-xs'),
@@ -178,6 +221,7 @@ function SheetContent({
   showCloseButton?: boolean;
   floatingClose?: boolean;
   floatingRail?: React.ReactNode;
+  /** Sync with parent `Sheet` `open` so viewport rail exit matches the panel. */
   floatingRailVisible?: boolean;
   floatingRailAnchorClassName?: string;
   floatingRailTopClassName?: string;
@@ -204,11 +248,15 @@ function SheetContent({
       ? SHEET_NESTED_FLOATING_RAIL_Z_INDEX
       : SHEET_FLOATING_RAIL_Z_INDEX;
 
+  const panelMotionClass =
+    side === 'center' ? SHEET_CENTER_PANEL_MOTION_CLASS : SHEET_SIDE_PANEL_MOTION_CLASS[side];
+
   const popupClassName = cn(
     SHEET_POPUP_BASE_CLASS,
     side !== 'center' && SHEET_SIDE_EDGE_CLASS,
     side === 'center' && SHEET_CENTER_PANEL_SURFACE_CLASS,
     side !== 'center' && nestedStackClass,
+    panelMotionClass,
     insetFloatingRail && 'relative overflow-visible',
     'pointer-events-auto bg-background',
     className,
@@ -266,13 +314,7 @@ function SheetContent({
         <SheetCenterShell
           floatingRailVisible={floatingRailVisible}
           nestedStackClass={nestedStackClass}
-          rail={
-            <SheetFloatingRailStack
-              floatingRail={floatingRail}
-              floatingRailVisible={floatingRailVisible}
-              showClose={floatingClose}
-            />
-          }
+          rail={<SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />}
           panel={popup}
         />
       ) : (
@@ -280,24 +322,19 @@ function SheetContent({
       )}
       {viewportFloatingRail ? (
         <div
+          {...(floatingRailVisible ? { 'data-open': '' } : { 'data-closed': '' })}
           className={cn(
             'fixed overflow-visible max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
             SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailTopClassName,
-            floatingRailVisible
-              ? 'pointer-events-auto translate-x-0 opacity-100'
-              : 'pointer-events-none translate-x-[2.5rem] opacity-0',
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',
+            SHEET_RIGHT_PANEL_MOTION_CLASS,
           )}
           style={{
             zIndex: floatingRailZIndex,
           }}
         >
-          <SheetFloatingRailStack
-            floatingRail={floatingRail}
-            floatingRailVisible={floatingRailVisible}
-            showClose={floatingClose}
-          />
+          <SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />
         </div>
       ) : null}
     </SheetPortal>
