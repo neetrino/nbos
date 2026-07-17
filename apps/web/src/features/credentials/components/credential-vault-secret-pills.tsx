@@ -125,7 +125,7 @@ export function CredentialVaultSecretPills({
   if (!login && !showPassword) return null;
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       {login ? (
         <CredentialVaultSecretPill
           icon={<AtSign size={12} strokeWidth={2} />}

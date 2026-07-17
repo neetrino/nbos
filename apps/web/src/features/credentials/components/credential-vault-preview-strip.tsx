@@ -18,6 +18,8 @@ import { cn } from '@/lib/utils';
 
 const PASSWORD_MASK = '••••••';
 
+/** Tight stack for login + password (and other copy rows) on vault cards. */
+const VAULT_PREVIEW_COPY_STACK_CLASS = 'flex flex-col gap-0.5';
 const VAULT_PREVIEW_PILL_ICON_CLASS = 'size-3.5 shrink-0';
 const VAULT_PREVIEW_INFO_ICON_CLASS = 'text-muted-foreground size-6 shrink-0';
 const VAULT_PREVIEW_INFO_LABEL_CLASS =
@@ -235,7 +237,7 @@ export function CredentialVaultPreviewStrip({
         </div>
       ) : null}
       {bottom.length > 0 ? (
-        <div className="mt-auto flex flex-col gap-1">
+        <div className={cn('mt-auto', VAULT_PREVIEW_COPY_STACK_CLASS)}>
           {bottom.map((item, index) => (
             <div key={`bottom-${item.type}-${index}`}>
               {renderPreviewItem(

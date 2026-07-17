@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
+import {
+  buildCredentialVaultPreview,
+  partitionVaultPreviewItems,
+} from '@/features/credentials/utils/credential-vault-preview';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 
 function base(overrides: Partial<CredentialListItem> = {}): CredentialListItem {
@@ -82,5 +85,14 @@ describe('buildCredentialVaultPreview', () => {
       }),
     );
     expect(model.items.map((item) => item.type)).toEqual(['copy-text', 'copy-secret']);
+  });
+
+  it('keeps login with secrets in the bottom cluster', () => {
+    const parts = partitionVaultPreviewItems([
+      { type: 'copy-text', icon: 'at-sign', value: 'user', copyLabel: 'Copy login' },
+      { type: 'copy-secret', icon: 'lock', secret: 'password', copyLabel: 'Copy password' },
+    ]);
+    expect(parts.top).toEqual([]);
+    expect(parts.bottom.map((item) => item.type)).toEqual(['copy-text', 'copy-secret']);
   });
 });
