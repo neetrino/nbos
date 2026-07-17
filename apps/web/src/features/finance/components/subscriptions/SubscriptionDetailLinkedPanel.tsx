@@ -1,54 +1,37 @@
 'use client';
 
-import Link from 'next/link';
-import { ExternalLink, FolderKanban } from 'lucide-react';
-import { DetailSheetSection } from '@/components/shared';
-import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
+import { Building2, FolderKanban, Handshake } from 'lucide-react';
+import { DetailSheetSection, EntityNavPillLink } from '@/components/shared';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import type { Subscription } from '@/lib/api/finance';
 
 export function SubscriptionDetailLinkedPanel({ subscription }: { subscription: Subscription }) {
+  const relations = useEntityRelations();
+
   return (
     <DetailSheetSection title="Linked">
-      <div className="space-y-2 text-sm">
-        <LinkRow
-          icon={FolderKanban}
-          value={subscription.project.name}
+      <div className="flex flex-col items-start gap-2">
+        <EntityNavPillLink
           href={`/projects/${subscription.projectId}`}
+          label={subscription.project.name}
+          icon={FolderKanban}
+          opensPage
         />
         {subscription.company ? (
-          <p className="text-muted-foreground">
-            <span className="text-foreground font-medium">{subscription.company.name}</span>
-          </p>
+          <EntityNavPillLink
+            label={subscription.company.name}
+            icon={Building2}
+            onOpen={() => relations.openEntity('company', subscription.company!.id)}
+          />
         ) : null}
         {subscription.partner ? (
-          <LinkRow
-            icon={ExternalLink}
-            value={subscription.partner.name}
-            href={`/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(subscription.partner.id)}`}
+          <EntityNavPillLink
+            label={subscription.partner.name}
+            icon={Handshake}
+            onOpen={() => relations.openEntity('partner', subscription.partner!.id)}
           />
         ) : null}
       </div>
     </DetailSheetSection>
-  );
-}
-
-function LinkRow({
-  icon: Icon,
-  value,
-  href,
-}: {
-  icon: typeof FolderKanban;
-  value: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
-    >
-      <Icon size={14} aria-hidden />
-      {value}
-      <ExternalLink size={12} className="opacity-70" aria-hidden />
-    </Link>
   );
 }
