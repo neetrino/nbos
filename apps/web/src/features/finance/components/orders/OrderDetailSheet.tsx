@@ -28,6 +28,12 @@ import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
 import { ORDER_STATUSES } from './order-statuses';
 
+/** Order detail: single-column general — narrower than shared auxiliary (36rem). */
+const ORDER_DETAIL_SHEET_WIDTH_CLASS =
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[30rem]';
+
+const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[30rem]';
+
 interface OrderDetailSheetProps {
   orderId: string | null;
   initialOrder?: Order | null;
@@ -119,7 +125,9 @@ export function OrderDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="medium"
+          width="compact"
+          contentClassName={ORDER_DETAIL_SHEET_WIDTH_CLASS}
+          railAnchorClassName={ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >

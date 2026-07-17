@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { DollarSign, ExternalLink, FolderKanban, Handshake } from 'lucide-react';
 import {
-  DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   DetailSheetMetaDate,
@@ -33,35 +32,31 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
   const [orderOpen, setOrderOpen] = useState(true);
 
   return (
-    <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
-      <div className="flex min-w-0 flex-col gap-4">
-        <DetailSheetCollapsibleSection
-          title="Order"
-          icon={<DollarSign size={12} />}
-          open={orderOpen}
-          onOpenChange={setOrderOpen}
-        >
-          <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-            <InlineField label="Code" value={order.code} />
-            <InlineField label="Title" value={getOrderDisplayTitle(order)} />
-            <div className="grid grid-cols-2 gap-4">
-              <InlineField label="Type" value={order.type} />
-              <InlineField label="Payment type" value={order.paymentType} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <InlineField label="Amount" value={formatAmount(total)} />
-              <InlineField label="Currency" value={order.currency} />
-            </div>
-            <div className="border-border mt-4 border-t pt-4">
-              <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
-            </div>
+    <div className="flex min-w-0 flex-col gap-4">
+      <DetailSheetCollapsibleSection
+        title="Order"
+        icon={<DollarSign size={12} />}
+        open={orderOpen}
+        onOpenChange={setOrderOpen}
+      >
+        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <InlineField label="Code" value={order.code} />
+          <InlineField label="Title" value={getOrderDisplayTitle(order)} />
+          <div className="grid grid-cols-2 gap-4">
+            <InlineField label="Type" value={order.type} />
+            <InlineField label="Payment type" value={order.paymentType} />
           </div>
-        </DetailSheetCollapsibleSection>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InlineField label="Amount" value={formatAmount(total)} />
+            <InlineField label="Currency" value={order.currency} />
+          </div>
+          <div className="border-border mt-4 border-t pt-4">
+            <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
+          </div>
+        </div>
+      </DetailSheetCollapsibleSection>
 
-      <div className="flex min-w-0 flex-col gap-4">
-        <OrderLinkedPanel order={order} />
-      </div>
+      <OrderLinkedPanel order={order} />
     </div>
   );
 }
