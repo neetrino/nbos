@@ -11,7 +11,6 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
-  EntityDetailSheetLoadingShell,
   StatusBadge,
 } from '@/components/shared';
 import { getContactRole } from '../constants/clients';
@@ -95,7 +94,9 @@ export function ContactSheet({
     const next = createContactGeneralDraft(contact);
     setDraft(next);
     setSnap(next);
-  }, [contact]);
+    // Seed form when switching contacts only (not on list refresh of same id).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional key
+  }, [contact?.id]);
 
   useEffect(() => {
     if (!open) {
@@ -118,35 +119,40 @@ export function ContactSheet({
     setDraft((prev) => (prev ? { ...prev, ...partial } : null));
   }, []);
 
-  const generalDirty = draft != null && snap != null && isContactGeneralDirty(draft, snap);
+  const activeDraft = draft ?? (renderContact ? createContactGeneralDraft(renderContact) : null);
+  const activeSnap = snap ?? activeDraft;
+  const generalDirty =
+    activeDraft != null && activeSnap != null && isContactGeneralDirty(activeDraft, activeSnap);
 
   const handleGeneralSave = useCallback(async () => {
-    if (!contact || !draft || !snap) return;
+    if (!contact || !activeDraft || !activeSnap) return;
     setGeneralError(null);
-    const patch = buildContactGeneralPatch(snap, draft);
+    const patch = buildContactGeneralPatch(activeSnap, activeDraft);
     if (Object.keys(patch).length === 0) return;
-    if (!draft.firstName.trim() || !draft.lastName.trim()) {
+    if (!activeDraft.firstName.trim() || !activeDraft.lastName.trim()) {
       setGeneralError('First and last name are required.');
       return;
     }
-    if (!draft.phone.trim()) {
+    if (!activeDraft.phone.trim()) {
       setGeneralError('Phone is required.');
       return;
     }
     setSaving(true);
     try {
       await onUpdate(contact.id, patch);
+      setSnap(activeDraft);
+      setDraft(activeDraft);
     } catch (err) {
       setGeneralError(contactSaveErrorMessage(err));
     } finally {
       setSaving(false);
     }
-  }, [contact, draft, snap, onUpdate]);
+  }, [contact, activeDraft, activeSnap, onUpdate]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
-    if (snap) setDraft({ ...snap });
-  }, [snap]);
+    if (activeSnap) setDraft({ ...activeSnap });
+  }, [activeSnap]);
 
   const handleRemoveFromProject = useCallback(async () => {
     if (!onRemoveParticipant) return;
@@ -164,26 +170,16 @@ export function ContactSheet({
 
   if (!hostMounted) return null;
 
-  if (!renderContact || !draft || !snap) {
-    return (
-      <EntityDetailSheetLoadingShell
-        open={open}
-        onOpenChange={onOpenChange}
-        onOpenChangeComplete={onOpenChangeComplete}
-        label="Loading contact…"
-        contentClassName={CONTACT_SHEET_CONTENT_WIDTH_CLASS}
-        railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
-        forceNestedBackdrop={forceNestedBackdrop}
-      />
-    );
-  }
-
-  const role = getContactRole(draft.role);
-  const displayTitle =
-    `${draft.firstName} ${draft.lastName}`.trim() ||
-    `${renderContact.firstName} ${renderContact.lastName}`;
-
-  const sourcePageHref = `/clients/contacts?openId=${encodeURIComponent(renderContact.id)}`;
+  const role = activeDraft ? getContactRole(activeDraft.role) : undefined;
+  const displayTitle = activeDraft
+    ? `${activeDraft.firstName} ${activeDraft.lastName}`.trim() ||
+      (renderContact ? `${renderContact.firstName} ${renderContact.lastName}` : 'Contact')
+    : renderContact
+      ? `${renderContact.firstName} ${renderContact.lastName}`
+      : 'Contact';
+  const sourcePageHref = renderContact
+    ? `/clients/contacts?openId=${encodeURIComponent(renderContact.id)}`
+    : '/clients/contacts';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -194,115 +190,130 @@ export function ContactSheet({
         railAnchorClassName={CONTACT_SHEET_RAIL_ANCHOR_CLASS}
         sourcePageHref={sourcePageHref}
         forceNestedBackdrop={forceNestedBackdrop}
+        showRailActions={Boolean(renderContact)}
       >
-        <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                  {displayTitle}
-                </h2>
-                {role ? (
-                  <StatusBadge
-                    label={role.label}
-                    variant={role.variant}
-                    className="shrink-0 self-center"
-                  />
-                ) : null}
+        <div className="flex h-full min-h-0 flex-col">
+          {!renderContact || !activeDraft || !activeSnap ? (
+            <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
+              Loading contact…
+            </div>
+          ) : (
+            <>
+              <div className="bg-background shrink-0 px-5 pt-5 pb-3">
+                <div className="flex min-h-9 flex-nowrap items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="inline-flex max-w-full min-w-0 flex-nowrap items-center gap-2">
+                      <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                        {displayTitle}
+                      </h2>
+                      {role ? (
+                        <StatusBadge
+                          label={role.label}
+                          variant={role.variant}
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="flex h-9 shrink-0 items-center gap-1.5">
+                    {onRemoveParticipant ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive shrink-0"
+                        disabled={removingFromProject || saving}
+                        onClick={() => setRemoveFromProjectOpen(true)}
+                        aria-label="Remove contact from project"
+                      >
+                        <Trash2 className="size-4" />
+                        Remove
+                      </Button>
+                    ) : null}
+                    {!isTrashView ? (
+                      <ClientPortfolioQuickActionsHeader
+                        variant="contact"
+                        entityId={renderContact.id}
+                        data={portfolio.data}
+                        loading={portfolio.loading}
+                      />
+                    ) : null}
+                    {isTrashView && onRestore ? (
+                      <DetailSheetSettingsMenu>
+                        <DropdownMenuItem onClick={() => onRestore(renderContact.id)}>
+                          <RotateCcw />
+                          Restore
+                        </DropdownMenuItem>
+                        {onPermanentDelete ? (
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => onPermanentDelete(renderContact.id)}
+                          >
+                            <Trash2 />
+                            Delete permanently
+                          </DropdownMenuItem>
+                        ) : null}
+                      </DetailSheetSettingsMenu>
+                    ) : onMoveToTrash ? (
+                      <DetailSheetSettingsMenu>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => onMoveToTrash(renderContact.id)}
+                        >
+                          <Trash2 />
+                          Move to Trash
+                        </DropdownMenuItem>
+                      </DetailSheetSettingsMenu>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-              {onRemoveParticipant ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive shrink-0"
-                  disabled={removingFromProject || saving}
-                  onClick={() => setRemoveFromProjectOpen(true)}
-                  aria-label="Remove contact from project"
-                >
-                  <Trash2 className="size-4" />
-                  Remove
-                </Button>
-              ) : null}
-              {!isTrashView ? (
-                <ClientPortfolioQuickActionsHeader
-                  variant="contact"
-                  entityId={renderContact.id}
-                  data={portfolio.data}
-                  loading={portfolio.loading}
-                />
-              ) : null}
-              {isTrashView && onRestore ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(renderContact.id)}>
-                    <RotateCcw />
-                    Restore
-                  </DropdownMenuItem>
-                  {onPermanentDelete ? (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onPermanentDelete(renderContact.id)}
-                    >
-                      <Trash2 />
-                      Delete permanently
-                    </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : onMoveToTrash ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => onMoveToTrash(renderContact.id)}
-                  >
-                    <Trash2 />
-                    Move to Trash
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              ) : null}
-            </div>
-          </div>
-        </div>
 
-        <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
+              <ClientDetailTabBar
+                activeTab={activeTab}
+                tabs={portfolio.tabs}
+                onSelect={setActiveTab}
+              />
 
-        <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
-          <DetailSheetTabPanel tabKey={activeTab}>
-            {activeTab === 'general' ? (
-              <ContactSheetScrollBody
-                contact={renderContact}
-                draft={draft}
-                patchDraft={patchDraft}
+              <div className={CONTACT_SHEET_BODY_SCROLL_CLASS}>
+                <DetailSheetTabPanel tabKey={activeTab}>
+                  {activeTab === 'general' ? (
+                    <ContactSheetScrollBody
+                      contact={renderContact}
+                      draft={activeDraft}
+                      patchDraft={patchDraft}
+                      saving={saving}
+                      readOnly={isTrashView}
+                      generalError={generalError}
+                      portfolioData={portfolio.data}
+                      portfolioLoading={portfolio.loading}
+                      portfolioError={portfolio.error}
+                      onPortfolioRetry={portfolio.reload}
+                    />
+                  ) : (
+                    <ClientPortfolioPanel
+                      tab={activeTab as ClientEmbeddedPortfolioTabId}
+                      data={portfolio.data}
+                      loading={portfolio.loading}
+                      error={portfolio.error}
+                      variant="contact"
+                      onRetry={portfolio.reload}
+                    />
+                  )}
+                </DetailSheetTabPanel>
+              </div>
+
+              <DetailSheetFormFooter
+                visible={!isTrashView && activeTab === 'general'}
+                dirty={generalDirty}
                 saving={saving}
-                readOnly={isTrashView}
-                generalError={generalError}
-                portfolioData={portfolio.data}
-                portfolioLoading={portfolio.loading}
-                portfolioError={portfolio.error}
-                onPortfolioRetry={portfolio.reload}
+                errorMessage={generalError}
+                onSave={() => void handleGeneralSave()}
+                onCancel={handleGeneralCancel}
               />
-            ) : (
-              <ClientPortfolioPanel
-                tab={activeTab as ClientEmbeddedPortfolioTabId}
-                data={portfolio.data}
-                loading={portfolio.loading}
-                error={portfolio.error}
-                variant="contact"
-                onRetry={portfolio.reload}
-              />
-            )}
-          </DetailSheetTabPanel>
+            </>
+          )}
         </div>
-
-        <DetailSheetFormFooter
-          visible={!isTrashView && activeTab === 'general' && Boolean(draft)}
-          dirty={generalDirty}
-          saving={saving}
-          errorMessage={generalError}
-          onSave={() => void handleGeneralSave()}
-          onCancel={handleGeneralCancel}
-        />
       </EntityDetailSheetContent>
 
       {onRemoveParticipant ? (

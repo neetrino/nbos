@@ -64,7 +64,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <main
                   className={cn(
                     'bg-background flex min-h-0 flex-1 flex-col overscroll-contain',
-                    isMessengerRoute ? 'overflow-hidden' : 'overflow-y-auto',
+                    isMessengerRoute
+                      ? 'overflow-hidden'
+                      : 'overflow-y-auto [scrollbar-gutter:stable]',
                     APP_MAIN_CONTENT_INSET,
                   )}
                 >

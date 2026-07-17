@@ -238,9 +238,15 @@ export function ClientPortfolioQuickActionsHeader({
   data: ContactPortfolioResponse | CompanyPortfolioResponse | null;
   loading: boolean;
 }) {
-  if (loading) return <QuickActionsTriggerSkeleton />;
-  if (!data) return null;
-  return <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />;
+  // Fixed slot height so skeleton → actions never shifts sheet body upward.
+  return (
+    <div className="flex h-9 min-w-[7.5rem] shrink-0 items-center justify-end">
+      {loading ? <QuickActionsTriggerSkeleton /> : null}
+      {!loading && data ? (
+        <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />
+      ) : null}
+    </div>
+  );
 }
 
 function QuickActionsTriggerSkeleton() {
