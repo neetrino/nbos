@@ -85,31 +85,7 @@ export function DeliveryItemDetailGeneralTab({
   return (
     <div className="space-y-4 px-5 py-4 sm:px-7">
       <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryItemTeamSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            productPlan={productPlan}
-            extensionPlan={extensionPlan}
-            onProductPlanChange={onProductPlanChange}
-            onExtensionPlanChange={onExtensionPlanChange}
-            disabled={planningDisabled}
-            gateRequiredFields={gateRequiredFields}
-          />
-          <DeliveryItemCommercialSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            financeTabHref={financeTabHref}
-            projectHubHref={projectHubHref}
-            sourcePageHref={sourcePageHref}
-            credentialsTabHref={credentialsTabHref}
-            gateRequiredFields={gateRequiredFields}
-          />
-        </div>
-
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+        <div className="flex w-full min-w-0 flex-col gap-4">
           {product && productPlan ? (
             <ProductPlanningSection
               entityId={product.id}
@@ -128,23 +104,48 @@ export function DeliveryItemDetailGeneralTab({
               gateRequiredFields={gateRequiredFields}
             />
           ) : null}
-          {kind === 'PRODUCT' && product ? (
-            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
-            </section>
-          ) : null}
-          {kind === 'EXTENSION' && extension ? (
-            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
-            </section>
-          ) : null}
-          <DeliveryItemKeyWorkLinksSection
+
+          <DeliveryItemTeamSection
             kind={kind}
             product={product}
             extension={extension}
-            workSpaceHref={workSpaceHref}
+            productPlan={productPlan}
+            extensionPlan={extensionPlan}
+            onProductPlanChange={onProductPlanChange}
+            onExtensionPlanChange={onExtensionPlanChange}
+            disabled={planningDisabled}
             gateRequiredFields={gateRequiredFields}
           />
+
+          <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+            <DeliveryItemCommercialSection
+              kind={kind}
+              product={product}
+              extension={extension}
+              financeTabHref={financeTabHref}
+              projectHubHref={projectHubHref}
+              sourcePageHref={sourcePageHref}
+              credentialsTabHref={credentialsTabHref}
+              gateRequiredFields={gateRequiredFields}
+            />
+            {kind === 'PRODUCT' && product ? (
+              <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
+                <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
+              </section>
+            ) : null}
+            {kind === 'EXTENSION' && extension ? (
+              <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
+                <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
+              </section>
+            ) : null}
+            <DeliveryItemKeyWorkLinksSection
+              kind={kind}
+              product={product}
+              extension={extension}
+              workSpaceHref={workSpaceHref}
+              gateRequiredFields={gateRequiredFields}
+            />
+          </div>
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>

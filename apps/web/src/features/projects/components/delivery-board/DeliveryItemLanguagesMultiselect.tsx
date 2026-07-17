@@ -77,7 +77,7 @@ export function DeliveryItemLanguagesMultiselect({
         <PopoverTrigger
           disabled={disabled}
           className={cn(
-            'border-input bg-background hover:bg-accent/40 flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left text-sm transition-colors outline-none',
+            'border-input bg-background flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left text-sm outline-none',
             'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
             open && 'border-ring ring-ring/30 ring-2',
             disabled && 'pointer-events-none opacity-50',

@@ -39,33 +39,35 @@ export function ExtensionPlanningSection({
   };
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
-      <h3 className="text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
+      <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
         <ClipboardList size={13} aria-hidden />
         Extension plan
       </h3>
       <div className="flex min-w-0 flex-col gap-3">
-        <InlineField
-          variant="controlled"
-          label="Extension name"
-          value={draft.name}
-          icon={<Package size={12} />}
-          placeholder="Name…"
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ name: v })}
-        />
-        <InlineField
-          variant="controlled"
-          label="Size"
-          type="select"
-          value={draft.size}
-          options={EXTENSION_SIZES.map((s) => ({ value: s.value, label: s.label }))}
-          icon={<Layers size={12} />}
-          disabled={disabled}
-          onValueChange={(v) => {
-            if (v) patchDraft({ size: v });
-          }}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <InlineField
+            variant="controlled"
+            label="Extension name"
+            value={draft.name}
+            icon={<Package size={12} />}
+            placeholder="Name…"
+            disabled={disabled}
+            onValueChange={(v) => patchDraft({ name: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Size"
+            type="select"
+            value={draft.size}
+            options={EXTENSION_SIZES.map((s) => ({ value: s.value, label: s.label }))}
+            icon={<Layers size={12} />}
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (v) patchDraft({ size: v });
+            }}
+          />
+        </div>
         <ExtensionPlanProductLine extension={extension} />
         <div className={deliveryStageGateFieldClass(gateRequiredFields, 'description', '')}>
           <EntityNotesField

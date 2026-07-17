@@ -8,7 +8,7 @@ import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
 import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
-import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
+import { splitDeliveryAccessSlotLabel } from './delivery-access-slot-label';
 
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
@@ -81,14 +81,15 @@ export function DeliveryAccessInfrastructureSection({
       );
     }
     return (
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-2.5">
         {slots.map((slot) => {
+          const labelParts = splitDeliveryAccessSlotLabel(slot.label);
           return (
             <li
               key={slot.slotKey}
-              className="border-border bg-background/60 rounded-lg border px-3 py-3 text-left"
+              className="border-border bg-background/60 rounded-lg border px-2.5 py-2 text-left"
             >
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-1.5">
                     {slot.required ? (
@@ -100,8 +101,9 @@ export function DeliveryAccessInfrastructureSection({
                       </span>
                     ) : null}
                     <div className="min-w-0">
-                      <span className="text-sm font-medium">
-                        {formatDeliveryAccessSlotLabel(slot.label)}
+                      <span className="flex flex-col text-sm leading-snug font-medium">
+                        <span>{labelParts[0]}</span>
+                        {labelParts[1] ? <span>{labelParts[1]}</span> : null}
                       </span>
                     </div>
                   </div>
@@ -178,7 +180,7 @@ export function DeliveryAccessInfrastructureSection({
   }
 
   return (
-    <section className="border-border bg-card/40 flex flex-col gap-5 rounded-xl border p-4">
+    <section className="border-border bg-card/40 flex flex-col gap-3 rounded-xl border p-3">
       <h3 className="text-primary flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
         <KeyRound size={14} aria-hidden />
         Access & infrastructure

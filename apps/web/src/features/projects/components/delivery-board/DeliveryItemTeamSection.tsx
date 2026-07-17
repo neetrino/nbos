@@ -5,8 +5,10 @@ import { RelationPickerField } from '@/components/shared';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { RELATION_PICKER_EMPTY_TRIGGER_CLASS } from '@/components/shared/detail-sheet-classes';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct, ProductEmployee } from '@/lib/api/products';
+import { cn } from '@/lib/utils';
 import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 import type {
   ExtensionPlanSnapshot,
@@ -36,10 +38,15 @@ function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefi
   const name = personName(seller);
 
   return (
-    <div>
-      <p className="text-muted-foreground mb-1 text-[10px] font-semibold tracking-wider uppercase">
-        Seller
-      </p>
+    <div className="relative w-full min-w-0">
+      <div className="text-foreground/85 mb-1.5 flex h-5 items-center gap-2 text-sm font-medium">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="text-muted-foreground/70 shrink-0">
+            <User size={12} aria-hidden />
+          </span>
+          <span className="truncate">Seller</span>
+        </div>
+      </div>
       {name && seller ? (
         <RelationPickerChip
           label={name}
@@ -48,7 +55,12 @@ function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefi
           onOpen={() => void relations.openEntity('employee', seller.id)}
         />
       ) : (
-        <div className="border-border bg-muted/20 text-muted-foreground rounded-lg border border-dashed px-2.5 py-2 text-xs italic">
+        <div
+          className={cn(
+            RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+            'pointer-events-none border-dashed italic',
+          )}
+        >
           Not assigned
         </div>
       )}
@@ -126,12 +138,12 @@ export function DeliveryItemTeamSection({
   };
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
-      <h3 className="text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
+    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
+      <h3 className="text-primary mb-3 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase">
         <User size={13} aria-hidden />
         Team
       </h3>
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 items-start gap-3">
         {kind === 'PRODUCT' && productPlan ? (
           <>
             <ProductRolePicker

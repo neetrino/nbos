@@ -12,8 +12,7 @@ export type DeliveryDetailTabId = (typeof DELIVERY_DETAIL_TABS)[number]['id'];
 export type DeliveryDetailSecondaryId = Exclude<DeliveryDetailTabId, 'general'>;
 
 /**
- * Narrower than Deal 75vw — three equal General columns fill the panel
- * at the former Team card width (no empty trailing track).
+ * Narrower than Deal 75vw — left stack + compact Access column.
  */
 export const DELIVERY_DETAIL_SHEET_CONTENT_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[58vw]';
@@ -22,10 +21,10 @@ export const DELIVERY_DETAIL_SHEET_CONTENT_CLASS =
 export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[58vw]';
 
 /**
- * General tab desktop columns — cards keep natural height (not stretched equal).
+ * General tab: main stack + narrower Access column (two-line slot labels).
  */
 export const DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS =
-  'grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-start xl:gap-5';
+  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] xl:items-start xl:gap-5';
 
 /** Column stack — cards fill track width so column edges stay aligned. */
 export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS = 'flex min-w-0 w-full flex-col gap-4';
