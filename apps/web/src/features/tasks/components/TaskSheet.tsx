@@ -11,6 +11,7 @@ import {
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
+import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
 import {
   TASK_SHEET_RAIL_ANCHOR_CLASS,
@@ -21,6 +22,7 @@ import { TaskSheetSplitLayout } from './TaskSheetSplitLayout';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
+import { TaskPipelineStages } from './TaskPipelineStages';
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetHeader } from './TaskSheetHeader';
@@ -92,6 +94,9 @@ export function TaskSheet({
       task.subtasks.length > 0 ||
       (task.completionRules?.length ?? 0) > 0 ||
       blockers.length > 0);
+  const pipelineStatus =
+    state.workflowFooterStatus ??
+    (state.task ? normalizeTaskStatusForDraft(state.task.status) : 'OPEN');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -117,6 +122,23 @@ export function TaskSheet({
           </div>
         ) : state.task && state.generalDraft ? (
           <>
+            <div className="bg-background shrink-0 px-7 pt-5 pb-3">
+              <TaskSheetHeader
+                draft={state.generalDraft}
+                disabled={state.loading || readOnly}
+                onPatchDraft={state.patchGeneralDraft}
+                onToggleUrgent={() => void state.handleToggleTaskUrgent()}
+              />
+            </div>
+
+            <div className="shrink-0 pb-3">
+              <TaskPipelineStages
+                currentStatus={pipelineStatus}
+                disabled={state.loading || readOnly || state.workflowSaving}
+                onStageClick={state.handlePipelineStatusClick}
+              />
+            </div>
+
             <TaskSheetSplitLayout
               detail={
                 <>
@@ -127,13 +149,6 @@ export function TaskSheet({
                           {state.generalError}
                         </div>
                       )}
-
-                      <TaskSheetHeader
-                        draft={state.generalDraft}
-                        disabled={state.loading || readOnly}
-                        onPatchDraft={state.patchGeneralDraft}
-                        onToggleUrgent={() => void state.handleToggleTaskUrgent()}
-                      />
 
                       <TaskSheetGeneralSection
                         task={state.task}
