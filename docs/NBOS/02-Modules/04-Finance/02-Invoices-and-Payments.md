@@ -124,14 +124,14 @@ Payment confirmed
 
 ### Правила переходов
 
-| Из                                                 | В                  | Как происходит                                                  |
-| -------------------------------------------------- | ------------------ | --------------------------------------------------------------- |
-| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты |
-| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                       |
-| `Overdue`                                          | `On Hold`          | вручную                                                         |
-| `On Hold`                                          | `Awaiting Payment` | вручную                                                         |
-| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | только после подтверждения денег                                |
-| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                         |
+| Из                                                 | В                  | Как происходит                                                                                     |
+| -------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты                                    |
+| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                                                          |
+| `Overdue`                                          | `On Hold`          | вручную                                                                                            |
+| `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
+| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
+| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
 
 ### Важное правило для `Tax`
 
@@ -275,6 +275,16 @@ Payment confirmed
    - domain / service purchase tasks;
    - bonus logic, если применимо;
    - partner logic, если применимо: `Payment -> Partner Accrual -> Partner Balance`, но не Expense напрямую.
+
+### Mark Paid без отдельной формы Payment
+
+Если пользователь переводит карточку в `Paid`, а `outstanding > 0`, система:
+
+1. автоматически создаёт `Payment` на сумму outstanding (метод по умолчанию `TRANSACTION`, note: auto-created when marked paid);
+2. прогоняет тот же post-payment pipeline, что и ручной Record Payment;
+3. карточка становится `Paid` с coverage = 0.
+
+Так статус денег и факт оплаты не расходятся: `Payment` остаётся источником правды для cash / P&L / bonus.
 
 ---
 
