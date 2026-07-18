@@ -11,7 +11,11 @@ import {
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
-import type { DealGeneralDraft } from './deal-general-form-state';
+import {
+  buildDealProjectChangePatch,
+  buildDealTypeChangePatch,
+  type DealGeneralDraft,
+} from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
@@ -26,19 +30,17 @@ interface DealInfoFieldsProps {
   gateRequiredFields?: ReadonlySet<string>;
 }
 
-/** Left column: project, company, and commercial basics. */
+/** Left column: commercial basics and company (when Tax). */
 export function DealInfoProjectBillingFields({
   draft,
   patchDraft,
-  searchProjects,
   searchCompanies,
   disabled = false,
   gateRequiredFields = new Set(),
 }: Pick<
   DealInfoFieldsProps,
-  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
+  'draft' | 'patchDraft' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
 >) {
-  const projectPicker = useRelationPickerActions('project');
   const companyPicker = useRelationPickerActions('company');
 
   return (
@@ -75,20 +77,6 @@ export function DealInfoProjectBillingFields({
         onValueChange={(paymentType) => patchDraft({ paymentType })}
       />
 
-      <RelationPickerField
-        label="Project"
-        entityKind="project"
-        value={draft.projectId}
-        selectionLabel={draft.linkedProjectLabel}
-        disabled={disabled}
-        placeholder="Search projects…"
-        icon={<FolderKanban size={12} />}
-        onSearch={searchProjects}
-        onSelect={(id, label) => patchDraft({ projectId: id, linkedProjectLabel: label })}
-        onClear={() => patchDraft({ projectId: null, linkedProjectLabel: null })}
-        {...projectPicker}
-      />
-
       {(draft.taxStatus ?? 'TAX') === 'TAX' && (
         <RelationPickerField
           label="Company"
@@ -109,22 +97,27 @@ export function DealInfoProjectBillingFields({
   );
 }
 
-/** Right column: deal type and product taxonomy. */
+/** Right column: deal type, project, and product fields (order by deal type). */
 export function DealInfoDealProductFields({
   draft,
   patchDraft,
   filteredProductTypeOptions,
+  searchProjects,
   searchProducts,
   disabled = false,
   gateRequiredFields = new Set(),
-}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+}: Omit<DealInfoFieldsProps, 'searchCompanies'>) {
+  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
+  const isLinkedProductDeal = draft.type === 'EXTENSION' || draft.type === 'MAINTENANCE';
+  const showProject = isProductLike || isLinkedProductDeal;
+  const allowProjectCreate = isProductLike;
+
+  const projectPicker = useRelationPickerActions('project');
   const productPicker = useRelationPickerActions(
     'product',
     'deal-existing-product',
     draft.projectId ? { projectId: draft.projectId } : undefined,
   );
-  const isExtension = draft.type === 'EXTENSION';
-  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
@@ -138,9 +131,27 @@ export function DealInfoDealProductFields({
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'type')}
         onValueChange={(v) => {
-          if (v) patchDraft({ type: v });
+          if (v) patchDraft(buildDealTypeChangePatch(draft, v));
         }}
       />
+
+      {showProject && (
+        <RelationPickerField
+          label="Project"
+          entityKind="project"
+          value={draft.projectId}
+          selectionLabel={draft.linkedProjectLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'projectId')}
+          disabled={disabled}
+          placeholder="Search projects…"
+          icon={<FolderKanban size={12} />}
+          onSearch={searchProjects}
+          onSelect={(id, label) => patchDraft(buildDealProjectChangePatch(id, label))}
+          onClear={() => patchDraft(buildDealProjectChangePatch(null, null))}
+          onOpenSelected={projectPicker.onOpenSelected}
+          {...(allowProjectCreate ? { onCreate: projectPicker.onCreate } : {})}
+        />
+      )}
 
       {isProductLike && (
         <InlineField
@@ -183,6 +194,25 @@ export function DealInfoDealProductFields({
         />
       )}
 
+      {isLinkedProductDeal && (
+        <RelationPickerField
+          label="Existing Product"
+          entityKind="product"
+          value={draft.existingProductId}
+          selectionLabel={draft.existingProductPickLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
+          disabled={disabled}
+          placeholder={draft.projectId ? 'Search products…' : 'Select a project first…'}
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onSelect={(id, label) =>
+            patchDraft({ existingProductId: id, existingProductPickLabel: label })
+          }
+          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
+          onOpenSelected={productPicker.onOpenSelected}
+        />
+      )}
+
       {draft.type === 'MAINTENANCE' && (
         <InlineField
           variant="controlled"
@@ -193,25 +223,6 @@ export function DealInfoDealProductFields({
           icon={<Calendar size={12} />}
           disabled={disabled}
           onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
-        />
-      )}
-
-      {isExtension && (
-        <RelationPickerField
-          label="Existing Product"
-          entityKind="product"
-          value={draft.existingProductId}
-          selectionLabel={draft.existingProductPickLabel}
-          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
-          disabled={disabled}
-          placeholder="Search products…"
-          icon={<Layers size={12} />}
-          onSearch={searchProducts}
-          onSelect={(id, label) =>
-            patchDraft({ existingProductId: id, existingProductPickLabel: label })
-          }
-          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
-          {...productPicker}
         />
       )}
 

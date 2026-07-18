@@ -48,11 +48,10 @@ export function DealCombinedInfoSection({
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
         <div className="min-w-0 sm:pr-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project & billing</p>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Billing</p>
           <DealInfoProjectBillingFields
             draft={draft}
             patchDraft={patchDraft}
-            searchProjects={searchProjects}
             searchCompanies={searchCompanies}
             disabled={disabled}
             gateRequiredFields={gateRequiredFields}
@@ -64,6 +63,7 @@ export function DealCombinedInfoSection({
             draft={draft}
             patchDraft={patchDraft}
             filteredProductTypeOptions={filteredProductTypeOptions}
+            searchProjects={searchProjects}
             searchProducts={searchProducts}
             disabled={disabled}
             gateRequiredFields={gateRequiredFields}

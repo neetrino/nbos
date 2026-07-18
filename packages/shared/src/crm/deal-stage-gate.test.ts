@@ -10,6 +10,7 @@ const baseDeal = {
   productType: null as string | null,
   pmId: null as string | null,
   deadline: null as Date | null,
+  projectId: null as string | null,
   existingProductId: null as string | null,
   companyId: null as string | null,
   taxStatus: 'TAX' as string | null,
@@ -52,12 +53,46 @@ describe('getDealStageGateErrors', () => {
     expect(getDealStageGateErrors(baseDeal, 'DISCUSS_NEEDS')).toEqual([]);
   });
 
+  it('requires projectId for EXTENSION/MAINTENANCE at DISCUSS_NEEDS', () => {
+    expect(
+      getDealStageGateErrors({ ...baseDeal, type: 'EXTENSION' }, 'DISCUSS_NEEDS').map(
+        (error) => error.field,
+      ),
+    ).toContain('projectId');
+    expect(
+      getDealStageGateErrors({ ...baseDeal, type: 'MAINTENANCE' }, 'DISCUSS_NEEDS').map(
+        (error) => error.field,
+      ),
+    ).toContain('projectId');
+    expect(
+      getDealStageGateErrors(
+        { ...baseDeal, type: 'EXTENSION', projectId: 'proj-1' },
+        'DISCUSS_NEEDS',
+      ),
+    ).toEqual([]);
+  });
+
   it('requires notes for FAILED', () => {
     expect(getDealStageGateErrors(baseDeal, 'FAILED')).toHaveLength(1);
     expect(getDealStageGateErrors({ ...baseDeal, notes: 'Budget' }, 'FAILED')).toEqual([]);
   });
 
-  it('accepts DEPOSIT_AND_CONTRACT without PM for PRODUCT', () => {
+  it('accepts DEPOSIT_AND_CONTRACT without PM for PRODUCT when project is set', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
+      projectId: 'proj-1',
+      deadline: new Date(),
+    };
+    expect(getDealStageGateErrors(deal, 'DEPOSIT_AND_CONTRACT')).toEqual([]);
+  });
+
+  it('requires projectId for PRODUCT/OUTSOURCE at DEPOSIT_AND_CONTRACT', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -68,7 +103,15 @@ describe('getDealStageGateErrors', () => {
       companyId: 'company-1',
       deadline: new Date(),
     };
-    expect(getDealStageGateErrors(deal, 'DEPOSIT_AND_CONTRACT')).toEqual([]);
+    expect(getDealStageGateErrors(deal, 'DEPOSIT_AND_CONTRACT').map((e) => e.field)).toContain(
+      'projectId',
+    );
+    expect(
+      getDealStageGateErrors(
+        { ...deal, type: 'OUTSOURCE', projectId: 'proj-1' },
+        'DEPOSIT_AND_CONTRACT',
+      ),
+    ).toEqual([]);
   });
 
   it('requires PM before WON for PRODUCT', () => {
@@ -80,6 +123,7 @@ describe('getDealStageGateErrors', () => {
       productType: 'COMPANY_WEBSITE',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
+      projectId: 'proj-1',
       deadline: new Date(),
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
@@ -98,6 +142,7 @@ describe('getDealStageGateErrors', () => {
       productType: 'COMPANY_WEBSITE',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
+      projectId: 'proj-1',
       pmId: 'pm-1',
       deadline: new Date(),
     };
@@ -117,5 +162,26 @@ describe('getDealStageGateErrors', () => {
       linkedOfferAssetCount: 1,
     };
     expect(getDealStageGateErrors(deal, 'SEND_OFFER')).toEqual([]);
+  });
+
+  it('requires existingProductId for EXTENSION and MAINTENANCE at DEPOSIT_AND_CONTRACT', () => {
+    const extension = {
+      ...baseDeal,
+      type: 'EXTENSION',
+      amount: 1000,
+      paymentType: 'CLASSIC',
+      taxStatus: 'TAX_FREE',
+      projectId: 'proj-1',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(
+      getDealStageGateErrors(extension, 'DEPOSIT_AND_CONTRACT').map((error) => error.field),
+    ).toContain('existingProductId');
+    expect(
+      getDealStageGateErrors(
+        { ...extension, type: 'MAINTENANCE', existingProductId: 'prod-1' },
+        'DEPOSIT_AND_CONTRACT',
+      ),
+    ).toEqual([]);
   });
 });

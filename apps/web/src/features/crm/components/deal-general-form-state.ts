@@ -159,3 +159,39 @@ export function buildDealGeneralPatch(
 export function isDealGeneralDirty(a: DealGeneralDraft, b: DealGeneralDraft): boolean {
   return JSON.stringify(a) !== JSON.stringify(b);
 }
+
+const PRODUCT_LIKE_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
+const LINKED_PRODUCT_TYPES = new Set(['EXTENSION', 'MAINTENANCE']);
+
+/** Clears taxonomy / linked-product fields that do not apply to the next deal type. */
+export function buildDealTypeChangePatch(
+  draft: DealGeneralDraft,
+  nextType: string,
+): Partial<DealGeneralDraft> {
+  const patch: Partial<DealGeneralDraft> = { type: nextType };
+  const prevType = draft.type ?? '';
+
+  if (PRODUCT_LIKE_TYPES.has(prevType) && !PRODUCT_LIKE_TYPES.has(nextType)) {
+    patch.productCategory = null;
+    patch.productType = null;
+  }
+  if (LINKED_PRODUCT_TYPES.has(prevType) && !LINKED_PRODUCT_TYPES.has(nextType)) {
+    patch.existingProductId = null;
+    patch.existingProductPickLabel = null;
+  }
+
+  return patch;
+}
+
+/** Project change always clears Existing Product (may not belong to the new project). */
+export function buildDealProjectChangePatch(
+  projectId: string | null,
+  linkedProjectLabel: string | null,
+): Partial<DealGeneralDraft> {
+  return {
+    projectId,
+    linkedProjectLabel,
+    existingProductId: null,
+    existingProductPickLabel: null,
+  };
+}
