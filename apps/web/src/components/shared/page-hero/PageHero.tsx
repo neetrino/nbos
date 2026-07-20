@@ -5,6 +5,7 @@ import {
   HeaderModuleTitleLockedContext,
   useHeaderModuleTitle,
 } from '@/components/layout/header-context';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
@@ -64,13 +65,16 @@ function PageHeroInner({
   const hasSearch = Boolean(search);
   const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
 
+  const isMobileViewport = useIsMobileViewport();
   const { searchActive, filterPanelOpen } = usePageHeroToolbar();
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
   const toolsRowOverflow = usePageHeroToolsRowOverflow(
     toolsRowRef,
-    hasSearch && hasTrailing && isCompactToolbar,
+    hasSearch && hasTrailing && isCompactToolbar && !isMobileViewport,
   );
-  const searchExpanded = isCompactToolbar && (searchActive || toolsRowOverflow);
+  /** Mobile keeps trailing (settings / primary) visible; search just shares the row. */
+  const searchExpanded =
+    !isMobileViewport && isCompactToolbar && (searchActive || toolsRowOverflow);
   const filterOverflowClass = filterPanelOpen ? PAGE_HERO_OVERFLOW_FILTERS_OPEN : undefined;
 
   if (!hasToolbar && !secondaryTabs) {
@@ -142,7 +146,11 @@ function HeroTrailingActions({
 }) {
   return (
     <div
-      className={cn(PAGE_HERO_TRAILING_SLOT, searchExpanded && PAGE_HERO_TRAILING_COLLAPSED)}
+      className={cn(
+        PAGE_HERO_TRAILING_SLOT,
+        'max-md:shrink-0',
+        searchExpanded && PAGE_HERO_TRAILING_COLLAPSED,
+      )}
       aria-hidden={searchExpanded}
     >
       {viewMode}

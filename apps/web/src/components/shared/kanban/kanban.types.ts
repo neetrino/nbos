@@ -64,6 +64,12 @@ export interface KanbanBoardProps<T> {
 export const SCROLL_SPEED = 6;
 export const EDGE_ZONE_WIDTH = 48;
 
+/** Total horizontal margin from `mx-2` on each kanban column (`0.5rem` × 2). */
+export const KANBAN_COLUMN_X_MARGIN_TOTAL_PX = 16;
+
+/** Brief highlight after a card moves between columns (ms). */
+export const KANBAN_CARD_MOVED_HIGHLIGHT_MS = 150;
+
 export const COLOR_PALETTE = [
   '#3B82F6',
   '#2563EB',

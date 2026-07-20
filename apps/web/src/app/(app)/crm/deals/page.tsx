@@ -81,6 +81,10 @@ const DEAL_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
   },
 ];
 
+const DEAL_SEARCH_PLACEHOLDER = 'Search deals by code, name, contact, company, orders, marketing…';
+const DEAL_SEARCH_PLACEHOLDER_MOBILE = 'Search deals by code…';
+const DEAL_SEARCH_MOBILE_CLASS = '[&>div]:min-h-9';
+
 interface PendingDealTransition {
   id: string;
   status: string;
@@ -501,7 +505,10 @@ function DealsPipelinePageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
+          searchPlaceholder={
+            isMobileViewport ? DEAL_SEARCH_PLACEHOLDER_MOBILE : DEAL_SEARCH_PLACEHOLDER
+          }
+          className={isMobileViewport ? DEAL_SEARCH_MOBILE_CLASS : undefined}
           filters={showDesktopBoardChrome ? filterConfigs : undefined}
           filterValues={
             showDesktopBoardChrome
@@ -531,22 +538,36 @@ function DealsPipelinePageContent() {
         <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />
       ) : null,
       trailing: (
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <ClientsDirectorySettingsSheet
             listScope={scope}
             onListScopeChange={setScope}
             entityLabel="deals"
           />
           {!isTrashView ? (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button
+              onClick={() => setShowCreate(true)}
+              size={isMobileViewport ? 'icon-sm' : 'default'}
+              aria-label="New Deal"
+            >
               <Plus size={16} aria-hidden />
-              New Deal
+              {isMobileViewport ? null : 'New Deal'}
             </Button>
           ) : null}
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, showDesktopBoardChrome, view],
+    [
+      filterConfigs,
+      filters,
+      isMobileViewport,
+      isTrashView,
+      scope,
+      search,
+      setScope,
+      showDesktopBoardChrome,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
