@@ -61,8 +61,8 @@ export default async function LandingPage() {
     <div className="bg-background text-foreground min-h-screen">
       {/* Navbar */}
       <nav className="border-border/60 border-b">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:h-16 sm:gap-4 sm:px-6">
+          <div className="min-w-0 shrink">
             {/* eslint-disable-next-line @next/next/no-img-element -- landing logo SVG; fixed dimensions, no next/image benefit */}
             <img
               src="/logo/logo.svg"
@@ -70,31 +70,33 @@ export default async function LandingPage() {
               width={168}
               height={28}
               fetchPriority="high"
-              className="h-7 w-auto"
+              className="h-6 w-auto max-w-full sm:h-7"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
             {user ? (
               <Link
                 href="/dashboard"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-5 sm:py-2.5"
               >
-                <LayoutDashboard size={16} />
-                Go to Dashboard
+                <LayoutDashboard size={16} className="hidden sm:block" />
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">Go to Dashboard</span>
               </Link>
             ) : (
               <>
                 <Link
                   href="/sign-in"
-                  className="text-muted-foreground hover:text-foreground rounded-xl px-4 py-2 text-sm font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground rounded-xl px-2.5 py-2 text-sm font-medium transition-colors sm:px-4"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-medium transition-colors"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:px-5 sm:py-2.5"
                 >
-                  Join with invite
+                  <span className="sm:hidden">Join</span>
+                  <span className="hidden sm:inline">Join with invite</span>
                 </Link>
               </>
             )}
@@ -103,27 +105,27 @@ export default async function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center">
+      <section className="mx-auto max-w-6xl px-4 pt-16 pb-16 text-center sm:px-6 sm:pt-24 sm:pb-20">
         <div className="bg-accent/10 text-accent mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
           <Zap size={14} />
           Business Operation System
         </div>
 
-        <h1 className="mx-auto max-w-3xl text-5xl leading-[1.1] font-bold tracking-tight sm:text-6xl">
+        <h1 className="mx-auto max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl md:text-6xl">
           Run your agency
           <span className="text-accent"> smarter</span>, not harder
         </h1>
 
-        <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg leading-relaxed">
+        <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-base leading-relaxed sm:text-lg">
           NBOS unifies CRM, project management, finance, tasks, and support into a single platform
           built for digital agencies.
         </p>
 
-        <div className="mt-10 flex items-center justify-center gap-4">
+        <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
           {user ? (
             <Link
               href="/dashboard"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
             >
               Open Dashboard
               <ArrowRight size={16} />
@@ -132,14 +134,14 @@ export default async function LandingPage() {
             <>
               <Link
                 href="/sign-up"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
               >
                 Join with invite
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/sign-in"
-                className="border-border hover:bg-secondary inline-flex items-center gap-2 rounded-xl border px-7 py-3.5 text-sm font-medium transition-colors"
+                className="border-border hover:bg-secondary inline-flex items-center justify-center gap-2 rounded-xl border px-7 py-3.5 text-sm font-medium transition-colors"
               >
                 Sign In
               </Link>
@@ -148,10 +150,13 @@ export default async function LandingPage() {
         </div>
 
         {/* Highlights */}
-        <div className="mt-16 flex flex-wrap items-center justify-center gap-8">
+        <div className="mt-12 flex flex-col items-start gap-4 sm:mt-16 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-8">
           {HIGHLIGHTS.map((h) => (
-            <div key={h.text} className="text-muted-foreground flex items-center gap-2 text-sm">
-              <h.icon size={16} className="text-accent" />
+            <div
+              key={h.text}
+              className="text-muted-foreground flex items-start gap-2 text-left text-sm sm:items-center sm:text-center"
+            >
+              <h.icon size={16} className="text-accent mt-0.5 shrink-0 sm:mt-0" />
               {h.text}
             </div>
           ))}
@@ -159,13 +164,13 @@ export default async function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="border-border/60 border-t py-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="border-border/60 border-t py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
               Everything you need to operate
             </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
+            <p className="text-muted-foreground mt-4 text-base sm:text-lg">
               Six core modules that cover every aspect of your business.
             </p>
           </div>
@@ -188,19 +193,21 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-border/60 border-t py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to get started?</h2>
-          <p className="text-muted-foreground mt-4 text-lg">
+      <section className="border-border/60 border-t py-16 sm:py-24">
+        <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+            Ready to get started?
+          </h2>
+          <p className="text-muted-foreground mt-4 text-base sm:text-lg">
             {user
               ? 'Your workspace is ready. Jump into the dashboard.'
               : 'Access is by invitation. Use your invite link to activate your account, or sign in if you already have one.'}
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
+          <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
             {user ? (
               <Link
                 href="/dashboard"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
               >
                 Go to Dashboard
                 <ArrowRight size={16} />
@@ -209,14 +216,14 @@ export default async function LandingPage() {
               <>
                 <Link
                   href="/sign-up"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
                 >
                   How to join
                   <ArrowRight size={16} />
                 </Link>
                 <Link
                   href="/sign-in"
-                  className="border-border hover:bg-secondary inline-flex items-center gap-2 rounded-xl border px-7 py-3.5 text-sm font-medium transition-colors"
+                  className="border-border hover:bg-secondary inline-flex items-center justify-center gap-2 rounded-xl border px-7 py-3.5 text-sm font-medium transition-colors"
                 >
                   Sign In
                 </Link>
@@ -228,11 +235,17 @@ export default async function LandingPage() {
 
       {/* Footer */}
       <footer className="border-border/60 border-t py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm">
             {/* eslint-disable-next-line @next/next/no-img-element -- footer logo SVG; fixed dimensions, no next/image benefit */}
-            <img src="/logo/logo.svg" alt="NBOS" width={120} height={20} className="h-5 w-auto" />
-            NBOS by Neetrino
+            <img
+              src="/logo/logo.svg"
+              alt="NBOS"
+              width={120}
+              height={20}
+              className="h-5 w-auto shrink-0"
+            />
+            <span className="truncate">NBOS by Neetrino</span>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <PublicSiteFooterLinks />
