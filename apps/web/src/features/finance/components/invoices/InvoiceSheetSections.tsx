@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FileText, Building2, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
 import {
   DetailSheetEntityLinkCard,
@@ -8,10 +9,10 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
+import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
@@ -46,26 +47,21 @@ export function InvoiceOfficialSection({
 
 export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
   const relations = useEntityRelations();
+  const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const deal = invoice.order?.deal ?? null;
+  const dealId = deal?.id ?? null;
   const dealTitle = getInvoiceDealTitle(invoice.order);
+  const hasDeal = Boolean(dealId && dealTitle);
   const cards = [
-    deal && dealTitle
+    invoice.order && !hasDeal
       ? {
-          key: `deal-${deal.id}`,
-          icon: Handshake,
-          label: 'Deal',
-          title: dealTitle,
-          href: `/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`,
+          key: `order-${invoice.order.id}`,
+          icon: FileText,
+          label: 'Order',
+          title: getOrderDisplayTitle(invoice.order),
+          href: ordersListWithOpenOrderHref(invoice.order.id),
         }
-      : invoice.order
-        ? {
-            key: `order-${invoice.order.id}`,
-            icon: FileText,
-            label: 'Order',
-            title: getOrderDisplayTitle(invoice.order),
-            href: ordersListWithOpenOrderHref(invoice.order.id),
-          }
-        : null,
+      : null,
     invoice.project
       ? {
           key: `project-${invoice.project.id}`,
@@ -98,38 +94,55 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
 
   const hasCompany = Boolean(invoice.company);
   const hasContact = Boolean(invoice.contact);
-  if (cards.length === 0 && !hasCompany && !hasContact) return null;
+  if (cards.length === 0 && !hasDeal && !hasCompany && !hasContact) return null;
 
   return (
-    <DetailSheetSection title="Linked">
-      <DetailSheetEntityLinkGrid>
-        {cards.map((row) => (
-          <DetailSheetEntityLinkCard
-            key={row.key}
-            href={row.href}
-            icon={row.icon}
-            label={row.label}
-            title={row.title}
-          />
-        ))}
-        {invoice.company ? (
-          <DetailSheetEntityLinkCard
-            icon={Building2}
-            label="Company"
-            title={invoice.company.name}
-            onOpen={() => relations.openEntity('company', invoice.company!.id)}
-          />
-        ) : null}
-        {invoice.contact ? (
-          <DetailSheetEntityLinkCard
-            icon={User}
-            label="Contact"
-            title={`${invoice.contact.firstName} ${invoice.contact.lastName}`.trim()}
-            onOpen={() => relations.openEntity('contact', invoice.contact!.id)}
-          />
-        ) : null}
-      </DetailSheetEntityLinkGrid>
-    </DetailSheetSection>
+    <>
+      <DetailSheetSection title="Linked">
+        <DetailSheetEntityLinkGrid>
+          {hasDeal && dealTitle ? (
+            <DetailSheetEntityLinkCard
+              icon={Handshake}
+              label="Deal"
+              title={dealTitle}
+              onOpen={() => setDealSheetOpen(true)}
+            />
+          ) : null}
+          {cards.map((row) => (
+            <DetailSheetEntityLinkCard
+              key={row.key}
+              href={row.href}
+              icon={row.icon}
+              label={row.label}
+              title={row.title}
+            />
+          ))}
+          {invoice.company ? (
+            <DetailSheetEntityLinkCard
+              icon={Building2}
+              label="Company"
+              title={invoice.company.name}
+              onOpen={() => relations.openEntity('company', invoice.company!.id)}
+            />
+          ) : null}
+          {invoice.contact ? (
+            <DetailSheetEntityLinkCard
+              icon={User}
+              label="Contact"
+              title={`${invoice.contact.firstName} ${invoice.contact.lastName}`.trim()}
+              onOpen={() => relations.openEntity('contact', invoice.contact!.id)}
+            />
+          ) : null}
+        </DetailSheetEntityLinkGrid>
+      </DetailSheetSection>
+
+      <EntityDealSheetDeepLink
+        dealId={dealSheetOpen ? dealId : null}
+        open={dealSheetOpen && Boolean(dealId)}
+        onOpenChange={setDealSheetOpen}
+        forceNestedBackdrop
+      />
+    </>
   );
 }
 

@@ -70,7 +70,7 @@ function SignInForm() {
   }
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center px-4">
+    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -81,10 +81,10 @@ function SignInForm() {
               width={168}
               height={28}
               fetchPriority="high"
-              className="h-7 w-auto"
+              className="h-6 w-auto sm:h-7"
             />
           </div>
-          <p className="text-muted-foreground text-base font-medium">
+          <p className="text-muted-foreground text-sm font-medium sm:text-base">
             Enter your credentials and sign in
           </p>
         </div>
@@ -150,7 +150,7 @@ function SignInForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
           >
             {isSubmitting ? (
               <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />

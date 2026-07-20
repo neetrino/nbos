@@ -265,9 +265,9 @@ export function useTasksListPage() {
     setFilters({});
   }, []);
 
-  const renderBoard = () =>
+  const renderBoard = (overrideBoardView?: TasksListBoardView) =>
     createElement(TasksListKanbanViews, {
-      boardView,
+      boardView: overrideBoardView ?? boardView,
       boardScope: boardScope as BoardLifecycleScope,
       tasks: displayTasks,
       myPlanStages,

@@ -15,6 +15,7 @@ import {
 } from '@/components/shared';
 import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsSheet } from './WorkSpaceDetailSettingsSheet';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
@@ -56,9 +57,13 @@ export function WorkSpaceDetailPage() {
   const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
+  const isMobileViewport = useIsMobileViewport();
 
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
+  const showDesktopBoardChrome = !isMobileViewport && !isPlanningArea;
+  const effectiveBoardView: WorkspaceBoardView =
+    isMobileViewport && !isPlanningArea ? 'kanban' : boardView;
 
   const handleBoardViewChange = useCallback(
     (next: SetStateAction<WorkspaceBoardView>) => {
@@ -102,20 +107,20 @@ export function WorkSpaceDetailPage() {
             search={taskViewFilters.search}
             onSearchChange={taskViewFilters.onSearchChange}
             searchPlaceholder="Search by task, project, product, workspace…"
-            filters={WORKSPACE_TASK_FILTER_CONFIGS}
-            filterValues={taskViewFilters.heroFilterValues}
-            onFilterChange={taskViewFilters.onFilterChange}
-            onClearAll={taskViewFilters.onClearFilters}
+            filters={showDesktopBoardChrome ? WORKSPACE_TASK_FILTER_CONFIGS : undefined}
+            filterValues={showDesktopBoardChrome ? taskViewFilters.heroFilterValues : undefined}
+            onFilterChange={showDesktopBoardChrome ? taskViewFilters.onFilterChange : undefined}
+            onClearAll={showDesktopBoardChrome ? taskViewFilters.onClearFilters : undefined}
           />
         }
         viewMode={
-          isPlanningArea ? undefined : (
+          showDesktopBoardChrome ? (
             <ViewModeSwitch
               value={boardView}
               onChange={handleBoardViewChange}
               options={WORKSPACE_BOARD_VIEW_OPTIONS}
             />
-          )
+          ) : undefined
         }
         trailing={
           <>
@@ -156,7 +161,7 @@ export function WorkSpaceDetailPage() {
         mode="standalone"
         defaultTaskLink={defaultLink ?? undefined}
         taskViewFilters={taskViewFilters}
-        boardView={boardView}
+        boardView={effectiveBoardView}
         setBoardView={handleBoardViewChange}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}

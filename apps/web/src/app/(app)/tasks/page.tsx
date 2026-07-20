@@ -23,6 +23,7 @@ import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clien
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
 import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 
 const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
   (segment) => ({
@@ -73,8 +74,11 @@ function TasksPageContent() {
     loadingMore,
     renderBoard,
   } = useTasksListPage();
-
+  const isMobileViewport = useIsMobileViewport();
   const newTaskDisabled = creatorReady && !creatorId;
+  const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
+  const displayBoardView: TasksListBoardView =
+    isMobileViewport && !isTrashView ? 'kanban' : boardView;
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -85,23 +89,27 @@ function TasksPageContent() {
             search={search}
             onSearchChange={setSearch}
             searchPlaceholder="Search by task, project, product, workspace…"
-            filters={filterConfigs}
-            filterValues={{
-              boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-              ...filters,
-            }}
-            onFilterChange={handleFilterChange}
-            onClearAll={handleClearFilters}
+            filters={showDesktopBoardChrome ? filterConfigs : undefined}
+            filterValues={
+              showDesktopBoardChrome
+                ? {
+                    boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+                    ...filters,
+                  }
+                : undefined
+            }
+            onFilterChange={showDesktopBoardChrome ? handleFilterChange : undefined}
+            onClearAll={showDesktopBoardChrome ? handleClearFilters : undefined}
           />
         }
         viewMode={
-          isTrashView ? null : (
+          showDesktopBoardChrome ? (
             <ViewModeSwitch
               value={boardView}
               onChange={setBoardView}
               options={TASKS_VIEW_OPTIONS}
             />
-          )
+          ) : null
         }
         trailing={
           <>
@@ -161,7 +169,7 @@ function TasksPageContent() {
         />
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4">
-          {renderBoard()}
+          {renderBoard(displayBoardView)}
           {taskMeta ? (
             <TaskListLoadMoreBanner
               loadedCount={displayTasks.length}

@@ -83,11 +83,11 @@ function AcceptInviteContent() {
 
   if (tokenError || inviteError) {
     return (
-      <div className="bg-background flex min-h-screen items-center justify-center px-4">
+      <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
         <div className="w-full max-w-sm text-center">
-          <div className="bg-destructive/10 text-destructive rounded-xl p-6">
+          <div className="bg-destructive/10 text-destructive rounded-xl p-5 sm:p-6">
             <p className="font-medium">Invitation Error</p>
-            <p className="mt-1 text-sm">{tokenError ?? inviteError}</p>
+            <p className="mt-1 text-sm break-words">{tokenError ?? inviteError}</p>
           </div>
         </div>
       </div>
@@ -96,9 +96,9 @@ function AcceptInviteContent() {
 
   if (success) {
     return (
-      <div className="bg-background flex min-h-screen items-center justify-center px-4">
+      <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
         <div className="w-full max-w-sm text-center">
-          <div className="bg-accent/10 rounded-xl p-6">
+          <div className="bg-accent/10 rounded-xl p-5 sm:p-6">
             <UserCheck className="text-accent mx-auto mb-3" size={40} />
             <p className="text-foreground font-semibold">Account created!</p>
             <p className="text-muted-foreground mt-1 text-sm">Redirecting to sign in…</p>
@@ -109,18 +109,18 @@ function AcceptInviteContent() {
   }
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center px-4">
+    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
           <div className="bg-accent mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
             <span className="text-accent-foreground text-lg font-bold">N</span>
           </div>
-          <h1 className="text-foreground text-2xl font-semibold tracking-tight">
+          <h1 className="text-foreground text-xl font-semibold tracking-tight sm:text-2xl">
             Create your account
           </h1>
           {inviteInfo && (
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="text-muted-foreground mt-1 text-sm break-words">
               Invited as <span className="text-foreground font-medium">{inviteInfo.roleName}</span>
               {' · '}
               {inviteInfo.email}
@@ -129,7 +129,7 @@ function AcceptInviteContent() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 htmlFor="firstName"
@@ -233,7 +233,7 @@ function AcceptInviteContent() {
           <button
             type="submit"
             disabled={isSubmitting || !inviteInfo}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
           >
             {isSubmitting ? (
               <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
@@ -251,7 +251,7 @@ function AcceptInviteContent() {
 export default function AcceptInvitePage() {
   return (
     <Suspense
-      fallback={<div className="bg-background flex min-h-screen items-center justify-center" />}
+      fallback={<div className="bg-background flex min-h-dvh items-center justify-center" />}
     >
       <AcceptInviteContent />
     </Suspense>

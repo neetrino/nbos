@@ -10,6 +10,7 @@ import {
   ViewModeSwitch,
   type ViewModeOption,
 } from '@/components/shared';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import type { DeliveryBoardKindFilter } from './project-delivery-board-model';
 import type { DeliveryBoardClosedFiltersInput } from './delivery-board-closed-filters';
 import type { ClosedFilterOptions } from './delivery-board-closed-filters';
@@ -106,6 +107,8 @@ export function DeliveryBoardPageHero({
   projectFilterId,
   onClearProjectFilter,
 }: DeliveryBoardPageHeroProps) {
+  const isMobileViewport = useIsMobileViewport();
+  const showDesktopBoardChrome = !isMobileViewport;
   const activeHeroFilterConfigs = useDeliveryBoardActiveHeroFilterConfigs(activeFilterOptions);
   const closedHeroFilterConfigs = useDeliveryBoardClosedHeroFilterConfigs(closedFilterOptions);
 
@@ -163,29 +166,39 @@ export function DeliveryBoardPageHero({
             search={activeFilters.search}
             onSearchChange={(value) => onActiveFiltersChange({ ...activeFilters, search: value })}
             searchPlaceholder="Search by name, project, or code…"
-            filters={activeHeroFilterConfigs}
-            filterValues={activeFiltersToHeroValues(kindFilter, activeFilters)}
-            onFilterChange={handleHeroFilterChange}
-            onClearAll={handleClearAll}
+            filters={showDesktopBoardChrome ? activeHeroFilterConfigs : undefined}
+            filterValues={
+              showDesktopBoardChrome
+                ? activeFiltersToHeroValues(kindFilter, activeFilters)
+                : undefined
+            }
+            onFilterChange={showDesktopBoardChrome ? handleHeroFilterChange : undefined}
+            onClearAll={showDesktopBoardChrome ? handleClearAll : undefined}
           />
         ) : (
           <IntegratedSearchFilters
             search={closedFilters.search}
             onSearchChange={(value) => onClosedFiltersChange({ ...closedFilters, search: value })}
             searchPlaceholder="Search closed items…"
-            filters={closedHeroFilterConfigs}
-            filterValues={closedFiltersToHeroValues(kindFilter, closedFilters)}
-            onFilterChange={handleHeroFilterChange}
-            onClearAll={handleClearAll}
+            filters={showDesktopBoardChrome ? closedHeroFilterConfigs : undefined}
+            filterValues={
+              showDesktopBoardChrome
+                ? closedFiltersToHeroValues(kindFilter, closedFilters)
+                : undefined
+            }
+            onFilterChange={showDesktopBoardChrome ? handleHeroFilterChange : undefined}
+            onClearAll={showDesktopBoardChrome ? handleClearAll : undefined}
           />
         )
       }
       viewMode={
-        <ViewModeSwitch
-          value={pipelineTab === 'active' ? activeViewMode : closedViewMode}
-          onChange={pipelineTab === 'active' ? onActiveViewModeChange : onClosedViewModeChange}
-          options={PIPELINE_VIEW_OPTIONS}
-        />
+        showDesktopBoardChrome ? (
+          <ViewModeSwitch
+            value={pipelineTab === 'active' ? activeViewMode : closedViewMode}
+            onChange={pipelineTab === 'active' ? onActiveViewModeChange : onClosedViewModeChange}
+            options={PIPELINE_VIEW_OPTIONS}
+          />
+        ) : null
       }
       trailing={
         <div className="flex shrink-0 flex-wrap items-center gap-2">
