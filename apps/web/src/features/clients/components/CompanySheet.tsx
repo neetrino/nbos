@@ -229,9 +229,9 @@ export function CompanySheet({
         ) : (
           <>
             <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex min-h-9 min-w-0 flex-nowrap items-center gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <div className="inline-flex max-w-full min-w-0 flex-nowrap items-center gap-2">
                     {editingName ? (
                       <input
                         ref={nameInputRef}
@@ -267,7 +267,7 @@ export function CompanySheet({
                     ) : null}
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                <div className="flex h-9 shrink-0 items-center gap-1.5">
                   {onRemoveParticipant ? (
                     <Button
                       type="button"

@@ -200,7 +200,7 @@ export function ContactSheet({
           ) : (
             <>
               <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-                <div className="flex min-h-9 flex-nowrap items-center gap-2">
+                <div className="flex min-h-9 min-w-0 flex-nowrap items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="inline-flex max-w-full min-w-0 flex-nowrap items-center gap-2">
                       <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
