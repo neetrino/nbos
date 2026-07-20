@@ -34,6 +34,7 @@ export interface CredentialVaultSecretPillProps {
   copyLabel: string;
   mono?: boolean;
   copied?: boolean;
+  className?: string;
   onCopy: () => void;
 }
 
@@ -43,6 +44,7 @@ export function CredentialVaultSecretPill({
   copyLabel,
   mono = true,
   copied: copiedExternal = false,
+  className,
   onCopy,
 }: CredentialVaultSecretPillProps) {
   const [copiedLocal, setCopiedLocal] = useState(false);
@@ -70,7 +72,7 @@ export function CredentialVaultSecretPill({
   return (
     <button
       type="button"
-      className={cn(SECRET_PILL_CLASS, copied && SECRET_PILL_COPIED_CLASS)}
+      className={cn(SECRET_PILL_CLASS, copied && SECRET_PILL_COPIED_CLASS, className)}
       title={copyLabel}
       aria-label={copyLabel}
       onClick={handleCopy}

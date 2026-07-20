@@ -87,17 +87,22 @@ export interface CredentialVaultPreviewStripProps {
 const VAULT_PREVIEW_STATIC_ROW_CLASS =
   'flex h-7 w-full items-center gap-2 rounded-lg px-2 text-left';
 
+/** Compact centered pill width for list-view Login / Password columns. */
+const VAULT_LIST_PREVIEW_PILL_CLASS = 'mx-auto w-auto max-w-full justify-center';
+
 function VaultPreviewStaticRow({
   icon,
   value,
   mono = false,
+  className,
 }: {
   icon: React.ReactNode;
   value: string;
   mono?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={VAULT_PREVIEW_STATIC_ROW_CLASS}>
+    <div className={cn(VAULT_PREVIEW_STATIC_ROW_CLASS, className)}>
       <span className="text-muted-foreground shrink-0" aria-hidden>
         {icon}
       </span>
@@ -120,6 +125,7 @@ function renderPreviewItem(
   interactive: boolean,
   onCopyText?: (text: string) => void,
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void,
+  pillClassName?: string,
 ) {
   if (item.type === 'info') {
     return <CredentialVaultInfoPreview icon={item.icon} label={item.label} />;
@@ -128,7 +134,11 @@ function renderPreviewItem(
   if (item.type === 'copy-text') {
     if (!interactive) {
       return (
-        <VaultPreviewStaticRow icon={<VaultPreviewIcon icon={item.icon} />} value={item.value} />
+        <VaultPreviewStaticRow
+          icon={<VaultPreviewIcon icon={item.icon} />}
+          value={item.value}
+          className={pillClassName}
+        />
       );
     }
     if (!onCopyText) return null;
@@ -137,6 +147,7 @@ function renderPreviewItem(
         icon={<VaultPreviewIcon icon={item.icon} />}
         value={item.value}
         copyLabel={item.copyLabel}
+        className={pillClassName}
         onCopy={() => onCopyText(item.value)}
       />
     );
@@ -148,6 +159,7 @@ function renderPreviewItem(
         icon={<VaultPreviewIcon icon={item.icon} />}
         value={PASSWORD_MASK}
         mono
+        className={pillClassName}
       />
     );
   }
@@ -161,6 +173,7 @@ function renderPreviewItem(
       copyLabel={item.copyLabel}
       copied={secretFlashCredentialId === credential.id}
       mono
+      className={pillClassName}
       onCopy={() => onCopySecret(credential.id, credential.criticality, item.secret)}
     />
   );
@@ -185,7 +198,7 @@ export function CredentialVaultPreviewStrip({
     const item = model.items[itemIndex];
     if (!item) return null;
     return (
-      <div className={className}>
+      <div className={cn('flex justify-center', className)}>
         {renderPreviewItem(
           item,
           credential,
@@ -193,6 +206,7 @@ export function CredentialVaultPreviewStrip({
           interactive,
           onCopyText,
           onCopySecret,
+          VAULT_LIST_PREVIEW_PILL_CLASS,
         )}
       </div>
     );

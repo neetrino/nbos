@@ -8,11 +8,15 @@ import {
   ENTITY_LIST_CELL_CLASS,
   EntityListDate,
   EntityListMutedDash,
-  EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getAccessLevel } from '@/features/credentials/constants/credentials';
+import {
+  VAULT_LIST_CENTER_CELL_CLASS,
+  VAULT_LIST_CENTER_INLINE_CLASS,
+  VAULT_LIST_CENTER_STACK_CLASS,
+} from '@/features/credentials/constants/credential-vault-table-layout';
 import {
   buildCredentialVaultCardMetaBadges,
   resolvePrimaryCredentialFolder,
@@ -25,6 +29,10 @@ import type { CredentialListItem } from '@/features/credentials/types/credential
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import type { CredentialSecretField } from '@/lib/api/credentials';
+
+/** ~20 characters wide; wraps up to two lines, then ellipsis. */
+const CREDENTIAL_LIST_TITLE_CLASS =
+  'line-clamp-2 max-w-[20ch] overflow-hidden text-sm leading-snug font-bold text-ellipsis break-all';
 
 export interface CredentialVaultTableRowCellsProps {
   cred: CredentialListItem;
@@ -90,8 +98,19 @@ export function CredentialVaultTableRowCells({
 
   return (
     <>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+      <TableCell className={`${ENTITY_LIST_CELL_CLASS} align-middle`}>
         <div className="flex items-center gap-2">
+          <KeyRound size={14} className="text-muted-foreground shrink-0 self-center" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className={CREDENTIAL_LIST_TITLE_CLASS} title={cred.name}>
+              {cred.name}
+            </p>
+            {primaryFolder && folderBadge ? (
+              <div className="mt-1">
+                <CredentialVaultMetaBadge item={folderBadge} className={ENTITY_LIST_BADGE_CLASS} />
+              </div>
+            ) : null}
+          </div>
           {onSetFavorite ? (
             <Button
               type="button"
@@ -100,7 +119,7 @@ export function CredentialVaultTableRowCells({
               data-credential-vault-action
               aria-label={cred.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               className={cn(
-                'size-7 shrink-0 transition-opacity',
+                'size-7 shrink-0 self-center transition-opacity',
                 cred.isFavorite
                   ? 'text-amber-500 opacity-100 hover:text-amber-600'
                   : 'text-muted-foreground opacity-0 group-hover:opacity-100',
@@ -113,50 +132,49 @@ export function CredentialVaultTableRowCells({
               <Star className={cn('size-4', cred.isFavorite ? 'fill-current' : null)} />
             </Button>
           ) : null}
-          <KeyRound size={14} className="text-muted-foreground shrink-0" aria-hidden />
-          <EntityListPrimaryCell title={cred.name} />
         </div>
-        {primaryFolder && folderBadge ? (
-          <div className={cn('mt-1', onSetFavorite ? 'pl-16' : 'pl-6')}>
-            <CredentialVaultMetaBadge item={folderBadge} className={ENTITY_LIST_BADGE_CLASS} />
-          </div>
-        ) : null}
       </TableCell>
       <TableCell
-        className={`${ENTITY_LIST_CELL_CLASS} max-w-[180px]`}
+        className={`${VAULT_LIST_CENTER_CELL_CLASS} max-w-[180px]`}
         onClick={(e) => e.stopPropagation()}
       >
         {renderPreviewCell(0)}
       </TableCell>
       <TableCell
-        className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}
+        className={`${VAULT_LIST_CENTER_CELL_CLASS} max-w-[140px]`}
         onClick={(e) => e.stopPropagation()}
       >
         {renderPreviewCell(1)}
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {categoryBadge ? (
-          <CredentialVaultMetaBadge item={categoryBadge} className={ENTITY_LIST_BADGE_CLASS} />
-        ) : (
-          <span className="text-xs">{category.label}</span>
-        )}
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
+        <div className={VAULT_LIST_CENTER_INLINE_CLASS}>
+          {categoryBadge ? (
+            <CredentialVaultMetaBadge item={categoryBadge} className={ENTITY_LIST_BADGE_CLASS} />
+          ) : (
+            <span className="text-xs">{category.label}</span>
+          )}
+        </div>
       </TableCell>
-      <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
+      <TableCell className={`${VAULT_LIST_CENTER_CELL_CLASS} text-muted-foreground text-xs`}>
         {formatCredentialTypeLabel(cred.credentialType)}
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {criticalityBadge ? (
-          <CredentialVaultMetaBadge item={criticalityBadge} className={ENTITY_LIST_BADGE_CLASS} />
-        ) : null}
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
+        <div className={VAULT_LIST_CENTER_INLINE_CLASS}>
+          {criticalityBadge ? (
+            <CredentialVaultMetaBadge item={criticalityBadge} className={ENTITY_LIST_BADGE_CLASS} />
+          ) : null}
+        </div>
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {access && accessBadge ? (
-          <CredentialVaultMetaBadge item={accessBadge} className={ENTITY_LIST_BADGE_CLASS} />
-        ) : null}
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
+        <div className={VAULT_LIST_CENTER_INLINE_CLASS}>
+          {access && accessBadge ? (
+            <CredentialVaultMetaBadge item={accessBadge} className={ENTITY_LIST_BADGE_CLASS} />
+          ) : null}
+        </div>
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
         {cred.project ? (
-          <div className="text-muted-foreground flex items-center gap-1 text-xs">
+          <div className={`${VAULT_LIST_CENTER_INLINE_CLASS} text-muted-foreground gap-1 text-xs`}>
             <FolderKanban size={10} aria-hidden />
             {cred.project.name}
           </div>
@@ -164,14 +182,14 @@ export function CredentialVaultTableRowCells({
           <EntityListMutedDash />
         )}
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <div className="flex flex-col gap-1">
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
+        <div className={VAULT_LIST_CENTER_STACK_CLASS}>
           <EntityListDate value={cred.nextRotationAt} emptyLabel="No date" />
           {healthBadge ? (
             <StatusBadge
               label={healthBadge.label}
               variant={healthBadge.variant}
-              className={ENTITY_LIST_BADGE_CLASS}
+              className={cn(ENTITY_LIST_BADGE_CLASS, 'self-center')}
             />
           ) : null}
         </div>
