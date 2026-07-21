@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 /** Shared rail control base (close + action buttons). */
 const ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS =
-  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:bg-primary/90 active:translate-y-0 sm:rounded-l-full sm:rounded-r-none';
+  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:bg-primary/90 active:translate-y-0';
 
 /** Copy / Open / Dashboard / Close — lengthen slightly to the left on hover. */
 export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS = cn(
@@ -21,7 +21,7 @@ export const ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS =
   'flex flex-col items-end gap-1.5 overflow-visible';
 
 export const ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS =
-  'pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100 max-sm:left-full max-sm:ml-2 max-sm:translate-x-1 sm:right-full sm:mr-2 sm:-translate-x-1';
+  'pointer-events-none absolute top-1/2 right-full z-10 mr-2 -translate-y-1/2 -translate-x-1 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100';
 
 export interface EntitySheetFloatingRailProps {
   sourcePageHref: string;

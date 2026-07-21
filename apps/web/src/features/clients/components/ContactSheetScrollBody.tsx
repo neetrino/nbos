@@ -61,7 +61,7 @@ export function ContactSheetScrollBody({
 
       <div className="space-y-6">
         <DetailSheetSection title="Contact info" icon={<User size={12} />}>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
             <InlineField
               variant="controlled"
               label="First name"
@@ -106,7 +106,7 @@ export function ContactSheetScrollBody({
         </DetailSheetSection>
 
         <DetailSheetSection title="Details" icon={<User size={12} />}>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
             <InlineField
               variant="controlled"
               label="Contact type"
@@ -152,7 +152,7 @@ export function ContactSheetScrollBody({
         </DetailSheetSection>
 
         <DetailSheetSection title="Messengers" icon={<MessageCircle size={12} />}>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
             <InlineField
               variant="controlled"
               label="WhatsApp"

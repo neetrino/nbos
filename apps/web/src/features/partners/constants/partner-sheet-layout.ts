@@ -1,8 +1,9 @@
 /** Right sheet width for Partner detail. */
 export const PARTNER_SHEET_CONTENT_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[58vw]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[58vw]';
 
-export const PARTNER_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[58vw]';
+export const PARTNER_SHEET_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[58vw]';
 
 /**
  * Single-row tab strip (no wrap). Start-aligned like other entity sheets so zoom/wide

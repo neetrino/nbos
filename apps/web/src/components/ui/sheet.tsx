@@ -89,7 +89,7 @@ const SHEET_POPUP_BASE_CLASS =
   'bg-background flex flex-col gap-4 bg-clip-padding text-sm shadow-lg outline-none';
 
 const SHEET_SIDE_EDGE_CLASS =
-  'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-3/4 data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b';
+  'data-[side=bottom]:fixed data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:fixed data-[side=left]:top-[2.5vh] data-[side=left]:bottom-[2.5vh] data-[side=left]:left-0 data-[side=left]:h-auto data-[side=left]:max-h-[95vh] data-[side=left]:w-[85vw] data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=right]:fixed data-[side=right]:top-[2.5vh] data-[side=right]:right-0 data-[side=right]:bottom-0 data-[side=right]:h-auto data-[side=right]:max-h-[calc(100vh-2.5vh)] data-[side=right]:w-[85vw] data-[side=right]:rounded-tl-2xl data-[side=right]:border-l data-[side=right]:border-b-0 data-[side=top]:fixed data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b';
 
 const SHEET_FLOATING_RAIL_INSET_CLASS =
   'pointer-events-none absolute z-10 overflow-visible max-sm:top-3 max-sm:-left-12 sm:-left-11';
@@ -324,7 +324,7 @@ function SheetContent({
         <div
           {...(floatingRailVisible ? { 'data-open': '' } : { 'data-closed': '' })}
           className={cn(
-            'fixed overflow-visible max-sm:top-[calc(3.5rem+0.25rem)] max-sm:left-3 sm:translate-x-px',
+            'fixed translate-x-px overflow-visible max-sm:top-[calc(3.5rem+0.25rem)] max-sm:right-[85vw] max-sm:left-auto',
             SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
             floatingRailTopClassName,
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',

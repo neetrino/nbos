@@ -19,12 +19,12 @@ import {
   type ChecklistWorkbenchMarkHandler,
 } from '@/features/checklist/checklist-instance-workbench-item-row';
 
-/** Align floating rail with panel left edge (width: min(75vw, max-w-2xl|4xl|5xl) on right sheet). */
+/** Align floating rail with panel left edge (85vw mobile; rem-capped on larger breakpoints). */
 const CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR =
-  'right-[min(75vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]';
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px right-[min(85vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]';
 
 const CHECKLIST_WORKBENCH_PANEL_CLASS =
-  'flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl xl:max-w-5xl';
+  'flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-4xl sm:data-[side=right]:w-full xl:max-w-5xl';
 
 export interface ChecklistInstanceWorkbenchSheetProps {
   open: boolean;

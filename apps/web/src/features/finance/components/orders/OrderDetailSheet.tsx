@@ -30,9 +30,10 @@ import { ORDER_STATUSES } from './order-statuses';
 
 /** Order detail: single-column general — narrower than shared auxiliary (36rem). */
 const ORDER_DETAIL_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[30rem]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[30rem]';
 
-const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[30rem]';
+const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[30rem]';
 
 interface OrderDetailSheetProps {
   orderId: string | null;

@@ -5,7 +5,7 @@ export const SIDEBAR_WIDTH_EXPANDED_PX = 260;
 export const SIDEBAR_WIDTH_COLLAPSED_PX = 56;
 
 /**
- * Mobile nav drawer — half viewport width, flush top/bottom (no Sheet insets).
+ * Mobile nav drawer — half viewport width, flush top/bottom.
  * Uses `data-[side=left]:*` so overrides beat default Sheet left-edge insets/rounding.
  */
 export const SIDEBAR_MOBILE_SHEET_CLASS =

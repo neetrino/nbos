@@ -1,9 +1,7 @@
 'use client';
 
 import { startTransition, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu } from 'lucide-react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -11,19 +9,9 @@ import { NAV_MODULE_DEFINITIONS } from '@/lib/navigation/nav-config';
 import { applySidebarPreferences } from '@/lib/navigation/apply-sidebar-preferences';
 import { getVisibleNavModules } from '@/lib/navigation/nav-visibility';
 import { useSidebarNavigation } from '@/lib/navigation/use-sidebar-navigation';
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
-import { SidebarNavList } from './SidebarNavList';
-import { SidebarNavigationCustomizeSheet } from './SidebarNavigationCustomizeSheet';
-import { SidebarSettingsMenu } from './SidebarSettingsMenu';
-import {
-  SIDEBAR_HEADER_CLASS,
-  SIDEBAR_HEADER_HEIGHT_CLASS,
-  SIDEBAR_LOGO_MAX_WIDTH_CLASS,
-  SIDEBAR_MOBILE_SHEET_CLASS,
-  SIDEBAR_NAV_LIST_CLASS,
-  SIDEBAR_WIDTH_COLLAPSED_PX,
-  SIDEBAR_WIDTH_EXPANDED_PX,
-} from './sidebar-layout-constants';
+import { SidebarMobileSheet } from './SidebarMobileSheet';
+import { SidebarPanel } from './SidebarPanel';
+import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 
 type SidebarProps = {
   collapsed: boolean;
@@ -90,6 +78,7 @@ export function Sidebar({
     <SidebarPanel
       visuallyExpanded={visuallyExpanded}
       collapsedForHeader={!visuallyExpanded}
+      showHeaderToggle
       headerToggleLabel={
         isMobileDrawer ? 'Close navigation' : collapsed ? 'Expand sidebar' : 'Collapse sidebar'
       }
@@ -120,19 +109,10 @@ export function Sidebar({
   if (isMobileDrawer) {
     return (
       <>
-        {/* Zero-width grid placeholder — drawer is portaled via Sheet. */}
         <div className="w-0 shrink-0 overflow-hidden" aria-hidden />
-        <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
-          <SheetContent side="left" showCloseButton={false} className={SIDEBAR_MOBILE_SHEET_CLASS}>
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <SheetDescription className="sr-only">
-              Primary app modules and personal links
-            </SheetDescription>
-            <div className="border-sidebar-border bg-sidebar flex h-full flex-col overflow-x-hidden">
-              {panel}
-            </div>
-          </SheetContent>
-        </Sheet>
+        <SidebarMobileSheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
+          {panel}
+        </SidebarMobileSheet>
       </>
     );
   }
@@ -178,125 +158,5 @@ export function Sidebar({
         {panel}
       </div>
     </aside>
-  );
-}
-
-type SidebarPanelProps = {
-  visuallyExpanded: boolean;
-  collapsedForHeader: boolean;
-  headerToggleLabel: string;
-  onHeaderToggle: () => void;
-  layout: ReturnType<typeof applySidebarPreferences>;
-  personalLinks: ReturnType<typeof useSidebarNavigation>['sidebarLinks'];
-  moreExpanded: boolean;
-  onToggleMore: () => void;
-  customizeOpen: boolean;
-  onCustomizeOpenChange: (open: boolean) => void;
-  isSaving: boolean;
-  onReorder: (keys: SidebarModuleKey[]) => void;
-  onHide: (key: SidebarModuleKey) => void;
-  onRestore: (key: SidebarModuleKey) => void;
-  onCreateLink: ReturnType<typeof useSidebarNavigation>['createPersonalLink'];
-  onDeleteLink: ReturnType<typeof useSidebarNavigation>['deletePersonalLink'];
-  onOpenCustomize: () => void;
-};
-
-function SidebarPanel({
-  visuallyExpanded,
-  collapsedForHeader,
-  headerToggleLabel,
-  onHeaderToggle,
-  layout,
-  personalLinks,
-  moreExpanded,
-  onToggleMore,
-  customizeOpen,
-  onCustomizeOpenChange,
-  isSaving,
-  onReorder,
-  onHide,
-  onRestore,
-  onCreateLink,
-  onDeleteLink,
-  onOpenCustomize,
-}: SidebarPanelProps) {
-  return (
-    <>
-      <SidebarHeader
-        collapsed={collapsedForHeader}
-        toggleLabel={headerToggleLabel}
-        onToggle={onHeaderToggle}
-      />
-
-      <nav className={cn('flex-1 overflow-y-auto', SIDEBAR_NAV_LIST_CLASS)}>
-        <SidebarNavList
-          collapsed={!visuallyExpanded}
-          primaryItems={layout.primary}
-          hiddenItems={layout.hidden}
-          personalLinks={personalLinks}
-          moreExpanded={moreExpanded}
-          onToggleMore={onToggleMore}
-        />
-      </nav>
-
-      <div className="border-sidebar-border border-t p-1.5">
-        <SidebarSettingsMenu collapsed={!visuallyExpanded} onCustomizeMenu={onOpenCustomize} />
-      </div>
-
-      <SidebarNavigationCustomizeSheet
-        open={customizeOpen}
-        onOpenChange={onCustomizeOpenChange}
-        primaryItems={layout.primary}
-        hiddenItems={layout.hidden}
-        personalLinks={personalLinks}
-        isSaving={isSaving}
-        onReorder={onReorder}
-        onHide={onHide}
-        onRestore={onRestore}
-        onCreateLink={onCreateLink}
-        onDeleteLink={onDeleteLink}
-      />
-    </>
-  );
-}
-
-function SidebarHeader({
-  collapsed,
-  toggleLabel,
-  onToggle,
-}: {
-  collapsed: boolean;
-  toggleLabel: string;
-  onToggle: () => void;
-}) {
-  return (
-    <div
-      className={cn(
-        SIDEBAR_HEADER_CLASS,
-        SIDEBAR_HEADER_HEIGHT_CLASS,
-        collapsed && 'justify-center',
-      )}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={toggleLabel}
-        className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors"
-      >
-        <Menu size={20} />
-      </button>
-      {!collapsed && (
-        <Link href="/dashboard" className="flex min-w-0 flex-1 items-center overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element -- sidebar logo SVG; fixed dimensions, no next/image benefit */}
-          <img
-            src="/logo/logo.svg"
-            alt="NBOS"
-            width={120}
-            height={20}
-            className={cn('h-5 w-auto', SIDEBAR_LOGO_MAX_WIDTH_CLASS)}
-          />
-        </Link>
-      )}
-    </div>
   );
 }

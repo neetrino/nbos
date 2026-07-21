@@ -3,9 +3,10 @@
  * monitors stay compact while all portfolio tabs still fit on one row.
  */
 export const CONTACT_SHEET_CONTENT_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(58rem,calc(100vw-2.5rem))]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(58rem,calc(100vw-2.5rem))]';
 
-export const CONTACT_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(58rem,calc(100vw-2.5rem))]';
+export const CONTACT_SHEET_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[min(58rem,calc(100vw-2.5rem))]';
 
 /**
  * Full tab strip on one row. No horizontal scroll on `sm+` so Files stays visible;
