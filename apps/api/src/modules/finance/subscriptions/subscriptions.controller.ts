@@ -98,7 +98,8 @@ export class SubscriptionsController {
   async create(
     @Body()
     body: {
-      projectId: string;
+      productId: string;
+      projectId?: string;
       type: string;
       baseMonthlyAmount?: number;
       amount?: number;

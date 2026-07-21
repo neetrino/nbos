@@ -169,6 +169,8 @@ export interface ProjectSubscription {
   id: string;
   code: string;
   type: string;
+  productId?: string;
+  reminderLanguage?: string;
   baseMonthlyAmount: string;
   billingDay: number;
   status: string;

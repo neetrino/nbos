@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import type { SubscriptionReminderLanguage } from '@nbos/database';
+import { type Prisma, type SubscriptionReminderLanguage } from '@nbos/database';
 
 const REMINDER_LANGUAGES: SubscriptionReminderLanguage[] = ['HY', 'RU', 'EN'];
 
@@ -16,7 +16,7 @@ export function parseReminderLanguage(raw: string | undefined): SubscriptionRemi
 
 export function applyReminderLanguagePatch(
   raw: string | undefined,
-  updateData: { reminderLanguage?: SubscriptionReminderLanguage },
+  updateData: Prisma.SubscriptionUpdateInput,
 ): void {
   if (raw === undefined) return;
   updateData.reminderLanguage = parseReminderLanguage(raw);
