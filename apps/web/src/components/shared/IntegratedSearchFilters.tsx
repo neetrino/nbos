@@ -159,8 +159,8 @@ export function IntegratedSearchFilters({
             aria-label={searchPlaceholder}
             role="searchbox"
             aria-controls={hasFilters ? 'integrated-search-filter-panel' : undefined}
-            className="h-9 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
-          />
+            className="h-9 w-full min-w-0 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
+          />{' '}
         </div>
         {hasQuery ? (
           <Button

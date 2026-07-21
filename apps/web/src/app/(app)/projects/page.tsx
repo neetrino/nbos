@@ -24,6 +24,7 @@ import { CreateProjectHubDialog } from '@/features/projects/components/CreatePro
 import { ProjectsListTable } from '@/features/projects/components/ProjectsListTable';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import type { Project } from '@/lib/api/projects';
 
 const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
@@ -44,6 +45,7 @@ const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
 export default function ProjectsPage() {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
+  const isMobileViewport = useIsMobileViewport();
   const directory = useProjectsHubDirectory();
   const {
     activeTab,
@@ -59,6 +61,8 @@ export default function ProjectsPage() {
     error,
     refetch,
   } = directory;
+
+  const effectiveView: ProjectsHubViewMode = isMobileViewport ? 'grid' : view;
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -76,6 +80,19 @@ export default function ProjectsPage() {
             ariaLabel="Project Hub filters"
           />
         }
+        tabsEnd={
+          isMobileViewport ? (
+            <Button
+              type="button"
+              size="icon-sm"
+              className="shrink-0"
+              aria-label="Create new project"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus size={16} aria-hidden />
+            </Button>
+          ) : null
+        }
         search={
           <IntegratedSearchFilters
             search={searchInput}
@@ -84,19 +101,25 @@ export default function ProjectsPage() {
             onClearAll={() => setSearchInput('')}
           />
         }
-        viewMode={<ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />}
+        viewMode={
+          isMobileViewport ? null : (
+            <ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />
+          )
+        }
         trailing={
           <>
             <ProjectsPageSettingsSheet items={projects} />
-            <Button
-              type="button"
-              className="shrink-0 gap-2"
-              aria-label="Create new project"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus size={16} aria-hidden />
-              Project
-            </Button>
+            {isMobileViewport ? null : (
+              <Button
+                type="button"
+                className="shrink-0 gap-2"
+                aria-label="Create new project"
+                onClick={() => setCreateOpen(true)}
+              >
+                <Plus size={16} aria-hidden />
+                Project
+              </Button>
+            )}
           </>
         }
       />
@@ -122,7 +145,7 @@ export default function ProjectsPage() {
               </Button>
             }
           />
-        ) : view === 'grid' ? (
+        ) : effectiveView === 'grid' ? (
           <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
             {projects.map((project) => (
               <ProjectNavigableCard key={project.id} project={project} />

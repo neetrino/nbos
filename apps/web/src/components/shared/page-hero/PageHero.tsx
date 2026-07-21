@@ -30,6 +30,11 @@ export interface PageHeroProps {
   /** When false, does not update the app header module title (e.g. entity detail with its own title). */
   syncModuleTitle?: boolean;
   tabs?: ReactNode;
+  /**
+   * Renders on the same row as `tabs`, trailing edge (e.g. mobile primary +).
+   * When set, the tabs row takes the full first toolbar line so tools wrap below.
+   */
+  tabsEnd?: ReactNode;
   search?: ReactNode;
   secondaryTabs?: ReactNode;
   viewMode?: ReactNode;
@@ -49,6 +54,7 @@ function PageHeroInner({
   title,
   syncModuleTitle = true,
   tabs,
+  tabsEnd,
   search,
   secondaryTabs,
   viewMode,
@@ -63,7 +69,8 @@ function PageHeroInner({
 
   const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
-  const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
+  const hasTabsRow = Boolean(tabs || tabsEnd);
+  const hasToolbar = Boolean(hasTabsRow || hasSearch || hasTrailing);
 
   const isMobileViewport = useIsMobileViewport();
   const { searchActive, filterPanelOpen } = usePageHeroToolbar();
@@ -99,8 +106,20 @@ function PageHeroInner({
     >
       {hasToolbar ? (
         <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
-          {tabs ? (
-            <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
+          {hasTabsRow ? (
+            <div
+              className={cn(
+                PAGE_HERO_TABS_SLOT,
+                tabsEnd
+                  ? 'flex w-full min-w-0 flex-1 basis-full items-center gap-2 overflow-hidden'
+                  : cn(PAGE_HERO_TAB_SCROLL),
+              )}
+            >
+              {tabs ? (
+                <div className={cn(PAGE_HERO_TAB_SCROLL, tabsEnd && 'min-w-0 flex-1')}>{tabs}</div>
+              ) : null}
+              {tabsEnd ? <div className="shrink-0">{tabsEnd}</div> : null}
+            </div>
           ) : null}
           {hasSearch || trailingNode ? (
             <div
