@@ -192,6 +192,8 @@ model Product {
   whatsappGroupOperations   WhatsAppGroupOperation[]
   whatsappParticipantSyncs  ProductWhatsAppParticipantSync[]
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
+  subscriptions             Subscription[]
+  partnerServiceTerms       PartnerServiceTerm[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])

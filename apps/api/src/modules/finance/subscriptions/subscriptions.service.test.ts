@@ -18,6 +18,7 @@ function mockSubscriptionForFindById(
     endDate: null as Date | null,
     invoices: [],
     project: { id: 'p', code: 'P', name: 'Proj' },
+    product: { id: 'prod-1', name: 'Website', projectId: 'p' },
     partner: null,
     ...overrides,
   };
@@ -131,9 +132,11 @@ describe('SubscriptionsService', () => {
   describe('create', () => {
     it('generates code SUB-YYYY-NNNN', async () => {
       prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
       prisma.subscription.create.mockResolvedValue({ id: '1', code: 'SUB-2026-0001' });
       prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
       const result = await service.create({
+        productId: 'prod-1',
         projectId: 'p1',
         type: 'MAINTENANCE_ONLY',
         amount: 50000,
@@ -141,6 +144,14 @@ describe('SubscriptionsService', () => {
         startDate: '2026-01-01',
       });
       expect(result.code).toMatch(/^SUB-\d{4}-\d{4}$/);
+      expect(prisma.subscription.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            productId: 'prod-1',
+            projectId: 'p1',
+          }),
+        }),
+      );
     });
   });
 

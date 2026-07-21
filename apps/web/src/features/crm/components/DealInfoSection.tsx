@@ -9,6 +9,8 @@ import {
   RelationPickerField,
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
 import {
@@ -27,6 +29,8 @@ interface DealInfoFieldsProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  /** When true, OUTSOURCE delivery toggle is locked (Deal Won). */
+  outsourceToggleLocked?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
@@ -105,12 +109,14 @@ export function DealInfoDealProductFields({
   searchProjects,
   searchProducts,
   disabled = false,
+  outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoFieldsProps, 'searchCompanies'>) {
   const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
   const isLinkedProductDeal = draft.type === 'EXTENSION' || draft.type === 'MAINTENANCE';
   const showProject = isProductLike || isLinkedProductDeal;
   const allowProjectCreate = isProductLike;
+  const outsourceToggleDisabled = disabled || outsourceToggleLocked;
 
   const projectPicker = useRelationPickerActions('project');
   const productPicker = useRelationPickerActions(
@@ -151,6 +157,26 @@ export function DealInfoDealProductFields({
           onOpenSelected={projectPicker.onOpenSelected}
           {...(allowProjectCreate ? { onCreate: projectPicker.onCreate } : {})}
         />
+      )}
+
+      {draft.type === 'OUTSOURCE' && (
+        <div className="flex items-start gap-2 pt-1">
+          <Checkbox
+            id="deal-outsource-goes-to-delivery"
+            checked={draft.outsourceGoesToDelivery}
+            disabled={outsourceToggleDisabled}
+            onCheckedChange={(checked) => patchDraft({ outsourceGoesToDelivery: checked === true })}
+          />
+          <div className="min-w-0">
+            <Label htmlFor="deal-outsource-goes-to-delivery" className="text-sm font-medium">
+              Goes to Delivery Board
+            </Label>
+            <p className="text-muted-foreground text-xs">
+              OFF (default): Product in Hub / Finance / WhatsApp without active Starting…Transfer.
+              ON: full delivery lifecycle after Won. Locked after Won.
+            </p>
+          </div>
+        </div>
       )}
 
       {isProductLike && (

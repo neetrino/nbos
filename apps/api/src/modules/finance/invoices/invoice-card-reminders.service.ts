@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
+import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 
 /** Money statuses eligible for invoice-card reminder jobs (replaces legacy pipeline buckets). */
 const REMINDER_ELIGIBLE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
@@ -96,6 +97,8 @@ export class InvoiceCardRemindersService {
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
     if (existing) return { created: false, type: seed.type, invoiceId: seed.invoice.id };
 
+    const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, seed.invoice.id);
+
     const rule = await this.prisma.notificationRule.upsert({
       where: { code: seed.type },
       update: { enabled: true, priority: 'high' },
@@ -114,7 +117,7 @@ export class InvoiceCardRemindersService {
         sourceModule: INVOICE_REMINDER_SOURCE_MODULE,
         sourceEntityType: 'Invoice',
         sourceEntityId: seed.invoice.id,
-        payload: buildReminderPayload(seed.invoice, asOf),
+        payload: buildReminderPayload(seed.invoice, asOf, productWhatsApp),
         idempotencyKey: buildReminderIdempotencyKey(seed, asOf),
       },
     });
@@ -150,13 +153,19 @@ function isPaymentReminderMoneyStatus(moneyStatus: string) {
   );
 }
 
-function buildReminderPayload(invoice: InvoiceReminderCandidate, asOf: Date): InputJsonValue {
+function buildReminderPayload(
+  invoice: InvoiceReminderCandidate,
+  asOf: Date,
+  productWhatsApp: { productId: string; groupChatId: string } | null,
+): InputJsonValue {
   return {
     invoiceCode: invoice.code,
     amount: String(invoice.amount),
     dueDate: invoice.dueDate?.toISOString() ?? null,
     companyName: invoice.company?.name ?? null,
     asOf: asOf.toISOString(),
+    productId: productWhatsApp?.productId ?? null,
+    whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
   };
 }
 

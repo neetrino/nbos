@@ -2,6 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { BillingService } from './billing.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
+const idleProduct = {
+  deadline: null,
+  status: 'DONE',
+  deliveryResolution: 'DONE',
+  extensions: [],
+};
+
 describe('BillingService', () => {
   let service: BillingService;
   let prisma: MockPrisma;
@@ -25,7 +32,8 @@ describe('BillingService', () => {
           taxStatus: 'TAX_FREE',
           billingDay: 15,
           status: 'ACTIVE',
-          project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test', products: [] },
+          project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test' },
+          product: idleProduct,
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null);
@@ -64,7 +72,8 @@ describe('BillingService', () => {
           baseMonthlyAmount: 5000,
           billingFrequency: 'MONTHLY',
           billingDay: 15,
-          project: { id: 'proj-1', code: 'P-1', name: 'T', products: [] },
+          project: { id: 'proj-1', code: 'P-1', name: 'T' },
+          product: idleProduct,
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce({ id: 'existing-inv' });
@@ -97,7 +106,8 @@ describe('BillingService', () => {
           baseMonthlyAmount: 100,
           billingFrequency: 'MONTHLY',
           billingDay: 15,
-          project: { id: 'p1', code: 'PR-1', name: 'A', products: [] },
+          project: { id: 'p1', code: 'PR-1', name: 'A' },
+          product: idleProduct,
         },
         {
           id: 'sub-2',
@@ -107,7 +117,8 @@ describe('BillingService', () => {
           baseMonthlyAmount: 200,
           billingFrequency: 'MONTHLY',
           billingDay: 15,
-          project: { id: 'p2', code: 'PR-2', name: 'B', products: [] },
+          project: { id: 'p2', code: 'PR-2', name: 'B' },
+          product: idleProduct,
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
@@ -136,7 +147,8 @@ describe('BillingService', () => {
           taxStatus: 'TAX',
           billingDay: 15,
           status: 'ACTIVE',
-          project: { id: 'proj-1', code: 'P-2025-0001', name: 'Legacy', products: [] },
+          project: { id: 'proj-1', code: 'P-2025-0001', name: 'Legacy' },
+          product: idleProduct,
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
@@ -150,7 +162,7 @@ describe('BillingService', () => {
       });
     });
 
-    it('skips DEV_ONLY invoice when product is past deadline and undelivered', async () => {
+    it('skips DEV_ONLY invoice when linked product is past deadline and undelivered', async () => {
       const today = new Date(2026, 4, 15);
       prisma.subscription.findMany.mockResolvedValue([
         {
@@ -163,18 +175,12 @@ describe('BillingService', () => {
           taxStatus: 'TAX',
           billingDay: 15,
           status: 'ACTIVE',
-          project: {
-            id: 'proj-1',
-            code: 'P-2026-0001',
-            name: 'Late',
-            products: [
-              {
-                deadline: new Date(2026, 3, 1),
-                status: 'DEVELOPMENT',
-                deliveryResolution: null,
-                extensions: [],
-              },
-            ],
+          project: { id: 'proj-1', code: 'P-2026-0001', name: 'Late' },
+          product: {
+            deadline: new Date(2026, 3, 1),
+            status: 'DEVELOPMENT',
+            deliveryResolution: null,
+            extensions: [],
           },
         },
       ]);

@@ -39,6 +39,7 @@ const baseDraft: DealGeneralDraft = {
   pmId: null,
   pmDisplayLabel: null,
   deadline: null,
+  outsourceGoesToDelivery: false,
 };
 
 describe('buildDealTypeChangePatch', () => {
@@ -63,6 +64,18 @@ describe('buildDealTypeChangePatch', () => {
       type: 'PRODUCT',
       existingProductId: null,
       existingProductPickLabel: null,
+    });
+  });
+
+  it('clears outsourceGoesToDelivery when leaving OUTSOURCE', () => {
+    const draft: DealGeneralDraft = {
+      ...baseDraft,
+      type: 'OUTSOURCE',
+      outsourceGoesToDelivery: true,
+    };
+    expect(buildDealTypeChangePatch(draft, 'PRODUCT')).toEqual({
+      type: 'PRODUCT',
+      outsourceGoesToDelivery: false,
     });
   });
 });

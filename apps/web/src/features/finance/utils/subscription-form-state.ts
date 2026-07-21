@@ -1,6 +1,7 @@
 import type { Subscription } from '@/lib/api/finance';
 
 export interface SubscriptionFormState {
+  productId: string;
   projectId: string;
   type: string;
   baseMonthlyAmount: string;
@@ -14,6 +15,7 @@ export interface SubscriptionFormState {
 }
 
 export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
+  productId: '',
   projectId: '',
   type: 'MAINTENANCE_ONLY',
   baseMonthlyAmount: '',
@@ -28,6 +30,7 @@ export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
 
 export function subscriptionToFormState(subscription: Subscription): SubscriptionFormState {
   return {
+    productId: subscription.productId,
     projectId: subscription.projectId,
     type: subscription.type,
     baseMonthlyAmount: subscription.baseMonthlyAmount,
@@ -45,7 +48,8 @@ export function buildSubscriptionCreatePayload(form: SubscriptionFormState) {
   const amount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
   const billingDay = parseInt(form.billingDay, 10);
   return {
-    projectId: form.projectId,
+    productId: form.productId,
+    ...(form.projectId.trim() ? { projectId: form.projectId.trim() } : {}),
     type: form.type,
     baseMonthlyAmount: amount,
     billingDay,
@@ -63,6 +67,12 @@ export function buildSubscriptionUpdatePayload(form: SubscriptionFormState) {
   const billingDay = parseInt(form.billingDay, 10);
   return {
     type: form.type,
+    ...(form.productId.trim()
+      ? {
+          productId: form.productId.trim(),
+          ...(form.projectId.trim() ? { projectId: form.projectId.trim() } : {}),
+        }
+      : {}),
     baseMonthlyAmount: amount,
     billingDay,
     billingFrequency: form.billingFrequency,

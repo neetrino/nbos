@@ -45,18 +45,18 @@ export class BillingService {
             id: true,
             code: true,
             name: true,
-            products: {
+          },
+        },
+        product: {
+          select: {
+            deadline: true,
+            status: true,
+            deliveryResolution: true,
+            extensions: {
               select: {
                 deadline: true,
                 status: true,
                 deliveryResolution: true,
-                extensions: {
-                  select: {
-                    deadline: true,
-                    status: true,
-                    deliveryResolution: true,
-                  },
-                },
               },
             },
           },
@@ -77,7 +77,7 @@ export class BillingService {
         if (
           subscriptionBillingPausedForLateDelivery({
             subscriptionType: sub.type,
-            products: sub.project.products,
+            products: [sub.product],
             billingDate: now,
           })
         ) {

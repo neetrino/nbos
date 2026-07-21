@@ -201,6 +201,7 @@ describe('partner service terms ops', () => {
       clientContactId: null,
       clientCompanyId: null,
       projectId: 'pr-2',
+      productId: 'prod-2',
       serviceType: 'ADS',
       paymentModel: 'MONTHLY',
       amount: new Decimal('18000'),
@@ -212,6 +213,7 @@ describe('partner service terms ops', () => {
       createdAt: new Date('2026-05-05T00:00:00.000Z'),
       updatedAt: new Date('2026-05-05T00:00:00.000Z'),
     });
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-2', projectId: 'pr-2' });
     prisma.subscription.findFirst.mockResolvedValue({ code: 'SUB-2026-0010' });
     prisma.subscription.create.mockResolvedValue({ id: 'sub-new' });
     prisma.partnerServiceTerm.update.mockResolvedValue({
@@ -220,6 +222,7 @@ describe('partner service terms ops', () => {
       clientContactId: null,
       clientCompanyId: null,
       projectId: 'pr-2',
+      productId: 'prod-2',
       serviceType: 'ADS',
       paymentModel: 'MONTHLY',
       amount: new Decimal('18000'),
@@ -237,6 +240,7 @@ describe('partner service terms ops', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'pr-2',
+          productId: 'prod-2',
           type: 'PARTNER_SERVICE',
           partnerId: 'p1',
         }),

@@ -16,9 +16,12 @@ import {
 } from './subscription-billing-dto';
 import { mergeFinanceWhere, type FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolveSubscriptionParticipationWhere } from '../finance-module-participation.where';
+import { resolveSubscriptionProductOwnership } from './subscription-product-ownership';
 
 interface CreateSubscriptionDto {
-  projectId: string;
+  productId: string;
+  /** Optional; must match Product.projectId when provided. */
+  projectId?: string;
   type: string;
   baseMonthlyAmount?: number;
   /** @deprecated Use baseMonthlyAmount */
@@ -36,6 +39,9 @@ interface CreateSubscriptionDto {
 
 interface UpdateSubscriptionDto {
   type?: string;
+  /** Optional re-link; must match Product.projectId when projectId also sent. */
+  productId?: string;
+  projectId?: string;
   baseMonthlyAmount?: number;
   /** @deprecated Use baseMonthlyAmount */
   amount?: number;
@@ -129,6 +135,7 @@ export class SubscriptionsService {
       where: gridWhere,
       include: {
         project: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true } },
         invoices: {
           where: { type: 'SUBSCRIPTION' },
           select: {
@@ -196,6 +203,7 @@ export class SubscriptionsService {
         where: listWhere,
         include: {
           project: { select: { id: true, code: true, name: true } },
+          product: { select: { id: true, name: true } },
           partner: { select: { id: true, name: true } },
           _count: { select: { invoices: true } },
           invoices: {
@@ -227,6 +235,7 @@ export class SubscriptionsService {
       where: { id },
       include: {
         project: true,
+        product: { select: { id: true, name: true, projectId: true } },
         partner: true,
         invoices: {
           include: { payments: { select: { id: true, amount: true, paymentDate: true } } },
@@ -241,12 +250,17 @@ export class SubscriptionsService {
   }
 
   async create(data: CreateSubscriptionDto) {
+    const ownership = await resolveSubscriptionProductOwnership(this.prisma, {
+      productId: data.productId,
+      projectId: data.projectId,
+    });
     const code = await this.generateCode();
     const billing = resolveSubscriptionBillingInput(data);
     const created = await this.prisma.subscription.create({
       data: {
         code,
-        projectId: data.projectId,
+        projectId: ownership.projectId,
+        productId: ownership.productId,
         type: data.type as SubscriptionTypeEnum,
         baseMonthlyAmount: billing.baseMonthlyAmount,
         billingFrequency: billing.billingFrequency,
@@ -267,6 +281,14 @@ export class SubscriptionsService {
 
     const updateData: Prisma.SubscriptionUpdateInput = {};
     if (data.type) updateData.type = data.type as SubscriptionTypeEnum;
+    if (data.productId !== undefined) {
+      const ownership = await resolveSubscriptionProductOwnership(this.prisma, {
+        productId: data.productId,
+        projectId: data.projectId,
+      });
+      updateData.product = { connect: { id: ownership.productId } };
+      updateData.project = { connect: { id: ownership.projectId } };
+    }
     applySubscriptionBillingPatch(data, updateData);
     if (data.billingDay !== undefined) updateData.billingDay = data.billingDay;
     if (data.taxStatus) {

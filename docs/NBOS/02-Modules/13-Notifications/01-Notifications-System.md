@@ -61,7 +61,8 @@ Business Event
 Invoice reminder due
   -> Notifications creates WhatsApp delivery job
   -> NBOS calls WhatsApp Gateway (логический WhatsAppWebAdapter)
-  -> Gateway sends via WAHA to Project WhatsApp Group
+  -> Gateway sends via WAHA to Product WhatsApp Group
+  (resolve: Invoice → Subscription.productId or Order.productId; never Project-level group for client billing reminders)
   -> Messenger stores outbound message copy in External conversation
 ```
 

@@ -26,6 +26,8 @@ interface WonDealData {
   deadline: Date | null;
   existingProductId: string | null;
   maintenanceStartAt: Date | null;
+  /** OUTSOURCE only; default false. Locked after Won in DealsService.update. */
+  outsourceGoesToDelivery?: boolean;
   source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -82,15 +84,32 @@ export class DealWonHandler {
     if (deal.type === 'MAINTENANCE') {
       return this.targetsAfterMaintenanceWon(deal);
     }
+    if (deal.type === 'OUTSOURCE') {
+      return this.targetsAfterOutsourceWon(deal, whatsappSource);
+    }
     return this.targetsFromExistingProject(deal);
+  }
+
+  private async targetsAfterOutsourceWon(
+    deal: WonDealData,
+    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+  ): Promise<DealWonDriveLinkTargets> {
+    const goesToDelivery = deal.outsourceGoesToDelivery === true;
+    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+      activeDeliveryBoard: goesToDelivery,
+    });
+    await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
+    return this.toLinkTargets(deal, result.projectId, result.productId);
   }
 
   private async targetsAfterProductWon(
     deal: WonDealData,
     whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
   ): Promise<DealWonDriveLinkTargets> {
-    const result = await this.ensureProductDeliveryShell(deal, whatsappSource);
-    await this.createProductSubscriptionIfReady(deal, result.projectId);
+    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+      activeDeliveryBoard: true,
+    });
+    await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
     if (result.productId) {
       await this.createMaintenanceDealIfMissing(deal, result.projectId, result.productId);
     }
@@ -142,9 +161,10 @@ export class DealWonHandler {
   private async ensureProductDeliveryShell(
     deal: WonDealData,
     whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    options: { activeDeliveryBoard: boolean },
   ): Promise<ProductWonResult> {
     const projectId = await this.ensureProject(deal);
-    const productId = await this.ensureProduct(deal, projectId);
+    const productId = await this.ensureProduct(deal, projectId, options);
     await this.syncProjectTeamFromDealShell(deal, projectId, productId);
     if (productId) {
       await this.enqueueProductWhatsApp(productId, deal.id, whatsappSource);
@@ -244,7 +264,11 @@ export class DealWonHandler {
     return project.id;
   }
 
-  private async ensureProduct(deal: WonDealData, projectId: string): Promise<string | null> {
+  private async ensureProduct(
+    deal: WonDealData,
+    projectId: string,
+    options: { activeDeliveryBoard: boolean },
+  ): Promise<string | null> {
     if (!deal.productCategory || !deal.productType) return null;
 
     const linkedOrder = await this.prisma.order.findFirst({
@@ -261,6 +285,13 @@ export class DealWonHandler {
         productType: deal.productType as Prisma.ProductCreateInput['productType'],
         pmId: deal.pmId ?? undefined,
         deadline: deal.deadline ?? undefined,
+        ...(options.activeDeliveryBoard
+          ? {}
+          : {
+              status: 'DONE' as const,
+              deliveryStage: null,
+              deliveryResolution: 'DONE' as const,
+            }),
       },
     });
 
@@ -275,14 +306,24 @@ export class DealWonHandler {
     return product.id;
   }
 
-  private async createProductSubscriptionIfReady(deal: WonDealData, projectId: string) {
+  private async createProductSubscriptionIfReady(
+    deal: WonDealData,
+    projectId: string,
+    productId: string | null,
+  ) {
     if (deal.paymentType !== 'SUBSCRIPTION') return;
+    if (!productId) {
+      this.logger.warn(
+        `Deal ${deal.code}: subscription skipped — productId missing after product shell`,
+      );
+      return;
+    }
 
     const firstPaidInvoice = this.getFirstPaidInvoice(deal);
     if (!firstPaidInvoice) return;
 
     const existing = await this.prisma.subscription.findFirst({
-      where: { projectId, type: 'DEV_AND_MAINTENANCE' },
+      where: { productId, type: 'DEV_AND_MAINTENANCE' },
       select: { id: true },
     });
     if (existing) return;
@@ -292,6 +333,7 @@ export class DealWonHandler {
       data: {
         code: await this.generateSubscriptionCode(),
         projectId,
+        productId,
         type: 'DEV_AND_MAINTENANCE',
         baseMonthlyAmount: Number(deal.amount ?? firstPaidInvoice.amount),
         billingDay: billingStartDate.getDate(),
@@ -340,13 +382,30 @@ export class DealWonHandler {
       this.logger.warn(`Maintenance deal ${deal.code} won without project or amount — skipping`);
       return null;
     }
+    if (!deal.existingProductId) {
+      this.logger.warn(
+        `Maintenance deal ${deal.code} won without existingProductId — subscription not created`,
+      );
+      return this.toLinkTargets(deal, deal.projectId, null);
+    }
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: deal.existingProductId },
+      select: { id: true, projectId: true },
+    });
+    if (!product || product.projectId !== deal.projectId) {
+      this.logger.warn(
+        `Maintenance deal ${deal.code}: existingProductId invalid for project — subscription not created`,
+      );
+      return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+    }
 
     const existing = await this.prisma.subscription.findFirst({
-      where: { projectId: deal.projectId, type: 'MAINTENANCE_ONLY' },
+      where: { productId: product.id, type: 'MAINTENANCE_ONLY' },
       select: { id: true },
     });
     if (existing) {
-      return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+      return this.toLinkTargets(deal, deal.projectId, product.id);
     }
 
     const billingStartDate = deal.maintenanceStartAt ?? new Date();
@@ -354,6 +413,7 @@ export class DealWonHandler {
       data: {
         code: await this.generateSubscriptionCode(),
         projectId: deal.projectId,
+        productId: product.id,
         type: 'MAINTENANCE_ONLY',
         baseMonthlyAmount: Number(deal.amount),
         billingDay: billingStartDate.getDate(),
@@ -362,7 +422,7 @@ export class DealWonHandler {
         status: 'PENDING',
       },
     });
-    return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+    return this.toLinkTargets(deal, deal.projectId, product.id);
   }
 
   private async handleExtensionWon(deal: WonDealData): Promise<string | null> {

@@ -434,7 +434,42 @@ After a main `PRODUCT` deal reaches `WON`, NBOS should auto-create a linked `MAI
 - leaving commercial variables such as maintenance amount and final offer empty;
 - ready for Seller to continue commercial discussion later.
 
-## OUTSOURCE and other future types
+## OUTSOURCE
+
+`Deal Type = OUTSOURCE` stays OUTSOURCE (it is not converted to PRODUCT). A Product entity is still created so Finance / Subscription / WhatsApp have a stable `productId`.
+
+### Field: `outsourceGoesToDelivery`
+
+| Property | Rule                                                     |
+| -------- | -------------------------------------------------------- |
+| Type     | Boolean on Deal                                          |
+| Default  | `false` (OFF)                                            |
+| Editable | Only while deal is **not** `WON`; after Won — **locked** |
+| UI       | Visible when `type = OUTSOURCE`                          |
+
+### Stages and gates
+
+Same deposit-based path as PRODUCT / EXTENSION for commercial stages:
+
+- offer / contract / first invoice created before deposit stage progression as in the shared matrix above;
+- `Deal Won` requires first invoice **paid** (or privileged override), unless explicitly excepted later.
+
+Required commercial fields for OUTSOURCE before Won follow PRODUCT-like taxonomy where applicable (`productCategory` / `productType`, deadline as delivery deadline when delivery is ON).
+
+### Downstream after `WON`
+
+| `outsourceGoesToDelivery` | Downstream                                                                                                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ON**                    | Order + Project + Product → **active Delivery Board** (`Starting → Development → QA → Transfer`) + WhatsApp Product group + Finance (Invoice / Subscription as payment type allows) |
+| **OFF** (default)         | Order + Project + Product **without** active Delivery Board (post-delivery style: product stays in Project Hub + Finance + WhatsApp; must not appear on active Development kanban)  |
+
+In both modes NBOS ensures a **Product WhatsApp Group** for the created Product.
+
+### Subscription / Finance
+
+If payment type is Subscription (or Finance later attaches a sub), Subscription is owned by the Outsource Product (`productId` required). Billing deadline auto-pause applies only when subscription type is DEV_ONLY / DEV_AND_MAINTENANCE and only against **that** Product (+ its Extensions).
+
+## Other future types
 
 Each future type must explicitly define:
 

@@ -84,6 +84,7 @@ describe('DealWonHandler', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'proj-1',
+          productId: 'product-1',
           type: 'DEV_AND_MAINTENANCE',
           status: 'ACTIVE',
           baseMonthlyAmount: 5000,
@@ -201,6 +202,7 @@ describe('DealWonHandler', () => {
   });
 
   it('creates pending maintenance subscription for MAINTENANCE deal', async () => {
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-maint', projectId: 'proj-1' });
     prisma.subscription.findFirst.mockResolvedValue(null);
     prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
 
@@ -211,6 +213,7 @@ describe('DealWonHandler', () => {
         projectId: 'proj-1',
         productCategory: null,
         productType: null,
+        existingProductId: 'prod-maint',
         maintenanceStartAt: new Date('2026-05-15'),
       }),
     });
@@ -219,11 +222,71 @@ describe('DealWonHandler', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'proj-1',
+          productId: 'prod-maint',
           type: 'MAINTENANCE_ONLY',
           status: 'PENDING',
           baseMonthlyAmount: 80000,
           billingDay: 15,
           taxStatus: 'TAX',
+        }),
+      }),
+    );
+  });
+
+  it('does not create maintenance subscription without existingProductId', async () => {
+    await handler.handle({
+      ...productDeal({
+        type: 'MAINTENANCE',
+        amount: 80000,
+        projectId: 'proj-1',
+        productCategory: null,
+        productType: null,
+        existingProductId: null,
+      }),
+    });
+
+    expect(prisma.subscription.create).not.toHaveBeenCalled();
+  });
+
+  it('creates outsource product without active delivery board when toggle is OFF', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-out' });
+
+    await handler.handle(
+      productDeal({
+        type: 'OUTSOURCE',
+        outsourceGoesToDelivery: false,
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'DONE',
+          deliveryStage: null,
+          deliveryResolution: 'DONE',
+        }),
+      }),
+    );
+    expect(productWhatsApp.ensureGroupForProduct).toHaveBeenCalledWith(
+      'product-out',
+      expect.objectContaining({ source: 'DEAL_WON' }),
+    );
+  });
+
+  it('creates outsource product on active delivery board when toggle is ON', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-out-on' });
+
+    await handler.handle(
+      productDeal({
+        type: 'OUTSOURCE',
+        outsourceGoesToDelivery: true,
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({
+          deliveryResolution: 'DONE',
         }),
       }),
     );

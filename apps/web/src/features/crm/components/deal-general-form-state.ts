@@ -38,6 +38,7 @@ export interface DealGeneralDraft {
   pmId: string | null;
   pmDisplayLabel: string | null;
   deadline: string | null;
+  outsourceGoesToDelivery: boolean;
 }
 
 /** Payload allowed by PUT /deals/:id (includes ids not on Deal view model). */
@@ -90,6 +91,7 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     pmId: deal.pmId,
     pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
     deadline: toDateInputValue(deal.deadline),
+    outsourceGoesToDelivery: deal.outsourceGoesToDelivery === true,
   };
 }
 
@@ -152,6 +154,9 @@ export function buildDealGeneralPatch(
   if (dateOrNull(draft.deadline) !== dateOrNull(snap.deadline)) {
     out.deadline = dateOrNull(draft.deadline);
   }
+  if (draft.outsourceGoesToDelivery !== snap.outsourceGoesToDelivery) {
+    out.outsourceGoesToDelivery = draft.outsourceGoesToDelivery;
+  }
 
   return out;
 }
@@ -174,6 +179,9 @@ export function buildDealTypeChangePatch(
   if (PRODUCT_LIKE_TYPES.has(prevType) && !PRODUCT_LIKE_TYPES.has(nextType)) {
     patch.productCategory = null;
     patch.productType = null;
+  }
+  if (prevType === 'OUTSOURCE' && nextType !== 'OUTSOURCE') {
+    patch.outsourceGoesToDelivery = false;
   }
   if (LINKED_PRODUCT_TYPES.has(prevType) && !LINKED_PRODUCT_TYPES.has(nextType)) {
     patch.existingProductId = null;

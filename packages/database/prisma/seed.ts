@@ -1180,10 +1180,14 @@ async function main() {
   // ── Subscriptions ──────────────────────────────────────────
   const sub1 = await prisma.subscription.upsert({
     where: { code: 'SUB-2026-0001' },
-    update: {},
+    update: {
+      productId: prod1.id,
+      projectId: project1.id,
+    },
     create: {
       code: 'SUB-2026-0001',
       projectId: project1.id,
+      productId: prod1.id,
       type: 'DEV_AND_MAINTENANCE',
       baseMonthlyAmount: 150000,
       billingDay: 1,
@@ -1194,10 +1198,14 @@ async function main() {
   });
   await prisma.subscription.upsert({
     where: { code: 'SUB-2026-0002' },
-    update: {},
+    update: {
+      productId: prod4.id,
+      projectId: project2.id,
+    },
     create: {
       code: 'SUB-2026-0002',
       projectId: project2.id,
+      productId: prod4.id,
       type: 'MAINTENANCE_ONLY',
       baseMonthlyAmount: 80000,
       billingDay: 15,

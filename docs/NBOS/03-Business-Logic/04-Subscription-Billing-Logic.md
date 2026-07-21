@@ -29,20 +29,22 @@ Flow:
 - Finance подтверждает оплату
 - Deal переводится в `Deal Won`
 - создаются Order / Project / Product
-- subscription создаётся сразу в `Active`
+- subscription создаётся сразу в `Active` с обязательным `productId` (+ denormalized `projectId`)
 
 Правило:
 
 - первый оплаченный invoice одновременно считается и стартом проекта, и первой оплаченной subscription-итерацией;
 - следующий monthly invoice должен быть создан на ту же дату следующего месяца;
-- месяц первого invoice должен быть виден в Subscription Grid как уже оплаченный.
+- месяц первого invoice должен быть виден в Subscription Grid как уже оплаченный;
+- idempotency auto-create: `productId` + type.
 
 ### 2. `MAINTENANCE` deal
 
 Flow:
 
 - maintenance deal переводится в `Deal Won`
-- subscription создаётся сразу в `Pending`
+- `existingProductId` обязателен — без Product subscription не создаётся
+- subscription создаётся сразу в `Pending` на этом Product
 - `start_date` ещё не подтверждён
 - Finance потом вручную назначает `start_date` и переводит подписку в `Active`
 
@@ -54,7 +56,8 @@ Flow:
 
 | Поле               | Описание                                           | Пример             |
 | ------------------ | -------------------------------------------------- | ------------------ |
-| **Проект**         | Привязка к проекту в Projects Hub                  | «BrandX — Website» |
+| **Product**        | Обязательный owner подписки                        | Website Product    |
+| **Проект**         | Denormalized = Product.projectId                   | «BrandX — Website» |
 | **Сумма**          | Ежемесячная сумма платежа                          | 180 000 ₽          |
 | **Billing Day**    | День месяца для выставления счёта                  | 5-е число          |
 | **Tax Status**     | Налогооблагаемый / Не налогооблагаемый             | Tax / Tax-Free     |
@@ -266,7 +269,7 @@ Project Beta:
 
 ### Что считается просрочкой
 
-1. У связанного **`Product`** или **`Extension`** на проекте заполнен **`deadline`** (дата сдачи, согласованная в CRM / карточке).
+1. У **связанного Product этой Subscription** (и его Extensions) заполнен **`deadline`** (дата сдачи, согласованная в CRM / карточке). Пауза **не** смотрит на другие Products того же Project.
 2. Дата запуска цикла биллинга (**`billingDate`**, обычно «сегодня» при `runMonthlyBilling`) по календарю **строго позже** дня `deadline` (`billingDate` > `deadline` по дате без времени).
 3. Единица доставки **ещё не завершена и не закрыта как отменённая**:
    - не `DONE` по `status` / `deliveryResolution` для Product;
@@ -279,6 +282,7 @@ Project Beta:
 - Ежемесячный прогон создания счетов подписки **пропускает** создание `Invoice` на этот месяц для подписки, попадающей под правила выше.
 - В ответе операции фиксируется список пропусков (`skippedLateDelivery`: код подписки + код проекта) для аудита и UI.
 - После перехода Product/Extension в успешный терминал (`DONE`) или после переноса дедлайна (данные в БД) **следующий** цикл биллинга снова создаёт счёт при обычных условиях.
+- Client reminders по Invoice/Subscription идут в **Product WhatsApp Group** (`subscription.productId`), не в «project group».
 
 ### «Штраф» в смысле канона
 
@@ -373,7 +377,7 @@ Project Beta:
 
 ## Правила и ограничения
 
-1. **Каждая подписка привязана к проекту** — не может существовать без проекта
+1. **Каждая подписка привязана к Product** — `productId` обязателен; `projectId` denormalized и должен совпадать с Product
 2. **Tax Status наследуется** — Invoice берёт статус из Subscription
 3. **Сумма может меняться** — но история изменений сохраняется
 4. **Invoice создаётся автоматически** — вручную создавать не нужно
@@ -381,3 +385,5 @@ Project Beta:
 6. **Уведомления не отправляются оплаченным** — сначала отметить Paid, потом запускать автоматизацию
 7. **Предоплата возможна** — клиент может оплатить несколько месяцев вперёд
 8. **Subscription Grid — источник правды** для прогноза ежемесячного дохода
+9. **Автопауза deadline** смотрит только Product (+ Extensions) этой Subscription, не весь Project
+10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`

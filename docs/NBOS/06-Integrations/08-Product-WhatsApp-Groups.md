@@ -27,6 +27,11 @@ Product resolution order:
 If unresolved → `409 DEAL_PRODUCT_NOT_READY`.  
 Never `Project.products[0]`. Never create Product from this action.
 
+## Client billing reminders
+
+Subscription / related Invoice payment reminders resolve the WhatsApp group via **`subscription.productId`** (Product WhatsApp Group).  
+NBOS never uses a Project-level group for these client billing messages.
+
 ## Participants
 
 Initial (when phones are valid):

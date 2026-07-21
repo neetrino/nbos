@@ -1,7 +1,8 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import {
   assertEntityIsActive,
@@ -109,10 +110,13 @@ interface UpdatePartnerDto {
 
 @Injectable()
 export class PartnersService {
+  private readonly logger = new Logger(PartnersService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly productWhatsApp: ProductWhatsAppGroupService,
   ) {}
 
   private assertDefaultPercentInRange(value: number): number {
@@ -466,7 +470,21 @@ export class PartnersService {
     input: CreateFinanceFromServiceTermInput,
   ): Promise<PartnerServiceTermWireDto> {
     await this.assertPartnerIsActiveForMutation(partnerId);
-    return createFinanceFromPartnerServiceTerm(this.prisma, partnerId, termId, input);
+    const term = await createFinanceFromPartnerServiceTerm(this.prisma, partnerId, termId, input);
+    if (term.productId) {
+      try {
+        await this.productWhatsApp.ensureGroupForProduct(term.productId, {
+          source: 'MANUAL_RETRY',
+        });
+      } catch (error) {
+        this.logger.warn(
+          `WhatsApp ensure for partner service product ${term.productId} failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+    return term;
   }
 
   async getStats() {

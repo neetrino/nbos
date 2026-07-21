@@ -33,11 +33,10 @@ Notifications
 
 Главный сценарий - WhatsApp Groups:
 
-- Project group;
-- Maintenance group;
-- Support discussion;
-- Finance reminders;
-- Accounting WhatsApp group.
+- **Product WhatsApp Group** (one Product → one group) — client billing / subscription reminders resolve via `subscription.productId` or Order.productId;
+- Maintenance / support discussion groups as product-scoped where applicable;
+- Accounting WhatsApp group;
+- Finance reminders to the Product group (not a project-level group).
 
 1:1 WhatsApp is secondary.
 

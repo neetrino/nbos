@@ -15,6 +15,7 @@ export interface Subscription {
   id: string;
   code: string;
   projectId: string;
+  productId: string;
   type: string;
   baseMonthlyAmount: string;
   billingFrequency: string;
@@ -26,6 +27,7 @@ export interface Subscription {
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  product?: { id: string; name: string } | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   partner?: { id: string; name: string } | null;
@@ -41,7 +43,8 @@ export interface Subscription {
 }
 
 export interface CreateSubscriptionPayload {
-  projectId: string;
+  productId: string;
+  projectId?: string;
   type: string;
   baseMonthlyAmount: number;
   billingDay: number;
@@ -55,6 +58,8 @@ export interface CreateSubscriptionPayload {
 
 export interface UpdateSubscriptionPayload {
   type?: string;
+  productId?: string;
+  projectId?: string;
   baseMonthlyAmount?: number;
   billingFrequency?: string;
   billingDay?: number;

@@ -254,7 +254,10 @@ enum SubscriptionBillingFrequencyEnum {
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
+  /// Denormalized from Product.projectId; must match Product on create/update.
   projectId  String                 @map("project_id")
+  /// Required ownership: Project → Product → Subscription → Invoice → Payment.
+  productId  String                 @map("product_id")
   type       SubscriptionTypeEnum
   baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
   billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
@@ -269,11 +272,14 @@ model Subscription {
   updatedAt  DateTime               @updatedAt @map("updated_at")
 
   project             Project              @relation(fields: [projectId], references: [id])
+  product             Product              @relation(fields: [productId], references: [id])
   partner             Partner?             @relation(fields: [partnerId], references: [id])
   invoices            Invoice[]
   partnerAccruals     PartnerAccrual[]
   partnerServiceTerms PartnerServiceTerm[]
 
+  @@index([productId])
+  @@index([projectId])
   @@map("subscriptions")
 }
 

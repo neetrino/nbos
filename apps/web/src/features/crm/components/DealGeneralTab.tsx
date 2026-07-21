@@ -149,6 +149,7 @@ export function DealGeneralTab({
             searchProducts={searchProducts}
             searchCompanies={searchCompanies}
             disabled={formDisabled}
+            outsourceToggleLocked={deal.status === 'WON'}
             gateRequiredFields={gateRequiredFields}
           />
           <DealOfferContractSection

@@ -23,6 +23,7 @@ interface DealCombinedInfoSectionProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  outsourceToggleLocked?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
@@ -34,6 +35,7 @@ export function DealCombinedInfoSection({
   searchProducts,
   searchCompanies,
   disabled = false,
+  outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: DealCombinedInfoSectionProps) {
   const { open, onOpenChange } = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.DEAL_PROJECT);
@@ -66,6 +68,7 @@ export function DealCombinedInfoSection({
             searchProjects={searchProjects}
             searchProducts={searchProducts}
             disabled={disabled}
+            outsourceToggleLocked={outsourceToggleLocked}
             gateRequiredFields={gateRequiredFields}
           />
         </div>
