@@ -14,6 +14,10 @@ import {
   applySubscriptionBillingPatch,
   resolveSubscriptionBillingInput,
 } from './subscription-billing-dto';
+import {
+  applyReminderLanguagePatch,
+  parseReminderLanguage,
+} from './subscription-reminder-language';
 import { mergeFinanceWhere, type FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolveSubscriptionParticipationWhere } from '../finance-module-participation.where';
 import { resolveSubscriptionProductOwnership } from './subscription-product-ownership';
@@ -33,6 +37,8 @@ interface CreateSubscriptionDto {
   /** @deprecated Use billingStartDate */
   startDate?: string;
   notificationsEnabled?: boolean;
+  /** HY | RU | EN — client WhatsApp payment reminder language (default HY). */
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string;
 }
@@ -52,6 +58,7 @@ interface UpdateSubscriptionDto {
   /** @deprecated Use billingStartDate */
   startDate?: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string | null;
 }
@@ -269,6 +276,7 @@ export class SubscriptionsService {
           (data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set']) ?? 'TAX',
         billingStartDate: billing.billingStartDate,
         notificationsEnabled: billing.notificationsEnabled,
+        reminderLanguage: parseReminderLanguage(data.reminderLanguage),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         partnerId: data.partnerId,
       },
@@ -290,6 +298,7 @@ export class SubscriptionsService {
       updateData.project = { connect: { id: ownership.projectId } };
     }
     applySubscriptionBillingPatch(data, updateData);
+    applyReminderLanguagePatch(data.reminderLanguage, updateData);
     if (data.billingDay !== undefined) updateData.billingDay = data.billingDay;
     if (data.taxStatus) {
       updateData.taxStatus =

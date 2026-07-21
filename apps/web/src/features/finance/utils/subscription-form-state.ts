@@ -1,4 +1,5 @@
 import type { Subscription } from '@/lib/api/finance';
+import { DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE } from '@/features/finance/constants/finance';
 
 export interface SubscriptionFormState {
   productId: string;
@@ -10,6 +11,7 @@ export interface SubscriptionFormState {
   billingStartDate: string;
   taxStatus: string;
   notificationsEnabled: boolean;
+  reminderLanguage: string;
   endDate: string;
   partnerId: string;
 }
@@ -24,6 +26,7 @@ export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
   billingStartDate: '',
   taxStatus: 'TAX',
   notificationsEnabled: true,
+  reminderLanguage: DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE,
   endDate: '',
   partnerId: '',
 };
@@ -39,6 +42,7 @@ export function subscriptionToFormState(subscription: Subscription): Subscriptio
     billingStartDate: subscription.billingStartDate.slice(0, 10),
     taxStatus: subscription.taxStatus,
     notificationsEnabled: subscription.notificationsEnabled,
+    reminderLanguage: subscription.reminderLanguage ?? DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE,
     endDate: subscription.endDate ? subscription.endDate.slice(0, 10) : '',
     partnerId: subscription.partner?.id ?? '',
   };
@@ -57,6 +61,7 @@ export function buildSubscriptionCreatePayload(form: SubscriptionFormState) {
     taxStatus: form.taxStatus,
     billingStartDate: new Date(form.billingStartDate).toISOString(),
     notificationsEnabled: form.notificationsEnabled,
+    reminderLanguage: form.reminderLanguage,
     ...(form.endDate.trim() ? { endDate: new Date(form.endDate).toISOString() } : {}),
     ...(form.partnerId.trim() ? { partnerId: form.partnerId.trim() } : {}),
   };
@@ -79,6 +84,7 @@ export function buildSubscriptionUpdatePayload(form: SubscriptionFormState) {
     taxStatus: form.taxStatus,
     billingStartDate: new Date(form.billingStartDate).toISOString(),
     notificationsEnabled: form.notificationsEnabled,
+    reminderLanguage: form.reminderLanguage,
     ...(form.endDate.trim() ? { endDate: new Date(form.endDate).toISOString() } : { endDate: '' }),
     partnerId: form.partnerId.trim() ? form.partnerId.trim() : null,
   };

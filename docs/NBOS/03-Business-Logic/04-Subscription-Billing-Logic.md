@@ -350,27 +350,36 @@ Project Beta:
 
 ## Автоматизация уведомлений
 
-### Типы уведомлений
+### Client WhatsApp payment reminders (canon)
 
-| Событие         | Канал    | Получатель          | Текст (шаблон)                                                        |
-| --------------- | -------- | ------------------- | --------------------------------------------------------------------- |
-| Invoice создан  | WhatsApp | Клиент              | «Здравствуйте! Ваш счёт на [сумма] выставлен. Оплатите до [дата].»    |
-| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]»           |
-| Просрочка (1-я) | WhatsApp | Клиент              | «Напоминаем: оплата [сумма] за [проект] просрочена.»                  |
-| Просрочка (2-я) | WhatsApp | Клиент              | «Оплата за [проект] не получена. Возможна приостановка обслуживания.» |
-| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                                |
+Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yerevan**.
 
-### Расписание уведомлений
+| Offset | When (Yerevan calendar) | Event code                             | Idempotency      |
+| ------ | ----------------------- | -------------------------------------- | ---------------- |
+| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice |
+| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice |
+
+- Language: `Subscription.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
+- Placeholders: `{productName}` = `Product.name`; `{month}` = localized `coverageStartMonth`.
+- No catch-up: if the invoice is created after the D-10 day, D-10 is skipped; D-2 still fires on its day.
+- Tax + official request not sent → block client payment reminders (accountant path separate).
+- Target: Product WhatsApp Group via `subscription.productId`.
+
+### Типы уведомлений (смежные)
+
+| Событие         | Канал    | Получатель          | Текст (шаблон)                                                              |
+| --------------- | -------- | ------------------- | --------------------------------------------------------------------------- |
+| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]» (Tax)           |
+| D-10 / D-2      | WhatsApp | Product group       | Subscription payment reminder (HY/RU/EN templates; see Subscriptions canon) |
+| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                                      |
+
+### Расписание (payment reminders)
 
 ```
-День B-5:  Invoice создан → уведомление бухгалтеру
-День B-4:  Уведомление клиенту (WhatsApp)
-День B:    Billing Day (дедлайн оплаты)
-День B+1:  1-е уведомление о просрочке
-День B+3:  2-е уведомление о просрочке
-День B+7:  Эскалация → Финансовый директор решает
-
-(B = Billing Day)
+dueDate − 10:  D-10 client WhatsApp (once)
+dueDate − 2:   D-2 client WhatsApp (once)
+dueDate:       pay-by deadline
+(Tax official-request internal reminders remain separate when request not sent)
 ```
 
 ---
@@ -386,4 +395,4 @@ Project Beta:
 7. **Предоплата возможна** — клиент может оплатить несколько месяцев вперёд
 8. **Subscription Grid — источник правды** для прогноза ежемесячного дохода
 9. **Автопауза deadline** смотрит только Product (+ Extensions) этой Subscription, не весь Project
-10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`
+10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`; D-10/D-2 vs `dueDate`; язык `reminderLanguage`

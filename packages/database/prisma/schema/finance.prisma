@@ -251,6 +251,13 @@ enum SubscriptionBillingFrequencyEnum {
   CUSTOM
 }
 
+/// Language for client WhatsApp subscription payment reminders (D-10 / D-2).
+enum SubscriptionReminderLanguage {
+  HY
+  RU
+  EN
+}
+
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
@@ -265,6 +272,8 @@ model Subscription {
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
   billingStartDate DateTime         @map("billing_start_date")
   notificationsEnabled Boolean      @default(true) @map("notifications_enabled")
+  /// Client WhatsApp payment reminder language (Product group D-10 / D-2).
+  reminderLanguage SubscriptionReminderLanguage @default(HY) @map("reminder_language")
   endDate    DateTime?              @map("end_date")
   status     SubscriptionStatusEnum @default(ACTIVE)
   partnerId  String?                @map("partner_id")

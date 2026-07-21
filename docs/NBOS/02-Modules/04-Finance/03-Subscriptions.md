@@ -83,9 +83,21 @@ Ownership rule (required):
 | `end_date`              | Дата окончания (null = бессрочная)                                                                   |
 | `tax_status`            | Tax / Free                                                                                           |
 | `notifications_enabled` | Разрешены ли автоматические уведомления по карточкам оплат                                           |
+| `reminder_language`     | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                        |
 | `status`                | Pending / Active / On Hold / Cancelled / Completed                                                   |
 | `partner`               | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals |
 | `amount_history`        | История изменений месячной базы                                                                      |
+
+### Client WhatsApp payment reminders (D-10 / D-2)
+
+Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
+
+- Target: **Product WhatsApp Group** via `subscription.productId`.
+- Copy uses `Product.name` and localized month from `Invoice.coverageStartMonth` in `reminder_language`.
+- Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
+- `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
+- Paid / cancelled / on hold → no send.
+- Missing WhatsApp `groupChatId` → skip + log (no crash).
 
 ### Что означает `base_monthly_amount`
 
@@ -321,7 +333,7 @@ Important rules:
 - Сумма = договорённый % или фиксированная сумма
 - Отображается в общей сетке подписок
 - Счета генерируются автоматически как обычная подписка
-- Client WhatsApp reminders идут в **Product WhatsApp Group** этого Product
+- Client WhatsApp reminders идут в **Product WhatsApp Group** этого Product (язык = `reminder_language` подписки)
 
 Важно: `Partner Service` — это outbound-доход Neetrino, когда партнёр платит нам. Это не Partner Payout.
 

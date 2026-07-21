@@ -22,6 +22,6 @@ import { WhatsAppProductGroupsWorker } from './whatsapp-product-groups.worker';
     WhatsAppProductGroupsWorker,
     ProductWhatsAppGroupService,
   ],
-  exports: [ProductWhatsAppGroupService, WhatsAppGatewayConnectionService],
+  exports: [ProductWhatsAppGroupService, WhatsAppGatewayConnectionService, WhatsAppGatewayClient],
 })
 export class WhatsAppGatewayModule {}

@@ -38,9 +38,9 @@ export class SchedulerController {
   @Post('invoice-card-reminders')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Create due Invoice Card reminder notification jobs (external cron)',
+    summary: 'Invoice Card reminders: Tax official-request + subscription D-10/D-2 WhatsApp',
     description:
-      'Creates idempotent NotificationEvent/NotificationJob records from Invoice Card rules. It does not send external client messages.',
+      'Yerevan calendar asOf. Official-request-due for Tax invoices past due without request. Subscription payment reminders at dueDate−10 and dueDate−2 (idempotent per invoice+offset); sends to Product WhatsApp Group when gateway is configured.',
   })
   async runInvoiceCardReminders() {
     return this.schedulerService.runInvoiceCardReminders();

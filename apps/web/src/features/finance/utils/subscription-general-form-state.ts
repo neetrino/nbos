@@ -65,6 +65,10 @@ export function buildSubscriptionGeneralPatch(
     out.notificationsEnabled = draft.notificationsEnabled;
   }
 
+  if (draft.reminderLanguage !== snap.reminderLanguage) {
+    out.reminderLanguage = draft.reminderLanguage;
+  }
+
   const endIso = dateIsoOrNull(draft.endDate);
   const snapEndIso = dateIsoOrNull(snap.endDate);
   if (endIso !== snapEndIso) {

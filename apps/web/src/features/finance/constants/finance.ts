@@ -84,6 +84,15 @@ export const SUBSCRIPTION_BILLING_FREQUENCIES = [
   { value: 'CUSTOM', label: 'Custom' },
 ] as const;
 
+/** Client WhatsApp payment reminder language (Subscription.reminderLanguage). */
+export const SUBSCRIPTION_REMINDER_LANGUAGES = [
+  { value: 'HY', label: 'Armenian' },
+  { value: 'RU', label: 'Russian' },
+  { value: 'EN', label: 'English' },
+] as const;
+
+export const DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE = 'HY' as const;
+
 export const SUBSCRIPTION_STATUSES = [
   { value: 'PENDING', label: 'Pending', variant: 'amber' as StatusVariant },
   { value: 'ACTIVE', label: 'Active', variant: 'green' as StatusVariant },

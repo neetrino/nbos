@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import {
   SUBSCRIPTION_BILLING_FREQUENCIES,
+  SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
@@ -295,6 +296,25 @@ export function SubscriptionFormDialog({
                 {partners.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="sub-reminder-language">Payment reminder language</Label>
+            <Select
+              value={form.reminderLanguage}
+              onValueChange={(v) => setForm({ ...form, reminderLanguage: normalizeSelectValue(v) })}
+            >
+              <SelectTrigger id="sub-reminder-language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUBSCRIPTION_REMINDER_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
                   </SelectItem>
                 ))}
               </SelectContent>

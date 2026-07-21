@@ -108,6 +108,7 @@ export class SubscriptionsController {
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
       partnerId?: string;
     },
@@ -130,6 +131,7 @@ export class SubscriptionsController {
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
       partnerId?: string | null;
     },
