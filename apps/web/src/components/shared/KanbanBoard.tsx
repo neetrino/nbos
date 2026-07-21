@@ -90,8 +90,10 @@ export function KanbanBoard<T>({
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 2);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+    const nextLeft = el.scrollLeft > 2;
+    const nextRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 2;
+    setCanScrollLeft((prev) => (prev === nextLeft ? prev : nextLeft));
+    setCanScrollRight((prev) => (prev === nextRight ? prev : nextRight));
   }, []);
 
   useEffect(() => {
@@ -105,19 +107,28 @@ export function KanbanBoard<T>({
       el.removeEventListener('scroll', updateScrollState);
       ro.disconnect();
     };
-  }, [updateScrollState, columns]);
+  }, [updateScrollState, columns.length]);
 
+  /**
+   * Mobile full-width columns: measure the scrollport once (and on window resize).
+   * Do NOT use ResizeObserver here — writing width from clientWidth into column
+   * styles can expand an unconstrained flex parent and loop forever.
+   */
   useEffect(() => {
+    if (!isMobileViewport) return;
     const el = scrollRef.current;
-    if (!el || !isMobileViewport) return;
-    const updateMobileWidth = () => {
-      setMobileColumnWidth(Math.max(0, el.clientWidth - KANBAN_COLUMN_X_MARGIN_TOTAL_PX));
+    if (!el) return;
+
+    const measure = () => {
+      const next = Math.round(el.clientWidth - KANBAN_COLUMN_X_MARGIN_TOTAL_PX);
+      if (next <= 0) return;
+      setMobileColumnWidth((prev) => (prev === next ? prev : next));
     };
-    updateMobileWidth();
-    const ro = new ResizeObserver(updateMobileWidth);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isMobileViewport, columns]);
+
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [isMobileViewport]);
 
   const startAutoScroll = useCallback((dir: 'left' | 'right') => {
     autoScrollDir.current = dir;
@@ -343,7 +354,7 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full flex-col">
+    <div className="relative flex h-full min-w-0 flex-col">
       <KanbanScrollEdgeControls
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
@@ -356,7 +367,7 @@ export function KanbanBoard<T>({
       <div
         ref={scrollRef}
         className={cn(
-          'min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
+          'min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
           '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           isMobileViewport && 'snap-x snap-mandatory',
           dragItem && terminalDropZones?.length && 'pb-28',

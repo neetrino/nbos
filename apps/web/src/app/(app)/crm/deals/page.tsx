@@ -573,7 +573,7 @@ function DealsPipelinePageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="deals"
@@ -603,7 +603,7 @@ function DealsPipelinePageContent() {
           }
         />
       ) : !isTrashView && effectiveView === 'kanban' ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <KanbanBoard
             columns={kanbanColumns}
