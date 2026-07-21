@@ -158,3 +158,28 @@ model MetaMessage {
   @@index([conversationId, receivedAt])
   @@map("meta_messages")
 }
+
+/// ATS.am Active Call webhook idempotency + latest call snapshot (one row per call uid).
+model AtsCallEvent {
+  id          String   @id @default(uuid())
+  uid         String   @unique
+  state       String?
+  disposition String?
+  billsec     String?
+  recordLink  String?  @map("record_link") @db.Text
+  clid        String?
+  input       String?
+  calldirect  String?
+  op          String?
+  channel     String?
+  rate        String?
+  leadId      String?  @map("lead_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@index([clid])
+  @@map("ats_call_events")
+}

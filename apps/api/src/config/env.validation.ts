@@ -39,10 +39,11 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
     if (isBlank(config[key])) errors.push(`${key} is required`);
   }
 
-  // Optional integration credentials (validated at runtime per platform in MetaOAuthService):
+  // Optional integration credentials (validated at runtime per platform):
   // - META_APP_ID / META_APP_SECRET — Facebook Messenger OAuth
   // - INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET — Instagram Login OAuth
   // - META_WEBHOOK_VERIFY_TOKEN — shared Meta webhook verification
+  // - ATS_API_KEY — ATS.am Active Call webhook (?key=); webhook returns 503 if unset
 
   // Secret strength + placeholder rejection (enforced in production).
   if (isProduction) {

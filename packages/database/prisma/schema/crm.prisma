@@ -149,8 +149,10 @@ model Lead {
   additionalContacts LeadAdditionalContact[]
   metaProviderEvents MetaProviderEvent[]
   metaConversation   MetaConversation?
+  atsCallEvents      AtsCallEvent[]
 
   @@index([trashedAt])
+  @@index([phone])
   @@map("leads")
 }
 
