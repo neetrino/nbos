@@ -148,7 +148,8 @@ Contact (человек)
 
 - Project → many Products
 - Project → many Extensions
-- Project → many Subscription Contracts
+- Project → many Subscription Contracts (via Products; Subscription also stores denormalized project_id)
+- Product → many Subscription Contracts
 - Project → many Credentials
 - Project → many Assets
 - Project → many Chats
@@ -350,7 +351,8 @@ Contact (человек)
 | Поле                  | Тип          | Описание                                                                       |
 | --------------------- | ------------ | ------------------------------------------------------------------------------ |
 | id                    | UUID         | Уникальный идентификатор                                                       |
-| project_id            | FK → Project | Проект                                                                         |
+| product_id            | FK → Product | **Обязательный** продукт-owner                                                 |
+| project_id            | FK → Project | Denormalized = Product.projectId (валидируется при create/update)              |
 | type                  | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
 | base_monthly_amount   | Decimal      | Базовая стоимость одного месяца                                                |
 | currency              | Enum         | AMD                                                                            |
@@ -368,7 +370,8 @@ Contact (человек)
 **Связи:**
 
 - Subscription → many Invoice Cards (каждая может покрывать один или несколько месяцев)
-- Subscription → one Project
+- Subscription → one Product (required)
+- Subscription → one Project (denormalized from Product)
 - Subscription → one Partner (опционально)
 
 ---

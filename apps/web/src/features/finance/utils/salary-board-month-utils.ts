@@ -33,7 +33,7 @@ export function formatPayrollMonthShort(payrollMonth: string): string {
   const year = Number.parseInt(yearPart, 10);
   const month = Number.parseInt(monthPart, 10) - 1;
   if (!Number.isFinite(year) || month < 0 || month > 11) return payrollMonth;
-  return new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date(year, month, 1));
+  return new Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(year, month, 1));
 }
 
 export function sumSalaryBoardColumn(

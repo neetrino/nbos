@@ -16,6 +16,7 @@ export function toDealStageGateInput(deal: Deal): DealStageGateInput {
     productType: deal.productType,
     pmId: deal.pmId,
     deadline: deal.deadline,
+    projectId: deal.projectId,
     existingProductId: deal.existingProductId,
     companyId: deal.companyId ?? null,
     taxStatus: deal.taxStatus ?? null,

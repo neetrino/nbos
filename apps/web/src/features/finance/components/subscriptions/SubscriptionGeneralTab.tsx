@@ -11,6 +11,7 @@ import {
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
   SUBSCRIPTION_BILLING_FREQUENCIES,
+  SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
 import type { SubscriptionGeneralDraft } from '@/features/finance/utils/subscription-general-form-state';
@@ -175,6 +176,18 @@ export function SubscriptionGeneralTab({
             />
             Billing notifications
           </label>
+          <InlineField
+            variant="controlled"
+            label="Payment reminder language"
+            type="select"
+            value={draft.reminderLanguage}
+            options={SUBSCRIPTION_REMINDER_LANGUAGES.map((l) => ({
+              value: l.value,
+              label: l.label,
+            }))}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ reminderLanguage: v })}
+          />
         </div>
       </DetailSheetCollapsibleSection>
 

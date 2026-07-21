@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { WhatsAppGatewayModule } from '../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { PartnersService } from './partners.service';
 import { PartnersController } from './partners.controller';
 
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, WhatsAppGatewayModule],
   controllers: [PartnersController],
   providers: [PartnersService],
   exports: [PartnersService],

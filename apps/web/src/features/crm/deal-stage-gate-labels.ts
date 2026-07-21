@@ -16,6 +16,7 @@ const KNOWN_FIELD_LABELS: Record<string, string> = {
   contractProof: 'Contract file (Drive)',
   pmId: 'Project manager',
   deadline: 'Deadline',
+  projectId: 'Project',
   existingProductId: 'Existing product',
   notes: 'Lost reason',
   name: 'Inquiry title',

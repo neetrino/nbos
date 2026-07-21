@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import {
   SUBSCRIPTION_BILLING_FREQUENCIES,
+  SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
@@ -39,9 +40,11 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { projectsApi, type Project } from '@/lib/api/projects';
+import { productsApi, type Product } from '@/lib/api/products';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 
 const PARTNERS_PAGE_SIZE = 100;
+const PRODUCTS_PAGE_SIZE = 100;
 
 function normalizeSelectValue(value: string | null): string {
   return value ?? '';
@@ -66,6 +69,7 @@ export function SubscriptionFormDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<SubscriptionFormState>({ ...EMPTY_SUBSCRIPTION_FORM });
   const [projects, setProjects] = useState<Project[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
 
@@ -85,17 +89,20 @@ export function SubscriptionFormDialog({
     setOptionsLoading(true);
     Promise.all([
       projectsApi.getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE }),
+      productsApi.getAll({ page: 1, pageSize: PRODUCTS_PAGE_SIZE }),
       partnersApi.getAll({ page: 1, pageSize: PARTNERS_PAGE_SIZE, scope: 'active' }),
     ])
-      .then(([projectRes, partnerRes]) => {
+      .then(([projectRes, productRes, partnerRes]) => {
         if (!cancelled) {
           setProjects(projectRes.items);
+          setProducts(productRes.items);
           setPartners(partnerRes.items);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setProjects([]);
+          setProducts([]);
           setPartners([]);
         }
       })
@@ -110,7 +117,7 @@ export function SubscriptionFormDialog({
   const parsedAmount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
   const parsedBillingDay = parseInt(form.billingDay, 10);
   const canSubmit =
-    (mode === 'edit' || Boolean(form.projectId)) &&
+    (mode === 'edit' || Boolean(form.productId)) &&
     Boolean(form.type) &&
     Boolean(form.billingStartDate) &&
     Number.isFinite(parsedAmount) &&
@@ -149,25 +156,48 @@ export function SubscriptionFormDialog({
 
           {mode === 'create' ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-project">Project</Label>
+              <Label htmlFor="sub-product">Product</Label>
               <Select
-                value={form.projectId || undefined}
-                onValueChange={(v) => setForm({ ...form, projectId: normalizeSelectValue(v) })}
+                value={form.productId || undefined}
+                onValueChange={(v) => {
+                  const product = products.find((p) => p.id === v);
+                  setForm({
+                    ...form,
+                    productId: normalizeSelectValue(v),
+                    projectId: product?.projectId ?? form.projectId,
+                  });
+                }}
                 disabled={optionsLoading}
               >
-                <SelectTrigger id="sub-project">
-                  <SelectValue placeholder={optionsLoading ? 'Loading…' : 'Select project'} />
+                <SelectTrigger id="sub-product">
+                  <SelectValue placeholder={optionsLoading ? 'Loading…' : 'Select product'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.code} — {p.name}
-                    </SelectItem>
-                  ))}
+                  {products.map((p) => {
+                    const project = projects.find((proj) => proj.id === p.projectId);
+                    const projectLabel = project
+                      ? `${project.code} — ${project.name}`
+                      : p.projectId;
+                    return (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} ({projectLabel})
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-muted-foreground text-sm">
+              Product:{' '}
+              {subscription?.product?.name ??
+                products.find((p) => p.id === form.productId)?.name ??
+                form.productId}
+              {subscription?.project
+                ? ` · Project ${subscription.project.code} — ${subscription.project.name}`
+                : null}
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="sub-type">Type</Label>
@@ -266,6 +296,25 @@ export function SubscriptionFormDialog({
                 {partners.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="sub-reminder-language">Payment reminder language</Label>
+            <Select
+              value={form.reminderLanguage}
+              onValueChange={(v) => setForm({ ...form, reminderLanguage: normalizeSelectValue(v) })}
+            >
+              <SelectTrigger id="sub-reminder-language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUBSCRIPTION_REMINDER_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
                   </SelectItem>
                 ))}
               </SelectContent>

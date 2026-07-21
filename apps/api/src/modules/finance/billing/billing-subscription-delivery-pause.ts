@@ -62,8 +62,9 @@ function isUndeliveredAfterDeadline(
 
 /**
  * When true, monthly subscription invoice generation must be skipped for this cycle:
- * development-priced subscription while at least one in-scope Product or Extension
+ * development-priced subscription while the linked Product (or its Extensions)
  * is past its deadline and not delivered / not abandoned.
+ * Scope is the Subscription's Product only — not all products on the Project.
  */
 export function subscriptionBillingPausedForLateDelivery(input: {
   subscriptionType: SubscriptionTypeEnum;

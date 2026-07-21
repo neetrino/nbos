@@ -19,6 +19,7 @@ describe('InvoicesService create', () => {
       prisma as never,
       { handle: vi.fn() } as never,
       operationalJournal as never,
+      { get: vi.fn().mockReturnValue({ create: vi.fn() }) } as never,
     );
   });
 

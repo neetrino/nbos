@@ -31,6 +31,8 @@ export interface CreateDealDto {
   contractSignedAt?: string | null;
   contractFileUrl?: string | null;
   maintenanceStartAt?: string | null;
+  /** OUTSOURCE only; default false; locked after Won. */
+  outsourceGoesToDelivery?: boolean;
 }
 
 export interface UpdateDealDto extends Partial<Omit<CreateDealDto, 'projectId'>> {

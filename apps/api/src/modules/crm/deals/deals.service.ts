@@ -239,6 +239,9 @@ export class DealsService {
         maintenanceStartAt: resolved.maintenanceStartAt
           ? new Date(resolved.maintenanceStartAt)
           : undefined,
+        ...(resolved.outsourceGoesToDelivery !== undefined && {
+          outsourceGoesToDelivery: resolved.outsourceGoesToDelivery,
+        }),
       },
       include: dealCreateInclude,
     });
@@ -301,6 +304,10 @@ export class DealsService {
         sellerId: nextSellerId,
         sellerAssistantId: nextAssistantId,
       });
+    }
+
+    if (data.outsourceGoesToDelivery !== undefined && existing.status === 'WON') {
+      throw new BadRequestException('outsourceGoesToDelivery cannot be changed after Deal Won');
     }
 
     let resolvedContactId =
@@ -374,6 +381,9 @@ export class DealsService {
         ...(data.contractFileUrl !== undefined && { contractFileUrl: data.contractFileUrl }),
         ...(data.maintenanceStartAt !== undefined && {
           maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : null,
+        }),
+        ...(data.outsourceGoesToDelivery !== undefined && {
+          outsourceGoesToDelivery: data.outsourceGoesToDelivery,
         }),
       },
       include: dealUpdateInclude,

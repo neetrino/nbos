@@ -745,6 +745,7 @@ async function createRichProjectBundle(
       data: {
         code: subCode,
         projectId: project.id,
+        productId: product.id,
         type: 'MAINTENANCE_ONLY',
         baseMonthlyAmount: 60_000 + suffix * 5_000,
         billingDay: 5,

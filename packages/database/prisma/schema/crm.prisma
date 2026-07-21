@@ -149,8 +149,10 @@ model Lead {
   additionalContacts LeadAdditionalContact[]
   metaProviderEvents MetaProviderEvent[]
   metaConversation   MetaConversation?
+  atsCallEvents      AtsCallEvent[]
 
   @@index([trashedAt])
+  @@index([phone])
   @@map("leads")
 }
 
@@ -223,6 +225,8 @@ model Deal {
   contractSignedAt    DateTime?            @map("contract_signed_at")
   contractFileUrl     String?              @map("contract_file_url")
   maintenanceStartAt  DateTime?            @map("maintenance_start_at")
+  /// OUTSOURCE only: when true, Won creates active Delivery Board lifecycle. Default false. Locked after Won.
+  outsourceGoesToDelivery Boolean          @default(false) @map("outsource_goes_to_delivery")
   wonMode             DealWonModeEnum?     @map("won_mode")
   exceptionReason     String?              @map("exception_reason") @db.Text
   exceptionApprovedById String?            @map("exception_approved_by_id")

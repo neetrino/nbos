@@ -98,7 +98,8 @@ export class SubscriptionsController {
   async create(
     @Body()
     body: {
-      projectId: string;
+      productId: string;
+      projectId?: string;
       type: string;
       baseMonthlyAmount?: number;
       amount?: number;
@@ -108,6 +109,7 @@ export class SubscriptionsController {
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
       partnerId?: string;
     },
@@ -130,6 +132,7 @@ export class SubscriptionsController {
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
       partnerId?: string | null;
     },

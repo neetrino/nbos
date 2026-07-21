@@ -6,7 +6,6 @@ import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
 import { marketingApi } from '@/lib/api/marketing';
 import { partnersApi } from '@/lib/api/partners';
-import { productsApi } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { systemListsApi } from '@/lib/api/systemLists';
 import { employeesApi } from '@/lib/api/employees';
@@ -16,6 +15,7 @@ import {
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
 } from '@/components/shared';
+import { useProductRelationSearch } from '@/components/shared/relation-picker';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
@@ -107,14 +107,14 @@ export function DealGeneralTab({
     return data.items.map((partner) => ({ value: partner.id, label: partner.name }));
   }, []);
 
-  const searchProducts = useCallback(async (query: string) => {
-    const data = await productsApi.getAll({ pageSize: 10, search: query || undefined });
-    return data.items.map((product) => ({
-      value: product.id,
-      label: product.name,
-      subtitle: product.productType,
-    }));
-  }, []);
+  const searchProductsInProject = useProductRelationSearch(draft.projectId);
+  const searchProducts = useCallback(
+    async (query: string) => {
+      if (!draft.projectId) return [];
+      return searchProductsInProject(query);
+    },
+    [draft.projectId, searchProductsInProject],
+  );
 
   const searchCompanies = useCallback(async (query: string) => {
     const data = await companiesApi.getAll({
@@ -149,6 +149,7 @@ export function DealGeneralTab({
             searchProducts={searchProducts}
             searchCompanies={searchCompanies}
             disabled={formDisabled}
+            outsourceToggleLocked={deal.status === 'WON'}
             gateRequiredFields={gateRequiredFields}
           />
           <DealOfferContractSection

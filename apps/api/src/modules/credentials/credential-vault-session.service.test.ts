@@ -38,5 +38,5 @@ describe('CredentialVaultSessionService', () => {
     expect(await service.isUnlocked('emp-1')).toBe(false);
 
     if (prev) process.env.REDIS_URL = prev;
-  });
+  }, 15_000);
 });

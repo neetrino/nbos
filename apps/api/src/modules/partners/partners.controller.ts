@@ -170,6 +170,7 @@ export class PartnersController {
       clientContactId?: string | null;
       clientCompanyId?: string | null;
       projectId?: string | null;
+      productId?: string | null;
       serviceType: string;
       paymentModel: string;
       amount: number;
@@ -195,6 +196,7 @@ export class PartnersController {
       clientContactId?: string | null;
       clientCompanyId?: string | null;
       projectId?: string | null;
+      productId?: string | null;
       serviceType?: string;
       paymentModel?: string;
       amount?: number;

@@ -36,6 +36,7 @@ const baseDraft: DealGeneralDraft = {
   pmId: null,
   pmDisplayLabel: null,
   deadline: null,
+  outsourceGoesToDelivery: false,
 };
 
 describe('applyDealRelationCreated', () => {

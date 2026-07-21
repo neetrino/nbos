@@ -33,6 +33,16 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
     priority: 'high',
   },
   {
+    eventType: 'finance.invoice.payment_reminder_d10',
+    category: 'action_required',
+    priority: 'high',
+  },
+  {
+    eventType: 'finance.invoice.payment_reminder_d2',
+    category: 'action_required',
+    priority: 'high',
+  },
+  {
     eventType: 'finance.expense.backlog_weekly_digest',
     category: 'informational',
     priority: 'normal',

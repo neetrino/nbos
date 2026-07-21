@@ -1,4 +1,5 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import {
   PrismaClient,
   type Prisma,
@@ -15,6 +16,13 @@ import {
   syncInvoiceOrderStatus,
 } from './invoice-service-helpers';
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
+import {
+  MARK_PAID_AUTO_PAYMENT_METHOD,
+  MARK_PAID_AUTO_PAYMENT_NOTE,
+  PAYMENTS_SERVICE_TOKEN,
+  markPaidPaymentDateIso,
+  type MarkPaidPaymentsPort,
+} from './invoice-mark-paid-settle';
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
@@ -83,7 +91,12 @@ export class InvoicesService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly dealWonHandler: DealWonHandler,
     private readonly operationalJournal: OperationalJournalService,
+    private readonly moduleRef: ModuleRef,
   ) {}
+
+  private resolvePaymentsService(): MarkPaidPaymentsPort {
+    return this.moduleRef.get<MarkPaidPaymentsPort>(PAYMENTS_SERVICE_TOKEN, { strict: false });
+  }
 
   async findAll(params: InvoiceQueryParams) {
     const {
@@ -301,6 +314,22 @@ export class InvoicesService {
     const amount = Number(invoice.amount);
     const paid = sumAmounts(invoice.payments);
     const now = new Date();
+    const outstanding = Math.max(0, amount - paid);
+
+    if (moneyStatus === 'PAID' && outstanding > 0) {
+      await this.resolvePaymentsService().create({
+        invoiceId: id,
+        amount: outstanding,
+        paymentDate: markPaidPaymentDateIso(now),
+        paymentMethod: MARK_PAID_AUTO_PAYMENT_METHOD,
+        notes: MARK_PAID_AUTO_PAYMENT_NOTE,
+      });
+      if (invoice.orderId) {
+        await this.checkAndPromoteDeal(invoice.orderId);
+      }
+      return this.findById(id);
+    }
+
     const derivedBase = deriveBaseInvoiceMoneyStatus({
       amount,
       paid,
@@ -314,7 +343,7 @@ export class InvoicesService {
       moneyStatus,
     };
     if (moneyStatus === 'PAID') {
-      updateData.paidDate = getLatestPaymentDate(invoice.payments);
+      updateData.paidDate = getLatestPaymentDate(invoice.payments) ?? now;
     } else {
       updateData.paidDate = null;
     }
@@ -420,10 +449,6 @@ export class InvoicesService {
     requested: InvoiceMoneyStatusEnum,
     derivedBase: InvoiceMoneyStatusEnum,
   ) {
-    if (requested === 'PAID' && derivedBase !== 'PAID') {
-      throw new BadRequestException('Cannot mark invoice as paid before payments fully cover it');
-    }
-
     if (derivedBase === 'PAID' && requested !== 'PAID') {
       throw new BadRequestException('Fully paid invoices must stay in PAID money status');
     }

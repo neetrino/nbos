@@ -15,14 +15,19 @@
 А конкретные деньги за конкретные месяцы живут уже в `Invoice Card`.
 
 ```text
-Subscription
-    ->
-Invoice Card(s) for covered period
-    ->
-Payment
-    ->
-MRR / revenue control
+Project
+    -> Product
+        -> Subscription
+            -> Invoice Card(s) for covered period
+                -> Payment
+                    -> MRR / revenue control
 ```
+
+Ownership rule (required):
+
+- every `Subscription` has a required `productId` (FK → Product);
+- `projectId` is stored on Subscription as a denormalized copy of `Product.projectId` and must match on create/update;
+- one Product may have many Subscriptions; one Project may have many Products.
 
 ---
 
@@ -65,8 +70,8 @@ MRR / revenue control
 | Поле                    | Описание                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------- |
 | `subscription_id`       | Уникальный идентификатор                                                                             |
-| `project`               | Проект, к которому привязана подписка                                                                |
-| `product`               | Продукт, если подписка относится к конкретному продукту                                              |
+| `product`               | **Обязательный** продукт (FK). Источник ownership для биллинга, паузы deadline и WhatsApp reminders  |
+| `project`               | Проект (denormalized = `Product.projectId`; валидируется при create/update)                          |
 | `company`               | Компания-плательщик                                                                                  |
 | `contact`               | Контактное лицо                                                                                      |
 | `type`                  | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                  |
@@ -78,9 +83,21 @@ MRR / revenue control
 | `end_date`              | Дата окончания (null = бессрочная)                                                                   |
 | `tax_status`            | Tax / Free                                                                                           |
 | `notifications_enabled` | Разрешены ли автоматические уведомления по карточкам оплат                                           |
+| `reminder_language`     | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                        |
 | `status`                | Pending / Active / On Hold / Cancelled / Completed                                                   |
 | `partner`               | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals |
 | `amount_history`        | История изменений месячной базы                                                                      |
+
+### Client WhatsApp payment reminders (D-10 / D-2)
+
+Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
+
+- Target: **Product WhatsApp Group** via `subscription.productId`.
+- Copy uses `Product.name` and localized month from `Invoice.coverageStartMonth` in `reminder_language`.
+- Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
+- `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
+- Paid / cancelled / on hold → no send.
+- Missing WhatsApp `groupChatId` → skip + log (no crash).
 
 ### Что означает `base_monthly_amount`
 
@@ -110,11 +127,12 @@ Flow:
 1. Seller creates first invoice in CRM.
 2. Finance confirms the first payment.
 3. Deal moves to `Deal Won`.
-4. Order / Project / Product are created.
-5. Subscription record is created immediately as `Active`.
+4. Order / Project / Product are created (`ensureProduct`).
+5. Subscription record is created immediately as `Active` with that `productId` (+ matching `projectId`).
 
 Important rules:
 
+- idempotency key for auto-create is **`productId` + subscription `type`** (not projectId + type);
 - the first paid invoice is not only the project start confirmation;
 - it is also the **first paid month of the subscription**;
 - the month of that first invoice must be visible as paid in Subscription Board;
@@ -131,15 +149,30 @@ Example:
 Flow:
 
 1. Maintenance deal reaches `Deal Won`.
-2. Subscription record is created immediately in `Pending`.
-3. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
-4. Finance later confirms / edits `billing_start_date` and activates billing.
+2. `existingProductId` is **required** — without a Product, Subscription is **not** created.
+3. Subscription record is created immediately in `Pending` on that Product.
+4. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
+5. Finance later confirms / edits `billing_start_date` and activates billing.
 
 Important rules:
 
 - invoice is not required before maintenance `Deal Won` by default;
 - CRM may pass the expected billing start date;
-- while status is `Pending`, this date is still editable and does not yet generate billing.
+- while status is `Pending`, this date is still editable and does not yet generate billing;
+- idempotency: `productId` + `MAINTENANCE_ONLY`.
+
+### Route C: Finance manual create
+
+- DTO requires `productId`;
+- `projectId` is taken from Product, or must match `Product.projectId` if also sent.
+
+### Route D: Partner Service (outbound)
+
+- Project + Product are required;
+- `PARTNER_SERVICE` Subscription is created on that Product (`PartnerServiceTerm.productId`);
+- create-finance must **link** the existing Product — it must not spawn a second Product;
+- WhatsApp group is ensured for that Product;
+- delivery-deadline auto-pause does **not** apply to `PARTNER_SERVICE`.
 
 ---
 
@@ -295,11 +328,12 @@ Important rules:
 
 Особенности:
 
-- Подписка создаётся на проект (бренд клиента)
+- Подписка создаётся на **Product** внутри Project (бренд клиента)
 - Плательщик = партнёр (не клиент)
 - Сумма = договорённый % или фиксированная сумма
 - Отображается в общей сетке подписок
 - Счета генерируются автоматически как обычная подписка
+- Client WhatsApp reminders идут в **Product WhatsApp Group** этого Product (язык = `reminder_language` подписки)
 
 Важно: `Partner Service` — это outbound-доход Neetrino, когда партнёр платит нам. Это не Partner Payout.
 
@@ -378,18 +412,20 @@ Client Subscription Invoice Paid
 ## Связи с другими сущностями
 
 ```
-Project ──→ Subscription(s) ──→ Invoice(s) ──→ Payment(s)
-                │
-                ├──→ Subscription Grid View
-                ├──→ MRR Reports
-                ├──→ Churn Reports
-                ├──→ Partner Service Revenue (если outbound Partner Service)
-                └──→ Partner Accrual (если inbound referral subscription)
+Project ──→ Product(s) ──→ Subscription(s) ──→ Invoice(s) ──→ Payment(s)
+                              │
+                              ├──→ Subscription Grid View
+                              ├──→ MRR Reports
+                              ├──→ Churn Reports
+                              ├──→ Product WhatsApp Group (client reminders)
+                              ├──→ Partner Service Revenue (если outbound Partner Service)
+                              └──→ Partner Accrual (если inbound referral subscription)
 ```
 
 | Сущность     | Связь                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
-| Project      | Одна подписка = один проект. У проекта может быть несколько подписок разного типа                       |
+| Product      | Обязательный owner подписки. У Product может быть несколько Subscription разных типов                   |
+| Project      | Denormalized на Subscription (= Product.projectId). У проекта — много Product и много Subscription      |
 | Invoice Card | Из подписки создаются карточки оплат с покрытием одного или нескольких месяцев                          |
 | Payment      | При оплате карточки обновляется покрытие месяцев в Grid                                                 |
 | Partner      | Для Partner Service — плательщик outbound-дохода; для referral subscription — источник partner accruals |

@@ -95,6 +95,7 @@ export interface Deal {
   linkedOfferAssetCount?: number;
   linkedContractAssetCount?: number;
   maintenanceStartAt: string | null;
+  outsourceGoesToDelivery: boolean;
   wonMode?: DealWonMode | null;
   exceptionReason?: string | null;
   exceptionApprovedAt?: string | null;

@@ -15,6 +15,7 @@ export interface Subscription {
   id: string;
   code: string;
   projectId: string;
+  productId: string;
   type: string;
   baseMonthlyAmount: string;
   billingFrequency: string;
@@ -23,9 +24,12 @@ export interface Subscription {
   status: string;
   billingStartDate: string;
   notificationsEnabled: boolean;
+  /** Client WhatsApp payment reminder language: HY | RU | EN */
+  reminderLanguage: string;
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  product?: { id: string; name: string } | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   partner?: { id: string; name: string } | null;
@@ -41,7 +45,8 @@ export interface Subscription {
 }
 
 export interface CreateSubscriptionPayload {
-  projectId: string;
+  productId: string;
+  projectId?: string;
   type: string;
   baseMonthlyAmount: number;
   billingDay: number;
@@ -49,18 +54,22 @@ export interface CreateSubscriptionPayload {
   taxStatus?: string;
   billingStartDate: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string;
 }
 
 export interface UpdateSubscriptionPayload {
   type?: string;
+  productId?: string;
+  projectId?: string;
   baseMonthlyAmount?: number;
   billingFrequency?: string;
   billingDay?: number;
   taxStatus?: string;
   billingStartDate?: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string | null;
 }

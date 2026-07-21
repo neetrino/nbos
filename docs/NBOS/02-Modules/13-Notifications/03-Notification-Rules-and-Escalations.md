@@ -39,22 +39,26 @@ Notification rule отвечает на вопрос: что делать, ко�
 
 ### Finance
 
-| Event                      | Условия                                                         | Действие                                                              |
-| -------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `invoice.created`          | `tax_status = Tax`                                              | WhatsApp message в бухгалтерскую группу с request на official invoice |
-| `invoice.awaiting_payment` | `notifications_enabled = On` и official invoice ready/requested | WhatsApp reminder в Project WhatsApp Group                            |
-| `invoice.overdue`          | Payment не получен после due date                               | In-App/Telegram Finance + WhatsApp group reminder                     |
-| `payment.received`         | Invoice paid                                                    | In-App Seller/Finance, optional WhatsApp confirmation                 |
-| `expense.due_soon`         | Expense Card due soon                                           | In-App Finance                                                        |
-| `expense.overdue`          | Expense unpaid after due date                                   | In-App/Telegram Finance + CEO escalation                              |
+| Event                                                                       | Условия                                                                                                                                           | Действие                                                                                                                                                                                                                                  |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `invoice.created`                                                           | `tax_status = Tax`                                                                                                                                | WhatsApp message в бухгалтерскую группу с request на official invoice                                                                                                                                                                     |
+| `invoice.awaiting_payment` / `finance.invoice.payment_reminder_d10` / `_d2` | Subscription invoice unpaid; `notifications_enabled`; Tax official request ready when Tax; Yerevan calendar day = `dueDate − 10` or `dueDate − 2` | WhatsApp client payment reminder to **Product WhatsApp Group** (`subscription.productId`); language = `Subscription.reminderLanguage` (HY/RU/EN). Idempotency: one job per `(invoiceId, offsetDays)` — no daily overdue spam on this path |
+| `finance.invoice.official_request_due`                                      | Tax invoice due; official request not sent                                                                                                        | Internal / accountant WhatsApp request automation (separate from client payment reminders)                                                                                                                                                |
+| `invoice.overdue`                                                           | Payment не получен после due date (ops alerts)                                                                                                    | In-App/Telegram Finance (client WhatsApp pre-due offsets above; not daily client spam)                                                                                                                                                    |
+| `payment.received`                                                          | Invoice paid                                                                                                                                      | In-App Seller/Finance, optional WhatsApp confirmation                                                                                                                                                                                     |
+| `expense.due_soon`                                                          | Expense Card due soon                                                                                                                             | In-App Finance                                                                                                                                                                                                                            |
+| `expense.overdue`                                                           | Expense unpaid after due date                                                                                                                     | In-App/Telegram Finance + CEO escalation                                                                                                                                                                                                  |
+
+Scheduler: `POST /api/scheduler/invoice-card-reminders` (Yerevan `asOf`).
 
 ### Subscriptions
 
-| Event                          | Условия               | Действие                              |
-| ------------------------------ | --------------------- | ------------------------------------- |
-| `subscription.invoice_created` | Subscription active   | Follow invoice rules                  |
-| `subscription.payment_missing` | Invoice overdue       | Finance alert + client group reminder |
-| `subscription.on_hold`         | Payment/process pause | Internal alert only                   |
+| Event                           | Условия                         | Действие                                                 |
+| ------------------------------- | ------------------------------- | -------------------------------------------------------- |
+| `subscription.invoice_created`  | Subscription active             | Follow invoice rules (Product WhatsApp Group)            |
+| `subscription.payment_reminder` | D-10 / D-2 vs `Invoice.dueDate` | Client WhatsApp to Product group; see Finance rows above |
+| `subscription.payment_missing`  | Invoice overdue (ops)           | Finance alert; client path is pre-due offsets only       |
+| `subscription.on_hold`          | Payment/process pause           | Internal alert only                                      |
 
 ### CRM
 
