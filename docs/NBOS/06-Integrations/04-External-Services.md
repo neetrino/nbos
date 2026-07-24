@@ -247,15 +247,16 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 
 See `09-ATS-AM-Integration.md`.
 
-| Capability     | MVP behavior                                                                      |
-| -------------- | --------------------------------------------------------------------------------- |
-| Webhook        | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                           |
-| Auth           | Query `key` = env `ATS_API_KEY`                                                   |
-| Lead creation  | Inbound (`calldirect=0`) → **Lead only** (`source=MARKETING`, `sourceDetail=ATS`) |
-| Contact / Deal | **Not** created on call                                                           |
-| Idempotency    | `AtsCallEvent.uid` unique; finish/end update event only                           |
+| Capability      | MVP behavior                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                                             |
+| Auth            | Query `key` = env `ATS_API_KEY`                                                                     |
+| Lead creation   | Inbound (`calldirect=0`) → **Lead only** (`source=MARKETING`, `sourceDetail=ATS`)                   |
+| `redirect_call` | Inbound `state=start` + known Contact/Lead assignee with `Employee.sipId` → include in webhook JSON |
+| Contact / Deal  | **Not** created on call                                                                             |
+| Idempotency     | `AtsCallEvent.uid` unique; finish/end update event only (no redirect)                               |
 
-Env: `ATS_API_KEY` (optional at boot; webhook `503` if unset).
+Env: `ATS_API_KEY` (optional at boot; webhook `503` if unset). SIP IDs live on `Employee.sipId` (HR profile).
 
 ### Назначение (full product vision)
 
@@ -263,10 +264,10 @@ Env: `ATS_API_KEY` (optional at boot; webhook `503` if unset).
 
 ### Фаза реализации
 
-| Этап        | Описание                                               |
-| ----------- | ------------------------------------------------------ |
-| **MVP**     | Active Call webhook → Lead (без Contact)               |
-| **Фаза 2+** | History/records, callback API, MarketingAccount by DID |
+| Этап        | Описание                                                                   |
+| ----------- | -------------------------------------------------------------------------- |
+| **MVP**     | Active Call webhook → Lead (без Contact) + optional `redirect_call` by SIP |
+| **Фаза 2+** | History/records, callback API, MarketingAccount by DID                     |
 
 ---
 

@@ -6,6 +6,7 @@ export interface EmployeeGeneralDraft {
   email: string;
   phone: string;
   telegram: string;
+  sipId: string;
   position: string;
   level: string;
   notes: string;
@@ -28,6 +29,7 @@ export function createEmployeeGeneralDraft(employee: Employee): EmployeeGeneralD
     email: employee.email,
     phone: employee.phone ?? '',
     telegram: employee.telegram ?? '',
+    sipId: employee.sipId ?? '',
     position: employee.position ?? '',
     level: employee.level ?? '',
     notes: employee.notes ?? '',
@@ -51,6 +53,7 @@ export function buildEmployeeGeneralPatch(
   if (!strEq(draft.email, snap.email)) out.email = draft.email.trim();
   if (!strEq(draft.phone, snap.phone)) out.phone = draft.phone.trim() || null;
   if (!strEq(draft.telegram, snap.telegram)) out.telegram = draft.telegram.trim() || null;
+  if (!strEq(draft.sipId, snap.sipId)) out.sipId = draft.sipId.trim() || null;
   if (!strEq(draft.position, snap.position)) out.position = draft.position.trim() || null;
   if (draft.level !== snap.level) out.level = draft.level || null;
   if (!strEq(draft.notes, snap.notes)) out.notes = draft.notes.trim() || null;

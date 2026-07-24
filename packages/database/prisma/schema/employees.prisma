@@ -23,6 +23,8 @@ model Employee {
   email        String               @unique
   phone        String?
   telegram     String?
+  /** ATS.am SIP extension / ID for Active Call `redirect_call` routing. */
+  sipId        String?              @map("sip_id")
   avatar       String?
   birthday     DateTime?
   notes        String?
