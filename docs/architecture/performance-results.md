@@ -80,3 +80,38 @@ Updated after each release. Production panel numbers marked when unavailable.
 
 **READY FOR STAGING:** migrate → `SCHEDULER_ENABLED=false` smoke → canary `notification-inbox-reconcile`.  
 **REQUIRES PRODUCTION METRICS:** SKIPPED_LOCKED rate; lease duration; dual-replica contention.
+
+## Release 5 — Notification write-path optimization (2026-07-27)
+
+| Scenario                  | Before                                  | After (flags on)                                                                                       |
+| ------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| createOne SQL             | ~8 (incl. rule upsert) + optional COUNT | ≤6 (cached rule id, no rule upsert; SSE from InboxState when flag on → **0 COUNT**)                    |
+| createMany 100 recipients | ~800–900 sequential                     | 1 prefs + 1 existing-jobs + set-based events/jobs/deliveries/notifications + 1 inbox upsert + ≤100 SSE |
+| Preferences               | N × findUnique                          | 1 × findMany (`code IN (...)`)                                                                         |
+| InboxState bulk           | N × upsert                              | 1 × `unnest` upsert                                                                                    |
+| SSE per batch / recipient | N publishes                             | **1** publish / recipient                                                                              |
+| Rule upsert in hot path   | Yes                                     | **No** (startup `NotificationRuleCacheService`)                                                        |
+| Delivery idempotency      | Index only                              | Unique `(job_id, channel)`                                                                             |
+| Outbox                    | None                                    | Deferred; PENDING enqueue reconcile scan                                                               |
+| InboxState READ           | Off                                     | **Still off**                                                                                          |
+
+| Metric (estimate)      | Legacy |          V2+bulk+SSE-from-inbox |
+| ---------------------- | -----: | ------------------------------: |
+| SQL / createOne        |    8–9 |                             5–6 |
+| SQL / 100 recipients   |   800+ | ~10–15 fixed + O(1) set inserts |
+| Redis PUBLISH / 100    |    100 |              ≤100 (1/recipient) |
+| Mutation COUNT for SSE |      1 |                           **0** |
+
+**Flags (default off):**
+
+```env
+NOTIFICATION_COMMAND_V2_ENABLED=false
+NOTIFICATION_BULK_WRITE_ENABLED=false
+NOTIFICATION_SSE_FROM_INBOX_STATE_ENABLED=false
+NOTIFICATION_ENQUEUE_RECONCILE_ENABLED=false
+NOTIFICATION_INBOX_STATE_READ_ENABLED=false
+```
+
+**VERIFIED LOCALLY:** unit tests command path, dual-write, concurrency helper; API typecheck.  
+**READY FOR STAGING:** Stage A flags off → Stage B V2 → Stage C bulk on SLA → Stage D SSE-from-inbox.  
+**OUTBOX:** deferred; use enqueue reconcile + keep IN_APP deliveries as `DELIVERED` in TX (current product behavior).
