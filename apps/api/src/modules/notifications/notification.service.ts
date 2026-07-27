@@ -1,6 +1,7 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
 import { resolveNotificationRuleConfig } from './notification-rules';
 
 type InAppNotificationRow = {
@@ -146,7 +147,10 @@ function toNotificationRow(row: InAppNotificationRow): NotificationRow {
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    @Optional() private readonly realtimePublisher?: NotificationRealtimePublisher,
+  ) {}
 
   async create(params: CreateNotificationParams): Promise<NotificationRow> {
     const userPref = await this.resolveUserPreference(params.recipientId, params.type);
@@ -249,6 +253,7 @@ export class NotificationService {
     });
 
     this.logger.log(`Notification created for user ${params.recipientId}: ${params.title}`);
+    await this.emitRealtime(params.recipientId, { invalidateList: true });
     return toNotificationRow(row);
   }
 
@@ -298,6 +303,9 @@ export class NotificationService {
         readAt: owned.readAt ?? now,
       },
     });
+    if (!owned.isRead) {
+      await this.emitRealtime(userId, { invalidateList: true });
+    }
     return toNotificationRow(row);
   }
 
@@ -315,6 +323,9 @@ export class NotificationService {
         readAt: new Date(),
       },
     });
+    if (!owned.isRead) {
+      await this.emitRealtime(userId, { invalidateList: true });
+    }
     return toNotificationRow(row);
   }
 
@@ -330,6 +341,9 @@ export class NotificationService {
         readAt: new Date(),
       },
     });
+    if (result.count > 0) {
+      await this.emitRealtime(userId, { invalidateList: true });
+    }
     return { updated: result.count };
   }
 
@@ -483,6 +497,14 @@ export class NotificationService {
     const filtered = normalized.filter((c) => allowed.has(c));
     if (filtered.length === 0) return ['IN_APP'];
     return filtered;
+  }
+
+  private async emitRealtime(
+    employeeId: string,
+    options?: { invalidateList?: boolean },
+  ): Promise<void> {
+    if (!this.realtimePublisher) return;
+    await this.realtimePublisher.publishUnreadState(employeeId, options);
   }
 }
 

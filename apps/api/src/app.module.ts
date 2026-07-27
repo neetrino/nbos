@@ -29,6 +29,7 @@ import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -90,6 +91,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     DriveModule,
     DocumentsModule,
     NotificationModule,
+    RealtimeModule,
     AutomationModule,
     CalendarModule,
     DashboardModule,

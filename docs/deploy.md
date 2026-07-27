@@ -43,6 +43,7 @@ Neon Postgres / R2 / Resend — внешние SaaS
 
 - HTTP из браузера: `/api/*` → Next.js **BFF** → Nest; JWT только в **httpOnly** cookie.
 - Messenger: `/api/auth/realtime-token` + `NEXT_PUBLIC_BACKEND_URL`.
+- Notification unread: `EventSource` → `/api/realtime/notifications` (Next SSE proxy) → Nest; multi-replica via `REDIS_EVENTS_URL` (fallback `REDIS_URL`).
 - Logout JWT: `POST /api/v1/auth/logout` + Redis denylist по `jti`.
 - Scheduler: `ServiceApiKeyGuard` на `/api/scheduler/*`.
 
@@ -138,6 +139,8 @@ JWT_SECRET=<openssl rand -base64 32>
 CREDENTIALS_ENCRYPTION_KEY=<openssl rand -base64 32>
 CORS_ORIGIN=https://app.example.com
 REDIS_URL=rediss://...
+# Optional dedicated Pub/Sub for notification SSE (defaults to REDIS_URL)
+# REDIS_EVENTS_URL=rediss://...
 SCHEDULER_API_KEY=<openssl rand -base64 32>
 R2_ACCOUNT_ID=...
 R2_ACCESS_KEY_ID=...
