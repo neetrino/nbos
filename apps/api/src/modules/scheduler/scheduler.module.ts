@@ -11,12 +11,14 @@ import { PlatformLifecycleModule } from '../platform-lifecycle/platform-lifecycl
 import { WhatsAppGatewayModule } from '../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { RealtimeModule } from '../realtime/realtime.module';
+import { AuthModule } from '../auth/auth.module';
 import { CredentialTrashPurgeCron } from './credential-trash-purge.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
+import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
 import { SchedulerController } from './scheduler.controller';
 import { SchedulerDiagnosticsController } from './scheduler-diagnostics.controller';
 import { SchedulerReadyController } from './scheduler-ready.controller';
@@ -39,6 +41,7 @@ const SCHEDULER_IMPORTS = [
   WhatsAppGatewayModule,
   NotificationModule,
   RealtimeModule,
+  AuthModule,
 ] as const;
 
 const CRON_PROVIDERS = [
@@ -48,6 +51,7 @@ const CRON_PROVIDERS = [
   PlatformTrashPurgeCron,
   NotificationInboxReconcileCron,
   NotificationEnqueueReconcileCron,
+  AuthSessionCleanupCron,
 ] as const;
 
 /**

@@ -97,6 +97,8 @@ describe('SchedulerService', () => {
       { runRetentionPurge: vi.fn() } as never,
       { reconcileBatch: vi.fn() } as never,
       { reconcileAll: vi.fn() } as never,
+      { reconcilePending: vi.fn() } as never,
+      { cleanupExpiredSessions: vi.fn() } as never,
       lease as never,
     );
   });

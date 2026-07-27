@@ -44,6 +44,7 @@
     "db:budget": "tsx scripts/db/print-connection-budget.ts",
     "notifications:inbox:check": "tsx apps/api/scripts/inbox-state-cli.ts --dry-run",
     "notifications:inbox:repair": "tsx apps/api/scripts/inbox-state-cli.ts --repair",
+    "auth:legacy-retirement-check": "tsx apps/api/scripts/auth-legacy-retirement-check.ts",
     "prepare": "husky"
   },
   "devDependencies": {

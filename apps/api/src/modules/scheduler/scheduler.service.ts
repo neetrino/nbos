@@ -14,6 +14,7 @@ import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-
 import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
 import { NotificationEnqueueReconcileService } from '../notifications/notification-enqueue-reconcile.service';
+import { AuthSessionService } from '../auth/auth-session.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -45,6 +46,7 @@ export class SchedulerService {
     private readonly productWhatsApp: ProductWhatsAppGroupService,
     private readonly notificationInboxReconcile: NotificationInboxReconcileService,
     private readonly notificationEnqueueReconcile: NotificationEnqueueReconcileService,
+    private readonly authSessions: AuthSessionService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -301,6 +303,20 @@ export class SchedulerService {
         const result = await this.notificationEnqueueReconcile.reconcilePending();
         return {
           processedCount: result.scannedJobs + result.scannedDeliveries,
+          metadata: result,
+        };
+      },
+    );
+  }
+
+  async runAuthSessionExpiryCleanup(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.authSessionExpiryCleanup, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.authSessions.cleanupExpiredSessions();
+        return {
+          processedCount: result.marked,
           metadata: result,
         };
       },

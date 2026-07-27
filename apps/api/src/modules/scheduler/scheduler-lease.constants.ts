@@ -24,6 +24,7 @@ export const SCHEDULER_JOB_NAMES = {
   salesKpiMonthClose: 'sales-kpi-month-close',
   supportSlaEscalation: 'support-sla-escalation',
   whatsappProductGroupsReconcile: 'whatsapp-product-groups-reconcile',
+  authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
 } as const;
 
 export type SchedulerJobName = (typeof SCHEDULER_JOB_NAMES)[keyof typeof SCHEDULER_JOB_NAMES];
