@@ -50,3 +50,18 @@ Updated after each release. Production panel numbers marked when unavailable.
 **VERIFIED LOCALLY:** `notification-inbox-state.flags`, `notification-inbox-dual-write`; API typecheck.  
 **READY FOR STAGING:** migrate → WRITE=true → reconcile → drift check. **Do not** enable READ until drift=0.  
 **REQUIRES PRODUCTION METRICS:** inbox drift rate; unread COUNT vs counter after WRITE.
+
+## Release 3 — API / Worker process split (2026-07-27)
+
+| Scenario                                   | Status |
+| ------------------------------------------ | ------ |
+| `PROCESS_ROLE` api\|worker\|scheduler\|all | ✅     |
+| Production forbids `all`                   | ✅     |
+| `worker.ts` + health/ready                 | ✅     |
+| Producers only on API role                 | ✅     |
+| Consumers on worker role                   | ✅     |
+| Retention + concurrency env                | ✅     |
+| InboxState READ remains off                | ✅     |
+
+**READY FOR STAGING:** deploy worker service then cut API to `PROCESS_ROLE=api`.  
+**REQUIRES PRODUCTION METRICS:** Redis connection count; queue waiting/active/failed; worker restart drain.

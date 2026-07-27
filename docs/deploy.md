@@ -15,19 +15,20 @@ Browser
   → Hetzner VPS :443/:80
   → Coolify reverse proxy (Traefik/Caddy, origin cert or LE)
   → nbos-web   (Next.js, :3000)
-  → nbos-api   (NestJS, :4000)
+  → nbos-api   (NestJS, :4000, PROCESS_ROLE=api)
+  → nbos-worker (NestJS worker.ts, :4001 health, PROCESS_ROLE=worker)
   → redis      (Coolify or Upstash — REDIS_URL)
 Neon Postgres / R2 / Resend — внешние SaaS
 ```
 
-| Компонент          | Продакшен                                       |
-| ------------------ | ----------------------------------------------- |
-| **Compute**        | Hetzner VPS + Coolify (`nbos-web` + `nbos-api`) |
-| **Edge / домены**  | Cloudflare proxied, SSL Full (strict), WAF      |
-| **База данных**    | Neon Postgres (`sslmode=require`)               |
-| **Object storage** | Cloudflare R2 (private bucket)                  |
-| **Кэш / очереди**  | Redis (`rediss://` в prod)                      |
-| **Email**          | Resend                                          |
+| Компонент          | Продакшен                                                       |
+| ------------------ | --------------------------------------------------------------- |
+| **Compute**        | Hetzner VPS + Coolify (`nbos-web` + `nbos-api` + `nbos-worker`) |
+| **Edge / домены**  | Cloudflare proxied, SSL Full (strict), WAF                      |
+| **База данных**    | Neon Postgres (`sslmode=require`)                               |
+| **Object storage** | Cloudflare R2 (private bucket)                                  |
+| **Кэш / очереди**  | Redis (`rediss://` в prod)                                      |
+| **Email**          | Resend                                                          |
 
 **Публичные URL (через Cloudflare):**
 
@@ -133,13 +134,16 @@ API в production требует `rediss://` при `NODE_ENV=production`. Self-
 
 ```env
 NODE_ENV=production
+PROCESS_ROLE=api
 PORT=4000
 DATABASE_URL=postgresql://...?sslmode=require
 JWT_SECRET=<openssl rand -base64 32>
 CREDENTIALS_ENCRYPTION_KEY=<openssl rand -base64 32>
 CORS_ORIGIN=https://app.example.com
 REDIS_URL=rediss://...
-# Optional dedicated Pub/Sub for notification SSE (defaults to REDIS_URL)
+# Optional dedicated URLs (fallback REDIS_URL). Do not flip QUEUE URL without drain plan.
+# REDIS_QUEUE_URL=rediss://...
+# REDIS_STATE_URL=rediss://...
 # REDIS_EVENTS_URL=rediss://...
 SCHEDULER_API_KEY=<openssl rand -base64 32>
 R2_ACCOUNT_ID=...
@@ -153,6 +157,41 @@ REPORT_EXPORT_SYNC_FALLBACK=false
 ```
 
 In-process scheduler cron в prod **не** включать без явного решения; используйте внешний cron + `SCHEDULER_API_KEY`.
+
+### 4.2b Worker — `nbos-worker` (same image as API)
+
+| Параметр      | Значение                                          |
+| ------------- | ------------------------------------------------- |
+| Build         | Same as `nbos-api`                                |
+| Start command | `cd apps/api && node --import tsx dist/worker.js` |
+| Port          | `4001` (`WORKER_HEALTH_PORT`)                     |
+| Health check  | `GET /health` → 200; ready: `GET /ready` → 200    |
+| Domain        | internal only (no public DNS required)            |
+
+```env
+NODE_ENV=production
+PROCESS_ROLE=worker
+WORKER_HEALTH_PORT=4001
+DATABASE_URL=... # same Neon
+REDIS_URL=rediss://... # same queue Redis as API producers
+# BULLMQ_MAIL_CONCURRENCY=5
+# BULLMQ_WHATSAPP_CONCURRENCY=3
+# BULLMQ_REPORTS_CONCURRENCY=1
+# BULLMQ_DRIVE_ZIP_CONCURRENCY=1
+# Total concurrency = worker_replicas × queue concurrency
+```
+
+**Rollout order (minimize dual consumers):**
+
+1. Deploy image with role support (API still on previous start until cutover).
+2. Start `nbos-worker` with `PROCESS_ROLE=worker`; verify `/ready`.
+3. Stop API replicas briefly → start API with `PROCESS_ROLE=api`.
+4. Enqueue one mail/report/zip/whatsapp test job; confirm waiting→active→completed on worker.
+5. Do **not** run `PROCESS_ROLE=all` in production.
+
+**Rollback:** restore API image/config that embeds workers; stop `nbos-worker` to avoid double processing; do not flush Redis queues.
+
+**Redis URL migration:** changing `REDIS_QUEUE_URL` does not move jobs — drain old Redis first (see Phase 3 runbook).
 
 ### 4.3 Web — `nbos-web`
 

@@ -54,4 +54,6 @@ COPY --from=builder /prod/api /app
 
 EXPOSE 4000
 
+# Coolify: nbos-api → dist/main.js (PROCESS_ROLE=api)
+# Coolify: nbos-worker → dist/worker.js (PROCESS_ROLE=worker, WORKER_HEALTH_PORT)
 CMD ["node", "--import", "tsx", "dist/main.js"]

@@ -9,7 +9,7 @@ Phased rollout. Do **not** merge all releases into one deploy.
 | 2A      | Cursor list without COUNT                              | Done     |
 | 2B      | NotificationInboxState dual-write (READ off)           | **Done** |
 | 2C      | READ unread from InboxState (after reconcile)          | Next     |
-| 3       | BullMQ worker separation                               | Pending  |
+| 3       | BullMQ worker separation                               | **Done** |
 | 4       | Scheduler lease                                        | Pending  |
 | 5       | Notification create / N+1 batching                     | Pending  |
 | 6       | Prisma/Neon pool                                       | Pending  |

@@ -44,20 +44,29 @@
 | `markAllAsRead`          | 1          | updateMany                                               |
 | Bulk (SLA)               | N × create | sequential `for` + `await create`                        |
 
-## Redis / BullMQ (per API process when `REDIS_URL` set)
+## Redis / BullMQ (per process when Redis set) — Phase 3.0 audit
 
-| Component                | File                                  | Connection                      |
-| ------------------------ | ------------------------------------- | ------------------------------- |
-| JWT denylist             | `token-denylist.service.ts`           | 1 ioredis                       |
-| Credential vault         | `credential-vault-session.service.ts` | 1                               |
-| Reports Queue + Worker   | `reports-*`                           | 2 (+ Worker blocking duplicate) |
-| Mail Queue + Worker      | `mail-*`                              | 2                               |
-| Drive ZIP Queue + Worker | `drive-export-zip-*`                  | 2                               |
-| WhatsApp Queue + Worker  | `whatsapp-product-groups-*`           | 2                               |
+| Queue                     | Producer                            | Worker                        |                       Current concurrency |       Retry | Retention                       | Redis connection                                           |
+| ------------------------- | ----------------------------------- | ----------------------------- | ----------------------------------------: | ----------: | ------------------------------- | ---------------------------------------------------------- |
+| `mail`                    | `MailQueueService`                  | `MailWorker` (OnModuleInit)   | env `BULLMQ_MAIL_CONCURRENCY` (default 5) |  5 / exp 5s | complete 1d/1000; fail 14d/5000 | `REDIS_QUEUE_URL`→`REDIS_URL` producer vs worker factories |
+| `whatsapp.product-groups` | `WhatsAppProductGroupsQueueService` | `WhatsAppProductGroupsWorker` |                             env default 3 |  5 / exp 5s | same critical options           | same                                                       |
+| `reports.export-jobs`     | `ReportsQueueService`               | `ReportsExportWorker`         |                             env default 1 | 3 / exp 10s | complete 6h/200; fail 7d/1000   | same                                                       |
+| `drive.zip-export-jobs`   | `DriveExportZipQueueService`        | `DriveExportZipWorker`        |                             env default 1 | 3 / exp 10s | export options                  | same                                                       |
 
-**Est. Redis connections / API process:** ~14–18 (including BullMQ duplicates).  
-**PROCESS_ROLE:** not present — workers start inside API when Redis is set.  
-**Retention:** WhatsApp has `removeOnComplete/Fail`; mail/reports/drive lack age/count retention.
+**Lifecycle (before Phase 3):** each Nest API process `OnModuleInit` created Queue **and** Worker when `REDIS_URL` set → N API replicas = N competing consumers + ~8 BullMQ Redis clients + denylist + vault + events.
+
+**Lifecycle (after Phase 3):** `PROCESS_ROLE=api` registers producers only; `PROCESS_ROLE=worker` (`apps/api/src/worker.ts` + `WorkerAppModule`) registers consumers; `PROCESS_ROLE=all` local/dev only (forbidden in production).
+
+**Est. Redis connections:**
+
+| Process                        |                                               Approx clients |
+| ------------------------------ | -----------------------------------------------------------: |
+| API (`PROCESS_ROLE=api`)       |    denylist + vault + 4 queue producers + events pub/sub ≈ 8 |
+| Worker (`PROCESS_ROLE=worker`) | 4 worker blocking + WhatsApp/other producers as needed ≈ 5–8 |
+| Legacy `all` in one process    |                                            ~14–18 (baseline) |
+
+**QueueEvents / QueueScheduler:** not used.  
+**No import-time `new Worker`:** workers only in Nest `OnModuleInit` inside worker role.
 
 ## Auth hot path
 
