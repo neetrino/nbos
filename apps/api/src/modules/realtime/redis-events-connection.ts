@@ -1,5 +1,9 @@
 import Redis from 'ioredis';
-import { createRedisConnection, getRedisUrl } from '../../common/redis/redis-connection';
+import { getRedisUrl } from '../../common/redis/redis-connection';
+import {
+  createEventsPublisherConnection,
+  createEventsSubscriberConnection,
+} from '../../runtime/queue-redis';
 
 /**
  * Redis URL for realtime Pub/Sub. Prefers `REDIS_EVENTS_URL`, falls back to `REDIS_URL`.
@@ -11,7 +15,17 @@ export function getRedisEventsUrl(): string | undefined {
   return getRedisUrl();
 }
 
-/** Dedicated publisher/subscriber connections (never share with BullMQ workers). */
+/** Dedicated publisher connection (never share with BullMQ workers). */
+export function createRedisEventsPublisherConnection(url: string): Redis {
+  return createEventsPublisherConnection(url);
+}
+
+/** Dedicated subscriber connection (never share with BullMQ workers). */
+export function createRedisEventsSubscriberConnection(url: string): Redis {
+  return createEventsSubscriberConnection(url);
+}
+
+/** @deprecated Prefer publisher/subscriber-specific factories. */
 export function createRedisEventsConnection(url: string): Redis {
-  return createRedisConnection(url);
+  return createEventsPublisherConnection(url);
 }

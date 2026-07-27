@@ -5,7 +5,11 @@ import {
   NOTIFICATION_SSE_EVENT,
 } from './notification-realtime.constants';
 import type { NotificationRealtimeBusMessage } from './notification-realtime.types';
-import { createRedisEventsConnection, getRedisEventsUrl } from './redis-events-connection';
+import {
+  createRedisEventsPublisherConnection,
+  createRedisEventsSubscriberConnection,
+  getRedisEventsUrl,
+} from './redis-events-connection';
 
 export type NotificationRealtimeHandler = (message: NotificationRealtimeBusMessage) => void;
 
@@ -30,8 +34,8 @@ export class NotificationRealtimeEventBus implements OnModuleInit, OnModuleDestr
       );
       return;
     }
-    this.publisher = createRedisEventsConnection(url);
-    this.subscriber = createRedisEventsConnection(url);
+    this.publisher = createRedisEventsPublisherConnection(url);
+    this.subscriber = createRedisEventsSubscriberConnection(url);
     this.subscriber.on('message', (channel, raw) => {
       if (channel !== NOTIFICATION_REALTIME_CHANNEL) return;
       this.dispatchLocal(this.parseMessage(raw));
