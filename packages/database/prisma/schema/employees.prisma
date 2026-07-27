@@ -38,9 +38,12 @@ model Employee {
   hireDate     DateTime?            @map("hire_date")
   fireDate     DateTime?            @map("fire_date")
   status       EmployeeStatusEnum   @default(PROBATION)
+  /** Bumped on password reset / disable so refresh rejects stale access claims. */
+  authVersion  Int                  @default(1) @map("auth_version")
   createdAt    DateTime             @default(now()) @map("created_at")
   updatedAt    DateTime             @updatedAt @map("updated_at")
 
+  authSessions                  AuthSession[]
   productsManaging              Product[]               @relation("ProductPM")
   productsAsDeveloper           Product[]               @relation("ProductDeveloper")
   productsAsDesigner            Product[]               @relation("ProductDesigner")

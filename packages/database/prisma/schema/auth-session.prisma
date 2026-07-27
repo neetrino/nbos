@@ -1,0 +1,42 @@
+// ─── AUTH SESSIONS (Phase 8 AuthSession V2) ─────────────────
+
+enum AuthSessionStatus {
+  ACTIVE
+  ROTATED
+  REVOKED
+  EXPIRED
+  COMPROMISED
+}
+
+/// Server-side refresh session. Raw refresh secrets are never stored.
+model AuthSession {
+  id                   String            @id @default(cuid())
+  employeeId           String            @map("employee_id")
+  tokenFamilyId        String            @map("token_family_id")
+  refreshTokenHash     String            @map("refresh_token_hash")
+  previousRefreshHash  String?           @map("previous_refresh_hash")
+  previousHashExpiresAt DateTime?        @map("previous_hash_expires_at")
+  status               AuthSessionStatus @default(ACTIVE)
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  expiresAt   DateTime  @map("expires_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+  rotatedAt   DateTime? @map("rotated_at")
+  revokedAt   DateTime? @map("revoked_at")
+  revokeReason String?  @map("revoke_reason")
+
+  createdIpHash String? @map("created_ip_hash")
+  lastIpHash    String? @map("last_ip_hash")
+  userAgentHash String? @map("user_agent_hash")
+  deviceLabel   String? @map("device_label")
+
+  version Int @default(1)
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, status])
+  @@index([expiresAt])
+  @@index([tokenFamilyId])
+  @@map("auth_sessions")
+}
