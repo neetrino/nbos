@@ -4,6 +4,8 @@
  * secrets (especially in production).
  */
 
+import { assertAuthSessionV2Config } from '../modules/auth/auth-session.flags';
+
 const MIN_SECRET_LENGTH = 32;
 
 /** Values that clearly came from `.env.example` and must never reach production. */
@@ -74,6 +76,15 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
 
   if (errors.length > 0) {
     throw new Error(`Invalid environment configuration:\n - ${errors.join('\n - ')}`);
+  }
+
+  try {
+    assertAuthSessionV2Config(config as NodeJS.ProcessEnv);
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`Invalid environment configuration:\n - ${err.message}`);
+    }
+    throw err;
   }
 
   return config;

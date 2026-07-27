@@ -14,6 +14,8 @@ declare module 'next-auth' {
 
   interface User {
     accessToken: string;
+    refreshToken?: string;
+    sessionId?: string;
     firstName: string;
     lastName: string;
   }
@@ -22,6 +24,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
+    /** Server-only opaque refresh; never copied into Session. */
+    refreshToken?: string;
+    sessionId?: string;
     firstName?: string;
     lastName?: string;
   }
@@ -59,11 +64,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const body = (await res.json()) as {
             data: {
               accessToken: string;
+              refreshToken?: string;
+              sessionId?: string;
               user: { id: string; email: string; firstName: string; lastName: string };
             };
           };
 
-          const { accessToken, user } = body.data;
+          const { accessToken, refreshToken, sessionId, user } = body.data;
 
           return {
             id: user.id,
@@ -72,6 +79,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             firstName: user.firstName,
             lastName: user.lastName,
             accessToken,
+            refreshToken,
+            sessionId,
           };
         } catch {
           return null;
@@ -83,6 +92,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.sessionId = user.sessionId;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.sub = user.id;
@@ -95,6 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.firstName = token.firstName ?? '';
         session.user.lastName = token.lastName ?? '';
       }
+      // Never expose accessToken / refreshToken to the browser session object.
       return session;
     },
   },
