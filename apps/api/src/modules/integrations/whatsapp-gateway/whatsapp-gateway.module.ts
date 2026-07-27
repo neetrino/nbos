@@ -8,8 +8,8 @@ import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.
 import { WhatsAppGatewayController } from './whatsapp-gateway.controller';
 import { WhatsAppGatewaySecretStore } from './whatsapp-gateway-secret.store';
 import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-queue.service';
-import { WhatsAppProductGroupsWorker } from './whatsapp-product-groups.worker';
 
+/** Producers + HTTP. BullMQ Worker lives in QueueWorkersModule. */
 @Module({
   imports: [AuditModule],
   controllers: [WhatsAppGatewayController, ProductWhatsAppController],
@@ -19,9 +19,14 @@ import { WhatsAppProductGroupsWorker } from './whatsapp-product-groups.worker';
     WhatsAppGatewayConnectionService,
     ProductWhatsAppParticipantResolver,
     WhatsAppProductGroupsQueueService,
-    WhatsAppProductGroupsWorker,
     ProductWhatsAppGroupService,
   ],
-  exports: [ProductWhatsAppGroupService, WhatsAppGatewayConnectionService, WhatsAppGatewayClient],
+  exports: [
+    ProductWhatsAppGroupService,
+    WhatsAppGatewayConnectionService,
+    WhatsAppGatewayClient,
+    ProductWhatsAppParticipantResolver,
+    WhatsAppProductGroupsQueueService,
+  ],
 })
 export class WhatsAppGatewayModule {}

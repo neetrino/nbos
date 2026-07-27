@@ -55,7 +55,9 @@ import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { QueueWorkersModule } from './runtime/queue-workers.module';
 
+/** Public HTTP API (+ workers only when PROCESS_ROLE=all for local/dev). */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -110,6 +112,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ChecklistTemplatesModule,
     PlatformAccessModule,
     PlatformLifecycleModule,
+    QueueWorkersModule.register(),
   ],
   controllers: [HealthController],
   providers: [

@@ -12,12 +12,29 @@ import {
 } from './security/cors-origins';
 import { createHelmetMiddleware } from './security/helmet.middleware';
 import { SocketIoCorsAdapter } from './socket-io.adapter';
+import { BullmqWorkerRegistry } from './runtime/bullmq-worker-registry';
+import { assertProcessRoleForEntrypoint } from './runtime/process-role';
+import { logProcessStartup } from './runtime/process-startup-log';
+import { logRedisTopology } from './runtime/queue-redis';
+import { MAIL_QUEUE_NAME } from './modules/mail/mail-queue.constants';
+import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.constants';
+import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
+import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
 
 /** Request body caps (defense against memory-exhaustion / DoS). Uploads go straight to R2 (presigned). */
 const JSON_BODY_LIMIT = '1mb';
 const URLENCODED_BODY_LIMIT = '1mb';
 
+const QUEUE_PRODUCER_NAMES = [
+  MAIL_QUEUE_NAME,
+  REPORT_EXPORT_QUEUE_NAME,
+  DRIVE_ZIP_EXPORT_QUEUE_NAME,
+  WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+];
+
 async function bootstrap() {
+  const role = assertProcessRoleForEntrypoint('api');
+
   const corsOrigins = parseCorsOriginsFromEnv();
   assertCorsOriginsSafeForProduction(corsOrigins);
 
@@ -82,10 +99,21 @@ async function bootstrap() {
   // process exits on SIGTERM — prevents EADDRINUSE during hot-reload restarts.
   app.enableShutdownHooks();
 
+  const registry = app.get(BullmqWorkerRegistry);
+  if (role === 'api') {
+    registry.assertApiHasNoWorkers();
+  }
+
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
 
   const logger = app.get(Logger);
+  logRedisTopology((message) => logger.log(message));
+  logProcessStartup({
+    role,
+    workers: registry.list(),
+    queueProducers: QUEUE_PRODUCER_NAMES,
+  });
   logger.log(`NBOS API running on http://localhost:${port}`);
   if (swaggerEnabled) {
     logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
