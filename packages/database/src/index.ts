@@ -29,13 +29,16 @@ export {
 } from './connection-budget';
 export {
   fingerprintSql,
+  replaceSqlStringLiterals,
   sanitizeMetricPayload,
+  textContainsPostgresUrlCredentials,
   shouldSampleQuery,
   recordDbQuery,
   recordDbPoolTimeout,
   setDbQueryMetricSink,
   getDbQueryCounters,
   resetDbQueryCounters,
+  METRIC_PAYLOAD_MAX_JSON_CHARS,
 } from './query-metrics';
 export { classifyDatabaseError, type DbErrorCode, type ClassifiedDbError } from './db-errors';
 export { withQueryMetrics } from './with-query-metrics';

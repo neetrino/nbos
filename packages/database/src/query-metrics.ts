@@ -34,6 +34,15 @@ const counters: MetricCounters = {
   db_pool_wait_timeout_total: 0,
 };
 
+/** Keyword check — fixed literal alternatives, no nested quantifiers. */
+const SENSITIVE_KEYWORD_RE = /password|passwd|secret|token|bearer/i;
+
+/**
+ * Serialized metric payloads above this size are treated as suspicious and redacted.
+ * Avoids scanning/returning arbitrarily large objects that may hide secrets in the tail.
+ */
+export const METRIC_PAYLOAD_MAX_JSON_CHARS = 16_384;
+
 let sink: ((line: string) => void) | null = null;
 
 export function setDbQueryMetricSink(next: ((line: string) => void) | null): void {
@@ -52,10 +61,41 @@ export function resetDbQueryCounters(): void {
   counters.db_pool_wait_timeout_total = 0;
 }
 
+/**
+ * Replace SQL single-quoted string literals with `?` using a linear scan.
+ * Handles doubled quotes (`''`) inside literals; leaves unterminated tails as `?`.
+ */
+export function replaceSqlStringLiterals(sql: string): string {
+  let out = '';
+  let i = 0;
+  while (i < sql.length) {
+    const ch = sql[i];
+    if (ch !== "'") {
+      out += ch;
+      i += 1;
+      continue;
+    }
+    // Opening quote — consume until closing quote ('' escapes a literal quote).
+    i += 1;
+    while (i < sql.length) {
+      if (sql[i] === "'" && sql[i + 1] === "'") {
+        i += 2;
+        continue;
+      }
+      if (sql[i] === "'") {
+        i += 1;
+        break;
+      }
+      i += 1;
+    }
+    out += '?';
+  }
+  return out;
+}
+
 /** Strip literals / quoted strings for fingerprinting — never log raw SQL with values. */
 export function fingerprintSql(sql: string): string {
-  const normalized = sql
-    .replace(/'([^']|'')*'/g, '?')
+  const normalized = replaceSqlStringLiterals(sql)
     .replace(/\$\d+/g, '?')
     .replace(/\b\d+(\.\d+)?\b/g, '?')
     .replace(/\s+/g, ' ')
@@ -64,21 +104,103 @@ export function fingerprintSql(sql: string): string {
   return createHash('sha256').update(normalized).digest('hex').slice(0, 16);
 }
 
+function startsWithIgnoreCase(text: string, index: number, prefixLower: string): boolean {
+  if (index + prefixLower.length > text.length) return false;
+  for (let i = 0; i < prefixLower.length; i += 1) {
+    if (text[index + i]!.toLowerCase() !== prefixLower[i]) return false;
+  }
+  return true;
+}
+
+function schemeLengthAt(text: string, index: number): number {
+  // Longer scheme first so `postgresql://` wins over `postgres://`.
+  if (startsWithIgnoreCase(text, index, 'postgresql://')) return 'postgresql://'.length;
+  if (startsWithIgnoreCase(text, index, 'postgres://')) return 'postgres://'.length;
+  return 0;
+}
+
+function isAuthorityEnd(ch: string): boolean {
+  return (
+    ch === '/' ||
+    ch === '?' ||
+    ch === '#' ||
+    ch === ' ' ||
+    ch === '\t' ||
+    ch === '\n' ||
+    ch === '\r'
+  );
+}
+
+/**
+ * Linear O(n) scan for `postgres(ql)://user:password@...` credentials in text.
+ * Does not treat `postgresql://host/db` or `postgresql://user@host/db` as credentials.
+ */
+export function textContainsPostgresUrlCredentials(text: string): boolean {
+  let i = 0;
+  while (i < text.length) {
+    const schemeLen = schemeLengthAt(text, i);
+    if (schemeLen === 0) {
+      i += 1;
+      continue;
+    }
+
+    const authorityStart = i + schemeLen;
+    let atPos = -1;
+    let j = authorityStart;
+    while (j < text.length && !isAuthorityEnd(text[j]!)) {
+      if (text[j] === '@' && atPos < 0) {
+        atPos = j;
+      }
+      j += 1;
+    }
+
+    if (atPos >= 0) {
+      const userInfo = text.slice(authorityStart, atPos);
+      if (userInfo.includes(':')) {
+        return true;
+      }
+    }
+
+    // Advance past this authority (or scheme) — never re-scan earlier bytes.
+    i = Math.max(authorityStart, j);
+  }
+  return false;
+}
+
+function buildRedactedMetricPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  return {
+    event: payload.event ?? 'db.query',
+    role: payload.role,
+    model: payload.model,
+    operation: payload.operation,
+    durationMs: payload.durationMs,
+    status: payload.status,
+    sampled: payload.sampled,
+    redacted: true,
+  };
+}
+
 /** Ensure log payloads never contain password-like substrings from accidental URL leaks. */
 export function sanitizeMetricPayload(payload: Record<string, unknown>): Record<string, unknown> {
-  const json = JSON.stringify(payload);
-  if (/password|passwd|secret|token|bearer|postgresql:\/\/[^:]+:[^@]+@/i.test(json)) {
-    return {
-      event: payload.event ?? 'db.query',
-      role: payload.role,
-      model: payload.model,
-      operation: payload.operation,
-      durationMs: payload.durationMs,
-      status: payload.status,
-      sampled: payload.sampled,
-      redacted: true,
-    };
+  let json: string;
+  try {
+    json = JSON.stringify(payload);
+  } catch {
+    return buildRedactedMetricPayload(payload);
   }
+
+  if (json === undefined) {
+    return buildRedactedMetricPayload(payload);
+  }
+
+  if (json.length > METRIC_PAYLOAD_MAX_JSON_CHARS) {
+    return buildRedactedMetricPayload(payload);
+  }
+
+  if (SENSITIVE_KEYWORD_RE.test(json) || textContainsPostgresUrlCredentials(json)) {
+    return buildRedactedMetricPayload(payload);
+  }
+
   return payload;
 }
 

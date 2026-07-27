@@ -1,6 +1,8 @@
 const DEFAULT_REFRESH_COOKIE_NAME = 'nbos_refresh';
 
-export function resolveWebAuthRefreshCookieName(env: NodeJS.ProcessEnv = process.env): string {
+export function resolveWebAuthRefreshCookieName(
+  env: Record<string, string | undefined> = process.env,
+): string {
   const name = env.AUTH_REFRESH_COOKIE_NAME?.trim();
   return name && name.length > 0 ? name : DEFAULT_REFRESH_COOKIE_NAME;
 }
