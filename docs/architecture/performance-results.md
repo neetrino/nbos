@@ -115,3 +115,19 @@ NOTIFICATION_INBOX_STATE_READ_ENABLED=false
 **VERIFIED LOCALLY:** unit tests command path, dual-write, concurrency helper; API typecheck.  
 **READY FOR STAGING:** Stage A flags off → Stage B V2 → Stage C bulk on SLA → Stage D SSE-from-inbox.  
 **OUTBOX:** deferred; use enqueue reconcile + keep IN_APP deliveries as `DELIVERED` in TX (current product behavior).
+
+## Release 6 — Prisma pool + query observability (2026-07-27)
+
+| Scenario                                               | Status        |
+| ------------------------------------------------------ | ------------- |
+| One Prisma client per process (`PRISMA_TOKEN`)         | ✅            |
+| Role pool defaults API 5 / Worker 4 / Scheduler 2      | ✅            |
+| Runtime `DATABASE_URL` pooled; migrations `DIRECT_URL` | ✅            |
+| Connection budget validation (prod requires budget)    | ✅            |
+| Slow query metrics (sampled, no params)                | ✅            |
+| Readiness cached `SELECT 1`                            | ✅            |
+| DB error classification (`DB_POOL_TIMEOUT`, …)         | ✅            |
+| InboxState READ                                        | **still off** |
+
+**READY FOR STAGING:** set `DB_TOTAL_CONNECTION_BUDGET` + replica counts → `pnpm db:budget` → Stage B metrics sample.  
+**REQUIRES PRODUCTION METRICS:** peak connections vs budget; pool timeout rate; slow query fingerprints.

@@ -63,12 +63,12 @@ File: `apps/api/src/modules/notifications/notification.service.ts`
 | Rule upsert in hot path  |                                                   **0** |
 | Mutation COUNT for SSE   |                       **0** when SSE-from-inbox enabled |
 
-## Phase 5 implementation notes
+## Phase 5 remaining producers (Stage F — not blocking Phase 6)
 
-- `NotificationCommandService` — V2 createOne / createMany (flagged).
-- `NotificationRuleCacheService` — system rules at startup; hot path uses cached rule id.
-- Bulk path: set-based SQL for events/jobs/deliveries/notifications + `incrementInboxUnreadMany`.
-- Mark read / archive / mark-all — conditional / set-based SQL.
-- Outbox deferred; `NotificationEnqueueReconcileService` scans PENDING jobs/deliveries.
-- Producers migrated to `createMany`: Support SLA, credentials high-risk.
-- **Do not enable** `NOTIFICATION_INBOX_STATE_READ_ENABLED`.
+| Producer                            | Pattern                          | Est. SQL | Remediation                                                      |
+| ----------------------------------- | -------------------------------- | -------: | ---------------------------------------------------------------- |
+| Payroll run wallet notify           | sequential `create` per employee |   ~8 × N | `createMany` when titles identical                               |
+| Bonus wallet hints                  | sequential `create` per hint     |   ~8 × N | batch by identical template or keep createOne (different bodies) |
+| Other wallet/bonus single-recipient | createOne                        |       ~8 | OK on V2 path                                                    |
+
+Do not block Phase 6 on full Stage F migration.
