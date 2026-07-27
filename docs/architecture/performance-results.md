@@ -131,3 +131,22 @@ NOTIFICATION_INBOX_STATE_READ_ENABLED=false
 
 **READY FOR STAGING:** set `DB_TOTAL_CONNECTION_BUDGET` + replica counts → `pnpm db:budget` → Stage B metrics sample.  
 **REQUIRES PRODUCTION METRICS:** peak connections vs budget; pool timeout rate; slow query fingerprints.
+
+## Release 7 — InboxState READ path (code; flag off) (2026-07-27)
+
+| Scenario                                      | Status                          |
+| --------------------------------------------- | ------------------------------- |
+| Dry-run + repair reconcile (advisory lock)    | ✅                              |
+| Readiness gate (`READY` / `NOT_READY`)        | ✅                              |
+| Shadow read (sampled)                         | ✅                              |
+| READ path + missing-state repair              | ✅ code; **flag default false** |
+| Frontend seeds `lastVersion` from GET version | ✅                              |
+| Legacy COUNT retained                         | ✅                              |
+| Staging COUNT vs InboxState p50/p95           | UNKNOWN                         |
+
+```env
+NOTIFICATION_INBOX_STATE_READ_ENABLED=false
+```
+
+**READY FOR STAGING:** WRITE+RECONCILE → `pnpm notifications:inbox:check` → shadow → READ.  
+**PRODUCTION READ:** only after readiness READY and shadow mismatches=0.
