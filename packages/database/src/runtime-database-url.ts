@@ -9,7 +9,6 @@ export type BuildRuntimeDatabaseUrlInput = {
   poolMax: number;
   poolTimeoutSec: number;
   connectTimeoutSec: number;
-  statementTimeoutMs?: number;
 };
 
 export type BuildRuntimeDatabaseUrlResult = {
@@ -27,9 +26,23 @@ const FORBIDDEN_OVERRIDE_KEYS = new Set([
 ]);
 
 /**
+ * Strip libpq `options` fragments that Neon pooler rejects as startup params.
+ * `statement_timeout` is applied via `SET` after connect in `createPrismaClient`.
+ * @see https://neon.tech/docs/connect/connection-errors#unsupported-startup-parameter
+ */
+function stripUnsupportedStartupOptions(options: string): string | null {
+  const cleaned = options
+    .replace(/-c\s+statement_timeout=\S+/gi, '')
+    .replace(/\bstatement_timeout=\S+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
+/**
  * Append / replace pool-related query parameters for node-pg / Neon pooled URLs.
- * Prisma driver adapter uses `pg.Pool`; URL params here are informational +
- * `options=-c statement_timeout=…` for session defaults when supported.
+ * Prisma driver adapter uses `pg.Pool`; URL params here are informational.
+ * Do not put `statement_timeout` in `options=` — Neon PgBouncer rejects it.
  */
 export function buildRuntimeDatabaseUrl(
   input: BuildRuntimeDatabaseUrlInput,
@@ -55,19 +68,21 @@ export function buildRuntimeDatabaseUrl(
     }
   }
 
+  const existingOptions = params.get('options');
+  if (existingOptions !== null) {
+    const cleaned = stripUnsupportedStartupOptions(existingOptions);
+    if (cleaned === null) {
+      params.delete('options');
+    } else {
+      params.set('options', cleaned);
+    }
+  }
+
   // Prisma/libpq-style hints (harmless on Neon pooler; Pool.max is authoritative).
   params.set('connection_limit', String(input.poolMax));
   params.set('pool_timeout', String(input.poolTimeoutSec));
   params.set('connect_timeout', String(input.connectTimeoutSec));
   params.set('application_name', `nbos-${input.role}`);
-
-  if (input.statementTimeoutMs !== undefined) {
-    const existingOptions = params.get('options') ?? '';
-    const timeoutOpt = `-c statement_timeout=${input.statementTimeoutMs}`;
-    if (!existingOptions.includes('statement_timeout')) {
-      params.set('options', existingOptions ? `${existingOptions} ${timeoutOpt}` : timeoutOpt);
-    }
-  }
 
   parsed.search = params.toString();
 

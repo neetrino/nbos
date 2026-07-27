@@ -48,7 +48,6 @@ export function createPrismaClient(options: CreatePrismaClientOptions = {}): Pri
         poolMax,
         poolTimeoutSec: cfg.poolTimeoutSec,
         connectTimeoutSec: cfg.connectTimeoutSec,
-        statementTimeoutMs: cfg.statementTimeoutMs,
       });
 
   const pool = new Pool({
