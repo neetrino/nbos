@@ -65,3 +65,18 @@ Updated after each release. Production panel numbers marked when unavailable.
 
 **READY FOR STAGING:** deploy worker service then cut API to `PROCESS_ROLE=api`.  
 **REQUIRES PRODUCTION METRICS:** Redis connection count; queue waiting/active/failed; worker restart drain.
+
+## Release 4 — Scheduler process + PostgreSQL lease (2026-07-27)
+
+| Scenario                                    | Status |
+| ------------------------------------------- | ------ |
+| `SchedulerLease` + `SchedulerRun` migration | ✅     |
+| Atomic acquire + fencingToken               | ✅     |
+| Heartbeat + AbortController                 | ✅     |
+| Cron only on `PROCESS_ROLE=scheduler\|all`  | ✅     |
+| API/Worker assert empty cron registry       | ✅     |
+| Manual HTTP also uses lease                 | ✅     |
+| InboxState READ remains off                 | ✅     |
+
+**READY FOR STAGING:** migrate → `SCHEDULER_ENABLED=false` smoke → canary `notification-inbox-reconcile`.  
+**REQUIRES PRODUCTION METRICS:** SKIPPED_LOCKED rate; lease duration; dual-replica contention.

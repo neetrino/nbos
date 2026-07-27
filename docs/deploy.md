@@ -17,18 +17,19 @@ Browser
   → nbos-web   (Next.js, :3000)
   → nbos-api   (NestJS, :4000, PROCESS_ROLE=api)
   → nbos-worker (NestJS worker.ts, :4001 health, PROCESS_ROLE=worker)
+  → nbos-scheduler (NestJS scheduler.ts, :4002, PROCESS_ROLE=scheduler)
   → redis      (Coolify or Upstash — REDIS_URL)
 Neon Postgres / R2 / Resend — внешние SaaS
 ```
 
-| Компонент          | Продакшен                                                       |
-| ------------------ | --------------------------------------------------------------- |
-| **Compute**        | Hetzner VPS + Coolify (`nbos-web` + `nbos-api` + `nbos-worker`) |
-| **Edge / домены**  | Cloudflare proxied, SSL Full (strict), WAF                      |
-| **База данных**    | Neon Postgres (`sslmode=require`)                               |
-| **Object storage** | Cloudflare R2 (private bucket)                                  |
-| **Кэш / очереди**  | Redis (`rediss://` в prod)                                      |
-| **Email**          | Resend                                                          |
+| Компонент          | Продакшен                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| **Compute**        | Hetzner VPS + Coolify (`nbos-web` + `nbos-api` + `nbos-worker` + `nbos-scheduler`) |
+| **Edge / домены**  | Cloudflare proxied, SSL Full (strict), WAF                                         |
+| **База данных**    | Neon Postgres (`sslmode=require`)                                                  |
+| **Object storage** | Cloudflare R2 (private bucket)                                                     |
+| **Кэш / очереди**  | Redis (`rediss://` в prod)                                                         |
+| **Email**          | Resend                                                                             |
 
 **Публичные URL (через Cloudflare):**
 
@@ -192,6 +193,37 @@ REDIS_URL=rediss://... # same queue Redis as API producers
 **Rollback:** restore API image/config that embeds workers; stop `nbos-worker` to avoid double processing; do not flush Redis queues.
 
 **Redis URL migration:** changing `REDIS_QUEUE_URL` does not move jobs — drain old Redis first (see Phase 3 runbook).
+
+### 4.2c Scheduler — `nbos-scheduler` (same image as API)
+
+| Параметр      | Значение                                             |
+| ------------- | ---------------------------------------------------- |
+| Build         | Same as `nbos-api`                                   |
+| Start command | `cd apps/api && node --import tsx dist/scheduler.js` |
+| Port          | `4002` (`SCHEDULER_HEALTH_PORT`)                     |
+| Health check  | `GET /api/health` → 200; ready: `GET /api/ready`     |
+| Replicas      | **1** on first rollout                               |
+
+```env
+NODE_ENV=production
+PROCESS_ROLE=scheduler
+SCHEDULER_ENABLED=false
+SCHEDULER_HEALTH_PORT=4002
+SCHEDULER_LEASE_TTL_MS=120000
+SCHEDULER_HEARTBEAT_INTERVAL_MS=30000
+SCHEDULER_API_KEY=<same as api>
+DATABASE_URL=...
+REDIS_URL=rediss://...
+# Stage C canary:
+# SCHEDULER_ENABLED=true
+# SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED=true
+# NOTIFICATION_INBOX_STATE_RECONCILE_ENABLED=true
+# NOTIFICATION_INBOX_STATE_READ_ENABLED=false
+```
+
+**Rollout:** migrate lease tables → deploy with `SCHEDULER_ENABLED=false` → enable one job → disable duplicate external cron for that job → then next jobs. Never leave Nest cron on API (`PROCESS_ROLE=api` asserts empty cron registry).
+
+**Rollback:** `SCHEDULER_ENABLED=false`, stop scheduler service, re-enable Coolify/external cron for the job; do not drop `scheduler_leases` / `scheduler_runs`.
 
 ### 4.3 Web — `nbos-web`
 
