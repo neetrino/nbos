@@ -20,15 +20,29 @@ describe('buildRuntimeDatabaseUrl', () => {
       poolMax: 5,
       poolTimeoutSec: 10,
       connectTimeoutSec: 10,
-      statementTimeoutMs: 30_000,
     });
     const parsed = new URL(url);
     expect(parsed.searchParams.get('sslmode')).toBe('require');
     expect(parsed.searchParams.get('foo')).toBe('1');
     expect(parsed.searchParams.get('connection_limit')).toBe('5');
     expect(parsed.searchParams.get('application_name')).toBe('nbos-api');
+    expect(parsed.searchParams.get('options')).toBeNull();
     expect(safeSummary).not.toContain('p@');
     expect(safeSummary).not.toContain(':p');
+  });
+
+  it('strips statement_timeout from options for Neon pooler compatibility', () => {
+    const { url } = buildRuntimeDatabaseUrl({
+      role: 'api',
+      baseUrl:
+        'postgresql://u:p@ep-xxx-pooler.neon.tech/neondb?sslmode=require&options=-c%20statement_timeout%3D30000',
+      poolMax: 5,
+      poolTimeoutSec: 10,
+      connectTimeoutSec: 10,
+    });
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('options')).toBeNull();
+    expect(url).not.toMatch(/statement_timeout/i);
   });
 
   it('does not duplicate connection_limit', () => {

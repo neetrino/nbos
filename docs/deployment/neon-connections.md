@@ -70,6 +70,8 @@ DB_CONNECT_TIMEOUT_SEC=10
 DB_STATEMENT_TIMEOUT_MS=30000
 ```
 
+`DB_STATEMENT_TIMEOUT_MS` is applied with `SET statement_timeout` after each pool connect — **not** via URL `options=` (Neon pooler rejects that startup parameter).
+
 ## Readiness
 
 ```env
