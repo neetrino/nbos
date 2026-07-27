@@ -3,14 +3,18 @@ import { NotificationService } from './notification.service';
 
 describe('NotificationService inbox dual-write', () => {
   const prevWrite = process.env.NOTIFICATION_INBOX_STATE_WRITE_ENABLED;
+  const prevSse = process.env.NOTIFICATION_SSE_FROM_INBOX_STATE_ENABLED;
 
   beforeEach(() => {
     process.env.NOTIFICATION_INBOX_STATE_WRITE_ENABLED = 'true';
+    process.env.NOTIFICATION_SSE_FROM_INBOX_STATE_ENABLED = 'true';
   });
 
   afterEach(() => {
     if (prevWrite === undefined) delete process.env.NOTIFICATION_INBOX_STATE_WRITE_ENABLED;
     else process.env.NOTIFICATION_INBOX_STATE_WRITE_ENABLED = prevWrite;
+    if (prevSse === undefined) delete process.env.NOTIFICATION_SSE_FROM_INBOX_STATE_ENABLED;
+    else process.env.NOTIFICATION_SSE_FROM_INBOX_STATE_ENABLED = prevSse;
   });
 
   it('increments inbox once on create and not on duplicate', async () => {
@@ -109,36 +113,57 @@ describe('NotificationService inbox dual-write', () => {
     let isRead = false;
     let unread = 1;
     const queryRaw = vi.fn(async () => {
-      unread = Math.max(0, unread - 1);
-      return [{ unread_count: unread, version: BigInt(2) }];
-    });
-    const row = () => ({
-      id: 'n1',
-      recipientEmployeeId: 'u1',
-      type: 'x',
-      category: 'informational',
-      priority: 'normal',
-      title: 'T',
-      body: '',
-      link: null,
-      actionLabel: null,
-      entityType: null,
-      entityId: null,
-      isRead,
-      readAt: isRead ? new Date() : null,
-      archivedAt: null,
-      createdAt: new Date(),
+      if (!isRead) {
+        isRead = true;
+        return [
+          {
+            id: 'n1',
+            recipientEmployeeId: 'u1',
+            type: 'x',
+            category: 'informational',
+            priority: 'normal',
+            title: 'T',
+            body: '',
+            link: null,
+            actionLabel: null,
+            entityType: null,
+            entityId: null,
+            isRead: true,
+            readAt: new Date(),
+            archivedAt: null,
+            createdAt: new Date(),
+          },
+        ];
+      }
+      if (unread > 0) {
+        unread = Math.max(0, unread - 1);
+        return [{ unread_count: unread, version: BigInt(2) }];
+      }
+      return [];
     });
 
     const prisma = {
       $queryRaw: queryRaw,
       $transaction: async <T>(fn: (tx: typeof prisma) => Promise<T>) => fn(prisma),
       inAppNotification: {
-        findFirst: async () => row(),
-        update: async () => {
-          isRead = true;
-          return row();
-        },
+        findFirst: async () => ({
+          id: 'n1',
+          recipientEmployeeId: 'u1',
+          type: 'x',
+          category: 'informational',
+          priority: 'normal',
+          title: 'T',
+          body: '',
+          link: null,
+          actionLabel: null,
+          entityType: null,
+          entityId: null,
+          isRead,
+          readAt: isRead ? new Date() : null,
+          archivedAt: null,
+          createdAt: new Date(),
+        }),
+        update: vi.fn(),
       },
     };
     const publisher = {
@@ -147,8 +172,9 @@ describe('NotificationService inbox dual-write', () => {
     };
     const service = new NotificationService(prisma as never, publisher as never);
     await service.markAsRead('n1', 'u1');
-    expect(queryRaw).toHaveBeenCalledTimes(1);
+    expect(queryRaw).toHaveBeenCalledTimes(2);
     await service.markAsRead('n1', 'u1');
-    expect(queryRaw).toHaveBeenCalledTimes(1);
+    // Second mark: UPDATE returns [] then findFirst — no decrement
+    expect(queryRaw).toHaveBeenCalledTimes(3);
   });
 });

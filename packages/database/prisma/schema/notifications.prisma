@@ -138,6 +138,7 @@ model NotificationDelivery {
 
   job NotificationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
+  @@unique([jobId, channel], map: "notification_deliveries_job_channel_uid")
   @@index([jobId])
   @@index([channel])
   @@index([status])

@@ -27,6 +27,50 @@ export async function incrementInboxUnread(
   return mapRow(rows[0]);
 }
 
+/**
+ * Set-based inbox bump for bulk inserts. `deltas` is recipientId → inserted unread count.
+ * Returns final snapshots for SSE (one per recipient).
+ */
+export async function incrementInboxUnreadMany(
+  tx: Tx,
+  deltas: ReadonlyMap<string, number>,
+): Promise<Map<string, InboxStateSnapshot>> {
+  const result = new Map<string, InboxStateSnapshot>();
+  if (deltas.size === 0) return result;
+
+  const employeeIds: string[] = [];
+  const counts: number[] = [];
+  for (const [employeeId, count] of deltas) {
+    if (count <= 0) continue;
+    employeeIds.push(employeeId);
+    counts.push(count);
+  }
+  if (employeeIds.length === 0) return result;
+
+  const rows = await tx.$queryRaw<
+    Array<{ employee_id: string; unread_count: number; version: bigint }>
+  >`
+    WITH incoming AS (
+      SELECT *
+      FROM unnest(${employeeIds}::text[], ${counts}::int[]) AS t(employee_id, delta)
+    )
+    INSERT INTO notification_inbox_state (employee_id, unread_count, version, updated_at)
+    SELECT employee_id, delta, 1, CURRENT_TIMESTAMP
+    FROM incoming
+    ON CONFLICT (employee_id) DO UPDATE
+    SET
+      unread_count = notification_inbox_state.unread_count + EXCLUDED.unread_count,
+      version = notification_inbox_state.version + 1,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING employee_id, unread_count, version
+  `;
+
+  for (const row of rows) {
+    result.set(row.employee_id, mapRow(row));
+  }
+  return result;
+}
+
 export async function decrementInboxUnread(
   tx: Tx,
   employeeId: string,
