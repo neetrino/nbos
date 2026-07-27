@@ -17,6 +17,7 @@ import {
 } from './runtime/queue-redis';
 import { startWorkerHealthServer } from './runtime/worker-health.server';
 import { DEFAULT_SHUTDOWN_TIMEOUT_MS, runGracefulShutdown } from './runtime/worker-shutdown';
+import { checkPrismaReadiness } from './database/db-readiness';
 
 const EXPECTED_QUEUES = [
   MAIL_QUEUE_NAME,
@@ -59,12 +60,8 @@ async function bootstrap() {
       }
     },
     isPrismaReady: async () => {
-      try {
-        await prisma.$queryRaw`SELECT 1`;
-        return true;
-      } catch {
-        return false;
-      }
+      const result = await checkPrismaReadiness(prisma);
+      return result.ok;
     },
   });
 
@@ -122,7 +119,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-   
   console.error(error);
   process.exit(1);
 });
