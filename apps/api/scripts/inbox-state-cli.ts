@@ -54,7 +54,6 @@ async function main(): Promise<void> {
       force: true,
     });
 
-     
     console.log(JSON.stringify(report, null, 2));
 
     if (args.mode === 'dry-run') {
@@ -67,7 +66,7 @@ async function main(): Promise<void> {
         maxMissingRows: resolveInboxReadMaxMissingRows(),
         maxAbsoluteDrift: resolveInboxReadMaxAbsoluteDrift(),
       });
-       
+
       console.log(
         JSON.stringify({ readiness: readiness.decision, reasons: readiness.reasons }, null, 2),
       );
@@ -79,7 +78,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-   
   console.error(err);
   process.exit(1);
 });
