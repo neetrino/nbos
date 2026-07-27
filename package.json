@@ -42,6 +42,8 @@
     "db:seed": "pnpm --filter @nbos/database seed",
     "db:studio": "pnpm --filter @nbos/database studio",
     "db:budget": "tsx scripts/db/print-connection-budget.ts",
+    "notifications:inbox:check": "tsx apps/api/scripts/inbox-state-cli.ts --dry-run",
+    "notifications:inbox:repair": "tsx apps/api/scripts/inbox-state-cli.ts --repair",
     "prepare": "husky"
   },
   "devDependencies": {

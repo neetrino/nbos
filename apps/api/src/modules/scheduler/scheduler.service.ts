@@ -274,10 +274,20 @@ export class SchedulerService {
       { jobName: SCHEDULER_JOB_NAMES.notificationInboxReconcile, trigger },
       async ({ signal }) => {
         if (signal.aborted) return;
-        const result = await this.notificationInboxReconcile.reconcileAll({ publish: true });
+        const result = await this.notificationInboxReconcile.reconcileAll({
+          mode: 'repair',
+          publish: true,
+        });
         return {
           processedCount: result.repaired,
-          metadata: { scanned: result.scanned, mismatches: result.mismatches.length },
+          metadata: {
+            scanned: result.scanned,
+            matched: result.matched,
+            drifted: result.drifted,
+            missing: result.missing,
+            negative: result.negative,
+            maxAbsoluteDrift: result.maxAbsoluteDrift,
+          },
         };
       },
     );
