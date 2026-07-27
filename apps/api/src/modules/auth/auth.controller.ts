@@ -26,6 +26,7 @@ import {
 } from './auth-session.cookies';
 import { resolveAuthRefreshCookieName } from './auth-session.flags';
 import { assertRefreshCsrf } from './auth-session.csrf';
+import { toAuthPublicResponse, type AuthPublicResponse } from './auth-public-response';
 
 const ONE_MINUTE_MS = 60_000;
 const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
@@ -45,31 +46,39 @@ export class AuthController {
   @Public()
   @Throttle(LOGIN_THROTTLE)
   @ApiOperation({ summary: 'Login with email and password' })
-  @ApiResponse({ status: 200, description: 'Returns access token and user info' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Returns access token and user info. Refresh token is set only via HttpOnly cookie (not in JSON).',
+  })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(
     @Body() dto: LoginDto,
     @Req() req: { ip?: string; headers: Record<string, string | string[] | undefined> },
     @Res({ passthrough: true })
     res: { setHeader: (name: string, value: string | string[]) => void },
-  ) {
+  ): Promise<AuthPublicResponse> {
     const result = await this.authService.login(dto.email, dto.password, {
       ip: req.ip,
       userAgent: headerValue(req.headers['user-agent']),
     });
-    if (result.refreshToken) {
-      const cookie = buildRefreshCookieOptions(result.refreshToken);
-      res.setHeader('Set-Cookie', serializeRefreshCookie(cookie));
-    }
-    // Keep backward-compatible body; refreshToken is for BFF/Auth.js server only.
-    return result;
+    this.setRefreshCookieIfPresent(res, result.refreshToken);
+    return toAuthPublicResponse(result);
   }
 
   @Post('refresh')
   @Public()
   @HttpCode(200)
   @Throttle(REFRESH_THROTTLE)
-  @ApiOperation({ summary: 'Rotate refresh session and issue short access token' })
+  @ApiOperation({
+    summary: 'Rotate refresh session and issue short access token',
+    description:
+      'Refresh token is accepted from HttpOnly cookie or request body (server-side BFF). Rotated refresh is set only via Set-Cookie, never in JSON.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Access token and user info. Refresh token only in HttpOnly cookie.',
+  })
   async refresh(
     @Body() dto: RefreshDto,
     @Req()
@@ -82,7 +91,7 @@ export class AuthController {
     @Headers('origin') origin?: string,
     @Headers('referer') referer?: string,
     @Headers('x-nbos-bff') bffHeader?: string,
-  ) {
+  ): Promise<AuthPublicResponse> {
     assertRefreshCsrf({
       origin,
       referer,
@@ -101,13 +110,8 @@ export class AuthController {
       ip: req.ip,
       userAgent: headerValue(req.headers['user-agent']),
     });
-    if (result.refreshToken) {
-      res.setHeader(
-        'Set-Cookie',
-        serializeRefreshCookie(buildRefreshCookieOptions(result.refreshToken)),
-      );
-    }
-    return result;
+    this.setRefreshCookieIfPresent(res, result.refreshToken);
+    return toAuthPublicResponse(result);
   }
 
   @Post('accept-invite')
@@ -165,6 +169,18 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
   getInviteInfo(@Query('token') token: string) {
     return this.authService.getInvitationInfo(token);
+  }
+
+  private setRefreshCookieIfPresent(
+    res: { setHeader: (name: string, value: string | string[]) => void },
+    refreshToken: string | undefined,
+  ): void {
+    if (!refreshToken) return;
+    // Refresh tokens are intentionally transported in an HttpOnly, Secure (prod),
+    // SameSite and path-scoped cookie. The raw secret is not persisted and is
+    // excluded from the JSON response (see `toAuthPublicResponse`).
+    // codeql[js/clear-text-storage-of-sensitive-data]
+    res.setHeader('Set-Cookie', serializeRefreshCookie(buildRefreshCookieOptions(refreshToken)));
   }
 }
 

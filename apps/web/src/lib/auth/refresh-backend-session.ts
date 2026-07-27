@@ -1,5 +1,6 @@
 import { encode, getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
+import { parseRefreshTokenFromResponse } from './parse-nest-refresh-cookie';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -12,7 +13,8 @@ function sessionCookieName(): string {
 
 /**
  * Calls Nest refresh with body token (BFF marker). Updates encrypted Auth.js JWT cookie
- * with the new access (and refresh) tokens. Never exposes refresh to client JS.
+ * with the new access (and refresh) tokens. Rotated refresh is read from Nest Set-Cookie
+ * (not JSON). Never exposes refresh to client JS.
  */
 export async function refreshBackendSession(req: NextRequest): Promise<{
   accessToken: string;
@@ -48,13 +50,13 @@ export async function refreshBackendSession(req: NextRequest): Promise<{
   const body = (await res.json()) as {
     data: {
       accessToken: string;
-      refreshToken?: string;
       sessionId?: string;
       user: { id: string; email: string; firstName: string; lastName: string };
     };
   };
 
-  const { accessToken, refreshToken: nextRefresh, sessionId, user } = body.data;
+  const { accessToken, sessionId, user } = body.data;
+  const nextRefresh = parseRefreshTokenFromResponse(res) ?? refreshToken;
 
   const newJwt = await encode({
     secret,
@@ -62,7 +64,7 @@ export async function refreshBackendSession(req: NextRequest): Promise<{
     token: {
       ...token,
       accessToken,
-      refreshToken: nextRefresh ?? refreshToken,
+      refreshToken: nextRefresh,
       sessionId: sessionId ?? (typeof token.sessionId === 'string' ? token.sessionId : undefined),
       sub: user.id,
       email: user.email,

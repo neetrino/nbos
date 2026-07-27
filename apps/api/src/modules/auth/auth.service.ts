@@ -23,9 +23,13 @@ interface LegacyJwtPayload {
   email: string;
 }
 
+/**
+ * Internal login/refresh result. Controllers must map through `toAuthPublicResponse`
+ * so `refreshToken` is never serialized into the public JSON body.
+ */
 export interface LoginResult {
   accessToken: string;
-  /** Present only for V2 issue; Auth.js / BFF must not expose to browser JS. */
+  /** Opaque refresh for HttpOnly cookie / server-side BFF Set-Cookie parse only. */
   refreshToken?: string;
   sessionId?: string;
   tokenVersion: 1 | 2;

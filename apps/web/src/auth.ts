@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import type { DefaultSession, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
+import { parseRefreshTokenFromResponse } from './lib/auth/parse-nest-refresh-cookie';
 
 declare module 'next-auth' {
   interface Session {
@@ -64,13 +65,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const body = (await res.json()) as {
             data: {
               accessToken: string;
-              refreshToken?: string;
               sessionId?: string;
               user: { id: string; email: string; firstName: string; lastName: string };
             };
           };
 
-          const { accessToken, refreshToken, sessionId, user } = body.data;
+          const { accessToken, sessionId, user } = body.data;
+          // Refresh is HttpOnly Set-Cookie only — never expected in JSON.
+          const refreshToken = parseRefreshTokenFromResponse(res);
 
           return {
             id: user.id,
