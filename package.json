@@ -41,6 +41,7 @@
     "db:push": "pnpm --filter @nbos/database push",
     "db:seed": "pnpm --filter @nbos/database seed",
     "db:studio": "pnpm --filter @nbos/database studio",
+    "db:budget": "tsx scripts/db/print-connection-budget.ts",
     "prepare": "husky"
   },
   "devDependencies": {

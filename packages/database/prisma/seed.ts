@@ -9,7 +9,7 @@ import { seedCredentialsDemo } from './seed-credentials-demo';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
 async function main() {
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
   console.log('Cleaning existing data...');
   await prisma.auditLog.deleteMany();

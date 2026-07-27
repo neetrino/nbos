@@ -371,7 +371,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
 };
 
 async function main() {
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
   console.log('Seeding RBAC permissions...');
 
