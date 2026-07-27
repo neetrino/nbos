@@ -74,12 +74,26 @@ export class EmployeeOffboardingService {
         },
       });
 
-      const updated = await tx.employee.update({
+      await tx.employee.update({
         where: { id: employeeId },
         data: {
           status: 'TERMINATED',
           fireDate: now,
+          authVersion: { increment: 1 },
         },
+      });
+
+      await tx.authSession.updateMany({
+        where: { employeeId, status: 'ACTIVE' },
+        data: {
+          status: 'REVOKED',
+          revokedAt: now,
+          revokeReason: 'user_disabled',
+        },
+      });
+
+      const updated = await tx.employee.findUniqueOrThrow({
+        where: { id: employeeId },
         include: {
           role: { select: { id: true, name: true, slug: true, level: true } },
           departments: { include: { department: true } },
@@ -98,6 +112,8 @@ export class EmployeeOffboardingService {
         inventory,
         revoked: result.revoked,
         checklistInstanceId: result.checklistInstanceId,
+        authSessionsRevoked: true,
+        event: 'auth.user_disabled_sessions_revoked',
       } as unknown as InputJsonValue,
     });
 
