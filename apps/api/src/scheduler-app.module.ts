@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { validateEnv } from './config/env.validation';
 import { buildLoggerParams } from './config/logger.config';
@@ -8,8 +9,8 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { HealthController } from './health.controller';
 
 /**
- * Scaffold for Phase 4 dedicated scheduler process.
- * Today production still prefers external cron → API scheduler routes.
+ * Dedicated scheduler process — cron + lease + internal scheduler HTTP.
+ * Does not import QueueWorkersModule or the full public AppModule.
  */
 @Module({
   imports: [
@@ -19,8 +20,11 @@ import { HealthController } from './health.controller';
       validate: validateEnv,
     }),
     LoggerModule.forRoot(buildLoggerParams()),
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60_000, limit: 100 }],
+    }),
     DatabaseModule,
-    SchedulerModule,
+    SchedulerModule.forRoot(),
   ],
   controllers: [HealthController],
 })

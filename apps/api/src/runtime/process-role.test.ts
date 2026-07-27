@@ -4,6 +4,7 @@ import {
   resolveProcessRole,
   shouldRegisterBullmqWorkers,
   shouldRegisterQueueProducers,
+  shouldRegisterScheduledJobs,
   shouldStartPublicHttpApi,
 } from './process-role';
 
@@ -58,9 +59,15 @@ describe('process-role', () => {
     expect(shouldRegisterBullmqWorkers()).toBe(false);
     expect(shouldRegisterQueueProducers()).toBe(true);
     expect(shouldStartPublicHttpApi()).toBe(true);
+    expect(shouldRegisterScheduledJobs()).toBe(false);
 
     process.env.PROCESS_ROLE = 'worker';
     expect(shouldRegisterBullmqWorkers()).toBe(true);
     expect(shouldStartPublicHttpApi()).toBe(false);
+    expect(shouldRegisterScheduledJobs()).toBe(false);
+
+    process.env.PROCESS_ROLE = 'scheduler';
+    expect(shouldRegisterScheduledJobs()).toBe(true);
+    expect(shouldRegisterBullmqWorkers()).toBe(false);
   });
 });

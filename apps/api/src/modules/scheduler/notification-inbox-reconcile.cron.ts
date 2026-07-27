@@ -5,17 +5,17 @@ import { CronJob } from 'cron';
 import { SchedulerService } from './scheduler.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { shouldStartCronJob } from './scheduler-cron-gate';
-import {
-  REPORT_SCHEDULES_DUE_CRON_ENV,
-  REPORT_SCHEDULES_DUE_DEFAULT_CRON,
-  REPORT_SCHEDULES_DUE_ENABLED_ENV,
-} from './report-schedules-due-cron.constants';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 
+export const NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV =
+  'SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED';
+export const NOTIFICATION_INBOX_RECONCILE_CRON_ENV = 'SCHEDULER_NOTIFICATION_INBOX_RECONCILE_CRON';
+export const NOTIFICATION_INBOX_RECONCILE_DEFAULT_CRON = '*/15 * * * *';
+
 @Injectable()
-export class ReportSchedulesDueCron implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(ReportSchedulesDueCron.name);
-  private readonly jobName = SCHEDULER_JOB_NAMES.reportSchedulesDue;
+export class NotificationInboxReconcileCron implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(NotificationInboxReconcileCron.name);
+  private readonly jobName = SCHEDULER_JOB_NAMES.notificationInboxReconcile;
 
   constructor(
     private readonly config: ConfigService,
@@ -25,14 +25,14 @@ export class ReportSchedulesDueCron implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
-    if (!shouldStartCronJob(REPORT_SCHEDULES_DUE_ENABLED_ENV)) {
+    if (!shouldStartCronJob(NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV)) {
       this.logger.log(`Cron ${this.jobName} not registered (role/flags).`);
       return;
     }
     if (this.schedulerRegistry.doesExist('cron', this.jobName)) return;
     const expression =
-      this.config.get<string>(REPORT_SCHEDULES_DUE_CRON_ENV)?.trim() ||
-      REPORT_SCHEDULES_DUE_DEFAULT_CRON;
+      this.config.get<string>(NOTIFICATION_INBOX_RECONCILE_CRON_ENV)?.trim() ||
+      NOTIFICATION_INBOX_RECONCILE_DEFAULT_CRON;
     let job: CronJob;
     try {
       job = new CronJob(expression, () => {
@@ -57,9 +57,9 @@ export class ReportSchedulesDueCron implements OnModuleInit, OnModuleDestroy {
   private async runSafely(): Promise<void> {
     if (this.jobRegistry.isShuttingDown()) return;
     try {
-      await this.schedulerService.runReportSchedulesDue('cron');
+      await this.schedulerService.runNotificationInboxReconcile('cron');
     } catch (caught) {
-      this.logger.error(`Report schedules due cron failed`, caught);
+      this.logger.error(`Notification inbox reconcile cron failed`, caught);
     }
   }
 }

@@ -98,7 +98,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     CalendarModule,
     DashboardModule,
     ReportsModule,
-    SchedulerModule,
+    SchedulerModule.forRoot(),
     PartnersModule,
     MarketingModule,
     MessengerModule,

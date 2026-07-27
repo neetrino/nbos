@@ -71,7 +71,7 @@ export function shouldRegisterBullmqWorkers(env: NodeJS.ProcessEnv = process.env
 
 export function shouldRegisterQueueProducers(env: NodeJS.ProcessEnv = process.env): boolean {
   const role = resolveProcessRole(env);
-  return role === 'api' || role === 'all' || role === 'worker';
+  return role === 'api' || role === 'all' || role === 'worker' || role === 'scheduler';
 }
 
 /** HTTP public API, Socket.IO, SSE — api and local all only. */
@@ -84,4 +84,10 @@ export function shouldStartPublicHttpApi(env: NodeJS.ProcessEnv = process.env): 
 export function shouldStartApiSideEffects(env: NodeJS.ProcessEnv = process.env): boolean {
   const role = resolveProcessRole(env);
   return role === 'api' || role === 'all';
+}
+
+/** Nest CronJob providers — scheduler process (and local `all` only). */
+export function shouldRegisterScheduledJobs(env: NodeJS.ProcessEnv = process.env): boolean {
+  const role = resolveProcessRole(env);
+  return role === 'scheduler' || role === 'all';
 }

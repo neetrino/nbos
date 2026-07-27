@@ -20,6 +20,7 @@ import { MAIL_QUEUE_NAME } from './modules/mail/mail-queue.constants';
 import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.constants';
 import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
 import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { ScheduledJobRegistry } from './modules/scheduler/scheduled-job-registry';
 
 /** Request body caps (defense against memory-exhaustion / DoS). Uploads go straight to R2 (presigned). */
 const JSON_BODY_LIMIT = '1mb';
@@ -100,8 +101,10 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const registry = app.get(BullmqWorkerRegistry);
+  const scheduledJobs = app.get(ScheduledJobRegistry);
   if (role === 'api') {
     registry.assertApiHasNoWorkers();
+    scheduledJobs.assertNoScheduledJobs('api');
   }
 
   const port = process.env.PORT ?? 4000;
@@ -113,6 +116,7 @@ async function bootstrap() {
     role,
     workers: registry.list(),
     queueProducers: QUEUE_PRODUCER_NAMES,
+    scheduledJobs: scheduledJobs.list(),
   });
   logger.log(`NBOS API running on http://localhost:${port}`);
   if (swaggerEnabled) {
