@@ -35,3 +35,18 @@ Updated after each release. Production panel numbers marked when unavailable.
 | Legacy `/notifications` page | meta.total       | Unchanged offset API                   |
 
 **Index note:** Existing `@@index([recipientEmployeeId, createdAt])` covers primary filter+sort. Compound `(recipient, createdAt, id)` deferred pending staging `EXPLAIN ANALYZE`.
+
+## Release 2B — InboxState dual-write (2026-07-27)
+
+| Scenario                                                       | Status |
+| -------------------------------------------------------------- | ------ |
+| Migration `NotificationInboxState` + CHECK `unread_count >= 0` | ✅     |
+| Flags WRITE / READ / RECONCILE (default off)                   | ✅     |
+| Dual-write on create / mark / archive / markAll                | ✅     |
+| Unread GET still `COUNT(*)` (READ=false)                       | ✅     |
+| Reconcile scheduler endpoint (batch)                           | ✅     |
+| Backfill in migration + reconcile repair                       | ✅     |
+
+**VERIFIED LOCALLY:** `notification-inbox-state.flags`, `notification-inbox-dual-write`; API typecheck.  
+**READY FOR STAGING:** migrate → WRITE=true → reconcile → drift check. **Do not** enable READ until drift=0.  
+**REQUIRES PRODUCTION METRICS:** inbox drift rate; unread COUNT vs counter after WRITE.

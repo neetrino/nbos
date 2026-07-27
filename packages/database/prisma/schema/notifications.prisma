@@ -27,6 +27,18 @@ model InAppNotification {
   @@map("in_app_notifications")
 }
 
+/// Materialized unread badge state (dual-write in Phase 2B; read switch is feature-flagged).
+model NotificationInboxState {
+  employeeId  String   @id @map("employee_id")
+  unreadCount Int      @default(0) @map("unread_count")
+  version     BigInt   @default(0)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("notification_inbox_state")
+}
+
 enum NotificationJobStatus {
   PENDING
   PROCESSING

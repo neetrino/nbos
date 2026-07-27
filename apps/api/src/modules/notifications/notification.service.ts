@@ -9,6 +9,17 @@ import {
 import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
+import {
+  isNotificationInboxStateReadEnabled,
+  isNotificationInboxStateWriteEnabled,
+} from './notification-inbox-state.flags';
+import {
+  decrementInboxUnread,
+  incrementInboxUnread,
+  readInboxState,
+  resetInboxUnread,
+  type InboxStateSnapshot,
+} from './notification-inbox-state.ops';
 import { decodeNotificationCursor, encodeNotificationCursor } from './notification-list-cursor';
 import { resolveNotificationRuleConfig } from './notification-rules';
 
@@ -200,7 +211,7 @@ export class NotificationService {
     const priority = params.priority ?? ruleConfig.priority;
     const category = params.category ?? ruleConfig.category;
 
-    const row = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const fingerprint = notificationFingerprint(params);
       const dedupeKey = params.dedupeKey ?? `in_app:${fingerprint}`;
       const idempotencyKey = params.idempotencyKey ?? `direct:${fingerprint}`;
@@ -210,7 +221,9 @@ export class NotificationService {
           where: notificationWhere(params),
           orderBy: { createdAt: 'desc' },
         });
-        if (existing) return existing;
+        if (existing) {
+          return { row: existing, created: false as const, inbox: undefined };
+        }
       }
 
       const rule = await tx.notificationRule.upsert({
@@ -257,7 +270,7 @@ export class NotificationService {
         },
       });
 
-      return tx.inAppNotification.create({
+      const created = await tx.inAppNotification.create({
         data: {
           recipientEmployeeId: params.recipientId,
           type: params.type,
@@ -271,11 +284,22 @@ export class NotificationService {
           entityId: params.entityId ?? null,
         },
       });
+
+      let inbox: InboxStateSnapshot | undefined;
+      if (isNotificationInboxStateWriteEnabled()) {
+        inbox = await incrementInboxUnread(tx, params.recipientId);
+      }
+      return { row: created, created: true as const, inbox };
     });
 
     this.logger.log(`Notification created for user ${params.recipientId}: ${params.title}`);
-    await this.emitRealtime(params.recipientId, { invalidateList: true });
-    return toNotificationRow(row);
+    if (result.created) {
+      await this.emitRealtime(params.recipientId, {
+        invalidateList: true,
+        snapshot: result.inbox,
+      });
+    }
+    return toNotificationRow(result.row);
   }
 
   async findByUser(userId: string, pagination: PaginationParams = {}) {
@@ -364,66 +388,152 @@ export class NotificationService {
   }
 
   async archive(id: string, userId: string): Promise<NotificationRow> {
-    const owned = await this.prisma.inAppNotification.findFirst({
-      where: { id, recipientEmployeeId: userId },
-    });
-    if (!owned) {
-      throw new NotFoundException(`Notification ${id} not found`);
-    }
+    const writeInbox = isNotificationInboxStateWriteEnabled();
     const now = new Date();
-    const row = await this.prisma.inAppNotification.update({
-      where: { id },
-      data: {
-        archivedAt: now,
-        isRead: true,
-        readAt: owned.readAt ?? now,
-      },
-    });
-    if (!owned.isRead) {
-      await this.emitRealtime(userId, { invalidateList: true });
+
+    if (!writeInbox) {
+      const owned = await this.prisma.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      const row = await this.prisma.inAppNotification.update({
+        where: { id },
+        data: {
+          archivedAt: now,
+          isRead: true,
+          readAt: owned.readAt ?? now,
+        },
+      });
+      if (!owned.isRead) {
+        await this.emitRealtime(userId, { invalidateList: true });
+      }
+      return toNotificationRow(row);
     }
-    return toNotificationRow(row);
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const owned = await tx.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      const wasUnread = !owned.isRead && owned.archivedAt == null;
+      const row = await tx.inAppNotification.update({
+        where: { id },
+        data: {
+          archivedAt: owned.archivedAt ?? now,
+          isRead: true,
+          readAt: owned.readAt ?? now,
+        },
+      });
+      let inbox: InboxStateSnapshot | undefined;
+      if (wasUnread) {
+        inbox = await decrementInboxUnread(tx, userId);
+      }
+      return { row, wasUnread, inbox };
+    });
+
+    if (outcome.wasUnread) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
+    }
+    return toNotificationRow(outcome.row);
   }
 
   async markAsRead(id: string, userId: string): Promise<NotificationRow> {
-    const owned = await this.prisma.inAppNotification.findFirst({
-      where: { id, recipientEmployeeId: userId },
-    });
-    if (!owned) {
-      throw new NotFoundException(`Notification ${id} not found`);
+    const writeInbox = isNotificationInboxStateWriteEnabled();
+
+    if (!writeInbox) {
+      const owned = await this.prisma.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      const row = await this.prisma.inAppNotification.update({
+        where: { id },
+        data: { isRead: true, readAt: new Date() },
+      });
+      if (!owned.isRead) {
+        await this.emitRealtime(userId, { invalidateList: true });
+      }
+      return toNotificationRow(row);
     }
-    const row = await this.prisma.inAppNotification.update({
-      where: { id },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const owned = await tx.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      if (owned.isRead) {
+        return { row: owned, changed: false as const, inbox: undefined };
+      }
+      const row = await tx.inAppNotification.update({
+        where: { id },
+        data: { isRead: true, readAt: new Date() },
+      });
+      const inbox = await decrementInboxUnread(tx, userId);
+      return { row, changed: true as const, inbox };
     });
-    if (!owned.isRead) {
-      await this.emitRealtime(userId, { invalidateList: true });
+
+    if (outcome.changed) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
     }
-    return toNotificationRow(row);
+    return toNotificationRow(outcome.row);
   }
 
   async markAllAsRead(userId: string): Promise<{ updated: number }> {
-    const result = await this.prisma.inAppNotification.updateMany({
-      where: {
-        recipientEmployeeId: userId,
-        isRead: false,
-        archivedAt: null,
-      },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
-    });
-    if (result.count > 0) {
-      await this.emitRealtime(userId, { invalidateList: true });
+    const writeInbox = isNotificationInboxStateWriteEnabled();
+
+    if (!writeInbox) {
+      const result = await this.prisma.inAppNotification.updateMany({
+        where: {
+          recipientEmployeeId: userId,
+          isRead: false,
+          archivedAt: null,
+        },
+        data: { isRead: true, readAt: new Date() },
+      });
+      if (result.count > 0) {
+        await this.emitRealtime(userId, { invalidateList: true });
+      }
+      return { updated: result.count };
     }
-    return { updated: result.count };
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.inAppNotification.updateMany({
+        where: {
+          recipientEmployeeId: userId,
+          isRead: false,
+          archivedAt: null,
+        },
+        data: { isRead: true, readAt: new Date() },
+      });
+      let inbox: InboxStateSnapshot | undefined;
+      if (result.count > 0) {
+        inbox = await resetInboxUnread(tx, userId);
+      }
+      return { updated: result.count, inbox };
+    });
+
+    if (outcome.updated > 0) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
+    }
+    return { updated: outcome.updated };
   }
 
-  async getUnreadCount(userId: string): Promise<{ count: number }> {
+  async getUnreadCount(userId: string): Promise<{ count: number; version?: number }> {
+    // READ defaults false — COUNT remains source of truth until reconcile proves dual-write.
+    if (isNotificationInboxStateReadEnabled()) {
+      const state = await readInboxState(this.prisma, userId);
+      if (state) {
+        return { count: state.unreadCount, version: state.version };
+      }
+      this.logger.warn(`InboxState missing for ${userId}; falling back to COUNT`);
+    }
     const count = await this.prisma.inAppNotification.count({
       where: {
         recipientEmployeeId: userId,
@@ -577,9 +687,15 @@ export class NotificationService {
 
   private async emitRealtime(
     employeeId: string,
-    options?: { invalidateList?: boolean },
+    options?: { invalidateList?: boolean; snapshot?: InboxStateSnapshot },
   ): Promise<void> {
     if (!this.realtimePublisher) return;
+    if (options?.snapshot) {
+      await this.realtimePublisher.publishSnapshot(employeeId, options.snapshot, {
+        invalidateList: options.invalidateList,
+      });
+      return;
+    }
     await this.realtimePublisher.publishUnreadState(employeeId, options);
   }
 }

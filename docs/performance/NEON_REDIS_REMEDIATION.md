@@ -5,8 +5,10 @@ Phased rollout. Do **not** merge all releases into one deploy.
 | Release | Theme                                                  | Status   |
 | ------- | ------------------------------------------------------ | -------- |
 | 1       | SSE unread + Redis Pub/Sub + fallback                  | Done     |
-| 1.1     | Reset SSE version on reconnect (connection generation) | **Done** |
-| 2       | Cursor list + NotificationInboxState                   | Next     |
+| 1.1     | Reset SSE version on reconnect (connection generation) | Done     |
+| 2A      | Cursor list without COUNT                              | Done     |
+| 2B      | NotificationInboxState dual-write (READ off)           | **Done** |
+| 2C      | READ unread from InboxState (after reconcile)          | Next     |
 | 3       | BullMQ worker separation                               | Pending  |
 | 4       | Scheduler lease                                        | Pending  |
 | 5       | Notification create / N+1 batching                     | Pending  |

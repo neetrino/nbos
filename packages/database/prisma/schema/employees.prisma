@@ -102,6 +102,7 @@ model Employee {
   mailThreadsTrashedBy             EmailThread[]                       @relation("EmailThreadTrashedBy")
   metaConnectedAccounts            MetaConnectedAccount[]              @relation("MetaConnectedBy")
   inAppNotificationsReceived       InAppNotification[]
+  notificationInboxState           NotificationInboxState?
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]
   driveZipExportJobsRequested      DriveZipExportJob[]

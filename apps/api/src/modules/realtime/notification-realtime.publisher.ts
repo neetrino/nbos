@@ -21,6 +21,38 @@ export class NotificationRealtimePublisher {
   ) {}
 
   /**
+   * Publish using a committed InboxState snapshot (preferred when dual-write is on).
+   * Does not re-COUNT — version is persistent across API restarts.
+   */
+  async publishSnapshot(
+    employeeId: string,
+    snapshot: { unreadCount: number; version: number },
+    options?: { invalidateList?: boolean },
+  ): Promise<NotificationUnreadChangedPayload | null> {
+    try {
+      const invalidateList = options?.invalidateList ?? true;
+      const payload: NotificationUnreadChangedPayload = {
+        schemaVersion: 1,
+        employeeId,
+        unreadCount: snapshot.unreadCount,
+        version: snapshot.version,
+        occurredAt: new Date().toISOString(),
+        invalidateList,
+      };
+      await this.eventBus.publish({
+        event: invalidateList
+          ? NOTIFICATION_SSE_EVENT.LIST_INVALIDATE
+          : NOTIFICATION_SSE_EVENT.UNREAD_CHANGED,
+        payload,
+      });
+      return payload;
+    } catch (err) {
+      this.logger.error(`Failed to publish inbox snapshot for ${employeeId}: ${String(err)}`);
+      return null;
+    }
+  }
+
+  /**
    * Re-reads unread count and publishes one SSE bus message for an employee.
    * Hub expands `invalidateList` into unread + list.invalidate frames.
    */

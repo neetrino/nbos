@@ -12,6 +12,7 @@ import { SupportSlaOrchestrationService } from '../support/support-sla-orchestra
 import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-purge.service';
 import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
 import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
 
 interface OverdueResult {
   marked: number;
@@ -35,6 +36,7 @@ export class SchedulerService {
     private readonly credentialsTrashPurgeService: CredentialsTrashPurgeService,
     private readonly platformTrashPurgeService: PlatformTrashPurgeService,
     private readonly productWhatsApp: ProductWhatsAppGroupService,
+    private readonly notificationInboxReconcile: NotificationInboxReconcileService,
   ) {}
 
   /** Monthly subscription billing (generates invoices). */
@@ -191,5 +193,11 @@ export class SchedulerService {
       `WhatsApp reconcile: productsEnsured=${result.productsEnsured}, operationsRequeued=${result.operationsRequeued}`,
     );
     return result;
+  }
+
+  /** Repair NotificationInboxState drift vs actual unread COUNT (feature-flagged). */
+  async runNotificationInboxReconcile() {
+    this.logger.log('Scheduler: notification inbox state reconcile');
+    return this.notificationInboxReconcile.reconcileAll({ publish: true });
   }
 }

@@ -144,4 +144,15 @@ export class SchedulerController {
   async runWhatsAppProductGroupsReconcile() {
     return this.schedulerService.runWhatsAppProductGroupsReconcile();
   }
+
+  @Post('notification-inbox-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reconcile NotificationInboxState vs actual unread COUNT',
+    description:
+      'Requires NOTIFICATION_INBOX_STATE_RECONCILE_ENABLED=true. Repairs drift in batches and publishes SSE snapshots.',
+  })
+  async runNotificationInboxReconcile() {
+    return this.schedulerService.runNotificationInboxReconcile();
+  }
 }

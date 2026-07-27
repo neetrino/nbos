@@ -9,6 +9,7 @@ import { SupportModule } from '../support/support.module';
 import { CredentialsModule } from '../credentials/credentials.module';
 import { PlatformLifecycleModule } from '../platform-lifecycle/platform-lifecycle.module';
 import { WhatsAppGatewayModule } from '../integrations/whatsapp-gateway/whatsapp-gateway.module';
+import { NotificationModule } from '../notifications/notification.module';
 import { CredentialTrashPurgeCron } from './credential-trash-purge.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
@@ -29,6 +30,7 @@ import { ServiceApiKeyGuard } from '../../common/guards/service-api-key.guard';
     CredentialsModule,
     PlatformLifecycleModule,
     WhatsAppGatewayModule,
+    NotificationModule,
   ],
   controllers: [SchedulerController],
   providers: [
