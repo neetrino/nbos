@@ -24,20 +24,20 @@ export async function notifyCredentialHighRiskRecipients(
   for (const admin of admins) recipients.add(admin.id);
   recipients.delete(params.actorId);
 
-  await Promise.all(
-    [...recipients].map((recipientId) =>
-      notifications.create({
-        type: 'credentials.high_risk_action',
-        recipientId,
-        title: params.title,
-        body: params.body,
-        entityType: 'credential',
-        entityId: params.entityId,
-        sourceModule: 'credentials',
-        dedupeKey: `credentials.high_risk_action:${recipientId}:${params.dedupeSuffix}`,
-      }),
-    ),
-  );
+  const recipientIds = [...recipients];
+  if (recipientIds.length === 0) return;
+
+  await notifications.createMany({
+    recipientIds,
+    type: 'credentials.high_risk_action',
+    title: params.title,
+    body: params.body,
+    entityType: 'credential',
+    entityId: params.entityId,
+    sourceModule: 'credentials',
+    dedupeKeyPrefix: 'credentials.high_risk_action',
+    dedupeKeySuffix: params.dedupeSuffix,
+  });
 }
 
 export async function notifyHighRiskCredentialAction(

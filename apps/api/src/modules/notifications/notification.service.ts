@@ -14,6 +14,11 @@ import {
   isNotificationInboxStateWriteEnabled,
 } from './notification-inbox-state.flags';
 import {
+  isNotificationCommandV2Enabled,
+  isNotificationSseFromInboxStateEnabled,
+} from './notification-command.flags';
+import { NotificationCommandService } from './notification-command.service';
+import {
   decrementInboxUnread,
   incrementInboxUnread,
   readInboxState,
@@ -182,9 +187,61 @@ export class NotificationService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     @Optional() private readonly realtimePublisher?: NotificationRealtimePublisher,
+    @Optional() private readonly commands?: NotificationCommandService,
   ) {}
 
   async create(params: CreateNotificationParams): Promise<NotificationRow> {
+    if (isNotificationCommandV2Enabled() && this.commands) {
+      return this.commands.createOne(params);
+    }
+    return this.createLegacy(params);
+  }
+
+  /** Multi-recipient create — uses V2/bulk path when flags enabled. */
+  async createMany(
+    command: import('./notification-command.service').CreateManyNotificationCommand,
+  ): Promise<import('./notification-command.service').CreateManyResult> {
+    if (isNotificationCommandV2Enabled() && this.commands) {
+      return this.commands.createMany(command);
+    }
+    const uniqueRecipients = [...new Set(command.recipientIds.filter(Boolean))];
+    const rows: NotificationRow[] = [];
+    let inserted = 0;
+    let filtered = 0;
+    for (const recipientId of uniqueRecipients) {
+      const dedupeKey = command.dedupeKeySuffix
+        ? `${command.dedupeKeyPrefix}:${recipientId}:${command.dedupeKeySuffix}`
+        : `${command.dedupeKeyPrefix}:${recipientId}`;
+      const row = await this.createLegacy({
+        type: command.type,
+        recipientId,
+        title: command.title,
+        body: command.body,
+        link: command.link,
+        actionLabel: command.actionLabel,
+        category: command.category,
+        priority: command.priority,
+        entityType: command.entityType,
+        entityId: command.entityId,
+        sourceModule: command.sourceModule,
+        dedupeKey,
+        idempotencyKey: dedupeKey,
+        payload: command.payload,
+      });
+      if (row.id.startsWith('skipped:')) filtered += 1;
+      else inserted += 1;
+      rows.push(row);
+    }
+    return {
+      requested: uniqueRecipients.length,
+      filtered,
+      inserted,
+      duplicatesSkipped: 0,
+      rows,
+    };
+  }
+
+  private async createLegacy(params: CreateNotificationParams): Promise<NotificationRow> {
     const userPref = await this.resolveUserPreference(params.recipientId, params.type);
     if (!userPref.enabled || !userPref.channels.includes('IN_APP')) {
       const skippedAt = new Date();
@@ -398,6 +455,9 @@ export class NotificationService {
       if (!owned) {
         throw new NotFoundException(`Notification ${id} not found`);
       }
+      if (owned.archivedAt) {
+        return toNotificationRow(owned);
+      }
       const row = await this.prisma.inAppNotification.update({
         where: { id },
         data: {
@@ -413,29 +473,70 @@ export class NotificationService {
     }
 
     const outcome = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.$queryRaw<Array<InAppNotificationRow & { was_unread: boolean }>>`
+        WITH picked AS (
+          SELECT id, is_read AS was_unread
+          FROM in_app_notifications
+          WHERE id = ${id}
+            AND recipient_employee_id = ${userId}
+            AND archived_at IS NULL
+          FOR UPDATE
+        ),
+        upd AS (
+          UPDATE in_app_notifications n
+          SET
+            archived_at = CURRENT_TIMESTAMP,
+            is_read = true,
+            read_at = COALESCE(n.read_at, CURRENT_TIMESTAMP)
+          FROM picked
+          WHERE n.id = picked.id
+          RETURNING
+            n.id,
+            n.recipient_employee_id AS "recipientEmployeeId",
+            n.type,
+            n.category,
+            n.priority,
+            n.title,
+            n.body,
+            n.link,
+            n.action_label AS "actionLabel",
+            n.entity_type AS "entityType",
+            n.entity_id AS "entityId",
+            n.is_read AS "isRead",
+            n.read_at AS "readAt",
+            n.archived_at AS "archivedAt",
+            n.created_at AS "createdAt",
+            picked.was_unread
+        )
+        SELECT * FROM upd
+      `;
+      if (updated[0]) {
+        let inbox: InboxStateSnapshot | undefined;
+        if (updated[0].was_unread) {
+          inbox = await decrementInboxUnread(tx, userId);
+        }
+        return {
+          row: updated[0],
+          changed: true as const,
+          wasUnread: updated[0].was_unread,
+          inbox,
+        };
+      }
       const owned = await tx.inAppNotification.findFirst({
         where: { id, recipientEmployeeId: userId },
       });
       if (!owned) {
         throw new NotFoundException(`Notification ${id} not found`);
       }
-      const wasUnread = !owned.isRead && owned.archivedAt == null;
-      const row = await tx.inAppNotification.update({
-        where: { id },
-        data: {
-          archivedAt: owned.archivedAt ?? now,
-          isRead: true,
-          readAt: owned.readAt ?? now,
-        },
-      });
-      let inbox: InboxStateSnapshot | undefined;
-      if (wasUnread) {
-        inbox = await decrementInboxUnread(tx, userId);
-      }
-      return { row, wasUnread, inbox };
+      return {
+        row: owned,
+        changed: false as const,
+        wasUnread: false,
+        inbox: undefined,
+      };
     });
 
-    if (outcome.wasUnread) {
+    if (outcome.changed && outcome.wasUnread) {
       await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
     }
     return toNotificationRow(outcome.row);
@@ -451,32 +552,52 @@ export class NotificationService {
       if (!owned) {
         throw new NotFoundException(`Notification ${id} not found`);
       }
+      if (owned.isRead) {
+        return toNotificationRow(owned);
+      }
       const row = await this.prisma.inAppNotification.update({
         where: { id },
         data: { isRead: true, readAt: new Date() },
       });
-      if (!owned.isRead) {
-        await this.emitRealtime(userId, { invalidateList: true });
-      }
+      await this.emitRealtime(userId, { invalidateList: true });
       return toNotificationRow(row);
     }
 
     const outcome = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.$queryRaw<InAppNotificationRow[]>`
+        UPDATE in_app_notifications
+        SET is_read = true, read_at = CURRENT_TIMESTAMP
+        WHERE id = ${id}
+          AND recipient_employee_id = ${userId}
+          AND is_read = false
+        RETURNING
+          id,
+          recipient_employee_id AS "recipientEmployeeId",
+          type,
+          category,
+          priority,
+          title,
+          body,
+          link,
+          action_label AS "actionLabel",
+          entity_type AS "entityType",
+          entity_id AS "entityId",
+          is_read AS "isRead",
+          read_at AS "readAt",
+          archived_at AS "archivedAt",
+          created_at AS "createdAt"
+      `;
+      if (updated[0]) {
+        const inbox = await decrementInboxUnread(tx, userId);
+        return { row: updated[0], changed: true as const, inbox };
+      }
       const owned = await tx.inAppNotification.findFirst({
         where: { id, recipientEmployeeId: userId },
       });
       if (!owned) {
         throw new NotFoundException(`Notification ${id} not found`);
       }
-      if (owned.isRead) {
-        return { row: owned, changed: false as const, inbox: undefined };
-      }
-      const row = await tx.inAppNotification.update({
-        where: { id },
-        data: { isRead: true, readAt: new Date() },
-      });
-      const inbox = await decrementInboxUnread(tx, userId);
-      return { row, changed: true as const, inbox };
+      return { row: owned, changed: false as const, inbox: undefined };
     });
 
     if (outcome.changed) {
@@ -504,19 +625,23 @@ export class NotificationService {
     }
 
     const outcome = await this.prisma.$transaction(async (tx) => {
-      const result = await tx.inAppNotification.updateMany({
-        where: {
-          recipientEmployeeId: userId,
-          isRead: false,
-          archivedAt: null,
-        },
-        data: { isRead: true, readAt: new Date() },
-      });
+      const result = await tx.$queryRaw<Array<{ updated: bigint }>>`
+        WITH updated AS (
+          UPDATE in_app_notifications
+          SET is_read = true, read_at = CURRENT_TIMESTAMP
+          WHERE recipient_employee_id = ${userId}
+            AND is_read = false
+            AND archived_at IS NULL
+          RETURNING id
+        )
+        SELECT count(*)::bigint AS updated FROM updated
+      `;
+      const updated = Number(result[0]?.updated ?? 0);
       let inbox: InboxStateSnapshot | undefined;
-      if (result.count > 0) {
+      if (updated > 0) {
         inbox = await resetInboxUnread(tx, userId);
       }
-      return { updated: result.count, inbox };
+      return { updated, inbox };
     });
 
     if (outcome.updated > 0) {
@@ -690,7 +815,7 @@ export class NotificationService {
     options?: { invalidateList?: boolean; snapshot?: InboxStateSnapshot },
   ): Promise<void> {
     if (!this.realtimePublisher) return;
-    if (options?.snapshot) {
+    if (options?.snapshot && isNotificationSseFromInboxStateEnabled()) {
       await this.realtimePublisher.publishSnapshot(employeeId, options.snapshot, {
         invalidateList: options.invalidateList,
       });
