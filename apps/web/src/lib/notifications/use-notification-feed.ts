@@ -32,6 +32,9 @@ function withJitter(ms: number): number {
  */
 export function useNotificationFeed(employeeId: string | undefined, listOpen: boolean) {
   const [items, setItems] = useState<NotificationDto[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [listLoadingMore, setListLoadingMore] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [listLoading, setListLoading] = useState(false);
   const [listError, setListError] = useState(false);
@@ -101,7 +104,11 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
   const loadList = useCallback(
     async (mode: 'full' | 'silent') => {
       if (!employeeId || documentHiddenRef.current) {
-        if (!employeeId) setItems([]);
+        if (!employeeId) {
+          setItems([]);
+          setHasMore(false);
+          setNextCursor(null);
+        }
         return;
       }
       if (!listOpenRef.current && mode === 'silent') {
@@ -115,17 +122,20 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
         setListError(false);
       }
       try {
-        const res = await notificationsApi.list({
-          page: 1,
-          pageSize: NOTIFICATION_LIST_PAGE_SIZE,
+        const res = await notificationsApi.listCursor({
+          limit: NOTIFICATION_LIST_PAGE_SIZE,
         });
         if (controller.signal.aborted) return;
         setItems(res.items);
+        setHasMore(res.hasMore);
+        setNextCursor(res.nextCursor);
       } catch {
         if (controller.signal.aborted) return;
         if (mode === 'full') {
           setListError(true);
           setItems([]);
+          setHasMore(false);
+          setNextCursor(null);
         }
       } finally {
         if (mode === 'full' && !controller.signal.aborted) {
@@ -135,6 +145,28 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
     },
     [employeeId],
   );
+
+  const loadMore = useCallback(async () => {
+    if (!employeeId || !nextCursor || listLoadingMore || documentHiddenRef.current) return;
+    setListLoadingMore(true);
+    try {
+      const res = await notificationsApi.listCursor({
+        cursor: nextCursor,
+        limit: NOTIFICATION_LIST_PAGE_SIZE,
+      });
+      setItems((prev) => {
+        const seen = new Set(prev.map((n) => n.id));
+        const appended = res.items.filter((n) => !seen.has(n.id));
+        return [...prev, ...appended];
+      });
+      setHasMore(res.hasMore);
+      setNextCursor(res.nextCursor);
+    } catch {
+      /* keep current page */
+    } finally {
+      setListLoadingMore(false);
+    }
+  }, [employeeId, nextCursor, listLoadingMore]);
 
   const refreshList = useCallback(() => {
     void loadList('full');
@@ -316,9 +348,12 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
     items,
     unreadCount,
     listLoading,
+    listLoadingMore,
     listError,
+    hasMore,
     sseStatus,
     refreshList,
+    loadMore,
     markAllRead,
     applyLocalRead,
   };

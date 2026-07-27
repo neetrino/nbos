@@ -30,6 +30,31 @@ export class NotificationController {
     });
   }
 
+  @Get('cursor')
+  @ApiOperation({
+    summary: 'Cursor-paginated notifications (no COUNT)',
+    description:
+      'Stable sort createdAt DESC, id DESC. Use nextCursor for the following page. Preferred for dropdown.',
+  })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'includeArchived', required: false })
+  async findAllCursor(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+    @Query('category') category?: string,
+    @Query('includeArchived') includeArchived?: string,
+  ) {
+    return this.notificationService.findByUserCursor(user.id, {
+      cursor,
+      limit: limit ? parseInt(limit, 10) : undefined,
+      category,
+      includeArchived: includeArchived === 'true',
+    });
+  }
+
   @Get('unread-count')
   @ApiOperation({ summary: 'Get unread notifications count' })
   async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {

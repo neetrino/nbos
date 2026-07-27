@@ -1,7 +1,15 @@
-import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
+import { decodeNotificationCursor, encodeNotificationCursor } from './notification-list-cursor';
 import { resolveNotificationRuleConfig } from './notification-rules';
 
 type InAppNotificationRow = {
@@ -62,6 +70,19 @@ interface PaginationParams {
   pageSize?: number;
   category?: string;
   includeArchived?: boolean;
+}
+
+interface CursorPaginationParams {
+  cursor?: string;
+  limit?: number;
+  category?: string;
+  includeArchived?: boolean;
+}
+
+export interface NotificationCursorListResult {
+  items: NotificationRow[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 export interface NotificationPreferenceRow {
@@ -269,7 +290,7 @@ export class NotificationService {
     const [rows, total] = await Promise.all([
       this.prisma.inAppNotification.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -284,6 +305,61 @@ export class NotificationService {
         pageSize,
         totalPages: Math.ceil(total / pageSize),
       },
+    };
+  }
+
+  /**
+   * Cursor list for dropdown / infinite scroll — **no COUNT(*)**.
+   * Sort: createdAt DESC, id DESC. Uses take+1 for hasMore.
+   */
+  async findByUserCursor(
+    userId: string,
+    pagination: CursorPaginationParams = {},
+  ): Promise<NotificationCursorListResult> {
+    const limit = normalizePageSize(pagination.limit);
+    const where: Prisma.InAppNotificationWhereInput = {
+      recipientEmployeeId: userId,
+      ...(pagination.category ? { category: pagination.category } : {}),
+      ...(pagination.includeArchived ? {} : { archivedAt: null }),
+    };
+
+    if (pagination.cursor) {
+      const decoded = decodeNotificationCursor(pagination.cursor);
+      if (!decoded) {
+        throw new BadRequestException('Invalid notification cursor');
+      }
+      const cursorDate = new Date(decoded.createdAt);
+      where.AND = [
+        {
+          OR: [
+            { createdAt: { lt: cursorDate } },
+            { createdAt: cursorDate, id: { lt: decoded.id } },
+          ],
+        },
+      ];
+    }
+
+    const rows = await this.prisma.inAppNotification.findMany({
+      where,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor =
+      hasMore && last
+        ? encodeNotificationCursor({
+            createdAt: last.createdAt.toISOString(),
+            id: last.id,
+          })
+        : null;
+
+    return {
+      items: pageRows.map(toNotificationRow),
+      nextCursor,
+      hasMore,
     };
   }
 

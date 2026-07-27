@@ -30,8 +30,17 @@ export function NotificationDropdown() {
   const employeeId = me?.id;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { items, unreadCount, listLoading, listError, markAllRead, applyLocalRead } =
-    useNotificationFeed(employeeId, open);
+  const {
+    items,
+    unreadCount,
+    listLoading,
+    listLoadingMore,
+    listError,
+    hasMore,
+    markAllRead,
+    applyLocalRead,
+    loadMore,
+  } = useNotificationFeed(employeeId, open);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -157,6 +166,16 @@ export function NotificationDropdown() {
                   </button>
                 );
               })}
+            {employeeId && !listLoading && !listError && hasMore && (
+              <button
+                type="button"
+                className="text-accent hover:bg-secondary/50 w-full px-4 py-2.5 text-center text-xs font-medium transition-colors"
+                disabled={listLoadingMore}
+                onClick={() => void loadMore()}
+              >
+                {listLoadingMore ? 'Loading…' : 'Load more'}
+              </button>
+            )}
           </div>
 
           <div className="border-border border-t px-4 py-2.5 text-center">

@@ -25,3 +25,13 @@ Updated after each release. Production panel numbers marked when unavailable.
 | Unread GET error                                        | Could zero badge       | Keeps prior count                               |
 
 **VERIFIED LOCALLY:** unit tests `notification-sse-version`, `notification-sse-reconnect.scenario`.
+
+## Release 2A — Cursor pagination without COUNT (2026-07-27)
+
+| Scenario                     | Before           | After                                  |
+| ---------------------------- | ---------------- | -------------------------------------- |
+| Dropdown list                | findMany + COUNT | 1× findMany take+1                     |
+| Invalidate / open            | page API         | `GET /notifications/cursor` first page |
+| Legacy `/notifications` page | meta.total       | Unchanged offset API                   |
+
+**Index note:** Existing `@@index([recipientEmployeeId, createdAt])` covers primary filter+sort. Compound `(recipient, createdAt, id)` deferred pending staging `EXPLAIN ANALYZE`.
