@@ -169,27 +169,45 @@ export class SupportSlaOrchestrationService {
     ticketId: string,
     payload: InputJsonValue,
   ): Promise<boolean> {
-    let anySent = false;
-    for (const recipientId of recipientIds) {
-      try {
-        await this.notificationService.create({
-          type,
-          recipientId,
-          title: 'Support SLA',
-          body: String((payload as { headline?: string }).headline ?? type),
-          link: '/support',
-          entityType: 'SupportTicket',
-          entityId: ticketId,
-          sourceModule: SOURCE_MODULE,
-          dedupeKey: `${dedupeKey}:${recipientId}`,
-          idempotencyKey: `${dedupeKey}:${recipientId}`,
-          payload,
-        });
-        anySent = true;
-      } catch (err) {
-        this.logger.warn(`Support SLA notify failed for ${recipientId}: ${String(err)}`);
+    if (recipientIds.length === 0) return false;
+    try {
+      const result = await this.notificationService.createMany({
+        recipientIds,
+        type,
+        title: 'Support SLA',
+        body: String((payload as { headline?: string }).headline ?? type),
+        link: '/support',
+        entityType: 'SupportTicket',
+        entityId: ticketId,
+        sourceModule: SOURCE_MODULE,
+        dedupeKeyPrefix: dedupeKey,
+        payload,
+      });
+      return result.inserted > 0 || result.duplicatesSkipped > 0;
+    } catch (err) {
+      this.logger.warn(`Support SLA bulk notify failed: ${String(err)}`);
+      let anySent = false;
+      for (const recipientId of recipientIds) {
+        try {
+          await this.notificationService.create({
+            type,
+            recipientId,
+            title: 'Support SLA',
+            body: String((payload as { headline?: string }).headline ?? type),
+            link: '/support',
+            entityType: 'SupportTicket',
+            entityId: ticketId,
+            sourceModule: SOURCE_MODULE,
+            dedupeKey: `${dedupeKey}:${recipientId}`,
+            idempotencyKey: `${dedupeKey}:${recipientId}`,
+            payload,
+          });
+          anySent = true;
+        } catch (inner) {
+          this.logger.warn(`Support SLA notify failed for ${recipientId}: ${String(inner)}`);
+        }
       }
+      return anySent;
     }
-    return anySent;
   }
 }

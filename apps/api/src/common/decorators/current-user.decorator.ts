@@ -14,6 +14,11 @@ export interface CurrentUserPayload {
   jti?: string;
   /** Access-token expiry (epoch seconds), set by AuthGuard. */
   tokenExp?: number;
+  /** AuthSession id (V2 access tokens only). */
+  sessionId?: string;
+  /** 1 = legacy long-lived JWT; 2 = AuthSession V2. */
+  tokenVersion?: 1 | 2;
+  authVersion?: number;
   meProfile?: {
     id: string;
     firstName: string;

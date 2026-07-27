@@ -13,10 +13,32 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { TokenDenylistService } from '../../common/security/token-denylist.service';
 import { CredentialVaultSessionService } from '../credentials/credential-vault-session.service';
+import { AuthSessionService } from './auth-session.service';
+import { resolveAuthAccessTokenTtlSeconds, shouldIssueAuthSessionV2 } from './auth-session.flags';
+import { recordAuthMetric } from './auth-session.metrics';
+import type { V2AccessTokenClaims } from './auth-session.tokens';
 
-interface JwtPayload {
+interface LegacyJwtPayload {
   sub: string;
   email: string;
+}
+
+/**
+ * Internal login/refresh result. Controllers must map through `toAuthPublicResponse`
+ * so `refreshToken` is never serialized into the public JSON body.
+ */
+export interface LoginResult {
+  accessToken: string;
+  /** Opaque refresh for HttpOnly cookie / server-side BFF Set-Cookie parse only. */
+  refreshToken?: string;
+  sessionId?: string;
+  tokenVersion: 1 | 2;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
 @Injectable()
@@ -30,12 +52,17 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly tokenDenylist: TokenDenylistService,
     private readonly vaultSession: CredentialVaultSessionService,
+    private readonly authSessions: AuthSessionService,
   ) {
     this.jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
     this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
   }
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string,
+    meta?: { ip?: string; userAgent?: string },
+  ): Promise<LoginResult> {
     const employee = await this.prisma.employee.findUnique({
       where: { email: email.toLowerCase().trim() },
       select: {
@@ -45,30 +72,94 @@ export class AuthService {
         lastName: true,
         passwordHash: true,
         status: true,
+        authVersion: true,
       },
     });
 
     if (!employee?.passwordHash) {
+      recordAuthMetric('auth_login_failed_total');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (employee.status === 'TERMINATED') {
+      recordAuthMetric('auth_login_failed_total');
       throw new UnauthorizedException('Account deactivated');
     }
 
     const isValid = await argon2.verify(employee.passwordHash, password);
     if (!isValid) {
+      recordAuthMetric('auth_login_failed_total');
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: JwtPayload = { sub: employee.id, email: employee.email };
+    const user = {
+      id: employee.id,
+      email: employee.email,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+    };
+
+    if (shouldIssueAuthSessionV2(employee.id)) {
+      const session = await this.authSessions.createSession({
+        employeeId: employee.id,
+        ip: meta?.ip,
+        userAgent: meta?.userAgent,
+      });
+      const accessToken = this.signV2AccessToken({
+        sub: employee.id,
+        email: employee.email,
+        sid: session.sessionId,
+        typ: 'access',
+        ver: 2,
+        authVersion: employee.authVersion,
+      });
+      return {
+        accessToken,
+        refreshToken: session.refreshToken,
+        sessionId: session.sessionId,
+        tokenVersion: 2,
+        user,
+      };
+    }
+
+    const payload: LegacyJwtPayload = { sub: employee.id, email: employee.email };
     const accessToken = jwt.sign(payload, this.jwtSecret, {
       expiresIn: this.jwtExpiresIn as jwt.SignOptions['expiresIn'],
       jwtid: randomUUID(),
     });
+    recordAuthMetric('auth_login_success_total');
 
     return {
       accessToken,
+      tokenVersion: 1,
+      user,
+    };
+  }
+
+  async refresh(
+    rawRefreshToken: string,
+    meta?: { ip?: string; userAgent?: string },
+  ): Promise<LoginResult> {
+    const started = Date.now();
+    const rotated = await this.authSessions.rotateRefresh(rawRefreshToken, meta);
+    const accessToken = this.signV2AccessToken({
+      sub: rotated.employeeId,
+      email: rotated.email,
+      sid: rotated.sessionId,
+      typ: 'access',
+      ver: 2,
+      authVersion: rotated.authVersion,
+    });
+    const employee = await this.prisma.employee.findUniqueOrThrow({
+      where: { id: rotated.employeeId },
+      select: { id: true, email: true, firstName: true, lastName: true },
+    });
+    this.logger.debug(`auth_refresh_latency_ms=${Date.now() - started}`);
+    return {
+      accessToken,
+      refreshToken: rotated.refreshToken,
+      sessionId: rotated.sessionId,
+      tokenVersion: 2,
       user: {
         id: employee.id,
         email: employee.email,
@@ -79,21 +170,50 @@ export class AuthService {
   }
 
   /**
-   * Revokes the caller's current access token until its natural expiry,
-   * so a stolen token cannot be reused after the user signs out.
+   * Revokes the caller's current access token (legacy denylist) and/or V2 session.
    */
   async logout(
     jti: string | undefined,
     tokenExp: number | undefined,
     employeeId?: string,
+    sessionId?: string,
   ): Promise<{ success: true }> {
     if (jti && typeof tokenExp === 'number') {
       await this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
+    }
+    if (employeeId && sessionId) {
+      await this.authSessions.revokeSession(sessionId, employeeId, 'logout');
     }
     if (employeeId) {
       await this.vaultSession.lock(employeeId);
     }
     return { success: true };
+  }
+
+  async logoutAll(employeeId: string): Promise<{ success: true; revoked: number }> {
+    const revoked = await this.authSessions.revokeAllSessions(employeeId, 'logout_all');
+    await this.vaultSession.lock(employeeId);
+    return { success: true, revoked };
+  }
+
+  async listSessions(employeeId: string, currentSessionId?: string) {
+    return this.authSessions.listSessionsForEmployee(employeeId, currentSessionId);
+  }
+
+  async revokeSessionForUser(employeeId: string, sessionId: string) {
+    const ok = await this.authSessions.revokeSession(sessionId, employeeId, 'admin_revoke');
+    if (!ok) {
+      throw new BadRequestException('Session not found or already revoked');
+    }
+    return { success: true as const };
+  }
+
+  signV2AccessToken(claims: Omit<V2AccessTokenClaims, 'iat' | 'exp' | 'jti'>): string {
+    const ttlSeconds = resolveAuthAccessTokenTtlSeconds();
+    return jwt.sign(claims, this.jwtSecret, {
+      expiresIn: ttlSeconds,
+      jwtid: randomUUID(),
+    });
   }
 
   async acceptInvite(token: string, firstName: string, lastName: string, password: string) {

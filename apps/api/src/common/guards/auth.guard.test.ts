@@ -73,6 +73,7 @@ describe('AuthGuard', () => {
     expect(request.user).toEqual({
       employeeId: 'emp_123',
       email: 'test@example.com',
+      tokenVersion: 1,
     });
   });
 

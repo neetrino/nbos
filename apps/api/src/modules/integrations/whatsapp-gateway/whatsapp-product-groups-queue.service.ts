@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { buildProductWhatsAppCreateDedupeKey, toBullMqSafeJobId } from '@nbos/shared';
-import { createRedisConnection, getRedisUrl } from '../../../common/redis/redis-connection';
+import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../../runtime/bullmq-job-options';
+import { shouldRegisterQueueProducers } from '../../../runtime/process-role';
+import { createQueueProducerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
 import {
   WHATSAPP_PRODUCT_GROUP_JOB_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
@@ -15,29 +17,29 @@ export interface WhatsAppProductGroupJobPayload {
 export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WhatsAppProductGroupsQueueService.name);
   private queue: Queue<WhatsAppProductGroupJobPayload> | null = null;
-  private connection: ReturnType<typeof createRedisConnection> | null = null;
+  private connection: ReturnType<typeof createQueueProducerConnection> | null = null;
 
   onModuleInit() {
-    const redisUrl = getRedisUrl();
-    if (!redisUrl) {
-      this.logger.warn('REDIS_URL unset — WhatsApp product group queue disabled');
+    if (!shouldRegisterQueueProducers()) {
       return;
     }
-    this.connection = createRedisConnection(redisUrl);
+    const redisUrl = getRedisQueueUrl();
+    if (!redisUrl) {
+      this.logger.warn('REDIS_QUEUE_URL/REDIS_URL unset — WhatsApp product group queue disabled');
+      return;
+    }
+    this.connection = createQueueProducerConnection(redisUrl);
     this.queue = new Queue<WhatsAppProductGroupJobPayload>(WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME, {
       connection: this.connection,
-      defaultJobOptions: {
-        attempts: 5,
-        backoff: { type: 'exponential', delay: 5000 },
-        removeOnComplete: 100,
-        removeOnFail: 200,
-      },
+      defaultJobOptions: BULLMQ_CRITICAL_JOB_OPTIONS,
     });
   }
 
   async onModuleDestroy() {
     await this.queue?.close();
+    this.queue = null;
     await this.connection?.quit();
+    this.connection = null;
   }
 
   isQueueAvailable(): boolean {

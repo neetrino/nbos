@@ -22,6 +22,7 @@ export interface Employee {
   email: string;
   phone: string | null;
   telegram: string | null;
+  sipId: string | null;
   avatar: string | null;
   birthday: string | null;
   notes: string | null;
@@ -102,6 +103,7 @@ export interface UpdateEmployeePayload {
   email?: string;
   phone?: string | null;
   telegram?: string | null;
+  sipId?: string | null;
   position?: string | null;
   level?: string | null;
   notes?: string | null;

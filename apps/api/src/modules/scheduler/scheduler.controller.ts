@@ -144,4 +144,26 @@ export class SchedulerController {
   async runWhatsAppProductGroupsReconcile() {
     return this.schedulerService.runWhatsAppProductGroupsReconcile();
   }
+
+  @Post('notification-inbox-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reconcile NotificationInboxState vs actual unread COUNT',
+    description:
+      'Requires NOTIFICATION_INBOX_STATE_RECONCILE_ENABLED=true. Repairs drift in batches and publishes SSE snapshots.',
+  })
+  async runNotificationInboxReconcile() {
+    return this.schedulerService.runNotificationInboxReconcile();
+  }
+
+  @Post('notification-enqueue-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Scan PENDING notification jobs/deliveries after enqueue failures',
+    description:
+      'Requires NOTIFICATION_ENQUEUE_RECONCILE_ENABLED=true. Logs recoverable PENDING rows (outbox deferred).',
+  })
+  async runNotificationEnqueueReconcile() {
+    return this.schedulerService.runNotificationEnqueueReconcile();
+  }
 }

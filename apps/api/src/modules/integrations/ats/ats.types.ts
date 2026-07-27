@@ -21,4 +21,6 @@ export interface AtsWebhookPayload {
 
 export interface AtsWebhookSuccessResponse {
   status: 'success';
+  /** ATS.am SIP ID — only when inbound start matched a known Contact/Lead assignee. */
+  redirect_call?: string;
 }

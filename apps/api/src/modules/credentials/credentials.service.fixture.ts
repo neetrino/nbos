@@ -31,7 +31,7 @@ export function createCredentialsServiceTestContext() {
       meta: { total: 0, page: 1, pageSize: 20, totalPages: 0 },
     }),
   };
-  const notifications = { create: vi.fn() };
+  const notifications = { create: vi.fn(), createMany: vi.fn() };
   const vaultSession = {
     getSession: vi.fn().mockResolvedValue({ unlocked: false, expiresAt: null }),
     isUnlocked: vi.fn().mockResolvedValue(false),

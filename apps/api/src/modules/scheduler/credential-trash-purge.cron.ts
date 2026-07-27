@@ -2,83 +2,64 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-purge.service';
 import {
   CREDENTIAL_TRASH_PURGE_CRON_ENV,
   CREDENTIAL_TRASH_PURGE_DEFAULT_CRON,
   CREDENTIAL_TRASH_PURGE_ENABLED_ENV,
-  CREDENTIAL_TRASH_PURGE_JOB_NAME,
 } from '../credentials/credential-trash-retention.constants';
-
-function isCronEnabled(config: ConfigService): boolean {
-  const raw = config.get<string>(CREDENTIAL_TRASH_PURGE_ENABLED_ENV)?.trim().toLowerCase();
-  return raw === 'true' || raw === '1' || raw === 'yes';
-}
-
-function resolveCronExpression(config: ConfigService): string {
-  const fromEnv = config.get<string>(CREDENTIAL_TRASH_PURGE_CRON_ENV)?.trim();
-  return fromEnv && fromEnv.length > 0 ? fromEnv : CREDENTIAL_TRASH_PURGE_DEFAULT_CRON;
-}
+import { SchedulerService } from './scheduler.service';
+import { ScheduledJobRegistry } from './scheduled-job-registry';
+import { shouldStartCronJob } from './scheduler-cron-gate';
+import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 
 @Injectable()
 export class CredentialTrashPurgeCron implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CredentialTrashPurgeCron.name);
+  private readonly jobName = SCHEDULER_JOB_NAMES.credentialTrashPurge;
 
   constructor(
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
-    private readonly credentialsTrashPurgeService: CredentialsTrashPurgeService,
+    private readonly schedulerService: SchedulerService,
+    private readonly jobRegistry: ScheduledJobRegistry,
   ) {}
 
   onModuleInit(): void {
-    if (!isCronEnabled(this.config)) {
-      this.logger.log(
-        `Credential trash purge in-process cron is off (set ${CREDENTIAL_TRASH_PURGE_ENABLED_ENV}=true to enable).`,
-      );
+    if (!shouldStartCronJob(CREDENTIAL_TRASH_PURGE_ENABLED_ENV)) {
+      this.logger.log(`Cron ${this.jobName} not registered (role/flags).`);
       return;
     }
-
-    if (this.schedulerRegistry.doesExist('cron', CREDENTIAL_TRASH_PURGE_JOB_NAME)) {
-      this.logger.warn(
-        `Cron "${CREDENTIAL_TRASH_PURGE_JOB_NAME}" already exists; skipping registration.`,
-      );
-      return;
-    }
-
-    const expression = resolveCronExpression(this.config);
+    if (this.schedulerRegistry.doesExist('cron', this.jobName)) return;
+    const expression =
+      this.config.get<string>(CREDENTIAL_TRASH_PURGE_CRON_ENV)?.trim() ||
+      CREDENTIAL_TRASH_PURGE_DEFAULT_CRON;
     let job: CronJob;
     try {
       job = new CronJob(expression, () => {
         void this.runSafely();
       });
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : String(caught);
-      this.logger.error(
-        `Invalid ${CREDENTIAL_TRASH_PURGE_CRON_ENV}="${expression}": ${message}. In-process cron not started.`,
-      );
+      this.logger.error(`Invalid cron for ${this.jobName}`, caught);
       return;
     }
-
-    this.schedulerRegistry.addCronJob(CREDENTIAL_TRASH_PURGE_JOB_NAME, job);
+    this.schedulerRegistry.addCronJob(this.jobName, job);
     job.start();
-    this.logger.log(
-      `Registered in-process cron "${CREDENTIAL_TRASH_PURGE_JOB_NAME}" (${expression}) → credential trash retention purge.`,
-    );
+    this.jobRegistry.register(this.jobName);
+    this.logger.log(`Registered cron ${this.jobName} (${expression})`);
   }
 
   onModuleDestroy(): void {
-    if (!this.schedulerRegistry.doesExist('cron', CREDENTIAL_TRASH_PURGE_JOB_NAME)) {
-      return;
+    if (this.schedulerRegistry.doesExist('cron', this.jobName)) {
+      this.schedulerRegistry.deleteCronJob(this.jobName);
     }
-    this.schedulerRegistry.deleteCronJob(CREDENTIAL_TRASH_PURGE_JOB_NAME);
   }
 
   private async runSafely(): Promise<void> {
+    if (this.jobRegistry.isShuttingDown()) return;
     try {
-      await this.credentialsTrashPurgeService.runRetentionPurge();
+      await this.schedulerService.runCredentialTrashPurge('cron');
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : String(caught);
-      this.logger.error(`Credential trash purge cron tick failed: ${message}`);
+      this.logger.error(`Credential trash purge cron failed`, caught);
     }
   }
 }

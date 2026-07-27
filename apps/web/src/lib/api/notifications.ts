@@ -34,6 +34,19 @@ export interface NotificationsListResponse {
   };
 }
 
+export interface NotificationsCursorParams {
+  cursor?: string;
+  limit?: number;
+  category?: string;
+  includeArchived?: boolean;
+}
+
+export interface NotificationsCursorResponse {
+  items: NotificationDto[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 export interface NotificationPreferenceDto {
   eventType: string;
   enabled: boolean;
@@ -57,8 +70,18 @@ export const notificationsApi = {
     return resp.data;
   },
 
-  async getUnreadCount(): Promise<{ count: number }> {
-    const resp = await api.get<{ count: number }>('/api/notifications/unread-count');
+  /** Dropdown / infinite scroll — no server COUNT. */
+  async listCursor(params: NotificationsCursorParams = {}): Promise<NotificationsCursorResponse> {
+    const resp = await api.get<NotificationsCursorResponse>('/api/notifications/cursor', {
+      params,
+    });
+    return resp.data;
+  },
+
+  async getUnreadCount(): Promise<{ count: number; version?: number; source?: string }> {
+    const resp = await api.get<{ count: number; version?: number; source?: string }>(
+      '/api/notifications/unread-count',
+    );
     return resp.data;
   },
 

@@ -102,7 +102,8 @@ const nextConfig: NextConfig = {
         {
           // Browser API calls are rewritten to the BFF route, which injects the
           // backend JWT from the httpOnly session cookie (see app/api/bff/).
-          source: '/api/:path((?!auth(?:/|$)|bff(?:/|$)).*)',
+          // Exclude auth, bff, and dedicated SSE realtime proxy.
+          source: '/api/:path((?!auth(?:/|$)|bff(?:/|$)|realtime(?:/|$)).*)',
           destination: '/api/bff/:path',
         },
       ],

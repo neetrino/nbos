@@ -24,7 +24,7 @@ async function main() {
     process.exit(1);
   }
 
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
   const passwordHash = await argon2.hash(ADMIN_PASSWORD, { type: argon2.argon2id });
 

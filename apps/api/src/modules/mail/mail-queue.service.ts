@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
-import { createRedisConnection, getRedisUrl } from '../../common/redis/redis-connection';
+import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../runtime/bullmq-job-options';
+import { shouldRegisterQueueProducers } from '../../runtime/process-role';
+import { createQueueProducerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
 import {
   MAIL_QUEUE_NAME,
   MAIL_SEND_JOB_NAME,
@@ -16,17 +18,25 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
   private connection: Redis | null = null;
 
   onModuleInit() {
-    const redisUrl = getRedisUrl();
+    if (!shouldRegisterQueueProducers()) {
+      return;
+    }
+    const redisUrl = getRedisQueueUrl();
     if (!redisUrl) {
       return;
     }
-    this.connection = createRedisConnection(redisUrl);
-    this.queue = new Queue<MailQueueJobPayload>(MAIL_QUEUE_NAME, { connection: this.connection });
+    this.connection = createQueueProducerConnection(redisUrl);
+    this.queue = new Queue<MailQueueJobPayload>(MAIL_QUEUE_NAME, {
+      connection: this.connection,
+      defaultJobOptions: BULLMQ_CRITICAL_JOB_OPTIONS,
+    });
   }
 
   async onModuleDestroy() {
     await this.queue?.close();
+    this.queue = null;
     await this.connection?.quit();
+    this.connection = null;
   }
 
   isQueueAvailable(): boolean {

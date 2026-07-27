@@ -4,6 +4,8 @@
  * secrets (especially in production).
  */
 
+import { assertAuthSessionV2Config } from '../modules/auth/auth-session.flags';
+
 const MIN_SECRET_LENGTH = 32;
 
 /** Values that clearly came from `.env.example` and must never reach production. */
@@ -45,6 +47,9 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
   // - META_WEBHOOK_VERIFY_TOKEN — shared Meta webhook verification
   // - ATS_API_KEY — ATS.am Active Call webhook (?key=); webhook returns 503 if unset
 
+  // PROCESS_ROLE is validated by runtime/process-role.ts at entrypoint bootstrap
+  // (required in production; `all` forbidden in production).
+
   // Secret strength + placeholder rejection (enforced in production).
   if (isProduction) {
     for (const key of ['JWT_SECRET', 'CREDENTIALS_ENCRYPTION_KEY']) {
@@ -71,6 +76,15 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
 
   if (errors.length > 0) {
     throw new Error(`Invalid environment configuration:\n - ${errors.join('\n - ')}`);
+  }
+
+  try {
+    assertAuthSessionV2Config(config as NodeJS.ProcessEnv);
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`Invalid environment configuration:\n - ${err.message}`);
+    }
+    throw err;
   }
 
   return config;

@@ -1,6 +1,8 @@
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { refreshBackendSession } from './auth/refresh-backend-session';
+import { runSingleFlightRefresh } from './auth/refresh-registry';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
 
@@ -21,6 +23,7 @@ const HOP_BY_HOP_HEADERS = new Set([
 /**
  * Proxies a browser API request to Nest, injecting the backend JWT from the
  * encrypted Auth.js session cookie (never exposed to client JavaScript).
+ * On 401, performs a single-flight BFF refresh and retries once.
  */
 export async function proxyToBackend(
   req: NextRequest,
@@ -30,13 +33,46 @@ export async function proxyToBackend(
   const targetUrl = new URL(`${BACKEND_URL}/api/${backendPath}`);
   targetUrl.search = req.nextUrl.search;
 
+  const bodyBuffer =
+    req.method !== 'GET' && req.method !== 'HEAD' ? await req.arrayBuffer() : undefined;
+
+  const first = await forwardOnce(req, targetUrl, undefined, bodyBuffer);
+  if (first.response.status !== 401) {
+    return toNextResponse(first.response, first.setCookie);
+  }
+
+  let refreshedAccess: string | null = null;
+  let setCookie: string | undefined;
+  const ok = await runSingleFlightRefresh(async () => {
+    const refreshed = await refreshBackendSession(req);
+    if (!refreshed) return false;
+    refreshedAccess = refreshed.accessToken;
+    setCookie = refreshed.setCookie;
+    return true;
+  });
+
+  if (!ok || !refreshedAccess) {
+    return toNextResponse(first.response);
+  }
+
+  const second = await forwardOnce(req, targetUrl, refreshedAccess, bodyBuffer);
+  return toNextResponse(second.response, setCookie);
+}
+
+async function forwardOnce(
+  req: NextRequest,
+  targetUrl: URL,
+  accessTokenOverride: string | undefined,
+  bodyBuffer: ArrayBuffer | undefined,
+): Promise<{ response: Response; setCookie?: string }> {
   const sessionToken = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
     secureCookie: process.env.NODE_ENV === 'production',
   });
   const accessToken =
-    typeof sessionToken?.accessToken === 'string' ? sessionToken.accessToken : undefined;
+    accessTokenOverride ??
+    (typeof sessionToken?.accessToken === 'string' ? sessionToken.accessToken : undefined);
 
   const headers = new Headers();
   req.headers.forEach((value, key) => {
@@ -56,26 +92,29 @@ export async function proxyToBackend(
     headers,
     redirect: 'manual',
   };
-
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    init.body = await req.arrayBuffer();
+  if (bodyBuffer) {
+    init.body = bodyBuffer;
   }
 
-  let backendResponse: Response;
   try {
-    backendResponse = await fetch(targetUrl, init);
+    const response = await fetch(targetUrl, init);
+    return { response };
   } catch {
-    return NextResponse.json(
-      {
-        statusCode: 503,
-        message: 'Backend is temporarily unavailable. Try again shortly.',
-        error: 'Service Unavailable',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 503 },
-    );
+    return {
+      response: Response.json(
+        {
+          statusCode: 503,
+          message: 'Backend is temporarily unavailable. Try again shortly.',
+          error: 'Service Unavailable',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 503 },
+      ),
+    };
   }
+}
 
+function toNextResponse(backendResponse: Response, setCookie?: string): NextResponse {
   const responseHeaders = new Headers();
   backendResponse.headers.forEach((value, key) => {
     if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
@@ -83,7 +122,9 @@ export async function proxyToBackend(
     }
     responseHeaders.set(key, value);
   });
-
+  if (setCookie) {
+    responseHeaders.append('Set-Cookie', setCookie);
+  }
   return new NextResponse(backendResponse.body, {
     status: backendResponse.status,
     headers: responseHeaders,

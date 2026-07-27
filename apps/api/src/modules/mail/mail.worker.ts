@@ -1,7 +1,11 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Worker } from 'bullmq';
 import type Redis from 'ioredis';
-import { createRedisConnection, getRedisUrl } from '../../common/redis/redis-connection';
+import { resolveBullmqConcurrency } from '../../runtime/bullmq-concurrency';
+import { logBullmqJob } from '../../runtime/bullmq-job-log';
+import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
+import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
+import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
 import {
   MAIL_QUEUE_NAME,
   MAIL_SEND_JOB_NAME,
@@ -20,19 +24,49 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly syncService: MailSyncService,
     private readonly sendService: MailSendService,
+    private readonly registry: BullmqWorkerRegistry,
   ) {}
 
   onModuleInit() {
-    const redisUrl = getRedisUrl();
+    if (!shouldRegisterBullmqWorkers()) {
+      return;
+    }
+    const redisUrl = getRedisQueueUrl();
     if (!redisUrl) {
       return;
     }
-    this.connection = createRedisConnection(redisUrl);
+    const concurrency = resolveBullmqConcurrency('mail');
+    this.connection = createQueueWorkerConnection(redisUrl);
     this.worker = new Worker<MailQueueJobPayload>(
       MAIL_QUEUE_NAME,
-      async (job) => this.process(job.name, job.data),
-      { connection: this.connection },
+      async (job) => {
+        const started = Date.now();
+        try {
+          await this.process(job.name, job.data);
+          logBullmqJob(this.logger, {
+            queue: MAIL_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'completed',
+          });
+        } catch (error) {
+          logBullmqJob(this.logger, {
+            queue: MAIL_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'failed',
+            errorCode: error instanceof Error ? error.name : 'Error',
+          });
+          throw error;
+        }
+      },
+      { connection: this.connection, concurrency },
     );
+    this.registry.register(MAIL_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {
       this.logger.error(`Mail worker failed for job ${job?.id ?? 'unknown'}.`, error);
     });
@@ -54,6 +88,8 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     await this.worker?.close();
+    this.worker = null;
     await this.connection?.quit();
+    this.connection = null;
   }
 }

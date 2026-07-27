@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ImapFlow } from 'imapflow';
 import { PrismaClient } from '@nbos/database';
+import { shouldStartApiSideEffects } from '../../runtime/process-role';
 import { PRISMA_TOKEN } from '../../database.module';
 import { MailQueueService } from './mail-queue.service';
 import { MailSyncService } from './mail-sync.service';
@@ -29,6 +30,9 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
+    if (!shouldStartApiSideEffects()) {
+      return;
+    }
     void this.startAll();
   }
 

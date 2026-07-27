@@ -1,11 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { TransformInterceptor } from './transform.interceptor';
 import { of, lastValueFrom } from 'rxjs';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 
 describe('TransformInterceptor', () => {
-  const interceptor = new TransformInterceptor();
-  const mockContext = {} as ExecutionContext;
+  const reflector = {
+    getAllAndOverride: vi.fn().mockReturnValue(false),
+  } as unknown as Reflector;
+  const interceptor = new TransformInterceptor(reflector);
+  const mockContext = {
+    getHandler: vi.fn(),
+    getClass: vi.fn(),
+  } as unknown as ExecutionContext;
 
   it('wraps response data', async () => {
     const handler: CallHandler = {
@@ -13,8 +20,8 @@ describe('TransformInterceptor', () => {
     };
 
     const result = await lastValueFrom(interceptor.intercept(mockContext, handler));
-    expect(result.data).toEqual({ id: 1, name: 'test' });
-    expect(result.timestamp).toBeDefined();
+    expect(result).toMatchObject({ data: { id: 1, name: 'test' } });
+    expect(result).toHaveProperty('timestamp');
   });
 
   it('wraps null response', async () => {
@@ -23,8 +30,8 @@ describe('TransformInterceptor', () => {
     };
 
     const result = await lastValueFrom(interceptor.intercept(mockContext, handler));
-    expect(result.data).toBeNull();
-    expect(result.timestamp).toBeDefined();
+    expect(result).toMatchObject({ data: null });
+    expect(result).toHaveProperty('timestamp');
   });
 
   it('wraps array response', async () => {
@@ -33,7 +40,7 @@ describe('TransformInterceptor', () => {
     };
 
     const result = await lastValueFrom(interceptor.intercept(mockContext, handler));
-    expect(result.data).toEqual([1, 2, 3]);
+    expect(result).toMatchObject({ data: [1, 2, 3] });
   });
 
   it('timestamp is ISO string', async () => {
@@ -41,7 +48,10 @@ describe('TransformInterceptor', () => {
       handle: () => of('data'),
     };
 
-    const result = await lastValueFrom(interceptor.intercept(mockContext, handler));
+    const result = (await lastValueFrom(interceptor.intercept(mockContext, handler))) as {
+      data: string;
+      timestamp: string;
+    };
     expect(new Date(result.timestamp).toISOString()).toBe(result.timestamp);
   });
 });

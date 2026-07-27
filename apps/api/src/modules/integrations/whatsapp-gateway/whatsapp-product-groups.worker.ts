@@ -8,7 +8,11 @@ import {
   buildProductWhatsAppParticipantDedupeKey,
   normalizePhoneToWhatsAppJid,
 } from '@nbos/shared';
-import { createRedisConnection, getRedisUrl } from '../../../common/redis/redis-connection';
+import { resolveBullmqConcurrency } from '../../../runtime/bullmq-concurrency';
+import { logBullmqJob } from '../../../runtime/bullmq-job-log';
+import { BullmqWorkerRegistry } from '../../../runtime/bullmq-worker-registry';
+import { shouldRegisterBullmqWorkers } from '../../../runtime/process-role';
+import { createQueueWorkerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
@@ -44,7 +48,7 @@ import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-que
 export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WhatsAppProductGroupsWorker.name);
   private worker: Worker<WhatsAppProductGroupJobPayload> | null = null;
-  private connection: ReturnType<typeof createRedisConnection> | null = null;
+  private connection: ReturnType<typeof createQueueWorkerConnection> | null = null;
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
@@ -53,20 +57,50 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     private readonly participants: ProductWhatsAppParticipantResolver,
     private readonly audit: AuditService,
     private readonly queue: WhatsAppProductGroupsQueueService,
+    private readonly registry: BullmqWorkerRegistry,
   ) {}
 
   onModuleInit() {
-    const redisUrl = getRedisUrl();
-    if (!redisUrl) {
-      this.logger.warn('REDIS_URL unset — WhatsApp product group worker disabled');
+    if (!shouldRegisterBullmqWorkers()) {
       return;
     }
-    this.connection = createRedisConnection(redisUrl);
+    const redisUrl = getRedisQueueUrl();
+    if (!redisUrl) {
+      this.logger.warn('REDIS_QUEUE_URL/REDIS_URL unset — WhatsApp product group worker disabled');
+      return;
+    }
+    const concurrency = resolveBullmqConcurrency('whatsapp');
+    this.connection = createQueueWorkerConnection(redisUrl);
     this.worker = new Worker<WhatsAppProductGroupJobPayload>(
       WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
-      async (job) => this.process(job),
-      { connection: this.connection },
+      async (job) => {
+        const started = Date.now();
+        try {
+          await this.process(job);
+          logBullmqJob(this.logger, {
+            queue: WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'completed',
+          });
+        } catch (error) {
+          logBullmqJob(this.logger, {
+            queue: WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'failed',
+            errorCode: error instanceof Error ? error.name : 'Error',
+          });
+          throw error;
+        }
+      },
+      { connection: this.connection, concurrency },
     );
+    this.registry.register(WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {
       this.logger.error(`WhatsApp job failed operationId=${job?.data.operationId}`, error);
       void this.onJobExhausted(job, error);
@@ -75,7 +109,9 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
 
   async onModuleDestroy() {
     await this.worker?.close();
+    this.worker = null;
     await this.connection?.quit();
+    this.connection = null;
   }
 
   async process(job: Job<WhatsAppProductGroupJobPayload>): Promise<void> {

@@ -23,6 +23,7 @@ import { CreatePersonalLinkDto } from '../dashboard/dto/create-personal-link.dto
 interface UpdateProfileBody {
   phone?: string;
   telegram?: string;
+  sipId?: string | null;
   avatar?: string;
   birthday?: string | null;
 }
@@ -133,22 +134,33 @@ export class MeController {
   }
 
   @Put('profile')
-  @ApiOperation({ summary: 'Update own profile (phone, telegram, avatar, birthday)' })
+  @ApiOperation({ summary: 'Update own profile (phone, telegram, sipId, avatar, birthday)' })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
         phone: { type: 'string', nullable: true },
         telegram: { type: 'string', nullable: true },
+        sipId: { type: 'string', nullable: true },
         avatar: { type: 'string', nullable: true },
         birthday: { type: 'string', format: 'date-time', nullable: true },
       },
     },
   })
   async updateProfile(@CurrentUser() user: CurrentUserPayload, @Body() body: UpdateProfileBody) {
-    const data: { phone?: string; telegram?: string; avatar?: string; birthday?: Date | null } = {};
+    const data: {
+      phone?: string;
+      telegram?: string;
+      sipId?: string | null;
+      avatar?: string;
+      birthday?: Date | null;
+    } = {};
     if (body.phone !== undefined) data.phone = body.phone;
     if (body.telegram !== undefined) data.telegram = body.telegram;
+    if (body.sipId !== undefined) {
+      const trimmed = typeof body.sipId === 'string' ? body.sipId.trim() : '';
+      data.sipId = trimmed.length > 0 ? trimmed : null;
+    }
     if (body.avatar !== undefined) data.avatar = body.avatar;
     if (body.birthday !== undefined) {
       data.birthday = body.birthday ? new Date(body.birthday) : null;

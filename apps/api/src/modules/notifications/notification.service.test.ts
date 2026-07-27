@@ -398,7 +398,10 @@ describe('NotificationService', () => {
 
   describe('getUnreadCount', () => {
     it('should return 0 for unknown user', async () => {
-      expect(await service.getUnreadCount('unknown')).toEqual({ count: 0 });
+      expect(await service.getUnreadCount('unknown')).toEqual({
+        count: 0,
+        source: 'legacy_count',
+      });
     });
 
     it('should count only unread notifications', async () => {
@@ -408,7 +411,10 @@ describe('NotificationService', () => {
 
       await service.markAsRead(n2.id, 'u1');
 
-      expect(await service.getUnreadCount('u1')).toEqual({ count: 2 });
+      expect(await service.getUnreadCount('u1')).toEqual({
+        count: 2,
+        source: 'legacy_count',
+      });
     });
   });
 });

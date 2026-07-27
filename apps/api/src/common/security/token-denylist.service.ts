@@ -1,6 +1,6 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type Redis from 'ioredis';
-import { createRedisConnection, getRedisUrl } from '../redis/redis-connection';
+import { createStateRedisConnection, getRedisStateUrl } from '../../runtime/queue-redis';
 import { jwtDenylistRedisKey, ttlSecondsUntil } from './jwt-denylist-redis';
 
 /** Sweep expired in-memory entries at most once per this interval. */
@@ -26,12 +26,14 @@ export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
   private redis: Redis | null = null;
 
   onModuleInit(): void {
-    const url = getRedisUrl();
+    const url = getRedisStateUrl();
     if (!url) {
-      this.logger.warn('REDIS_URL unset — JWT denylist uses in-memory storage only');
+      this.logger.warn(
+        'REDIS_STATE_URL/REDIS_URL unset — JWT denylist uses in-memory storage only',
+      );
       return;
     }
-    this.redis = createRedisConnection(url);
+    this.redis = createStateRedisConnection(url);
     this.logger.log('JWT denylist backed by Redis');
   }
 

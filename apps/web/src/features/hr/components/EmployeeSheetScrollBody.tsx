@@ -134,6 +134,16 @@ export function EmployeeSheetScrollBody({
             disabled={saving || !canEdit}
             onValueChange={(v) => patchDraft({ telegram: v })}
           />
+          <InlineField
+            variant="controlled"
+            label="ATS SIP ID"
+            type="text"
+            value={draft.sipId}
+            placeholder="3126107"
+            icon={<Phone size={12} />}
+            disabled={saving || !canEdit}
+            onValueChange={(v) => patchDraft({ sipId: v })}
+          />
         </div>
       </DetailSheetSection>
 
