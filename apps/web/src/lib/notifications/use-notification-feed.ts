@@ -16,6 +16,7 @@ import { NotificationRefetchRegistry } from '@/lib/realtime/notification-refetch
 import {
   createNotificationSseVersionGate,
   resetNotificationSseVersionOnOpen,
+  seedNotificationSseVersionFromReconcile,
   shouldApplyNotificationSseVersion,
   type NotificationSseVersionGate,
 } from '@/lib/realtime/notification-sse-version';
@@ -91,10 +92,15 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
     const controller = new AbortController();
     unreadAbortRef.current = controller;
     try {
-      const { count } = await notificationsApi.getUnreadCount();
+      const { count, version } = await notificationsApi.getUnreadCount();
       if (controller.signal.aborted) return;
       setUnreadCount(count);
-      // Unread endpoint has no persistent version yet — do not seed lastVersion from GET.
+      if (typeof version === 'number' && Number.isFinite(version)) {
+        versionGateRef.current = seedNotificationSseVersionFromReconcile(
+          versionGateRef.current,
+          version,
+        );
+      }
     } catch {
       if (controller.signal.aborted) return;
       /* keep last known count — never force badge to 0 on error */

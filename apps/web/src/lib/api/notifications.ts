@@ -78,8 +78,10 @@ export const notificationsApi = {
     return resp.data;
   },
 
-  async getUnreadCount(): Promise<{ count: number }> {
-    const resp = await api.get<{ count: number }>('/api/notifications/unread-count');
+  async getUnreadCount(): Promise<{ count: number; version?: number; source?: string }> {
+    const resp = await api.get<{ count: number; version?: number; source?: string }>(
+      '/api/notifications/unread-count',
+    );
     return resp.data;
   },
 

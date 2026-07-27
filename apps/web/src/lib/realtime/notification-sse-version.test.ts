@@ -46,11 +46,12 @@ describe('notification SSE version gate', () => {
     expect(fresh.apply).toBe(true);
   });
 
-  it('accepts the first event after open when lastVersion is null', () => {
+  it('ignores equal version', () => {
     let gate = createNotificationSseVersionGate();
     gate = resetNotificationSseVersionOnOpen(gate);
-    const result = shouldApplyNotificationSseVersion(gate, gate.generation, 1);
-    expect(result.apply).toBe(true);
-    expect(result.next.lastVersion).toBe(1);
+    const first = shouldApplyNotificationSseVersion(gate, gate.generation, 5);
+    expect(first.apply).toBe(true);
+    const second = shouldApplyNotificationSseVersion(first.next, gate.generation, 5);
+    expect(second.apply).toBe(false);
   });
 });

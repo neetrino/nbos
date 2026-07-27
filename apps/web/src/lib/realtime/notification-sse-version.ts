@@ -1,11 +1,11 @@
 /**
- * Process-local SSE versions reset on API restart. Compare versions only within
- * one SSE connection generation — never across reconnects.
+ * SSE version gate. After READ rollout, reconciliation GET can seed lastVersion
+ * with InboxState.version so replicas share one persistent sequence.
  */
 export type NotificationSseVersionGate = {
   /** Increments on every successful SSE `open` (including first connect). */
   generation: number;
-  /** Last applied SSE version for the current generation; null after reset. */
+  /** Last applied SSE / reconcile version for the current generation; null after reset. */
   lastVersion: number | null;
 };
 
@@ -23,9 +23,20 @@ export function resetNotificationSseVersionOnOpen(
   };
 }
 
+/** Seed lastVersion from unread GET reconciliation (persistent InboxState version). */
+export function seedNotificationSseVersionFromReconcile(
+  gate: NotificationSseVersionGate,
+  version: number,
+): NotificationSseVersionGate {
+  return {
+    generation: gate.generation,
+    lastVersion: version,
+  };
+}
+
 /**
  * Returns whether an SSE payload version should update UI for this generation.
- * Stale events from a previous connection generation are ignored.
+ * Equal or older versions are ignored.
  */
 export function shouldApplyNotificationSseVersion(
   gate: NotificationSseVersionGate,
@@ -35,7 +46,7 @@ export function shouldApplyNotificationSseVersion(
   if (eventGeneration !== gate.generation) {
     return { apply: false, next: gate };
   }
-  if (gate.lastVersion !== null && version < gate.lastVersion) {
+  if (gate.lastVersion !== null && version <= gate.lastVersion) {
     return { apply: false, next: gate };
   }
   return {

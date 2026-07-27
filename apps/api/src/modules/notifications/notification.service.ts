@@ -12,6 +12,8 @@ import { NotificationRealtimePublisher } from '../realtime/notification-realtime
 import {
   isNotificationInboxStateReadEnabled,
   isNotificationInboxStateWriteEnabled,
+  isNotificationInboxStateShadowReadEnabled,
+  resolveInboxShadowReadSampleRate,
 } from './notification-inbox-state.flags';
 import {
   isNotificationCommandV2Enabled,
@@ -23,10 +25,13 @@ import {
   incrementInboxUnread,
   readInboxState,
   resetInboxUnread,
+  syncInboxUnreadToActual,
   type InboxStateSnapshot,
 } from './notification-inbox-state.ops';
+import { recordInboxMetric } from './notification-inbox-metrics';
 import { decodeNotificationCursor, encodeNotificationCursor } from './notification-list-cursor';
 import { resolveNotificationRuleConfig } from './notification-rules';
+import { createHash } from 'node:crypto';
 
 type InAppNotificationRow = {
   id: string;
@@ -650,23 +655,87 @@ export class NotificationService {
     return { updated: outcome.updated };
   }
 
-  async getUnreadCount(userId: string): Promise<{ count: number; version?: number }> {
-    // READ defaults false — COUNT remains source of truth until reconcile proves dual-write.
-    if (isNotificationInboxStateReadEnabled()) {
+  async getUnreadCount(
+    userId: string,
+  ): Promise<{ count: number; version?: number; source?: 'inbox_state' | 'legacy_count' }> {
+    const readEnabled = isNotificationInboxStateReadEnabled();
+    const shadowEnabled = isNotificationInboxStateShadowReadEnabled();
+
+    if (readEnabled) {
       const state = await readInboxState(this.prisma, userId);
       if (state) {
-        return { count: state.unreadCount, version: state.version };
+        return { count: state.unreadCount, version: state.version, source: 'inbox_state' };
       }
-      this.logger.warn(`InboxState missing for ${userId}; falling back to COUNT`);
+      recordInboxMetric('notification_inbox_missing_state_total');
+      recordInboxMetric('notification_inbox_read_fallback_total');
+      this.logger.warn(
+        JSON.stringify({
+          event: 'notification.inbox_state.missing_repaired',
+          employeeIdHash: hashEmployeeId(userId),
+        }),
+      );
+      const repaired = await this.prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+        const recount = await tx.inAppNotification.count({
+          where: {
+            recipientEmployeeId: userId,
+            isRead: false,
+            archivedAt: null,
+          },
+        });
+        return syncInboxUnreadToActual(tx, userId, recount);
+      });
+      recordInboxMetric('notification_inbox_repair_total');
+      return {
+        count: repaired.unreadCount,
+        version: repaired.version,
+        source: 'inbox_state',
+      };
     }
-    const count = await this.prisma.inAppNotification.count({
+
+    const count = await this.countUnreadLegacy(userId);
+
+    if (shadowEnabled && shouldSampleShadow(resolveInboxShadowReadSampleRate())) {
+      try {
+        const state = await readInboxState(this.prisma, userId);
+        if (!state) {
+          recordInboxMetric('notification_inbox_missing_state_total');
+          this.logger.warn(
+            JSON.stringify({
+              event: 'notification.inbox_state.shadow_missing',
+              employeeIdHash: hashEmployeeId(userId),
+              legacyCount: count,
+            }),
+          );
+        } else if (state.unreadCount !== count) {
+          recordInboxMetric('notification_inbox_shadow_mismatch_total');
+          recordInboxMetric('notification_inbox_drift_detected_total');
+          this.logger.warn(
+            JSON.stringify({
+              event: 'notification.inbox_state.shadow_mismatch',
+              employeeIdHash: hashEmployeeId(userId),
+              legacyCount: count,
+              inboxCount: state.unreadCount,
+              version: state.version,
+            }),
+          );
+        }
+      } catch (err) {
+        this.logger.warn(`Inbox shadow read failed: ${String(err)}`);
+      }
+    }
+
+    return { count, source: 'legacy_count' };
+  }
+
+  private async countUnreadLegacy(userId: string): Promise<number> {
+    return this.prisma.inAppNotification.count({
       where: {
         recipientEmployeeId: userId,
         isRead: false,
         archivedAt: null,
       },
     });
-    return { count };
   }
 
   async getUserPreferences(userId: string): Promise<NotificationPreferenceRow[]> {
@@ -849,4 +918,14 @@ function resolveKnownNotificationEventTypes(): string[] {
     'document.access_changed',
     'credentials.high_risk_action',
   ];
+}
+
+function hashEmployeeId(employeeId: string): string {
+  return createHash('sha256').update(employeeId).digest('hex').slice(0, 12);
+}
+
+function shouldSampleShadow(rate: number, random = Math.random): boolean {
+  if (rate <= 0) return false;
+  if (rate >= 1) return true;
+  return random() < rate;
 }

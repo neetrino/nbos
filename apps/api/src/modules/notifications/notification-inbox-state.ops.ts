@@ -117,6 +117,32 @@ export async function readInboxState(
   return mapRow(rows[0]);
 }
 
+/**
+ * Atomically set unread counter to actual COUNT (missing-state / repair path).
+ * Bumps version when the value changes or the row is inserted.
+ */
+export async function syncInboxUnreadToActual(
+  tx: Tx,
+  employeeId: string,
+  actualUnread: number,
+): Promise<InboxStateSnapshot> {
+  const rows = await tx.$queryRaw<Array<{ unread_count: number; version: bigint }>>`
+    INSERT INTO notification_inbox_state (employee_id, unread_count, version, updated_at)
+    VALUES (${employeeId}, ${actualUnread}, 1, CURRENT_TIMESTAMP)
+    ON CONFLICT (employee_id) DO UPDATE
+    SET
+      unread_count = EXCLUDED.unread_count,
+      version = CASE
+        WHEN notification_inbox_state.unread_count IS DISTINCT FROM EXCLUDED.unread_count
+          THEN notification_inbox_state.version + 1
+        ELSE notification_inbox_state.version
+      END,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING unread_count, version
+  `;
+  return mapRow(rows[0]);
+}
+
 function mapRow(row: { unread_count: number; version: bigint } | undefined): InboxStateSnapshot {
   if (!row) {
     return { unreadCount: 0, version: 0 };
