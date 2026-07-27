@@ -13,6 +13,7 @@ import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-p
 import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
 import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
+import { NotificationEnqueueReconcileService } from '../notifications/notification-enqueue-reconcile.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -43,6 +44,7 @@ export class SchedulerService {
     private readonly platformTrashPurgeService: PlatformTrashPurgeService,
     private readonly productWhatsApp: ProductWhatsAppGroupService,
     private readonly notificationInboxReconcile: NotificationInboxReconcileService,
+    private readonly notificationEnqueueReconcile: NotificationEnqueueReconcileService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -276,6 +278,20 @@ export class SchedulerService {
         return {
           processedCount: result.repaired,
           metadata: { scanned: result.scanned, mismatches: result.mismatches.length },
+        };
+      },
+    );
+  }
+
+  async runNotificationEnqueueReconcile(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.notificationEnqueueReconcile, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.notificationEnqueueReconcile.reconcilePending();
+        return {
+          processedCount: result.scannedJobs + result.scannedDeliveries,
+          metadata: result,
         };
       },
     );

@@ -16,6 +16,7 @@ import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
+import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { SchedulerController } from './scheduler.controller';
 import { SchedulerDiagnosticsController } from './scheduler-diagnostics.controller';
 import { SchedulerReadyController } from './scheduler-ready.controller';
@@ -46,6 +47,7 @@ const CRON_PROVIDERS = [
   CredentialTrashPurgeCron,
   PlatformTrashPurgeCron,
   NotificationInboxReconcileCron,
+  NotificationEnqueueReconcileCron,
 ] as const;
 
 /**

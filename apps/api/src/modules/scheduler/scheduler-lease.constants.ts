@@ -15,6 +15,7 @@ export const SCHEDULER_JOB_NAMES = {
   credentialTrashPurge: 'credential-trash-purge',
   platformTrashPurge: 'platform-trash-purge',
   notificationInboxReconcile: 'notification-inbox-reconcile',
+  notificationEnqueueReconcile: 'notification-enqueue-reconcile',
   billing: 'billing',
   expenses: 'expenses',
   overdueInvoices: 'overdue-invoices',

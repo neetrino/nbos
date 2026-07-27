@@ -155,4 +155,15 @@ export class SchedulerController {
   async runNotificationInboxReconcile() {
     return this.schedulerService.runNotificationInboxReconcile();
   }
+
+  @Post('notification-enqueue-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Scan PENDING notification jobs/deliveries after enqueue failures',
+    description:
+      'Requires NOTIFICATION_ENQUEUE_RECONCILE_ENABLED=true. Logs recoverable PENDING rows (outbox deferred).',
+  })
+  async runNotificationEnqueueReconcile() {
+    return this.schedulerService.runNotificationEnqueueReconcile();
+  }
 }
