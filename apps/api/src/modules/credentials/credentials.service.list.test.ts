@@ -194,6 +194,26 @@ describe('CredentialsService findAll', () => {
     );
   });
 
+  it('scopes company tab to ALL access level when row bypass is enabled', async () => {
+    prisma.credential.findMany.mockResolvedValue([]);
+    prisma.credential.count.mockResolvedValue(0);
+    await service.findAll(
+      {
+        tab: 'company',
+        employeeId: 'owner-1',
+        departmentIds: [],
+        bypassRowVisibility: true,
+        sort: 'created_desc',
+      },
+      accessOwnerAll,
+    );
+    expect(prisma.credential.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ accessLevel: 'ALL' }),
+      }),
+    );
+  });
+
   it('adds health metadata for rotation due/overdue flags', async () => {
     prisma.credential.findMany.mockResolvedValue([
       {

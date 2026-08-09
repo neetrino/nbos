@@ -42,7 +42,7 @@ export class CredentialsController {
   @ApiQuery({
     name: 'tab',
     required: false,
-    enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret'],
+    enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret', 'company'],
   })
   @ApiQuery({
     name: 'scope',
