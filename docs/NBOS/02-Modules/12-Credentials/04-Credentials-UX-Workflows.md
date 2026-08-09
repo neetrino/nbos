@@ -24,18 +24,21 @@ Credentials должен быть быстрым рабочим инструме
 
 Scope tabs определяют область vault, а не внешний вид списка.
 
-| Scope      | Для чего                                         | Create   |
-| ---------- | ------------------------------------------------ | -------- |
-| `All`      | все credentials, доступные пользователю          | скрыт    |
-| `My`       | личные рабочие credentials сотрудника            | доступен |
-| `Team`     | низкорисковые общие credentials компании/команды | доступен |
-| `Project`  | credentials клиентов, проектов и продуктов       | доступен |
-| `Secret`   | чувствительные credentials с ручным доступом     | доступен |
-| `Archived` | архивированные credentials                       | скрыт    |
+| Scope      | Для чего                                                 | Create   |
+| ---------- | -------------------------------------------------------- | -------- |
+| `All`      | все credentials, доступные пользователю (aggregate view) | скрыт    |
+| `My`       | личные рабочие credentials сотрудника                    | доступен |
+| `Team`     | low-risk shared credentials отдела / seat (`DEPARTMENT`) | доступен |
+| `Company`  | low-risk shared credentials на всю компанию (`ALL`)      | доступен |
+| `Project`  | credentials клиентов, проектов и продуктов               | доступен |
+| `Secret`   | чувствительные credentials с ручным доступом             | доступен |
+| `Archived` | архивированные credentials                               | скрыт    |
 
-`All` используется для поиска, просмотра, открытия Sheet и quick actions. Создание из `All` не допускается: пользователь должен сначала перейти в `My`, `Team`, `Project` или `Secret`.
+`All` используется для поиска, просмотра, открытия Sheet и quick actions. Создание из `All` не допускается: пользователь должен сначала перейти в `My`, `Team`, `Company`, `Project` или `Secret`.
 
-`Department` как UX-scope не использовать. Клиентские/рабочие credentials относятся к `Project`.
+**Team ≠ Company:** `Team` — department/seat; `Company` — все сотрудники с правом Credentials (только low-risk).
+
+`Department` как отдельный UX-tab не использовать; department-level записи — во вкладке `Team`. Клиентские/рабочие credentials относятся к `Project`.
 
 ## View Modes
 

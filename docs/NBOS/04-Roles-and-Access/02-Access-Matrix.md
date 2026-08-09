@@ -71,14 +71,15 @@
 
 ### Credentials (Пароли и учётные данные)
 
-Credentials rows below are a high-level role reference. Exact access is resolved by Credentials scopes (`My`, `Team`, `Project`, `Secret`) plus Platform Access Foundation.
+Credentials rows below are a high-level role reference. Exact access is resolved by Credentials scopes (`My`, `Team`, `Company`, `Project`, `Secret`) plus Platform Access Foundation.
 
-| Модуль                      | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
-| --------------------------- | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
-| Credentials (my)            | ✅  | ✅     | ✅  | ✅  | ✅     | ✅       | ✅  | ✅       | ✅      | ✅        | ✅         | ✅            |
-| Credentials (team low-risk) | ✅  | ❌     | 🔶  | 🔶  | ❌     | 🔶       | 🔶  | 🔶       | ❌      | 🔶        | 🔶         | ✅            |
-| Credentials (project)       | ✅  | ❌     | ✅  | 🔶  | 🔶     | 🔶       | 🔶  | ✅       | ❌      | ❌        | ❌         | ✅            |
-| Credentials (secret)        | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | 🔶       | ❌      | ❌        | ❌         | ❌            |
+| Модуль                         | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
+| ------------------------------ | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
+| Credentials (my)               | ✅  | ✅     | ✅  | ✅  | ✅     | ✅       | ✅  | ✅       | ✅      | ✅        | ✅         | ✅            |
+| Credentials (team low-risk)    | ✅  | ❌     | 🔶  | 🔶  | ❌     | 🔶       | 🔶  | 🔶       | ❌      | 🔶        | 🔶         | ✅            |
+| Credentials (company low-risk) | ✅  | 🔶     | 🔶  | 🔶  | 🔶     | 🔶       | 🔶  | 🔶       | 🔶      | 🔶        | 🔶         | 🔶            |
+| Credentials (project)          | ✅  | ❌     | ✅  | 🔶  | 🔶     | 🔶       | 🔶  | ✅       | ❌      | ❌        | ❌         | ✅            |
+| Credentials (secret)           | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | 🔶       | ❌      | ❌        | ❌         | ❌            |
 
 ### Коммуникации и файлы
 
@@ -110,13 +111,14 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 
 ### Уровни доступа к паролям
 
-| Уровень      | Описание                               | Кто видит                                                     | Примеры                                     |
-| ------------ | -------------------------------------- | ------------------------------------------------------------- | ------------------------------------------- |
-| **My**       | Личные рабочие пароли                  | owner + global vault owners                                   | личные рабочие аккаунты сотрудника          |
-| **Team**     | Low-risk shared credentials            | role-based access; interns/juniors can be excluded            | тестовые аккаунты, low-risk сервисы команды |
-| **Project**  | Клиентские project/product credentials | Project/Product team + role/personal levels + manual override | hosting, CMS admin, database, env           |
-| **Secret**   | Секретные пароли компании/клиентов     | manual selected employees + global vault owners               | root/master, bank, sensitive API keys       |
-| **Archived** | Архивные credentials                   | by archive policy                                             | старые/выведенные доступы                   |
+| Уровень      | Описание                               | Кто видит                                                     | Примеры                                    |
+| ------------ | -------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| **My**       | Личные рабочие пароли                  | owner + global vault owners                                   | личные рабочие аккаунты сотрудника         |
+| **Team**     | Low-risk shared (department/seat)      | `DEPARTMENT`; role/seat; interns/juniors can be excluded      | low-risk сервисы отдела, тестовые аккаунты |
+| **Company**  | Low-risk shared (company-wide)         | `ALL`; все с Credentials permission                           | общие Wi‑Fi, офисные SaaS, internal how-to |
+| **Project**  | Клиентские project/product credentials | Project/Product team + role/personal levels + manual override | hosting, CMS admin, database, env          |
+| **Secret**   | Секретные пароли компании/клиентов     | manual selected employees + global vault owners               | root/master, bank, sensitive API keys      |
+| **Archived** | Архивные credentials                   | by archive policy                                             | старые/выведенные доступы                  |
 
 ### Операции с паролями по ролям
 
