@@ -108,6 +108,7 @@ export class CredentialsController {
         employeeId: access.employeeId,
         departmentIds: access.departmentIds,
         viewScope: access.viewScope,
+        bypassRowVisibility: access.bypassRowVisibility,
         scope: listScope,
         includeArchived: listScope === 'trash',
         sort: normalizeCredentialListSort(sort, listScope === 'trash'),

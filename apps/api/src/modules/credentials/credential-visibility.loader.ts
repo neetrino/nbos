@@ -2,7 +2,6 @@ import type { Prisma, PrismaClient } from '@nbos/database';
 import {
   type CredentialsAccessContext,
   credentialsRbacBypassesRowFilter,
-  resolveCredentialsRbacScope,
 } from './credentials-access';
 import { loadManualGrantCredentialIds } from './credential-manual-grants';
 import {
@@ -33,10 +32,9 @@ export async function buildCredentialRowVisibilityWhere(
   prisma: InstanceType<typeof PrismaClient>,
   platformAccessResolver: PlatformAccessResolverService,
   access: CredentialsAccessContext,
-  action: 'view' | 'edit' | 'delete' = 'view',
+  _action: 'view' | 'edit' | 'delete' = 'view',
 ): Promise<Pick<Prisma.CredentialWhereInput, 'OR'>> {
-  const scope = resolveCredentialsRbacScope(access, action);
-  if (credentialsRbacBypassesRowFilter(scope)) return {};
+  if (credentialsRbacBypassesRowFilter(access)) return {};
   const ctx = await loadCredentialVisibilityContext(prisma, platformAccessResolver, access);
   return { OR: buildCredentialVisibilityOr(ctx) };
 }

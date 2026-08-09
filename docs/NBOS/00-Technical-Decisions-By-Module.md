@@ -120,13 +120,14 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Credentials
 
-| Area       | Decision                                                                                                             |
-| ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| Encryption | Use AES-256-GCM field-level encryption for secret fields.                                                            |
-| List APIs  | Never return decrypted secrets in list APIs.                                                                         |
-| Reveal     | Reveal/copy/export must use explicit endpoints and audit every access.                                               |
-| Step-up    | Require step-up authentication for high-risk reveal/export flows; MVP may start with password re-auth, then add 2FA. |
-| Boundaries | Secrets must not be stored in Messenger, Drive comments, task comments or plain text logs.                           |
+| Area       | Decision                                                                                                                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Encryption | Use AES-256-GCM field-level encryption for secret fields.                                                                                                                                                     |
+| List APIs  | Never return decrypted secrets in list APIs.                                                                                                                                                                  |
+| Reveal     | Reveal/copy/export must use explicit endpoints and audit every access.                                                                                                                                        |
+| Step-up    | Require step-up authentication for high-risk reveal/export flows; MVP may start with password re-auth, then add 2FA.                                                                                          |
+| Row ACL    | `Credential.accessLevel` + grants always apply for normal `CREDENTIALS_*` scopes. Vault-wide bypass is only `CREDENTIALS_BYPASS_ROW_VISIBILITY` (Owner/CEO). Do not treat `CREDENTIALS_VIEW=ALL` as god-mode. |
+| Boundaries | Secrets must not be stored in Messenger, Drive comments, task comments or plain text logs.                                                                                                                    |
 
 ### Messenger
 

@@ -41,8 +41,7 @@ export function CredentialSecretVersionsPanel({
   const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
   const canReveal =
     canUseCredentialEmergencyAccess(me?.role.slug) ||
-    me?.permissions.CREDENTIALS_EDIT === 'ALL' ||
-    me?.permissions.CREDENTIALS_VIEW === 'ALL';
+    Boolean(me?.permissions.CREDENTIALS_BYPASS_ROW_VISIBILITY);
 
   const revealVersion = async (version: CredentialSecretVersion, password?: string) => {
     try {

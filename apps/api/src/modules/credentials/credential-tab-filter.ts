@@ -12,9 +12,9 @@ export function applyCredentialTabFilter(
   tab: CredentialTab,
   employeeId: string,
   visibilityCtx: CredentialVisibilityContext | undefined,
-  viewScope?: string,
+  bypassRowVisibility?: boolean,
 ): void {
-  const rbacBypass = credentialsRbacBypassesRowFilter(viewScope);
+  const rbacBypass = credentialsRbacBypassesRowFilter(bypassRowVisibility);
   const searchOr = where.OR;
   delete where.OR;
   delete where.accessLevel;

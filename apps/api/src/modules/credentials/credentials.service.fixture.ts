@@ -13,13 +13,18 @@ vi.mock('argon2', () => ({
 }));
 
 export const TEST_KEY = 'test-key-for-credentials';
-export const accessUser1 = { employeeId: 'user-1', departmentIds: [] as string[] };
+export const accessUser1 = {
+  employeeId: 'user-1',
+  departmentIds: [] as string[],
+  bypassRowVisibility: false,
+};
 export const accessOwnerAll = {
   employeeId: 'owner-1',
   departmentIds: [] as string[],
   viewScope: 'ALL',
   editScope: 'ALL',
   deleteScope: 'ALL',
+  bypassRowVisibility: true,
 };
 
 export function createCredentialsServiceTestContext() {

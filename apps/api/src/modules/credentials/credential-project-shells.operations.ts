@@ -20,6 +20,7 @@ export async function listCredentialProjectShells(
     employeeId: access.employeeId,
     departmentIds: access.departmentIds,
     viewScope: resolveCredentialsRbacScope(access, 'view'),
+    bypassRowVisibility: access.bypassRowVisibility,
   });
 
   const where: Prisma.CredentialWhereInput = {

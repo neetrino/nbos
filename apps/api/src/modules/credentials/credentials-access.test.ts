@@ -2,19 +2,33 @@ import { describe, it, expect } from 'vitest';
 import {
   credentialsAccessFromUser,
   credentialsRbacBypassesRowFilter,
+  hasCredentialsRowVisibilityBypass,
   resolveCredentialsRbacScope,
 } from './credentials-access';
 
 describe('credentialsRbacBypassesRowFilter', () => {
-  it('returns true for ALL scope', () => {
-    expect(credentialsRbacBypassesRowFilter('ALL')).toBe(true);
-    expect(credentialsRbacBypassesRowFilter(' all ')).toBe(true);
-  });
-
-  it('returns false for other scopes', () => {
-    expect(credentialsRbacBypassesRowFilter('OWN')).toBe(false);
-    expect(credentialsRbacBypassesRowFilter('DEPARTMENT')).toBe(false);
+  it('returns true only when bypassRowVisibility is set', () => {
+    expect(credentialsRbacBypassesRowFilter(true)).toBe(true);
+    expect(credentialsRbacBypassesRowFilter({ bypassRowVisibility: true })).toBe(true);
+    expect(credentialsRbacBypassesRowFilter({ bypassRowVisibility: false })).toBe(false);
+    expect(credentialsRbacBypassesRowFilter(false)).toBe(false);
     expect(credentialsRbacBypassesRowFilter(undefined)).toBe(false);
+  });
+});
+
+describe('hasCredentialsRowVisibilityBypass', () => {
+  it('requires non-NONE CREDENTIALS_BYPASS_ROW_VISIBILITY', () => {
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'ALL' })).toBe(
+      true,
+    );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'OWN' })).toBe(
+      true,
+    );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'NONE' })).toBe(
+      false,
+    );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_VIEW: 'ALL' })).toBe(false);
+    expect(hasCredentialsRowVisibilityBypass({})).toBe(false);
   });
 });
 
@@ -25,6 +39,7 @@ describe('resolveCredentialsRbacScope', () => {
     viewScope: 'OWN',
     editScope: 'ALL',
     deleteScope: 'NONE',
+    bypassRowVisibility: false,
   };
 
   it('picks scope by action', () => {
@@ -35,7 +50,7 @@ describe('resolveCredentialsRbacScope', () => {
 });
 
 describe('credentialsAccessFromUser', () => {
-  it('maps employee id and CREDENTIALS scopes from permissions', () => {
+  it('maps scopes and does not treat CREDENTIALS_VIEW=ALL as bypass', () => {
     const ctx = credentialsAccessFromUser({
       id: 'emp-1',
       email: 'o@example.com',
@@ -57,6 +72,26 @@ describe('credentialsAccessFromUser', () => {
       viewScope: 'ALL',
       editScope: 'ALL',
       deleteScope: 'ALL',
+      bypassRowVisibility: false,
     });
+  });
+
+  it('enables bypass only from CREDENTIALS_BYPASS_ROW_VISIBILITY', () => {
+    const ctx = credentialsAccessFromUser({
+      id: 'emp-1',
+      email: 'o@example.com',
+      role: 'role-owner',
+      roleLevel: 100,
+      departmentIds: [],
+      firstName: 'Owner',
+      lastName: 'User',
+      permissions: {
+        CREDENTIALS_VIEW: 'OWN',
+        CREDENTIALS_BYPASS_ROW_VISIBILITY: 'ALL',
+      },
+    });
+
+    expect(ctx.bypassRowVisibility).toBe(true);
+    expect(credentialsRbacBypassesRowFilter(ctx)).toBe(true);
   });
 });
