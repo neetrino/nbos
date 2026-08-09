@@ -1,5 +1,5 @@
 /** Vault scope tabs (UX); maps to API `tab` query and create `accessLevel`. */
-export type CredentialVaultScope = 'all' | 'my' | 'team' | 'project' | 'secret';
+export type CredentialVaultScope = 'all' | 'my' | 'team' | 'company' | 'project' | 'secret';
 
 export function vaultScopeToListTab(scope: CredentialVaultScope): string {
   return scope;
@@ -11,6 +11,8 @@ export function accessLevelForVaultScope(scope: CredentialVaultScope): string | 
       return 'PERSONAL';
     case 'team':
       return 'DEPARTMENT';
+    case 'company':
+      return 'ALL';
     case 'project':
       return 'PROJECT_TEAM';
     case 'secret':

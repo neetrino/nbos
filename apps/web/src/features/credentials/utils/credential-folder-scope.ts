@@ -1,7 +1,7 @@
 import type { CredentialFolder } from '@/lib/api/credentials';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
-export type CredentialFolderScope = 'MY' | 'TEAM' | 'PROJECT' | 'SECRET';
+export type CredentialFolderScope = 'MY' | 'TEAM' | 'ALL' | 'PROJECT' | 'SECRET';
 
 /** Maps credential access level to folder tree scope (vault sections). */
 export function accessLevelToFolderScope(accessLevel: string): CredentialFolderScope | null {
@@ -10,6 +10,8 @@ export function accessLevelToFolderScope(accessLevel: string): CredentialFolderS
       return 'MY';
     case 'DEPARTMENT':
       return 'TEAM';
+    case 'ALL':
+      return 'ALL';
     case 'PROJECT_TEAM':
       return 'PROJECT';
     case 'SECRET':
@@ -27,6 +29,8 @@ export function vaultScopeToFolderScope(
       return 'MY';
     case 'team':
       return 'TEAM';
+    case 'company':
+      return 'ALL';
     case 'project':
       return 'PROJECT';
     case 'secret':
@@ -34,6 +38,28 @@ export function vaultScopeToFolderScope(
     default:
       return null;
   }
+}
+
+/**
+ * Folder list API query scope. Vault «All» uses `ALL` (no server-side scope filter);
+ * company vault uses `ALL` then {@link credentialFoldersForVaultTab} narrows to scope ALL rows.
+ */
+export function folderListScopeParamForVaultTab(
+  vaultScope: CredentialVaultScope,
+): string | undefined {
+  if (vaultScope === 'all') return 'ALL';
+  const mapped = vaultScopeToFolderScope(vaultScope);
+  return mapped ?? undefined;
+}
+
+/** Client-side scope filter when the folders API cannot distinguish vault All vs company ALL scope. */
+export function credentialFoldersForVaultTab(
+  folders: CredentialFolder[],
+  vaultScope: CredentialVaultScope,
+): CredentialFolder[] {
+  const expected = vaultScopeToFolderScope(vaultScope);
+  if (!expected || vaultScope === 'all') return folders;
+  return folders.filter((folder) => folder.scope === expected);
 }
 
 export interface CredentialFolderContext {
@@ -51,7 +77,7 @@ function resolveFolderScope(context: CredentialFolderContext): CredentialFolderS
 }
 
 /**
- * Folders in the sheet must match the credential section (My / Team / Project / Secret),
+ * Folders in the sheet must match the credential section (My / Team / Company / Project / Secret),
  * not the active vault tab — e.g. a Team credential opened from All shows Team folders only.
  */
 export function filterCredentialFoldersForContext(
