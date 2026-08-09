@@ -24,7 +24,14 @@ const VALID_VIEW_MODES = new Set<CredentialVaultViewMode>([
   'category-board',
   'folders',
 ]);
-const VALID_TABS = new Set<CredentialVaultScope>(['all', 'my', 'team', 'project', 'secret']);
+const VALID_TABS = new Set<CredentialVaultScope>([
+  'all',
+  'my',
+  'team',
+  'company',
+  'project',
+  'secret',
+]);
 const VALID_LIST_SCOPES = new Set<CredentialVaultListScope>(['active', 'trash']);
 
 export const DEFAULT_CREDENTIAL_VAULT_PAGE_PREFERENCES: CredentialVaultPagePreferences = {

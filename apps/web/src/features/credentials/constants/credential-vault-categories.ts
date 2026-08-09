@@ -6,6 +6,7 @@ import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 export const VAULT_CATEGORY_VALUES_BY_SCOPE = {
   my: ['MAIL', 'SERVICE', 'APP', 'OTHER'],
   team: ['SERVICE', 'MAIL', 'APP', 'OTHER'],
+  company: ['SERVICE', 'MAIL', 'APP', 'OTHER'],
   project: ['ADMIN', 'DOMAIN', 'HOSTING', 'DATABASE', 'API_KEY', 'APP', 'MAIL', 'SERVICE', 'OTHER'],
   secret: ['ADMIN', 'API_KEY', 'DATABASE', 'HOSTING', 'DOMAIN', 'OTHER'],
 } as const satisfies Record<Exclude<CredentialVaultScope, 'all'>, readonly string[]>;

@@ -54,24 +54,29 @@ Step-up для copy/reveal секретов **зависит от criticality**,
 ### Vault shell / main screen
 
 - Главный экран Credentials использует существующий NBOS page canon: стандартные tabs/search/actions, без нового визуального паттерна.
-- Scope tabs: `All`, `My`, `Team`, `Project`, `Secret`, `Archived`.
+- Scope tabs: `All`, `My`, `Team`, `Company`, `Project`, `Secret`, `Archived`.
 - `All` — режим просмотра/поиска/использования по всем доступным credentials. **Create button скрыта** в `All`.
-- Создать credential можно только внутри конкретного scope: `My`, `Team`, `Project`, `Secret`. Выбранный scope автоматически передается в create Sheet.
+- Создать credential можно только внутри конкретного scope: `My`, `Team`, `Company`, `Project`, `Secret`. Выбранный scope автоматически передается в create Sheet.
 - **Sort** — первый фильтр в панели vault (не strip): default **Recently used** (`sort=recent` → API `recent`), в меню только `Name` / `Newest`; не использовать `all` (это для category-фильтров). Один список; дубликатов нет.
 - `Recently used` — порядок по последней vault-активности в audit (30d), затем `createdAt`; учитывает текущий tab/search/quick filters. В `Category Board` sort не меняет Kanban-колонки (данные те же, порядок внутри колонок — по имени).
 - **Implemented (2026-06-06):** `GET /api/credentials?sort=recent|name_asc|created_desc` + те же query, что и список. `recent` только для активного vault; `Archived` → всегда `created_desc`. Отдельный `GET /credentials/recent` и partition `excludeIds` **сняты**.
 
 ### Vault scopes
 
-| Scope      | Смысл                                            | Access intent                                      |
-| ---------- | ------------------------------------------------ | -------------------------------------------------- |
-| `My`       | личные рабочие credentials сотрудника            | owner + global vault owners                        |
-| `Team`     | низкорисковые общие credentials компании/команды | role-based access; interns/juniors can be excluded |
-| `Project`  | credentials клиентов, проектов и продуктов       | project/product team access + role/personal levels |
-| `Secret`   | чувствительные company/client credentials        | manual selected people + global vault owners       |
-| `Archived` | archived credentials                             | no create                                          |
+| Scope      | Смысл                                                           | Access intent / DB                                                            |
+| ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `My`       | личные рабочие credentials сотрудника                           | owner + global vault owners                                                   |
+| `Team`     | low-risk shared credentials **отдела / seat** (не вся компания) | `accessLevel = DEPARTMENT`; role/seat policy; interns/juniors can be excluded |
+| `Company`  | low-risk shared credentials **на всю компанию**                 | `accessLevel = ALL`; все сотрудники с Credentials permission                  |
+| `Project`  | credentials клиентов, проектов и продуктов                      | project/product team access + role/personal levels                            |
+| `Secret`   | чувствительные company/client credentials                       | manual selected people + global vault owners                                  |
+| `Archived` | archived credentials                                            | no create                                                                     |
 
-`Department` как UX-scope не использовать: он путает с org department. Рабочие клиентские credentials живут в `Project`.
+**Team ≠ Company:** `Team` — department/seat scope (`DEPARTMENT`); `Company` — company-wide low-risk pool (`ALL`). Использовать редко; не смешивать с critical secrets.
+
+`Department` как **отдельный UX-tab** не использовать (путает с org department): department-level записи живут во вкладке `Team`. Рабочие клиентские credentials — в `Project`.
+
+**Migration:** Bitrix `Neetrino → Global` импортируется как vault scope `Company` / `accessLevel = ALL`.
 
 ### View modes
 
@@ -146,7 +151,7 @@ Access model должен быть платформенным, а не толь�
 - Для manual credential override достаточно `View` и `Edit`.
 - Delete/archive/permanent delete не являются manual credential levels.
 - Delete должен оставаться отдельным high-level permission для Founder/CEO/Director-level.
-- Team scope применяет role-based access к low-risk shared credentials; это не место для critical client/production secrets.
+- `Team` scope — department/seat low-risk shared credentials (`DEPARTMENT`); `Company` scope — company-wide low-risk (`ALL`). Ни то ни другое — не место для critical client/production secrets.
 
 ---
 
@@ -182,7 +187,7 @@ DB сохраняет оба поля:
 
 Принято не чистое C, а **C-hybrid**:
 
-- scope выбран через vault tab: `My`, `Team`, `Project`, `Secret`;
+- scope выбран через vault tab: `My`, `Team`, `Company`, `Project`, `Secret`;
 - category задается/preset-ится контекстом: Category Board column, Delivery slot, Product/Project context или compact category control;
 - credentialType выбирается как `What is stored?` / secret format;
 - если category уже задана контекстом, не заставлять пользователя выбирать ее снова;
@@ -211,6 +216,7 @@ One DB enum (`ADMIN`, `DOMAIN`, `HOSTING`, `SERVICE`, `APP`, `MAIL`, `API_KEY`, 
 | ----------- | -------------------------------------------------------------------- |
 | `My`        | MAIL, SERVICE, APP, OTHER                                            |
 | `Team`      | SERVICE, MAIL, APP, OTHER                                            |
+| `Company`   | SERVICE, MAIL, APP, OTHER                                            |
 | `Project`   | ADMIN, DOMAIN, HOSTING, DATABASE, API_KEY, APP, MAIL, SERVICE, OTHER |
 | `Secret`    | ADMIN, API_KEY, DATABASE, HOSTING, DOMAIN, OTHER                     |
 | `All`       | full enum (search across all accessible credentials)                 |

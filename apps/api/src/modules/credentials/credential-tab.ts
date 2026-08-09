@@ -1,4 +1,4 @@
-export type CredentialTab = 'all' | 'personal' | 'department' | 'secret' | 'project';
+export type CredentialTab = 'all' | 'personal' | 'department' | 'secret' | 'project' | 'company';
 
 const TAB_ALIASES: Record<string, CredentialTab> = {
   all: 'all',
@@ -8,6 +8,7 @@ const TAB_ALIASES: Record<string, CredentialTab> = {
   team: 'department',
   secret: 'secret',
   project: 'project',
+  company: 'company',
 };
 
 /** Maps vault tab query params (legacy + canon names) to internal tab filter. */

@@ -63,6 +63,16 @@ export function applyCredentialTabFilter(
       else andParts.push({ accessLevel: 'PROJECT_TEAM' });
       break;
     }
+    case 'company': {
+      const allBranch = visibilityCtx
+        ? buildCredentialVisibilityOr(visibilityCtx).find(
+            (b) => 'accessLevel' in b && b.accessLevel === 'ALL',
+          )
+        : undefined;
+      if (!rbacBypass && allBranch) andParts.push(allBranch);
+      else andParts.push({ accessLevel: 'ALL' });
+      break;
+    }
     case 'all':
     default:
       if (!rbacBypass && visibilityCtx) {
