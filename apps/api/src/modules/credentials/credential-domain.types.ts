@@ -45,6 +45,8 @@ export interface CredentialQueryParams {
   folderId?: string;
   withoutFolder?: boolean;
   viewScope?: string;
+  /** Owner/CEO vault-wide row bypass; independent of viewScope. */
+  bypassRowVisibility?: boolean;
   /** @deprecated Prefer `scope`. Transitional alias for trash list. */
   includeArchived?: boolean;
   scope?: 'active' | 'trash';

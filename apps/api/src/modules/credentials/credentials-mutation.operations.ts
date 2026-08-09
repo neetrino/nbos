@@ -183,6 +183,7 @@ export async function createCredential(
       viewScope: 'ALL',
       editScope: 'ALL',
       deleteScope: 'ALL',
+      bypassRowVisibility: true,
     });
     const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
     if (updated) return mapCredentialForApi({ ...updated, favorites: [] });

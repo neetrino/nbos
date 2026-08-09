@@ -7,7 +7,11 @@ import {
 } from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
 
-const access = { employeeId: 'emp-1', departmentIds: [] as string[] };
+const access = {
+  employeeId: 'emp-1',
+  departmentIds: [] as string[],
+  bypassRowVisibility: false,
+};
 
 function createRuntime(prisma: MockPrisma): CredentialsRuntime {
   return {

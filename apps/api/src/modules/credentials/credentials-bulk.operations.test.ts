@@ -35,7 +35,7 @@ describe('bulkArchiveCredentials', () => {
 
     const result = await bulkArchiveCredentials(
       runtime,
-      { employeeId: 'emp-1', departmentIds: [] },
+      { employeeId: 'emp-1', departmentIds: [], bypassRowVisibility: false },
       ['cred-1', 'cred-2', 'skipped'],
     );
 
