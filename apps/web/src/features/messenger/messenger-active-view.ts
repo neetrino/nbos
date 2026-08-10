@@ -1,1 +1,6 @@
-export type MessengerActiveView = { type: 'channel'; id: string } | { type: 'dm'; userId: string };
+export type MessengerActiveView = {
+  type: 'conversation';
+  id: string;
+  /** Present for DIRECT chats — used for typing emit dual-compat. */
+  peerEmployeeId?: string | null;
+};

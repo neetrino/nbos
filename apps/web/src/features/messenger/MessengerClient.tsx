@@ -1,42 +1,57 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   MESSENGER_TYPING_EMIT_MIN_MS,
-  type MessengerWsChannelPeerReadPayload,
-  type MessengerWsDmPeerReadPayload,
+  type MessengerWsConversationPeerReadPayload,
 } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
-import { employeesApi } from '@/lib/api/employees';
 import {
   messengerApi,
-  type MessengerChannelRow,
-  type MessengerDmConversationRow,
-  type MessengerSearchResultRow,
+  type MessengerConversationDetail,
+  type MessengerL1EntityRow,
 } from '@/lib/api/messenger';
-import { MessengerSidebar } from './MessengerSidebar';
+import { MessengerL1Panel } from './MessengerL1Panel';
+import { MessengerL2Panel } from './MessengerL2Panel';
 import { MessengerThread } from './MessengerThread';
 import type { MessengerActiveView } from './messenger-active-view';
 import {
   initialsFromDisplayName,
-  mapMessengerRowToView,
   type MessengerViewMessage,
 } from './messenger-message-mapper';
+import { mapUnifiedMessageToView } from './messenger-unified-message.mapper';
 import { dmReadReceiptMessageId as computeDmReadReceiptMessageId } from './messenger-dm-read-receipt.util';
 import { MESSENGER_REMOTE_TYPING_HINT_MS } from './messenger-typing-ui.constants';
+import {
+  type MessengerInternalTabId,
+} from './messenger-internal.constants';
 import { useMessengerRealtime } from './useMessengerRealtime';
+import { useMessengerNavigation } from './useMessengerNavigation';
+import { MessengerInternalChrome } from './MessengerInternalChrome';
 
-function messengerShellClass(embedded: boolean): string {
+function shellClass(embedded: boolean): string {
   return embedded
     ? 'flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
     : 'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
 }
 
-function messengerCenterShellClass(embedded: boolean): string {
+function centerClass(embedded: boolean): string {
   return embedded
     ? 'flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]'
     : 'flex h-full min-h-0 flex-1 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+}
+
+function entityKey(entity: MessengerL1EntityRow): string {
+  return `${entity.entityType}:${entity.entityId}`;
+}
+
+function parseAttachmentIds(draft: string): string[] | undefined {
+  const ids = draft
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return ids.length > 0 ? ids : undefined;
 }
 
 export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
@@ -45,25 +60,23 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
   const canEditMessenger = can('EDIT', 'MESSENGER');
   useHeaderModuleTitle('Messenger', !embedded);
 
-  const [channels, setChannels] = useState<MessengerChannelRow[]>([]);
-  const [conversations, setConversations] = useState<MessengerDmConversationRow[]>([]);
-  const [peerNames, setPeerNames] = useState<Record<string, string>>({});
+  const [zone, setZone] = useState<'internal' | 'external'>('internal');
+  const [tab, setTab] = useState<MessengerInternalTabId>('all');
+  const nav = useMessengerNavigation(tab, canViewMessenger);
+
   const [active, setActive] = useState<MessengerActiveView | null>(null);
+  const [conversationDetail, setConversationDetail] =
+    useState<MessengerConversationDetail | null>(null);
   const [messages, setMessages] = useState<MessengerViewMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [olderLoading, setOlderLoading] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
   const [bootError, setBootError] = useState<string | null>(null);
-  const [listError, setListError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [attachmentDraft, setAttachmentDraft] = useState('');
-  const [zone, setZone] = useState<'internal' | 'external'>('internal');
-  const [searchResults, setSearchResults] = useState<MessengerSearchResultRow[]>([]);
   const [remoteTypingHint, setRemoteTypingHint] = useState<string | null>(null);
-  const [onlineInMessengerById, setOnlineInMessengerById] = useState<Record<string, true>>({});
-  const [dmPeerLastReadAt, setDmPeerLastReadAt] = useState<string | null>(null);
+  const [peerLastReadAt, setPeerLastReadAt] = useState<string | null>(null);
   const [channelReadReceipt, setChannelReadReceipt] = useState<{
     seen: boolean;
     anchorId: string | null;
@@ -71,506 +84,228 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
 
   const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLocalTypingEmitRef = useRef(0);
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
-
   const activeRef = useRef(active);
   activeRef.current = active;
 
-  const refreshMessengerLists = useCallback(() => {
-    void (async () => {
+  const openConversation = useCallback(
+    async (conversationId: string, peerEmployeeId?: string | null) => {
+      setActive({ type: 'conversation', id: conversationId, peerEmployeeId });
+      setMessagesLoading(true);
+      setNewMessage('');
+      setAttachmentDraft('');
       try {
-        const [ch, convos] = await Promise.all([
-          messengerApi.listChannels(),
-          messengerApi.listDmConversations(),
+        const [detail, page] = await Promise.all([
+          messengerApi.getConversation(conversationId),
+          messengerApi.listConversationMessages(conversationId),
         ]);
-        setChannels(ch);
-        setConversations(convos);
-      } catch {
-        /* noop */
-      }
-    })();
-  }, []);
-
-  const refreshChannelMessages = useCallback(() => {
-    void (async () => {
-      const a = activeRef.current;
-      if (a?.type !== 'channel') return;
-      try {
-        const res = await messengerApi.listChannelMessages(a.id);
-        setMessages(res.items.map(mapMessengerRowToView));
-        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
+        setConversationDetail(detail);
+        setMessages(page.items.map(mapUnifiedMessageToView));
+        setHasMoreOlder(Boolean(page.meta.hasMoreOlder));
+        setPeerLastReadAt(page.peerLastReadAt);
         setChannelReadReceipt({
-          seen: res.lastOwnMessageSeenByOthers,
-          anchorId: res.lastOwnMessageId,
+          seen: page.lastOwnMessageSeenByOthers,
+          anchorId: page.lastOwnMessageId,
         });
+        await messengerApi.markConversationRead(conversationId);
+        void nav.refreshL1();
+        void nav.refreshL2();
       } catch {
-        /* noop */
+        setBootError('Failed to open conversation');
+      } finally {
+        setMessagesLoading(false);
       }
-    })();
-  }, []);
-
-  const loadOlderMessages = useCallback(async () => {
-    if (!me || !active) return;
-    const list = messagesRef.current;
-    if (list.length === 0) return;
-    const oldest = list[0];
-    if (!oldest) return;
-    setOlderLoading(true);
-    try {
-      if (active.type === 'channel') {
-        const res = await messengerApi.listChannelMessages(active.id, {
-          before: oldest.timestamp,
-        });
-        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-        setMessages((prev) => {
-          const existing = new Set(prev.map((m) => m.id));
-          const incoming = res.items.map(mapMessengerRowToView).filter((m) => !existing.has(m.id));
-          return [...incoming, ...prev];
-        });
-      } else {
-        const res = await messengerApi.listDirectMessages(me.id, active.userId, {
-          before: oldest.timestamp,
-        });
-        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-        setMessages((prev) => {
-          const existing = new Set(prev.map((m) => m.id));
-          const incoming = res.items.map(mapMessengerRowToView).filter((m) => !existing.has(m.id));
-          return [...incoming, ...prev];
-        });
-        setDmPeerLastReadAt(res.peerLastReadAt ?? null);
-      }
-    } catch {
-      /* noop */
-    } finally {
-      setOlderLoading(false);
-    }
-  }, [me, active]);
-
-  const onChannelPeerRead = useCallback(
-    (p: MessengerWsChannelPeerReadPayload) => {
-      const a = activeRef.current;
-      if (a?.type !== 'channel' || a.id !== p.channelId) return;
-      refreshChannelMessages();
     },
-    [refreshChannelMessages],
+    [nav],
   );
 
-  const onInboundChannelMessage = useCallback(
-    (channelId: string, msg: MessengerViewMessage) => {
-      setMessages((prev) => {
-        const a = activeRef.current;
-        if (a?.type !== 'channel' || a.id !== channelId) return prev;
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        return [...prev, msg];
-      });
-      void (async () => {
-        const a = activeRef.current;
-        if (a?.type === 'channel' && a.id === channelId) {
-          try {
-            await messengerApi.markChannelRead(channelId);
-          } catch {
-            /* noop */
-          }
-        }
-        refreshMessengerLists();
-      })();
-    },
-    [refreshMessengerLists],
-  );
-
-  const onInboundDmMessage = useCallback(
-    (counterpartId: string, msg: MessengerViewMessage) => {
-      setMessages((prev) => {
-        const a = activeRef.current;
-        if (a?.type !== 'dm' || a.userId !== counterpartId) return prev;
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        return [...prev, msg];
-      });
-      void (async () => {
-        const a = activeRef.current;
-        if (a?.type === 'dm' && a.userId === counterpartId) {
-          try {
-            await messengerApi.markDmRead(counterpartId);
-          } catch {
-            /* noop */
-          }
-        }
-        refreshMessengerLists();
-      })();
-    },
-    [refreshMessengerLists],
-  );
-
-  const showRemoteTypingHint = useCallback((hint: string) => {
-    setRemoteTypingHint(hint);
-    if (typingClearTimerRef.current) clearTimeout(typingClearTimerRef.current);
-    typingClearTimerRef.current = setTimeout(() => {
-      setRemoteTypingHint(null);
-      typingClearTimerRef.current = null;
-    }, MESSENGER_REMOTE_TYPING_HINT_MS);
-  }, []);
-
-  const onPresenceSnapshot = useCallback((employeeIds: readonly string[]) => {
-    const next: Record<string, true> = {};
-    for (const id of employeeIds) next[id] = true;
-    setOnlineInMessengerById(next);
-  }, []);
-
-  const onPresenceDelta = useCallback((employeeId: string, state: 'online' | 'offline') => {
-    setOnlineInMessengerById((prev) => {
-      if (state === 'offline') {
-        if (!(employeeId in prev)) return prev;
-        const next = { ...prev };
-        delete next[employeeId];
-        return next;
+  const onInboundConversationMessage = useCallback(
+    (conversationId: string, msg: MessengerViewMessage) => {
+      if (activeRef.current?.id === conversationId) {
+        setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+        void messengerApi.markConversationRead(conversationId);
       }
-      if (prev[employeeId]) return prev;
-      return { ...prev, [employeeId]: true };
-    });
-  }, []);
+      void nav.refreshL1();
+      void nav.refreshL2();
+    },
+    [nav],
+  );
 
-  const onDmPeerRead = useCallback((p: MessengerWsDmPeerReadPayload) => {
-    if (activeRef.current?.type !== 'dm') return;
-    if (p.counterpartId !== activeRef.current.userId) return;
-    setDmPeerLastReadAt((prev) => {
-      if (!p.lastReadAt) return prev;
-      if (!prev) return p.lastReadAt;
-      return new Date(p.lastReadAt) > new Date(prev) ? p.lastReadAt : prev;
-    });
-  }, []);
-
-  const { emitChannelTyping, emitDmTyping } = useMessengerRealtime({
+  const realtime = useMessengerRealtime({
     canViewMessenger,
     meId: me?.id,
     active,
-    onInboundChannelMessage,
-    onInboundDmMessage,
-    onRemoteTypingHint: showRemoteTypingHint,
-    onPresenceSnapshot,
-    onPresenceDelta,
-    onReadListsInvalidate: refreshMessengerLists,
-    onDmPeerRead,
-    onChannelPeerRead,
+    onInboundConversationMessage,
+    onRemoteTypingHint: (hint) => {
+      setRemoteTypingHint(hint);
+      if (typingClearTimerRef.current) clearTimeout(typingClearTimerRef.current);
+      typingClearTimerRef.current = setTimeout(() => {
+        setRemoteTypingHint(null);
+      }, MESSENGER_REMOTE_TYPING_HINT_MS);
+    },
+    onReadListsInvalidate: () => {
+      void nav.refreshL1();
+      void nav.refreshL2();
+    },
+    onConversationPeerRead: (payload: MessengerWsConversationPeerReadPayload) => {
+      if (activeRef.current?.id !== payload.conversationId) return;
+      setPeerLastReadAt(payload.lastReadAt);
+      void messengerApi.listConversationMessages(payload.conversationId).then((page) => {
+        setChannelReadReceipt({
+          seen: page.lastOwnMessageSeenByOthers,
+          anchorId: page.lastOwnMessageId,
+        });
+      });
+    },
   });
 
-  const fireLocalTypingIntent = useCallback(() => {
-    const a = activeRef.current;
-    if (!a) return;
-    const now = Date.now();
-    if (now - lastLocalTypingEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
-    lastLocalTypingEmitRef.current = now;
-    if (a.type === 'channel') emitChannelTyping(a.id);
-    else emitDmTyping(a.userId);
-  }, [emitChannelTyping, emitDmTyping]);
-
-  useEffect(() => {
-    setRemoteTypingHint(null);
-    if (typingClearTimerRef.current) {
-      clearTimeout(typingClearTimerRef.current);
-      typingClearTimerRef.current = null;
-    }
-  }, [active]);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (search.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      void (async () => {
-        try {
-          const result = await messengerApi.search(search.trim());
-          if (!cancelled) setSearchResults(result.items);
-        } catch {
-          if (!cancelled) setSearchResults([]);
-        }
-      })();
-    }, 250);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [search]);
-
-  useEffect(() => {
-    if (permsLoading || !me) return;
-    if (!canViewMessenger) {
-      setChannels([]);
-      setConversations([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        setBootError(null);
-        const [ch, convos] = await Promise.all([
-          messengerApi.listChannels(),
-          messengerApi.listDmConversations(),
-        ]);
-        if (cancelled) return;
-        setChannels(ch);
-        setConversations(convos);
-        setActive((prev) => {
-          if (prev) return prev;
-          if (ch[0]) return { type: 'channel', id: ch[0].id };
-          if (convos[0]) return { type: 'dm', userId: convos[0].recipientId };
-          return null;
-        });
-        try {
-          const emps = await employeesApi.getAll({ page: 1, pageSize: 500 });
-          if (cancelled) return;
-          const map: Record<string, string> = {};
-          for (const e of emps.items) {
-            map[e.id] = `${e.firstName} ${e.lastName}`.trim() || e.email;
-          }
-          setPeerNames(map);
-        } catch {
-          if (!cancelled) setPeerNames({});
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setBootError(e instanceof Error ? e.message : 'Failed to load messenger');
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [permsLoading, me, canViewMessenger]);
-
-  useEffect(() => {
-    if (!canViewMessenger || !me || !active) {
-      setDmPeerLastReadAt(null);
-      setChannelReadReceipt({ seen: false, anchorId: null });
-      return;
-    }
-    const activeSnapshot = active;
-    const meId = me.id;
-    let cancelled = false;
-    (async () => {
-      setMessagesLoading(true);
-      setListError(null);
-      try {
-        if (activeSnapshot.type === 'channel') {
-          setDmPeerLastReadAt(null);
-          const res = await messengerApi.listChannelMessages(activeSnapshot.id);
-          if (cancelled) return;
-          setMessages(res.items.map(mapMessengerRowToView));
-          setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-          setChannelReadReceipt({
-            seen: res.lastOwnMessageSeenByOthers,
-            anchorId: res.lastOwnMessageId,
-          });
-          await messengerApi.markChannelRead(activeSnapshot.id);
-          if (!cancelled) refreshMessengerLists();
-        } else {
-          setChannelReadReceipt({ seen: false, anchorId: null });
-          const res = await messengerApi.listDirectMessages(meId, activeSnapshot.userId);
-          if (cancelled) return;
-          setMessages(res.items.map(mapMessengerRowToView));
-          setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-          setDmPeerLastReadAt(res.peerLastReadAt ?? null);
-          await messengerApi.markDmRead(activeSnapshot.userId);
-          if (!cancelled) refreshMessengerLists();
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setListError(e instanceof Error ? e.message : 'Failed to load messages');
-          setMessages([]);
-          setDmPeerLastReadAt(null);
-          setChannelReadReceipt({ seen: false, anchorId: null });
-        }
-      } finally {
-        if (!cancelled) setMessagesLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [active, me, canViewMessenger, refreshMessengerLists]);
-
-  async function handleSend() {
-    if (!canEditMessenger || !me || !active || !newMessage.trim() || sendBusy) return;
-    const text = newMessage.trim();
-    const fileAssetIds = attachmentDraft
-      .split(/[,\s]+/)
-      .map((id) => id.trim())
-      .filter(Boolean);
+  const handleSend = useCallback(async () => {
+    if (!active || !conversationDetail?.canSend || !canEditMessenger) return;
+    const content = newMessage.trim();
+    if (!content || sendBusy) return;
     setSendBusy(true);
-    setNewMessage('');
-    setAttachmentDraft('');
-    setRemoteTypingHint(null);
-    if (typingClearTimerRef.current) {
-      clearTimeout(typingClearTimerRef.current);
-      typingClearTimerRef.current = null;
-    }
     try {
-      if (active.type === 'channel') {
-        await messengerApi.sendChannelMessage(active.id, { content: text, fileAssetIds });
-        const res = await messengerApi.listChannelMessages(active.id);
-        setMessages(res.items.map(mapMessengerRowToView));
-        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-        setChannelReadReceipt({
-          seen: res.lastOwnMessageSeenByOthers,
-          anchorId: res.lastOwnMessageId,
-        });
-        await messengerApi.markChannelRead(active.id);
-        refreshMessengerLists();
-      } else {
-        await messengerApi.sendDirectMessage({
-          recipientId: active.userId,
-          content: text,
-          fileAssetIds,
-        });
-        const res = await messengerApi.listDirectMessages(me.id, active.userId);
-        setMessages(res.items.map(mapMessengerRowToView));
-        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
-        setDmPeerLastReadAt(res.peerLastReadAt ?? null);
-        await messengerApi.markDmRead(active.userId);
-        refreshMessengerLists();
-      }
-    } catch (e) {
-      setListError(e instanceof Error ? e.message : 'Send failed');
-      setNewMessage(text);
-      setAttachmentDraft(fileAssetIds.join(', '));
+      const created = await messengerApi.sendConversationMessage(active.id, {
+        content,
+        fileAssetIds: parseAttachmentIds(attachmentDraft),
+      });
+      setMessages((prev) =>
+        prev.some((m) => m.id === created.id)
+          ? prev
+          : [...prev, mapUnifiedMessageToView(created)],
+      );
+      setNewMessage('');
+      setAttachmentDraft('');
+      void nav.refreshL1();
+      void nav.refreshL2();
+    } catch {
+      setBootError('Failed to send message');
     } finally {
       setSendBusy(false);
     }
-  }
+  }, [active, attachmentDraft, canEditMessenger, conversationDetail?.canSend, nav, newMessage, sendBusy]);
+
+  const handleLoadOlder = useCallback(async () => {
+    if (!active || olderLoading || !hasMoreOlder || messages.length === 0) return;
+    const oldest = messages[0];
+    if (!oldest) return;
+    setOlderLoading(true);
+    try {
+      const page = await messengerApi.listConversationMessages(active.id, {
+        before: oldest.timestamp,
+      });
+      const older = page.items.map(mapUnifiedMessageToView);
+      setMessages((prev) => {
+        const ids = new Set(prev.map((m) => m.id));
+        return [...older.filter((m) => !ids.has(m.id)), ...prev];
+      });
+      setHasMoreOlder(Boolean(page.meta.hasMoreOlder));
+    } finally {
+      setOlderLoading(false);
+    }
+  }, [active, hasMoreOlder, messages, olderLoading]);
+
+  const onComposerTypingIntent = useCallback(() => {
+    if (!active) return;
+    const now = Date.now();
+    if (now - lastLocalTypingEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
+    lastLocalTypingEmitRef.current = now;
+    realtime.emitConversationTyping(active.id);
+  }, [active, realtime]);
 
   if (permsLoading) {
     return (
-      <div className={messengerCenterShellClass(embedded)}>
-        <p className="text-sm text-black/50">Loading…</p>
+      <div className={centerClass(embedded)}>
+        <p className="text-sm text-black/40">Loading permissions…</p>
       </div>
     );
   }
-
   if (!canViewMessenger) {
     return (
-      <div className={messengerCenterShellClass(embedded)}>
-        <p className="text-sm text-black/60">You do not have permission to view Messenger.</p>
+      <div className={centerClass(embedded)}>
+        <p className="text-sm text-black/50">You do not have access to Messenger.</p>
       </div>
     );
   }
 
-  if (bootError) {
-    return (
-      <div className={messengerCenterShellClass(embedded)}>
-        <p className="text-sm text-red-600">{bootError}</p>
-      </div>
-    );
-  }
-
-  const dmPeers = conversations.map((c) => {
-    const resolved = peerNames[c.recipientId];
-    const fallback = `Colleague (${c.recipientId.slice(0, 8)}…)`;
-    const name = resolved ?? fallback;
-    return {
-      id: c.recipientId,
-      name,
-      initials: initialsFromDisplayName(resolved ?? c.recipientId),
-      online: Boolean(onlineInMessengerById[c.recipientId]),
-      unreadCount: c.unreadCount,
-    };
-  });
-
-  const channelSidebarItems = channels.map((c) => ({
-    id: c.id,
-    listLabel: c.name.startsWith('#') ? c.name : `#${c.name}`,
-    unreadCount: c.unreadCount,
-  }));
-
-  const channelRow =
-    active?.type === 'channel' ? channels.find((c) => c.id === active.id) : undefined;
-  const dmPeer = active?.type === 'dm' ? dmPeers.find((p) => p.id === active.userId) : undefined;
-
-  const dmReadReceiptTargetId =
-    active?.type === 'dm' && me
-      ? computeDmReadReceiptMessageId(messages, me.id, dmPeerLastReadAt)
+  const dmReceiptId =
+    conversationDetail?.type === 'DIRECT' && me?.id
+      ? computeDmReadReceiptMessageId(messages, me.id, peerLastReadAt)
       : null;
 
   return (
-    <div className={messengerShellClass(embedded)}>
-      <div className="flex gap-2 border-b border-black/[0.06] bg-white px-4 py-2">
-        <button
-          type="button"
-          onClick={() => setZone('internal')}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
-            zone === 'internal'
-              ? 'bg-[#E5A84B]/15 text-black'
-              : 'text-black/45 hover:bg-black/[0.03]'
-          }`}
-        >
-          Internal
-        </button>
-        <button
-          type="button"
-          onClick={() => setZone('external')}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
-            zone === 'external'
-              ? 'bg-[#E5A84B]/15 text-black'
-              : 'text-black/45 hover:bg-black/[0.03]'
-          }`}
-        >
-          External
-        </button>
-      </div>
-      {listError ? (
-        <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-center text-xs text-red-800">
-          {listError}
+    <div className={shellClass(embedded)}>
+      <MessengerInternalChrome
+        zone={zone}
+        onZoneChange={setZone}
+        tab={tab}
+        onTabChange={(next) => {
+          setTab(next);
+          setActive(null);
+          setConversationDetail(null);
+          setMessages([]);
+        }}
+        messageSearch={nav.messageSearch}
+        onMessageSearchChange={nav.setMessageSearch}
+      />
+
+      {(bootError || nav.listError) && (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900">
+          {bootError ?? nav.listError}
         </div>
-      ) : null}
+      )}
+
       {zone === 'external' ? (
-        <div className="flex flex-1 items-center justify-center bg-white p-8 text-center">
-          <div className="max-w-md">
-            <h2 className="text-lg font-semibold text-black">
-              External Messenger is not connected yet
-            </h2>
-            <p className="mt-2 text-sm text-black/55">
-              CRM Inbox, Project WhatsApp Groups, Support and Finance external conversations will
-              use
-              <code className="mx-1 rounded bg-black/[0.04] px-1">
-                WhatsAppWebAdapter -&gt; WAHA
-              </code>
-              later. Internal messages cannot be sent to clients from here.
+        <div className="flex flex-1 items-center justify-center p-8">
+          <div className="max-w-md text-center">
+            <p className="text-sm font-semibold text-black">External Messenger</p>
+            <p className="mt-2 text-sm text-black/50">
+              Client-facing channels stay separate from Internal Messenger and will connect later.
             </p>
           </div>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">
-          <MessengerSidebar
-            channels={channelSidebarItems}
-            dmPeers={dmPeers}
-            active={active}
-            onSelect={setActive}
-            search={search}
-            onSearchChange={setSearch}
-            searchResults={searchResults}
-            onSelectSearchResult={(result) => {
-              if (result.scope === 'channel') setActive({ type: 'channel', id: result.channelId });
-              if (result.scope === 'dm' && result.recipientId) {
-                setActive({ type: 'dm', userId: result.recipientId });
-              }
+          <MessengerL1Panel
+            entities={nav.entities}
+            selectedEntityKey={nav.selectedEntity ? entityKey(nav.selectedEntity) : null}
+            onSelect={(entity) => {
+              void (async () => {
+                const id = await nav.selectEntity(entity);
+                if (id) await openConversation(id);
+                else {
+                  setActive(null);
+                  setConversationDetail(null);
+                  setMessages([]);
+                }
+              })();
             }}
+            search={nav.l1Search}
+            onSearchChange={nav.setL1Search}
           />
-          {!active ? (
-            <div className="flex flex-1 items-center justify-center bg-white">
-              <p className="text-sm text-black/40">Select a channel or conversation.</p>
-            </div>
-          ) : (
+          <MessengerL2Panel
+            conversations={nav.conversations}
+            activeConversationId={active?.id ?? null}
+            onSelect={(c) => {
+              void openConversation(c.id, c.peerEmployeeId);
+            }}
+            searchResults={nav.searchResults}
+            onSelectSearchResult={(result) => {
+              void openConversation(result.conversationId);
+            }}
+            emptyHint={
+              nav.selectedEntity
+                ? 'No conversations yet — open an entity to create its chat.'
+                : 'Select an entity on the left.'
+            }
+          />
+          {conversationDetail && active ? (
             <MessengerThread
-              active={active}
-              channelRow={channelRow}
-              dmTitle={active.type === 'dm' ? (dmPeer?.name ?? active.userId) : ''}
-              dmInitials={active.type === 'dm' ? (dmPeer?.initials ?? '?') : ''}
+              conversation={conversationDetail}
               messages={messages}
               messagesLoading={messagesLoading}
               hasMoreOlder={hasMoreOlder}
               olderLoading={olderLoading}
-              onLoadOlder={() => loadOlderMessages()}
+              onLoadOlder={handleLoadOlder}
               newMessage={newMessage}
               onNewMessageChange={setNewMessage}
               attachmentDraft={attachmentDraft}
@@ -578,13 +313,18 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
               onSend={() => {
                 void handleSend();
               }}
-              canSend={canEditMessenger}
-              sendDisabled={!newMessage.trim() || sendBusy}
+              canSend={canEditMessenger && conversationDetail.canSend}
+              sendDisabled={sendBusy || !newMessage.trim()}
               remoteTypingHint={remoteTypingHint}
-              onComposerTypingIntent={canEditMessenger ? fireLocalTypingIntent : undefined}
-              dmReadReceiptMessageId={dmReadReceiptTargetId}
-              channelReadReceipt={active.type === 'channel' ? channelReadReceipt : null}
+              onComposerTypingIntent={onComposerTypingIntent}
+              dmReadReceiptMessageId={dmReceiptId}
+              channelReadReceipt={channelReadReceipt}
+              headerInitials={initialsFromDisplayName(conversationDetail.title)}
             />
+          ) : (
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-white">
+              <p className="text-sm text-black/40">Select a conversation to start chatting.</p>
+            </div>
           )}
         </div>
       )}

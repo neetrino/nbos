@@ -1,6 +1,5 @@
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Inject } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -17,10 +16,15 @@ import { PRISMA_TOKEN } from '../../database.module';
 import {
   MESSENGER_SOCKET_NAMESPACE,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
+  MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
+  MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
+  MESSENGER_WS_SERVER_CONVERSATION_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
@@ -30,17 +34,27 @@ import {
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsChannelPeerReadPayload,
+  type MessengerWsConversationPeerReadPayload,
   type MessengerWsDmPeerReadPayload,
   messengerSocketChannelRoom,
+  messengerSocketConversationRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
+import {
+  canAccessMessengerChannel,
+  loadMessengerLegacyAccess,
+} from './access/messenger-legacy-channel-access.op';
+import { canViewConversation } from './access/messenger-conversation-access.op';
+import { toMessengerAccessContext } from './access/messenger-access.types';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
+import type { MessengerUnifiedMessageDto } from './unified/messenger-conversation-message.mapper';
 import { parseCorsOriginsFromEnv } from '../../security/cors-origins';
 
 interface JwtSubPayload {
   sub: string;
+  authVersion?: number;
 }
 
 @WebSocketGateway({
@@ -88,8 +102,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!employeeId) return { ok: false };
     const channelId = extractChannelId(body);
     if (!channelId) return { ok: false };
-    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
-    if (!channel) return { ok: false };
+    if (!(await this.employeeMayUseChannel(employeeId, channelId))) return { ok: false };
     await client.join(messengerSocketChannelRoom(channelId));
     return { ok: true };
   }
@@ -103,8 +116,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!employeeId) return { ok: false };
     const channelId = extractChannelId(body);
     if (!channelId) return { ok: false };
-    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
-    if (!channel) return { ok: false };
+    if (!(await this.employeeMayUseChannel(employeeId, channelId))) return { ok: false };
     if (!this.typingThrottle.allow(client.id)) return { ok: true };
     const label = await this.typingDisplayLabel(employeeId);
     client.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_TYPING, {
@@ -112,6 +124,20 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       employeeId,
       label,
     });
+    return { ok: true };
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION)
+  async handleSubscribeConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return { ok: false };
+    const conversationId = extractConversationId(body);
+    if (!conversationId) return { ok: false };
+    if (!(await this.employeeMayUseConversation(employeeId, conversationId))) return { ok: false };
+    await client.join(messengerSocketConversationRoom(conversationId));
     return { ok: true };
   }
 
@@ -124,6 +150,11 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!employeeId) return { ok: false };
     const recipientId = extractRecipientId(body);
     if (!recipientId || recipientId === employeeId) return { ok: false };
+    const recipient = await this.prisma.employee.findUnique({
+      where: { id: recipientId },
+      select: { id: true, status: true },
+    });
+    if (!recipient || recipient.status === 'TERMINATED') return { ok: false };
     if (!this.typingThrottle.allow(client.id)) return { ok: true };
     const label = await this.typingDisplayLabel(employeeId);
     client.to(messengerSocketUserRoom(recipientId)).emit(MESSENGER_WS_SERVER_DM_TYPING, {
@@ -134,12 +165,47 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     return { ok: true };
   }
 
+  @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CONVERSATION)
+  async handleTypingConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return { ok: false };
+    const conversationId = extractConversationId(body);
+    if (!conversationId) return { ok: false };
+    if (!(await this.employeeMayUseConversation(employeeId, conversationId))) return { ok: false };
+    if (!this.typingThrottle.allow(client.id)) return { ok: true };
+    const label = await this.typingDisplayLabel(employeeId);
+    client
+      .to(messengerSocketConversationRoom(conversationId))
+      .emit(MESSENGER_WS_SERVER_CONVERSATION_TYPING, {
+        conversationId,
+        employeeId,
+        label,
+      });
+    return { ok: true };
+  }
+
   emitChannelMessage(channelId: string, message: MessengerMessageDto): void {
     if (!this.server) return;
     this.server
       .to(messengerSocketChannelRoom(channelId))
       .emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
         channelId,
+        message,
+      });
+  }
+
+  emitConversationMessage(
+    conversationId: string,
+    message: MessengerUnifiedMessageDto,
+  ): void {
+    if (!this.server) return;
+    this.server
+      .to(messengerSocketConversationRoom(conversationId))
+      .emit(MESSENGER_WS_SERVER_CONVERSATION_MESSAGE, {
+        conversationId,
         message,
       });
   }
@@ -186,6 +252,16 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
   }
 
+  emitConversationPeerRead(
+    conversationId: string,
+    payload: MessengerWsConversationPeerReadPayload,
+  ): void {
+    if (!this.server) return;
+    this.server
+      .to(messengerSocketConversationRoom(conversationId))
+      .emit(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ, payload);
+  }
+
   private async authenticateAndJoinUserRoom(client: Socket): Promise<void> {
     const token = readSocketToken(client);
     if (!token) {
@@ -195,6 +271,34 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     try {
       const payload = jwt.verify(token, this.jwtSecret) as JwtSubPayload;
       const employeeId = payload.sub;
+      if (!employeeId) {
+        client.disconnect(true);
+        return;
+      }
+
+      const employee = await this.prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { id: true, status: true, authVersion: true },
+      });
+      if (!employee || employee.status === 'TERMINATED') {
+        client.disconnect(true);
+        return;
+      }
+      if (
+        typeof payload.authVersion === 'number' &&
+        payload.authVersion !== employee.authVersion
+      ) {
+        client.disconnect(true);
+        return;
+      }
+
+      const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
+      if (!access || access.viewScope === 'NONE') {
+        this.logger.warn(`Messenger socket denied: no MESSENGER VIEW for ${employeeId}`);
+        client.disconnect(true);
+        return;
+      }
+
       client.data.employeeId = employeeId;
       await client.join(messengerSocketUserRoom(employeeId));
       const { becameOnline } = this.presenceTracker.increment(employeeId);
@@ -211,6 +315,26 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       this.logger.warn('Messenger socket auth failed');
       client.disconnect(true);
     }
+  }
+
+  private async employeeMayUseChannel(employeeId: string, channelId: string): Promise<boolean> {
+    const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
+    if (!access || access.viewScope === 'NONE') return false;
+    const channel = await this.prisma.messengerChannel.findUnique({
+      where: { id: channelId },
+      select: { id: true, projectId: true, type: true },
+    });
+    if (!channel) return false;
+    return canAccessMessengerChannel(this.prisma, access, channel);
+  }
+
+  private async employeeMayUseConversation(
+    employeeId: string,
+    conversationId: string,
+  ): Promise<boolean> {
+    const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
+    if (!access || access.viewScope === 'NONE') return false;
+    return canViewConversation(this.prisma, toMessengerAccessContext(access), conversationId);
   }
 
   private async typingDisplayLabel(employeeId: string): Promise<string> {
@@ -244,6 +368,14 @@ function extractChannelId(body: unknown): string | null {
 function extractRecipientId(body: unknown): string | null {
   if (!body || typeof body !== 'object') return null;
   const raw = (body as { recipientId?: unknown }).recipientId;
+  if (typeof raw !== 'string') return null;
+  const id = raw.trim();
+  return id.length > 0 ? id : null;
+}
+
+function extractConversationId(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null;
+  const raw = (body as { conversationId?: unknown }).conversationId;
   if (typeof raw !== 'string') return null;
   const id = raw.trim();
   return id.length > 0 ? id : null;

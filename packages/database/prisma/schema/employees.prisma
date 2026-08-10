@@ -95,6 +95,14 @@ model Employee {
   messengerDmThreadsAsB            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
   messengerChannelReadStates       MessengerChannelReadState[]
   messengerDmThreadReadStates      MessengerDirectThreadReadState[]
+  messengerConversationsCreated    MessengerConversation[]             @relation("MessengerConversationCreatedBy")
+  messengerConversationsDirectLow  MessengerConversation[]             @relation("MessengerConversationDirectLow")
+  messengerConversationsDirectHigh MessengerConversation[]             @relation("MessengerConversationDirectHigh")
+  messengerConversationParticipants MessengerConversationParticipant[] @relation("MessengerConversationParticipantEmployee")
+  messengerMessagesSent            MessengerMessage[]                  @relation("MessengerMessageSender")
+  messengerMessageAttachments      MessengerMessageAttachment[]        @relation("MessengerMessageAttachmentActor")
+  messengerConversationReadStates  MessengerConversationReadState[]    @relation("MessengerConversationReadStateEmployee")
+  messengerUserConversationSettings MessengerUserConversationSetting[] @relation("MessengerUserConversationSettingEmployee")
   mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
   mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")

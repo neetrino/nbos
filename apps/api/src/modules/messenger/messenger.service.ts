@@ -1,4 +1,9 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import type { InputJsonValue } from '@nbos/database';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -10,6 +15,15 @@ import {
   MESSENGER_AUDIT_ENTITY_CHANNEL,
   MESSENGER_AUDIT_ENTITY_DM_THREAD,
 } from './messenger-audit.constants';
+import {
+  assertCanAccessMessengerChannel,
+  loadMessengerLegacyAccess,
+  type MessengerLegacyAccessContext,
+} from './access/messenger-legacy-channel-access.op';
+import {
+  assertActiveEmployeeRecipient,
+  assertMessengerFileAssetsAttachable,
+} from './messenger-attachment-access.op';
 import {
   channelTypeFromApi,
   channelTypeToApi,
@@ -38,6 +52,7 @@ import {
   markDmThreadReadForEmployee,
 } from './messenger-read-state.ops';
 import { listMessengerVisibleChannelIds } from './messenger-visible-channel-ids.ops';
+import { dualWriteLegacyMessageToUnified } from './unified/messenger-legacy-dual-write.ops';
 import type {
   MessengerChannelDto,
   MessengerChannelPagedMessagesDto,
@@ -45,6 +60,7 @@ import type {
   MessengerDmPagedMessagesDto,
   MessengerSearchResultDto,
   MessengerMessageDto,
+  MessengerHistoryListParams,
 } from './messenger.types';
 
 export type {
@@ -53,13 +69,8 @@ export type {
   MessengerDmConversationDto,
   MessengerDmPagedMessagesDto,
   MessengerMessageDto,
+  MessengerHistoryListParams,
 } from './messenger.types';
-
-export interface MessengerHistoryListParams {
-  /** Load messages strictly older than this timestamp (exclusive). Omit for the latest window. */
-  before?: Date;
-  pageSize?: number;
-}
 
 function attachmentCreateMany(fileAssetIds: string[] | undefined, actorId: string) {
   const uniqueIds = [...new Set(fileAssetIds?.map((id) => id.trim()).filter(Boolean) ?? [])];
@@ -82,8 +93,34 @@ export class MessengerService {
     private readonly messengerGateway: MessengerGateway,
   ) {}
 
+  private async requireMessengerViewAccess(
+    employeeId: string,
+  ): Promise<MessengerLegacyAccessContext> {
+    const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
+    if (!access || access.viewScope === 'NONE') {
+      throw new ForbiddenException('No permission: MESSENGER.VIEW');
+    }
+    return access;
+  }
+
+  private async requireMessengerEditAccess(
+    employeeId: string,
+  ): Promise<MessengerLegacyAccessContext> {
+    const access = await this.requireMessengerViewAccess(employeeId);
+    if (access.editScope === 'NONE') {
+      throw new ForbiddenException('No permission: MESSENGER.EDIT');
+    }
+    return access;
+  }
+
   async getChannels(employeeId: string): Promise<MessengerChannelDto[]> {
-    const rows = await this.prisma.messengerChannel.findMany({ orderBy: { createdAt: 'asc' } });
+    const access = await this.requireMessengerViewAccess(employeeId);
+    const visibleIds = await listMessengerVisibleChannelIds(this.prisma, employeeId, access);
+    if (visibleIds.length === 0) return [];
+    const rows = await this.prisma.messengerChannel.findMany({
+      where: { id: { in: visibleIds } },
+      orderBy: { createdAt: 'asc' },
+    });
     const unreadCounts = await Promise.all(
       rows.map((r) => countChannelUnreadForEmployee(this.prisma, r.id, employeeId)),
     );
@@ -103,6 +140,7 @@ export class MessengerService {
     type: MessengerChannelTypeApi,
     actorEmployeeId: string,
   ): Promise<MessengerChannelDto> {
+    await this.requireMessengerViewAccess(actorEmployeeId);
     const created = await this.prisma.messengerChannel.create({
       data: {
         name,
@@ -138,25 +176,11 @@ export class MessengerService {
     viewerId: string,
     params: MessengerHistoryListParams = {},
   ): Promise<MessengerChannelPagedMessagesDto> {
-    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    const access = await this.requireMessengerViewAccess(viewerId);
+    await assertCanAccessMessengerChannel(this.prisma, access, channelId);
     const pageSize = clampMessengerPageSizeValue(
       params.pageSize ?? MESSENGER_MESSAGES_DEFAULT_PAGE_SIZE,
     );
-    const emptyMeta = {
-      total: 0,
-      page: 1,
-      pageSize,
-      totalPages: 1,
-      hasMoreOlder: false,
-    };
-    if (!channel) {
-      return {
-        items: [] as MessengerMessageDto[],
-        meta: emptyMeta,
-        lastOwnMessageId: null,
-        lastOwnMessageSeenByOthers: false,
-      };
-    }
     const [total, { rowsAsc, hasMoreOlder }, receipt] = await Promise.all([
       this.prisma.messengerChannelMessage.count({ where: { channelId } }),
       loadMessengerChannelMessageWindow(this.prisma, channelId, {
@@ -188,10 +212,13 @@ export class MessengerService {
     content: string,
     fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
-    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
-    if (!channel) {
-      throw new NotFoundException('Channel not found');
-    }
+    const access = await this.requireMessengerEditAccess(senderId);
+    const channel = await assertCanAccessMessengerChannel(this.prisma, access, channelId);
+    const validatedAttachments = await assertMessengerFileAssetsAttachable(
+      this.prisma,
+      access,
+      fileAssetIds,
+    );
     const snapshot = await snapshotMessengerSenderName(this.prisma, senderId);
     const created = await this.prisma.messengerChannelMessage.create({
       data: {
@@ -199,13 +226,17 @@ export class MessengerService {
         senderId,
         senderNameSnapshot: snapshot,
         content,
-        attachments: attachmentCreateMany(fileAssetIds, senderId),
+        attachments: attachmentCreateMany(validatedAttachments, senderId),
       },
       include: { attachments: true },
     });
+    const fullChannel = await this.prisma.messengerChannel.findUnique({
+      where: { id: channel.id },
+      select: { name: true },
+    });
     const channelMessageAudit: InputJsonValue = {
       messageId: created.id,
-      channelName: channel.name,
+      channelName: fullChannel?.name ?? channel.id,
     };
     await this.auditService.log({
       entityType: MESSENGER_AUDIT_ENTITY_CHANNEL,
@@ -216,6 +247,16 @@ export class MessengerService {
     });
     const dto = mapPrismaChannelMessageToDto(created);
     this.messengerGateway.emitChannelMessage(channelId, dto);
+    void dualWriteLegacyMessageToUnified(this.prisma, {
+      conversationId: channelId,
+      messageId: created.id,
+      senderId,
+      senderNameSnapshot: snapshot,
+      content,
+      createdAt: created.createdAt,
+      editedAt: created.editedAt,
+      fileAssetIds: validatedAttachments,
+    });
     return dto;
   }
 
@@ -224,6 +265,8 @@ export class MessengerService {
     peerId: string,
     params: MessengerHistoryListParams = {},
   ): Promise<MessengerDmPagedMessagesDto> {
+    await this.requireMessengerViewAccess(viewerId);
+    await assertActiveEmployeeRecipient(this.prisma, peerId);
     const [a, b] = orderedParticipantIds(viewerId, peerId);
     const thread = await this.prisma.messengerDirectThread.findUnique({
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
@@ -279,6 +322,13 @@ export class MessengerService {
     content: string,
     fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
+    const access = await this.requireMessengerEditAccess(senderId);
+    await assertActiveEmployeeRecipient(this.prisma, recipientId);
+    const validatedAttachments = await assertMessengerFileAssetsAttachable(
+      this.prisma,
+      access,
+      fileAssetIds,
+    );
     const [a, b] = orderedParticipantIds(senderId, recipientId);
     const thread = await this.prisma.messengerDirectThread.upsert({
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
@@ -292,7 +342,7 @@ export class MessengerService {
         senderId,
         senderNameSnapshot: snapshot,
         content,
-        attachments: attachmentCreateMany(fileAssetIds, senderId),
+        attachments: attachmentCreateMany(validatedAttachments, senderId),
       },
       include: { attachments: true },
     });
@@ -309,17 +359,29 @@ export class MessengerService {
     });
     const dto = mapPrismaDmMessageToDto(created, thread.id);
     this.messengerGateway.emitDmToParticipants(senderId, recipientId, thread.id, dto);
+    void dualWriteLegacyMessageToUnified(this.prisma, {
+      conversationId: thread.id,
+      messageId: created.id,
+      senderId,
+      senderNameSnapshot: snapshot,
+      content,
+      createdAt: created.createdAt,
+      editedAt: created.editedAt,
+      fileAssetIds: validatedAttachments,
+    });
     return dto;
   }
 
   async getDirectConversations(userId: string): Promise<MessengerDmConversationDto[]> {
+    await this.requireMessengerViewAccess(userId);
     return loadMessengerDmConversations(this.prisma, userId);
   }
 
   async search(userId: string, query: string): Promise<{ items: MessengerSearchResultDto[] }> {
+    const access = await this.requireMessengerViewAccess(userId);
     const q = query.trim();
     if (q.length < MESSENGER_SEARCH_MIN_QUERY_LEN) return { items: [] };
-    const visibleChannelIds = await listMessengerVisibleChannelIds(this.prisma, userId);
+    const visibleChannelIds = await listMessengerVisibleChannelIds(this.prisma, userId, access);
     const [channels, dms] = await Promise.all([
       visibleChannelIds.length === 0
         ? Promise.resolve([])
@@ -366,10 +428,8 @@ export class MessengerService {
   }
 
   async markChannelRead(channelId: string, employeeId: string): Promise<void> {
-    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
-    if (!channel) {
-      throw new NotFoundException('Channel not found');
-    }
+    const access = await this.requireMessengerViewAccess(employeeId);
+    await assertCanAccessMessengerChannel(this.prisma, access, channelId);
     const lastReadAt = await markChannelReadForEmployee(this.prisma, channelId, employeeId);
     this.messengerGateway.emitReadListsUpdated(employeeId);
     this.messengerGateway.emitChannelPeerRead(channelId, {
@@ -380,6 +440,8 @@ export class MessengerService {
   }
 
   async markDirectConversationRead(actorId: string, recipientId: string): Promise<void> {
+    await this.requireMessengerViewAccess(actorId);
+    await assertActiveEmployeeRecipient(this.prisma, recipientId);
     const [a, b] = orderedParticipantIds(actorId, recipientId);
     const thread = await this.prisma.messengerDirectThread.findUnique({
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },

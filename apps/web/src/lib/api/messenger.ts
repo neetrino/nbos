@@ -1,5 +1,94 @@
 import { api } from '../api';
 
+export type MessengerInternalTab = 'all' | 'deal' | 'project' | 'dev' | 'tasks';
+
+export type MessengerL1EntityType = 'PROJECT' | 'PRODUCT' | 'DEAL' | 'TASK' | 'DIRECT_BUCKET';
+
+export interface MessengerL1EntityRow {
+  entityType: MessengerL1EntityType;
+  entityId: string;
+  title: string;
+  subtitle: string | null;
+  unreadCount: number;
+  primaryConversationId: string | null;
+}
+
+export interface MessengerL2ConversationRow {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  lastMessageAt: string | null;
+  lastMessagePreview: string | null;
+  unreadCount: number;
+  primaryEntityType: string | null;
+  primaryEntityId: string | null;
+  peerEmployeeId: string | null;
+}
+
+export interface MessengerConversationDetail {
+  id: string;
+  type: string;
+  title: string;
+  status: string;
+  canonicalKey: string | null;
+  lastMessageAt: string | null;
+  primaryEntityType: string | null;
+  primaryEntityId: string | null;
+  peerEmployeeId: string | null;
+  canSend: boolean;
+}
+
+export interface MessengerMessageAttachmentRow {
+  id: string;
+  fileAssetId: string;
+  createdAt: string;
+}
+
+export interface MessengerUnifiedMessageRow {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  createdAt: string;
+  editedAt: string | null;
+  attachments: MessengerMessageAttachmentRow[];
+}
+
+export interface MessengerListMeta {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasMoreOlder?: boolean;
+}
+
+export interface MessengerUnifiedPagedMessages {
+  items: MessengerUnifiedMessageRow[];
+  meta: MessengerListMeta;
+  lastOwnMessageId: string | null;
+  lastOwnMessageSeenByOthers: boolean;
+  peerLastReadAt: string | null;
+}
+
+export interface MessengerUnifiedSearchResultRow {
+  conversationId: string;
+  conversationType: string;
+  conversationTitle: string;
+  messageId: string;
+  senderName: string;
+  content: string;
+  createdAt: string;
+}
+
+export type MessengerEnsureConversationBody =
+  | { type: 'PROJECT_GENERAL' | 'PRODUCT' | 'DEAL' | 'TASK'; entityId: string }
+  | { type: 'DIRECT'; peerEmployeeId: string };
+
+const LIST_PAGE_SIZE = 100;
+
+/** Legacy types kept for any residual callers. */
 export interface MessengerChannelRow {
   id: string;
   name: string;
@@ -20,35 +109,6 @@ export interface MessengerMessageRow {
   attachments: MessengerMessageAttachmentRow[];
 }
 
-export interface MessengerMessageAttachmentRow {
-  id: string;
-  fileAssetId: string;
-  createdAt: string;
-}
-
-export interface MessengerListMeta {
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  hasMoreOlder?: boolean;
-}
-
-export interface MessengerPagedMessages {
-  items: MessengerMessageRow[];
-  meta: MessengerListMeta;
-}
-
-/** DM thread history includes the peer’s read cursor for receipts on your own messages. */
-export interface MessengerDmPagedMessages extends MessengerPagedMessages {
-  peerLastReadAt: string | null;
-}
-
-export interface MessengerChannelPagedMessages extends MessengerPagedMessages {
-  lastOwnMessageId: string | null;
-  lastOwnMessageSeenByOthers: boolean;
-}
-
 export interface MessengerDmConversationRow {
   recipientId: string;
   lastMessage: MessengerMessageRow;
@@ -65,57 +125,58 @@ export interface MessengerSearchResultRow {
   createdAt: string;
 }
 
-const LIST_PAGE_SIZE = 100;
-
 export const messengerApi = {
-  async listChannels(): Promise<MessengerChannelRow[]> {
-    const resp = await api.get<MessengerChannelRow[]>('/api/messenger/channels');
+  async listInternalEntities(
+    tab: MessengerInternalTab,
+    search?: string,
+  ): Promise<MessengerL1EntityRow[]> {
+    const resp = await api.get<MessengerL1EntityRow[]>('/api/messenger/internal/entities', {
+      params: { tab, ...(search ? { search } : {}) },
+    });
     return resp.data;
   },
 
-  async listChannelMessages(
-    channelId: string,
-    params?: { before?: string; pageSize?: number },
-  ): Promise<MessengerChannelPagedMessages> {
-    const resp = await api.get<MessengerChannelPagedMessages>(
-      `/api/messenger/channels/${channelId}/messages`,
+  async listInternalConversations(params: {
+    entityType?: MessengerL1EntityType;
+    entityId?: string;
+    projectTree?: boolean;
+    includeInternalGroups?: boolean;
+  }): Promise<MessengerL2ConversationRow[]> {
+    const resp = await api.get<MessengerL2ConversationRow[]>(
+      '/api/messenger/internal/conversations',
       {
         params: {
-          ...(params?.before ? { before: params.before } : {}),
-          pageSize: params?.pageSize ?? LIST_PAGE_SIZE,
+          ...(params.entityType ? { entityType: params.entityType } : {}),
+          ...(params.entityId ? { entityId: params.entityId } : {}),
+          ...(params.projectTree ? { projectTree: '1' } : {}),
+          ...(params.includeInternalGroups ? { includeInternalGroups: '1' } : {}),
         },
       },
     );
     return resp.data;
   },
 
-  async sendChannelMessage(
-    channelId: string,
-    body: { content: string; fileAssetIds?: string[] },
-  ): Promise<MessengerMessageRow> {
-    const resp = await api.post<MessengerMessageRow>(
-      `/api/messenger/channels/${channelId}/messages`,
+  async ensureConversation(
+    body: MessengerEnsureConversationBody,
+  ): Promise<{ id: string; type: string; title: string | null }> {
+    const resp = await api.post<{ id: string; type: string; title: string | null }>(
+      '/api/messenger/conversations/ensure',
       body,
     );
     return resp.data;
   },
 
-  async markChannelRead(channelId: string): Promise<void> {
-    await api.post(`/api/messenger/channels/${channelId}/read`);
-  },
-
-  async listDmConversations(): Promise<MessengerDmConversationRow[]> {
-    const resp = await api.get<MessengerDmConversationRow[]>('/api/messenger/dm/conversations');
+  async getConversation(id: string): Promise<MessengerConversationDetail> {
+    const resp = await api.get<MessengerConversationDetail>(`/api/messenger/conversations/${id}`);
     return resp.data;
   },
 
-  async listDirectMessages(
-    userId1: string,
-    userId2: string,
+  async listConversationMessages(
+    conversationId: string,
     params?: { before?: string; pageSize?: number },
-  ): Promise<MessengerDmPagedMessages> {
-    const resp = await api.get<MessengerDmPagedMessages>(
-      `/api/messenger/dm/${userId1}/${userId2}`,
+  ): Promise<MessengerUnifiedPagedMessages> {
+    const resp = await api.get<MessengerUnifiedPagedMessages>(
+      `/api/messenger/conversations/${conversationId}/messages`,
       {
         params: {
           ...(params?.before ? { before: params.before } : {}),
@@ -126,17 +187,38 @@ export const messengerApi = {
     return resp.data;
   },
 
-  async sendDirectMessage(body: {
-    recipientId: string;
-    content: string;
-    fileAssetIds?: string[];
-  }): Promise<MessengerMessageRow> {
-    const resp = await api.post<MessengerMessageRow>('/api/messenger/dm', body);
+  async sendConversationMessage(
+    conversationId: string,
+    body: { content: string; fileAssetIds?: string[] },
+  ): Promise<MessengerUnifiedMessageRow> {
+    const resp = await api.post<MessengerUnifiedMessageRow>(
+      `/api/messenger/conversations/${conversationId}/messages`,
+      body,
+    );
     return resp.data;
   },
 
-  async markDmRead(recipientId: string): Promise<void> {
-    await api.post('/api/messenger/dm/mark-read', { recipientId });
+  async markConversationRead(conversationId: string): Promise<void> {
+    await api.post(`/api/messenger/conversations/${conversationId}/read`);
+  },
+
+  async searchInternal(q: string): Promise<{ items: MessengerUnifiedSearchResultRow[] }> {
+    const resp = await api.get<{ items: MessengerUnifiedSearchResultRow[] }>(
+      '/api/messenger/internal/search',
+      { params: { q } },
+    );
+    return resp.data;
+  },
+
+  // Legacy (dual-compat)
+  async listChannels(): Promise<MessengerChannelRow[]> {
+    const resp = await api.get<MessengerChannelRow[]>('/api/messenger/channels');
+    return resp.data;
+  },
+
+  async listDmConversations(): Promise<MessengerDmConversationRow[]> {
+    const resp = await api.get<MessengerDmConversationRow[]>('/api/messenger/dm/conversations');
+    return resp.data;
   },
 
   async search(q: string): Promise<{ items: MessengerSearchResultRow[] }> {

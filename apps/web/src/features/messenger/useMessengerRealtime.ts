@@ -4,24 +4,20 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { io, type Socket } from 'socket.io-client';
 import {
   MESSENGER_SOCKET_NAMESPACE,
-  MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
-  MESSENGER_WS_CLIENT_TYPING_CHANNEL,
-  MESSENGER_WS_CLIENT_TYPING_DM,
-  MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
-  MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
-  MESSENGER_WS_SERVER_CHANNEL_TYPING,
+  MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
+  MESSENGER_WS_CLIENT_TYPING_CONVERSATION,
+  MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
+  MESSENGER_WS_SERVER_CONVERSATION_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
-  MESSENGER_WS_SERVER_DM_MESSAGE,
-  MESSENGER_WS_SERVER_DM_PEER_READ,
-  MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
-  type MessengerWsChannelPeerReadPayload,
-  type MessengerWsDmPeerReadPayload,
+  type MessengerWsConversationPeerReadPayload,
 } from '@nbos/shared';
-import type { MessengerMessageRow } from '@/lib/api/messenger';
-import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
+import type { MessengerUnifiedMessageRow } from '@/lib/api/messenger';
+import type { MessengerViewMessage } from './messenger-message-mapper';
+import { mapUnifiedMessageToView } from './messenger-unified-message.mapper';
 import type { MessengerActiveView } from './messenger-active-view';
 
 const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
@@ -54,83 +50,58 @@ function isMessengerReadListsPayload(payload: unknown): boolean {
   return (payload as { scope?: unknown }).scope === MESSENGER_WS_READ_UPDATED_SCOPE.LISTS;
 }
 
-function parseMessengerDmPeerReadPayload(payload: unknown): MessengerWsDmPeerReadPayload | null {
-  if (!payload || typeof payload !== 'object') return null;
-  const counterpartId = (payload as { counterpartId?: unknown }).counterpartId;
-  const threadId = (payload as { threadId?: unknown }).threadId;
-  const lastReadAt = (payload as { lastReadAt?: unknown }).lastReadAt;
-  if (typeof counterpartId !== 'string' || counterpartId.trim().length === 0) return null;
-  if (typeof threadId !== 'string' || threadId.trim().length === 0) return null;
-  if (typeof lastReadAt !== 'string' || lastReadAt.trim().length === 0) return null;
-  return { counterpartId, threadId, lastReadAt };
-}
-
-function parseMessengerChannelPeerReadPayload(
+function parseConversationPeerRead(
   payload: unknown,
-): MessengerWsChannelPeerReadPayload | null {
+): MessengerWsConversationPeerReadPayload | null {
   if (!payload || typeof payload !== 'object') return null;
-  const channelId = (payload as { channelId?: unknown }).channelId;
+  const conversationId = (payload as { conversationId?: unknown }).conversationId;
   const readerId = (payload as { readerId?: unknown }).readerId;
   const lastReadAt = (payload as { lastReadAt?: unknown }).lastReadAt;
-  if (typeof channelId !== 'string' || channelId.trim().length === 0) return null;
+  if (typeof conversationId !== 'string' || conversationId.trim().length === 0) return null;
   if (typeof readerId !== 'string' || readerId.trim().length === 0) return null;
   if (typeof lastReadAt !== 'string' || lastReadAt.trim().length === 0) return null;
-  return { channelId, readerId, lastReadAt };
+  return { conversationId, readerId, lastReadAt };
 }
 
 export interface MessengerRealtimeControls {
-  emitChannelTyping: (channelId: string) => void;
-  emitDmTyping: (recipientId: string) => void;
+  emitConversationTyping: (conversationId: string) => void;
 }
 
 export function useMessengerRealtime(options: {
   canViewMessenger: boolean;
   meId: string | undefined;
   active: MessengerActiveView | null;
-  onInboundChannelMessage: (channelId: string, msg: MessengerViewMessage) => void;
-  onInboundDmMessage: (counterpartId: string, msg: MessengerViewMessage) => void;
+  onInboundConversationMessage: (conversationId: string, msg: MessengerViewMessage) => void;
   onRemoteTypingHint: (hint: string) => void;
   onPresenceSnapshot?: (employeeIds: readonly string[]) => void;
   onPresenceDelta?: (employeeId: string, state: 'online' | 'offline') => void;
-  /** Fired when this user’s read cursors changed on another tab/device (re-fetch list unread). */
   onReadListsInvalidate?: () => void;
-  /** DM peer advanced their read cursor (receipts on your own messages). */
-  onDmPeerRead?: (payload: MessengerWsDmPeerReadPayload) => void;
-  /** Channel member advanced read cursor (receipt hints for senders in that channel). */
-  onChannelPeerRead?: (payload: MessengerWsChannelPeerReadPayload) => void;
+  onConversationPeerRead?: (payload: MessengerWsConversationPeerReadPayload) => void;
 }): MessengerRealtimeControls {
   const [realtimeToken, setRealtimeToken] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const activeRef = useRef(options.active);
   const meIdRef = useRef(options.meId);
-  const onCh = useRef(options.onInboundChannelMessage);
-  const onDm = useRef(options.onInboundDmMessage);
+  const onMsg = useRef(options.onInboundConversationMessage);
   const onTypingHint = useRef(options.onRemoteTypingHint);
   const onPresenceSnapshotRef = useRef(options.onPresenceSnapshot);
   const onPresenceDeltaRef = useRef(options.onPresenceDelta);
   const onReadListsInvalidateRef = useRef(options.onReadListsInvalidate);
-  const onDmPeerReadRef = useRef(options.onDmPeerRead);
-  const onChannelPeerReadRef = useRef(options.onChannelPeerRead);
+  const onPeerReadRef = useRef(options.onConversationPeerRead);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
     meIdRef.current = options.meId;
-    onCh.current = options.onInboundChannelMessage;
-    onDm.current = options.onInboundDmMessage;
+    onMsg.current = options.onInboundConversationMessage;
     onTypingHint.current = options.onRemoteTypingHint;
     onPresenceSnapshotRef.current = options.onPresenceSnapshot;
     onPresenceDeltaRef.current = options.onPresenceDelta;
     onReadListsInvalidateRef.current = options.onReadListsInvalidate;
-    onDmPeerReadRef.current = options.onDmPeerRead;
-    onChannelPeerReadRef.current = options.onChannelPeerRead;
+    onPeerReadRef.current = options.onConversationPeerRead;
   });
 
-  const emitChannelTyping = useCallback((channelId: string) => {
-    socketRef.current?.emit(MESSENGER_WS_CLIENT_TYPING_CHANNEL, { channelId });
-  }, []);
-
-  const emitDmTyping = useCallback((recipientId: string) => {
-    socketRef.current?.emit(MESSENGER_WS_CLIENT_TYPING_DM, { recipientId });
+  const emitConversationTyping = useCallback((conversationId: string) => {
+    socketRef.current?.emit(MESSENGER_WS_CLIENT_TYPING_CONVERSATION, { conversationId });
   }, []);
 
   useEffect(() => {
@@ -176,50 +147,29 @@ export function useMessengerRealtime(options: {
     });
     socketRef.current = socket;
 
-    function subscribeIfChannel() {
+    function subscribeIfConversation() {
       const a = activeRef.current;
-      if (a?.type === 'channel') {
-        socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL, { channelId: a.id });
+      if (a?.type === 'conversation') {
+        socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION, { conversationId: a.id });
       }
     }
 
-    socket.on('connect', subscribeIfChannel);
+    socket.on('connect', subscribeIfConversation);
 
     socket.on(
-      MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
-      (payload: { channelId: string; message: MessengerMessageRow }) => {
-        const view = mapMessengerRowToView(payload.message);
-        onCh.current(payload.channelId, view);
+      MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+      (payload: { conversationId: string; message: MessengerUnifiedMessageRow }) => {
+        onMsg.current(payload.conversationId, mapUnifiedMessageToView(payload.message));
       },
     );
 
     socket.on(
-      MESSENGER_WS_SERVER_DM_MESSAGE,
-      (payload: { counterpartId: string; message: MessengerMessageRow }) => {
-        const view = mapMessengerRowToView(payload.message);
-        onDm.current(payload.counterpartId, view);
-      },
-    );
-
-    socket.on(
-      MESSENGER_WS_SERVER_CHANNEL_TYPING,
-      (payload: { channelId: string; employeeId: string; label: string }) => {
+      MESSENGER_WS_SERVER_CONVERSATION_TYPING,
+      (payload: { conversationId: string; employeeId: string; label: string }) => {
         const me = meIdRef.current;
         if (!me || payload.employeeId === me) return;
         const a = activeRef.current;
-        if (a?.type === 'channel' && a.id === payload.channelId) {
-          onTypingHint.current(`${payload.label} is typing…`);
-        }
-      },
-    );
-
-    socket.on(
-      MESSENGER_WS_SERVER_DM_TYPING,
-      (payload: { counterpartId: string; employeeId: string; label: string }) => {
-        const me = meIdRef.current;
-        if (!me || payload.employeeId === me) return;
-        const a = activeRef.current;
-        if (a?.type === 'dm' && a.userId === payload.counterpartId) {
+        if (a?.type === 'conversation' && a.id === payload.conversationId) {
           onTypingHint.current(`${payload.label} is typing…`);
         }
       },
@@ -239,14 +189,9 @@ export function useMessengerRealtime(options: {
       onReadListsInvalidateRef.current?.();
     });
 
-    socket.on(MESSENGER_WS_SERVER_DM_PEER_READ, (payload: unknown) => {
-      const p = parseMessengerDmPeerReadPayload(payload);
-      if (p) onDmPeerReadRef.current?.(p);
-    });
-
-    socket.on(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, (payload: unknown) => {
-      const p = parseMessengerChannelPeerReadPayload(payload);
-      if (p) onChannelPeerReadRef.current?.(p);
+    socket.on(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ, (payload: unknown) => {
+      const p = parseConversationPeerRead(payload);
+      if (p) onPeerReadRef.current?.(p);
     });
 
     return () => {
@@ -260,16 +205,17 @@ export function useMessengerRealtime(options: {
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket?.connected) return;
-    if (options.active?.type === 'channel') {
-      socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL, { channelId: options.active.id });
+    if (options.active?.type === 'conversation') {
+      socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION, {
+        conversationId: options.active.id,
+      });
     }
   }, [options.active]);
 
   return useMemo(
     () => ({
-      emitChannelTyping,
-      emitDmTyping,
+      emitConversationTyping,
     }),
-    [emitChannelTyping, emitDmTyping],
+    [emitConversationTyping],
   );
 }
