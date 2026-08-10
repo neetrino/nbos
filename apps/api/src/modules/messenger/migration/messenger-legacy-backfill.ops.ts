@@ -5,6 +5,7 @@ import {
   planLegacyDirectConversation,
   type LegacyChannelType,
 } from './messenger-legacy-backfill-mapping';
+import { resolveChannelConversationTarget } from './messenger-legacy-backfill-resolve';
 
 export type MessengerBackfillCounts = {
   conversations: number;
@@ -16,6 +17,8 @@ export type MessengerBackfillCounts = {
   channelsProcessed: number;
   directsProcessed: number;
   skippedAttachmentsMissingFile: number;
+  reconciledIntoExistingCanonical: number;
+  blockedConflicts: number;
 };
 
 export type MessengerBackfillResult = {
@@ -35,6 +38,8 @@ function emptyCounts(): MessengerBackfillCounts {
     channelsProcessed: 0,
     directsProcessed: 0,
     skippedAttachmentsMissingFile: 0,
+    reconciledIntoExistingCanonical: 0,
+    blockedConflicts: 0,
   };
 }
 
@@ -63,8 +68,8 @@ async function existingPrimaryProjectIds(
 
 /**
  * Idempotent copy of legacy channels/DMs into unified messenger tables.
- * Reuses legacy row ids as conversation/message/attachment ids.
- * Does not modify legacy tables. Does not dual-write live traffic.
+ * Reuses legacy row ids when no canonical conversation exists yet.
+ * When ensure already created a canonical row, migrates messages into that id.
  */
 export async function runMessengerLegacyBackfill(
   prisma: InstanceType<typeof PrismaClient>,
@@ -125,43 +130,80 @@ export async function runMessengerLegacyBackfill(
       for (const msg of channel.messages) {
         counts.attachments += msg.attachments.length;
       }
+      const preview = await resolveChannelConversationTarget(prisma, plan);
+      if (!preview.ok) {
+        counts.blockedConflicts += 1;
+        warnings.push(`Channel ${channel.id}: ${preview.reason}`);
+      } else if (preview.reconciled) {
+        counts.reconciledIntoExistingCanonical += 1;
+        warnings.push(
+          `Channel ${channel.id}: would reconcile into existing canonical ${preview.conversationId}`,
+        );
+      }
       continue;
     }
 
-    await prisma.messengerConversation.upsert({
-      where: { id: plan.conversationId },
-      create: {
-        id: plan.conversationId,
-        type: plan.type,
-        title: plan.title,
-        status: 'ACTIVE',
-        createdById,
-        canonicalKey: plan.canonicalKey,
-        metadata: plan.metadata as InputJsonValue,
-        lastMessageAt,
-        createdAt: channel.createdAt,
-        updatedAt: channel.createdAt,
-      },
-      update: {
-        type: plan.type,
-        title: plan.title,
-        canonicalKey: plan.canonicalKey,
-        metadata: plan.metadata as InputJsonValue,
-        lastMessageAt,
-        createdById,
-      },
-    });
+    const target = await resolveChannelConversationTarget(prisma, plan);
+    if (!target.ok) {
+      counts.blockedConflicts += 1;
+      warnings.push(`Channel ${channel.id}: ${target.reason}`);
+      continue;
+    }
+    if (target.reconciled) {
+      counts.reconciledIntoExistingCanonical += 1;
+      warnings.push(
+        `Channel ${channel.id}: reconciled into existing canonical conversation ${target.conversationId}`,
+      );
+    }
+
+    const conversationId = target.conversationId;
+
+    if (target.createWithLegacyId) {
+      await prisma.messengerConversation.upsert({
+        where: { id: conversationId },
+        create: {
+          id: conversationId,
+          type: plan.type,
+          title: plan.title,
+          status: 'ACTIVE',
+          createdById,
+          canonicalKey: plan.canonicalKey,
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          createdAt: channel.createdAt,
+          updatedAt: channel.createdAt,
+        },
+        update: {
+          type: plan.type,
+          title: plan.title,
+          canonicalKey: plan.canonicalKey,
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          createdById,
+        },
+      });
+    } else {
+      await prisma.messengerConversation.update({
+        where: { id: conversationId },
+        data: {
+          title: plan.title,
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          ...(createdById ? { createdById } : {}),
+        },
+      });
+    }
 
     for (const employeeId of participantIds) {
       await prisma.messengerConversationParticipant.upsert({
         where: {
           conversationId_employeeId: {
-            conversationId: plan.conversationId,
+            conversationId,
             employeeId,
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           employeeId,
           role: 'MEMBER',
           joinedAt: channel.createdAt,
@@ -177,14 +219,14 @@ export async function runMessengerLegacyBackfill(
       await prisma.messengerConversationLink.upsert({
         where: {
           conversationId_entityType_entityId_relationType: {
-            conversationId: plan.conversationId,
+            conversationId,
             entityType: 'PROJECT',
             entityId: plan.primaryProjectId,
             relationType: 'PRIMARY',
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           entityType: 'PROJECT',
           entityId: plan.primaryProjectId,
           relationType: 'PRIMARY',
@@ -195,14 +237,14 @@ export async function runMessengerLegacyBackfill(
       await prisma.messengerConversationLink.upsert({
         where: {
           conversationId_entityType_entityId_relationType: {
-            conversationId: plan.conversationId,
+            conversationId,
             entityType: 'PROJECT',
             entityId: plan.relatedProjectId,
             relationType: 'RELATED',
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           entityType: 'PROJECT',
           entityId: plan.relatedProjectId,
           relationType: 'RELATED',
@@ -219,7 +261,7 @@ export async function runMessengerLegacyBackfill(
         where: { id: msg.id },
         create: {
           id: msg.id,
-          conversationId: plan.conversationId,
+          conversationId,
           senderId: msg.senderId,
           senderNameSnapshot: msg.senderNameSnapshot,
           content: msg.content,
@@ -229,7 +271,7 @@ export async function runMessengerLegacyBackfill(
           updatedAt: msg.editedAt ?? msg.createdAt,
         },
         update: {
-          conversationId: plan.conversationId,
+          conversationId,
           senderId: msg.senderId,
           senderNameSnapshot: msg.senderNameSnapshot,
           content: msg.content,
@@ -269,19 +311,32 @@ export async function runMessengerLegacyBackfill(
     }
 
     for (const rs of channel.readStates) {
+      const existingRead = await prisma.messengerConversationReadState.findUnique({
+        where: {
+          conversationId_employeeId: {
+            conversationId,
+            employeeId: rs.employeeId,
+          },
+        },
+        select: { lastReadAt: true },
+      });
+      const mergedLastReadAt =
+        existingRead && existingRead.lastReadAt > rs.lastReadAt
+          ? existingRead.lastReadAt
+          : rs.lastReadAt;
       await prisma.messengerConversationReadState.upsert({
         where: {
           conversationId_employeeId: {
-            conversationId: plan.conversationId,
+            conversationId,
             employeeId: rs.employeeId,
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           employeeId: rs.employeeId,
           lastReadAt: rs.lastReadAt,
         },
-        update: { lastReadAt: rs.lastReadAt },
+        update: { lastReadAt: mergedLastReadAt },
       });
     }
   }
@@ -317,46 +372,83 @@ export async function runMessengerLegacyBackfill(
       for (const msg of thread.messages) {
         counts.attachments += msg.attachments.length;
       }
+      const preview = await resolveChannelConversationTarget(prisma, plan);
+      if (!preview.ok) {
+        counts.blockedConflicts += 1;
+        warnings.push(`DM thread ${thread.id}: ${preview.reason}`);
+      } else if (preview.reconciled) {
+        counts.reconciledIntoExistingCanonical += 1;
+        warnings.push(
+          `DM thread ${thread.id}: would reconcile into existing canonical ${preview.conversationId}`,
+        );
+      }
       continue;
     }
 
-    await prisma.messengerConversation.upsert({
-      where: { id: plan.conversationId },
-      create: {
-        id: plan.conversationId,
-        type: 'DIRECT',
-        title: null,
-        status: 'ACTIVE',
-        createdById,
-        canonicalKey: plan.canonicalKey,
-        directParticipantLowId: plan.directParticipantLowId,
-        directParticipantHighId: plan.directParticipantHighId,
-        metadata: plan.metadata as InputJsonValue,
-        lastMessageAt,
-        createdAt: thread.createdAt,
-        updatedAt: thread.createdAt,
-      },
-      update: {
-        type: 'DIRECT',
-        canonicalKey: plan.canonicalKey,
-        directParticipantLowId: plan.directParticipantLowId,
-        directParticipantHighId: plan.directParticipantHighId,
-        metadata: plan.metadata as InputJsonValue,
-        lastMessageAt,
-        createdById,
-      },
-    });
+    const target = await resolveChannelConversationTarget(prisma, plan);
+    if (!target.ok) {
+      counts.blockedConflicts += 1;
+      warnings.push(`DM thread ${thread.id}: ${target.reason}`);
+      continue;
+    }
+    if (target.reconciled) {
+      counts.reconciledIntoExistingCanonical += 1;
+      warnings.push(
+        `DM thread ${thread.id}: reconciled into existing canonical conversation ${target.conversationId}`,
+      );
+    }
+    const conversationId = target.conversationId;
+
+    if (target.createWithLegacyId) {
+      await prisma.messengerConversation.upsert({
+        where: { id: conversationId },
+        create: {
+          id: conversationId,
+          type: 'DIRECT',
+          title: null,
+          status: 'ACTIVE',
+          createdById,
+          canonicalKey: plan.canonicalKey,
+          directParticipantLowId: plan.directParticipantLowId,
+          directParticipantHighId: plan.directParticipantHighId,
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          createdAt: thread.createdAt,
+          updatedAt: thread.createdAt,
+        },
+        update: {
+          type: 'DIRECT',
+          canonicalKey: plan.canonicalKey,
+          directParticipantLowId: plan.directParticipantLowId,
+          directParticipantHighId: plan.directParticipantHighId,
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          createdById,
+        },
+      });
+    } else {
+      await prisma.messengerConversation.update({
+        where: { id: conversationId },
+        data: {
+          metadata: plan.metadata as InputJsonValue,
+          lastMessageAt,
+          directParticipantLowId: plan.directParticipantLowId,
+          directParticipantHighId: plan.directParticipantHighId,
+          ...(createdById ? { createdById } : {}),
+        },
+      });
+    }
 
     for (const employeeId of [plan.directParticipantLowId, plan.directParticipantHighId]) {
       await prisma.messengerConversationParticipant.upsert({
         where: {
           conversationId_employeeId: {
-            conversationId: plan.conversationId,
+            conversationId,
             employeeId,
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           employeeId,
           role: 'MEMBER',
           joinedAt: thread.createdAt,
@@ -370,7 +462,7 @@ export async function runMessengerLegacyBackfill(
         where: { id: msg.id },
         create: {
           id: msg.id,
-          conversationId: plan.conversationId,
+          conversationId,
           senderId: msg.senderId,
           senderNameSnapshot: msg.senderNameSnapshot,
           content: msg.content,
@@ -380,7 +472,7 @@ export async function runMessengerLegacyBackfill(
           updatedAt: msg.editedAt ?? msg.createdAt,
         },
         update: {
-          conversationId: plan.conversationId,
+          conversationId,
           senderId: msg.senderId,
           senderNameSnapshot: msg.senderNameSnapshot,
           content: msg.content,
@@ -418,19 +510,32 @@ export async function runMessengerLegacyBackfill(
     }
 
     for (const rs of thread.readStates) {
+      const existingRead = await prisma.messengerConversationReadState.findUnique({
+        where: {
+          conversationId_employeeId: {
+            conversationId,
+            employeeId: rs.employeeId,
+          },
+        },
+        select: { lastReadAt: true },
+      });
+      const mergedLastReadAt =
+        existingRead && existingRead.lastReadAt > rs.lastReadAt
+          ? existingRead.lastReadAt
+          : rs.lastReadAt;
       await prisma.messengerConversationReadState.upsert({
         where: {
           conversationId_employeeId: {
-            conversationId: plan.conversationId,
+            conversationId,
             employeeId: rs.employeeId,
           },
         },
         create: {
-          conversationId: plan.conversationId,
+          conversationId,
           employeeId: rs.employeeId,
           lastReadAt: rs.lastReadAt,
         },
-        update: { lastReadAt: rs.lastReadAt },
+        update: { lastReadAt: mergedLastReadAt },
       });
     }
   }

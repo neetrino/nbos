@@ -48,6 +48,8 @@
     "messenger:backfill:dry": "tsx apps/api/scripts/messenger-legacy-backfill-cli.ts --dry-run",
     "messenger:backfill:apply": "tsx apps/api/scripts/messenger-legacy-backfill-cli.ts --apply",
     "messenger:backfill:verify": "tsx apps/api/scripts/messenger-legacy-backfill-cli.ts --verify",
+    "messenger:project-general:dry": "tsx apps/api/scripts/messenger-project-general-reconcile-cli.ts --dry-run",
+    "messenger:project-general:apply": "tsx apps/api/scripts/messenger-project-general-reconcile-cli.ts --apply",
     "prepare": "husky"
   },
   "devDependencies": {

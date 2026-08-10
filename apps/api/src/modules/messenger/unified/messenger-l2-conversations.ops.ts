@@ -2,6 +2,7 @@ import type { PrismaClient } from '@nbos/database';
 import { canViewConversation } from '../access/messenger-conversation-access.op';
 import type { MessengerAccessContext } from '../access/messenger-access.types';
 import { countConversationUnreadForEmployee } from './messenger-conversation-read.ops';
+import { sortMessengerProjectTopics } from './messenger-l2-sort';
 import type { MessengerL2ConversationDto } from './messenger-unified.types';
 
 type ConversationListRow = {
@@ -99,15 +100,17 @@ export async function listConversationsForEntity(
       status: { in: ['ACTIVE', 'ARCHIVED'] },
       links: { some: { entityType, entityId } },
     },
-    orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
+    orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }, { id: 'asc' }],
     take: 100,
     select: listSelect,
   });
-  return mapVisibleRows(prisma, access, rows);
+  const visible = await mapVisibleRows(prisma, access, rows);
+  return entityType === 'PROJECT' ? sortMessengerProjectTopics(visible) : visible;
 }
 
 /**
  * For All → Project: primary project chat + product/deal/task chats under that project tree.
+ * Does not include org-wide INTERNAL_GROUP (those are not project-scoped Topics).
  */
 export async function listConversationsForProjectTree(
   prisma: InstanceType<typeof PrismaClient>,
@@ -142,11 +145,12 @@ export async function listConversationsForProjectTree(
           : []),
       ],
     },
-    orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
+    orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }, { id: 'asc' }],
     take: 100,
     select: listSelect,
   });
-  return mapVisibleRows(prisma, access, rows);
+  const visible = await mapVisibleRows(prisma, access, rows);
+  return sortMessengerProjectTopics(visible);
 }
 
 /** Direct conversations for the current user. */

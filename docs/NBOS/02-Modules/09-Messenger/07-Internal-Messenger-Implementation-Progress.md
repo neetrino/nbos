@@ -34,11 +34,19 @@ Phase 6+ — Unified API cutover + L1/L2 Internal Messenger UI (complete for Int
 
 ## Explicitly Not Completed
 
-- removal of legacy channel/DM tables
+- removal of legacy channel/DM tables (`READY_FOR_LATER_DELETION` after freeze soak)
 - External Messenger (CRM Inbox / WhatsApp) — placeholder zone only
 - Favorites / Collections
-- production apply of migration/backfill on deployed environments
+- production apply of freeze flag on deployed environments (tooling ready; operator step)
 - Task card / Product page embedded chat panels (API ready via ensure)
+- dedicated L1 entry for INTERNAL_GROUP org chats
+
+## Stabilization notes (2026-08-10)
+
+- Eager `PROJECT_GENERAL` on Project create + gap-fill CLI
+- Topics race/stale/loading fixes; General pinned; INTERNAL_GROUP excluded from Project Topics
+- Backfill reconciles into existing canonical conversations
+- See `docs/NBOS_INTERNAL_MESSENGER_IMPLEMENTATION_AND_CUTOVER_REPORT.md`
 
 ## Migration Safety
 

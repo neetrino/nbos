@@ -17,6 +17,7 @@ import {
 } from './unified/messenger-unified.ops';
 import type { MessengerInternalTab } from './unified/messenger-unified.types';
 import type { MessengerHistoryListParams } from './messenger.types';
+import { messengerLegacyWsDualEmitEnabled } from './messenger-legacy-write-mode';
 
 @Injectable()
 export class MessengerUnifiedService {
@@ -75,11 +76,12 @@ export class MessengerUnifiedService {
       fileAssetIds,
     );
     this.messengerGateway.emitConversationMessage(conversationId, dto);
-    // Dual-emit legacy channel event when conversation id matches a legacy channel room.
-    this.messengerGateway.emitChannelMessage(
-      conversationId,
-      mapUnifiedMessageToLegacyDto(dto),
-    );
+    if (messengerLegacyWsDualEmitEnabled()) {
+      this.messengerGateway.emitChannelMessage(
+        conversationId,
+        mapUnifiedMessageToLegacyDto(dto),
+      );
+    }
     this.logger.debug(`Unified message sent in ${conversationId}`);
     return dto;
   }
@@ -92,6 +94,7 @@ export class MessengerUnifiedService {
       readerId: employeeId,
       lastReadAt: result.lastReadAt.toISOString(),
     });
+    if (!messengerLegacyWsDualEmitEnabled()) return;
     if (result.type === 'DIRECT' && result.peerEmployeeId) {
       this.messengerGateway.emitDmPeerRead(result.peerEmployeeId, {
         counterpartId: employeeId,

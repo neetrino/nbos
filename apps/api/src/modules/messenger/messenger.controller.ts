@@ -313,6 +313,6 @@ function toEnsureInput(body: EnsureMessengerConversationDto): EnsureConversation
   return {
     type: body.type,
     entityId: body.entityId,
-    createdById: '',
+    createdById: null,
   };
 }

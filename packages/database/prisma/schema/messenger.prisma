@@ -128,8 +128,9 @@ model MessengerDirectThreadReadState {
   @@map("messenger_direct_thread_read_states")
 }
 
-// ─── UNIFIED INTERNAL MESSENGER (Phase 3 foundation) ───────
-// Additive schema for future L1/L2 navigation. Legacy channel/DM tables remain source of truth until cutover.
+// ─── UNIFIED INTERNAL MESSENGER ────────────────────────────
+// Unified conversation tables are the Internal Messenger UI source of truth.
+// Legacy channel/DM tables remain for compatibility until write-freeze + verified retirement.
 // NBOS Internal Messenger is single-organization (no tenantId on Employee); isolation is application RBAC.
 
 enum MessengerConversationType {

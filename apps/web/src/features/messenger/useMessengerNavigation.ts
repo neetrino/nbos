@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   messengerApi,
   type MessengerL1EntityRow,
@@ -12,14 +12,27 @@ import {
   type MessengerInternalTabId,
 } from './messenger-internal.constants';
 
+export type MessengerL2LoadState = 'idle' | 'loading' | 'success' | 'error';
+
 export function useMessengerNavigation(tab: MessengerInternalTabId, canView: boolean) {
   const [l1Search, setL1Search] = useState('');
   const [entities, setEntities] = useState<MessengerL1EntityRow[]>([]);
   const [selectedEntity, setSelectedEntity] = useState<MessengerL1EntityRow | null>(null);
   const [conversations, setConversations] = useState<MessengerL2ConversationRow[]>([]);
+  const [l2State, setL2State] = useState<MessengerL2LoadState>('idle');
+  const [l2Error, setL2Error] = useState<string | null>(null);
   const [messageSearch, setMessageSearch] = useState('');
   const [searchResults, setSearchResults] = useState<MessengerUnifiedSearchResultRow[]>([]);
   const [listError, setListError] = useState<string | null>(null);
+
+  const generationRef = useRef(0);
+  const selectedEntityRef = useRef<MessengerL1EntityRow | null>(null);
+  selectedEntityRef.current = selectedEntity;
+
+  const bumpGeneration = useCallback(() => {
+    generationRef.current += 1;
+    return generationRef.current;
+  }, []);
 
   const refreshL1 = useCallback(async () => {
     if (!canView) return;
@@ -31,44 +44,62 @@ export function useMessengerNavigation(tab: MessengerInternalTabId, canView: boo
     }
   }, [canView, tab, l1Search]);
 
+  const loadL2ForEntity = useCallback(
+    async (entity: MessengerL1EntityRow, generation: number, activeTab: MessengerInternalTabId) => {
+      if (entity.entityType === 'DIRECT_BUCKET') {
+        const rows = await messengerApi.listInternalConversations({
+          entityType: 'DIRECT_BUCKET',
+        });
+        if (generation !== generationRef.current) return null;
+        return rows;
+      }
+      const rows = await messengerApi.listInternalConversations({
+        entityType: entity.entityType,
+        entityId: entity.entityId,
+        projectTree: activeTab === 'all' && entity.entityType === 'PROJECT',
+        // Project Topics must stay project-scoped (no org INTERNAL_GROUP leak).
+        includeInternalGroups: false,
+      });
+      if (generation !== generationRef.current) return null;
+      return rows;
+    },
+    [],
+  );
+
   const refreshL2 = useCallback(async () => {
-    if (!selectedEntity) {
+    const entity = selectedEntityRef.current;
+    if (!entity) {
       setConversations([]);
+      setL2State('idle');
+      setL2Error(null);
       return;
     }
+    const generation = generationRef.current;
+    setL2State('loading');
+    setL2Error(null);
     try {
-      if (selectedEntity.entityType === 'DIRECT_BUCKET') {
-        setConversations(
-          await messengerApi.listInternalConversations({ entityType: 'DIRECT_BUCKET' }),
-        );
-        return;
-      }
-      setConversations(
-        await messengerApi.listInternalConversations({
-          entityType: selectedEntity.entityType,
-          entityId: selectedEntity.entityId,
-          projectTree: tab === 'all' && selectedEntity.entityType === 'PROJECT',
-          includeInternalGroups: tab === 'all',
-        }),
-      );
+      const rows = await loadL2ForEntity(entity, generation, tab);
+      if (rows === null || generation !== generationRef.current) return;
+      setConversations(rows);
+      setL2State('success');
     } catch {
-      setListError('Failed to load conversations');
+      if (generation !== generationRef.current) return;
+      setL2State('error');
+      setL2Error('Failed to load conversations');
     }
-  }, [selectedEntity, tab]);
+  }, [loadL2ForEntity, tab]);
 
   useEffect(() => {
     void refreshL1();
   }, [refreshL1]);
 
   useEffect(() => {
+    bumpGeneration();
     setSelectedEntity(null);
     setConversations([]);
-  }, [tab]);
-
-  useEffect(() => {
-    if (!selectedEntity) return;
-    void refreshL2();
-  }, [selectedEntity, refreshL2]);
+    setL2State('idle');
+    setL2Error(null);
+  }, [tab, bumpGeneration]);
 
   useEffect(() => {
     if (messageSearch.trim().length < 2) {
@@ -85,23 +116,55 @@ export function useMessengerNavigation(tab: MessengerInternalTabId, canView: boo
 
   const selectEntity = useCallback(
     async (entity: MessengerL1EntityRow): Promise<string | null> => {
+      const generation = bumpGeneration();
       setSelectedEntity(entity);
-      if (entity.entityType === 'DIRECT_BUCKET') return null;
+      setConversations([]);
+      setL2State('loading');
+      setL2Error(null);
+      setListError(null);
+
+      if (entity.entityType === 'DIRECT_BUCKET') {
+        try {
+          const rows = await loadL2ForEntity(entity, generation, tab);
+          if (rows === null || generation !== generationRef.current) return null;
+          setConversations(rows);
+          setL2State('success');
+          return null;
+        } catch {
+          if (generation !== generationRef.current) return null;
+          setL2State('error');
+          setL2Error('Failed to load conversations');
+          return null;
+        }
+      }
+
       const ensureType = MESSENGER_ENSURE_TYPE_BY_ENTITY[entity.entityType];
-      if (!ensureType) return null;
+      if (!ensureType) {
+        setL2State('idle');
+        return null;
+      }
+
       try {
         const ensured = await messengerApi.ensureConversation({
           type: ensureType,
           entityId: entity.entityId,
         });
-        void refreshL2();
+        if (generation !== generationRef.current) return null;
+
+        const rows = await loadL2ForEntity(entity, generation, tab);
+        if (rows === null || generation !== generationRef.current) return null;
+        setConversations(rows);
+        setL2State('success');
         return ensured.id;
       } catch {
+        if (generation !== generationRef.current) return null;
+        setL2State('error');
+        setL2Error('Failed to open entity chat');
         setListError('Failed to open entity chat');
         return null;
       }
     },
-    [refreshL2],
+    [bumpGeneration, loadL2ForEntity, tab],
   );
 
   return {
@@ -110,6 +173,8 @@ export function useMessengerNavigation(tab: MessengerInternalTabId, canView: boo
     entities,
     selectedEntity,
     conversations,
+    l2State,
+    l2Error,
     messageSearch,
     setMessageSearch,
     searchResults,
@@ -118,5 +183,6 @@ export function useMessengerNavigation(tab: MessengerInternalTabId, canView: boo
     refreshL1,
     refreshL2,
     selectEntity,
+    bumpGeneration,
   };
 }

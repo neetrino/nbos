@@ -239,6 +239,7 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
         onZoneChange={setZone}
         tab={tab}
         onTabChange={(next) => {
+          nav.bumpGeneration();
           setTab(next);
           setActive(null);
           setConversationDetail(null);
@@ -292,6 +293,8 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
             onSelectSearchResult={(result) => {
               void openConversation(result.conversationId);
             }}
+            loadState={nav.selectedEntity ? nav.l2State : 'idle'}
+            errorMessage={nav.l2Error}
             emptyHint={
               nav.selectedEntity
                 ? 'No conversations yet — open an entity to create its chat.'

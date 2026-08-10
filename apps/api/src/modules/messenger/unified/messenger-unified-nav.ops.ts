@@ -55,15 +55,9 @@ export async function unifiedListL2Conversations(
     }
     return [];
   }
+  // Project Topics are entity-scoped only — never append org-wide INTERNAL_GROUP.
   if (opts.projectTree && opts.entityType === 'PROJECT') {
-    const [tree, groups] = await Promise.all([
-      listConversationsForProjectTree(prisma, access, opts.entityId),
-      opts.includeInternalGroups
-        ? listInternalGroupConversations(prisma, access)
-        : Promise.resolve([]),
-    ]);
-    const seen = new Set(tree.map((c) => c.id));
-    return [...tree, ...groups.filter((g) => !seen.has(g.id))];
+    return listConversationsForProjectTree(prisma, access, opts.entityId);
   }
   return listConversationsForEntity(prisma, access, opts.entityType, opts.entityId);
 }
