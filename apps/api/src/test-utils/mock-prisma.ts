@@ -112,6 +112,8 @@ export function createMockPrisma() {
     inAppNotification: createModelMock(),
     calendarMeeting: createModelMock(),
     personalCalendarEvent: createModelMock(),
+    messengerChannel: createModelMock(),
+    messengerDirectThread: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),

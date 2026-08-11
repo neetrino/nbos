@@ -40,7 +40,7 @@ function messengerCenterShellClass(embedded: boolean): string {
 }
 
 export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
-  const { me, isLoading: permsLoading, can } = usePermission();
+  const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canViewMessenger = can('VIEW', 'MESSENGER');
   const canEditMessenger = can('EDIT', 'MESSENGER');
   useHeaderModuleTitle('Messenger', !embedded);
@@ -444,6 +444,14 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
     return (
       <div className={messengerCenterShellClass(embedded)}>
         <p className="text-sm text-black/50">Loading…</p>
+      </div>
+    );
+  }
+
+  if (meLoadError) {
+    return (
+      <div className={messengerCenterShellClass(embedded)}>
+        <p className="text-sm text-red-600">{meLoadError}</p>
       </div>
     );
   }

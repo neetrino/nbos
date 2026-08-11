@@ -66,3 +66,9 @@ export interface MessengerSearchResultDto {
   content: string;
   createdAt: Date;
 }
+
+export interface MessengerHistoryListParams {
+  /** Load messages strictly older than this timestamp (exclusive). Omit for the latest window. */
+  before?: Date;
+  pageSize?: number;
+}

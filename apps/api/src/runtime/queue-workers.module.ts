@@ -1,4 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
+import { AuditModule } from '../modules/audit/audit.module';
 import { MailModule } from '../modules/mail/mail.module';
 import { MailWorker } from '../modules/mail/mail.worker';
 import { ReportsModule } from '../modules/reports/reports.module';
@@ -31,7 +32,7 @@ export class QueueWorkersModule {
   static forWorker(): DynamicModule {
     return {
       module: QueueWorkersModule,
-      imports: [MailModule, ReportsModule, DriveModule, WhatsAppGatewayModule],
+      imports: [AuditModule, MailModule, ReportsModule, DriveModule, WhatsAppGatewayModule],
       providers: [
         BullmqWorkerRegistry,
         MailWorker,

@@ -7,8 +7,14 @@ export const MESSENGER_SOCKET_NAMESPACE = '/messenger';
 /** Client → server: join a channel room for live messages. */
 export const MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL = 'messenger.subscribe_channel';
 
+/** Client → server: join a unified conversation room. */
+export const MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION = 'messenger.subscribe_conversation';
+
 /** Server → client: new channel message persisted. */
 export const MESSENGER_WS_SERVER_CHANNEL_MESSAGE = 'messenger.channel.message';
+
+/** Server → client: new unified conversation message persisted. */
+export const MESSENGER_WS_SERVER_CONVERSATION_MESSAGE = 'messenger.conversation.message';
 
 /** Server → client: new DM persisted (`counterpartId` is the other participant). */
 export const MESSENGER_WS_SERVER_DM_MESSAGE = 'messenger.dm.message';
@@ -16,11 +22,17 @@ export const MESSENGER_WS_SERVER_DM_MESSAGE = 'messenger.dm.message';
 /** Client → server: ephemeral typing in a channel (server throttles). */
 export const MESSENGER_WS_CLIENT_TYPING_CHANNEL = 'messenger.typing_channel';
 
+/** Client → server: ephemeral typing in a unified conversation. */
+export const MESSENGER_WS_CLIENT_TYPING_CONVERSATION = 'messenger.typing_conversation';
+
 /** Client → server: ephemeral typing in a DM to `recipientId`. */
 export const MESSENGER_WS_CLIENT_TYPING_DM = 'messenger.typing_dm';
 
 /** Server → client: someone else is typing in the channel (`label` is first name or fallback). */
 export const MESSENGER_WS_SERVER_CHANNEL_TYPING = 'messenger.channel.typing';
+
+/** Server → client: someone else is typing in a unified conversation. */
+export const MESSENGER_WS_SERVER_CONVERSATION_TYPING = 'messenger.conversation.typing';
 
 /** Server → client: DM peer is typing (`counterpartId` is the typist from your perspective). */
 export const MESSENGER_WS_SERVER_DM_TYPING = 'messenger.dm.typing';
@@ -66,10 +78,23 @@ export interface MessengerWsChannelPeerReadPayload {
   lastReadAt: string;
 }
 
+/** Server → client: someone marked a unified conversation read. */
+export const MESSENGER_WS_SERVER_CONVERSATION_PEER_READ = 'messenger.conversation.peer_read';
+
+export interface MessengerWsConversationPeerReadPayload {
+  conversationId: string;
+  readerId: string;
+  lastReadAt: string;
+}
+
 export function messengerSocketUserRoom(employeeId: string): string {
   return `messenger:user:${employeeId}`;
 }
 
 export function messengerSocketChannelRoom(channelId: string): string {
   return `messenger:channel:${channelId}`;
+}
+
+export function messengerSocketConversationRoom(conversationId: string): string {
+  return `messenger:conversation:${conversationId}`;
 }

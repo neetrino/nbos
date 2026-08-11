@@ -127,6 +127,7 @@ model FileAsset {
   documentAttachments         DocumentAttachment[]
   messengerChannelAttachments MessengerChannelMessageAttachment[]
   messengerDirectAttachments  MessengerDirectMessageAttachment[]
+  messengerMessageAttachments MessengerMessageAttachment[]
   emailAttachments            EmailAttachment[]
   reportExportJobs            ReportExportJob[]
   driveZipExportOutputs       DriveZipExportJob[]                @relation("DriveZipExportOutputFile")
