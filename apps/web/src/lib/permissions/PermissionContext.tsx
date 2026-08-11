@@ -54,6 +54,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     fetchedUserIdRef.current = userId;
 
     let cancelled = false;
+    let settled = false;
     setIsLoading(true);
 
     async function fetchMe() {
@@ -78,13 +79,18 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
           });
         }
       } finally {
+        settled = true;
         if (!cancelled) setIsLoading(false);
       }
     }
 
-    fetchMe();
+    void fetchMe();
     return () => {
       cancelled = true;
+      // Strict Mode / remount: allow a fresh fetch if the in-flight one was aborted.
+      if (!settled && fetchedUserIdRef.current === userId) {
+        fetchedUserIdRef.current = null;
+      }
     };
   }, [userId, status]);
 

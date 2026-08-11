@@ -7,7 +7,6 @@ import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.servi
 import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
-import { ensureProjectGeneralConversation } from '../../messenger/unified/messenger-conversation-ensure.ops';
 
 interface WonDealData {
   id: string;
@@ -233,25 +232,18 @@ export class DealWonHandler {
 
     const projectCode = await this.generateProjectCode();
     const contactId = deal.contactId;
-    const project = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.project.create({
-        data: {
-          code: projectCode,
-          name: deal.name ?? `Project from ${deal.code}`,
-          contactId,
-          companyId: deal.companyId ?? undefined,
-        },
-      });
-      await ensureProjectGeneralConversation(tx as unknown as InstanceType<typeof PrismaClient>, {
-        projectId: created.id,
-        createdById: null,
-        title: created.name ?? deal.name ?? `Project from ${deal.code}`,
-      });
-      await tx.deal.update({
-        where: { id: deal.id },
-        data: { projectId: created.id },
-      });
-      return created;
+    const project = await this.prisma.project.create({
+      data: {
+        code: projectCode,
+        name: deal.name ?? `Project from ${deal.code}`,
+        contactId,
+        companyId: deal.companyId ?? undefined,
+      },
+    });
+
+    await this.prisma.deal.update({
+      where: { id: deal.id },
+      data: { projectId: project.id },
     });
 
     const dealAdditional = await this.prisma.dealAdditionalContact.findMany({

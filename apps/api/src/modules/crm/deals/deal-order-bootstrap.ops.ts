@@ -9,7 +9,6 @@ import type {
   PrismaClient,
   TaxStatus,
 } from '@nbos/database';
-import { ensureProjectGeneralConversation } from '../../messenger/unified/messenger-conversation-ensure.ops';
 
 interface DealOrderBootstrapInput {
   id: string;
@@ -43,25 +42,18 @@ export async function ensureProjectForDeal(
   }
 
   const projectCode = await generateProjectCode(prisma);
-  const project = await prisma.$transaction(async (tx) => {
-    const created = await tx.project.create({
-      data: {
-        code: projectCode,
-        name: deal.name ?? `Project from ${deal.code}`,
-        contactId: deal.contactId,
-        companyId: deal.companyId ?? undefined,
-      },
-    });
-    await ensureProjectGeneralConversation(tx as unknown as InstanceType<typeof PrismaClient>, {
-      projectId: created.id,
-      createdById: null,
-      title: created.name ?? deal.name ?? `Project from ${deal.code}`,
-    });
-    await tx.deal.update({
-      where: { id: deal.id },
-      data: { projectId: created.id },
-    });
-    return created;
+  const project = await prisma.project.create({
+    data: {
+      code: projectCode,
+      name: deal.name ?? `Project from ${deal.code}`,
+      contactId: deal.contactId,
+      companyId: deal.companyId ?? undefined,
+    },
+  });
+
+  await prisma.deal.update({
+    where: { id: deal.id },
+    data: { projectId: project.id },
   });
 
   return project.id;

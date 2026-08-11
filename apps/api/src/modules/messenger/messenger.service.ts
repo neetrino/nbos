@@ -1,10 +1,4 @@
-import {
-  ForbiddenException,
-  GoneException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { InputJsonValue } from '@nbos/database';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -53,8 +47,6 @@ import {
   markDmThreadReadForEmployee,
 } from './messenger-read-state.ops';
 import { listMessengerVisibleChannelIds } from './messenger-visible-channel-ids.ops';
-import { dualWriteLegacyMessageToUnified } from './unified/messenger-legacy-dual-write.ops';
-import { messengerLegacyWritesAllowed } from './messenger-legacy-write-mode';
 import type {
   MessengerChannelDto,
   MessengerChannelPagedMessagesDto,
@@ -94,14 +86,6 @@ export class MessengerService {
     private readonly auditService: AuditService,
     private readonly messengerGateway: MessengerGateway,
   ) {}
-
-  private assertLegacyWritesAllowed(): void {
-    if (!messengerLegacyWritesAllowed()) {
-      throw new GoneException(
-        'Legacy Messenger writes are frozen. Use unified /messenger/conversations APIs.',
-      );
-    }
-  }
 
   private async requireMessengerViewAccess(
     employeeId: string,
@@ -150,7 +134,6 @@ export class MessengerService {
     type: MessengerChannelTypeApi,
     actorEmployeeId: string,
   ): Promise<MessengerChannelDto> {
-    this.assertLegacyWritesAllowed();
     await this.requireMessengerViewAccess(actorEmployeeId);
     const created = await this.prisma.messengerChannel.create({
       data: {
@@ -223,7 +206,6 @@ export class MessengerService {
     content: string,
     fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
-    this.assertLegacyWritesAllowed();
     const access = await this.requireMessengerEditAccess(senderId);
     const channel = await assertCanAccessMessengerChannel(this.prisma, access, channelId);
     const validatedAttachments = await assertMessengerFileAssetsAttachable(
@@ -259,16 +241,6 @@ export class MessengerService {
     });
     const dto = mapPrismaChannelMessageToDto(created);
     this.messengerGateway.emitChannelMessage(channelId, dto);
-    void dualWriteLegacyMessageToUnified(this.prisma, {
-      conversationId: channelId,
-      messageId: created.id,
-      senderId,
-      senderNameSnapshot: snapshot,
-      content,
-      createdAt: created.createdAt,
-      editedAt: created.editedAt,
-      fileAssetIds: validatedAttachments,
-    });
     return dto;
   }
 
@@ -334,7 +306,6 @@ export class MessengerService {
     content: string,
     fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
-    this.assertLegacyWritesAllowed();
     const access = await this.requireMessengerEditAccess(senderId);
     await assertActiveEmployeeRecipient(this.prisma, recipientId);
     const validatedAttachments = await assertMessengerFileAssetsAttachable(
@@ -372,16 +343,6 @@ export class MessengerService {
     });
     const dto = mapPrismaDmMessageToDto(created, thread.id);
     this.messengerGateway.emitDmToParticipants(senderId, recipientId, thread.id, dto);
-    void dualWriteLegacyMessageToUnified(this.prisma, {
-      conversationId: thread.id,
-      messageId: created.id,
-      senderId,
-      senderNameSnapshot: snapshot,
-      content,
-      createdAt: created.createdAt,
-      editedAt: created.editedAt,
-      fileAssetIds: validatedAttachments,
-    });
     return dto;
   }
 
@@ -441,7 +402,6 @@ export class MessengerService {
   }
 
   async markChannelRead(channelId: string, employeeId: string): Promise<void> {
-    this.assertLegacyWritesAllowed();
     const access = await this.requireMessengerViewAccess(employeeId);
     await assertCanAccessMessengerChannel(this.prisma, access, channelId);
     const lastReadAt = await markChannelReadForEmployee(this.prisma, channelId, employeeId);
@@ -454,7 +414,6 @@ export class MessengerService {
   }
 
   async markDirectConversationRead(actorId: string, recipientId: string): Promise<void> {
-    this.assertLegacyWritesAllowed();
     await this.requireMessengerViewAccess(actorId);
     await assertActiveEmployeeRecipient(this.prisma, recipientId);
     const [a, b] = orderedParticipantIds(actorId, recipientId);

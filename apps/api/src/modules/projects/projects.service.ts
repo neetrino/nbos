@@ -21,7 +21,6 @@ import {
   mergeProfileAListScope,
   parseLifecycleScopeFromQuery,
 } from '../../common/lifecycle/entity-lifecycle-scope';
-import { ensureProjectGeneralConversation } from '../messenger/unified/messenger-conversation-ensure.ops';
 
 const PROJECT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code']);
 
@@ -117,26 +116,18 @@ export class ProjectsService {
 
   async create(data: CreateProjectDto) {
     const code = await this.generateCode();
-    return this.prisma.$transaction(async (tx) => {
-      const project = await tx.project.create({
-        data: {
-          code,
-          name: data.name,
-          contactId: data.contactId,
-          description: data.description,
-          companyId: data.companyId,
-        },
-        include: {
-          company: { select: { id: true, name: true } },
-          contact: { select: { id: true, firstName: true, lastName: true } },
-        },
-      });
-      await ensureProjectGeneralConversation(tx as unknown as InstanceType<typeof PrismaClient>, {
-        projectId: project.id,
-        createdById: null,
-        title: project.name ?? data.name,
-      });
-      return project;
+    return this.prisma.project.create({
+      data: {
+        code,
+        name: data.name,
+        contactId: data.contactId,
+        description: data.description,
+        companyId: data.companyId,
+      },
+      include: {
+        company: { select: { id: true, name: true } },
+        contact: { select: { id: true, firstName: true, lastName: true } },
+      },
     });
   }
 
