@@ -2,17 +2,18 @@
 
 ## Guarantees
 
-| Invariant | Guaranteed? | Evidence |
-| --- | --- | --- |
-| Project exists ⇒ PROJECT_GENERAL exists | **NO** | DB: 14 projects, 9 PROJECT_GENERAL; no messenger hook in `ensureProjectForDeal` |
-| Deal exists ⇒ DEAL conversation | **NO** | Only on ensure DEAL |
-| Product ⇒ PRODUCT conversation | **NO** | Only on ensure PRODUCT |
-| Task ⇒ TASK conversation | **NO** | Only on ensure TASK |
-| Opening L1 entity ⇒ primary conversation exists after ensure | **Intentional yes** (if ensure succeeds) | `selectEntity` → `ensureConversation` |
+| Invariant                                                    | Guaranteed?                              | Evidence                                                                        |
+| ------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------- |
+| Project exists ⇒ PROJECT_GENERAL exists                      | **NO**                                   | DB: 14 projects, 9 PROJECT_GENERAL; no messenger hook in `ensureProjectForDeal` |
+| Deal exists ⇒ DEAL conversation                              | **NO**                                   | Only on ensure DEAL                                                             |
+| Product ⇒ PRODUCT conversation                               | **NO**                                   | Only on ensure PRODUCT                                                          |
+| Task ⇒ TASK conversation                                     | **NO**                                   | Only on ensure TASK                                                             |
+| Opening L1 entity ⇒ primary conversation exists after ensure | **Intentional yes** (if ensure succeeds) | `selectEntity` → `ensureConversation`                                           |
 
 ## Lifecycle per type
 
 ### PROJECT_GENERAL
+
 ```
 Project created (CRM bootstrap / elsewhere)
   → NO messenger create
@@ -24,12 +25,15 @@ Never auto-archived on project trash in messenger code (UNKNOWN if orphans remai
 ```
 
 ### PRODUCT / DEAL / TASK
+
 Same lazy pattern. Appear under All→Project tree only after materialization.
 
 ### DIRECT
+
 Created on ensure when selecting Direct bucket peer (or API ensure). Listed via participants.
 
 ### INTERNAL_GROUP
+
 Created by **backfill** (or theoretically other writers). Not in ensure DTO types for nav. On All tab, appended to L2 for **any** selected entity that uses `includeInternalGroups: true` — including projects (**IMPLEMENTATION_LEAK / UNKNOWN_PRODUCT_DECISION**).
 
 ## Ensure idempotency
@@ -41,8 +45,8 @@ Created by **backfill** (or theoretically other writers). Not in ensure DTO type
 
 ## Who calls ensure
 
-| Caller | When |
-| --- | --- |
-| Web `useMessengerNavigation.selectEntity` | L1 click (not DIRECT_BUCKET) |
-| Any API client of `POST /messenger/conversations/ensure` | Manual/future embeds |
-| **Not** project/deal/product/task create services | CONFIRMED_FROM_CODE (CRM grep empty) |
+| Caller                                                   | When                                 |
+| -------------------------------------------------------- | ------------------------------------ |
+| Web `useMessengerNavigation.selectEntity`                | L1 click (not DIRECT_BUCKET)         |
+| Any API client of `POST /messenger/conversations/ensure` | Manual/future embeds                 |
+| **Not** project/deal/product/task create services        | CONFIRMED_FROM_CODE (CRM grep empty) |
