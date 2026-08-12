@@ -38,18 +38,19 @@
 - реализовать access mask для финансовых данных.
 - реализовать Files tab как Drive Client Library, а не отдельное хранилище файлов внутри Clients.
 
-### C4. Company имеет один primary contact
+### C4. Company contacts (primary + billing + additional)
 
-Текущая модель поддерживает `company.contactId`, но бизнесу нужен минимум:
+Модель:
 
-- primary contact;
-- billing contact, если отличается;
-- дополнительные контакты компании / проекта.
+- `company.contactId` — optional primary contact;
+- `company.billingContactId` — optional billing contact;
+- `company_additional_contacts` — дополнительные контакты (как Deal/Project).
 
 Нужно:
 
 - не заставлять сотрудников выбирать сложные роли вручную;
-- добавить конкретные связи только там, где они реально нужны процессу.
+- primary = первый в списке Contacts; остальные → junction;
+- billing остаётся отдельным полем (не роль в списке).
 
 ### C5. Deal / Project контакты слишком простые
 
@@ -101,16 +102,13 @@ Client Portfolio — вычисляемый клиентский обзор, к�
 Текущее состояние:
 
 - `Contact.role` существует как enum `CLIENT / PARTNER / CONTRACTOR / OTHER`;
-- `Company.contactId` является единственным контактом компании;
-- `Deal.contactId` является единственным контактом сделки;
-- `Project.contactId` является единственным контактом проекта;
+- `Company.contactId` optional primary; `Company.billingContactId` optional; `CompanyAdditionalContact` junction для доп. контактов;
+- `Deal.contactId` / `Project.contactId` + additional junction tables;
 - отдельного `Client Account` нет.
 
 Нужно:
 
 - решить технически: переименовать `Contact.role` в `contact_type` или оставить DB-name `role`, но в API/UI называть `contactType`;
-- добавить `Company.billingContactId`, если billing contact отличается от primary contact;
-- предусмотреть дополнительные контакты Company / Deal / Project через отдельные link-модели или лёгкую связь, если это понадобится в v1;
 - не создавать таблицу `ClientAccount`;
 - не хранить Client Portfolio как таблицу.
 
@@ -138,8 +136,8 @@ ClientContactLink
 - dedupe endpoint или service method перед созданием Contact из Lead / Deal;
 - `GET /clients/portfolio/contact/:contactId`;
 - `GET /clients/portfolio/company/:companyId`;
-- `GET /clients/companies` — вернуть primary contact и billing contact;
-- `POST/PATCH /clients/companies` — поддержать billing contact.
+- `GET /clients/companies` — вернуть primary contact, billing contact и additionalContacts;
+- `POST/PUT /clients/companies` — `contactIds` (первый = primary) + optional billing contact; primary не обязателен.
 
 Portfolio API должен возвращать computed data, а не создавать новую запись.
 

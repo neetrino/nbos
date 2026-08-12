@@ -32,7 +32,7 @@ Contact хранит персональную и коммуникационну�
 - ИП клиента;
 - физлицо, если счёт выставляется на человека.
 
-Company хранит реквизиты, tax status, legal address, bank details, primary contact и настройки для счетов.
+Company хранит реквизиты, tax status, legal address, bank details, optional contacts (primary + additional) и настройки для счетов.
 
 ### Client Portfolio
 

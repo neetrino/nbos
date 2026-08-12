@@ -11,7 +11,7 @@ export function mergeEntityContactIds(
   return ids;
 }
 
-/** First id is primary (deal/lead/project FK); rest go to junction table. */
+/** First id is primary (deal/lead/project/company FK); rest go to junction table. */
 export function splitEntityContactIds(contactIds: string[]): {
   primaryContactId: string | null;
   additionalContactIds: string[];

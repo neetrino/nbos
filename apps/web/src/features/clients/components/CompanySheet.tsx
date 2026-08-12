@@ -140,8 +140,8 @@ export function CompanySheet({
     setGeneralError(null);
     const patch = buildCompanyGeneralPatch(snap, draft);
     if (Object.keys(patch).length === 0) return;
-    if (!draft.name.trim() || !draft.primaryContactId) {
-      setGeneralError('Company name and primary contact are required.');
+    if (!draft.name.trim()) {
+      setGeneralError('Company name is required.');
       return;
     }
     setSaving(true);

@@ -60,6 +60,13 @@ describe('CompaniesService', () => {
 
   describe('create', () => {
     it('creates company with defaults', async () => {
+      prisma.company.findUnique.mockResolvedValue({
+        id: 'test-id',
+        name: 'Test Co',
+        contactId: 'c1',
+        additionalContacts: [],
+      });
+      prisma.contact.count.mockResolvedValue(1);
       await service.create({ name: 'Test Co', contactId: 'c1' });
       expect(prisma.company.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -67,12 +74,38 @@ describe('CompaniesService', () => {
             name: 'Test Co',
             type: 'LEGAL',
             taxStatus: 'TAX',
+            contactId: 'c1',
+          }),
+        }),
+      );
+    });
+
+    it('creates company without primary contact', async () => {
+      prisma.company.findUnique.mockResolvedValue({
+        id: 'test-id',
+        name: 'No Contact Co',
+        contactId: null,
+        additionalContacts: [],
+      });
+      await service.create({ name: 'No Contact Co' });
+      expect(prisma.company.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'No Contact Co',
+            contactId: null,
           }),
         }),
       );
     });
 
     it('creates company with custom type and bankDetails', async () => {
+      prisma.company.findUnique.mockResolvedValue({
+        id: 'test-id',
+        name: 'Custom Co',
+        contactId: 'c1',
+        additionalContacts: [],
+      });
+      prisma.contact.count.mockResolvedValue(1);
       await service.create({
         name: 'Custom Co',
         contactId: 'c1',
@@ -88,6 +121,26 @@ describe('CompaniesService', () => {
           }),
         }),
       );
+    });
+
+    it('creates company with contactIds list', async () => {
+      prisma.company.findUnique.mockResolvedValue({
+        id: 'test-id',
+        name: 'Multi Co',
+        contactId: 'c1',
+        additionalContacts: [{ contactId: 'c2' }],
+      });
+      prisma.contact.count.mockResolvedValue(1);
+      await service.create({ name: 'Multi Co', contactIds: ['c1', 'c2'] });
+      expect(prisma.company.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ contactId: 'c1' }),
+        }),
+      );
+      expect(prisma.companyAdditionalContact.createMany).toHaveBeenCalledWith({
+        data: [{ companyId: 'test-id', contactId: 'c2' }],
+        skipDuplicates: true,
+      });
     });
   });
 
@@ -113,12 +166,22 @@ describe('CompaniesService', () => {
 
   describe('update', () => {
     it('updates company fields', async () => {
-      prisma.company.findUnique.mockResolvedValue({
-        id: '1',
-        taxStatus: 'NO_TAX',
-        contactId: 'c1',
-        trashedAt: null,
-      });
+      prisma.company.findUnique
+        .mockResolvedValueOnce({
+          id: '1',
+          taxStatus: 'NO_TAX',
+          contactId: 'c1',
+          trashedAt: null,
+          additionalContacts: [],
+        })
+        .mockResolvedValueOnce({
+          id: '1',
+          name: 'Updated',
+          taxStatus: 'NO_TAX',
+          contactId: 'c2',
+          trashedAt: null,
+          additionalContacts: [],
+        });
       prisma.company.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
         name: 'Updated',
@@ -129,6 +192,11 @@ describe('CompaniesService', () => {
         notes: 'note',
       });
       expect(result.name).toBe('Updated');
+      expect(prisma.company.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ contactId: 'c2', name: 'Updated' }),
+        }),
+      );
     });
   });
 

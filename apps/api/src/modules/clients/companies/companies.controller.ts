@@ -58,7 +58,8 @@ export class CompaniesController {
     @Body()
     body: {
       name: string;
-      contactId: string;
+      contactId?: string | null;
+      contactIds?: string[];
       billingContactId?: string | null;
       type?: string;
       taxId?: string;
@@ -81,7 +82,8 @@ export class CompaniesController {
     @Body()
     body: {
       name?: string;
-      contactId?: string;
+      contactId?: string | null;
+      contactIds?: string[];
       billingContactId?: string | null;
       type?: string;
       taxId?: string;
