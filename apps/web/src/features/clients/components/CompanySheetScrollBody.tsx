@@ -53,7 +53,7 @@ export function CompanySheetScrollBody({
   onPortfolioRetry,
 }: CompanySheetScrollBodyProps) {
   const fieldDisabled = saving || readOnly;
-  const contactPicker = useRelationPickerActions('contact', 'company-sheet-primary');
+  const contactPicker = useRelationPickerActions('contact', 'company-contacts');
   const billingContactPicker = useRelationPickerActions('contact', 'company-sheet-billing');
   const taxStatus = getTaxStatus(company.taxStatus);
   const typeOptions = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
@@ -154,18 +154,17 @@ export function CompanySheetScrollBody({
         <DetailSheetSection title="Contacts" icon={<User size={12} />}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <RelationPickerField
-              label="Primary contact"
+              label="Contacts"
               entityKind="contact"
-              value={draft.primaryContactId || null}
-              selectionLabel={draft.primaryContactLabel || null}
-              placeholder="Search contacts…"
+              multiple
+              value={draft.contactIds}
+              selectionLabels={draft.contactLabels}
+              placeholder="Optional — search contacts…"
               icon={<User size={12} />}
               maxResults={25}
               disabled={fieldDisabled}
               onSearch={searchContacts}
-              onSelect={(id, label) =>
-                patchDraft({ primaryContactId: id, primaryContactLabel: label })
-              }
+              onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
               {...contactPicker}
             />
             <RelationPickerField

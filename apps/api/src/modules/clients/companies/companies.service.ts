@@ -6,6 +6,7 @@ import {
   type TaxStatus,
   JsonNull,
 } from '@nbos/database';
+import { splitEntityContactIds } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
@@ -15,10 +16,23 @@ import {
 } from '../../../common/lifecycle/entity-lifecycle-guards';
 import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
 import { mergeClientListScope } from '../client-entity-lifecycle';
+import { syncEntityContactLinks } from '../../crm/shared/sync-entity-contact-links.ops';
+
+const companyPersonSelect = { id: true, firstName: true, lastName: true } as const;
+
+const companyListInclude = {
+  contact: { select: companyPersonSelect },
+  billingContact: { select: companyPersonSelect },
+  additionalContacts: {
+    include: { contact: { select: companyPersonSelect } },
+  },
+  _count: { select: { projects: true, invoices: true } },
+} as const;
 
 interface CreateCompanyDto {
   name: string;
-  contactId: string;
+  contactId?: string | null;
+  contactIds?: string[];
   billingContactId?: string | null;
   type?: string;
   taxId?: string;
@@ -53,17 +67,17 @@ export class CompaniesService {
     const where: Prisma.CompanyWhereInput = mergeClientListScope({}, lifecycleScope);
 
     if (search) {
+      const personName: Prisma.ContactWhereInput = {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ],
+      };
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { taxId: { contains: search, mode: 'insensitive' } },
-        {
-          contact: {
-            OR: [
-              { firstName: { contains: search, mode: 'insensitive' } },
-              { lastName: { contains: search, mode: 'insensitive' } },
-            ],
-          },
-        },
+        { contact: personName },
+        { additionalContacts: { some: { contact: personName } } },
       ];
     }
     if (type) where.type = type as CompanyType;
@@ -72,11 +86,7 @@ export class CompaniesService {
     const [items, total] = await Promise.all([
       this.prisma.company.findMany({
         where,
-        include: {
-          contact: { select: { id: true, firstName: true, lastName: true } },
-          billingContact: { select: { id: true, firstName: true, lastName: true } },
-          _count: { select: { projects: true, invoices: true } },
-        },
+        include: companyListInclude,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -96,6 +106,9 @@ export class CompaniesService {
       include: {
         contact: true,
         billingContact: true,
+        additionalContacts: {
+          include: { contact: { select: companyPersonSelect } },
+        },
         projects: { select: { id: true, code: true, name: true } },
         invoices: { select: { id: true, code: true, moneyStatus: true, amount: true } },
         _count: { select: { projects: true, invoices: true } },
@@ -113,18 +126,34 @@ export class CompaniesService {
     if (!c) throw new BadRequestException(`Contact ${contactId} not found or is in Trash`);
   }
 
+  private async assertActiveContactsExist(contactIds: string[]) {
+    const unique = [...new Set(contactIds.filter(Boolean))];
+    for (const id of unique) {
+      await this.assertActiveContactExists(id);
+    }
+  }
+
+  private resolveIncomingContactIds(data: { contactIds?: string[] }): string[] | undefined {
+    if (data.contactIds !== undefined) return data.contactIds;
+    return undefined;
+  }
+
   async create(data: CreateCompanyDto) {
-    await this.assertActiveContactExists(data.contactId);
+    const contactIds =
+      data.contactIds !== undefined ? data.contactIds : data.contactId ? [data.contactId] : [];
+    const { primaryContactId } = splitEntityContactIds(contactIds);
+    await this.assertActiveContactsExist(contactIds);
+
     const billingId =
-      data.billingContactId && data.billingContactId !== data.contactId
+      data.billingContactId && data.billingContactId !== primaryContactId
         ? data.billingContactId
         : null;
     if (billingId) await this.assertActiveContactExists(billingId);
 
-    return this.prisma.company.create({
+    const company = await this.prisma.company.create({
       data: {
         name: data.name,
-        contactId: data.contactId,
+        contactId: primaryContactId,
         billingContactId: billingId,
         type: (data.type as CompanyType) ?? 'LEGAL',
         taxId: data.taxId,
@@ -136,12 +165,11 @@ export class CompaniesService {
         country: data.country ?? undefined,
         notes: data.notes,
       },
-      include: {
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        billingContact: { select: { id: true, firstName: true, lastName: true } },
-        _count: { select: { projects: true, invoices: true } },
-      },
     });
+
+    await syncEntityContactLinks(this.prisma, 'company', company.id, contactIds);
+
+    return this.findById(company.id);
   }
 
   async update(id: string, data: Partial<CreateCompanyDto>) {
@@ -152,7 +180,20 @@ export class CompaniesService {
       throw new BadRequestException('Tax status cannot be changed after company creation.');
     }
 
-    if (data.contactId) await this.assertActiveContactExists(data.contactId);
+    const incomingContactIds = this.resolveIncomingContactIds(data);
+    let resolvedContactId: string | null | undefined = undefined;
+    if (incomingContactIds !== undefined) {
+      await this.assertActiveContactsExist(incomingContactIds);
+      const synced = await syncEntityContactLinks(this.prisma, 'company', id, incomingContactIds);
+      resolvedContactId = synced.primaryContactId;
+    } else if (data.contactId !== undefined) {
+      if (data.contactId) {
+        await this.assertActiveContactExists(data.contactId);
+        resolvedContactId = data.contactId;
+      } else {
+        resolvedContactId = null;
+      }
+    }
 
     let billingContactId: string | null | undefined = undefined;
     if (data.billingContactId !== undefined) {
@@ -160,16 +201,16 @@ export class CompaniesService {
         billingContactId = null;
       } else {
         await this.assertActiveContactExists(data.billingContactId);
-        const primary = data.contactId ?? existing.contactId;
+        const primary = resolvedContactId !== undefined ? resolvedContactId : existing.contactId;
         billingContactId = data.billingContactId === primary ? null : data.billingContactId;
       }
     }
 
-    return this.prisma.company.update({
+    await this.prisma.company.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),
-        ...(data.contactId && { contactId: data.contactId }),
+        ...(resolvedContactId !== undefined && { contactId: resolvedContactId }),
         ...(data.type && { type: data.type as CompanyType }),
         ...(data.taxId !== undefined && { taxId: data.taxId }),
         ...(data.legalAddress !== undefined && { legalAddress: data.legalAddress }),
@@ -182,12 +223,9 @@ export class CompaniesService {
         }),
         ...(billingContactId !== undefined && { billingContactId }),
       },
-      include: {
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        billingContact: { select: { id: true, firstName: true, lastName: true } },
-        _count: { select: { projects: true, invoices: true } },
-      },
     });
+
+    return this.findById(id);
   }
 
   async moveToTrash(id: string) {
@@ -213,11 +251,7 @@ export class CompaniesService {
     return this.prisma.company.update({
       where: { id },
       data: { trashedAt: null },
-      include: {
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        billingContact: { select: { id: true, firstName: true, lastName: true } },
-        _count: { select: { projects: true, invoices: true } },
-      },
+      include: companyListInclude,
     });
   }
 

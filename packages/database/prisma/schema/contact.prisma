@@ -31,6 +31,7 @@ model Contact {
   dealAdditionalLinks DealAdditionalContact[] @relation("DealAdditionalContact")
   leadAdditionalLinks LeadAdditionalContact[] @relation("LeadAdditionalContact")
   projectAdditionalLinks ProjectAdditionalContact[] @relation("ProjectAdditionalContact")
+  companyAdditionalLinks CompanyAdditionalContact[] @relation("CompanyAdditionalContact")
   partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
@@ -58,7 +59,7 @@ model Company {
   legalAddress String?     @map("legal_address")
   bankDetails  Json?       @map("bank_details")
   taxStatus    TaxStatus   @default(TAX)
-  contactId    String      @map("contact_id")
+  contactId    String?     @map("contact_id")
   billingContactId String? @map("billing_contact_id")
   phone        String?
   email        String?
@@ -68,8 +69,9 @@ model Company {
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
-  contact                   Contact                   @relation("CompanyPrimaryContact", fields: [contactId], references: [id])
+  contact                   Contact?                  @relation("CompanyPrimaryContact", fields: [contactId], references: [id])
   billingContact            Contact?                  @relation("CompanyBillingContact", fields: [billingContactId], references: [id])
+  additionalContacts        CompanyAdditionalContact[]
   projects                  Project[]
   invoices                  Invoice[]
   deals                     Deal[]
@@ -78,4 +80,16 @@ model Company {
 
   @@index([trashedAt])
   @@map("companies")
+}
+
+/// Extra client contacts on a company (v1 list; primary remains `Company.contactId`).
+model CompanyAdditionalContact {
+  companyId String @map("company_id")
+  contactId String @map("contact_id")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact Contact @relation("CompanyAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, contactId])
+  @@map("company_additional_contacts")
 }

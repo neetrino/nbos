@@ -25,7 +25,7 @@ import { DetailSheetFieldSegmented } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 import { useRelationPickerActions } from '@/components/shared/relation-picker/use-relation-picker-actions';
-import { useContactSearchOptions } from '../hooks/use-contact-search-options';
+import { useContactRelationSearch } from '@/components/shared/relation-picker';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
 import { applyCompanyRelationCreated } from './apply-company-relation-created';
@@ -37,6 +37,22 @@ interface CreateCompanyDialogProps {
   defaultName?: string;
 }
 
+const EMPTY_FORM = {
+  name: '',
+  type: 'LEGAL',
+  taxStatus: 'TAX',
+  taxId: '',
+  legalAddress: '',
+  contactIds: [] as string[],
+  contactLabels: {} as Record<string, string>,
+  billingContactId: '',
+  billingContactLabel: '',
+  phone: '',
+  email: '',
+  country: '',
+  notes: '',
+};
+
 export function CreateCompanyDialog({
   open,
   onOpenChange,
@@ -44,51 +60,23 @@ export function CreateCompanyDialog({
   defaultName = '',
 }: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
-  const searchContacts = useContactSearchOptions();
-  const primaryContactPicker = useRelationPickerActions('contact', 'company-create-primary');
+  const contactRelationSearch = useContactRelationSearch();
+  const contactsPicker = useRelationPickerActions('contact', 'company-create-contacts');
   const billingContactPicker = useRelationPickerActions('contact', 'company-create-billing');
-  const [form, setForm] = useState({
-    name: '',
-    type: 'LEGAL',
-    taxStatus: 'TAX',
-    taxId: '',
-    legalAddress: '',
-    primaryContactId: '',
-    primaryContactLabel: '',
-    billingContactId: '',
-    billingContactLabel: '',
-    phone: '',
-    email: '',
-    country: '',
-    notes: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   useEffect(() => {
     if (!open || !defaultName.trim()) return;
     setForm((prev) => ({ ...prev, name: defaultName.trim() }));
   }, [open, defaultName]);
 
-  const canSubmit =
-    Boolean(form.name) &&
-    Boolean(form.type) &&
-    Boolean(form.taxStatus) &&
-    Boolean(form.primaryContactId);
+  const canSubmit = Boolean(form.name) && Boolean(form.type) && Boolean(form.taxStatus);
 
   const reset = () => {
     setForm({
-      name: '',
-      type: 'LEGAL',
-      taxStatus: 'TAX',
-      taxId: '',
-      legalAddress: '',
-      primaryContactId: '',
-      primaryContactLabel: '',
-      billingContactId: '',
-      billingContactLabel: '',
-      phone: '',
-      email: '',
-      country: '',
-      notes: '',
+      ...EMPTY_FORM,
+      contactIds: [],
+      contactLabels: {},
     });
   };
 
@@ -97,15 +85,16 @@ export function CreateCompanyDialog({
     if (!canSubmit) return;
     setLoading(true);
     try {
+      const primaryId = form.contactIds[0] ?? '';
       const created = await companiesApi.create({
         name: form.name,
         type: form.type,
         taxStatus: form.taxStatus,
         taxId: form.taxId || undefined,
         legalAddress: form.legalAddress || undefined,
-        contactId: form.primaryContactId,
+        contactIds: form.contactIds,
         billingContactId:
-          form.billingContactId && form.billingContactId !== form.primaryContactId
+          form.billingContactId && form.billingContactId !== primaryId
             ? form.billingContactId
             : undefined,
         phone: form.phone || undefined,
@@ -192,41 +181,34 @@ export function CreateCompanyDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1.5">
-              <Label>Legal Address</Label>
-              <Input
-                value={form.legalAddress}
-                onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-                placeholder="Legal address..."
-              />
-            </div>
-            <RelationPickerField
-              label="Primary Contact *"
-              entityKind="contact"
-              value={form.primaryContactId || null}
-              selectionLabel={form.primaryContactLabel || null}
-              placeholder="Search by name, phone, email…"
-              icon={<User size={12} />}
-              maxResults={25}
-              onSearch={searchContacts}
-              onSelect={(id, label) =>
-                setForm((prev) => ({
-                  ...prev,
-                  primaryContactId: id,
-                  primaryContactLabel: label,
-                }))
-              }
-              onClear={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  primaryContactId: '',
-                  primaryContactLabel: '',
-                }))
-              }
-              {...primaryContactPicker}
+          <div className="space-y-1.5">
+            <Label>Legal Address</Label>
+            <Input
+              value={form.legalAddress}
+              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
+              placeholder="Legal address..."
             />
           </div>
+
+          <RelationPickerField
+            label="Contacts"
+            entityKind="contact"
+            multiple
+            value={form.contactIds}
+            selectionLabels={form.contactLabels}
+            placeholder="Optional — search or create contact…"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={contactRelationSearch}
+            onChange={(ids, labels) =>
+              setForm((prev) => ({
+                ...prev,
+                contactIds: ids,
+                contactLabels: labels,
+              }))
+            }
+            {...contactsPicker}
+          />
 
           <RelationPickerField
             label="Billing Contact"
@@ -236,7 +218,7 @@ export function CreateCompanyDialog({
             placeholder="Optional — defaults to primary when empty"
             icon={<User size={12} />}
             maxResults={25}
-            onSearch={searchContacts}
+            onSearch={contactRelationSearch}
             onSelect={(id, label) =>
               setForm((prev) => ({
                 ...prev,

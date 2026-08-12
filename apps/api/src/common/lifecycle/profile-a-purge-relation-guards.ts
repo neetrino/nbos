@@ -37,6 +37,7 @@ export const profileAContactPurgeRelationGuards = {
   dealAdditionalLinks: { none: {} },
   leadAdditionalLinks: { none: {} },
   projectAdditionalLinks: { none: {} },
+  companyAdditionalLinks: { none: {} },
   partners: { none: {} },
   partnerServiceTerms: { none: {} },
 } satisfies Omit<Prisma.ContactWhereInput, 'id' | 'trashedAt'>;
@@ -47,6 +48,7 @@ export const profileACompanyPurgeRelationGuards = {
   deals: { none: {} },
   operationalJournalEntries: { none: {} },
   partnerServiceTerms: { none: {} },
+  additionalContacts: { none: {} },
 } satisfies Omit<Prisma.CompanyWhereInput, 'id' | 'trashedAt'>;
 
 export const profileAProjectPurgeRelationGuards = {

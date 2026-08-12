@@ -54,4 +54,30 @@ describe('syncEntityContactLinks', () => {
       syncEntityContactLinks(prisma as never, 'deal', dealId, ['missing']),
     ).rejects.toThrow('Primary contact was not found');
   });
+
+  it('syncs company additional contacts', async () => {
+    const companyId = 'company-1';
+    const prisma = {
+      contact: {
+        count: vi.fn(async (args: { where: { id: string | { in: string[] } } }) => {
+          const id = args.where.id;
+          if (typeof id === 'string') return id === 'primary' ? 1 : 0;
+          return id.in.length;
+        }),
+      },
+      companyAdditionalContact: {
+        deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+        createMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+    };
+    const result = await syncEntityContactLinks(prisma as never, 'company', companyId, [
+      'primary',
+      'extra',
+    ]);
+    expect(result.primaryContactId).toBe('primary');
+    expect(prisma.companyAdditionalContact.createMany).toHaveBeenCalledWith({
+      data: [{ companyId, contactId: 'extra' }],
+      skipDuplicates: true,
+    });
+  });
 });

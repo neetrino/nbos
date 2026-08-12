@@ -26,6 +26,7 @@ export function createMockPrisma() {
     leadAdditionalContact: createModelMock(),
     dealAdditionalContact: createModelMock(),
     projectAdditionalContact: createModelMock(),
+    companyAdditionalContact: createModelMock(),
     deal: createModelMock(),
     project: createModelMock(),
     contact: createModelMock(),
