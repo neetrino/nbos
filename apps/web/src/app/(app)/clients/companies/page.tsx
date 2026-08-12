@@ -11,9 +11,11 @@ import {
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListPagination,
   LoadingState,
   useModuleHeroSlots,
   ViewModeSwitch,
+  type ListPaginationMeta,
 } from '@/components/shared';
 import { CompanyCard } from '@/features/clients/components/CompanyCard';
 import { CompanySheet } from '@/features/clients/components/CompanySheet';
@@ -25,6 +27,7 @@ import {
 } from '@/features/clients/constants/clients-directory-view-options';
 import { COMPANY_TYPES, TAX_STATUSES } from '@/features/clients/constants/clients';
 import { clientsDirectoryCardGridClass } from '@/features/clients/constants/clients-directory-card-classes';
+import { CLIENTS_DIRECTORY_PAGE_SIZE } from '@/features/clients/constants/clients-directory-page-size';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
@@ -34,12 +37,21 @@ import { toast } from 'sonner';
 
 const OPEN_COMPANY_QUERY = 'openId';
 
+const emptyCompaniesListMeta = (): ListPaginationMeta => ({
+  total: 0,
+  page: 1,
+  pageSize: CLIENTS_DIRECTORY_PAGE_SIZE,
+  totalPages: 0,
+});
+
 function CompaniesPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sidebarCollapsed = useAppSidebarCollapsed();
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyCompaniesListMeta);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -72,19 +84,25 @@ function CompaniesPageContent() {
     setLoading(true);
     try {
       const data = await companiesApi.getAll({
-        pageSize: 100,
+        page,
+        pageSize: CLIENTS_DIRECTORY_PAGE_SIZE,
         scope,
         search: search || undefined,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
         taxStatus: filters.taxStatus && filters.taxStatus !== 'all' ? filters.taxStatus : undefined,
       });
       setCompanies(data.items);
+      setListMeta(data.meta);
       setError(null);
     } catch {
       setError('Companies could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
+  }, [page, search, filters, scope]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, filters, scope]);
 
   useEffect(() => {
@@ -281,6 +299,10 @@ function CompaniesPageContent() {
       ) : (
         <CompaniesTable companies={companies} onOpen={handleRowClick} />
       )}
+
+      {!loading && !error && companies.length > 0 ? (
+        <ListPagination meta={listMeta} onPageChange={setPage} />
+      ) : null}
 
       <CreateCompanyDialog
         open={showCreate}
