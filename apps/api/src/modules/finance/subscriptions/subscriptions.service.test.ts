@@ -5,7 +5,14 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 function mockSubscriptionForFindById(
-  overrides: Partial<{ status: string; billingStartDate: Date; endDate: Date | null }> = {},
+  overrides: Partial<{
+    status: string;
+    billingStartDate: Date;
+    endDate: Date | null;
+    termMonths: number | null;
+    coverageMonthCount: number;
+    billingFrequency: string;
+  }> = {},
 ) {
   return {
     id: '1',
@@ -18,6 +25,7 @@ function mockSubscriptionForFindById(
     status: 'ACTIVE',
     billingStartDate: new Date('2026-01-01T00:00:00.000Z'),
     endDate: null as Date | null,
+    termMonths: null as number | null,
     invoices: [],
     project: { id: 'p', code: 'P', name: 'Proj' },
     product: { id: 'prod-1', name: 'Website', projectId: 'p' },
@@ -145,6 +153,7 @@ describe('SubscriptionsService', () => {
         type: 'MAINTENANCE_ONLY',
         amount: 50000,
         billingDay: 1,
+        billingFrequency: 'MONTHLY',
         startDate: '2026-01-01',
       });
       expect(result.code).toMatch(/^SUB-\d{4}-\d{4}$/);
@@ -154,10 +163,31 @@ describe('SubscriptionsService', () => {
             productId: 'prod-1',
             projectId: 'p1',
             amount: 50000,
+            billingFrequency: 'MONTHLY',
             coverageMonthCount: 1,
           }),
         }),
       );
+      const createData = prisma.subscription.create.mock.calls[0]?.[0] as {
+        data?: Record<string, unknown>;
+      };
+      expect(createData?.data).not.toHaveProperty('monthlyEquivalentAmount');
+    });
+
+    it('rejects create when billingFrequency is omitted', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
+
+      await expect(
+        service.create({
+          productId: 'prod-1',
+          projectId: 'p1',
+          type: 'MAINTENANCE_ONLY',
+          amount: 50000,
+          billingDay: 1,
+          startDate: '2026-01-01',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
     });
   });
 
@@ -184,9 +214,11 @@ describe('SubscriptionsService', () => {
       await service.update('1', { billingDay: 15 });
 
       const call = prisma.subscription.update.mock.calls[0]?.[0] as {
-        data?: { endDate?: unknown };
+        data?: { endDate?: unknown; billingFrequency?: unknown };
       };
       expect(call?.data?.endDate).toBeUndefined();
+      expect(call?.data?.billingFrequency).toBeUndefined();
+      expect(call?.data).not.toHaveProperty('monthlyEquivalentAmount');
     });
 
     it('rejects invalid endDate string', async () => {
@@ -236,6 +268,18 @@ describe('SubscriptionsService', () => {
           data: expect.objectContaining({ termMonths: 6 }),
         }),
       );
+    });
+
+    it('rejects termMonths that do not divide by coverageMonthCount', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({
+          billingFrequency: 'CUSTOM',
+          coverageMonthCount: 4,
+        }),
+      );
+
+      await expect(service.update('1', { termMonths: 6 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
   });
 

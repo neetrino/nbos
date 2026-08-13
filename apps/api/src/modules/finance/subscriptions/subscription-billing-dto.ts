@@ -19,15 +19,22 @@ export interface ResolvedSubscriptionBillingInput {
   notificationsEnabled: boolean;
 }
 
-export function parseBillingFrequency(raw: string | undefined): SubscriptionBillingFrequencyEnum {
-  if (!raw) return 'MONTHLY';
-  const upper = raw.toUpperCase();
+export function parseBillingFrequency(raw: string): SubscriptionBillingFrequencyEnum {
+  const upper = raw.trim().toUpperCase();
+  if (!upper) {
+    throw new BadRequestException('billingFrequency is required');
+  }
   if (BILLING_FREQUENCIES.includes(upper as SubscriptionBillingFrequencyEnum)) {
     return upper as SubscriptionBillingFrequencyEnum;
   }
   throw new BadRequestException(`Unknown billingFrequency: ${raw}`);
 }
 
+/**
+ * Create-path billing resolver. `billingFrequency` is required: `amount` is a period sum,
+ * so a missing frequency must not silently default to MONTHLY.
+ * Updates use `applySubscriptionBillingPatch`, which leaves frequency untouched when omitted.
+ */
 export function resolveSubscriptionBillingInput(data: {
   amount?: number;
   billingStartDate?: string;
@@ -49,6 +56,10 @@ export function resolveSubscriptionBillingInput(data: {
   const billingStartDate = new Date(startRaw);
   if (Number.isNaN(billingStartDate.getTime())) {
     throw new BadRequestException('billingStartDate is invalid');
+  }
+
+  if (data.billingFrequency == null || !data.billingFrequency.trim()) {
+    throw new BadRequestException('billingFrequency is required');
   }
 
   const billingFrequency = parseBillingFrequency(data.billingFrequency);
@@ -117,7 +128,7 @@ function applyFrequencyAndCoveragePatch(
     return;
   }
 
-  const nextFrequency = parseBillingFrequency(data.billingFrequency);
+  const nextFrequency = parseBillingFrequency(data.billingFrequency ?? '');
   updateData.billingFrequency = nextFrequency;
   updateData.coverageMonthCount = resolveCoverageMonthCountForFrequency(
     nextFrequency,
@@ -188,4 +199,25 @@ export function parseOptionalTermMonths(
     );
   }
   return value;
+}
+
+/**
+ * Fixed term must divide into whole billing periods so billing never invoices a partial
+ * period (e.g. term 6 + monthly OK; term 6 + custom 4 rejected; term 12 + yearly OK).
+ * Call only when both values are known (non-null term).
+ */
+export function assertTermMonthsAlignWithCoverage(
+  termMonths: number,
+  coverageMonthCount: number,
+): void {
+  if (coverageMonthCount > termMonths) {
+    throw new BadRequestException(
+      `coverageMonthCount (${coverageMonthCount}) must be less than or equal to termMonths (${termMonths})`,
+    );
+  }
+  if (termMonths % coverageMonthCount !== 0) {
+    throw new BadRequestException(
+      `termMonths (${termMonths}) must be divisible by coverageMonthCount (${coverageMonthCount})`,
+    );
+  }
 }

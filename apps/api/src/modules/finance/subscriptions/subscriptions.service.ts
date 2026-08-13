@@ -12,6 +12,7 @@ import { buildSubscriptionGridPayload } from './subscription-grid';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 import {
   applySubscriptionBillingPatch,
+  assertTermMonthsAlignWithCoverage,
   parseOptionalTermMonths,
   resolveSubscriptionBillingInput,
 } from './subscription-billing-dto';
@@ -269,6 +270,9 @@ export class SubscriptionsService {
     const code = await this.generateCode();
     const billing = resolveSubscriptionBillingInput(data);
     const termMonths = parseOptionalTermMonths(data.termMonths);
+    if (termMonths != null) {
+      assertTermMonthsAlignWithCoverage(termMonths, billing.coverageMonthCount);
+    }
     const created = await this.prisma.subscription.create({
       data: {
         code,
@@ -293,7 +297,7 @@ export class SubscriptionsService {
   }
 
   async update(id: string, data: UpdateSubscriptionDto) {
-    await this.findById(id);
+    const current = await this.findById(id);
 
     const updateData: Prisma.SubscriptionUpdateInput = {};
     if (data.type) updateData.type = data.type as SubscriptionTypeEnum;
@@ -314,6 +318,7 @@ export class SubscriptionsService {
     }
     applyEndDatePatch(data.endDate, updateData);
     applyTermMonthsPatch(data.termMonths, updateData);
+    assertUpdatedTermAlignsWithCoverage(current, data, updateData);
     if (data.partnerId !== undefined)
       updateData.partner = data.partnerId
         ? { connect: { id: data.partnerId } }
@@ -460,4 +465,21 @@ function applyTermMonthsPatch(
   if (parsed !== undefined) {
     updateData.termMonths = parsed;
   }
+}
+
+function assertUpdatedTermAlignsWithCoverage(
+  current: { termMonths: number | null; coverageMonthCount: number },
+  data: UpdateSubscriptionDto,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  const nextTerm =
+    data.termMonths !== undefined ? parseOptionalTermMonths(data.termMonths) : current.termMonths;
+  if (nextTerm == null) {
+    return;
+  }
+  const nextCoverage =
+    typeof updateData.coverageMonthCount === 'number'
+      ? updateData.coverageMonthCount
+      : current.coverageMonthCount;
+  assertTermMonthsAlignWithCoverage(nextTerm, nextCoverage);
 }

@@ -1,7 +1,9 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { loadCoverageInvoicesBySubscription } from './billing-coverage-invoices';
 import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
+import { resolveTermCompletion } from './billing-subscription-term-completion';
 import { matchingSubscriptionBillingDays } from './subscription-billing-days';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
@@ -16,6 +18,8 @@ export interface BillingRunResult {
   errors: string[];
   /** Monthly dev subscription invoices not created because delivery missed `Product`/`Extension` deadline. */
   skippedLateDelivery: { subscriptionCode: string; projectCode: string }[];
+  /** Fixed-term subscriptions finished because covered months already met `termMonths`. */
+  completedTerm: { subscriptionCode: string; projectCode: string }[];
 }
 
 const subscriptionBillingInclude = {
@@ -58,7 +62,8 @@ export class BillingService {
     const subscriptions = await this.findSubscriptionsDueOn(now);
     this.logger.log(`Found ${subscriptions.length} subscriptions to bill for day ${day}`);
 
-    const coverageBySubscriptionId = await this.loadCoverageInvoicesBySubscription(
+    const coverageBySubscriptionId = await loadCoverageInvoicesBySubscription(
+      this.prisma,
       subscriptions.map((sub) => sub.id),
     );
 
@@ -67,6 +72,7 @@ export class BillingService {
       totalAmount: 0,
       errors: [],
       skippedLateDelivery: [],
+      completedTerm: [],
     };
 
     for (const sub of subscriptions) {
@@ -172,6 +178,10 @@ export class BillingService {
       }
 
       const existingInvoices = coverageBySubscriptionId.get(sub.id) ?? [];
+      if (await this.completeSubscriptionIfTermMet(sub, existingInvoices, result)) {
+        return;
+      }
+
       if (isBillingMonthCoveredByInvoices(billingMonthKey, existingInvoices)) {
         this.logger.log(
           `Invoice coverage already includes ${billingMonthKey} for subscription ${sub.code}`,
@@ -187,6 +197,44 @@ export class BillingService {
       this.logger.error(message);
       result.errors.push(message);
     }
+  }
+
+  /**
+   * Order: pause (above) → term completion → coverage dedup → create.
+   * Pause first so a late-delivery month never creates an invoice (and thus never
+   * consumes term). Term completion uses invoice coverage only, so a paused month
+   * cannot mark the term complete by itself.
+   */
+  private async completeSubscriptionIfTermMet(
+    sub: BillableSubscription,
+    existingInvoices: readonly SubscriptionCoverageInvoiceRow[],
+    result: BillingRunResult,
+  ): Promise<boolean> {
+    const decision = resolveTermCompletion({
+      termMonths: sub.termMonths,
+      endDate: sub.endDate,
+      invoices: existingInvoices,
+    });
+    if (!decision.shouldComplete) {
+      return false;
+    }
+
+    await this.prisma.subscription.update({
+      where: { id: sub.id },
+      data: {
+        status: 'COMPLETED',
+        ...(decision.endDate != null ? { endDate: decision.endDate } : {}),
+      },
+    });
+
+    result.completedTerm.push({
+      subscriptionCode: sub.code,
+      projectCode: sub.project.code,
+    });
+    this.logger.log(
+      `Completed subscription ${sub.code}: covered ${decision.coveredMonths} months meets termMonths ${sub.termMonths}`,
+    );
+    return true;
   }
 
   private async createSubscriptionInvoice(
@@ -216,42 +264,6 @@ export class BillingService {
 
     this.logger.log(`Generated invoice ${code} for subscription ${sub.code}`);
     return charge.amount;
-  }
-
-  private async loadCoverageInvoicesBySubscription(
-    subscriptionIds: string[],
-  ): Promise<Map<string, SubscriptionCoverageInvoiceRow[]>> {
-    const bySubscriptionId = new Map<string, SubscriptionCoverageInvoiceRow[]>();
-    if (subscriptionIds.length === 0) {
-      return bySubscriptionId;
-    }
-
-    const rows = await this.prisma.invoice.findMany({
-      where: {
-        subscriptionId: { in: subscriptionIds },
-        type: 'SUBSCRIPTION',
-      },
-      select: {
-        subscriptionId: true,
-        coverageStartMonth: true,
-        coverageMonthCount: true,
-        createdAt: true,
-      },
-    });
-
-    for (const row of rows) {
-      if (!row.subscriptionId) {
-        continue;
-      }
-      const list = bySubscriptionId.get(row.subscriptionId) ?? [];
-      list.push({
-        coverageStartMonth: row.coverageStartMonth,
-        coverageMonthCount: row.coverageMonthCount,
-        createdAt: row.createdAt,
-      });
-      bySubscriptionId.set(row.subscriptionId, list);
-    }
-    return bySubscriptionId;
   }
 
   private async generateInvoiceCode(targetDate: Date): Promise<string> {

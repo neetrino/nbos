@@ -21,6 +21,8 @@ type MockBillableSubscription = {
   taxStatus: string;
   billingDay: number;
   status: string;
+  termMonths: number | null;
+  endDate: Date | null;
   project: { id: string; code: string; name: string };
   product: typeof idleProduct;
 };
@@ -46,6 +48,8 @@ function mockBillableSubscription(
     taxStatus: 'TAX_FREE',
     billingDay: 15,
     status: 'ACTIVE',
+    termMonths: null,
+    endDate: null,
     project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test' },
     product: idleProduct,
     ...overrides,
@@ -91,6 +95,7 @@ describe('BillingService', () => {
       expect(result.totalAmount).toBe(5000);
       expect(result.errors.length).toBe(0);
       expect(result.skippedLateDelivery).toEqual([]);
+      expect(result.completedTerm).toEqual([]);
       expect(prisma.invoice.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -124,6 +129,7 @@ describe('BillingService', () => {
       expect(result.totalAmount).toBe(0);
       expect(result.errors).toEqual([]);
       expect(result.skippedLateDelivery).toEqual([]);
+      expect(result.completedTerm).toEqual([]);
       expect(prisma.invoice.findFirst).not.toHaveBeenCalled();
       expect(prisma.invoice.create).not.toHaveBeenCalled();
     });
@@ -136,6 +142,7 @@ describe('BillingService', () => {
       expect(result.generatedInvoices).toBe(0);
       expect(result.totalAmount).toBe(0);
       expect(result.skippedLateDelivery).toEqual([]);
+      expect(result.completedTerm).toEqual([]);
       expect(prisma.invoice.findMany).not.toHaveBeenCalled();
     });
 
@@ -168,6 +175,7 @@ describe('BillingService', () => {
       expect(result.errors.length).toBe(1);
       expect(result.errors[0]).toContain('SUB-1');
       expect(result.skippedLateDelivery).toEqual([]);
+      expect(result.completedTerm).toEqual([]);
     });
 
     it('uses the target billing date year when generating invoice codes', async () => {
@@ -430,6 +438,95 @@ describe('BillingService', () => {
           createdAt: true,
         },
       });
+    });
+
+    it('completes a fixed-term subscription when covered months meet termMonths', async () => {
+      const today = new Date(2026, 6, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({
+          code: 'SUB-TERM-1',
+          termMonths: 6,
+          endDate: null,
+        }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-01',
+          coverageMonthCount: 6,
+          createdAt: new Date(2026, 0, 15),
+        }),
+      ]);
+      prisma.subscription.update.mockResolvedValue({});
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(0);
+      expect(result.completedTerm).toEqual([
+        { subscriptionCode: 'SUB-TERM-1', projectCode: 'P-2026-0001' },
+      ]);
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+      expect(prisma.subscription.update).toHaveBeenCalledWith({
+        where: { id: 'sub-1' },
+        data: {
+          status: 'COMPLETED',
+          endDate: new Date(2026, 6, 0, 23, 59, 59, 999),
+        },
+      });
+    });
+
+    it('does not complete or bill when late-delivery pause skips a term month', async () => {
+      const today = new Date(2026, 4, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({
+          code: 'SUB-DEV-TERM',
+          type: 'DEV_ONLY',
+          termMonths: 6,
+          product: {
+            deadline: new Date(2026, 3, 1),
+            status: 'DEVELOPMENT',
+            deliveryResolution: null,
+            extensions: [],
+          },
+        }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-01',
+          coverageMonthCount: 3,
+          createdAt: new Date(2026, 0, 15),
+        }),
+      ]);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(0);
+      expect(result.completedTerm).toEqual([]);
+      expect(result.skippedLateDelivery).toEqual([
+        { subscriptionCode: 'SUB-DEV-TERM', projectCode: 'P-2026-0001' },
+      ]);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    it('continues billing open-ended subscriptions after many covered months', async () => {
+      const today = new Date(2026, 6, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({ termMonths: null }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-01',
+          coverageMonthCount: 6,
+          createdAt: new Date(2026, 0, 15),
+        }),
+      ]);
+      setupInvoiceCodeGeneration(prisma);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(1);
+      expect(result.completedTerm).toEqual([]);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
   });
 
