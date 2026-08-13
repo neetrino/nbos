@@ -24,6 +24,7 @@ import {
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
+import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { SubscriptionBillingPeriodConfirmDialog } from './SubscriptionBillingPeriodConfirmDialog';
 import { useSubscriptionGeneralSave } from './use-subscription-general-save';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
@@ -153,6 +154,7 @@ export function SubscriptionDetailSheet({
   if (!hostMounted) return null;
 
   const subType = subscription ? getSubscriptionType(subscription.type) : undefined;
+  const termSummary = subscription ? formatSubscriptionTermSummary(subscription) : null;
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
 
   return (
@@ -184,6 +186,12 @@ export function SubscriptionDetailSheet({
                   </div>
                   <p className="text-muted-foreground mt-0.5 text-sm">
                     {formatSubscriptionPeriodStatement(subscription)}
+                    {termSummary ? (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        {termSummary}
+                      </>
+                    ) : null}
                     <span className="mx-1.5">·</span>
                     {subscription.project.name}
                   </p>

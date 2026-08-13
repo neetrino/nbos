@@ -27,6 +27,8 @@ export interface Subscription {
   billingDay: number;
   taxStatus: string;
   status: string;
+  /** Agreed fixed term in months; null = open-ended. */
+  termMonths: number | null;
   billingStartDate: string;
   notificationsEnabled: boolean;
   /** Client WhatsApp payment reminder language: HY | RU | EN */
@@ -43,6 +45,8 @@ export interface Subscription {
     code: string;
     moneyStatus: string;
     amount: string;
+    type?: string;
+    createdAt?: string;
     coverageStartMonth?: string | null;
     coverageMonthCount?: number | null;
   }>;

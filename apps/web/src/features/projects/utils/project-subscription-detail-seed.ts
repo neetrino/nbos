@@ -19,6 +19,7 @@ export function buildProjectSubscriptionSeed(
     billingDay: row.billingDay,
     taxStatus: 'NO_VAT',
     status: row.status,
+    termMonths: null,
     billingStartDate: row.billingStartDate,
     notificationsEnabled: true,
     reminderLanguage: row.reminderLanguage ?? 'HY',

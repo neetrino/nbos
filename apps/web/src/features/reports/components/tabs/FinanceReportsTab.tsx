@@ -37,7 +37,7 @@ export function FinanceReportsTab({ state }: FinanceReportsTabProps) {
             </ChartCard>
             <ChartCard
               title="MRR movement"
-              description="Active, new and churned recurring revenue."
+              description="Active, new, churned and completed recurring revenue."
             >
               <ReportBarChart data={mrrChart(data)} />
             </ChartCard>
@@ -106,6 +106,10 @@ function mrrChart(data: FinanceReportsTabData): ChartDatum[] {
     { name: 'Active', value: numberValue(data.mrrSubscriptionRevenue.active.activeMrr) },
     { name: 'New', value: numberValue(data.mrrSubscriptionRevenue.movement.newMrr) },
     { name: 'Churned', value: numberValue(data.mrrSubscriptionRevenue.movement.churnedMrr) },
+    {
+      name: 'Completed',
+      value: numberValue(data.mrrSubscriptionRevenue.movement.completedMrr),
+    },
   ];
 }
 

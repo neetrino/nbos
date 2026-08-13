@@ -20,6 +20,11 @@ import {
 } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import {
+  DealSubscriptionTermField,
+  dealAmountFieldLabel,
+  showDealSubscriptionTermFields,
+} from './DealSubscriptionTermField';
 
 interface DealInfoFieldsProps {
   draft: DealGeneralDraft;
@@ -46,12 +51,13 @@ export function DealInfoProjectBillingFields({
   'draft' | 'patchDraft' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
 >) {
   const companyPicker = useRelationPickerActions('company');
+  const showSubscriptionTerm = showDealSubscriptionTermFields(draft);
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
         variant="controlled"
-        label="Cost"
+        label={dealAmountFieldLabel(draft.paymentType)}
         type="money"
         value={draft.amount ?? ''}
         placeholder="Enter amount..."
@@ -60,6 +66,15 @@ export function DealInfoProjectBillingFields({
         className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
+
+      {showSubscriptionTerm ? (
+        <DealSubscriptionTermField
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={disabled}
+          gateRequiredFields={gateRequiredFields}
+        />
+      ) : null}
 
       <DetailSheetFieldSegmented
         label="Tax Status"

@@ -60,6 +60,7 @@ describe('create invoice dialog utils', () => {
     billingDay: 15,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-01-01T00:00:00.000Z',
     notificationsEnabled: true,
     reminderLanguage: 'HY',

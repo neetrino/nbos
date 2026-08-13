@@ -16,6 +16,7 @@ function minimalSubscription(overrides: Partial<Subscription>): Subscription {
     billingDay: 1,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-01-01',
     notificationsEnabled: true,
     reminderLanguage: 'HY',
@@ -41,6 +42,7 @@ describe('buildSubscriptionsCsvContent', () => {
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('coverageAnnualizedAmount');
     expect(csv).toContain('monthlyEquivalentAmount');
+    expect(csv).toContain('termMonths');
   });
 
   it('escapes project name with comma', () => {

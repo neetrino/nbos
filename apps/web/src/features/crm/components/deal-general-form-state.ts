@@ -7,6 +7,7 @@ import { toDateInputValue } from './deal-general-tab.helpers';
 export interface DealGeneralDraft {
   name: string | null;
   amount: number | null;
+  subscriptionTermMonths: number | null;
   paymentType: string | null;
   taxStatus: string | null;
   projectId: string | null;
@@ -56,6 +57,7 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
   return {
     name: deal.name,
     amount: deal.amount,
+    subscriptionTermMonths: deal.subscriptionTermMonths ?? null,
     paymentType: deal.paymentType,
     taxStatus: deal.taxStatus ?? null,
     projectId: deal.projectId,
@@ -108,6 +110,9 @@ export function buildDealGeneralPatch(
 
   if (draft.name !== snap.name) out.name = draft.name;
   if (draft.amount !== snap.amount) out.amount = draft.amount;
+  if (draft.subscriptionTermMonths !== snap.subscriptionTermMonths) {
+    out.subscriptionTermMonths = draft.subscriptionTermMonths;
+  }
   if (draft.paymentType !== snap.paymentType) out.paymentType = draft.paymentType;
   if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus ?? undefined;
   if (draft.projectId !== snap.projectId) out.projectId = draft.projectId;

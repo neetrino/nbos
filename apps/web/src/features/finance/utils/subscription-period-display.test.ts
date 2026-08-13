@@ -19,6 +19,7 @@ function baseSubscription(overrides: Partial<Subscription> = {}): Subscription {
     billingDay: 24,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-04-24T00:00:00.000Z',
     notificationsEnabled: true,
     reminderLanguage: 'HY',

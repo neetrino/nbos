@@ -8,6 +8,7 @@ import {
 const baseDraft: DealGeneralDraft = {
   name: null,
   amount: null,
+  subscriptionTermMonths: null,
   paymentType: null,
   taxStatus: 'TAX',
   projectId: 'proj-1',

@@ -23,6 +23,7 @@ const baseSubscription: Subscription = {
   billingDay: 15,
   taxStatus: 'TAX',
   status: 'ACTIVE',
+  termMonths: null,
   billingStartDate: '2026-01-15T00:00:00.000Z',
   notificationsEnabled: true,
   reminderLanguage: 'HY',

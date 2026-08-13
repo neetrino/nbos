@@ -17,6 +17,7 @@ import {
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
+import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -153,6 +154,7 @@ export default function SubscriptionDetailPage() {
 
   const subType = getSubscriptionType(subscription.type);
   const subStatus = getSubscriptionStatus(subscription.status);
+  const termSummary = formatSubscriptionTermSummary(subscription);
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -178,7 +180,15 @@ export default function SubscriptionDetailPage() {
               ) : null}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
-              {formatSubscriptionPeriodStatement(subscription)} · {subscription.project.name}
+              {formatSubscriptionPeriodStatement(subscription)}
+              {termSummary ? (
+                <>
+                  <span className="mx-1.5">·</span>
+                  {termSummary}
+                </>
+              ) : null}
+              <span className="mx-1.5">·</span>
+              {subscription.project.name}
             </p>
           </div>
           {subStatus ? <StatusBadge label={subStatus.label} variant={subStatus.variant} /> : null}

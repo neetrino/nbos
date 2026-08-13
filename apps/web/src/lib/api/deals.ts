@@ -66,6 +66,8 @@ export interface Deal {
   status: string;
   type: string | null;
   amount: number | null;
+  /** Fixed subscription term in months for PRODUCT/EXTENSION + SUBSCRIPTION deals. */
+  subscriptionTermMonths?: number | null;
   paymentType: string | null;
   projectId: string | null;
   taxStatus?: string;

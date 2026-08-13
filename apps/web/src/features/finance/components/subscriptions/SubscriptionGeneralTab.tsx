@@ -24,6 +24,7 @@ import {
 } from '@/features/finance/utils/subscription-form-state';
 import { partnersApi } from '@/lib/api/partners';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
+import { SubscriptionTermSummary } from './SubscriptionTermSummary';
 import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionGeneralTabProps {
@@ -174,6 +175,7 @@ export function SubscriptionGeneralTab({
           {billingValidationError ? (
             <p className="text-destructive text-sm">{billingValidationError}</p>
           ) : null}
+          <SubscriptionTermSummary subscription={subscription} />
           <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"

@@ -22,6 +22,7 @@ const mockRow = (id: string): Subscription => ({
   billingDay: 1,
   taxStatus: 'TAX',
   status: 'ACTIVE',
+  termMonths: null,
   billingStartDate: '2026-01-01',
   notificationsEnabled: true,
   reminderLanguage: 'HY',
