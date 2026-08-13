@@ -1,9 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-
-/** Minimum covered months for a fixed-term deal subscription. */
-const DEAL_SUBSCRIPTION_TERM_MONTHS_MIN = 1;
-/** Maximum covered months for a fixed-term deal subscription. */
-const DEAL_SUBSCRIPTION_TERM_MONTHS_MAX = 120;
+import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 
 /**
  * Validates optional `subscriptionTermMonths` on deal create/update.
@@ -20,11 +16,11 @@ export function parseOptionalSubscriptionTermMonths(
   }
   if (
     !Number.isInteger(value) ||
-    value < DEAL_SUBSCRIPTION_TERM_MONTHS_MIN ||
-    value > DEAL_SUBSCRIPTION_TERM_MONTHS_MAX
+    value < SUBSCRIPTION_TERM_MONTHS_MIN ||
+    value > SUBSCRIPTION_TERM_MONTHS_MAX
   ) {
     throw new BadRequestException(
-      `subscriptionTermMonths must be an integer from ${DEAL_SUBSCRIPTION_TERM_MONTHS_MIN} to ${DEAL_SUBSCRIPTION_TERM_MONTHS_MAX}, or null`,
+      `subscriptionTermMonths must be an integer from ${SUBSCRIPTION_TERM_MONTHS_MIN} to ${SUBSCRIPTION_TERM_MONTHS_MAX}, or null`,
     );
   }
   return value;

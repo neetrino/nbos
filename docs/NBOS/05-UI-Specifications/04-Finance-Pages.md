@@ -547,7 +547,7 @@ Company P&L | Project P&L | Product P&L | Order P&L | Cash Flow | MRR | Journal
 **Тренд MRR:**
 
 - Линейный график MRR по месяцам
-- Разбивка: New MRR (новые подписки) / Expansion MRR (увеличение) / Churn MRR (отток)
+- Разбивка: New MRR (новые подписки) / Churn MRR (отмены) / Completed MRR (истечение срока)
 
 **Разбивка по подпискам:**
 

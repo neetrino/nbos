@@ -1,9 +1,3 @@
-/** Minimum fixed subscription term on PRODUCT/EXTENSION deals. */
-export const DEAL_SUBSCRIPTION_TERM_MONTHS_MIN = 1;
-
-/** Maximum fixed subscription term on PRODUCT/EXTENSION deals. */
-export const DEAL_SUBSCRIPTION_TERM_MONTHS_MAX = 120;
-
 /** Quick preset term lengths (months). */
 const DEAL_SUBSCRIPTION_TERM_PRESET_SIX = 6;
 

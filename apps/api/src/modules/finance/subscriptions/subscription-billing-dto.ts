@@ -1,15 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma, SubscriptionBillingFrequencyEnum } from '@nbos/database';
+import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 
 const BILLING_FREQUENCIES: SubscriptionBillingFrequencyEnum[] = ['MONTHLY', 'YEARLY', 'CUSTOM'];
 const MONTHLY_COVERAGE_MONTH_COUNT = 1;
 const YEARLY_COVERAGE_MONTH_COUNT = 12;
 const CUSTOM_COVERAGE_MONTH_MIN = 2;
 const CUSTOM_COVERAGE_MONTH_MAX = 60;
-/** Minimum covered months for a fixed-term subscription. */
-const SUBSCRIPTION_TERM_MONTHS_MIN = 1;
-/** Maximum covered months for a fixed-term subscription. */
-const SUBSCRIPTION_TERM_MONTHS_MAX = 120;
 
 export interface ResolvedSubscriptionBillingInput {
   amount: number;
