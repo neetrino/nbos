@@ -266,10 +266,13 @@ model Subscription {
   /// Required ownership: Project → Product → Subscription → Invoice → Payment.
   productId  String                 @map("product_id")
   type       SubscriptionTypeEnum
-  baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
+  /// Amount for one billing period (yearly => full yearly sum). Source of truth for money.
+  amount     Decimal                @map("amount") @db.Decimal(12, 2)
   billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
-  /// Coverage length in months when billingFrequency = CUSTOM (API validates 2..60).
-  prepaidMonthCount Int?            @map("prepaid_month_count")
+  /// Coverage length in months: MONTHLY=1, YEARLY=12, CUSTOM=2..60. Required on every create.
+  coverageMonthCount Int            @map("coverage_month_count")
+  /// Analytics-only: amount / coverageMonthCount. Postgres GENERATED ALWAYS STORED; never written by application code.
+  monthlyEquivalentAmount Decimal   @default(dbgenerated()) @map("monthly_equivalent_amount") @db.Decimal(12, 2)
   billingDay Int                    @map("billing_day")
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
   billingStartDate DateTime         @map("billing_start_date")
