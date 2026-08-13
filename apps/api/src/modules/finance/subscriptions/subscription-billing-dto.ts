@@ -4,6 +4,10 @@ import type { Prisma, SubscriptionBillingFrequencyEnum } from '@nbos/database';
 const BILLING_FREQUENCIES: SubscriptionBillingFrequencyEnum[] = ['MONTHLY', 'YEARLY', 'CUSTOM'];
 const CUSTOM_PREPAID_MONTH_MIN = 2;
 const CUSTOM_PREPAID_MONTH_MAX = 60;
+/** Minimum covered months for a fixed-term subscription. */
+const SUBSCRIPTION_TERM_MONTHS_MIN = 1;
+/** Maximum covered months for a fixed-term subscription. */
+const SUBSCRIPTION_TERM_MONTHS_MAX = 120;
 
 export interface ResolvedSubscriptionBillingInput {
   baseMonthlyAmount: number;
@@ -155,6 +159,31 @@ function parseCustomPrepaidMonthCount(value: number | null | undefined): number 
   ) {
     throw new BadRequestException(
       `prepaidMonthCount is required for CUSTOM billingFrequency and must be an integer from ${CUSTOM_PREPAID_MONTH_MIN} to ${CUSTOM_PREPAID_MONTH_MAX}`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Validates optional `termMonths` on create/update.
+ * `undefined` = omit / leave untouched; `null` = open-ended; otherwise integer 1..120.
+ */
+export function parseOptionalTermMonths(
+  value: number | null | undefined,
+): number | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  if (
+    !Number.isInteger(value) ||
+    value < SUBSCRIPTION_TERM_MONTHS_MIN ||
+    value > SUBSCRIPTION_TERM_MONTHS_MAX
+  ) {
+    throw new BadRequestException(
+      `termMonths must be an integer from ${SUBSCRIPTION_TERM_MONTHS_MIN} to ${SUBSCRIPTION_TERM_MONTHS_MAX}, or null`,
     );
   }
   return value;

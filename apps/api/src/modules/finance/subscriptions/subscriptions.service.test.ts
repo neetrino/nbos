@@ -155,6 +155,84 @@ describe('SubscriptionsService', () => {
     });
   });
 
+  describe('update', () => {
+    it('clears endDate when blank string is sent', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ endDate: new Date('2026-06-01T00:00:00.000Z') }),
+      );
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { endDate: '' });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ endDate: null }),
+        }),
+      );
+    });
+
+    it('leaves endDate untouched when undefined', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { billingDay: 15 });
+
+      const call = prisma.subscription.update.mock.calls[0]?.[0] as {
+        data?: { endDate?: unknown };
+      };
+      expect(call?.data?.endDate).toBeUndefined();
+    });
+
+    it('rejects invalid endDate string', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { endDate: 'not-a-date' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects termMonths below minimum', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { termMonths: 0 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects termMonths above maximum', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { termMonths: 121 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('accepts null termMonths to clear the term', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { termMonths: null });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ termMonths: null }),
+        }),
+      );
+    });
+
+    it('accepts valid termMonths', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { termMonths: 6 });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ termMonths: 6 }),
+        }),
+      );
+    });
+  });
+
   describe('updateStatus', () => {
     it('updates status', async () => {
       prisma.subscription.findUnique
@@ -184,6 +262,40 @@ describe('SubscriptionsService', () => {
         activeMonthCount: 0,
         annualizedAmount: 0,
       });
+    });
+
+    it('sets endDate when completing a subscription without one', async () => {
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ACTIVE', endDate: null }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'COMPLETED' }));
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'COMPLETED');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'COMPLETED',
+            endDate: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('preserves existing endDate when completing', async () => {
+      const endDate = new Date('2026-05-01T00:00:00.000Z');
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ON_HOLD', endDate }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'COMPLETED', endDate }));
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'COMPLETED');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'COMPLETED' },
+        }),
+      );
     });
 
     it('rejects invalid subscription status', async () => {

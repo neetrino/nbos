@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { SUBSCRIPTION_PARTNER_FILTER_UNLINKED } from '@nbos/shared';
 import {
   PrismaClient,
@@ -12,6 +12,7 @@ import { buildSubscriptionGridPayload } from './subscription-grid';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 import {
   applySubscriptionBillingPatch,
+  parseOptionalTermMonths,
   resolveSubscriptionBillingInput,
 } from './subscription-billing-dto';
 import {
@@ -41,6 +42,8 @@ interface CreateSubscriptionDto {
   /** HY | RU | EN — client WhatsApp payment reminder language (default HY). */
   reminderLanguage?: string;
   endDate?: string;
+  /** Covered months until term ends; null = open-ended. */
+  termMonths?: number | null;
   partnerId?: string;
 }
 
@@ -62,6 +65,8 @@ interface UpdateSubscriptionDto {
   notificationsEnabled?: boolean;
   reminderLanguage?: string;
   endDate?: string;
+  /** Covered months until term ends; null = open-ended. */
+  termMonths?: number | null;
   partnerId?: string | null;
 }
 
@@ -265,6 +270,7 @@ export class SubscriptionsService {
     });
     const code = await this.generateCode();
     const billing = resolveSubscriptionBillingInput(data);
+    const termMonths = parseOptionalTermMonths(data.termMonths);
     const created = await this.prisma.subscription.create({
       data: {
         code,
@@ -281,6 +287,7 @@ export class SubscriptionsService {
         notificationsEnabled: billing.notificationsEnabled,
         reminderLanguage: parseReminderLanguage(data.reminderLanguage),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
+        termMonths,
         partnerId: data.partnerId,
       },
     });
@@ -307,7 +314,8 @@ export class SubscriptionsService {
       updateData.taxStatus =
         data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set'];
     }
-    if (data.endDate) updateData.endDate = new Date(data.endDate);
+    applyEndDatePatch(data.endDate, updateData);
+    applyTermMonthsPatch(data.termMonths, updateData);
     if (data.partnerId !== undefined)
       updateData.partner = data.partnerId
         ? { connect: { id: data.partnerId } }
@@ -335,6 +343,9 @@ export class SubscriptionsService {
       updateData.billingStartDate = new Date();
     }
     if (status === 'CANCELLED') {
+      updateData.endDate = new Date();
+    }
+    if (status === 'COMPLETED' && current.endDate == null) {
       updateData.endDate = new Date();
     }
 
@@ -420,5 +431,35 @@ export class SubscriptionsService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `${prefix}${String(nextNum).padStart(4, '0')}`;
+  }
+}
+
+/** `undefined` untouched; blank string clears to null; valid ISO sets the date. */
+function applyEndDatePatch(
+  endDate: string | undefined,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  if (endDate === undefined) {
+    return;
+  }
+  if (endDate.trim() === '') {
+    updateData.endDate = null;
+    return;
+  }
+  const parsed = new Date(endDate);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new BadRequestException('endDate is invalid');
+  }
+  updateData.endDate = parsed;
+}
+
+/** `undefined` untouched; `null` clears; otherwise validated integer months. */
+function applyTermMonthsPatch(
+  termMonths: number | null | undefined,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  const parsed = parseOptionalTermMonths(termMonths);
+  if (parsed !== undefined) {
+    updateData.termMonths = parsed;
   }
 }

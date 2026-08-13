@@ -203,6 +203,8 @@ model Deal {
   status              DealStatusEnum       @default(START_CONVERSATION)
   amount              Decimal?             @db.Decimal(12, 2)
   paymentType         PaymentTypeEnum?     @map("payment_type")
+  /// Agreed subscription term length in covered months (copied to Order / Subscription on Won).
+  subscriptionTermMonths Int?              @map("subscription_term_months")
   taxStatus           TaxStatus?           @map("tax_status")
   sellerId            String               @map("seller_id")
   sellerAssistantId   String?              @map("seller_assistant_id")

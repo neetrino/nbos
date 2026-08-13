@@ -112,6 +112,7 @@ export class SubscriptionsController {
       notificationsEnabled?: boolean;
       reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string;
     },
   ) {
@@ -136,6 +137,7 @@ export class SubscriptionsController {
       notificationsEnabled?: boolean;
       reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string | null;
     },
   ) {
