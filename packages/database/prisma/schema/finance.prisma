@@ -268,6 +268,8 @@ model Subscription {
   type       SubscriptionTypeEnum
   baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
   billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
+  /// Coverage length in months when billingFrequency = CUSTOM (API validates 2..60).
+  prepaidMonthCount Int?            @map("prepaid_month_count")
   billingDay Int                    @map("billing_day")
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
   billingStartDate DateTime         @map("billing_start_date")
