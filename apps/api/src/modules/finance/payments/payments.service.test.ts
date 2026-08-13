@@ -334,6 +334,64 @@ describe('PaymentsService', () => {
 
       expect(prisma.payment.create).not.toHaveBeenCalled();
     });
+
+    it('keeps term subscription order open after first period payment below contract total', async () => {
+      const paymentDate = new Date('2026-03-12T00:00:00.000Z');
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv1',
+          code: 'INV-1',
+          orderId: 'ord1',
+          projectId: 'proj-1',
+          companyId: 'company-1',
+          amount: 100000,
+          moneyStatus: 'AWAITING_PAYMENT',
+          dueDate: new Date('2026-03-20'),
+          payments: [],
+          order: { productId: null },
+        })
+        .mockResolvedValueOnce({
+          amount: 100000,
+          dueDate: new Date('2026-03-20'),
+          moneyStatus: 'AWAITING_PAYMENT',
+          payments: [{ amount: 100000, paymentDate }],
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'PAID' });
+      prisma.payment.create.mockResolvedValue({ id: 'term-1', amount: 100000 });
+      prisma.invoice.findMany.mockResolvedValue([
+        { moneyStatus: 'PAID', amount: 100000, payments: [{ amount: 100000 }] },
+      ]);
+      prisma.payment.findUnique.mockResolvedValue(
+        mockPaymentFindByIdRow('term-1', {
+          amount: 100000,
+          invoice: { moneyStatus: 'PAID' },
+        }),
+      );
+      prisma.order.findUnique.mockResolvedValue({
+        status: 'PARTIALLY_PAID',
+        paymentType: 'SUBSCRIPTION',
+        subscriptionTermMonths: 6,
+        totalAmount: 600000,
+      });
+
+      await service.create({
+        invoiceId: 'inv1',
+        amount: 100000,
+        paymentDate: '2026-03-12',
+      });
+
+      expect(prisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'ord1' },
+        data: { status: 'PARTIALLY_PAID' },
+      });
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).not.toHaveBeenCalled();
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).toHaveBeenCalledWith({
+        invoiceId: 'inv1',
+        paymentId: 'term-1',
+      });
+    });
   });
 
   describe('delete', () => {
