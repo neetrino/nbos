@@ -178,17 +178,17 @@ Project Shell не должен быть местом, где команда в�
 
 ## 6. Жизненный цикл delivery-сущностей
 
-Основная активная цепочка и для `Product`, и для `Extension`:
+Состояние `Product` и `Extension` — **три оси**, а не одно поле:
 
-- `Starting`
-- `Development`
-- `QA`
-- `Transfer`
+| Ось                  | Значения                                       | Смысл                              |
+| -------------------- | ---------------------------------------------- | ---------------------------------- |
+| `deliveryStage`      | `STARTING` → `DEVELOPMENT` → `QA` → `TRANSFER` | рабочая стадия pipeline            |
+| `deliveryWorkStatus` | `ACTIVE` \| `ON_HOLD`                          | пауза **поверх** стадии, не стадия |
+| `deliveryResolution` | `null` \| `DONE` \| `CANCELLED`                | терминальный исход                 |
 
-Терминальные исходы:
+«Открыт / не закрыт» = `deliveryResolution IS NULL`. Так же считается `isActive` в `apps/api/src/modules/projects/delivery-lifecycle.ts`. `ON_HOLD` — это **не** закрытие.
 
-- `Done`
-- `Cancelled`
+Поле `status` (`ProductStatusEnum`, включая `CREATING`) — **legacy-зеркало**. Канон использует `deliveryStage`; `CREATING` соответствует `STARTING`.
 
 ### On Hold
 
@@ -241,33 +241,36 @@ Project Shell не должен быть местом, где команда в�
 
 ## 8. Вычисляемые project views
 
-`Project` не должен иметь ручной lifecycle status.
+У `Project` **нет** lifecycle-статуса (в схеме только `trashedAt`). Ручной `status` / `state` на Project не добавлять. Проектный статус не кэшировать и не денормализовать.
 
-Его отображение в hub views вычисляется из состояний `Product`, `Extension` и maintenance context.
+Hub views считаются из детей.
+
+**Признак «продукт на maintenance»** — не поле на `Product`. Продукт на обслуживании, если у него есть `Subscription` с:
+
+- `type` ∈ { `MAINTENANCE_ONLY`, `DEV_AND_MAINTENANCE` };
+- `status` ∈ { `PENDING`, `ACTIVE` }.
+
+`PENDING` = обслуживание продано, но ещё не стартовало (создаётся при Deal Won для `Deal.type = MAINTENANCE`). `ON_HOLD` / `CANCELLED` / `COMPLETED` = maintenance отключён, работы не ведутся.
+
+Исключения (внутренний продукт, спецпроект, бесплатное ведение) оформляются той же подпиской с `baseMonthlyAmount = 0` и `type = MAINTENANCE_ONLY`. Поля `maintenanceMode` на Product и сущности `Maintenance` в БД нет и не будет: Maintenance — **view**, не сущность.
 
 ### Development view
 
-Проект попадает сюда, если хотя бы один `Product` или `Extension` находится в активной delivery-работе:
-
-- `Starting`
-- `Development`
-- `QA`
-- `Transfer`
-
-Карточки с `On Hold` остаются в этом же рабочем контексте, но с отдельным visual state.
+Проект попадает сюда, если есть ≥1 `Product` **или** `Extension` с `deliveryResolution IS NULL` (любая стадия, включая `STARTING` и `ON_HOLD`).
 
 ### Maintenance view
 
-Проект попадает сюда, если у существующего продукта есть maintenance / subscription context.
+Проект попадает сюда, если есть ≥1 `Product` с maintenance-подпиской (`PENDING` / `ACTIVE` по формуле выше).
 
-Maintenance не является отдельной delivery-stage.
+Проект может одновременно попадать в `Development` и `Maintenance`.
 
 ### Closed view
 
-Проект попадает сюда, когда активной delivery-работы больше нет, а его delivery-сущности имеют terminal outcomes:
+Проект попадает сюда, если нет ни одного `Product` / `Extension` с `deliveryResolution IS NULL` **и нет** активной maintenance-подписки.
 
-- `Done`
-- `Cancelled`
+«Проект активен» = `Development` ∪ `Maintenance`.
+
+Когда появятся фильтры этих views на `/projects`: одна общая функция вывода рядом с `apps/api/src/modules/projects/delivery-lifecycle.ts`, переиспользуемая списком, счётчиками и Project Shell. Сейчас вычисления нет (`projects.service.ts` отсекает только удалённые проекты через `active-project-list-scope.ts`).
 
 ---
 
@@ -302,7 +305,8 @@ Projects Hub показывает operational context, но не подменя�
 4. `Delivery Board` — это view над delivery-сущностями, а не отдельная сущность.
 5. `On Hold` — status, а не stage.
 6. `Done` и `Cancelled` уходят в `Closed`, а не смешиваются с active board.
-7. `Maintenance` — отдельный operating mode, а не обычная стадия продуктовой разработки.
+7. `Maintenance` — отдельный operating mode (view над `Subscription`), а не стадия delivery и не флаг на `Product`.
+8. У `Project` нет lifecycle-статуса; hub views считаются из детей, без кэша.
 
 ---
 
