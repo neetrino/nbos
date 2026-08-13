@@ -7,6 +7,7 @@ import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.servi
 import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
 
 interface WonDealData {
   id: string;
@@ -62,6 +63,7 @@ export class DealWonHandler {
   ) {}
 
   async handle(deal: WonDealData) {
+    await this.syncSubscriptionOrderContractTotalAtWon(deal);
     const targets = await this.resolveWonTargets(deal, 'DEAL_WON');
     if (targets) {
       await this.driveDealWonLinks.linkApprovedDealMaterials(targets);
@@ -71,6 +73,41 @@ export class DealWonHandler {
   /** Creates project/product/extension shell without marking the deal Won (early delivery). */
   async ensureDeliveryShell(deal: WonDealData) {
     await this.resolveWonTargets(deal, 'EARLY_DELIVERY');
+  }
+
+  private async syncSubscriptionOrderContractTotalAtWon(deal: WonDealData): Promise<void> {
+    if (deal.paymentType !== 'SUBSCRIPTION' || deal.subscriptionTermMonths == null) {
+      return;
+    }
+
+    const order = await this.prisma.order.findFirst({
+      where: { dealId: deal.id },
+      select: { id: true, totalAmount: true, subscriptionTermMonths: true },
+    });
+    if (!order) return;
+
+    const expectedTotalAmount = resolveDealOrderTotalAmount({
+      amount: deal.amount,
+      paymentType: 'SUBSCRIPTION',
+      subscriptionTermMonths: deal.subscriptionTermMonths,
+    });
+    const currentTotalAmount = Number(order.totalAmount);
+    const expectedTermMonths = deal.subscriptionTermMonths;
+
+    if (
+      currentTotalAmount === expectedTotalAmount &&
+      order.subscriptionTermMonths === expectedTermMonths
+    ) {
+      return;
+    }
+
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        totalAmount: expectedTotalAmount,
+        subscriptionTermMonths: expectedTermMonths,
+      },
+    });
   }
 
   private async resolveWonTargets(

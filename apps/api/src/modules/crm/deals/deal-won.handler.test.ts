@@ -135,6 +135,77 @@ describe('DealWonHandler', () => {
     );
   });
 
+  it('re-syncs order contract total when subscription term changed before won', async () => {
+    prisma.order.findFirst.mockResolvedValue({
+      id: 'order-1',
+      totalAmount: 6_000_000,
+      subscriptionTermMonths: 6,
+    });
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 12,
+      }),
+    );
+
+    expect(prisma.order.update).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      data: {
+        totalAmount: 12_000_000,
+        subscriptionTermMonths: 12,
+      },
+    });
+  });
+
+  it('does not update order when contract total already matches deal at won', async () => {
+    prisma.order.findFirst.mockResolvedValue({
+      id: 'order-1',
+      totalAmount: 6_000_000,
+      subscriptionTermMonths: 6,
+    });
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+      }),
+    );
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
+  });
+
+  it('does not re-sync order for CLASSIC deals at won', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal({ paymentType: 'CLASSIC' }));
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
+  });
+
+  it('does not re-sync order for open-ended SUBSCRIPTION deals at won', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-open' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        subscriptionTermMonths: null,
+      }),
+    );
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
+  });
+
   it('auto-creates linked MAINTENANCE deal after PRODUCT won', async () => {
     prisma.product.create.mockResolvedValue({ id: 'product-1' });
     prisma.deal.findFirst.mockResolvedValue(null);
