@@ -6,6 +6,11 @@ export interface CreateDealDto {
   type?: string;
   amount?: number;
   paymentType?: string;
+  /**
+   * Fixed subscription term in months (1..120), or null for open-ended.
+   * Required at SEND_OFFER for PRODUCT/EXTENSION when paymentType is SUBSCRIPTION.
+   */
+  subscriptionTermMonths?: number | null;
   taxStatus?: string;
   companyId?: string | null;
   /** Defaults to the authenticated employee when omitted. */

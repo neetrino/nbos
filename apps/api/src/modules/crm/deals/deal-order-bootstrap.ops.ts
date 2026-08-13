@@ -16,6 +16,7 @@ interface DealOrderBootstrapInput {
   type: DealTypeEnum | null;
   amount: unknown;
   paymentType: PaymentTypeEnum | null;
+  subscriptionTermMonths?: number | null;
   taxStatus: TaxStatus | null;
   projectId: string | null;
   contactId: string | null;
@@ -75,6 +76,7 @@ export async function createOrderForDeal(
       type: orderType,
       paymentType: (input.deal.paymentType ?? 'CLASSIC') as PaymentTypeEnum,
       totalAmount: input.totalAmount,
+      subscriptionTermMonths: input.deal.subscriptionTermMonths ?? null,
       taxStatus: (input.deal.taxStatus ?? 'TAX') as TaxStatus,
       status: input.status,
       paymentMode: input.paymentMode,

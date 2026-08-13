@@ -7,6 +7,7 @@ const baseDeal = {
   type: 'PRODUCT',
   amount: null as unknown,
   paymentType: null as string | null,
+  subscriptionTermMonths: null as number | null,
   productCategory: null as string | null,
   productType: null as string | null,
   pmId: null as string | null,
@@ -264,5 +265,70 @@ describe('validateDealStageGate', () => {
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(complete, 'WON')).not.toThrow();
+  });
+
+  it('requires subscriptionTermMonths at SEND_OFFER for PRODUCT + SUBSCRIPTION', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 6_000_000,
+      paymentType: 'SUBSCRIPTION',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
+    expect(() =>
+      validateDealStageGate({ ...deal, subscriptionTermMonths: 6 }, 'SEND_OFFER'),
+    ).not.toThrow();
+  });
+
+  it('requires subscriptionTermMonths at SEND_OFFER for EXTENSION + SUBSCRIPTION', () => {
+    const deal = {
+      ...baseDeal,
+      type: 'EXTENSION',
+      amount: 1_200_000,
+      paymentType: 'SUBSCRIPTION',
+      projectId: 'proj-1',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
+    expect(() =>
+      validateDealStageGate({ ...deal, subscriptionTermMonths: 12 }, 'SEND_OFFER'),
+    ).not.toThrow();
+  });
+
+  it('does not require subscriptionTermMonths for MAINTENANCE or OUTSOURCE subscription', () => {
+    const maintenance = {
+      ...baseDeal,
+      type: 'MAINTENANCE',
+      amount: 80_000,
+      paymentType: 'SUBSCRIPTION',
+      projectId: 'proj-1',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(maintenance, 'SEND_OFFER')).not.toThrow();
+
+    const outsource = {
+      ...baseDeal,
+      type: 'OUTSOURCE',
+      amount: 500_000,
+      paymentType: 'SUBSCRIPTION',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(outsource, 'SEND_OFFER')).not.toThrow();
+  });
+
+  it('does not require subscriptionTermMonths for CLASSIC PRODUCT deals', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
   });
 });
