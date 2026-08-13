@@ -231,7 +231,10 @@ export class BillingService {
     }
 
     const rows = await this.prisma.invoice.findMany({
-      where: { subscriptionId: { in: subscriptionIds } },
+      where: {
+        subscriptionId: { in: subscriptionIds },
+        type: 'SUBSCRIPTION',
+      },
       select: {
         subscriptionId: true,
         coverageStartMonth: true,
