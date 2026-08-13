@@ -18,6 +18,9 @@ describe('ExtensionsService', () => {
   const partnerAccrualClassic = {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
   };
+  const partnerAccrualSubscription = {
+    releaseHeldAccrualsAfterDelivery: vi.fn().mockResolvedValue(undefined),
+  };
 
   const auditService: Pick<AuditService, 'log'> = {
     log: vi.fn().mockResolvedValue(undefined),
@@ -38,6 +41,7 @@ describe('ExtensionsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite.mockClear();
@@ -47,6 +51,7 @@ describe('ExtensionsService', () => {
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
+      partnerAccrualSubscription as never,
       supportService as never,
       auditService as never,
       deliveryStageChecklistSync as never,
@@ -526,6 +531,31 @@ describe('ExtensionsService', () => {
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('releases held subscription accruals when a linked order exists', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('e1', 'user-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
     });
 
     it('blocks completion while extension is paused', async () => {

@@ -92,7 +92,10 @@ Deal source = Partner
 
 - начисление создаётся только от реально полученного платежа;
 - если клиент не оплатил месяц, партнёру за этот месяц ничего не начисляется;
-- payout_rule относится к конкретной subscription-связи, а не глобально ко всему партнёру;
+- для `DEV_ONLY` / `DEV_AND_MAINTENANCE` начисление создаётся сразу, но держится как `ACCRUED` до сдачи связанного product/extension, затем становится `ELIGIBLE`;
+- `MAINTENANCE_ONLY` и `PARTNER_SERVICE` сразу `ELIGIBLE` — у них нет milestone сдачи;
+- если у order нет ни `productId`, ни `extensionId`, держать нельзя (release никогда не сработает) — создаём `ELIGIBLE`;
+- payout_rule относится к конкретной subscription-связи, а не глобально ко всему партнёру, и применяется к уже `ELIGIBLE` начислениям;
 - маленькие суммы могут копиться на балансе по этой subscription.
 
 ---
@@ -151,5 +154,6 @@ Expense Card — это факт платежа партнёру. Partner Accrua
 | Partner source обязателен при source = Partner                        | Accepted |
 | Classic partner payout после сдачи и полной оплаты                    | Accepted |
 | Subscription partner payout после каждого реально полученного платежа | Accepted |
+| DEV-подписки: accrual `ACCRUED` до сдачи, затем `ELIGIBLE`            | Accepted |
 | Subscription payout_rule задаётся на уровне subscription / project    | Accepted |
 | Expense не создаётся без Partner Accrual / Balance логики             | Accepted |

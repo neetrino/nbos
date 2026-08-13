@@ -70,6 +70,14 @@ Subscription invoice paid
   -> Expense Card
 ```
 
+Начисление по-прежнему одна строка на реально полученный платёж. Меняется только начальный статус:
+
+- `DEV_ONLY` и `DEV_AND_MAINTENANCE` — если связанный product/extension ещё не сдан, accrual создаётся как `ACCRUED` (`eligibleAt` пустой) и не попадает в payout batch. После сдачи статус меняется на `ELIGIBLE`. Журнал при release не пишется: обязательство уже учтено в момент платежа.
+- `MAINTENANCE_ONLY` и `PARTNER_SERVICE` — сразу `ELIGIBLE`: у них нет milestone сдачи.
+- Если у order нет ни `productId`, ни `extensionId`, держать нельзя (нечему стать DONE) — создаём `ELIGIBLE`.
+
+`payout_rule` применяется только к уже `ELIGIBLE` начислениям и не заменяет этот delivery gate.
+
 ### Payout Rule
 
 `payout_rule` задаётся на уровне конкретной partner subscription / project связи.
@@ -154,6 +162,7 @@ Payout Batch Approved
 | Partner Accrual создаётся только от реально полученных денег                | Accepted |
 | Classic payout платится после сдачи и полной оплаты                         | Accepted |
 | Subscription payout использует payout_rule на уровне subscription / project | Accepted |
+| DEV-подписки: accrual `ACCRUED` до сдачи, затем `ELIGIBLE`                  | Accepted |
 | Partner Balance нужен для контроля unpaid accruals                          | Accepted |
 | Payout Batch объединяет несколько accruals в одну выплату                   | Accepted |
 | Expense Card является payment layer, а не source of truth по начислениям    | Accepted |

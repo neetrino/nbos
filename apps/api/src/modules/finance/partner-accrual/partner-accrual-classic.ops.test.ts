@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Decimal } from '@nbos/database';
 import {
   computeInboundPartnerAccrualAmount,
-  isClassicInboundDeliveryComplete,
+  isInboundDeliveryComplete,
 } from './partner-accrual-classic.ops';
 
 describe('partner-accrual-classic.ops', () => {
@@ -11,9 +11,9 @@ describe('partner-accrual-classic.ops', () => {
     expect(a.toFixed(2)).toBe('123.45');
   });
 
-  it('isClassicInboundDeliveryComplete is true for DONE product order', () => {
+  it('isInboundDeliveryComplete is true for DONE product order', () => {
     expect(
-      isClassicInboundDeliveryComplete({
+      isInboundDeliveryComplete({
         productId: 'p1',
         extensionId: null,
         product: { status: 'DONE' },
@@ -22,9 +22,9 @@ describe('partner-accrual-classic.ops', () => {
     ).toBe(true);
   });
 
-  it('isClassicInboundDeliveryComplete is true for DONE extension order', () => {
+  it('isInboundDeliveryComplete is true for DONE extension order', () => {
     expect(
-      isClassicInboundDeliveryComplete({
+      isInboundDeliveryComplete({
         productId: null,
         extensionId: 'e1',
         product: null,
@@ -33,9 +33,9 @@ describe('partner-accrual-classic.ops', () => {
     ).toBe(true);
   });
 
-  it('isClassicInboundDeliveryComplete is false when carrier not DONE', () => {
+  it('isInboundDeliveryComplete is false when carrier not DONE', () => {
     expect(
-      isClassicInboundDeliveryComplete({
+      isInboundDeliveryComplete({
         productId: 'p1',
         extensionId: null,
         product: { status: 'TRANSFER' },

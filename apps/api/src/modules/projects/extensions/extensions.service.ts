@@ -34,6 +34,7 @@ import {
 } from '../delivery-lifecycle';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../../finance/partner-accrual/partner-accrual-subscription.service';
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
 import {
@@ -101,6 +102,7 @@ export class ExtensionsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly supportService: SupportService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
@@ -526,6 +528,7 @@ export class ExtensionsService {
     if (linkedOrder) {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
     }
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     await this.audit.log({

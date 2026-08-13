@@ -4,7 +4,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import {
   computeInboundPartnerAccrualAmount,
-  isClassicInboundDeliveryComplete,
+  isInboundDeliveryComplete,
 } from './partner-accrual-classic.ops';
 
 /**
@@ -99,7 +99,7 @@ export class PartnerAccrualClassicService {
 
     if (terms.paymentType && terms.paymentType !== order.paymentType) return;
 
-    if (!isClassicInboundDeliveryComplete(order)) {
+    if (!isInboundDeliveryComplete(order)) {
       this.logger.debug(
         { orderId: order.id },
         'Skipping partner accrual: classic inbound delivery not DONE yet',
