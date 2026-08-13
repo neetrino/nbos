@@ -80,6 +80,11 @@ describe('DealWonHandler', () => {
 
     await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION' }));
 
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productId: 'product-1', type: 'DEV_AND_MAINTENANCE' },
+      }),
+    );
     expect(prisma.subscription.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -89,6 +94,41 @@ describe('DealWonHandler', () => {
           status: 'ACTIVE',
           amount: 5000,
           coverageMonthCount: 1,
+          taxStatus: 'TAX',
+        }),
+      }),
+    );
+    expect(prisma.subscription.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('termMonths');
+  });
+
+  it('creates DEV_ONLY term subscription with deal amount copied as-is', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+      }),
+    );
+
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productId: 'product-1', type: 'DEV_ONLY' },
+      }),
+    );
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          projectId: 'proj-1',
+          productId: 'product-1',
+          type: 'DEV_ONLY',
+          status: 'ACTIVE',
+          amount: 1_000_000,
+          coverageMonthCount: 1,
+          termMonths: 6,
           taxStatus: 'TAX',
         }),
       }),

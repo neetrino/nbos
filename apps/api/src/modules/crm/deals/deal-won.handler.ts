@@ -15,6 +15,8 @@ interface WonDealData {
   type: string | null;
   amount: unknown;
   paymentType: string | null;
+  /** Fixed billing periods for SUBSCRIPTION product/extension deals; null = open-ended. */
+  subscriptionTermMonths?: number | null;
   taxStatus: string | null;
   contactId: string | null;
   companyId: string | null;
@@ -322,8 +324,11 @@ export class DealWonHandler {
     const firstPaidInvoice = this.getFirstPaidInvoice(deal);
     if (!firstPaidInvoice) return;
 
+    const termMonths = deal.subscriptionTermMonths ?? null;
+    const subscriptionType = termMonths != null ? 'DEV_ONLY' : 'DEV_AND_MAINTENANCE';
+
     const existing = await this.prisma.subscription.findFirst({
-      where: { productId, type: 'DEV_AND_MAINTENANCE' },
+      where: { productId, type: subscriptionType },
       select: { id: true },
     });
     if (existing) return;
@@ -334,9 +339,10 @@ export class DealWonHandler {
         code: await this.generateSubscriptionCode(),
         projectId,
         productId,
-        type: 'DEV_AND_MAINTENANCE',
+        type: subscriptionType,
         amount: Number(deal.amount ?? firstPaidInvoice.amount),
         coverageMonthCount: 1,
+        ...(termMonths != null ? { termMonths } : {}),
         billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
         billingStartDate,
