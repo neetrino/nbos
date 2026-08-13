@@ -10,7 +10,9 @@ function mockSubscriptionForFindById(
   return {
     id: '1',
     code: 'SUB-2026-0001',
-    baseMonthlyAmount: 5000,
+    amount: 5000,
+    coverageMonthCount: 1,
+    monthlyEquivalentAmount: 5000,
     billingFrequency: 'MONTHLY',
     notificationsEnabled: true,
     status: 'ACTIVE',
@@ -43,7 +45,9 @@ describe('SubscriptionsService', () => {
       prisma.subscription.findMany.mockResolvedValue([
         {
           id: '1',
-          baseMonthlyAmount: 1000,
+          amount: 1000,
+          coverageMonthCount: 1,
+          monthlyEquivalentAmount: 1000,
           status: 'ACTIVE',
           billingStartDate: new Date('2026-03-01T00:00:00.000Z'),
           endDate: null,
@@ -149,6 +153,8 @@ describe('SubscriptionsService', () => {
           data: expect.objectContaining({
             productId: 'prod-1',
             projectId: 'p1',
+            amount: 50000,
+            coverageMonthCount: 1,
           }),
         }),
       );

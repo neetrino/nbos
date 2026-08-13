@@ -8,7 +8,7 @@ function baseSub(overrides: Partial<SubscriptionGridRowInput> = {}): Subscriptio
     id: 'sub-1',
     type: 'MAINTENANCE_ONLY',
     status: 'ACTIVE',
-    baseMonthlyAmount: 80000,
+    monthlyEquivalentAmount: 80000,
     billingStartDate: new Date('2026-01-01'),
     endDate: null,
     project: { id: 'p1', name: 'Alpha' },
@@ -93,7 +93,11 @@ describe('buildSubscriptionGridPayload', () => {
     const payload = buildSubscriptionGridPayload(
       [
         baseSub(),
-        baseSub({ id: 'sub-2', project: { id: 'p2', name: 'Beta' }, baseMonthlyAmount: 20000 }),
+        baseSub({
+          id: 'sub-2',
+          project: { id: 'p2', name: 'Beta' },
+          monthlyEquivalentAmount: 20000,
+        }),
       ],
       2026,
       NOW,

@@ -29,7 +29,8 @@ export interface SubscriptionGridRowInput {
   id: string;
   type: string;
   status: string;
-  baseMonthlyAmount: unknown;
+  /** Analytics/display monthly equivalent; never used for invoice amounts. */
+  monthlyEquivalentAmount: unknown;
   billingStartDate: Date;
   endDate: Date | null;
   project: { id: string; name: string };
@@ -186,7 +187,7 @@ export function buildSubscriptionGridPayload(
   now: Date,
 ): SubscriptionGridPayload {
   const rows: SubscriptionGridRow[] = subscriptions.map((sub) => {
-    const amountMonthly = numericAmount(sub.baseMonthlyAmount);
+    const amountMonthly = numericAmount(sub.monthlyEquivalentAmount);
     const months: SubscriptionGridCell[] = [];
     for (let m = 0; m < 12; m++) {
       months.push(resolveMonthCell(sub, year, m, now));

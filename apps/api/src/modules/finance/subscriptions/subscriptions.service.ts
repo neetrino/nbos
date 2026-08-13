@@ -28,12 +28,11 @@ interface CreateSubscriptionDto {
   /** Optional; must match Product.projectId when provided. */
   projectId?: string;
   type: string;
-  baseMonthlyAmount?: number;
-  /** @deprecated Use baseMonthlyAmount */
+  /** Period sum (one billing cycle). */
   amount?: number;
   billingDay: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number | null;
+  coverageMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -52,12 +51,11 @@ interface UpdateSubscriptionDto {
   /** Optional re-link; must match Product.projectId when projectId also sent. */
   productId?: string;
   projectId?: string;
-  baseMonthlyAmount?: number;
-  /** @deprecated Use baseMonthlyAmount */
+  /** Period sum (one billing cycle). */
   amount?: number;
   billingDay?: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number | null;
+  coverageMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -277,9 +275,9 @@ export class SubscriptionsService {
         projectId: ownership.projectId,
         productId: ownership.productId,
         type: data.type as SubscriptionTypeEnum,
-        baseMonthlyAmount: billing.baseMonthlyAmount,
+        amount: billing.amount,
         billingFrequency: billing.billingFrequency,
-        prepaidMonthCount: billing.prepaidMonthCount,
+        coverageMonthCount: billing.coverageMonthCount,
         billingDay: data.billingDay,
         taxStatus:
           (data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set']) ?? 'TAX',
@@ -379,17 +377,17 @@ export class SubscriptionsService {
         by: ['status'],
         where: periodWhere,
         _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
         where: periodWhere,
         _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.aggregate({
         where: activeWhere,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.count({ where: activeWhere }),
     ]);
@@ -399,7 +397,7 @@ export class SubscriptionsService {
       byStatus,
       byType,
       activeSubscriptions,
-      monthlyRevenue: totalRevenue._sum.baseMonthlyAmount,
+      monthlyRevenue: totalRevenue._sum?.monthlyEquivalentAmount ?? null,
     };
   }
 

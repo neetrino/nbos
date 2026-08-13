@@ -15,9 +15,9 @@ type MockBillableSubscription = {
   code: string;
   projectId: string;
   type: string;
-  baseMonthlyAmount: number;
+  amount: number;
   billingFrequency: SubscriptionBillingFrequencyEnum;
-  prepaidMonthCount: number | null;
+  coverageMonthCount: number;
   taxStatus: string;
   billingDay: number;
   status: string;
@@ -40,9 +40,9 @@ function mockBillableSubscription(
     code: 'SUB-2026-0001',
     projectId: 'proj-1',
     type: 'MAINTENANCE_ONLY',
-    baseMonthlyAmount: 5000,
+    amount: 5000,
     billingFrequency: 'MONTHLY',
-    prepaidMonthCount: null,
+    coverageMonthCount: 1,
     taxStatus: 'TAX_FREE',
     billingDay: 15,
     status: 'ACTIVE',
@@ -152,7 +152,7 @@ describe('BillingService', () => {
           id: 'sub-2',
           code: 'SUB-2',
           projectId: 'p2',
-          baseMonthlyAmount: 200,
+          amount: 200,
           project: { id: 'p2', code: 'PR-2', name: 'B' },
         }),
       ]);
@@ -176,7 +176,7 @@ describe('BillingService', () => {
         mockBillableSubscription({
           id: 'sub-legacy',
           code: 'SUB-2025-0008',
-          baseMonthlyAmount: 7500,
+          amount: 7500,
           taxStatus: 'TAX',
         }),
       ]);
@@ -199,7 +199,7 @@ describe('BillingService', () => {
           id: 'sub-dev',
           code: 'SUB-DEV-1',
           type: 'DEV_ONLY',
-          baseMonthlyAmount: 100_000,
+          amount: 100_000,
           taxStatus: 'TAX',
           product: {
             deadline: new Date(2026, 3, 1),
@@ -224,8 +224,9 @@ describe('BillingService', () => {
       const today = new Date(2026, 2, 15);
       prisma.subscription.findMany.mockResolvedValue([
         mockBillableSubscription({
-          baseMonthlyAmount: 10_000,
+          amount: 120_000,
           billingFrequency: 'YEARLY',
+          coverageMonthCount: 12,
           billingDay: 15,
         }),
       ]);
@@ -251,8 +252,9 @@ describe('BillingService', () => {
       const today = new Date(2026, 3, 15);
       prisma.subscription.findMany.mockResolvedValue([
         mockBillableSubscription({
-          baseMonthlyAmount: 10_000,
+          amount: 120_000,
           billingFrequency: 'YEARLY',
+          coverageMonthCount: 12,
           billingDay: 15,
         }),
       ]);
@@ -274,8 +276,9 @@ describe('BillingService', () => {
       const today = new Date(2027, 2, 15);
       prisma.subscription.findMany.mockResolvedValue([
         mockBillableSubscription({
-          baseMonthlyAmount: 10_000,
+          amount: 120_000,
           billingFrequency: 'YEARLY',
+          coverageMonthCount: 12,
           billingDay: 15,
         }),
       ]);
@@ -304,9 +307,7 @@ describe('BillingService', () => {
 
     it('creates a MONTHLY invoice when no invoice covers the billing month', async () => {
       const today = new Date(2026, 2, 15);
-      prisma.subscription.findMany.mockResolvedValue([
-        mockBillableSubscription({ baseMonthlyAmount: 7500 }),
-      ]);
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ amount: 7500 })]);
       prisma.invoice.findMany.mockResolvedValue([]);
       setupInvoiceCodeGeneration(prisma);
 
@@ -326,9 +327,9 @@ describe('BillingService', () => {
 
     it('creates one CUSTOM invoice with prepaid coverage and skips the next month', async () => {
       const subscription = mockBillableSubscription({
-        baseMonthlyAmount: 10_000,
+        amount: 40_000,
         billingFrequency: 'CUSTOM',
-        prepaidMonthCount: 4,
+        coverageMonthCount: 4,
         billingDay: 15,
       });
       prisma.subscription.findMany.mockResolvedValueOnce([subscription]);

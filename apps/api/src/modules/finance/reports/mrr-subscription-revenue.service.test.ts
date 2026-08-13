@@ -16,13 +16,30 @@ describe('MrrSubscriptionRevenueService', () => {
     const prisma = createMockPrisma();
     prisma.subscription.count.mockResolvedValue(3);
     prisma.subscription.aggregate
-      .mockResolvedValueOnce({ _sum: { baseMonthlyAmount: new Decimal(900) } })
-      .mockResolvedValueOnce({ _count: 2, _sum: { baseMonthlyAmount: new Decimal(500) } })
-      .mockResolvedValueOnce({ _count: 1, _sum: { baseMonthlyAmount: new Decimal(200) } })
-      .mockResolvedValueOnce({ _count: 0, _sum: { baseMonthlyAmount: null } });
+      .mockResolvedValueOnce({ _sum: { monthlyEquivalentAmount: new Decimal(900) } })
+      .mockResolvedValueOnce({
+        _count: { _all: 2 },
+        _sum: { monthlyEquivalentAmount: new Decimal(500) },
+      })
+      .mockResolvedValueOnce({
+        _count: { _all: 1 },
+        _sum: { monthlyEquivalentAmount: new Decimal(200) },
+      })
+      .mockResolvedValueOnce({
+        _count: { _all: 0 },
+        _sum: { monthlyEquivalentAmount: null },
+      });
     prisma.subscription.groupBy.mockResolvedValue([
-      { type: 'MAINTENANCE_ONLY', _count: 2, _sum: { baseMonthlyAmount: new Decimal(600) } },
-      { type: 'DEV_ONLY', _count: 1, _sum: { baseMonthlyAmount: new Decimal(300) } },
+      {
+        type: 'MAINTENANCE_ONLY',
+        _count: { _all: 2 },
+        _sum: { monthlyEquivalentAmount: new Decimal(600) },
+      },
+      {
+        type: 'DEV_ONLY',
+        _count: { _all: 1 },
+        _sum: { monthlyEquivalentAmount: new Decimal(300) },
+      },
     ]);
     prisma.payment.count.mockResolvedValue(4);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(700) } });
@@ -64,15 +81,24 @@ describe('MrrSubscriptionRevenueService', () => {
     prisma.subscription.groupBy.mockResolvedValue([]);
     prisma.subscription.aggregate.mockImplementation((args: AggregateArgs) => {
       if (args.where?.status === 'CANCELLED') {
-        return Promise.resolve({ _count: 1, _sum: { baseMonthlyAmount: new Decimal(150) } });
+        return Promise.resolve({
+          _count: { _all: 1 },
+          _sum: { monthlyEquivalentAmount: new Decimal(150) },
+        });
       }
       if (args.where?.status === 'COMPLETED') {
-        return Promise.resolve({ _count: 2, _sum: { baseMonthlyAmount: new Decimal(400) } });
+        return Promise.resolve({
+          _count: { _all: 2 },
+          _sum: { monthlyEquivalentAmount: new Decimal(400) },
+        });
       }
       if (args.where?.billingStartDate) {
-        return Promise.resolve({ _count: 0, _sum: { baseMonthlyAmount: null } });
+        return Promise.resolve({
+          _count: { _all: 0 },
+          _sum: { monthlyEquivalentAmount: null },
+        });
       }
-      return Promise.resolve({ _sum: { baseMonthlyAmount: null } });
+      return Promise.resolve({ _sum: { monthlyEquivalentAmount: null } });
     });
     prisma.payment.count.mockResolvedValue(0);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: null } });

@@ -197,11 +197,7 @@ export class BillingService {
   ): Promise<number> {
     const code = await this.generateInvoiceCode(now);
     const dueDate = new Date(now.getFullYear(), now.getMonth(), day + 14);
-    const charge = subscriptionChargeAmount(
-      Number(sub.baseMonthlyAmount),
-      sub.billingFrequency,
-      sub.prepaidMonthCount,
-    );
+    const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
 
     await this.prisma.invoice.create({
       data: {
