@@ -40,6 +40,22 @@ function subInvoice(
 }
 
 describe('buildSubscriptionGridPayload', () => {
+  it('paints a linked deal-deposit month as paid on the board', () => {
+    const payload = buildSubscriptionGridPayload(
+      [
+        baseSub({
+          billingStartDate: new Date(2026, 2, 15),
+          invoices: [subInvoice('inv-deposit', { start: '2026-03', count: 1, paid: true })],
+        }),
+      ],
+      2026,
+      NOW,
+    );
+    expect(payload.rows[0].months[2].kind).toBe('PAID');
+    expect(payload.rows[0].months[2].invoiceId).toBe('inv-deposit');
+    expect(payload.rows[0].months[3].kind).not.toBe('PAID');
+  });
+
   it('marks paid months from coverage on fully paid invoices', () => {
     const payload = buildSubscriptionGridPayload(
       [
