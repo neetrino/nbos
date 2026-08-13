@@ -16,6 +16,7 @@ import {
   SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
+import { applyBillingPeriodChangeToDraft } from '@/features/finance/utils/subscription-billing-period-change';
 import type { SubscriptionGeneralDraft } from '@/features/finance/utils/subscription-general-form-state';
 import {
   getSubscriptionBillingValidationError,
@@ -29,6 +30,7 @@ interface SubscriptionGeneralTabProps {
   subscription: Subscription;
   draft: SubscriptionGeneralDraft;
   patchDraft: (partial: Partial<SubscriptionGeneralDraft>) => void;
+  replaceDraft: (next: SubscriptionGeneralDraft) => void;
   formDisabled?: boolean;
 }
 
@@ -38,6 +40,7 @@ export function SubscriptionGeneralTab({
   subscription,
   draft,
   patchDraft,
+  replaceDraft,
   formDisabled = false,
 }: SubscriptionGeneralTabProps) {
   const [partnerOptions, setPartnerOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -60,19 +63,35 @@ export function SubscriptionGeneralTab({
   }, []);
 
   const partnerSelectOptions = [{ value: '', label: 'None' }, ...partnerOptions];
-
   const [billingOpen, setBillingOpen] = useState(true);
-
   const billingValidationError = getSubscriptionBillingValidationError(draft);
+  const monthlyEquivalent = parseFloat(subscription.monthlyEquivalentAmount);
 
   const onBillingFrequencyChange = useCallback(
     (value: string) => {
-      patchDraft({
-        billingFrequency: value,
-        coverageMonthCount: value === 'CUSTOM' ? draft.coverageMonthCount : '',
+      replaceDraft({
+        ...applyBillingPeriodChangeToDraft(
+          draft,
+          {
+            billingFrequency: value,
+            coverageMonthCount: value === 'CUSTOM' ? draft.coverageMonthCount : '',
+          },
+          monthlyEquivalent,
+        ),
+        partnerPickLabel: draft.partnerPickLabel,
       });
     },
-    [draft.coverageMonthCount, patchDraft],
+    [draft, monthlyEquivalent, replaceDraft],
+  );
+
+  const onCoverageMonthCountChange = useCallback(
+    (value: string) => {
+      replaceDraft({
+        ...applyBillingPeriodChangeToDraft(draft, { coverageMonthCount: value }, monthlyEquivalent),
+        partnerPickLabel: draft.partnerPickLabel,
+      });
+    },
+    [draft, monthlyEquivalent, replaceDraft],
   );
 
   const onPartnerChange = useCallback(
@@ -95,28 +114,16 @@ export function SubscriptionGeneralTab({
         onOpenChange={setBillingOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className={BILLING_FIELD_PAIR_CLASS}>
-            <InlineField
-              variant="controlled"
-              label="Type"
-              type="select"
-              value={draft.type}
-              options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-              icon={<Layers size={12} />}
-              disabled={formDisabled}
-              onValueChange={(v) => v && patchDraft({ type: v })}
-            />
-            <InlineField
-              variant="controlled"
-              label={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
-              type="money"
-              value={draft.amount}
-              placeholder="Enter amount…"
-              icon={<DollarSign size={12} />}
-              disabled={formDisabled}
-              onValueChange={(v) => patchDraft({ amount: v })}
-            />
-          </div>
+          <InlineField
+            variant="controlled"
+            label="Type"
+            type="select"
+            value={draft.type}
+            options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            icon={<Layers size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ type: v })}
+          />
           <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
@@ -151,9 +158,19 @@ export function SubscriptionGeneralTab({
               placeholder={`${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX}`}
               icon={<Repeat size={12} />}
               disabled={formDisabled}
-              onValueChange={(v) => patchDraft({ coverageMonthCount: v })}
+              onValueChange={onCoverageMonthCountChange}
             />
           ) : null}
+          <InlineField
+            variant="controlled"
+            label={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
+            type="money"
+            value={draft.amount}
+            placeholder="Enter amount…"
+            icon={<DollarSign size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ amount: v })}
+          />
           {billingValidationError ? (
             <p className="text-destructive text-sm">{billingValidationError}</p>
           ) : null}
