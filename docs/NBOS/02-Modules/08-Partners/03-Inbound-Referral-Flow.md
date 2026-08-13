@@ -69,7 +69,7 @@ Deal source = Partner
 Правила:
 
 - партнёрский accrual не создаётся при Deal Won;
-- accrual создаётся только после полной оплаты и сдачи проекта;
+- accrual создаётся только после полной оплаты и сдачи проекта (любой переход связанного product/extension в `DONE`);
 - если есть тестовый / waiting period, он фиксируется в payout rules проекта;
 - после eligibility Finance может создать payout batch / expense.
 

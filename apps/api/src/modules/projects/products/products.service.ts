@@ -632,14 +632,6 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { productId: id },
-      select: { id: true },
-    });
-    if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-    }
     await this.applyHeldAccrualDeliveryOutcome(id, target);
     await this.audit.log({
       entityType: 'PRODUCT',
@@ -755,6 +747,8 @@ export class ProductsService {
     });
     if (!linkedOrder) return;
     if (targetStatus === 'DONE') {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
       await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
       return;
     }

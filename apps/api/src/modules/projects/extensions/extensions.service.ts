@@ -525,14 +525,6 @@ export class ExtensionsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { extensionId: id },
-      select: { id: true },
-    });
-    if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-    }
     await this.applyHeldAccrualDeliveryOutcome(id, target);
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     await this.audit.log({
@@ -577,6 +569,8 @@ export class ExtensionsService {
     });
     if (!linkedOrder) return;
     if (targetStatus === 'DONE') {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
       await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
       return;
     }

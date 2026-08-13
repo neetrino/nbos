@@ -7,6 +7,12 @@ import type { NotificationService } from '../../notifications/notification.servi
 import type { AuditService } from '../../audit/audit.service';
 import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 
+vi.mock('../../bonus/product-bonus-pool-sync', () => ({
+  syncProductBonusPoolForOrder: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
   let prisma: MockPrisma;
@@ -42,6 +48,7 @@ describe('ExtensionsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    vi.mocked(syncProductBonusPoolForOrder).mockClear();
     partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
     partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery.mockClear();
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
@@ -453,7 +460,22 @@ describe('ExtensionsService', () => {
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
         'ord-1',
       );
-      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+    });
+
+    it('creates classic inbound accrual when extension reaches DONE through updateStatus, not complete', async () => {
+      stubExtensionReadyForDone(prisma);
+
+      await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+    });
+
+    it('syncs bonus pool when extension reaches DONE through updateStatus, not complete', async () => {
+      stubExtensionReadyForDone(prisma);
+
+      await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
     });
 
     it('cancels held accruals when extension reaches LOST through updateStatus', async () => {
@@ -471,6 +493,8 @@ describe('ExtensionsService', () => {
         'ord-1',
       );
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
     });
 
     it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', async () => {
@@ -652,9 +676,33 @@ describe('ExtensionsService', () => {
       await service.complete('e1', 'user-1');
 
       expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
         'ord-1',
       );
+    });
+
+    it('still fires classic accrual and bonus-pool sync from complete', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('e1', 'user-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
     });
 
     it('blocks completion while extension is paused', async () => {
@@ -782,6 +830,8 @@ describe('ExtensionsService', () => {
         'ord-1',
       );
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
     });
   });
 
@@ -801,6 +851,23 @@ describe('ExtensionsService', () => {
     });
   });
 });
+
+function stubExtensionReadyForDone(prisma: MockPrisma) {
+  prisma.extension.findUnique.mockResolvedValue({
+    id: 'e1',
+    projectId: 'proj-1',
+    status: 'TRANSFER',
+    tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+    order: {
+      id: 'ord-1',
+      status: 'FULLY_PAID',
+      paymentType: 'CLASSIC',
+      invoices: [{ moneyStatus: 'PAID' }],
+    },
+  });
+  prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+  prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+}
 
 function readExceptionResponse(error: unknown) {
   if (!(error instanceof BadRequestException)) return {};
