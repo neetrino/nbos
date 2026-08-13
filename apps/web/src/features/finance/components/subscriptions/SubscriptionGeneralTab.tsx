@@ -17,7 +17,10 @@ import {
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
 import type { SubscriptionGeneralDraft } from '@/features/finance/utils/subscription-general-form-state';
-import { getSubscriptionBillingValidationError } from '@/features/finance/utils/subscription-form-state';
+import {
+  getSubscriptionBillingValidationError,
+  getSubscriptionPeriodAmountLabel,
+} from '@/features/finance/utils/subscription-form-state';
 import { partnersApi } from '@/lib/api/partners';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
 import type { Subscription } from '@/lib/api/finance';
@@ -66,10 +69,10 @@ export function SubscriptionGeneralTab({
     (value: string) => {
       patchDraft({
         billingFrequency: value,
-        prepaidMonthCount: value === 'CUSTOM' ? draft.prepaidMonthCount : '',
+        coverageMonthCount: value === 'CUSTOM' ? draft.coverageMonthCount : '',
       });
     },
-    [draft.prepaidMonthCount, patchDraft],
+    [draft.coverageMonthCount, patchDraft],
   );
 
   const onPartnerChange = useCallback(
@@ -105,13 +108,13 @@ export function SubscriptionGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Amount / month"
+              label={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
               type="money"
-              value={draft.baseMonthlyAmount}
+              value={draft.amount}
               placeholder="Enter amount…"
               icon={<DollarSign size={12} />}
               disabled={formDisabled}
-              onValueChange={(v) => patchDraft({ baseMonthlyAmount: v })}
+              onValueChange={(v) => patchDraft({ amount: v })}
             />
           </div>
           <div className={BILLING_FIELD_PAIR_CLASS}>
@@ -142,13 +145,13 @@ export function SubscriptionGeneralTab({
           {draft.billingFrequency === 'CUSTOM' ? (
             <InlineField
               variant="controlled"
-              label={`Prepaid months (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX})`}
+              label={`Coverage months (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX})`}
               type="number"
-              value={draft.prepaidMonthCount}
+              value={draft.coverageMonthCount}
               placeholder={`${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX}`}
               icon={<Repeat size={12} />}
               disabled={formDisabled}
-              onValueChange={(v) => patchDraft({ prepaidMonthCount: v })}
+              onValueChange={(v) => patchDraft({ coverageMonthCount: v })}
             />
           ) : null}
           {billingValidationError ? (

@@ -37,6 +37,7 @@ import {
   buildSubscriptionUpdatePayload,
   EMPTY_SUBSCRIPTION_FORM,
   getSubscriptionBillingValidationError,
+  getSubscriptionPeriodAmountLabel,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
@@ -117,7 +118,7 @@ export function SubscriptionFormDialog({
     };
   }, [open]);
 
-  const parsedAmount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
+  const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
   const parsedBillingDay = parseInt(form.billingDay, 10);
   const billingValidationError = getSubscriptionBillingValidationError(form);
   const canSubmit =
@@ -226,9 +227,9 @@ export function SubscriptionFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <NbosMoneyInput
               id="sub-amount"
-              label="Base monthly amount"
-              value={form.baseMonthlyAmount}
-              onChange={(baseMonthlyAmount) => setForm({ ...form, baseMonthlyAmount })}
+              label={getSubscriptionPeriodAmountLabel(form.billingFrequency)}
+              value={form.amount}
+              onChange={(amount) => setForm({ ...form, amount })}
               required
             />
             <div className="flex flex-col gap-1.5">
@@ -254,23 +255,23 @@ export function SubscriptionFormDialog({
               setForm({
                 ...form,
                 billingFrequency,
-                prepaidMonthCount: billingFrequency === 'CUSTOM' ? form.prepaidMonthCount : '',
+                coverageMonthCount: billingFrequency === 'CUSTOM' ? form.coverageMonthCount : '',
               })
             }
           />
 
           {form.billingFrequency === 'CUSTOM' ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-prepaid-months">
-                Prepaid months ({CUSTOM_PREPAID_MONTH_MIN}–{CUSTOM_PREPAID_MONTH_MAX})
+              <Label htmlFor="sub-coverage-months">
+                Coverage months ({CUSTOM_PREPAID_MONTH_MIN}–{CUSTOM_PREPAID_MONTH_MAX})
               </Label>
               <Input
-                id="sub-prepaid-months"
+                id="sub-coverage-months"
                 type="number"
                 min={CUSTOM_PREPAID_MONTH_MIN}
                 max={CUSTOM_PREPAID_MONTH_MAX}
-                value={form.prepaidMonthCount}
-                onChange={(e) => setForm({ ...form, prepaidMonthCount: e.target.value })}
+                value={form.coverageMonthCount}
+                onChange={(e) => setForm({ ...form, coverageMonthCount: e.target.value })}
                 required
               />
               {billingValidationError ? (

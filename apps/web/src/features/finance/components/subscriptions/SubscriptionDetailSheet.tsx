@@ -101,10 +101,10 @@ export function SubscriptionDetailSheet({
   }, [
     subscription?.id,
     subscription?.status,
-    subscription?.baseMonthlyAmount,
+    subscription?.amount,
     subscription?.billingDay,
     subscription?.billingFrequency,
-    subscription?.prepaidMonthCount,
+    subscription?.coverageMonthCount,
     subscription?.partner?.id,
   ]);
 
@@ -200,7 +200,7 @@ export function SubscriptionDetailSheet({
                     ) : null}
                   </div>
                   <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
+                    {formatAmount(parseFloat(subscription.monthlyEquivalentAmount))}/mo equiv.
                     <span className="mx-1.5">·</span>
                     {subscription.project.name}
                   </p>

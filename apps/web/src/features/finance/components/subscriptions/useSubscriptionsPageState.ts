@@ -232,7 +232,7 @@ function useSubscriptionActivation(
             statsPartnerScope,
             subscription.status,
             'ACTIVE',
-            Number(updated.baseMonthlyAmount),
+            Number(updated.monthlyEquivalentAmount),
           ),
         );
         setMutationError(null);
@@ -268,7 +268,7 @@ function useSubscriptionCancellation(
             statsPartnerScope,
             subscription.status,
             'CANCELLED',
-            Number(subscription.baseMonthlyAmount),
+            Number(subscription.monthlyEquivalentAmount),
           ),
         );
         setMutationError(null);
@@ -305,7 +305,7 @@ function useSubscriptionHold(
             statsPartnerScope,
             'ACTIVE',
             'ON_HOLD',
-            Number(subscription.baseMonthlyAmount),
+            Number(subscription.monthlyEquivalentAmount),
           ),
         );
         setMutationError(null);

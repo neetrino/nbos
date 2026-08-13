@@ -9,9 +9,9 @@ export interface SubscriptionFormState {
   productId: string;
   projectId: string;
   type: string;
-  baseMonthlyAmount: string;
+  amount: string;
   billingFrequency: string;
-  prepaidMonthCount: string;
+  coverageMonthCount: string;
   billingDay: string;
   billingStartDate: string;
   taxStatus: string;
@@ -25,9 +25,9 @@ export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
   productId: '',
   projectId: '',
   type: 'MAINTENANCE_ONLY',
-  baseMonthlyAmount: '',
+  amount: '',
   billingFrequency: 'MONTHLY',
-  prepaidMonthCount: '',
+  coverageMonthCount: '',
   billingDay: '1',
   billingStartDate: '',
   taxStatus: 'TAX',
@@ -37,7 +37,14 @@ export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
   partnerId: '',
 };
 
-export function parsePrepaidMonthCount(raw: string): number | null {
+/** Label for the human-entered amount field based on selected billing period. */
+export function getSubscriptionPeriodAmountLabel(billingFrequency: string): string {
+  if (billingFrequency === 'YEARLY') return 'Amount / year';
+  if (billingFrequency === 'CUSTOM') return 'Amount for period';
+  return 'Amount / month';
+}
+
+export function parseCoverageMonthCount(raw: string): number | null {
   const trimmed = raw.trim();
   if (!trimmed || !/^\d+$/.test(trimmed)) return null;
   const value = parseInt(trimmed, 10);
@@ -52,11 +59,11 @@ export function parsePrepaidMonthCount(raw: string): number | null {
 }
 
 export function getSubscriptionBillingValidationError(
-  form: Pick<SubscriptionFormState, 'billingFrequency' | 'prepaidMonthCount'>,
+  form: Pick<SubscriptionFormState, 'billingFrequency' | 'coverageMonthCount'>,
 ): string | null {
   if (form.billingFrequency !== 'CUSTOM') return null;
-  if (parsePrepaidMonthCount(form.prepaidMonthCount) != null) return null;
-  return `Prepaid month count is required for Custom billing (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX} months).`;
+  if (parseCoverageMonthCount(form.coverageMonthCount) != null) return null;
+  return `Coverage month count is required for Custom billing (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX} months).`;
 }
 
 export function subscriptionToFormState(subscription: Subscription): SubscriptionFormState {
@@ -64,10 +71,10 @@ export function subscriptionToFormState(subscription: Subscription): Subscriptio
     productId: subscription.productId,
     projectId: subscription.projectId,
     type: subscription.type,
-    baseMonthlyAmount: subscription.baseMonthlyAmount,
+    amount: subscription.amount,
     billingFrequency: subscription.billingFrequency,
-    prepaidMonthCount:
-      subscription.prepaidMonthCount != null ? String(subscription.prepaidMonthCount) : '',
+    coverageMonthCount:
+      subscription.billingFrequency === 'CUSTOM' ? String(subscription.coverageMonthCount) : '',
     billingDay: String(subscription.billingDay),
     billingStartDate: subscription.billingStartDate.slice(0, 10),
     taxStatus: subscription.taxStatus,
@@ -78,27 +85,27 @@ export function subscriptionToFormState(subscription: Subscription): Subscriptio
   };
 }
 
-function prepaidMonthCountPayload(
+function coverageMonthCountPayload(
   billingFrequency: string,
-  prepaidMonthCount: string,
-): { prepaidMonthCount: number } | Record<string, never> {
+  coverageMonthCount: string,
+): { coverageMonthCount: number } | Record<string, never> {
   if (billingFrequency !== 'CUSTOM') return {};
-  const count = parsePrepaidMonthCount(prepaidMonthCount);
+  const count = parseCoverageMonthCount(coverageMonthCount);
   if (count == null) return {};
-  return { prepaidMonthCount: count };
+  return { coverageMonthCount: count };
 }
 
 export function buildSubscriptionCreatePayload(form: SubscriptionFormState) {
-  const amount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
+  const amount = parseFloat(form.amount.replace(/\s/g, ''));
   const billingDay = parseInt(form.billingDay, 10);
   return {
     productId: form.productId,
     ...(form.projectId.trim() ? { projectId: form.projectId.trim() } : {}),
     type: form.type,
-    baseMonthlyAmount: amount,
+    amount,
     billingDay,
     billingFrequency: form.billingFrequency,
-    ...prepaidMonthCountPayload(form.billingFrequency, form.prepaidMonthCount),
+    ...coverageMonthCountPayload(form.billingFrequency, form.coverageMonthCount),
     taxStatus: form.taxStatus,
     billingStartDate: new Date(form.billingStartDate).toISOString(),
     notificationsEnabled: form.notificationsEnabled,
@@ -109,7 +116,7 @@ export function buildSubscriptionCreatePayload(form: SubscriptionFormState) {
 }
 
 export function buildSubscriptionUpdatePayload(form: SubscriptionFormState) {
-  const amount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
+  const amount = parseFloat(form.amount.replace(/\s/g, ''));
   const billingDay = parseInt(form.billingDay, 10);
   return {
     type: form.type,
@@ -119,10 +126,10 @@ export function buildSubscriptionUpdatePayload(form: SubscriptionFormState) {
           ...(form.projectId.trim() ? { projectId: form.projectId.trim() } : {}),
         }
       : {}),
-    baseMonthlyAmount: amount,
+    amount,
     billingDay,
     billingFrequency: form.billingFrequency,
-    ...prepaidMonthCountPayload(form.billingFrequency, form.prepaidMonthCount),
+    ...coverageMonthCountPayload(form.billingFrequency, form.coverageMonthCount),
     taxStatus: form.taxStatus,
     billingStartDate: new Date(form.billingStartDate).toISOString(),
     notificationsEnabled: form.notificationsEnabled,

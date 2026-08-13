@@ -8,7 +8,9 @@ const CSV_HEADERS = [
   'projectCode',
   'projectName',
   'type',
-  'baseMonthlyAmount',
+  'amount',
+  'coverageMonthCount',
+  'monthlyEquivalentAmount',
   'billingFrequency',
   'billingDay',
   'taxStatus',
@@ -55,7 +57,9 @@ function subscriptionToCsvCells(row: Subscription): string[] {
     row.project.code,
     row.project.name,
     row.type,
-    row.baseMonthlyAmount,
+    row.amount,
+    String(row.coverageMonthCount),
+    row.monthlyEquivalentAmount,
     row.billingFrequency,
     String(row.billingDay),
     row.taxStatus,
@@ -76,7 +80,7 @@ function subscriptionToCsvCells(row: Subscription): string[] {
 }
 
 function grandTotalSubscriptionsCsvLine(rows: Subscription[]): string {
-  const amount = sumMoneyStringsMajorUnits(rows.map((r) => r.baseMonthlyAmount)).toFixed(2);
+  const mrrTotal = sumMoneyStringsMajorUnits(rows.map((r) => r.monthlyEquivalentAmount)).toFixed(2);
   const activeMonths = rows.reduce((acc, r) => acc + (r.coverage?.activeMonthCount ?? 0), 0);
   const annualized = (sumAnnualizedCents(rows) / 100).toFixed(2);
   const invoiceCount = rows.reduce((acc, r) => acc + r.invoices.length, 0);
@@ -87,7 +91,9 @@ function grandTotalSubscriptionsCsvLine(rows: Subscription[]): string {
     '',
     '',
     '',
-    amount,
+    '',
+    '',
+    mrrTotal,
     '',
     '',
     '',

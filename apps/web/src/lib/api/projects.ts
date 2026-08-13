@@ -171,7 +171,10 @@ export interface ProjectSubscription {
   type: string;
   productId?: string;
   reminderLanguage?: string;
-  baseMonthlyAmount: string;
+  amount: string;
+  coverageMonthCount: number;
+  monthlyEquivalentAmount: string;
+  billingFrequency: string;
   billingDay: number;
   status: string;
   billingStartDate: string;

@@ -48,7 +48,7 @@ export function FinanceSubscriptionsSection({
                   {st ? <StatusBadge label={st.label} variant={st.variant} /> : null}
                 </div>
                 <p className="font-bold">
-                  {formatProjectFinanceAmount(projectSubscriptionMonthlyAmount(sub))} / mo
+                  {formatProjectFinanceAmount(projectSubscriptionMonthlyAmount(sub))} / mo equiv.
                 </p>
               </div>
               <p className="text-muted-foreground mt-1 text-xs">

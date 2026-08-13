@@ -77,10 +77,10 @@ export default function SubscriptionDetailPage() {
   }, [
     subscription?.id,
     subscription?.status,
-    subscription?.baseMonthlyAmount,
+    subscription?.amount,
     subscription?.billingDay,
     subscription?.billingFrequency,
-    subscription?.prepaidMonthCount,
+    subscription?.coverageMonthCount,
     subscription?.partner?.id,
   ]);
 
@@ -199,7 +199,7 @@ export default function SubscriptionDetailPage() {
               ) : null}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
-              {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo ·{' '}
+              {formatAmount(parseFloat(subscription.monthlyEquivalentAmount))}/mo equiv. ·{' '}
               {subscription.project.name}
             </p>
           </div>
