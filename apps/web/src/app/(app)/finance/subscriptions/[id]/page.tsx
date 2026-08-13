@@ -15,6 +15,7 @@ import {
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
+import { getSubscriptionBillingValidationError } from '@/features/finance/utils/subscription-form-state';
 import {
   formatAmount,
   getSubscriptionStatus,
@@ -79,6 +80,7 @@ export default function SubscriptionDetailPage() {
     subscription?.baseMonthlyAmount,
     subscription?.billingDay,
     subscription?.billingFrequency,
+    subscription?.prepaidMonthCount,
     subscription?.partner?.id,
   ]);
 
@@ -103,6 +105,11 @@ export default function SubscriptionDetailPage() {
   const handleGeneralSave = useCallback(() => {
     if (!subscription || !generalDraft || !generalSnap) return;
     setGeneralError(null);
+    const billingError = getSubscriptionBillingValidationError(generalDraft);
+    if (billingError) {
+      setGeneralError(billingError);
+      return;
+    }
     const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
     if (Object.keys(patch).length === 0) return;
 

@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  CUSTOM_PREPAID_MONTH_MAX,
+  CUSTOM_PREPAID_MONTH_MIN,
   SUBSCRIPTION_BILLING_FREQUENCIES,
   SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
@@ -34,6 +36,7 @@ import {
   buildSubscriptionCreatePayload,
   buildSubscriptionUpdatePayload,
   EMPTY_SUBSCRIPTION_FORM,
+  getSubscriptionBillingValidationError,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
@@ -116,6 +119,7 @@ export function SubscriptionFormDialog({
 
   const parsedAmount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
   const parsedBillingDay = parseInt(form.billingDay, 10);
+  const billingValidationError = getSubscriptionBillingValidationError(form);
   const canSubmit =
     (mode === 'edit' || Boolean(form.productId)) &&
     Boolean(form.type) &&
@@ -124,7 +128,8 @@ export function SubscriptionFormDialog({
     parsedAmount > 0 &&
     Number.isFinite(parsedBillingDay) &&
     parsedBillingDay >= 1 &&
-    parsedBillingDay <= 28;
+    parsedBillingDay <= 28 &&
+    billingValidationError == null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,8 +250,34 @@ export function SubscriptionFormDialog({
             icon={<Repeat size={12} />}
             value={form.billingFrequency}
             options={SUBSCRIPTION_BILLING_FREQUENCIES}
-            onValueChange={(billingFrequency) => setForm({ ...form, billingFrequency })}
+            onValueChange={(billingFrequency) =>
+              setForm({
+                ...form,
+                billingFrequency,
+                prepaidMonthCount: billingFrequency === 'CUSTOM' ? form.prepaidMonthCount : '',
+              })
+            }
           />
+
+          {form.billingFrequency === 'CUSTOM' ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="sub-prepaid-months">
+                Prepaid months ({CUSTOM_PREPAID_MONTH_MIN}–{CUSTOM_PREPAID_MONTH_MAX})
+              </Label>
+              <Input
+                id="sub-prepaid-months"
+                type="number"
+                min={CUSTOM_PREPAID_MONTH_MIN}
+                max={CUSTOM_PREPAID_MONTH_MAX}
+                value={form.prepaidMonthCount}
+                onChange={(e) => setForm({ ...form, prepaidMonthCount: e.target.value })}
+                required
+              />
+              {billingValidationError ? (
+                <p className="text-destructive text-sm">{billingValidationError}</p>
+              ) : null}
+            </div>
+          ) : null}
 
           <DetailSheetFieldSegmented
             label="Tax status"

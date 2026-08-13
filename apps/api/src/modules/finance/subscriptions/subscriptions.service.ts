@@ -32,6 +32,7 @@ interface CreateSubscriptionDto {
   amount?: number;
   billingDay: number;
   billingFrequency?: string;
+  prepaidMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -53,6 +54,7 @@ interface UpdateSubscriptionDto {
   amount?: number;
   billingDay?: number;
   billingFrequency?: string;
+  prepaidMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -271,6 +273,7 @@ export class SubscriptionsService {
         type: data.type as SubscriptionTypeEnum,
         baseMonthlyAmount: billing.baseMonthlyAmount,
         billingFrequency: billing.billingFrequency,
+        prepaidMonthCount: billing.prepaidMonthCount,
         billingDay: data.billingDay,
         taxStatus:
           (data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set']) ?? 'TAX',

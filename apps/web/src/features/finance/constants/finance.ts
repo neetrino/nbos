@@ -84,6 +84,10 @@ export const SUBSCRIPTION_BILLING_FREQUENCIES = [
   { value: 'CUSTOM', label: 'Custom' },
 ] as const;
 
+/** Custom billing: prepaid coverage window (months). */
+export const CUSTOM_PREPAID_MONTH_MIN = 2;
+export const CUSTOM_PREPAID_MONTH_MAX = 60;
+
 /** Client WhatsApp payment reminder language (Subscription.reminderLanguage). */
 export const SUBSCRIPTION_REMINDER_LANGUAGES = [
   { value: 'HY', label: 'Armenian' },

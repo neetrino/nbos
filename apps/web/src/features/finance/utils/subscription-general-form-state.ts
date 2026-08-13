@@ -1,6 +1,7 @@
 import type { Subscription } from '@/lib/api/finance';
 import type { UpdateSubscriptionPayload } from '@/lib/api/subscriptions';
 import {
+  parsePrepaidMonthCount,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
@@ -35,6 +36,30 @@ function dateIsoOrNull(value: string): string | null {
   return new Date(trimmed).toISOString();
 }
 
+function applyBillingFrequencyPatch(
+  snap: SubscriptionGeneralDraft,
+  draft: SubscriptionGeneralDraft,
+  out: UpdateSubscriptionPayload,
+): void {
+  const frequencyChanged = draft.billingFrequency !== snap.billingFrequency;
+  const prepaidChanged = draft.prepaidMonthCount !== snap.prepaidMonthCount;
+
+  if (frequencyChanged) {
+    out.billingFrequency = draft.billingFrequency;
+    if (draft.billingFrequency === 'CUSTOM') {
+      const count = parsePrepaidMonthCount(draft.prepaidMonthCount);
+      if (count != null) out.prepaidMonthCount = count;
+    }
+    return;
+  }
+
+  if (draft.billingFrequency === 'CUSTOM' && prepaidChanged) {
+    out.billingFrequency = draft.billingFrequency;
+    const count = parsePrepaidMonthCount(draft.prepaidMonthCount);
+    if (count != null) out.prepaidMonthCount = count;
+  }
+}
+
 export function buildSubscriptionGeneralPatch(
   snap: SubscriptionGeneralDraft,
   draft: SubscriptionGeneralDraft,
@@ -47,9 +72,7 @@ export function buildSubscriptionGeneralPatch(
   const snapAmount = parseDraftAmount(snap.baseMonthlyAmount);
   if (amount != null && amount !== snapAmount) out.baseMonthlyAmount = amount;
 
-  if (draft.billingFrequency !== snap.billingFrequency) {
-    out.billingFrequency = draft.billingFrequency;
-  }
+  applyBillingFrequencyPatch(snap, draft, out);
 
   const billingDay = parseDraftBillingDay(draft.billingDay);
   const snapBillingDay = parseDraftBillingDay(snap.billingDay);

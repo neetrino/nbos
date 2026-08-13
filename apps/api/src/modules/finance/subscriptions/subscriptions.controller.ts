@@ -105,6 +105,7 @@ export class SubscriptionsController {
       amount?: number;
       billingDay: number;
       billingFrequency?: string;
+      prepaidMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
@@ -128,6 +129,7 @@ export class SubscriptionsController {
       amount?: number;
       billingDay?: number;
       billingFrequency?: string;
+      prepaidMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
