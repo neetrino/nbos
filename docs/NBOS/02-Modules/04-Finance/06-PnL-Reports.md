@@ -303,11 +303,12 @@ Order P&L нужен для:
 
 Показывает:
 
-- active MRR;
+- active MRR (`Subscription.monthlyEquivalentAmount` активных на snapshot date);
 - yearly/custom coverage;
-- new MRR;
+- new MRR (`billingStartDate` в периоде);
 - expansion / contraction;
-- churned MRR;
+- churned MRR — только `CANCELLED` (по `endDate` в периоде);
+- completed MRR — только `COMPLETED` (естественное истечение срока; отдельно от churn);
 - paid coverage by month.
 
 Источники:

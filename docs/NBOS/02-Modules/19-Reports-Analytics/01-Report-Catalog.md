@@ -105,7 +105,7 @@ Finance reports должны соответствовать Finance Core Archite
 
 - MRR Summary;
 - MRR Growth;
-- Churn;
+- Churn (`churnedMrr` from `CANCELLED`; `completedMrr` from `COMPLETED` is reported separately);
 - Subscription Payments by Month;
 - Upcoming Billing;
 - Subscription Coverage;

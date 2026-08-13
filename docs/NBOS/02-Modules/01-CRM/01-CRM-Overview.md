@@ -93,6 +93,8 @@ For stale logic and removal tracking see `06-CRM-Cleanup-Register.md`.
 
 ### Subscription Monthly (Ежемесячная подписка)
 
+- `Deal.amount` — цена **одного** периода (лейбл UI: «Amount / month»), не стоимость всего контракта
+- для `PRODUCT`/`EXTENSION` срок `subscriptionTermMonths` обязателен с SEND_OFFER; `Order.totalAmount = Deal.amount × subscriptionTermMonths`
 - 1-я оплата до начала работ является одновременно подтверждением заказа и первой оплаченной subscription-итерацией
 - Ежемесячные платежи во время разработки идут дальше по monthly cycle
 - После сдачи Product / Extension — переход на Maintenance с изменённой суммой

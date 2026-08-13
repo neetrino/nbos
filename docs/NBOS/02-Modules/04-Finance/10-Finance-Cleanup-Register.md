@@ -398,6 +398,8 @@ Examples:
 не переводит `ON_HOLD` invoice cards в `DELAYED`. Legacy **`InvoiceStatusEnum` / колонка `status` удалены**;
 `finance-status.utils.ts` и order rollup используют money layer для оплаты заказа.
 
+Срочная подписка: `FULLY_PAID` только когда платежи по **order-linked** invoice ≥ `Order.totalAmount`. Карточки биллинг-прогона пишут `subscriptionId` и не пишут `orderId` — заказ не видит последующие периоды. Это открытое решение (см. `00-Technical-Decisions-By-Module.md`), не план реализации.
+
 Remaining refactor:
 
 - finish expected incoming from official invoice/payment request fields;

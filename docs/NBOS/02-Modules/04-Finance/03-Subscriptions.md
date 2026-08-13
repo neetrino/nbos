@@ -80,9 +80,10 @@ Ownership rule (required):
 | `monthly_equivalent_amount` | `amount / coverage_month_count` — generated stored column в БД; **не редактируется вручную**; только MRR и аналитика                                  |
 | `currency`                  | Валюта                                                                                                                                                |
 | `billing_start_date`        | Дата старта биллинга                                                                                                                                  |
-| `billing_frequency`         | Monthly / Yearly / Custom                                                                                                                             |
+| `billing_frequency`         | Monthly / Yearly / Custom. **Обязательно при создании** (нет тихого default `MONTHLY`): `amount` — сумма периода и без частоты бессмысленна           |
 | `billing_day`               | День месяца для выставления карточек, если применяется месячная логика                                                                                |
-| `end_date`                  | Дата окончания (null = бессрочная)                                                                                                                    |
+| `end_date`                  | Дата окончания (календарная; null = не задана). Не является счётчиком срока                                                                           |
+| `term_months`               | Срок в **покрытых месяцах** (`Int?`, 1–120). `null` = бессрочная. Пропущенный (пауза) месяц срок **не** расходует                                     |
 | `tax_status`                | Tax / Free                                                                                                                                            |
 | `notifications_enabled`     | Разрешены ли автоматические уведомления по карточкам оплат                                                                                            |
 | `reminder_language`         | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                                                                         |
@@ -103,7 +104,7 @@ Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days
 
 ### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
 
-**Инвариант:** `amount` — единственный источник истины для денег. Сумма на `Invoice Card` = `amount` напрямую, без умножения. `monthly_equivalent_amount` — только для MRR и сравнения подписок разной частоты; **никогда** не использовать для расчёта счёта и не вводить вручную.
+**Инвариант:** `amount` — единственный источник истины для денег. Сумма на `Invoice Card` = `amount` напрямую, без умножения. `monthly_equivalent_amount` — только для MRR и сравнения подписок разной частоты; **никогда** не использовать для расчёта счёта, не вводить вручную и **не умножать обратно**, чтобы восстановить сумму контракта.
 
 | Поле                        | Кто задаёт                               | Назначение                                              |
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------- |
@@ -144,6 +145,7 @@ Flow:
 Important rules:
 
 - idempotency key for auto-create is **`productId` + subscription `type`** (not projectId + type);
+- `termMonths` копируется с `Deal.subscriptionTermMonths` (`null` = бессрочно); `coverageMonthCount = 1`;
 - the first paid invoice is not only the project start confirmation;
 - it is also the **first paid month of the subscription**;
 - the month of that first invoice must be visible as paid in Subscription Board;
@@ -192,6 +194,8 @@ Important rules:
 У подписки должна быть поддержка не только ежемесячной, но и другой частоты оплаты.
 
 ### Частота оплаты
+
+При **создании** подписки `billing_frequency` обязателен: без периода `amount` нельзя интерпретировать. На update частота не подставляется сама — её меняют явно.
 
 | Значение  | Смысл                           | `coverage_month_count`  |
 | --------- | ------------------------------- | ----------------------- |
@@ -251,9 +255,32 @@ Important rules:
 
 Ежедневный прогон выбирает активные подписки по `billing_day`:
 
+- в прогон попадают только подписки со статусом `Active` (On Hold / Cancelled / Completed не биллятся);
 - подписка попадает в прогон, если сегодня — её `billing_day`, либо последний день месяца, когда `billing_day` = 29–31, а в месяце меньше дней;
+- порядок на одну подписку: пауза late-delivery → проверка срока (`term_months`) → дедуп покрытия → создание карточки;
+- если число **различных покрытых месяцев** по invoice type `SUBSCRIPTION` уже ≥ `term_months`, биллинг **не** создаёт карточку и переводит подписку в `Completed` (при пустом `end_date` ставит конец последнего покрытого месяца);
+- месяц без карточки (On Hold, late-delivery pause) **не** входит в покрытие и срок не расходует — контракт сдвигается вправо;
 - для целевого месяца `YYYY-MM` подписка **пропускается**, если у неё уже есть карточка оплаты, покрывающая этот месяц: месяц попадает в полуинтервал `[coverage_start_month, coverage_start_month + coverage_month_count)`;
 - наличие покрытия блокирует повторное выставление **независимо от статуса оплаты** карточки; факт оплаты (`Paid`) используется отдельно — для Subscription Grid.
+
+---
+
+## Срок подписки (`term_months`)
+
+`term_months` — согласованная длина контракта в **покрытых календарных месяцах**, не в календарной дате окончания. `null` = бессрочная: биллинг сам в `Completed` не переводит.
+
+Счётчик срока = число **уникальных** месяцев в окнах покрытия invoice `type = SUBSCRIPTION` (пересечения не удваиваются). Пауза биллинга не создаёт invoice → месяц не покрыт → срок не тратится.
+
+Когда покрытые месяцы достигают `term_months`, биллинг перестаёт выставлять счета и статус становится `Completed` (терминальный).
+
+### Инварианты (create и update)
+
+Действуют, когда `term_months` задан (не `null`):
+
+- `coverage_month_count <= term_months`;
+- `term_months % coverage_month_count === 0` — срок делится на целые периоды биллинга, частичного периода не бывает.
+
+Примеры: срок 6 + Monthly — допустимо; срок 6 + Custom 4 — отказ; срок 12 + Yearly — допустимо. Диапазон `term_months`: целое 1–120.
 
 ---
 
@@ -302,6 +329,8 @@ Important rules:
 - **Изменение суммы** → выбор месяца, с которого действует новая сумма
 - **Итоговая строка** → помесячные суммы (ожидаемый доход)
 
+Прогноз (`FORECAST`) для **срочной** подписки ограничен оставшимися покрытыми месяцами: `term_months` минус число различных уже покрытых месяцев. Пропущенные (past / MISSED) месяцы срок не расходуют, поэтому прогноз может уйти правее наивной календарной даты конца. Бессрочные (`term_months` null) ограничиваются только `end_date`. Ячейки `Cancelled` / `Completed` без invoice — `N/A`.
+
 ### Summary Row (итоговые показатели)
 
 | Метрика                  | Описание                                                     |
@@ -323,8 +352,10 @@ Important rules:
 Каждый день система проверяет:
   └─ Есть ли активные подписки, у которых пора создать новую карточку оплаты?
      └─ Да → Для каждой такой подписки:
+        ├─ late-delivery pause? → пропуск (месяц не покрыт, срок не тратится)
+        ├─ покрытые месяцы уже = term_months? → статус Completed, без новой карточки
         ├─ проверить, нет ли уже карточки с покрытием целевого месяца
-        ├─ создать Invoice Card
+        ├─ создать Invoice Card (subscriptionId, без orderId)
         ├─ сумма = amount подписки (без умножения)
         ├─ tax_status = из подписки
         ├─ notifications_enabled = из подписки
@@ -388,8 +419,10 @@ Client Subscription Invoice Paid
 | **Pending**   | Подписка создана, billing_start_date можно менять, активный биллинг ещё не запущен |
 | **Active**    | Подписка активна и участвует в регулярном биллинге                                 |
 | **On Hold**   | Биллинг и обслуживание временно остановлены                                        |
-| **Cancelled** | Подписка прекращена досрочно                                                       |
-| **Completed** | Подписка завершилась штатно и больше не должна генерировать новые invoice          |
+| **Cancelled** | Подписка прекращена досрочно (churn)                                               |
+| **Completed** | Срок покрытых месяцев исчерпан или штатное завершение; новые invoice не создаются  |
+
+Ручные переходы: `Pending` → `Active` / `Cancelled`; `Active` → `On Hold` / `Cancelled` / `Completed`; `On Hold` → `Active` / `Cancelled` / `Completed`. `Cancelled` и `Completed` — терминальные. Биллинг ставит `Completed` только с `Active` (в прогон другие статусы не попадают).
 
 ### Процесс отмены
 
@@ -414,6 +447,8 @@ Client Subscription Invoice Paid
 | **Revenue Churn**      | Потерянный MRR / MRR на начало месяца × 100%           |
 | **Net MRR Change**     | New MRR + Expansion MRR − Churned MRR                  |
 | **Retention Rate**     | 100% − Churn Rate                                      |
+
+В отчёте MRR / Subscription Revenue **не смешивать** с churn: `CANCELLED` → `churnedMrr`; `COMPLETED` → отдельное `completedMrr` (естественное истечение срока). Оба считаются по `monthly_equivalent_amount` и `endDate` в периоде.
 
 ---
 
