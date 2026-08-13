@@ -16,6 +16,7 @@ describe('ProductsService', () => {
   };
   const partnerAccrualSubscription = {
     releaseHeldAccrualsAfterDelivery: vi.fn().mockResolvedValue(undefined),
+    cancelHeldAccrualsAfterLostDelivery: vi.fn().mockResolvedValue(undefined),
   };
 
   const auditService: Pick<AuditService, 'log'> = {
@@ -43,6 +44,7 @@ describe('ProductsService', () => {
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
     partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
+    partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
     checklistTemplates.assertStageInstancesCompleted.mockClear();
@@ -719,6 +721,50 @@ describe('ProductsService', () => {
       );
     });
 
+    it('releases held accruals when product reaches DONE through updateStatus, not complete', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      });
+      prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.updateStatus('p1', 'DONE', 'emp-audit');
+
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+    });
+
+    it('cancels held accruals when product reaches LOST through updateStatus', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
+      prisma.product.update.mockResolvedValue({ id: 'p1', status: 'LOST' });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.updateStatus('p1', 'LOST', 'emp-audit');
+
+      expect(partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+    });
+
     it('blocks CREATING → DEVELOPMENT when stage checklist is not complete', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
@@ -1037,6 +1083,28 @@ describe('ProductsService', () => {
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');
+    });
+
+    it('cancels held subscription accruals when product ends LOST via cancel', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'LOST',
+        deliveryResolution: 'CANCELLED',
+        cancellationReason: 'Scope cancelled',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.cancel('p1', { reason: 'Scope cancelled' }, 'emp-1');
+
+      expect(partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
     });
   });
 

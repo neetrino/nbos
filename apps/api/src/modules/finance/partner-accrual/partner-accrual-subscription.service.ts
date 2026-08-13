@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
+import { Decimal, PrismaClient } from '@nbos/database';
+import { partnerAccrualJournalKey } from '../../../common/lifecycle/finance-record-lifecycle-guards';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { computeInboundPartnerAccrualAmount } from './partner-accrual-classic.ops';
@@ -9,45 +10,14 @@ import {
   isDevelopmentSubscriptionType,
   shouldHoldSubscriptionAccrualUntilDelivery,
 } from './partner-accrual-subscription.ops';
+import {
+  loadPaidSubscriptionInvoice,
+  resolveEligiblePartnerOrder,
+  type InboundSubscriptionOrder,
+  type PaidSubscriptionInvoice,
+} from './partner-accrual-subscription.query';
 
-const referralTermsSelect = {
-  id: true,
-  partnerId: true,
-  partnerPercent: true,
-  dealType: true,
-  paymentType: true,
-} as const;
-
-const inboundSubscriptionOrderSelect = {
-  id: true,
-  projectId: true,
-  dealId: true,
-  productId: true,
-  extensionId: true,
-  paymentType: true,
-  deal: {
-    select: {
-      source: true,
-      sourcePartnerId: true,
-      partnerReferralTerms: { select: referralTermsSelect },
-    },
-  },
-  product: { select: { status: true } },
-  extension: { select: { status: true } },
-} satisfies Prisma.OrderSelect;
-
-type InboundSubscriptionOrder = Prisma.OrderGetPayload<{
-  select: typeof inboundSubscriptionOrderSelect;
-}>;
-
-type PaidSubscriptionInvoice = {
-  id: string;
-  companyId: string | null;
-  projectId: string;
-  orderId: string | null;
-  subscriptionId: string;
-  subscription: { partnerId: string | null; type: string } | null;
-};
+const HELD_ACCRUAL_LOST_JOURNAL_NOTE = 'Held subscription partner accrual cancelled: delivery lost';
 
 /**
  * PAR-02: inbound referral accrual per paid subscription invoice (cash received on this payment).
@@ -70,10 +40,10 @@ export class PartnerAccrualSubscriptionService {
     });
     if (dup) return;
 
-    const invoice = await this.loadPaidSubscriptionInvoice(input.invoiceId);
+    const invoice = await loadPaidSubscriptionInvoice(this.prisma, input.invoiceId);
     if (!invoice) return;
 
-    const order = await this.resolveEligiblePartnerOrder(invoice);
+    const order = await resolveEligiblePartnerOrder(this.prisma, invoice);
     if (!order) return;
 
     const payment = await this.prisma.payment.findUnique({
@@ -113,44 +83,30 @@ export class PartnerAccrualSubscriptionService {
     );
   }
 
-  private async loadPaidSubscriptionInvoice(
-    invoiceId: string,
-  ): Promise<PaidSubscriptionInvoice | null> {
-    const invoice = await this.prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      select: {
-        id: true,
-        moneyStatus: true,
-        type: true,
-        projectId: true,
-        orderId: true,
-        subscriptionId: true,
-        companyId: true,
-        subscription: { select: { partnerId: true, type: true } },
+  /** Cancel held subscription accruals. Idempotent via updateMany on ACCRUED. */
+  async cancelHeldAccrualsAfterLostDelivery(orderId: string): Promise<void> {
+    const where = heldSubscriptionAccrualWhere(orderId);
+    const held = await this.prisma.partnerAccrual.findMany({
+      where,
+      select: { id: true, amount: true },
+    });
+    if (held.length === 0) return;
+
+    const cancelled = await this.prisma.partnerAccrual.updateMany({
+      where,
+      data: { status: 'CANCELLED' },
+    });
+    if (cancelled.count === 0) return;
+
+    this.logger.log(
+      {
+        orderId,
+        cancelledCount: cancelled.count,
+        cancelledAmount: sumAccrualAmounts(held).toFixed(2),
       },
-    });
-    if (!invoice || invoice.moneyStatus !== 'PAID') return null;
-    if (invoice.type !== 'SUBSCRIPTION' || !invoice.subscriptionId) return null;
-    if (!invoice.projectId) return null;
-    return { ...invoice, projectId: invoice.projectId, subscriptionId: invoice.subscriptionId };
-  }
-
-  private async resolveEligiblePartnerOrder(
-    invoice: PaidSubscriptionInvoice,
-  ): Promise<InboundSubscriptionOrder | null> {
-    const order = await this.resolveOrderForSubscriptionPartnerInvoice({
-      projectId: invoice.projectId,
-      orderId: invoice.orderId,
-      subscriptionPartnerId: invoice.subscription?.partnerId ?? null,
-    });
-    if (!order?.dealId || !order.deal) return null;
-    if (order.paymentType !== 'SUBSCRIPTION') return null;
-    if (order.deal.source !== 'PARTNER' || !order.deal.sourcePartnerId) return null;
-
-    const terms = order.deal.partnerReferralTerms;
-    if (!terms || terms.partnerId !== order.deal.sourcePartnerId) return null;
-    if (terms.paymentType && terms.paymentType !== order.paymentType) return null;
-    return order;
+      'Cancelled held subscription partner accruals after lost delivery',
+    );
+    await this.reverseCancelledAccrualJournal(held.map((row) => row.id));
   }
 
   private resolveCreateStatus(
@@ -266,34 +222,16 @@ export class PartnerAccrualSubscriptionService {
     );
   }
 
-  private async resolveOrderForSubscriptionPartnerInvoice(input: {
-    projectId: string;
-    orderId: string | null;
-    subscriptionPartnerId: string | null;
-  }): Promise<InboundSubscriptionOrder | null> {
-    if (input.orderId) {
-      return this.prisma.order.findUnique({
-        where: { id: input.orderId },
-        select: inboundSubscriptionOrderSelect,
-      });
+  private async reverseCancelledAccrualJournal(accrualIds: string[]): Promise<void> {
+    for (const id of accrualIds) {
+      await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+        partnerAccrualJournalKey(id),
+        HELD_ACCRUAL_LOST_JOURNAL_NOTE,
+      );
     }
-
-    const dealPartnerFilter = input.subscriptionPartnerId
-      ? { sourcePartnerId: input.subscriptionPartnerId }
-      : { sourcePartnerId: { not: null } };
-
-    return this.prisma.order.findFirst({
-      where: {
-        projectId: input.projectId,
-        paymentType: 'SUBSCRIPTION',
-        deal: {
-          source: 'PARTNER',
-          ...dealPartnerFilter,
-          partnerReferralTerms: { isNot: null },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-      select: inboundSubscriptionOrderSelect,
-    });
   }
+}
+
+function sumAccrualAmounts(rows: Array<{ amount: Decimal }>): Decimal {
+  return rows.reduce((sum, row) => sum.add(row.amount), new Decimal(0));
 }

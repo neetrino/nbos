@@ -72,7 +72,8 @@ Subscription invoice paid
 
 Начисление по-прежнему одна строка на реально полученный платёж. Меняется только начальный статус:
 
-- `DEV_ONLY` и `DEV_AND_MAINTENANCE` — если связанный product/extension ещё не сдан, accrual создаётся как `ACCRUED` (`eligibleAt` пустой) и не попадает в payout batch. После сдачи статус меняется на `ELIGIBLE`. Журнал при release не пишется: обязательство уже учтено в момент платежа.
+- `DEV_ONLY` и `DEV_AND_MAINTENANCE` — если связанный product/extension ещё не сдан, accrual создаётся как `ACCRUED` (`eligibleAt` пустой) и не попадает в payout batch. После сдачи (`DONE` через complete, updateStatus или любой другой переход в DONE) статус меняется на `ELIGIBLE`. Журнал при release не пишется: обязательство уже учтено в момент платежа.
+- Если носитель закрывается как `LOST` (cancel или status → LOST), held-строки того order (`ACCRUED` + `subscriptionId` не null) становятся `CANCELLED`. `ELIGIBLE` / `IN_BATCH` / `PAID` не трогаем — обещанные или выплаченные деньги только вручную. Повторный cancel — no-op (`updateMany`). Журнальная строка `PARTNER_ACCRUAL` реверсится через тот же `reverseJournalLineByIdempotencyKey`, что invoice/expense cancel (`status: REVERSED`).
 - `MAINTENANCE_ONLY` и `PARTNER_SERVICE` — сразу `ELIGIBLE`: у них нет milestone сдачи.
 - Если у order нет ни `productId`, ни `extensionId`, держать нельзя (нечему стать DONE) — создаём `ELIGIBLE`.
 
@@ -163,6 +164,7 @@ Payout Batch Approved
 | Classic payout платится после сдачи и полной оплаты (полученная сумма ≥ `Order.totalAmount`) | Accepted |
 | Subscription payout использует payout_rule на уровне subscription / project                  | Accepted |
 | DEV-подписки: accrual `ACCRUED` до сдачи, затем `ELIGIBLE`                                   | Accepted |
+| Held DEV-accrual: `LOST` носителя → `CANCELLED` + reverse journal                            | Accepted |
 | Partner Balance нужен для контроля unpaid accruals                                           | Accepted |
 | Payout Batch объединяет несколько accruals в одну выплату                                    | Accepted |
 | Expense Card является payment layer, а не source of truth по начислениям                     | Accepted |
