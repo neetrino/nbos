@@ -237,7 +237,7 @@ Lifecycle board работает на уровне `Product` и `Extension`. У 
 - delivery lifecycle заканчивается на `Done` или `Cancelled`;
 - maintenance не продолжает эту же board-stage цепочку;
 - признак maintenance — `Subscription` (`PENDING` / `ACTIVE`, типы `MAINTENANCE_ONLY` или `DEV_AND_MAINTENANCE`); ручного флага на `Product` нет;
-- исключения (внутренний продукт, спецпроект, бесплатное ведение) = та же подписка с `baseMonthlyAmount = 0`;
+- исключения (внутренний продукт, спецпроект, бесплатное ведение) = та же подписка с `amount = 0`;
 - финансовая активация и billing управляются Finance / Subscription Board.
 
 ---

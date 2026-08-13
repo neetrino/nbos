@@ -252,7 +252,7 @@ Hub views считаются из детей.
 
 `PENDING` = обслуживание продано, но ещё не стартовало (создаётся при Deal Won для `Deal.type = MAINTENANCE`). `ON_HOLD` / `CANCELLED` / `COMPLETED` = maintenance отключён, работы не ведутся.
 
-Исключения (внутренний продукт, спецпроект, бесплатное ведение) оформляются той же подпиской с `baseMonthlyAmount = 0` и `type = MAINTENANCE_ONLY`. Поля `maintenanceMode` на Product и сущности `Maintenance` в БД нет и не будет: Maintenance — **view**, не сущность.
+Исключения (внутренний продукт, спецпроект, бесплатное ведение) оформляются той же подпиской с `amount = 0` и `type = MAINTENANCE_ONLY`. Поля `maintenanceMode` на Product и сущности `Maintenance` в БД нет и не будет: Maintenance — **view**, не сущность.
 
 ### Development view
 

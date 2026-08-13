@@ -348,24 +348,26 @@ Contact (человек)
 
 Повторяющееся коммерческое соглашение: клиент платит фиксированную сумму регулярно.
 
-| Поле                  | Тип          | Описание                                                                       |
-| --------------------- | ------------ | ------------------------------------------------------------------------------ |
-| id                    | UUID         | Уникальный идентификатор                                                       |
-| product_id            | FK → Product | **Обязательный** продукт-owner                                                 |
-| project_id            | FK → Project | Denormalized = Product.projectId (валидируется при create/update)              |
-| type                  | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
-| base_monthly_amount   | Decimal      | Базовая стоимость одного месяца                                                |
-| currency              | Enum         | AMD                                                                            |
-| tax_status            | Enum         | Tax, Free                                                                      |
-| notifications_enabled | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                     |
-| billing_frequency     | Enum         | Monthly, Yearly, Custom                                                        |
-| billing_day           | Integer      | День месяца для биллинга (1–28), если применяется месячная логика              |
-| billing_start_date    | Date         | Дата старта биллинга                                                           |
-| end_date              | Date         | Дата окончания (null = бессрочно)                                              |
-| status                | Enum         | Pending, Active, On Hold, Cancelled, Completed                                 |
-| partner_id            | FK → Partner | Партнёр (если partner service)                                                 |
-| partner_percent       | Decimal      | % партнёра                                                                     |
-| notes                 | Text         | Заметки                                                                        |
+| Поле                      | Тип          | Описание                                                                       |
+| ------------------------- | ------------ | ------------------------------------------------------------------------------ |
+| id                        | UUID         | Уникальный идентификатор                                                       |
+| product_id                | FK → Product | **Обязательный** продукт-owner                                                 |
+| project_id                | FK → Project | Denormalized = Product.projectId (валидируется при create/update)              |
+| type                      | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
+| amount                    | Decimal      | Сумма за один период биллинга (единственное вводимое денежное поле)            |
+| coverage_month_count      | Integer      | Длина периода в месяцах (1 / 12 / 2–60 для Custom)                             |
+| monthly_equivalent_amount | Decimal      | Generated: `amount / coverage_month_count`; только MRR и аналитика             |
+| currency                  | Enum         | AMD                                                                            |
+| tax_status                | Enum         | Tax, Free                                                                      |
+| notifications_enabled     | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                     |
+| billing_frequency         | Enum         | Monthly, Yearly, Custom                                                        |
+| billing_day               | Integer      | День месяца для биллинга (1–28), если применяется месячная логика              |
+| billing_start_date        | Date         | Дата старта биллинга                                                           |
+| end_date                  | Date         | Дата окончания (null = бессрочно)                                              |
+| status                    | Enum         | Pending, Active, On Hold, Cancelled, Completed                                 |
+| partner_id                | FK → Partner | Партнёр (если partner service)                                                 |
+| partner_percent           | Decimal      | % партнёра                                                                     |
+| notes                     | Text         | Заметки                                                                        |
 
 **Связи:**
 
