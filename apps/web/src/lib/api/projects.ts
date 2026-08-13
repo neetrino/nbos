@@ -58,6 +58,7 @@ export interface ProjectProductSummary {
   order?: {
     id: string;
     status?: string;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
     deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
@@ -99,6 +100,7 @@ export interface ProjectExtensionSummary {
   order?: {
     id: string;
     status?: string | null;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
     deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;

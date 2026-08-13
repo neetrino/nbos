@@ -224,6 +224,7 @@ export class ProductsService {
               id: true,
               code: true,
               status: true,
+              paymentType: true,
               invoices: { select: { moneyStatus: true } },
             },
           },
@@ -500,6 +501,7 @@ export class ProductsService {
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.applyHeldAccrualDeliveryOutcome(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
       await this.audit.log({
         entityType: 'PRODUCT',
@@ -535,6 +537,7 @@ export class ProductsService {
       include: { project: { select: { id: true, code: true, name: true } } },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.applyHeldAccrualDeliveryOutcome(id, target);
     await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
@@ -595,6 +598,7 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.applyHeldAccrualDeliveryOutcome(id, 'LOST');
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -635,8 +639,8 @@ export class ProductsService {
     if (linkedOrder) {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
     }
+    await this.applyHeldAccrualDeliveryOutcome(id, target);
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -738,6 +742,23 @@ export class ProductsService {
         }`,
       );
     }
+  }
+
+  private async applyHeldAccrualDeliveryOutcome(
+    productId: string,
+    targetStatus: string,
+  ): Promise<void> {
+    if (targetStatus !== 'DONE' && targetStatus !== 'LOST') return;
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { productId },
+      select: { id: true },
+    });
+    if (!linkedOrder) return;
+    if (targetStatus === 'DONE') {
+      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
+      return;
+    }
+    await this.partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery(linkedOrder.id);
   }
 
   private async loadLinkedProductSellerId(productId: string): Promise<string | null> {

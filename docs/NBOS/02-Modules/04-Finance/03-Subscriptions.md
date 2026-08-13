@@ -146,16 +146,17 @@ Important rules:
 
 - idempotency key for auto-create is **`productId` + subscription `type`** (not projectId + type);
 - `termMonths` копируется с `Deal.subscriptionTermMonths` (`null` = бессрочно); `coverageMonthCount = 1`;
-- the first paid invoice is not only the project start confirmation;
-- it is also the **first paid month of the subscription**;
-- the month of that first invoice must be visible as paid in Subscription Board;
-- the next payment is due after the already paid coverage period ends.
+- the first paid invoice confirms the project start;
+- it is a deal / order invoice, **not** a subscription invoice, so its month is **not** painted on the board: the grid paints only `SUBSCRIPTION` invoices carrying `coverage_start_month`;
+- subscription coverage starts from `billingStartDate` and is painted from the invoices billing generates.
+
+Open question, not implemented: whether the month already covered by the CRM deposit should count as the first paid subscription month. Today it does not, so a `billingStartDate` inside that month yields a second invoice for the same month.
 
 Example:
 
 - first invoice paid on `15 March`
-- March is shown as paid in the subscription row
-- next billing cycle is `15 April`
+- March is not painted from that invoice
+- with `billingStartDate = 15 March` the subscription invoices March itself, next cycle `15 April`
 
 ### Route B: `Deal Type = MAINTENANCE`
 
@@ -445,7 +446,7 @@ Client Subscription Invoice Paid
 | ---------------------- | ------------------------------------------------------ |
 | **Monthly Churn Rate** | Отменённые подписки / Активные на начало месяца × 100% |
 | **Revenue Churn**      | Потерянный MRR / MRR на начало месяца × 100%           |
-| **Net MRR Change**     | New MRR + Expansion MRR − Churned MRR                  |
+| **Net MRR Change**     | New MRR − Churned MRR − Completed MRR                  |
 | **Retention Rate**     | 100% − Churn Rate                                      |
 
 В отчёте MRR / Subscription Revenue **не смешивать** с churn: `CANCELLED` → `churnedMrr`; `COMPLETED` → отдельное `completedMrr` (естественное истечение срока). Оба считаются по `monthly_equivalent_amount` и `endDate` в периоде.

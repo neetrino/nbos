@@ -339,6 +339,11 @@ Blocks on the first screen:
 
 Карточка уходит в `Closed` как успешно закрытая.
 
+Финансовый close-gate:
+
+- classic-заказ (`paymentType = CLASSIC`) должен быть `FULLY_PAID` или `CLOSED`, и не должно быть outstanding invoice;
+- subscription-заказ (`paymentType = SUBSCRIPTION`) не требует полной оплаты контракта — достаточно, что нет outstanding invoice. Разработка по подписке сдаётся в середине срока, оставшиеся периоды оплачиваются уже за поставленный продукт.
+
 ### 4.6. Cancelled
 
 Неуспешное закрытие delivery.

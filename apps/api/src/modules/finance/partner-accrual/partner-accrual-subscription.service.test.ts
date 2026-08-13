@@ -7,7 +7,10 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 
 describe('PartnerAccrualSubscriptionService', () => {
   let prisma: MockPrisma;
-  const operationalJournal = { appendPartnerAccrualLine: vi.fn().mockResolvedValue(undefined) };
+  const operationalJournal = {
+    appendPartnerAccrualLine: vi.fn().mockResolvedValue(undefined),
+    reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
+  };
   let service: PartnerAccrualSubscriptionService;
 
   const partnerDeal = {
@@ -72,6 +75,8 @@ describe('PartnerAccrualSubscriptionService', () => {
     prisma = createMockPrisma();
     operationalJournal.appendPartnerAccrualLine.mockReset();
     operationalJournal.appendPartnerAccrualLine.mockResolvedValue(undefined);
+    operationalJournal.reverseJournalLineByIdempotencyKey.mockReset();
+    operationalJournal.reverseJournalLineByIdempotencyKey.mockResolvedValue(undefined);
     service = new PartnerAccrualSubscriptionService(prisma as never, operationalJournal as never);
   });
 
@@ -322,5 +327,88 @@ describe('PartnerAccrualSubscriptionService', () => {
     await service.releaseHeldAccrualsAfterDelivery('ord1');
 
     expect(operationalJournal.appendPartnerAccrualLine).not.toHaveBeenCalled();
+  });
+
+  it('cancels only held ACCRUED subscription rows of that order', async () => {
+    const logSpy = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    prisma.partnerAccrual.findMany.mockResolvedValue([
+      { id: 'pa-held', amount: new Decimal('80.00') },
+    ]);
+    prisma.partnerAccrual.updateMany.mockResolvedValue({ count: 1 });
+
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+
+    expect(prisma.partnerAccrual.updateMany).toHaveBeenCalledWith({
+      where: heldSubscriptionAccrualWhere('ord1'),
+      data: { status: 'CANCELLED' },
+    });
+    expect(heldSubscriptionAccrualWhere('ord1')).toEqual({
+      orderId: 'ord1',
+      status: 'ACCRUED',
+      subscriptionId: { not: null },
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: 'ord1',
+        cancelledCount: 1,
+        cancelledAmount: '80.00',
+      }),
+      expect.stringContaining('Cancelled held'),
+    );
+    logSpy.mockRestore();
+  });
+
+  it('cancellation leaves ELIGIBLE, IN_BATCH and PAID rows untouched', async () => {
+    prisma.partnerAccrual.findMany.mockResolvedValue([
+      { id: 'pa-held', amount: new Decimal('10.00') },
+    ]);
+    prisma.partnerAccrual.updateMany.mockResolvedValue({ count: 1 });
+
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+
+    expect(prisma.partnerAccrual.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { orderId: 'ord1', status: 'ACCRUED', subscriptionId: { not: null } },
+      }),
+    );
+  });
+
+  it('cancellation called twice updates nothing the second time', async () => {
+    prisma.partnerAccrual.findMany
+      .mockResolvedValueOnce([{ id: 'pa-held', amount: new Decimal('40.00') }])
+      .mockResolvedValueOnce([]);
+    prisma.partnerAccrual.updateMany.mockResolvedValueOnce({ count: 1 });
+
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+
+    expect(prisma.partnerAccrual.updateMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('a LOST product with no held accruals performs no write and logs nothing', async () => {
+    const logSpy = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    prisma.partnerAccrual.findMany.mockResolvedValue([]);
+
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+
+    expect(prisma.partnerAccrual.updateMany).not.toHaveBeenCalled();
+    expect(operationalJournal.reverseJournalLineByIdempotencyKey).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalled();
+    logSpy.mockRestore();
+  });
+
+  it('reverses the operational journal once per cancelled held accrual', async () => {
+    prisma.partnerAccrual.findMany.mockResolvedValue([
+      { id: 'pa-held', amount: new Decimal('25.00') },
+    ]);
+    prisma.partnerAccrual.updateMany.mockResolvedValue({ count: 1 });
+
+    await service.cancelHeldAccrualsAfterLostDelivery('ord1');
+
+    expect(operationalJournal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledTimes(1);
+    expect(operationalJournal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledWith(
+      'partner-accrual:pa-held',
+      expect.stringContaining('cancelled'),
+    );
   });
 });

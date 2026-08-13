@@ -1,4 +1,5 @@
 import type { StageGateError } from '../stage-gates/types';
+import { isOrderPaymentGateSatisfied } from './order-payment-gate';
 
 export const EXTENSION_ALLOWED_TRANSITIONS: Record<string, string[]> = {
   NEW: ['DEVELOPMENT', 'LOST'],
@@ -16,6 +17,7 @@ export interface ExtensionStageGateInput {
   order?: {
     id: string;
     status?: string | null;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
   } | null;
   tasks?: Array<{ status: string }>;
@@ -84,11 +86,11 @@ function isClosedTask(status: string): boolean {
 }
 
 function buildOpenOrderErrors(order: ExtensionStageGateInput['order']): StageGateError[] {
-  if (!order?.status || ['FULLY_PAID', 'CLOSED'].includes(order.status)) return [];
+  if (isOrderPaymentGateSatisfied(order)) return [];
   return [
     {
       field: 'finance',
-      message: `Order ${order.status} must be fully paid or closed before Extension Done.`,
+      message: `Order ${order?.status} must be fully paid or closed before Extension Done.`,
     },
   ];
 }

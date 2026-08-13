@@ -1,14 +1,11 @@
 'use client';
 
 import { CalendarDays } from 'lucide-react';
+import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { formatAmount } from '../constants/dealPipeline';
 import { deriveDealSubscriptionContractTotal } from '@/features/crm/utils/deal-subscription-contract-total';
-import {
-  DEAL_SUBSCRIPTION_TERM_MONTHS_MAX,
-  DEAL_SUBSCRIPTION_TERM_MONTHS_MIN,
-  DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS,
-} from '@/features/crm/constants/deal-subscription-term';
+import { DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS } from '@/features/crm/constants/deal-subscription-term';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
@@ -23,7 +20,7 @@ function parseTermMonthsInput(value: string): number | null {
   if (!value.trim()) return null;
   const parsed = Number(value);
   if (!Number.isInteger(parsed)) return null;
-  if (parsed < DEAL_SUBSCRIPTION_TERM_MONTHS_MIN || parsed > DEAL_SUBSCRIPTION_TERM_MONTHS_MAX) {
+  if (parsed < SUBSCRIPTION_TERM_MONTHS_MIN || parsed > SUBSCRIPTION_TERM_MONTHS_MAX) {
     return null;
   }
   return parsed;
@@ -65,10 +62,10 @@ export function DealSubscriptionTermField({
       />
       <InlineField
         variant="controlled"
-        label={`Subscription term (${DEAL_SUBSCRIPTION_TERM_MONTHS_MIN}–${DEAL_SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
+        label={`Subscription term (${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
         type="number"
         value={draft.subscriptionTermMonths ?? ''}
-        placeholder={`${DEAL_SUBSCRIPTION_TERM_MONTHS_MIN}–${DEAL_SUBSCRIPTION_TERM_MONTHS_MAX}`}
+        placeholder={`${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX}`}
         icon={<CalendarDays size={12} />}
         disabled={disabled}
         className={gateClass}
