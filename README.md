@@ -58,5 +58,5 @@ Template-ի կանոնները թարմացվում են։ Գոյություն 
 Պրոյեկտ ստեղծելուց հետո. AI-ն (onboarding 3.1.1) — prettier, vitest, husky, commitlint, CI workflow. Մշակողը. Branch Protection (`main`), Secret Protection, Dependabot npm։ Մանրամասներ — `docs/QUALITY_AUTOMATION_PLAN.md`։
 
 ---
-
+#
 [MIT](LICENSE) — ազատ օգտագործում և հարմարեցում։
