@@ -7,7 +7,7 @@ import {
 const MONTHLY_COVERAGE_MONTHS = 1;
 const YEARLY_COVERAGE_MONTHS = 12;
 
-export function resolveBillingCoverageMonths(
+function resolveBillingCoverageMonths(
   billingFrequency: string,
   coverageMonthCount: string,
 ): number {
@@ -37,7 +37,7 @@ export function computePeriodAmountFromMonthlyEquivalent(
   return monthlyEquivalent * months;
 }
 
-export function formatProposedPeriodAmount(
+function formatProposedPeriodAmount(
   monthlyEquivalent: number,
   billingFrequency: string,
   coverageMonthCount: string,

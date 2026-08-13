@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 
 /** Minimum covered months for a fixed-term deal subscription. */
-export const DEAL_SUBSCRIPTION_TERM_MONTHS_MIN = 1;
+const DEAL_SUBSCRIPTION_TERM_MONTHS_MIN = 1;
 /** Maximum covered months for a fixed-term deal subscription. */
-export const DEAL_SUBSCRIPTION_TERM_MONTHS_MAX = 120;
+const DEAL_SUBSCRIPTION_TERM_MONTHS_MAX = 120;
 
 /**
  * Validates optional `subscriptionTermMonths` on deal create/update.

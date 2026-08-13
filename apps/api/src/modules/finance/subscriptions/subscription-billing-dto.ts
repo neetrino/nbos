@@ -19,7 +19,7 @@ export interface ResolvedSubscriptionBillingInput {
   notificationsEnabled: boolean;
 }
 
-export function parseBillingFrequency(raw: string): SubscriptionBillingFrequencyEnum {
+function parseBillingFrequency(raw: string): SubscriptionBillingFrequencyEnum {
   const upper = raw.trim().toUpperCase();
   if (!upper) {
     throw new BadRequestException('billingFrequency is required');
