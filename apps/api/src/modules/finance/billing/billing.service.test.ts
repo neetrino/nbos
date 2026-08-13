@@ -528,6 +528,101 @@ describe('BillingService', () => {
       expect(result.completedTerm).toEqual([]);
       expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
+
+    it('does not generate a second invoice for the month already covered by a linked deal deposit', async () => {
+      const today = new Date(2026, 2, 15);
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ termMonths: 6 })]);
+      prisma.invoice.findMany.mockResolvedValue([
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 1,
+          createdAt: new Date(2026, 2, 15),
+        }),
+      ]);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(0);
+      expect(result.completedTerm).toEqual([]);
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    it('a 6-month term whose linked deposit month is counted completes after five generated invoices (six paid periods total)', async () => {
+      const subscription = mockBillableSubscription({ termMonths: 6, billingDay: 15 });
+      const covered = [
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 1,
+          createdAt: new Date(2026, 2, 15),
+        }),
+      ];
+      prisma.subscription.findMany.mockResolvedValue([subscription]);
+      prisma.invoice.findMany.mockImplementation(() => Promise.resolve([...covered]));
+      prisma.subscription.update.mockResolvedValue({});
+
+      const billingRuns = [
+        { date: new Date(2026, 2, 15), monthKey: '2026-03' },
+        { date: new Date(2026, 3, 15), monthKey: '2026-04' },
+        { date: new Date(2026, 4, 15), monthKey: '2026-05' },
+        { date: new Date(2026, 5, 15), monthKey: '2026-06' },
+        { date: new Date(2026, 6, 15), monthKey: '2026-07' },
+        { date: new Date(2026, 7, 15), monthKey: '2026-08' },
+        { date: new Date(2026, 8, 15), monthKey: '2026-09' },
+      ];
+
+      let generatedTotal = 0;
+      for (const [index, run] of billingRuns.entries()) {
+        setupInvoiceCodeGeneration(prisma);
+        const result = await service.runMonthlyBilling(run.date);
+        if (result.generatedInvoices === 1) {
+          generatedTotal += 1;
+          covered.push(
+            mockCoverageInvoiceRow({
+              coverageStartMonth: run.monthKey,
+              coverageMonthCount: 1,
+              createdAt: run.date,
+            }),
+          );
+        }
+        if (index === billingRuns.length - 1) {
+          expect(result.generatedInvoices).toBe(0);
+          expect(result.completedTerm).toEqual([
+            { subscriptionCode: 'SUB-2026-0001', projectCode: 'P-2026-0001' },
+          ]);
+        }
+      }
+
+      expect(generatedTotal).toBe(5);
+      expect(covered).toHaveLength(6);
+    });
+
+    it('open-ended subscriptions still bill the next uncovered month after a linked deposit', async () => {
+      const today = new Date(2026, 3, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({ termMonths: null }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([
+        mockCoverageInvoiceRow({
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 1,
+          createdAt: new Date(2026, 2, 15),
+        }),
+      ]);
+      setupInvoiceCodeGeneration(prisma);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(1);
+      expect(result.completedTerm).toEqual([]);
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-04',
+            coverageMonthCount: 1,
+          }),
+        }),
+      );
+    });
   });
 
   describe('runMonthlyExpenses', () => {

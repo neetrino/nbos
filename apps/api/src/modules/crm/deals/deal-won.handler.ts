@@ -8,6 +8,8 @@ import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.t
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
+import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
+import { linkDealDepositInvoiceToSubscription } from './link-deal-deposit-invoice';
 
 interface WonDealData {
   id: string;
@@ -39,11 +41,21 @@ interface WonDealData {
   marketingActivityId: string | null;
   orders?: Array<{
     invoices?: Array<{
+      id?: string;
       moneyStatus: string;
       amount: unknown;
       paidDate?: Date | null;
+      subscriptionId?: string | null;
     }>;
   }>;
+}
+
+interface FirstPaidDealInvoice {
+  id?: string;
+  moneyStatus: string;
+  amount: unknown;
+  paidDate?: Date | null;
+  subscriptionId?: string | null;
 }
 
 interface ProductWonResult {
@@ -370,22 +382,45 @@ export class DealWonHandler {
     });
     if (existing) return;
 
+    await this.createActiveProductSubscription(deal, projectId, productId, firstPaidInvoice);
+  }
+
+  private async createActiveProductSubscription(
+    deal: WonDealData,
+    projectId: string,
+    productId: string,
+    firstPaidInvoice: FirstPaidDealInvoice,
+  ): Promise<void> {
+    const termMonths = deal.subscriptionTermMonths ?? null;
+    const subscriptionType = termMonths != null ? 'DEV_ONLY' : 'DEV_AND_MAINTENANCE';
     const billingStartDate = firstPaidInvoice.paidDate ?? new Date();
-    await this.prisma.subscription.create({
+    const amount = Number(deal.amount ?? firstPaidInvoice.amount);
+    const created = await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
         projectId,
         productId,
         type: subscriptionType,
-        amount: Number(deal.amount ?? firstPaidInvoice.amount),
+        amount,
         billingFrequency: 'MONTHLY',
-        coverageMonthCount: 1,
+        coverageMonthCount: ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT,
         ...(termMonths != null ? { termMonths } : {}),
         billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
         billingStartDate,
         status: 'ACTIVE',
       },
+    });
+
+    await linkDealDepositInvoiceToSubscription({
+      prisma: this.prisma,
+      logger: this.logger,
+      dealId: deal.id,
+      dealCode: deal.code,
+      invoiceId: firstPaidInvoice.id,
+      subscriptionId: created.id,
+      periodAmount: amount,
+      periodCoverageMonthCount: ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT,
     });
   }
 

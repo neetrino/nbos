@@ -1,4 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Decimal } from '@nbos/database';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
@@ -406,6 +408,131 @@ describe('DealWonHandler', () => {
         }),
       }),
     );
+  });
+
+  describe('Route A deposit coverage linkage', () => {
+    const paidAt = new Date(2026, 2, 15);
+
+    function paidDepositInvoice(overrides: Record<string, unknown> = {}) {
+      return {
+        id: 'inv-deposit',
+        moneyStatus: 'PAID',
+        amount: 1_000_000,
+        paidDate: paidAt,
+        subscriptionId: null,
+        ...overrides,
+      };
+    }
+
+    function subscriptionDeal(overrides: Record<string, unknown> = {}) {
+      return productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+        orders: [{ invoices: [paidDepositInvoice()] }],
+        ...overrides,
+      });
+    }
+
+    function mockCreatedSubscription() {
+      prisma.product.create.mockResolvedValue({ id: 'product-1' });
+      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+    }
+
+    function mockDbInvoice(overrides: Record<string, unknown> = {}) {
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'inv-deposit',
+        code: 'INV-2026-0001',
+        amount: new Decimal('1000000.00'),
+        paidDate: paidAt,
+        subscriptionId: null,
+        type: 'SUBSCRIPTION',
+        order: { dealId: 'deal-1' },
+        ...overrides,
+      });
+    }
+
+    it('links a deposit equal to the period price as the paid month with one period of coverage', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice();
+
+      await handler.handle(subscriptionDeal());
+
+      expect(prisma.invoice.update).toHaveBeenCalledWith({
+        where: { id: 'inv-deposit' },
+        data: {
+          subscriptionId: 'sub-1',
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 1,
+        },
+      });
+    });
+
+    it('links a deposit equal to exactly two period prices as two coverage months', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ amount: new Decimal('2000000.00') });
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ amount: 2_000_000 })] }],
+        }),
+      );
+
+      expect(prisma.invoice.update).toHaveBeenCalledWith({
+        where: { id: 'inv-deposit' },
+        data: {
+          subscriptionId: 'sub-1',
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 2,
+        },
+      });
+    });
+
+    it('leaves a partial deposit unlinked, writes nothing else, and logs a warning', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ amount: new Decimal('400000.00') });
+      const warnSpy = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ amount: 400_000 })] }],
+        }),
+      );
+
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+      expect(prisma.subscription.create).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('D-2026-0001'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('INV-2026-0001'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('400000.00'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('1000000.00'));
+      warnSpy.mockRestore();
+    });
+
+    it('never re-links an invoice that already carries a subscriptionId', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ subscriptionId: 'sub-other' });
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ subscriptionId: 'sub-other' })] }],
+        }),
+      );
+
+      expect(prisma.subscription.create).toHaveBeenCalledTimes(1);
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+
+    it('links nothing when the subscription already exists (idempotency early return)', async () => {
+      prisma.product.create.mockResolvedValue({ id: 'product-1' });
+      prisma.subscription.findFirst.mockResolvedValue({ id: 'sub-existing' });
+
+      await handler.handle(subscriptionDeal());
+
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
+      expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
   });
 });
 

@@ -27,7 +27,7 @@ describe('PartnerAccrualClassicService', () => {
     dealId: 'd1',
     productId: 'prod1' as string | null,
     extensionId: null as string | null,
-    paymentType: 'CLASSIC' as const,
+    paymentType: 'CLASSIC' as 'CLASSIC' | 'SUBSCRIPTION',
     totalAmount: new Decimal('150000'),
     product: { status: 'DONE' } as { status: string } | null,
     extension: null as { status: string } | null,
@@ -107,5 +107,55 @@ describe('PartnerAccrualClassicService', () => {
     });
 
     expect(prisma.partnerAccrual.create).not.toHaveBeenCalled();
+  });
+
+  it('creates accrual after delivery when the order is fully paid and DONE', async () => {
+    mockClassicFlow();
+    prisma.payment.findFirst.mockResolvedValue({ id: 'pay-full', invoiceId: 'inv-full' });
+
+    await service.tryInboundClassicAfterDelivery('ord1');
+
+    expect(prisma.partnerAccrual.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          paymentId: 'pay-full',
+          orderId: 'ord1',
+          status: 'ELIGIBLE',
+        }),
+      }),
+    );
+  });
+
+  it('does not create a second classic accrual when after-delivery runs twice', async () => {
+    mockClassicFlow();
+    prisma.payment.findFirst.mockResolvedValue({ id: 'pay-full', invoiceId: 'inv-full' });
+
+    await service.tryInboundClassicAfterDelivery('ord1');
+    expect(prisma.partnerAccrual.create).toHaveBeenCalledTimes(1);
+
+    prisma.partnerAccrual.findUnique.mockResolvedValue({ id: 'pa-classic' });
+    await service.tryInboundClassicAfterDelivery('ord1');
+
+    expect(prisma.partnerAccrual.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not create a second classic accrual when the order already has a classic row', async () => {
+    mockClassicFlow();
+    prisma.payment.findFirst.mockResolvedValue({ id: 'pay-full', invoiceId: 'inv-full' });
+    prisma.partnerAccrual.findFirst.mockResolvedValue({ id: 'pa-existing' });
+
+    await service.tryInboundClassicAfterDelivery('ord1');
+
+    expect(prisma.partnerAccrual.create).not.toHaveBeenCalled();
+  });
+
+  it('does not create a classic inbound accrual for a SUBSCRIPTION delivery', async () => {
+    mockClassicFlow({ paymentType: 'SUBSCRIPTION' });
+    prisma.payment.findFirst.mockResolvedValue({ id: 'pay-sub', invoiceId: 'inv-sub' });
+
+    await service.tryInboundClassicAfterDelivery('ord1');
+
+    expect(prisma.partnerAccrual.create).not.toHaveBeenCalled();
+    expect(operationalJournal.appendPartnerAccrualLine).not.toHaveBeenCalled();
   });
 });

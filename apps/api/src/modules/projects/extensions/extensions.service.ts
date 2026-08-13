@@ -387,7 +387,7 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
       await this.audit.log({
         entityType: 'EXTENSION',
@@ -426,7 +426,7 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     return attachExtensionReadiness(updated);
   }
 
@@ -488,7 +488,7 @@ export class ExtensionsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    await this.applyHeldAccrualDeliveryOutcome(id, 'LOST');
+    await this.applyDeliveryOutcomeSideEffects(id, 'LOST');
     await this.audit.log({
       entityType: 'EXTENSION',
       entityId: id,
@@ -525,15 +525,7 @@ export class ExtensionsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { extensionId: id },
-      select: { id: true },
-    });
-    if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-    }
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     await this.audit.log({
       entityType: 'EXTENSION',
@@ -566,7 +558,7 @@ export class ExtensionsService {
     return { total, byStatus, bySize };
   }
 
-  private async applyHeldAccrualDeliveryOutcome(
+  private async applyDeliveryOutcomeSideEffects(
     extensionId: string,
     targetStatus: string,
   ): Promise<void> {
@@ -577,6 +569,8 @@ export class ExtensionsService {
     });
     if (!linkedOrder) return;
     if (targetStatus === 'DONE') {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
       await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
       return;
     }

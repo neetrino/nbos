@@ -146,17 +146,17 @@ Important rules:
 
 - idempotency key for auto-create is **`productId` + subscription `type`** (not projectId + type);
 - `termMonths` копируется с `Deal.subscriptionTermMonths` (`null` = бессрочно); `coverageMonthCount = 1`;
-- the first paid invoice confirms the project start;
-- it is a deal / order invoice, **not** a subscription invoice, so its month is **not** painted on the board: the grid paints only `SUBSCRIPTION` invoices carrying `coverage_start_month`;
-- subscription coverage starts from `billingStartDate` and is painted from the invoices billing generates.
-
-Open question, not implemented: whether the month already covered by the CRM deposit should count as the first paid subscription month. Today it does not, so a `billingStartDate` inside that month yields a second invoice for the same month.
+- the first paid invoice confirms the project start and **is** the first paid month of the subscription;
+- when Deal Won creates the subscription, that invoice is linked (`subscriptionId`) and given `coverage_start_month` = calendar month of `paidDate` (`YYYY-MM`, same key as billing and the grid) plus `coverage_month_count` for the whole periods the amount actually pays;
+- amount equal to one period `amount` → one period of coverage (`coverage_month_count` of the subscription); amount equal to N whole period prices → N periods; any other amount (partial deposit, rounded-down advance) is **not** linked — the invoice stays a deal/order card and a warning is logged (deal, invoice, both amounts);
+- linkage runs only at subscription **create**, only for this deal's first paid invoice, and only when `subscriptionId` is still null; an existing subscription (idempotency) or an invoice already attached to another subscription is not rewritten; amount, type, `moneyStatus`, and payments are never changed;
+- once linked, the grid paints that month, billing skips it (coverage dedup), and `term_months` counts it, so a 6-month term is six paid periods in total.
 
 Example:
 
-- first invoice paid on `15 March`
-- March is not painted from that invoice
-- with `billingStartDate = 15 March` the subscription invoices March itself, next cycle `15 April`
+- first invoice paid on `15 March` for exactly one period
+- March is painted from that invoice
+- `billingStartDate = 15 March`; billing does not invoice March again; next cycle `15 April`
 
 ### Route B: `Deal Type = MAINTENANCE`
 

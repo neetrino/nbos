@@ -149,4 +149,44 @@ describe('syncProductBonusPoolForOrder delivery funding recalc', () => {
     };
     expect(createArg.data.amount.lte(new Decimal(100))).toBe(true);
   });
+
+  it('does not double AUTO releases when pool sync runs twice after DONE', async () => {
+    let releasedAmount = new Decimal(0);
+    prisma.bonusEntry.aggregate.mockImplementation(
+      (args: { where?: { status?: string } } | undefined) => {
+        if (args?.where?.status === 'PAID') {
+          return Promise.resolve({ _sum: { amount: new Decimal(0) } });
+        }
+        return Promise.resolve({ _sum: { amount: new Decimal(100) } });
+      },
+    );
+    prisma.bonusRelease.aggregate.mockImplementation(() =>
+      Promise.resolve({ _sum: { amount: releasedAmount } }),
+    );
+    prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(100) } });
+    prisma.bonusEntry.findMany.mockImplementation(
+      (args: { where?: { type?: { in?: string[] } } }) => {
+        if (args.where?.type?.in) {
+          return Promise.resolve([
+            { id: 'be1', employeeId: 'e1', projectId: 'proj1', amount: new Decimal(30) },
+            { id: 'be2', employeeId: 'e2', projectId: 'proj1', amount: new Decimal(70) },
+          ]);
+        }
+        return Promise.resolve([]);
+      },
+    );
+    prisma.bonusRelease.groupBy.mockResolvedValue([]);
+    prisma.bonusRelease.create.mockImplementation((args: { data: { amount: Decimal } }) => {
+      releasedAmount = releasedAmount.plus(args.data.amount);
+      return Promise.resolve({ id: 'rel' });
+    });
+
+    await syncProductBonusPoolForOrder(prisma as never, 'ord1');
+    const createdAfterFirst = prisma.bonusRelease.create.mock.calls.length;
+    expect(createdAfterFirst).toBeGreaterThan(0);
+
+    await syncProductBonusPoolForOrder(prisma as never, 'ord1');
+
+    expect(prisma.bonusRelease.create).toHaveBeenCalledTimes(createdAfterFirst);
+  });
 });

@@ -6,6 +6,12 @@ import type { NotificationService } from '../../notifications/notification.servi
 import type { AuditService } from '../../audit/audit.service';
 import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 
+vi.mock('../../bonus/product-bonus-pool-sync', () => ({
+  syncProductBonusPoolForOrder: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+
 describe('ProductsService', () => {
   let service: ProductsService;
   let prisma: MockPrisma;
@@ -43,6 +49,7 @@ describe('ProductsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    vi.mocked(syncProductBonusPoolForOrder).mockClear();
     partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
     partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery.mockClear();
     vi.mocked(auditService.log).mockClear();
@@ -745,7 +752,22 @@ describe('ProductsService', () => {
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
         'ord-1',
       );
-      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+    });
+
+    it('creates classic inbound accrual when product reaches DONE through updateStatus, not complete', async () => {
+      stubProductReadyForDone(prisma);
+
+      await service.updateStatus('p1', 'DONE', 'emp-audit');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+    });
+
+    it('syncs bonus pool when product reaches DONE through updateStatus, not complete', async () => {
+      stubProductReadyForDone(prisma);
+
+      await service.updateStatus('p1', 'DONE', 'emp-audit');
+
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
     });
 
     it('cancels held accruals when product reaches LOST through updateStatus', async () => {
@@ -763,6 +785,8 @@ describe('ProductsService', () => {
         'ord-1',
       );
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
     });
 
     it('blocks CREATING → DEVELOPMENT when stage checklist is not complete', async () => {
@@ -919,9 +943,38 @@ describe('ProductsService', () => {
       await service.complete('p1', 'emp-1');
 
       expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
         'ord-1',
       );
+    });
+
+    it('still fires classic accrual and bonus-pool sync from complete', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: { status: 'FULLY_PAID', invoices: [] },
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('p1', 'emp-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
     });
 
     it('blocks completion until client acceptance is recorded', async () => {
@@ -1105,6 +1158,8 @@ describe('ProductsService', () => {
         'ord-1',
       );
       expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
     });
   });
 
@@ -1130,6 +1185,26 @@ describe('ProductsService', () => {
     });
   });
 });
+
+function stubProductReadyForDone(prisma: MockPrisma) {
+  prisma.product.findUnique.mockResolvedValue({
+    id: 'p1',
+    projectId: 'proj-1',
+    status: 'TRANSFER',
+    clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+    extensions: [{ status: 'DONE' }],
+    tasks: [{ status: 'DONE' }],
+    tickets: [{ status: 'RESOLVED' }],
+    order: {
+      id: 'ord-1',
+      status: 'FULLY_PAID',
+      paymentType: 'CLASSIC',
+      invoices: [{ moneyStatus: 'PAID' }],
+    },
+  });
+  prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });
+  prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+}
 
 function readExceptionResponse(error: unknown) {
   if (!(error instanceof BadRequestException)) return {};

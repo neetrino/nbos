@@ -51,4 +51,60 @@ describe('resolveTermCompletion', () => {
     });
     expect(decision.shouldComplete).toBe(false);
   });
+
+  it('counts a linked deposit month plus five generated invoices as six paid periods', () => {
+    const invoices = [
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-03',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 2, 15),
+      },
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-04',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 3, 15),
+      },
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-05',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 4, 15),
+      },
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-06',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 5, 15),
+      },
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-07',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 6, 15),
+      },
+      {
+        type: 'SUBSCRIPTION' as const,
+        coverageStartMonth: '2026-08',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 7, 15),
+      },
+    ];
+    const afterFiveGenerated = resolveTermCompletion({
+      termMonths: 6,
+      endDate: null,
+      invoices,
+    });
+    expect(afterFiveGenerated.shouldComplete).toBe(true);
+    expect(afterFiveGenerated.coveredMonths).toBe(6);
+
+    const afterFourGenerated = resolveTermCompletion({
+      termMonths: 6,
+      endDate: null,
+      invoices: invoices.slice(0, 5),
+    });
+    expect(afterFourGenerated.shouldComplete).toBe(false);
+    expect(afterFourGenerated.coveredMonths).toBe(5);
+  });
 });
