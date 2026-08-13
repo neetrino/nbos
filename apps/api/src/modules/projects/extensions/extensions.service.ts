@@ -168,6 +168,7 @@ export class ExtensionsService {
               id: true,
               code: true,
               status: true,
+              paymentType: true,
               invoices: { select: { moneyStatus: true } },
             },
           },

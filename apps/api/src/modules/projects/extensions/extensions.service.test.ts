@@ -406,7 +406,12 @@ describe('ExtensionsService', () => {
         projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
-        order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
@@ -425,12 +430,17 @@ describe('ExtensionsService', () => {
       );
     });
 
-    it('blocks TRANSFER → DONE when linked order is not fully paid', async () => {
+    it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }],
-        order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
       });
 
       const error = await service
@@ -441,6 +451,52 @@ describe('ExtensionsService', () => {
       expect(readExceptionResponse(error)).toMatchObject({
         code: EXTENSION_STAGE_GATE_ERROR_CODE,
         errors: [{ field: 'finance', message: expect.stringContaining('Order PARTIALLY_PAID') }],
+      });
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
+    it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'SUBSCRIPTION',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(result.status).toBe('DONE');
+      expect(prisma.extension.update).toHaveBeenCalled();
+    });
+
+    it('blocks TRANSFER → DONE when a subscription order has an unpaid invoice', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }],
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'SUBSCRIPTION',
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
+        },
+      });
+
+      const error = await service
+        .updateStatus('e1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: EXTENSION_STAGE_GATE_ERROR_CODE,
+        errors: [{ field: 'finance', message: expect.any(String) }],
       });
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });

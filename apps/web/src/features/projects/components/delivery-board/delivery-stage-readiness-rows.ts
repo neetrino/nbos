@@ -1,3 +1,4 @@
+import { isOrderPaymentGateSatisfied } from '@nbos/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
@@ -37,8 +38,7 @@ export function buildProductStageReadinessRows(
   } else if (stage === 'TRANSFER') {
     const invoices = product.order?.invoices ?? [];
     const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk =
-      !product.order?.status || ['FULLY_PAID', 'CLOSED'].includes(product.order.status);
+    const orderOk = isOrderPaymentGateSatisfied(product.order);
     const extOpen = (product.extensions ?? []).filter(
       (e) => !CLOSED_EXTENSION.has(e.status),
     ).length;
@@ -103,8 +103,7 @@ export function buildExtensionStageReadinessRows(
   } else if (stage === 'TRANSFER') {
     const invoices = extension.order?.invoices ?? [];
     const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk =
-      !extension.order?.status || ['FULLY_PAID', 'CLOSED'].includes(extension.order.status);
+    const orderOk = isOrderPaymentGateSatisfied(extension.order);
     rows.push(
       { key: 'tasks', label: 'No open tasks', done: countOpenTasks(extension.tasks ?? []) === 0 },
       { key: 'order', label: 'Order financially closed', done: orderOk },

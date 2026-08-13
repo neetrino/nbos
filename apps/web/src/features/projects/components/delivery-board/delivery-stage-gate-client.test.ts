@@ -91,4 +91,21 @@ describe('getLocalDeliveryCompleteErrors', () => {
     const errors = getLocalDeliveryCompleteErrors(productItem());
     expect(errors.length).toBeGreaterThan(0);
   });
+
+  it('regression: allows complete when a subscription order is PARTIALLY_PAID and invoices are paid', () => {
+    const errors = getLocalDeliveryCompleteErrors(
+      productItem({
+        status: 'TRANSFER',
+        clientAcceptedAt: '2026-04-29T09:00:00.000Z',
+        deliveryLifecycle: lc({ stage: 'TRANSFER' }),
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'SUBSCRIPTION',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      }),
+    );
+    expect(errors).toEqual([]);
+  });
 });

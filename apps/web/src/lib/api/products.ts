@@ -57,6 +57,7 @@ export interface Product {
     id: string;
     code?: string;
     status?: string;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
   } | null;
   _count: { extensions: number; tasks: number; tickets: number };

@@ -224,6 +224,7 @@ export class ProductsService {
               id: true,
               code: true,
               status: true,
+              paymentType: true,
               invoices: { select: { moneyStatus: true } },
             },
           },

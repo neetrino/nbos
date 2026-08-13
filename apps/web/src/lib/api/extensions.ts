@@ -51,7 +51,7 @@ export interface Extension {
     }>;
   };
   assignee: ExtensionEmployee | null;
-  order?: { id: string; code: string; status: string } | null;
+  order?: { id: string; code: string; status: string; paymentType?: string | null } | null;
   readiness?: ExtensionReadinessSummary;
   _count: { tasks: number };
   checklistStageProgress?: ChecklistStageProgress | null;

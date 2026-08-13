@@ -1,3 +1,5 @@
+import { isOrderPaymentGateSatisfied, PRODUCT_GATE_CLOSED_TASK_STATUSES } from '@nbos/shared';
+
 export interface ProductDoneReadiness {
   canCompleteWithRuntimeData: boolean;
   blockers: ProductDoneReadinessItem[];
@@ -35,6 +37,7 @@ interface ProductForDoneReadiness {
   } | null;
   order?: {
     status?: string | null;
+    paymentType?: string | null;
     deal?: {
       offerFileUrl?: string | null;
       contractFileUrl?: string | null;
@@ -47,11 +50,9 @@ interface ProductForDoneReadiness {
 }
 
 const CLOSED_EXTENSION_STATUSES = ['DONE', 'LOST'];
-import { PRODUCT_GATE_CLOSED_TASK_STATUSES } from '@nbos/shared';
 
 const CLOSED_TASK_STATUSES = [...PRODUCT_GATE_CLOSED_TASK_STATUSES];
 const CLOSED_TICKET_STATUSES = ['RESOLVED', 'CLOSED'];
-const CLOSED_ORDER_STATUSES = ['FULLY_PAID', 'CLOSED'];
 const HANDOFF_CREDENTIAL_CATEGORIES = ['ADMIN', 'DOMAIN', 'HOSTING', 'APP', 'API_KEY', 'DATABASE'];
 
 export function buildProductDoneReadiness(product: ProductForDoneReadiness): ProductDoneReadiness {
@@ -115,11 +116,11 @@ function buildOpenWorkBlockers(summary: ProductDoneReadiness['summary']) {
 
 function buildFinanceBlockers(order: ProductForDoneReadiness['order'], unpaidInvoiceCount: number) {
   const blockers = buildCountBlocker('UNPAID_INVOICES', 'Finance', unpaidInvoiceCount);
-  if (order?.status && !CLOSED_ORDER_STATUSES.includes(order.status)) {
+  if (!isOrderPaymentGateSatisfied(order)) {
     blockers.push({
       code: 'ORDER_NOT_CLOSED',
       label: 'Finance',
-      message: `Linked order is ${order.status}; it must be fully paid or closed before Done.`,
+      message: `Linked order is ${order?.status}; it must be fully paid or closed before Done.`,
     });
   }
   return blockers;

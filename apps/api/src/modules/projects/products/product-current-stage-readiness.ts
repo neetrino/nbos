@@ -1,3 +1,4 @@
+import { isOrderPaymentGateSatisfied } from '@nbos/shared';
 import type { DeliveryLifecycleProjection } from '../delivery-lifecycle';
 
 export interface ProductOpenCounts {
@@ -14,6 +15,7 @@ interface ProductForStageReadiness {
   order?: {
     id?: string | null;
     status?: string | null;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
   } | null;
 }
@@ -41,8 +43,7 @@ export function buildProductCurrentStageReadiness(
   if (stage === 'TRANSFER') {
     const invoices = product.order?.invoices ?? [];
     const unpaidInvoices = invoices.filter((inv) => inv.moneyStatus !== 'PAID').length;
-    const orderOk =
-      !product.order?.status || ['FULLY_PAID', 'CLOSED'].includes(product.order.status);
+    const orderOk = isOrderPaymentGateSatisfied(product.order);
 
     const checks = [
       open.openExtensions === 0,
