@@ -16,7 +16,8 @@ import type {
 const MRR_NOTES = [
   'Active MRR sums Subscription.baseMonthlyAmount for active subscriptions at the snapshot date.',
   'Paid subscription revenue uses Payment rows linked to subscription invoice cards.',
-  'New and churned MRR use billingStartDate/endDate in the selected period.',
+  'New MRR uses billingStartDate; churned and completed MRR use endDate in the selected period.',
+  'Natural completion (COMPLETED) is reported separately from churn (CANCELLED).',
   'Yearly subscriptions bill via invoice coverage_month_count; MRR uses monthly base, not invoiced total.',
 ];
 
@@ -77,17 +78,19 @@ export class MrrSubscriptionRevenueService {
   }
 
   private async getMovement(dateFilter: ReturnType<typeof buildDateFilter>) {
-    const [newRows, churnedRows] = await Promise.all([
+    const [newRows, churnedRows, completedRows] = await Promise.all([
       this.prisma.subscription.aggregate({
         ...(dateFilter ? { where: { billingStartDate: dateFilter } } : {}),
         _count: true,
         _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.aggregate({
-        where: {
-          status: { in: ['CANCELLED', 'COMPLETED'] },
-          ...(dateFilter ? { endDate: dateFilter } : { endDate: { not: null } }),
-        },
+        where: endedSubscriptionWhere('CANCELLED', dateFilter),
+        _count: true,
+        _sum: { baseMonthlyAmount: true },
+      }),
+      this.prisma.subscription.aggregate({
+        where: endedSubscriptionWhere('COMPLETED', dateFilter),
         _count: true,
         _sum: { baseMonthlyAmount: true },
       }),
@@ -97,6 +100,8 @@ export class MrrSubscriptionRevenueService {
       newSubscriptionCount: newRows._count,
       churnedMrr: decimalString(churnedRows._sum.baseMonthlyAmount),
       churnedSubscriptionCount: churnedRows._count,
+      completedMrr: decimalString(completedRows._sum.baseMonthlyAmount),
+      completedSubscriptionCount: completedRows._count,
     };
   }
 
@@ -129,5 +134,15 @@ function activeSubscriptionWhere(snapshotDate: Date) {
     status: 'ACTIVE' as const,
     billingStartDate: { lte: snapshotDate },
     OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+  };
+}
+
+function endedSubscriptionWhere(
+  status: 'CANCELLED' | 'COMPLETED',
+  dateFilter: ReturnType<typeof buildDateFilter>,
+) {
+  return {
+    status,
+    ...(dateFilter ? { endDate: dateFilter } : { endDate: { not: null } }),
   };
 }
