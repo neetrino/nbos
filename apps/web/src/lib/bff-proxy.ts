@@ -17,7 +17,9 @@ const HOP_BY_HOP_HEADERS = new Set([
   'transfer-encoding',
   'upgrade',
   'host',
+  // fetch decodes the body, so the backend's length and encoding no longer describe it.
   'content-length',
+  'content-encoding',
 ]);
 
 /**
