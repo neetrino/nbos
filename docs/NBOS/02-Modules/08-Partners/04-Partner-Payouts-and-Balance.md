@@ -51,7 +51,7 @@ Project delivered
   -> Paid
 ```
 
-Classic payout не использует накопительную subscription payout_rule. Даже если сумма маленькая, партнёру платим за этот проект после сдачи и полной оплаты.
+Classic payout не использует накопительную subscription payout_rule. Даже если сумма маленькая, партнёру платим за этот проект после сдачи и полной оплаты. Полная оплата Classic — сумма платежей по **order-linked** invoice ≥ `Order.totalAmount` (весь контракт), а не факт, что все уже выставленные счета оплачены. Депозит без остатка полной оплатой не считается.
 
 Если бизнес хочет задержать выплату по конкретному classic case, это manual hold с причиной и audit log.
 
@@ -157,12 +157,12 @@ Payout Batch Approved
 
 ## 8. Accepted decisions
 
-| Решение                                                                     | Статус   |
-| --------------------------------------------------------------------------- | -------- |
-| Partner Accrual создаётся только от реально полученных денег                | Accepted |
-| Classic payout платится после сдачи и полной оплаты                         | Accepted |
-| Subscription payout использует payout_rule на уровне subscription / project | Accepted |
-| DEV-подписки: accrual `ACCRUED` до сдачи, затем `ELIGIBLE`                  | Accepted |
-| Partner Balance нужен для контроля unpaid accruals                          | Accepted |
-| Payout Batch объединяет несколько accruals в одну выплату                   | Accepted |
-| Expense Card является payment layer, а не source of truth по начислениям    | Accepted |
+| Решение                                                                                      | Статус   |
+| -------------------------------------------------------------------------------------------- | -------- |
+| Partner Accrual создаётся только от реально полученных денег                                 | Accepted |
+| Classic payout платится после сдачи и полной оплаты (полученная сумма ≥ `Order.totalAmount`) | Accepted |
+| Subscription payout использует payout_rule на уровне subscription / project                  | Accepted |
+| DEV-подписки: accrual `ACCRUED` до сдачи, затем `ELIGIBLE`                                   | Accepted |
+| Partner Balance нужен для контроля unpaid accruals                                           | Accepted |
+| Payout Batch объединяет несколько accruals в одну выплату                                    | Accepted |
+| Expense Card является payment layer, а не source of truth по начислениям                     | Accepted |

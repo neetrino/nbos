@@ -20,7 +20,7 @@ interface DecimalValue {
 
 export type ResolvedOrderStatus = 'PENDING_PAYMENT' | 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE';
 
-/** Optional order fields for term-subscription contract-total gating. */
+/** Optional order fields for contract-total gating (classic and term subscription). */
 export interface ResolveOrderStatusOrderContext {
   paymentType: PaymentTypeEnum;
   subscriptionTermMonths: number | null;
@@ -56,6 +56,25 @@ function isTermSubscriptionOrder(
   return order?.paymentType === 'SUBSCRIPTION' && order.subscriptionTermMonths != null;
 }
 
+function isPositiveContractTotal(amount: ResolveOrderStatusOrderContext['totalAmount']): boolean {
+  const contractTotal = toFinanceNumber(amount);
+  return Number.isFinite(contractTotal) && contractTotal > 0;
+}
+
+function usesReceivedAgainstContractTotal(
+  order: ResolveOrderStatusOrderContext | null | undefined,
+): order is ResolveOrderStatusOrderContext {
+  if (!order) return false;
+  if (isTermSubscriptionOrder(order)) return true;
+  return order.paymentType === 'CLASSIC' && isPositiveContractTotal(order.totalAmount);
+}
+
+function hasAwaitingPaymentInvoice(invoices: OrderInvoiceCarrier[]): boolean {
+  return invoices.some(
+    (invoice) => invoice.moneyStatus !== 'PAID' && invoice.moneyStatus !== 'CANCELLED',
+  );
+}
+
 function resolveInvoiceDrivenOrderStatus(invoices: OrderInvoiceCarrier[]): ResolvedOrderStatus {
   const allPaid = invoices.every((invoice) => invoice.moneyStatus === 'PAID');
   if (allPaid) {
@@ -67,10 +86,7 @@ function resolveInvoiceDrivenOrderStatus(invoices: OrderInvoiceCarrier[]): Resol
     return 'PARTIALLY_PAID';
   }
 
-  const hasAwaiting = invoices.some(
-    (invoice) => invoice.moneyStatus !== 'PAID' && invoice.moneyStatus !== 'CANCELLED',
-  );
-  if (hasAwaiting) {
+  if (hasAwaitingPaymentInvoice(invoices)) {
     return 'PENDING_PAYMENT';
   }
 
@@ -78,16 +94,14 @@ function resolveInvoiceDrivenOrderStatus(invoices: OrderInvoiceCarrier[]): Resol
 }
 
 /**
- * Term subscription: FULLY_PAID only when received money on order-linked invoices
- * reaches `Order.totalAmount`. Billing invoices often lack `orderId`, so this path
- * conservatively refuses premature FULLY_PAID when only early periods are visible.
+ * FULLY_PAID only when received money on order-linked invoices reaches `contractTotal`.
+ * Shared by CLASSIC (positive `Order.totalAmount`) and fixed-term subscription.
  */
-function resolveTermSubscriptionOrderStatus(
+function resolveReceivedAgainstContractStatus(
   invoices: OrderInvoiceCarrier[],
-  order: ResolveOrderStatusOrderContext,
+  contractTotal: number,
 ): ResolvedOrderStatus {
   const received = invoices.reduce((sum, invoice) => sum + sumAmounts(invoice.payments), 0);
-  const contractTotal = toFinanceNumber(order.totalAmount);
 
   if (received >= contractTotal) {
     return 'FULLY_PAID';
@@ -97,10 +111,7 @@ function resolveTermSubscriptionOrderStatus(
     return 'PARTIALLY_PAID';
   }
 
-  const hasAwaiting = invoices.some(
-    (invoice) => invoice.moneyStatus !== 'PAID' && invoice.moneyStatus !== 'CANCELLED',
-  );
-  if (hasAwaiting) {
+  if (hasAwaitingPaymentInvoice(invoices)) {
     return 'PENDING_PAYMENT';
   }
 
@@ -111,8 +122,8 @@ export function resolveOrderStatus(
   invoices: OrderInvoiceCarrier[],
   order?: ResolveOrderStatusOrderContext | null,
 ): ResolvedOrderStatus {
-  if (isTermSubscriptionOrder(order) && order) {
-    return resolveTermSubscriptionOrderStatus(invoices, order);
+  if (usesReceivedAgainstContractTotal(order)) {
+    return resolveReceivedAgainstContractStatus(invoices, toFinanceNumber(order.totalAmount));
   }
 
   return resolveInvoiceDrivenOrderStatus(invoices);

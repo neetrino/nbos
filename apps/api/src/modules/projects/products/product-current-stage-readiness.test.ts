@@ -62,6 +62,25 @@ describe('buildProductCurrentStageReadiness', () => {
       }),
     ).toEqual({ completed: 6, total: 6 });
   });
+
+  it('does not treat TRANSFER as finance-ready after a deposit-only PARTIALLY_PAID order', () => {
+    const p = {
+      ...baseProduct,
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER' as const,
+      clientAcceptedAt: new Date(),
+      order: {
+        id: 'ord-1',
+        status: 'PARTIALLY_PAID',
+        invoices: [{ moneyStatus: 'PAID' }],
+      },
+    };
+    const lc = buildProductDeliveryLifecycle(p);
+    expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
+      completed: 5,
+      total: 6,
+    });
+  });
 });
 
 function zeroOpen() {

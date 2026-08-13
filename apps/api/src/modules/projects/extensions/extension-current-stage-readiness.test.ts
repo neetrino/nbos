@@ -40,4 +40,22 @@ describe('buildExtensionCurrentStageReadiness', () => {
       total: 3,
     });
   });
+
+  it('does not treat TRANSFER as finance-ready after a deposit-only PARTIALLY_PAID order', () => {
+    const ext = {
+      ...base,
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER' as const,
+      order: {
+        id: 'ord-1',
+        status: 'PARTIALLY_PAID',
+        invoices: [{ moneyStatus: 'PAID' }],
+      },
+    };
+    const lc = buildExtensionDeliveryLifecycle(ext);
+    expect(buildExtensionCurrentStageReadiness(ext, lc, { openTasks: 0 })).toEqual({
+      completed: 2,
+      total: 3,
+    });
+  });
 });

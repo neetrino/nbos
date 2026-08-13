@@ -268,6 +268,115 @@ describe('PaymentsService', () => {
       });
     });
 
+    it('does not mark a CLASSIC order FULLY_PAID or accrue the partner after a deposit-only payment', async () => {
+      const paidAt = new Date('2026-03-12T00:00:00.000Z');
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv1',
+          code: 'INV-DEP',
+          orderId: 'ord1',
+          projectId: 'proj-1',
+          companyId: 'company-1',
+          amount: 50_000,
+          moneyStatus: 'AWAITING_PAYMENT',
+          dueDate: new Date('2026-03-20'),
+          payments: [],
+          order: { productId: 'product-1' },
+        })
+        .mockResolvedValueOnce({
+          amount: 50_000,
+          dueDate: new Date('2026-03-20'),
+          moneyStatus: 'AWAITING_PAYMENT',
+          payments: [{ amount: 50_000, paymentDate: paidAt }],
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'PAID' });
+      prisma.payment.create.mockResolvedValue({ id: 'dep-1', amount: 50_000 });
+      prisma.invoice.findMany.mockResolvedValue([
+        { moneyStatus: 'PAID', amount: 50_000, payments: [{ amount: 50_000 }] },
+      ]);
+      prisma.payment.findUnique.mockResolvedValue(
+        mockPaymentFindByIdRow('dep-1', {
+          amount: 50_000,
+          invoice: { moneyStatus: 'PAID' },
+        }),
+      );
+      prisma.order.findUnique.mockResolvedValue({
+        paymentType: 'CLASSIC',
+        subscriptionTermMonths: null,
+        totalAmount: 150_000,
+        status: 'PARTIALLY_PAID',
+      });
+
+      await service.create({
+        invoiceId: 'inv1',
+        amount: 50_000,
+        paymentDate: '2026-03-12',
+      });
+
+      expect(prisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'ord1' },
+        data: { status: 'PARTIALLY_PAID' },
+      });
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).not.toHaveBeenCalled();
+    });
+
+    it('accrues the classic partner after received money covers the CLASSIC contract total', async () => {
+      const paidAt = new Date('2026-03-12T00:00:00.000Z');
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv1',
+          code: 'INV-REM',
+          orderId: 'ord1',
+          projectId: 'proj-1',
+          companyId: 'company-1',
+          amount: 100_000,
+          moneyStatus: 'AWAITING_PAYMENT',
+          dueDate: new Date('2026-03-20'),
+          payments: [],
+          order: { productId: 'product-1' },
+        })
+        .mockResolvedValueOnce({
+          amount: 100_000,
+          dueDate: new Date('2026-03-20'),
+          moneyStatus: 'AWAITING_PAYMENT',
+          payments: [{ amount: 100_000, paymentDate: paidAt }],
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'PAID' });
+      prisma.payment.create.mockResolvedValue({ id: 'rem-1', amount: 100_000 });
+      prisma.invoice.findMany.mockResolvedValue([
+        { moneyStatus: 'PAID', amount: 50_000, payments: [{ amount: 50_000 }] },
+        { moneyStatus: 'PAID', amount: 100_000, payments: [{ amount: 100_000 }] },
+      ]);
+      prisma.payment.findUnique.mockResolvedValue(
+        mockPaymentFindByIdRow('rem-1', {
+          amount: 100_000,
+          invoice: { moneyStatus: 'PAID' },
+        }),
+      );
+      prisma.order.findUnique.mockResolvedValue({
+        paymentType: 'CLASSIC',
+        subscriptionTermMonths: null,
+        totalAmount: 150_000,
+        status: 'FULLY_PAID',
+      });
+
+      await service.create({
+        invoiceId: 'inv1',
+        amount: 100_000,
+        paymentDate: '2026-03-12',
+      });
+
+      expect(prisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'ord1' },
+        data: { status: 'FULLY_PAID' },
+      });
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).toHaveBeenCalledWith({
+        orderId: 'ord1',
+        paymentId: 'rem-1',
+        invoiceId: 'inv1',
+      });
+    });
+
     it('marks unpaid overdue invoice as delayed after payment sync if still not fully covered', async () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
