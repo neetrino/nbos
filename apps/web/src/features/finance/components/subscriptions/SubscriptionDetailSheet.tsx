@@ -24,6 +24,7 @@ import {
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
+import { getSubscriptionBillingValidationError } from '@/features/finance/utils/subscription-form-state';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
@@ -103,6 +104,7 @@ export function SubscriptionDetailSheet({
     subscription?.baseMonthlyAmount,
     subscription?.billingDay,
     subscription?.billingFrequency,
+    subscription?.prepaidMonthCount,
     subscription?.partner?.id,
   ]);
 
@@ -132,6 +134,11 @@ export function SubscriptionDetailSheet({
   const handleGeneralSave = useCallback(() => {
     if (!subscription || !generalDraft || !generalSnap) return;
     setGeneralError(null);
+    const billingError = getSubscriptionBillingValidationError(generalDraft);
+    if (billingError) {
+      setGeneralError(billingError);
+      return;
+    }
     const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
     if (Object.keys(patch).length === 0) return;
 

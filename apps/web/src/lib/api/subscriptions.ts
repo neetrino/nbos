@@ -19,6 +19,8 @@ export interface Subscription {
   type: string;
   baseMonthlyAmount: string;
   billingFrequency: string;
+  /** Set when billingFrequency is CUSTOM (2–60 months). */
+  prepaidMonthCount?: number | null;
   billingDay: number;
   taxStatus: string;
   status: string;
@@ -51,6 +53,7 @@ export interface CreateSubscriptionPayload {
   baseMonthlyAmount: number;
   billingDay: number;
   billingFrequency?: string;
+  prepaidMonthCount?: number;
   taxStatus?: string;
   billingStartDate: string;
   notificationsEnabled?: boolean;
@@ -65,6 +68,7 @@ export interface UpdateSubscriptionPayload {
   projectId?: string;
   baseMonthlyAmount?: number;
   billingFrequency?: string;
+  prepaidMonthCount?: number;
   billingDay?: number;
   taxStatus?: string;
   billingStartDate?: string;
