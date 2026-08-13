@@ -501,7 +501,7 @@ export class ProductsService {
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
       await this.audit.log({
         entityType: 'PRODUCT',
@@ -537,7 +537,7 @@ export class ProductsService {
       include: { project: { select: { id: true, code: true, name: true } } },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
@@ -598,7 +598,7 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    await this.applyHeldAccrualDeliveryOutcome(id, 'LOST');
+    await this.applyDeliveryOutcomeSideEffects(id, 'LOST');
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -632,7 +632,7 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    await this.applyHeldAccrualDeliveryOutcome(id, target);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -736,7 +736,7 @@ export class ProductsService {
     }
   }
 
-  private async applyHeldAccrualDeliveryOutcome(
+  private async applyDeliveryOutcomeSideEffects(
     productId: string,
     targetStatus: string,
   ): Promise<void> {
