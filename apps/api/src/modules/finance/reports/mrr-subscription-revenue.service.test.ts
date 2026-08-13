@@ -3,17 +3,43 @@ import { describe, expect, it } from 'vitest';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import { MrrSubscriptionRevenueService } from './mrr-subscription-revenue.service';
 
+type AggregateArgs = {
+  where?: {
+    status?: string;
+    billingStartDate?: unknown;
+    endDate?: unknown;
+  };
+};
+
 describe('MrrSubscriptionRevenueService', () => {
   it('builds active MRR, movement and paid subscription revenue', async () => {
     const prisma = createMockPrisma();
     prisma.subscription.count.mockResolvedValue(3);
     prisma.subscription.aggregate
-      .mockResolvedValueOnce({ _sum: { baseMonthlyAmount: new Decimal(900) } })
-      .mockResolvedValueOnce({ _count: 2, _sum: { baseMonthlyAmount: new Decimal(500) } })
-      .mockResolvedValueOnce({ _count: 1, _sum: { baseMonthlyAmount: new Decimal(200) } });
+      .mockResolvedValueOnce({ _sum: { monthlyEquivalentAmount: new Decimal(900) } })
+      .mockResolvedValueOnce({
+        _count: { _all: 2 },
+        _sum: { monthlyEquivalentAmount: new Decimal(500) },
+      })
+      .mockResolvedValueOnce({
+        _count: { _all: 1 },
+        _sum: { monthlyEquivalentAmount: new Decimal(200) },
+      })
+      .mockResolvedValueOnce({
+        _count: { _all: 0 },
+        _sum: { monthlyEquivalentAmount: null },
+      });
     prisma.subscription.groupBy.mockResolvedValue([
-      { type: 'MAINTENANCE_ONLY', _count: 2, _sum: { baseMonthlyAmount: new Decimal(600) } },
-      { type: 'DEV_ONLY', _count: 1, _sum: { baseMonthlyAmount: new Decimal(300) } },
+      {
+        type: 'MAINTENANCE_ONLY',
+        _count: { _all: 2 },
+        _sum: { monthlyEquivalentAmount: new Decimal(600) },
+      },
+      {
+        type: 'DEV_ONLY',
+        _count: { _all: 1 },
+        _sum: { monthlyEquivalentAmount: new Decimal(300) },
+      },
     ]);
     prisma.payment.count.mockResolvedValue(4);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(700) } });
@@ -38,6 +64,8 @@ describe('MrrSubscriptionRevenueService', () => {
       newSubscriptionCount: 2,
       churnedMrr: '200.00',
       churnedSubscriptionCount: 1,
+      completedMrr: '0.00',
+      completedSubscriptionCount: 0,
     });
     expect(report.paidRevenue).toEqual({
       paidSubscriptionRevenue: '700.00',
@@ -45,5 +73,62 @@ describe('MrrSubscriptionRevenueService', () => {
       invoicedSubscriptionAmount: '850.00',
       invoiceCount: 5,
     });
+  });
+
+  it('counts CANCELLED subscriptions as churn and COMPLETED subscriptions separately', async () => {
+    const prisma = createMockPrisma();
+    prisma.subscription.count.mockResolvedValue(0);
+    prisma.subscription.groupBy.mockResolvedValue([]);
+    prisma.subscription.aggregate.mockImplementation((args: AggregateArgs) => {
+      if (args.where?.status === 'CANCELLED') {
+        return Promise.resolve({
+          _count: { _all: 1 },
+          _sum: { monthlyEquivalentAmount: new Decimal(150) },
+        });
+      }
+      if (args.where?.status === 'COMPLETED') {
+        return Promise.resolve({
+          _count: { _all: 2 },
+          _sum: { monthlyEquivalentAmount: new Decimal(400) },
+        });
+      }
+      if (args.where?.billingStartDate) {
+        return Promise.resolve({
+          _count: { _all: 0 },
+          _sum: { monthlyEquivalentAmount: null },
+        });
+      }
+      return Promise.resolve({ _sum: { monthlyEquivalentAmount: null } });
+    });
+    prisma.payment.count.mockResolvedValue(0);
+    prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: null } });
+    prisma.invoice.count.mockResolvedValue(0);
+    prisma.invoice.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    const report = await new MrrSubscriptionRevenueService(prisma as never).getReport({
+      dateFrom: '2026-05-01',
+      dateTo: '2026-05-31',
+    });
+
+    expect(report.movement).toMatchObject({
+      churnedMrr: '150.00',
+      churnedSubscriptionCount: 1,
+      completedMrr: '400.00',
+      completedSubscriptionCount: 2,
+    });
+
+    const cancelledCall = prisma.subscription.aggregate.mock.calls.find(
+      ([args]) => (args as AggregateArgs).where?.status === 'CANCELLED',
+    );
+    const completedCall = prisma.subscription.aggregate.mock.calls.find(
+      ([args]) => (args as AggregateArgs).where?.status === 'COMPLETED',
+    );
+    expect(cancelledCall).toBeDefined();
+    expect(completedCall).toBeDefined();
+    expect((cancelledCall?.[0] as AggregateArgs).where?.status).toBe('CANCELLED');
+    expect((completedCall?.[0] as AggregateArgs).where?.status).toBe('COMPLETED');
+    expect((cancelledCall?.[0] as AggregateArgs).where?.endDate).toEqual(
+      (completedCall?.[0] as AggregateArgs).where?.endDate,
+    );
   });
 });

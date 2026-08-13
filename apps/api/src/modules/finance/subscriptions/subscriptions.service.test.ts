@@ -5,17 +5,27 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 function mockSubscriptionForFindById(
-  overrides: Partial<{ status: string; billingStartDate: Date; endDate: Date | null }> = {},
+  overrides: Partial<{
+    status: string;
+    billingStartDate: Date;
+    endDate: Date | null;
+    termMonths: number | null;
+    coverageMonthCount: number;
+    billingFrequency: string;
+  }> = {},
 ) {
   return {
     id: '1',
     code: 'SUB-2026-0001',
-    baseMonthlyAmount: 5000,
+    amount: 5000,
+    coverageMonthCount: 1,
+    monthlyEquivalentAmount: 5000,
     billingFrequency: 'MONTHLY',
     notificationsEnabled: true,
     status: 'ACTIVE',
     billingStartDate: new Date('2026-01-01T00:00:00.000Z'),
     endDate: null as Date | null,
+    termMonths: null as number | null,
     invoices: [],
     project: { id: 'p', code: 'P', name: 'Proj' },
     product: { id: 'prod-1', name: 'Website', projectId: 'p' },
@@ -43,7 +53,9 @@ describe('SubscriptionsService', () => {
       prisma.subscription.findMany.mockResolvedValue([
         {
           id: '1',
-          baseMonthlyAmount: 1000,
+          amount: 1000,
+          coverageMonthCount: 1,
+          monthlyEquivalentAmount: 1000,
           status: 'ACTIVE',
           billingStartDate: new Date('2026-03-01T00:00:00.000Z'),
           endDate: null,
@@ -141,6 +153,7 @@ describe('SubscriptionsService', () => {
         type: 'MAINTENANCE_ONLY',
         amount: 50000,
         billingDay: 1,
+        billingFrequency: 'MONTHLY',
         startDate: '2026-01-01',
       });
       expect(result.code).toMatch(/^SUB-\d{4}-\d{4}$/);
@@ -149,9 +162,124 @@ describe('SubscriptionsService', () => {
           data: expect.objectContaining({
             productId: 'prod-1',
             projectId: 'p1',
+            amount: 50000,
+            billingFrequency: 'MONTHLY',
+            coverageMonthCount: 1,
           }),
         }),
       );
+      const createData = prisma.subscription.create.mock.calls[0]?.[0] as {
+        data?: Record<string, unknown>;
+      };
+      expect(createData?.data).not.toHaveProperty('monthlyEquivalentAmount');
+    });
+
+    it('rejects create when billingFrequency is omitted', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
+
+      await expect(
+        service.create({
+          productId: 'prod-1',
+          projectId: 'p1',
+          type: 'MAINTENANCE_ONLY',
+          amount: 50000,
+          billingDay: 1,
+          startDate: '2026-01-01',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('update', () => {
+    it('clears endDate when blank string is sent', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ endDate: new Date('2026-06-01T00:00:00.000Z') }),
+      );
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { endDate: '' });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ endDate: null }),
+        }),
+      );
+    });
+
+    it('leaves endDate untouched when undefined', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { billingDay: 15 });
+
+      const call = prisma.subscription.update.mock.calls[0]?.[0] as {
+        data?: { endDate?: unknown; billingFrequency?: unknown };
+      };
+      expect(call?.data?.endDate).toBeUndefined();
+      expect(call?.data?.billingFrequency).toBeUndefined();
+      expect(call?.data).not.toHaveProperty('monthlyEquivalentAmount');
+    });
+
+    it('rejects invalid endDate string', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { endDate: 'not-a-date' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects termMonths below minimum', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { termMonths: 0 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects termMonths above maximum', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { termMonths: 121 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('accepts null termMonths to clear the term', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { termMonths: null });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ termMonths: null }),
+        }),
+      );
+    });
+
+    it('accepts valid termMonths', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { termMonths: 6 });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ termMonths: 6 }),
+        }),
+      );
+    });
+
+    it('rejects termMonths that do not divide by coverageMonthCount', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({
+          billingFrequency: 'CUSTOM',
+          coverageMonthCount: 4,
+        }),
+      );
+
+      await expect(service.update('1', { termMonths: 6 })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
   });
 
@@ -184,6 +312,40 @@ describe('SubscriptionsService', () => {
         activeMonthCount: 0,
         annualizedAmount: 0,
       });
+    });
+
+    it('sets endDate when completing a subscription without one', async () => {
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ACTIVE', endDate: null }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'COMPLETED' }));
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'COMPLETED');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'COMPLETED',
+            endDate: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('preserves existing endDate when completing', async () => {
+      const endDate = new Date('2026-05-01T00:00:00.000Z');
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ON_HOLD', endDate }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'COMPLETED', endDate }));
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'COMPLETED');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'COMPLETED' },
+        }),
+      );
     });
 
     it('rejects invalid subscription status', async () => {

@@ -8,6 +8,7 @@ const KNOWN_FIELD_LABELS: Record<string, string> = {
   sourceContactId: 'Client / referral contact',
   whichOne: 'Which one',
   amount: 'Amount',
+  subscriptionTermMonths: 'Subscription term',
   paymentType: 'Payment type',
   productCategory: 'Product category',
   productType: 'Product type',

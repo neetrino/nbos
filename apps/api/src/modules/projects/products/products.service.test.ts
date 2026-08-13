@@ -14,6 +14,9 @@ describe('ProductsService', () => {
   const partnerAccrualClassic = {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
   };
+  const partnerAccrualSubscription = {
+    releaseHeldAccrualsAfterDelivery: vi.fn().mockResolvedValue(undefined),
+  };
 
   const auditService: Pick<AuditService, 'log'> = {
     log: vi.fn().mockResolvedValue(undefined),
@@ -39,6 +42,7 @@ describe('ProductsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
     checklistTemplates.assertStageInstancesCompleted.mockClear();
@@ -50,6 +54,7 @@ describe('ProductsService', () => {
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
+      partnerAccrualSubscription as never,
       auditService as never,
       deliveryStageChecklistSync as never,
       checklistTemplates as never,
@@ -786,6 +791,36 @@ describe('ProductsService', () => {
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('releases held subscription accruals when a linked order exists', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: { status: 'FULLY_PAID', invoices: [] },
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('p1', 'emp-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
     });
 
     it('blocks completion until client acceptance is recorded', async () => {

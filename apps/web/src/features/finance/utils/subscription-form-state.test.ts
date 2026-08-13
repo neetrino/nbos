@@ -5,7 +5,8 @@ import {
   buildSubscriptionUpdatePayload,
   EMPTY_SUBSCRIPTION_FORM,
   getSubscriptionBillingValidationError,
-  parsePrepaidMonthCount,
+  getSubscriptionPeriodAmountLabel,
+  parseCoverageMonthCount,
   subscriptionToFormState,
 } from './subscription-form-state';
 
@@ -15,11 +16,14 @@ const baseSubscription: Subscription = {
   projectId: 'proj-1',
   productId: 'prod-1',
   type: 'MAINTENANCE_ONLY',
-  baseMonthlyAmount: '10000',
+  amount: '10000',
+  coverageMonthCount: 1,
+  monthlyEquivalentAmount: '10000',
   billingFrequency: 'MONTHLY',
   billingDay: 15,
   taxStatus: 'TAX',
   status: 'ACTIVE',
+  termMonths: null,
   billingStartDate: '2026-01-15T00:00:00.000Z',
   notificationsEnabled: true,
   reminderLanguage: 'HY',
@@ -29,32 +33,40 @@ const baseSubscription: Subscription = {
   invoices: [],
 };
 
-describe('parsePrepaidMonthCount', () => {
+describe('getSubscriptionPeriodAmountLabel', () => {
+  it('reflects the selected billing period', () => {
+    expect(getSubscriptionPeriodAmountLabel('MONTHLY')).toBe('Amount / month');
+    expect(getSubscriptionPeriodAmountLabel('YEARLY')).toBe('Amount / year');
+    expect(getSubscriptionPeriodAmountLabel('CUSTOM')).toBe('Amount for period');
+  });
+});
+
+describe('parseCoverageMonthCount', () => {
   it('accepts integers in the allowed range', () => {
-    expect(parsePrepaidMonthCount('2')).toBe(2);
-    expect(parsePrepaidMonthCount('60')).toBe(60);
+    expect(parseCoverageMonthCount('2')).toBe(2);
+    expect(parseCoverageMonthCount('60')).toBe(60);
   });
 
   it('rejects out-of-range and non-integer values', () => {
-    expect(parsePrepaidMonthCount('')).toBeNull();
-    expect(parsePrepaidMonthCount('1')).toBeNull();
-    expect(parsePrepaidMonthCount('61')).toBeNull();
-    expect(parsePrepaidMonthCount('4.5')).toBeNull();
+    expect(parseCoverageMonthCount('')).toBeNull();
+    expect(parseCoverageMonthCount('1')).toBeNull();
+    expect(parseCoverageMonthCount('61')).toBeNull();
+    expect(parseCoverageMonthCount('4.5')).toBeNull();
   });
 });
 
 describe('getSubscriptionBillingValidationError', () => {
-  it('requires prepaid months for custom billing', () => {
+  it('requires coverage months for custom billing', () => {
     expect(
       getSubscriptionBillingValidationError({
         billingFrequency: 'CUSTOM',
-        prepaidMonthCount: '',
+        coverageMonthCount: '',
       }),
     ).toMatch(/required/i);
     expect(
       getSubscriptionBillingValidationError({
         billingFrequency: 'CUSTOM',
-        prepaidMonthCount: '4',
+        coverageMonthCount: '4',
       }),
     ).toBeNull();
   });
@@ -63,82 +75,87 @@ describe('getSubscriptionBillingValidationError', () => {
     expect(
       getSubscriptionBillingValidationError({
         billingFrequency: 'MONTHLY',
-        prepaidMonthCount: '',
+        coverageMonthCount: '',
       }),
     ).toBeNull();
   });
 });
 
 describe('subscriptionToFormState', () => {
-  it('maps prepaidMonthCount for custom subscriptions', () => {
+  it('maps coverageMonthCount for custom subscriptions', () => {
     const form = subscriptionToFormState({
       ...baseSubscription,
       billingFrequency: 'CUSTOM',
-      prepaidMonthCount: 6,
+      coverageMonthCount: 6,
+      monthlyEquivalentAmount: '1666.67',
+      amount: '10000',
     });
-    expect(form.prepaidMonthCount).toBe('6');
+    expect(form.coverageMonthCount).toBe('6');
   });
 
-  it('uses empty string when prepaidMonthCount is null', () => {
+  it('uses empty string for coverageMonthCount when not custom', () => {
     const form = subscriptionToFormState({
       ...baseSubscription,
       billingFrequency: 'MONTHLY',
-      prepaidMonthCount: null,
+      coverageMonthCount: 1,
     });
-    expect(form.prepaidMonthCount).toBe('');
+    expect(form.coverageMonthCount).toBe('');
   });
 });
 
 describe('buildSubscriptionCreatePayload', () => {
-  it('includes prepaidMonthCount only for custom billing', () => {
+  it('includes coverageMonthCount only for custom billing', () => {
     const customPayload = buildSubscriptionCreatePayload({
       ...EMPTY_SUBSCRIPTION_FORM,
       productId: 'prod-1',
-      baseMonthlyAmount: '10000',
+      amount: '40000',
       billingStartDate: '2026-03-01',
       billingFrequency: 'CUSTOM',
-      prepaidMonthCount: '4',
+      coverageMonthCount: '4',
     });
     expect(customPayload).toMatchObject({
       billingFrequency: 'CUSTOM',
-      prepaidMonthCount: 4,
+      amount: 40000,
+      coverageMonthCount: 4,
     });
 
     const monthlyPayload = buildSubscriptionCreatePayload({
       ...EMPTY_SUBSCRIPTION_FORM,
       productId: 'prod-1',
-      baseMonthlyAmount: '10000',
+      amount: '10000',
       billingStartDate: '2026-03-01',
       billingFrequency: 'MONTHLY',
-      prepaidMonthCount: '4',
+      coverageMonthCount: '4',
     });
-    expect(monthlyPayload).not.toHaveProperty('prepaidMonthCount');
+    expect(monthlyPayload).not.toHaveProperty('coverageMonthCount');
   });
 });
 
 describe('buildSubscriptionUpdatePayload', () => {
-  it('omits prepaidMonthCount for monthly billing', () => {
+  it('omits coverageMonthCount for monthly billing', () => {
     const payload = buildSubscriptionUpdatePayload({
       ...subscriptionToFormState(baseSubscription),
       billingFrequency: 'YEARLY',
-      prepaidMonthCount: '',
+      coverageMonthCount: '',
     });
     expect(payload).toMatchObject({ billingFrequency: 'YEARLY' });
-    expect(payload).not.toHaveProperty('prepaidMonthCount');
+    expect(payload).not.toHaveProperty('coverageMonthCount');
   });
 
-  it('includes prepaidMonthCount for custom billing', () => {
+  it('includes coverageMonthCount for custom billing', () => {
     const payload = buildSubscriptionUpdatePayload({
       ...subscriptionToFormState({
         ...baseSubscription,
         billingFrequency: 'CUSTOM',
-        prepaidMonthCount: 12,
+        coverageMonthCount: 12,
+        amount: '120000',
+        monthlyEquivalentAmount: '10000',
       }),
-      prepaidMonthCount: '12',
+      coverageMonthCount: '12',
     });
     expect(payload).toMatchObject({
       billingFrequency: 'CUSTOM',
-      prepaidMonthCount: 12,
+      coverageMonthCount: 12,
     });
   });
 });

@@ -1,8 +1,8 @@
+/** Parses subscription MRR from project API rows (`monthlyEquivalentAmount`). */
 import type { ProjectSubscription } from '@/lib/api/projects';
 
-/** Parses subscription MRR from project API rows (`baseMonthlyAmount`). */
 export function projectSubscriptionMonthlyAmount(sub: ProjectSubscription): number {
-  const parsed = Number(sub.baseMonthlyAmount);
+  const parsed = Number(sub.monthlyEquivalentAmount);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 

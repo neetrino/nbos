@@ -341,6 +341,8 @@ Payment confirmed
 - manual development / extension invoices;
 - логика перехода заказа и сделки после оплаты.
 
+Статус заказа. Бессрочная `SUBSCRIPTION` (без `subscriptionTermMonths`): все существующие **order-linked** invoice в `PAID` → `FULLY_PAID`. Classic (`paymentType = CLASSIC` и `Order.totalAmount` > 0) и срочная подписка (`paymentType = SUBSCRIPTION` и `subscriptionTermMonths != null`): `FULLY_PAID` только когда сумма платежей по этим invoice ≥ `Order.totalAmount`; ниже — `PARTIALLY_PAID` / `PENDING_PAYMENT` / `ACTIVE`. Classic с нулевым, отрицательным или непригодным `totalAmount` остаётся на invoice-driven правиле — иначе нулевой контракт молча закрыл бы заказ. Оплата только депозита, пока остаток контракта ещё не выставлен, полной не считается. Первый период срочной подписки (deposit invoice) ставит `orderId`; карточки биллинг-прогона ставят только `subscriptionId` и **не** `orderId`, поэтому заказ не видит последующие периоды. Для срочной подписки правило — консервативный стоп против преждевременного `FULLY_PAID`, не полный трекинг контракта.
+
 ### Subscriptions
 
 - массовое автосоздание карточек;

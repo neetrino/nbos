@@ -1,9 +1,13 @@
 import { getDealStageGateErrors, type DealStageGateInput } from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { getDealSubscriptionTermGateErrors } from './deal-stage-gate-subscription-term';
 
 export function getLocalDealStageGateErrors(deal: Deal, targetStatus: string): ApiFieldError[] {
-  return getDealStageGateErrors(toDealStageGateInput(deal), targetStatus);
+  return [
+    ...getDealStageGateErrors(toDealStageGateInput(deal), targetStatus),
+    ...getDealSubscriptionTermGateErrors(deal, targetStatus),
+  ];
 }
 
 export function toDealStageGateInput(deal: Deal): DealStageGateInput {

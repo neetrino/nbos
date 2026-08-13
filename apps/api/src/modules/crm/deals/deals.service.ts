@@ -27,6 +27,7 @@ import { validateDealStageGate } from './deal-stage-gate';
 import { validateDealWonGate } from './deal-won-gate';
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
 import { resolveDealCreateDefaults } from './deal-create-defaults.op';
+import { parseOptionalSubscriptionTermMonths } from './deal-subscription-term';
 import {
   dealNeedsPartnerReferralTerms,
   patchPartnerReferralTerms as persistPartnerReferralTerms,
@@ -189,6 +190,9 @@ export class DealsService {
   async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
     const resolved = await resolveDealCreateDefaults(this.prisma, data, meta);
     await validateDealCreate(this.prisma, resolved);
+    const subscriptionTermMonths = parseOptionalSubscriptionTermMonths(
+      resolved.subscriptionTermMonths,
+    );
     if (resolved.source === 'PARTNER' || resolved.sourcePartnerId) {
       await assertPartnerAssignableForInboundCrm(
         this.prisma,
@@ -209,6 +213,7 @@ export class DealsService {
         ...(resolved.paymentType && {
           paymentType: resolved.paymentType as Prisma.DealCreateInput['paymentType'],
         }),
+        ...(subscriptionTermMonths !== undefined && { subscriptionTermMonths }),
         ...(resolved.taxStatus && {
           taxStatus: resolved.taxStatus as Prisma.DealCreateInput['taxStatus'],
         }),
@@ -310,6 +315,8 @@ export class DealsService {
       throw new BadRequestException('outsourceGoesToDelivery cannot be changed after Deal Won');
     }
 
+    const subscriptionTermMonths = parseOptionalSubscriptionTermMonths(data.subscriptionTermMonths);
+
     let resolvedContactId =
       data.contactId !== undefined ? data.contactId : (existing.contact?.id ?? null);
 
@@ -333,6 +340,7 @@ export class DealsService {
         ...(data.paymentType && {
           paymentType: data.paymentType as Prisma.DealUpdateInput['paymentType'],
         }),
+        ...(subscriptionTermMonths !== undefined && { subscriptionTermMonths }),
         ...(data.taxStatus && { taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'] }),
         ...(data.companyId !== undefined && { companyId: data.companyId }),
         ...(data.sellerId !== undefined && { sellerId: data.sellerId }),

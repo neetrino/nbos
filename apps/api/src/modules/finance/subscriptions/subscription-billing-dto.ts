@@ -2,38 +2,50 @@ import { BadRequestException } from '@nestjs/common';
 import type { Prisma, SubscriptionBillingFrequencyEnum } from '@nbos/database';
 
 const BILLING_FREQUENCIES: SubscriptionBillingFrequencyEnum[] = ['MONTHLY', 'YEARLY', 'CUSTOM'];
-const CUSTOM_PREPAID_MONTH_MIN = 2;
-const CUSTOM_PREPAID_MONTH_MAX = 60;
+const MONTHLY_COVERAGE_MONTH_COUNT = 1;
+const YEARLY_COVERAGE_MONTH_COUNT = 12;
+const CUSTOM_COVERAGE_MONTH_MIN = 2;
+const CUSTOM_COVERAGE_MONTH_MAX = 60;
+/** Minimum covered months for a fixed-term subscription. */
+const SUBSCRIPTION_TERM_MONTHS_MIN = 1;
+/** Maximum covered months for a fixed-term subscription. */
+const SUBSCRIPTION_TERM_MONTHS_MAX = 120;
 
 export interface ResolvedSubscriptionBillingInput {
-  baseMonthlyAmount: number;
+  amount: number;
   billingStartDate: Date;
   billingFrequency: SubscriptionBillingFrequencyEnum;
-  prepaidMonthCount: number | null;
+  coverageMonthCount: number;
   notificationsEnabled: boolean;
 }
 
-export function parseBillingFrequency(raw: string | undefined): SubscriptionBillingFrequencyEnum {
-  if (!raw) return 'MONTHLY';
-  const upper = raw.toUpperCase();
+function parseBillingFrequency(raw: string): SubscriptionBillingFrequencyEnum {
+  const upper = raw.trim().toUpperCase();
+  if (!upper) {
+    throw new BadRequestException('billingFrequency is required');
+  }
   if (BILLING_FREQUENCIES.includes(upper as SubscriptionBillingFrequencyEnum)) {
     return upper as SubscriptionBillingFrequencyEnum;
   }
   throw new BadRequestException(`Unknown billingFrequency: ${raw}`);
 }
 
+/**
+ * Create-path billing resolver. `billingFrequency` is required: `amount` is a period sum,
+ * so a missing frequency must not silently default to MONTHLY.
+ * Updates use `applySubscriptionBillingPatch`, which leaves frequency untouched when omitted.
+ */
 export function resolveSubscriptionBillingInput(data: {
-  baseMonthlyAmount?: number;
   amount?: number;
   billingStartDate?: string;
   startDate?: string;
   billingFrequency?: string;
-  prepaidMonthCount?: number | null;
+  coverageMonthCount?: number | null;
   notificationsEnabled?: boolean;
 }): ResolvedSubscriptionBillingInput {
-  const baseRaw = data.baseMonthlyAmount ?? data.amount;
-  if (baseRaw === undefined || !Number.isFinite(baseRaw) || baseRaw <= 0) {
-    throw new BadRequestException('baseMonthlyAmount must be greater than zero');
+  const amountRaw = data.amount;
+  if (amountRaw === undefined || !Number.isFinite(amountRaw) || amountRaw <= 0) {
+    throw new BadRequestException('amount must be greater than zero');
   }
 
   const startRaw = data.billingStartDate ?? data.startDate;
@@ -46,14 +58,18 @@ export function resolveSubscriptionBillingInput(data: {
     throw new BadRequestException('billingStartDate is invalid');
   }
 
+  if (data.billingFrequency == null || !data.billingFrequency.trim()) {
+    throw new BadRequestException('billingFrequency is required');
+  }
+
   const billingFrequency = parseBillingFrequency(data.billingFrequency);
   return {
-    baseMonthlyAmount: baseRaw,
+    amount: amountRaw,
     billingStartDate,
     billingFrequency,
-    prepaidMonthCount: resolvePrepaidMonthCountForFrequency(
+    coverageMonthCount: resolveCoverageMonthCountForFrequency(
       billingFrequency,
-      data.prepaidMonthCount,
+      data.coverageMonthCount,
     ),
     notificationsEnabled: data.notificationsEnabled ?? true,
   };
@@ -61,22 +77,20 @@ export function resolveSubscriptionBillingInput(data: {
 
 export function applySubscriptionBillingPatch(
   data: {
-    baseMonthlyAmount?: number;
     amount?: number;
     billingStartDate?: string;
     startDate?: string;
     billingFrequency?: string;
-    prepaidMonthCount?: number | null;
+    coverageMonthCount?: number | null;
     notificationsEnabled?: boolean;
   },
   updateData: Prisma.SubscriptionUpdateInput,
 ): void {
-  const baseRaw = data.baseMonthlyAmount ?? data.amount;
-  if (baseRaw !== undefined) {
-    if (!Number.isFinite(baseRaw) || baseRaw <= 0) {
-      throw new BadRequestException('baseMonthlyAmount must be greater than zero');
+  if (data.amount !== undefined) {
+    if (!Number.isFinite(data.amount) || data.amount <= 0) {
+      throw new BadRequestException('amount must be greater than zero');
     }
-    updateData.baseMonthlyAmount = baseRaw;
+    updateData.amount = data.amount;
   }
 
   const startRaw = data.billingStartDate ?? data.startDate;
@@ -88,74 +102,122 @@ export function applySubscriptionBillingPatch(
     updateData.billingStartDate = billingStartDate;
   }
 
-  applyFrequencyAndPrepaidPatch(data, updateData);
+  applyFrequencyAndCoveragePatch(data, updateData);
 
   if (data.notificationsEnabled !== undefined) {
     updateData.notificationsEnabled = data.notificationsEnabled;
   }
 }
 
-function applyFrequencyAndPrepaidPatch(
+function applyFrequencyAndCoveragePatch(
   data: {
     billingFrequency?: string;
-    prepaidMonthCount?: number | null;
+    coverageMonthCount?: number | null;
   },
   updateData: Prisma.SubscriptionUpdateInput,
 ): void {
   const frequencyProvided = data.billingFrequency !== undefined;
-  const prepaidProvided = data.prepaidMonthCount !== undefined;
+  const coverageProvided = data.coverageMonthCount !== undefined;
 
   if (!frequencyProvided) {
-    if (prepaidProvided) {
+    if (coverageProvided) {
       throw new BadRequestException(
-        'prepaidMonthCount can only be set together with billingFrequency CUSTOM',
+        'coverageMonthCount can only be set together with billingFrequency CUSTOM',
       );
     }
     return;
   }
 
-  const nextFrequency = parseBillingFrequency(data.billingFrequency);
+  const nextFrequency = parseBillingFrequency(data.billingFrequency ?? '');
   updateData.billingFrequency = nextFrequency;
-  if (nextFrequency === 'CUSTOM') {
-    updateData.prepaidMonthCount = resolvePrepaidMonthCountForFrequency(
-      'CUSTOM',
-      data.prepaidMonthCount,
-    );
-    return;
-  }
-  if (prepaidProvided && data.prepaidMonthCount != null) {
-    throw new BadRequestException(
-      'prepaidMonthCount must not be set when billingFrequency is MONTHLY or YEARLY',
-    );
-  }
-  updateData.prepaidMonthCount = null;
+  updateData.coverageMonthCount = resolveCoverageMonthCountForFrequency(
+    nextFrequency,
+    data.coverageMonthCount,
+  );
 }
 
-function resolvePrepaidMonthCountForFrequency(
+function resolveCoverageMonthCountForFrequency(
   billingFrequency: SubscriptionBillingFrequencyEnum,
-  prepaidMonthCount: number | null | undefined,
-): number | null {
-  if (billingFrequency === 'CUSTOM') {
-    return parseCustomPrepaidMonthCount(prepaidMonthCount);
+  coverageMonthCount: number | null | undefined,
+): number {
+  if (billingFrequency === 'MONTHLY') {
+    assertNoCustomCoverage(coverageMonthCount, billingFrequency);
+    return MONTHLY_COVERAGE_MONTH_COUNT;
   }
-  if (prepaidMonthCount != null) {
-    throw new BadRequestException(
-      'prepaidMonthCount must not be set when billingFrequency is MONTHLY or YEARLY',
-    );
+  if (billingFrequency === 'YEARLY') {
+    assertNoCustomCoverage(coverageMonthCount, billingFrequency);
+    return YEARLY_COVERAGE_MONTH_COUNT;
   }
-  return null;
+  return parseCustomCoverageMonthCount(coverageMonthCount);
 }
 
-function parseCustomPrepaidMonthCount(value: number | null | undefined): number {
+function assertNoCustomCoverage(
+  coverageMonthCount: number | null | undefined,
+  billingFrequency: SubscriptionBillingFrequencyEnum,
+): void {
+  if (coverageMonthCount != null) {
+    throw new BadRequestException(
+      `coverageMonthCount must not be set when billingFrequency is ${billingFrequency}`,
+    );
+  }
+}
+
+function parseCustomCoverageMonthCount(value: number | null | undefined): number {
   if (
     value == null ||
     !Number.isInteger(value) ||
-    value < CUSTOM_PREPAID_MONTH_MIN ||
-    value > CUSTOM_PREPAID_MONTH_MAX
+    value < CUSTOM_COVERAGE_MONTH_MIN ||
+    value > CUSTOM_COVERAGE_MONTH_MAX
   ) {
     throw new BadRequestException(
-      `prepaidMonthCount is required for CUSTOM billingFrequency and must be an integer from ${CUSTOM_PREPAID_MONTH_MIN} to ${CUSTOM_PREPAID_MONTH_MAX}`,
+      `coverageMonthCount is required for CUSTOM billingFrequency and must be an integer from ${CUSTOM_COVERAGE_MONTH_MIN} to ${CUSTOM_COVERAGE_MONTH_MAX}`,
     );
   }
   return value;
+}
+
+/**
+ * Validates optional `termMonths` on create/update.
+ * `undefined` = omit / leave untouched; `null` = open-ended; otherwise integer 1..120.
+ */
+export function parseOptionalTermMonths(
+  value: number | null | undefined,
+): number | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  if (
+    !Number.isInteger(value) ||
+    value < SUBSCRIPTION_TERM_MONTHS_MIN ||
+    value > SUBSCRIPTION_TERM_MONTHS_MAX
+  ) {
+    throw new BadRequestException(
+      `termMonths must be an integer from ${SUBSCRIPTION_TERM_MONTHS_MIN} to ${SUBSCRIPTION_TERM_MONTHS_MAX}, or null`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Fixed term must divide into whole billing periods so billing never invoices a partial
+ * period (e.g. term 6 + monthly OK; term 6 + custom 4 rejected; term 12 + yearly OK).
+ * Call only when both values are known (non-null term).
+ */
+export function assertTermMonthsAlignWithCoverage(
+  termMonths: number,
+  coverageMonthCount: number,
+): void {
+  if (coverageMonthCount > termMonths) {
+    throw new BadRequestException(
+      `coverageMonthCount (${coverageMonthCount}) must be less than or equal to termMonths (${termMonths})`,
+    );
+  }
+  if (termMonths % coverageMonthCount !== 0) {
+    throw new BadRequestException(
+      `termMonths (${termMonths}) must be divisible by coverageMonthCount (${coverageMonthCount})`,
+    );
+  }
 }

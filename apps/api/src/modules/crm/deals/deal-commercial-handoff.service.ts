@@ -11,7 +11,11 @@ import { AuditService } from '../../audit/audit.service';
 import { dealDetailInclude } from './deal.includes';
 import { DealWonHandler } from './deal-won.handler';
 import { validateDealWonGate } from './deal-won-gate';
-import { assertDealHasCommercialAmount, createOrderForDeal } from './deal-order-bootstrap.ops';
+import {
+  assertDealHasCommercialAmount,
+  createOrderForDeal,
+  resolveDealOrderTotalAmount,
+} from './deal-order-bootstrap.ops';
 import { createDealDepositInvoice } from './deal-deposit-invoice.ops';
 import {
   DEPOSIT_COMMERCIAL_DEAL_TYPES,
@@ -48,7 +52,7 @@ export class DealCommercialHandoffService {
     if (!order) {
       const created = await createOrderForDeal(this.prisma, {
         deal,
-        totalAmount: Number(deal.amount ?? amount),
+        totalAmount: resolveDealOrderTotalAmount(deal, amount),
         paymentMode: 'STANDARD_PREPAY',
         deliveryStartMode: 'AFTER_PAYMENT',
         status: 'PENDING_PAYMENT',
@@ -153,7 +157,13 @@ export class DealCommercialHandoffService {
     validateDealWonGate(deal, { skipFinance: true });
 
     const wonMode = mapExceptionTypeToWonMode(body.exceptionType);
-    const totalAmount = body.exceptionType === 'FREE' ? 0 : assertDealHasCommercialAmount(deal);
+    const totalAmount =
+      body.exceptionType === 'FREE'
+        ? 0
+        : resolveDealOrderTotalAmount({
+            ...deal,
+            amount: assertDealHasCommercialAmount(deal),
+          });
 
     await createOrderForDeal(this.prisma, {
       deal,

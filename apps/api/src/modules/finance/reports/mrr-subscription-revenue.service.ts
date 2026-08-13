@@ -14,10 +14,11 @@ import type {
 } from './mrr-subscription-revenue.types';
 
 const MRR_NOTES = [
-  'Active MRR sums Subscription.baseMonthlyAmount for active subscriptions at the snapshot date.',
+  'Active MRR sums Subscription.monthlyEquivalentAmount for active subscriptions at the snapshot date.',
   'Paid subscription revenue uses Payment rows linked to subscription invoice cards.',
-  'New and churned MRR use billingStartDate/endDate in the selected period.',
-  'Yearly subscriptions bill via invoice coverage_month_count; MRR uses monthly base, not invoiced total.',
+  'New MRR uses billingStartDate; churned and completed MRR use endDate in the selected period.',
+  'Natural completion (COMPLETED) is reported separately from churn (CANCELLED).',
+  'Yearly/custom subscriptions bill the period amount on the invoice; MRR uses monthlyEquivalentAmount.',
 ];
 
 @Injectable()
@@ -55,48 +56,52 @@ export class MrrSubscriptionRevenueService {
     const where = activeSubscriptionWhere(snapshotDate);
     const [activeSubscriptionCount, total, byType] = await Promise.all([
       this.prisma.subscription.count({ where }),
-      this.prisma.subscription.aggregate({ where, _sum: { baseMonthlyAmount: true } }),
+      this.prisma.subscription.aggregate({ where, _sum: { monthlyEquivalentAmount: true } }),
       this.prisma.subscription.groupBy({
         by: ['type'],
         where,
-        _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _count: { _all: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
     ]);
     return {
-      activeMrr: decimalString(total._sum.baseMonthlyAmount),
+      activeMrr: decimalString(total._sum?.monthlyEquivalentAmount),
       activeSubscriptionCount,
       byType: byType
         .map((row) => ({
           type: String(row.type),
-          activeSubscriptionCount: row._count,
-          activeMrr: decimalString(row._sum.baseMonthlyAmount),
+          activeSubscriptionCount: row._count._all,
+          activeMrr: decimalString(row._sum?.monthlyEquivalentAmount),
         }))
         .sort((a, b) => a.type.localeCompare(b.type)),
     };
   }
 
   private async getMovement(dateFilter: ReturnType<typeof buildDateFilter>) {
-    const [newRows, churnedRows] = await Promise.all([
+    const [newRows, churnedRows, completedRows] = await Promise.all([
       this.prisma.subscription.aggregate({
         ...(dateFilter ? { where: { billingStartDate: dateFilter } } : {}),
-        _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _count: { _all: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.aggregate({
-        where: {
-          status: { in: ['CANCELLED', 'COMPLETED'] },
-          ...(dateFilter ? { endDate: dateFilter } : { endDate: { not: null } }),
-        },
-        _count: true,
-        _sum: { baseMonthlyAmount: true },
+        where: endedSubscriptionWhere('CANCELLED', dateFilter),
+        _count: { _all: true },
+        _sum: { monthlyEquivalentAmount: true },
+      }),
+      this.prisma.subscription.aggregate({
+        where: endedSubscriptionWhere('COMPLETED', dateFilter),
+        _count: { _all: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
     ]);
     return {
-      newMrr: decimalString(newRows._sum.baseMonthlyAmount),
-      newSubscriptionCount: newRows._count,
-      churnedMrr: decimalString(churnedRows._sum.baseMonthlyAmount),
-      churnedSubscriptionCount: churnedRows._count,
+      newMrr: decimalString(newRows._sum?.monthlyEquivalentAmount),
+      newSubscriptionCount: newRows._count._all,
+      churnedMrr: decimalString(churnedRows._sum?.monthlyEquivalentAmount),
+      churnedSubscriptionCount: churnedRows._count._all,
+      completedMrr: decimalString(completedRows._sum?.monthlyEquivalentAmount),
+      completedSubscriptionCount: completedRows._count._all,
     };
   }
 
@@ -129,5 +134,15 @@ function activeSubscriptionWhere(snapshotDate: Date) {
     status: 'ACTIVE' as const,
     billingStartDate: { lte: snapshotDate },
     OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+  };
+}
+
+function endedSubscriptionWhere(
+  status: 'CANCELLED' | 'COMPLETED',
+  dateFilter: ReturnType<typeof buildDateFilter>,
+) {
+  return {
+    status,
+    ...(dateFilter ? { endDate: dateFilter } : { endDate: { not: null } }),
   };
 }

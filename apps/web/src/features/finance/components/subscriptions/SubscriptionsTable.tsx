@@ -69,7 +69,7 @@ export function SubscriptionsTable({
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Company</TableHead>
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Partner</TableHead>
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
-              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount/mo</TableHead>
+              <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount/mo equiv.</TableHead>
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Coverage</TableHead>
               <TableHead className={FINANCE_LIST_HEAD_CLASS}>Billing Day</TableHead>
@@ -214,7 +214,7 @@ function SubscriptionTableRow({
         </div>
       </TableCell>
       <SubscriptionTypeCell subscriptionType={subscriptionType} />
-      <SubscriptionAmountCell amount={subscription.baseMonthlyAmount} />
+      <SubscriptionAmountCell amount={subscription.monthlyEquivalentAmount} />
       <SubscriptionStatusCell subscriptionStatus={subscriptionStatus} />
       <TableCell className={`${FINANCE_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
         {subscription.coverage?.activeMonthCount ?? 0} months

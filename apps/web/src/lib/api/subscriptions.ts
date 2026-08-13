@@ -17,13 +17,18 @@ export interface Subscription {
   projectId: string;
   productId: string;
   type: string;
-  baseMonthlyAmount: string;
+  /** Sum for one billing period (human-entered; equals invoice amount). */
+  amount: string;
+  /** Period length in months: MONTHLY = 1, YEARLY = 12, CUSTOM = 2–60. */
+  coverageMonthCount: number;
+  /** Read-only MRR equivalent: amount / coverageMonthCount. */
+  monthlyEquivalentAmount: string;
   billingFrequency: string;
-  /** Set when billingFrequency is CUSTOM (2–60 months). */
-  prepaidMonthCount?: number | null;
   billingDay: number;
   taxStatus: string;
   status: string;
+  /** Agreed fixed term in months; null = open-ended. */
+  termMonths: number | null;
   billingStartDate: string;
   notificationsEnabled: boolean;
   /** Client WhatsApp payment reminder language: HY | RU | EN */
@@ -40,6 +45,8 @@ export interface Subscription {
     code: string;
     moneyStatus: string;
     amount: string;
+    type?: string;
+    createdAt?: string;
     coverageStartMonth?: string | null;
     coverageMonthCount?: number | null;
   }>;
@@ -50,10 +57,11 @@ export interface CreateSubscriptionPayload {
   productId: string;
   projectId?: string;
   type: string;
-  baseMonthlyAmount: number;
+  amount: number;
   billingDay: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number;
+  /** Required when billingFrequency is CUSTOM (2–60). */
+  coverageMonthCount?: number;
   taxStatus?: string;
   billingStartDate: string;
   notificationsEnabled?: boolean;
@@ -66,9 +74,9 @@ export interface UpdateSubscriptionPayload {
   type?: string;
   productId?: string;
   projectId?: string;
-  baseMonthlyAmount?: number;
+  amount?: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number;
+  coverageMonthCount?: number;
   billingDay?: number;
   taxStatus?: string;
   billingStartDate?: string;
@@ -135,12 +143,12 @@ export interface SubscriptionStats {
   byStatus: Array<{
     status: string;
     _count: number;
-    _sum: { baseMonthlyAmount: number | null };
+    _sum: { monthlyEquivalentAmount: number | null };
   }>;
   byType: Array<{
     type: string;
     _count: number;
-    _sum: { baseMonthlyAmount: number | null };
+    _sum: { monthlyEquivalentAmount: number | null };
   }>;
   activeSubscriptions: number;
   monthlyRevenue: number | null;

@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { SUBSCRIPTION_PARTNER_FILTER_UNLINKED } from '@nbos/shared';
 import {
   PrismaClient,
@@ -12,6 +12,8 @@ import { buildSubscriptionGridPayload } from './subscription-grid';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 import {
   applySubscriptionBillingPatch,
+  assertTermMonthsAlignWithCoverage,
+  parseOptionalTermMonths,
   resolveSubscriptionBillingInput,
 } from './subscription-billing-dto';
 import {
@@ -27,12 +29,11 @@ interface CreateSubscriptionDto {
   /** Optional; must match Product.projectId when provided. */
   projectId?: string;
   type: string;
-  baseMonthlyAmount?: number;
-  /** @deprecated Use baseMonthlyAmount */
+  /** Period sum (one billing cycle). */
   amount?: number;
   billingDay: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number | null;
+  coverageMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -41,6 +42,8 @@ interface CreateSubscriptionDto {
   /** HY | RU | EN — client WhatsApp payment reminder language (default HY). */
   reminderLanguage?: string;
   endDate?: string;
+  /** Covered months until term ends; null = open-ended. */
+  termMonths?: number | null;
   partnerId?: string;
 }
 
@@ -49,12 +52,11 @@ interface UpdateSubscriptionDto {
   /** Optional re-link; must match Product.projectId when projectId also sent. */
   productId?: string;
   projectId?: string;
-  baseMonthlyAmount?: number;
-  /** @deprecated Use baseMonthlyAmount */
+  /** Period sum (one billing cycle). */
   amount?: number;
   billingDay?: number;
   billingFrequency?: string;
-  prepaidMonthCount?: number | null;
+  coverageMonthCount?: number | null;
   taxStatus?: string;
   billingStartDate?: string;
   /** @deprecated Use billingStartDate */
@@ -62,6 +64,8 @@ interface UpdateSubscriptionDto {
   notificationsEnabled?: boolean;
   reminderLanguage?: string;
   endDate?: string;
+  /** Covered months until term ends; null = open-ended. */
+  termMonths?: number | null;
   partnerId?: string | null;
 }
 
@@ -265,15 +269,19 @@ export class SubscriptionsService {
     });
     const code = await this.generateCode();
     const billing = resolveSubscriptionBillingInput(data);
+    const termMonths = parseOptionalTermMonths(data.termMonths);
+    if (termMonths != null) {
+      assertTermMonthsAlignWithCoverage(termMonths, billing.coverageMonthCount);
+    }
     const created = await this.prisma.subscription.create({
       data: {
         code,
         projectId: ownership.projectId,
         productId: ownership.productId,
         type: data.type as SubscriptionTypeEnum,
-        baseMonthlyAmount: billing.baseMonthlyAmount,
+        amount: billing.amount,
         billingFrequency: billing.billingFrequency,
-        prepaidMonthCount: billing.prepaidMonthCount,
+        coverageMonthCount: billing.coverageMonthCount,
         billingDay: data.billingDay,
         taxStatus:
           (data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set']) ?? 'TAX',
@@ -281,6 +289,7 @@ export class SubscriptionsService {
         notificationsEnabled: billing.notificationsEnabled,
         reminderLanguage: parseReminderLanguage(data.reminderLanguage),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
+        termMonths,
         partnerId: data.partnerId,
       },
     });
@@ -288,7 +297,7 @@ export class SubscriptionsService {
   }
 
   async update(id: string, data: UpdateSubscriptionDto) {
-    await this.findById(id);
+    const current = await this.findById(id);
 
     const updateData: Prisma.SubscriptionUpdateInput = {};
     if (data.type) updateData.type = data.type as SubscriptionTypeEnum;
@@ -307,7 +316,9 @@ export class SubscriptionsService {
       updateData.taxStatus =
         data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set'];
     }
-    if (data.endDate) updateData.endDate = new Date(data.endDate);
+    applyEndDatePatch(data.endDate, updateData);
+    applyTermMonthsPatch(data.termMonths, updateData);
+    assertUpdatedTermAlignsWithCoverage(current, data, updateData);
     if (data.partnerId !== undefined)
       updateData.partner = data.partnerId
         ? { connect: { id: data.partnerId } }
@@ -335,6 +346,9 @@ export class SubscriptionsService {
       updateData.billingStartDate = new Date();
     }
     if (status === 'CANCELLED') {
+      updateData.endDate = new Date();
+    }
+    if (status === 'COMPLETED' && current.endDate == null) {
       updateData.endDate = new Date();
     }
 
@@ -368,17 +382,17 @@ export class SubscriptionsService {
         by: ['status'],
         where: periodWhere,
         _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
         where: periodWhere,
         _count: true,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.aggregate({
         where: activeWhere,
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.count({ where: activeWhere }),
     ]);
@@ -388,7 +402,7 @@ export class SubscriptionsService {
       byStatus,
       byType,
       activeSubscriptions,
-      monthlyRevenue: totalRevenue._sum.baseMonthlyAmount,
+      monthlyRevenue: totalRevenue._sum?.monthlyEquivalentAmount ?? null,
     };
   }
 
@@ -421,4 +435,51 @@ export class SubscriptionsService {
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
+}
+
+/** `undefined` untouched; blank string clears to null; valid ISO sets the date. */
+function applyEndDatePatch(
+  endDate: string | undefined,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  if (endDate === undefined) {
+    return;
+  }
+  if (endDate.trim() === '') {
+    updateData.endDate = null;
+    return;
+  }
+  const parsed = new Date(endDate);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new BadRequestException('endDate is invalid');
+  }
+  updateData.endDate = parsed;
+}
+
+/** `undefined` untouched; `null` clears; otherwise validated integer months. */
+function applyTermMonthsPatch(
+  termMonths: number | null | undefined,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  const parsed = parseOptionalTermMonths(termMonths);
+  if (parsed !== undefined) {
+    updateData.termMonths = parsed;
+  }
+}
+
+function assertUpdatedTermAlignsWithCoverage(
+  current: { termMonths: number | null; coverageMonthCount: number },
+  data: UpdateSubscriptionDto,
+  updateData: Prisma.SubscriptionUpdateInput,
+): void {
+  const nextTerm =
+    data.termMonths !== undefined ? parseOptionalTermMonths(data.termMonths) : current.termMonths;
+  if (nextTerm == null) {
+    return;
+  }
+  const nextCoverage =
+    typeof updateData.coverageMonthCount === 'number'
+      ? updateData.coverageMonthCount
+      : current.coverageMonthCount;
+  assertTermMonthsAlignWithCoverage(nextTerm, nextCoverage);
 }

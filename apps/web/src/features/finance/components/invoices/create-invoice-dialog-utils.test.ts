@@ -53,11 +53,14 @@ describe('create invoice dialog utils', () => {
     projectId: 'project-1',
     productId: 'product-1',
     type: 'MAINTENANCE_ONLY',
-    baseMonthlyAmount: '50000',
+    amount: '50000',
+    coverageMonthCount: 1,
+    monthlyEquivalentAmount: '50000',
     billingFrequency: 'MONTHLY',
     billingDay: 15,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-01-01T00:00:00.000Z',
     notificationsEnabled: true,
     reminderLanguage: 'HY',
@@ -68,7 +71,7 @@ describe('create invoice dialog utils', () => {
     invoices: [],
   };
 
-  it('pre-fills subscription invoice form from monthly amount', () => {
+  it('pre-fills subscription invoice form from period amount', () => {
     expect(getInitialInvoiceFormFromSubscription(subscription).amount).toBe('50000');
   });
 

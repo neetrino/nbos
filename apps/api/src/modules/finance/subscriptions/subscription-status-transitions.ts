@@ -4,8 +4,8 @@ import type { SubscriptionStatusEnum } from '@nbos/database';
 /** Allowed manual transitions (billing scheduler never calls these helpers). */
 const ALLOWED_TRANSITIONS: Record<SubscriptionStatusEnum, readonly SubscriptionStatusEnum[]> = {
   PENDING: ['ACTIVE', 'CANCELLED'],
-  ACTIVE: ['ON_HOLD', 'CANCELLED'],
-  ON_HOLD: ['ACTIVE', 'CANCELLED'],
+  ACTIVE: ['ON_HOLD', 'CANCELLED', 'COMPLETED'],
+  ON_HOLD: ['ACTIVE', 'CANCELLED', 'COMPLETED'],
   CANCELLED: [],
   COMPLETED: [],
 };

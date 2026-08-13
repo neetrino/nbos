@@ -13,18 +13,20 @@ import {
 } from '@/components/shared';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { formatAmount, getSubscriptionType } from '@/features/finance/constants/finance';
+import { getSubscriptionType } from '@/features/finance/constants/finance';
 import {
   subscriptionWorkspaceHref,
   subscriptionsListWithOpenSubscriptionHref,
 } from '@/features/finance/constants/subscription-deep-link';
 import {
-  buildSubscriptionGeneralPatch,
   createSubscriptionGeneralDraft,
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
-import { getSubscriptionBillingValidationError } from '@/features/finance/utils/subscription-form-state';
+import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
+import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
+import { SubscriptionBillingPeriodConfirmDialog } from './SubscriptionBillingPeriodConfirmDialog';
+import { useSubscriptionGeneralSave } from './use-subscription-general-save';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
@@ -44,11 +46,6 @@ interface SubscriptionDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubscriptionUpdated?: (subscription: Subscription) => void;
-}
-
-function subscriptionSaveErrorMessage(err: unknown): string {
-  if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
 }
 
 export function SubscriptionDetailSheet({
@@ -79,8 +76,6 @@ export function SubscriptionDetailSheet({
   const [activeTab, setActiveTab] = useState<SubscriptionDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const generalDirtyRef = useRef(false);
 
   useEffect(() => {
@@ -101,15 +96,19 @@ export function SubscriptionDetailSheet({
   }, [
     subscription?.id,
     subscription?.status,
-    subscription?.baseMonthlyAmount,
+    subscription?.amount,
     subscription?.billingDay,
     subscription?.billingFrequency,
-    subscription?.prepaidMonthCount,
+    subscription?.coverageMonthCount,
     subscription?.partner?.id,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const replaceGeneralDraft = useCallback((next: SubscriptionGeneralDraft) => {
+    setGeneralDraft(next);
   }, []);
 
   const generalDirty =
@@ -131,45 +130,31 @@ export function SubscriptionDetailSheet({
     [onSubscriptionUpdated, setSubscription],
   );
 
-  const handleGeneralSave = useCallback(() => {
-    if (!subscription || !generalDraft || !generalSnap) return;
-    setGeneralError(null);
-    const billingError = getSubscriptionBillingValidationError(generalDraft);
-    if (billingError) {
-      setGeneralError(billingError);
-      return;
-    }
-    const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
-    if (Object.keys(patch).length === 0) return;
-
-    const draftAtSave = generalDraft;
-    const snapAtSave = generalSnap;
-    setGeneralSnap({ ...draftAtSave });
-    setSaving(true);
-
-    void (async () => {
-      try {
-        const updated = await subscriptionsApi.update(subscription.id, patch);
-        generalDirtyRef.current = false;
-        handleSubscriptionChange(updated);
-      } catch (err) {
-        setGeneralSnap(snapAtSave);
-        setGeneralDraft(draftAtSave);
-        setGeneralError(subscriptionSaveErrorMessage(err));
-      } finally {
-        setSaving(false);
-      }
-    })();
-  }, [subscription, generalDraft, generalSnap, handleSubscriptionChange]);
-
-  const handleGeneralCancel = useCallback(() => {
-    setGeneralError(null);
-    if (generalSnap) setGeneralDraft({ ...generalSnap });
-  }, [generalSnap]);
+  const {
+    saving,
+    generalError,
+    periodConfirmOpen,
+    setPeriodConfirmOpen,
+    periodConfirmDescription,
+    handleSave: handleGeneralSave,
+    handleCancel: handleGeneralCancel,
+    confirmPeriodChangeAndSave,
+  } = useSubscriptionGeneralSave({
+    subscription,
+    generalDraft,
+    generalSnap,
+    onSaved: handleSubscriptionChange,
+    setGeneralDraft,
+    setGeneralSnap,
+    onDirtyReset: () => {
+      generalDirtyRef.current = false;
+    },
+  });
 
   if (!hostMounted) return null;
 
   const subType = subscription ? getSubscriptionType(subscription.type) : undefined;
+  const termSummary = subscription ? formatSubscriptionTermSummary(subscription) : null;
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
 
   return (
@@ -200,7 +185,13 @@ export function SubscriptionDetailSheet({
                     ) : null}
                   </div>
                   <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
+                    {formatSubscriptionPeriodStatement(subscription)}
+                    {termSummary ? (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        {termSummary}
+                      </>
+                    ) : null}
                     <span className="mx-1.5">·</span>
                     {subscription.project.name}
                   </p>
@@ -233,6 +224,7 @@ export function SubscriptionDetailSheet({
                       subscription={subscription}
                       draft={generalDraft}
                       patchDraft={patchGeneralDraft}
+                      replaceDraft={replaceGeneralDraft}
                       formDisabled={saving}
                     />
                   ) : null}
@@ -260,6 +252,15 @@ export function SubscriptionDetailSheet({
           />
         </EntityDetailSheetContent>
       </Sheet>
+      <SubscriptionBillingPeriodConfirmDialog
+        open={periodConfirmOpen}
+        subscriptionCode={subscription?.code ?? ''}
+        description={periodConfirmDescription}
+        isSubmitting={saving}
+        onOpenChange={setPeriodConfirmOpen}
+        onConfirm={confirmPeriodChangeAndSave}
+        forceNestedBackdrop
+      />
     </EntityItemHost>
   );
 }

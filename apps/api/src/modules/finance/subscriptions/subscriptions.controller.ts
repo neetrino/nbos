@@ -101,17 +101,17 @@ export class SubscriptionsController {
       productId: string;
       projectId?: string;
       type: string;
-      baseMonthlyAmount?: number;
       amount?: number;
       billingDay: number;
       billingFrequency?: string;
-      prepaidMonthCount?: number | null;
+      coverageMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
       reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string;
     },
   ) {
@@ -125,17 +125,17 @@ export class SubscriptionsController {
     @Body()
     body: {
       type?: string;
-      baseMonthlyAmount?: number;
       amount?: number;
       billingDay?: number;
       billingFrequency?: string;
-      prepaidMonthCount?: number | null;
+      coverageMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
       reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string | null;
     },
   ) {

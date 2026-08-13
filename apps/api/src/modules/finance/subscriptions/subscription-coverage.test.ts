@@ -14,7 +14,7 @@ function inv(paid: boolean, start: string, count: number) {
 describe('buildSubscriptionCoverageSummary', () => {
   it('counts distinct paid months in the rollup year', () => {
     const summary = buildSubscriptionCoverageSummary(
-      { baseMonthlyAmount: 1000 },
+      { monthlyEquivalentAmount: 1000 },
       [inv(true, '2026-03', 2), inv(true, '2026-05', 1)],
       2026,
     );
@@ -25,7 +25,7 @@ describe('buildSubscriptionCoverageSummary', () => {
 
   it('ignores unpaid and non-subscription invoices', () => {
     const summary = buildSubscriptionCoverageSummary(
-      { baseMonthlyAmount: 500 },
+      { monthlyEquivalentAmount: 500 },
       [
         inv(false, '2026-01', 3),
         {
@@ -43,7 +43,7 @@ describe('buildSubscriptionCoverageSummary', () => {
 
   it('handles yearly coverage spanning into the next year', () => {
     const summary = buildSubscriptionCoverageSummary(
-      { baseMonthlyAmount: 100 },
+      { monthlyEquivalentAmount: 100 },
       [inv(true, '2026-11', 4)],
       2026,
     );

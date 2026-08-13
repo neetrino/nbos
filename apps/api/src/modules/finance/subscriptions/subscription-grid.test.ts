@@ -8,9 +8,10 @@ function baseSub(overrides: Partial<SubscriptionGridRowInput> = {}): Subscriptio
     id: 'sub-1',
     type: 'MAINTENANCE_ONLY',
     status: 'ACTIVE',
-    baseMonthlyAmount: 80000,
+    monthlyEquivalentAmount: 80000,
     billingStartDate: new Date('2026-01-01'),
     endDate: null,
+    termMonths: null,
     project: { id: 'p1', name: 'Alpha' },
     invoices: [],
     ...overrides,
@@ -93,12 +94,54 @@ describe('buildSubscriptionGridPayload', () => {
     const payload = buildSubscriptionGridPayload(
       [
         baseSub(),
-        baseSub({ id: 'sub-2', project: { id: 'p2', name: 'Beta' }, baseMonthlyAmount: 20000 }),
+        baseSub({
+          id: 'sub-2',
+          project: { id: 'p2', name: 'Beta' },
+          monthlyEquivalentAmount: 20000,
+        }),
       ],
       2026,
       NOW,
     );
     expect(payload.monthTotals[10]).toBe(100000);
     expect(payload.grandAnnualTotal).toBeGreaterThan(0);
+  });
+
+  it('bounds forecast by remaining term months after latest coverage', () => {
+    const payload = buildSubscriptionGridPayload(
+      [
+        baseSub({
+          termMonths: 6,
+          invoices: [
+            subInvoice('i1', { start: '2026-01', count: 1, paid: true }),
+            subInvoice('i2', { start: '2026-02', count: 1, paid: true }),
+            subInvoice('i3', { start: '2026-03', count: 1, paid: true }),
+          ],
+        }),
+      ],
+      2026,
+      NOW,
+    );
+    // remaining = 3 → Jun, Jul, Aug forecast; Sep+ NA (missed Apr/May do not consume term)
+    expect(payload.rows[0].months[3].kind).toBe('MISSED');
+    expect(payload.rows[0].months[4].kind).toBe('MISSED');
+    expect(payload.rows[0].months[5].kind).toBe('FORECAST');
+    expect(payload.rows[0].months[6].kind).toBe('FORECAST');
+    expect(payload.rows[0].months[7].kind).toBe('FORECAST');
+    expect(payload.rows[0].months[8].kind).toBe('NA');
+  });
+
+  it('keeps open-ended forecast unbounded by term', () => {
+    const payload = buildSubscriptionGridPayload(
+      [
+        baseSub({
+          termMonths: null,
+          invoices: [subInvoice('i1', { start: '2026-01', count: 1, paid: true })],
+        }),
+      ],
+      2026,
+      NOW,
+    );
+    expect(payload.rows[0].months[10].kind).toBe('FORECAST');
   });
 });

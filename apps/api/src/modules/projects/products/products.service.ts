@@ -38,6 +38,7 @@ import { buildProductCurrentStageReadiness } from './product-current-stage-readi
 import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../../finance/partner-accrual/partner-accrual-subscription.service';
 import { AuditService } from '../../audit/audit.service';
 import {
   DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
@@ -148,6 +149,7 @@ export class ProductsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
@@ -633,6 +635,7 @@ export class ProductsService {
     if (linkedOrder) {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
     }
     await this.audit.log({
       entityType: 'PRODUCT',

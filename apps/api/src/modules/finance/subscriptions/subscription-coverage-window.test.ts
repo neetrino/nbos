@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  countDistinctCoveredMonths,
   isBillingMonthCoveredByInvoices,
+  latestCoveredMonthKey,
   type SubscriptionCoverageInvoiceRow,
 } from './subscription-coverage-window';
 
@@ -8,6 +10,7 @@ function row(
   partial: Partial<SubscriptionCoverageInvoiceRow> & { createdAt: Date },
 ): SubscriptionCoverageInvoiceRow {
   return {
+    type: partial.type ?? 'SUBSCRIPTION',
     coverageStartMonth: partial.coverageStartMonth ?? null,
     coverageMonthCount: partial.coverageMonthCount ?? null,
     createdAt: partial.createdAt,
@@ -66,5 +69,47 @@ describe('isBillingMonthCoveredByInvoices', () => {
     ];
     expect(isBillingMonthCoveredByInvoices('2026-13', invoices)).toBe(false);
     expect(isBillingMonthCoveredByInvoices('bad', invoices)).toBe(false);
+  });
+});
+
+describe('countDistinctCoveredMonths', () => {
+  it('unions overlapping invoice windows without double-counting', () => {
+    const invoices = [
+      row({
+        coverageStartMonth: '2026-01',
+        coverageMonthCount: 3,
+        createdAt: new Date(2026, 0, 1),
+      }),
+      row({
+        coverageStartMonth: '2026-02',
+        coverageMonthCount: 3,
+        createdAt: new Date(2026, 1, 1),
+      }),
+    ];
+    expect(countDistinctCoveredMonths(invoices)).toBe(4);
+    expect(latestCoveredMonthKey(invoices)).toBe('2026-04');
+  });
+
+  it('ignores non-SUBSCRIPTION invoices', () => {
+    const invoices = [
+      row({
+        type: 'ONE_TIME',
+        coverageStartMonth: '2026-01',
+        coverageMonthCount: 6,
+        createdAt: new Date(2026, 0, 1),
+      }),
+      row({
+        coverageStartMonth: '2026-03',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 2, 1),
+      }),
+    ];
+    expect(countDistinctCoveredMonths(invoices)).toBe(1);
+  });
+
+  it('falls back to createdAt month for legacy null coverage', () => {
+    const invoices = [row({ createdAt: new Date(2026, 5, 20) })];
+    expect(countDistinctCoveredMonths(invoices)).toBe(1);
+    expect(latestCoveredMonthKey(invoices)).toBe('2026-06');
   });
 });

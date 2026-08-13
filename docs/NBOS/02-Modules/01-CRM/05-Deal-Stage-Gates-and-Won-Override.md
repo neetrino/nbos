@@ -251,6 +251,11 @@ This is the canonical business matrix for current implementation planning.
 - payment type
 - at least one offer file in Drive (`OFFER` purpose) or legacy offer URL
 
+Meaning of `amount` at this gate:
+
+- `paymentType = CLASSIC` — total cost of the work;
+- `paymentType = SUBSCRIPTION` — price of **one** billing period (deal form label: `Amount / month`). The contract total is derived, never typed and never divided: `Order.totalAmount = Deal.amount × Deal.subscriptionTermMonths` when the term is set.
+
 ### Offer requirement
 
 At least one must exist:
@@ -266,12 +271,14 @@ At least one must exist:
 - product category
 - product type
 - planned deadline
+- `subscriptionTermMonths` when `paymentType = SUBSCRIPTION` (integer 1–120; counted in covered months)
 
 `EXTENSION`
 
 - linked project
 - linked product if extension belongs to a specific product
 - extension scope
+- `subscriptionTermMonths` when `paymentType = SUBSCRIPTION` (same rule as PRODUCT)
 
 `MAINTENANCE`
 
@@ -280,6 +287,8 @@ At least one must exist:
 - planned start date or service start logic
 - linked project
 - linked product
+
+`MAINTENANCE` and `OUTSOURCE` subscription deals stay open-ended at this gate (`subscriptionTermMonths` is not required).
 
 ## Stage 6 - Get Answer
 
@@ -365,6 +374,8 @@ For `PRODUCT + payment_type = Subscription`:
 - month of first invoice is shown as paid in Subscription Board;
 - next monthly cycle is anchored to the payment day of that first paid invoice.
 
+For any `paymentType = SUBSCRIPTION` deal with `subscriptionTermMonths` set: if the term changed after the order was bootstrapped, Deal Won re-syncs `Order.totalAmount` and `Order.subscriptionTermMonths` from the deal (`totalAmount` = period amount × term).
+
 ---
 
 ## Deal type specifics
@@ -379,6 +390,7 @@ Typical required data set:
 - marketing attribution
 - amount
 - payment type
+- `subscriptionTermMonths` when payment type is Subscription
 - offer
 - PM
 - deadline
@@ -396,6 +408,7 @@ Typical required data set:
 - extension scope
 - amount
 - payment type
+- `subscriptionTermMonths` when payment type is Subscription
 - offer
 - deadline
 - invoice
