@@ -17,14 +17,14 @@ const ENTITY_NOTES_SHELL_LAYOUT_CLASS = [
 export const ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   ENTITY_NOTES_SHELL_LAYOUT_CLASS,
-  'cursor-text border-0 bg-white shadow-sm ring-1 ring-black/[0.05] dark:bg-card dark:ring-white/[0.07]',
+  'cursor-text border-0 bg-card shadow-sm ring-1 ring-border/60',
 ].join(' ');
 
 /** Active edit: same surface + focus ring (toolbar above editor). */
 export const ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   ENTITY_NOTES_SHELL_LAYOUT_CLASS,
-  'border-0 bg-white shadow-sm ring-1 ring-black/[0.05] dark:bg-card dark:ring-white/[0.07]',
+  'border-0 bg-card shadow-sm ring-1 ring-border/60',
   'focus-within:ring-2 focus-within:ring-blue-400/25',
 ].join(' ');
 

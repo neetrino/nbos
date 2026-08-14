@@ -66,8 +66,6 @@ export function KanbanColumnQuickCreate<T>({ column, config }: KanbanColumnQuick
           'border-primary/20 bg-primary/[0.08] text-foreground/90 shadow-none backdrop-blur-sm',
           'px-2.5 py-1 text-xs font-medium transition-colors',
           'hover:border-primary/30 hover:bg-primary/[0.14] hover:text-foreground',
-          'dark:border-white/15 dark:bg-white/10 dark:text-white/90',
-          'dark:hover:border-white/25 dark:hover:bg-white/15',
           'focus-visible:ring-primary/25 focus-visible:ring-2 focus-visible:outline-none',
         )}
       >
