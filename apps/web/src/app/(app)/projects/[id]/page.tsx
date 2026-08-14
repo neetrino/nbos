@@ -55,7 +55,7 @@ function ProjectDetailPageContent() {
     fetchProject();
   }, [fetchProject, params.id]);
 
-  useProjectDetailHeader(project);
+  useProjectDetailHeader({ project, onProjectUpdated: setProject });
 
   if (loading) {
     return <ProjectDetailLoading />;
