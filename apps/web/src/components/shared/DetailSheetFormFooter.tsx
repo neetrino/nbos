@@ -39,7 +39,7 @@ export function DetailSheetFormFooter({
   return (
     <div
       className={cn(
-        'border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 shrink-0 border-t px-6 py-4 backdrop-blur-sm dark:border-stone-800',
+        'border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 shrink-0 border-t px-6 py-4 backdrop-blur-sm',
         className,
       )}
     >
