@@ -1,11 +1,21 @@
-import { Building2, Globe, Link2, type LucideIcon } from 'lucide-react';
-import type { TaskLink } from '@/lib/api/tasks';
+import { FolderKanban, Layers, LayoutGrid, Link2, type LucideIcon } from 'lucide-react';
+import type { Task, TaskLink } from '@/lib/api/tasks';
 
 export const TASK_CARD_CHIP_CLASS =
-  'bg-muted/70 text-muted-foreground inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium';
+  'inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium leading-none';
 
 export const TASK_CARD_ACTION_BTN_CLASS =
   'flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors';
+
+export type TaskCardContextKind = 'PROJECT' | 'PRODUCT' | 'WORK_SPACE' | 'OTHER';
+
+export type TaskCardContextChip = {
+  key: string;
+  kind: TaskCardContextKind;
+  label: string;
+};
+
+const MAX_TASK_CARD_CONTEXT_CHIPS = 2;
 
 /** Task board card due date — `dd.MM.yyyy`. */
 export function formatTaskCardDate(value: string): string {
@@ -24,29 +34,100 @@ export function formatAssigneeShortName(firstName: string, lastName: string): st
   return `${initial}. ${last}`;
 }
 
-export function linkChipIcon(entityType: string): LucideIcon {
-  if (entityType === 'PROJECT') return Building2;
-  if (entityType === 'PRODUCT' || entityType === 'EXTENSION') return Globe;
+export function taskCardContextIcon(kind: TaskCardContextKind): LucideIcon {
+  if (kind === 'PROJECT') return FolderKanban;
+  if (kind === 'PRODUCT') return Layers;
+  if (kind === 'WORK_SPACE') return LayoutGrid;
   return Link2;
 }
 
-/** Up to two chips: project first, then product/extension/order/deal. */
+export function taskCardContextChipClass(kind: TaskCardContextKind): string {
+  if (kind === 'PROJECT') {
+    return 'bg-sky-500/10 text-sky-800 dark:text-sky-300';
+  }
+  if (kind === 'PRODUCT') {
+    return 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300';
+  }
+  if (kind === 'WORK_SPACE') {
+    return 'bg-violet-500/10 text-violet-800 dark:text-violet-300';
+  }
+  return 'bg-muted/70 text-muted-foreground';
+}
+
+/**
+ * Compact delivery context for board cards: Product → Project → Work Space,
+ * then other labeled links. Max two chips.
+ */
+export function pickTaskCardContextChips(
+  task: Pick<Task, 'links' | 'workspaceId' | 'workspace'>,
+  options?: { hideWorkspace?: boolean },
+): TaskCardContextChip[] {
+  const chips: TaskCardContextChip[] = [];
+  const links = task.links ?? [];
+
+  const product = links.find((link) => link.entityType === 'PRODUCT' && Boolean(linkLabel(link)));
+  const project = links.find((link) => link.entityType === 'PROJECT' && Boolean(linkLabel(link)));
+
+  if (product) {
+    chips.push({
+      key: product.id,
+      kind: 'PRODUCT',
+      label: linkLabel(product)!,
+    });
+  }
+  if (project && chips.length < MAX_TASK_CARD_CONTEXT_CHIPS) {
+    chips.push({
+      key: project.id,
+      kind: 'PROJECT',
+      label: linkLabel(project)!,
+    });
+  }
+
+  if (!options?.hideWorkspace && chips.length < MAX_TASK_CARD_CONTEXT_CHIPS && task.workspaceId) {
+    const workspaceName = task.workspace?.name?.trim();
+    if (workspaceName) {
+      chips.push({
+        key: `ws:${task.workspaceId}`,
+        kind: 'WORK_SPACE',
+        label: workspaceName,
+      });
+    }
+  }
+
+  if (chips.length >= MAX_TASK_CARD_CONTEXT_CHIPS) return chips;
+
+  for (const link of links) {
+    if (link.entityType === 'PROJECT' || link.entityType === 'PRODUCT') continue;
+    const label = linkLabel(link);
+    if (!label) continue;
+    chips.push({
+      key: link.id,
+      kind: 'OTHER',
+      label,
+    });
+    if (chips.length >= MAX_TASK_CARD_CONTEXT_CHIPS) break;
+  }
+
+  return chips;
+}
+
+/** @deprecated Prefer {@link pickTaskCardContextChips}. */
 export function pickTaskCardLinkChips(links: TaskLink[]): TaskLink[] {
-  if (links.length === 0) return [];
+  return pickTaskCardContextChips({ links, workspaceId: null, workspace: null }).flatMap((chip) => {
+    const match = links.find((link) => link.id === chip.key);
+    return match ? [match] : [];
+  });
+}
 
-  const project = links.find((link) => link.entityType === 'PROJECT');
-  const secondaryTypes = new Set(['PRODUCT', 'EXTENSION', 'ORDER', 'DEAL']);
-  const secondary = links.find(
-    (link) =>
-      link !== project && secondaryTypes.has(link.entityType) && Boolean(link.entityLabel?.trim()),
-  );
-  const fallbackSecondary = links.find(
-    (link) => link !== project && Boolean(link.entityLabel?.trim()),
-  );
+/** @deprecated Prefer {@link taskCardContextIcon}. */
+export function linkChipIcon(entityType: string): LucideIcon {
+  if (entityType === 'PROJECT') return FolderKanban;
+  if (entityType === 'PRODUCT' || entityType === 'EXTENSION') return Layers;
+  if (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE') return LayoutGrid;
+  return Link2;
+}
 
-  const picked = [project, secondary ?? fallbackSecondary].filter(
-    (link): link is TaskLink => link != null,
-  );
-  if (picked.length > 0) return picked.slice(0, 2);
-  return links.slice(0, 2);
+function linkLabel(link: TaskLink): string | null {
+  const label = link.entityLabel?.trim();
+  return label || null;
 }

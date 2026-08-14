@@ -235,7 +235,12 @@ export function WorkSpaceRuntime({
 
   const renderCard = useCallback(
     (task: Task) => (
-      <TaskMiniCard task={task} onAction={handleCardAction} onClick={handleTaskClick} />
+      <TaskMiniCard
+        task={task}
+        onAction={handleCardAction}
+        onClick={handleTaskClick}
+        hideWorkspaceContext
+      />
     ),
     [handleCardAction, handleTaskClick],
   );
