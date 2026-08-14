@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, LayoutGrid, List, Plus } from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHero,
@@ -12,12 +12,12 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  ListPagination,
   DetailSheetTabPanel,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   ProjectNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import type { ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
@@ -44,7 +44,6 @@ const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
 export default function ProjectsPage() {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
-  const directory = useProjectsHubDirectory();
   const {
     activeTab,
     setActiveTab,
@@ -52,13 +51,14 @@ export default function ProjectsPage() {
     setViewMode: setView,
     searchInput,
     setSearchInput,
-    setPage,
     items: projects,
-    meta,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     error,
     refetch,
-  } = directory;
+  } = useProjectsHubDirectory();
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -122,20 +122,30 @@ export default function ProjectsPage() {
               </Button>
             }
           />
-        ) : view === 'grid' ? (
-          <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
-            {projects.map((project) => (
-              <ProjectNavigableCard key={project.id} project={project} />
-            ))}
-          </div>
         ) : (
-          <ProjectsListTable projects={projects} onProjectClick={handleClick} />
+          <>
+            {view === 'grid' ? (
+              <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
+                {projects.map((project) => (
+                  <ProjectNavigableCard key={project.id} project={project} />
+                ))}
+              </div>
+            ) : (
+              <ProjectsListTable projects={projects} onProjectClick={handleClick} />
+            )}
+            {loadingMore ? (
+              <div className="text-muted-foreground flex items-center justify-center py-4">
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+                <span className="sr-only">Loading more projects</span>
+              </div>
+            ) : null}
+            <InfiniteScrollSentinel
+              onReach={loadMore}
+              disabled={loading || loadingMore || !hasMore}
+            />
+          </>
         )}
       </DetailSheetTabPanel>
-
-      {!loading && !error && projects.length > 0 ? (
-        <ListPagination meta={meta} onPageChange={setPage} />
-      ) : null}
 
       <CreateProjectHubDialog
         open={createOpen}
