@@ -21,6 +21,7 @@ import {
 import { formatTaskSheetDateTime } from './task-sheet-format';
 import { TASK_SHEET_COMPACT_FIELD_CLASS, TaskSheetCompactRow } from './task-sheet-compact-row';
 import { TaskFilesBlock } from './TaskFilesBlock';
+import { TaskLinkedEntitiesSection } from './TaskLinkedEntitiesSection';
 
 interface TaskSheetGeneralSectionProps {
   task: Task;
@@ -28,6 +29,8 @@ interface TaskSheetGeneralSectionProps {
   draft: TaskGeneralDraft;
   disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
+  onLinksChange: (links: Task['links']) => void;
+  onTaskChange: (task: Task) => void;
   onSearchEmployees: (
     query: string,
   ) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
@@ -39,6 +42,8 @@ export function TaskSheetGeneralSection({
   draft,
   disabled = false,
   onPatchDraft,
+  onLinksChange,
+  onTaskChange,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
   const creatorPicker = useRelationPickerActions('employee', 'task-creator');
@@ -186,6 +191,13 @@ export function TaskSheetGeneralSection({
           </div>
         </div>
       </section>
+
+      <TaskLinkedEntitiesSection
+        task={task}
+        disabled={disabled}
+        onLinksChange={onLinksChange}
+        onTaskChange={onTaskChange}
+      />
 
       <TaskFilesBlock taskId={taskId} />
 
