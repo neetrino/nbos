@@ -618,7 +618,7 @@ function LeadsPipelinePageContent() {
             getItemId={(lead) => lead.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
-            onColumnLoadMore={isTrashView ? undefined : loadMoreColumn}
+            onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
             emptyMessage="No leads"
             columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead))}

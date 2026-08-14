@@ -667,7 +667,7 @@ function DealsPipelinePageContent() {
             getItemId={(deal) => deal.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
-            onColumnLoadMore={isTrashView ? undefined : loadMoreColumn}
+            onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
             emptyMessage="No deals"
             terminalDropZones={
