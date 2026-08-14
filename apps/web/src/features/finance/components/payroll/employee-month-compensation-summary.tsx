@@ -237,7 +237,7 @@ function PayrollRunFooter({
   );
 
   return (
-    <div className="border-border dark:bg-card flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5">
+    <div className="border-border bg-card flex items-center gap-3 rounded-xl border px-3 py-2.5">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
         <CalendarDays size={16} aria-hidden />
       </span>

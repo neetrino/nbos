@@ -8,7 +8,7 @@ import type { RecentPaymentItem } from './finance-dashboard-data';
 
 const PAYMENTS_HREF = '/finance/payments';
 
-const PAYMENT_ROW_SHELL = 'border-border/70 rounded-xl border bg-white px-3 py-3 dark:bg-white';
+const PAYMENT_ROW_SHELL = 'border-border/70 bg-card rounded-xl border px-3 py-3';
 
 const CLIENT_AVATAR_SHELLS = [
   'bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',

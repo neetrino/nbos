@@ -53,7 +53,7 @@ export function InvoiceAction({
         value={invoiceAmount}
         onChange={setInvoiceAmount}
         placeholder="Amount..."
-        className="text-foreground w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-stone-700 dark:bg-stone-900"
+        className="text-foreground border-border bg-background w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none focus:border-emerald-400"
         onKeyDown={(event) => {
           if (event.key === 'Enter') handleCreateInvoice();
           if (event.key === 'Escape') setShowInvoiceForm(false);
@@ -76,7 +76,7 @@ export function DisabledInvoiceAction() {
     <Button
       variant="outline"
       size="sm"
-      className="w-full justify-center gap-1.5 border-stone-300 text-stone-500 dark:border-stone-600 dark:text-stone-400"
+      className="border-border text-muted-foreground w-full justify-center gap-1.5"
       disabled
       title="Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company"
     >
@@ -116,7 +116,7 @@ export function TaskAction({
         value={taskTitle}
         onChange={(event) => setTaskTitle(event.target.value)}
         placeholder="Title..."
-        className="text-foreground w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-sky-400 dark:border-stone-700 dark:bg-stone-900"
+        className="text-foreground border-border bg-background w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none focus:border-sky-400"
         onKeyDown={(event) => {
           if (event.key === 'Enter') handleCreateTask();
           if (event.key === 'Escape') setShowTaskForm(false);

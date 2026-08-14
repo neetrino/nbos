@@ -22,8 +22,7 @@ import type {
 } from './finance-dashboard-data';
 
 const EXPENSE_TILE_SHELL = 'bg-muted/35';
-const EXPENSE_SUMMARY_BANNER =
-  'border-border/70 bg-white text-foreground dark:bg-white dark:text-foreground';
+const EXPENSE_SUMMARY_BANNER = 'border-border/70 bg-card text-foreground';
 
 export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayrollRunsSummary }) {
   const href = payrollRunsListHref();

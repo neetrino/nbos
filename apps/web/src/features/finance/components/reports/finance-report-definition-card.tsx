@@ -19,7 +19,7 @@ import {
 import type { FinanceReportDefinition } from '@/lib/api/finance-reports';
 
 const DEFINITION_PANEL_SHELL =
-  'border-border/70 flex h-full flex-col rounded-xl border bg-white p-4 dark:bg-white';
+  'border-border/70 bg-card flex h-full flex-col rounded-xl border p-4';
 
 const DEFINITION_ICON_SHELL =
   'flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
@@ -89,7 +89,7 @@ export function FinanceReportDefinitionCard({
               <Link
                 key={href}
                 href={href}
-                className="border-border/70 text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-lg border bg-white px-2.5 py-1.5 text-xs font-medium transition-colors dark:bg-white"
+                className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted bg-card inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors"
               >
                 {href}
                 <ArrowUpRight size={12} aria-hidden />
