@@ -110,6 +110,7 @@ export function KanbanColumnHeader<T>({
 }: ColumnHeaderProps<T>) {
   const hex = getColumnHex(column);
   const hasItems = column.items.length > 0;
+  const displayCount = column.totalCount ?? column.items.length;
 
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState('');
@@ -183,7 +184,7 @@ export function KanbanColumnHeader<T>({
       <KanbanStageHeaderBar
         hex={hex}
         label={column.label}
-        count={column.items.length}
+        count={displayCount}
         textColor={textColor}
         trailing={trailing}
         editable={editable}
@@ -200,7 +201,7 @@ export function KanbanColumnHeader<T>({
     <KanbanStageHeaderBar
       hex="#6B7280"
       label={column.label}
-      count={column.items.length}
+      count={displayCount}
       textColor="#fff"
       trailing={trailing}
       editable={editable}
