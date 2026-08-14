@@ -155,7 +155,9 @@ export function useTaskSheetState({
       setTask((current) => {
         if (!current) return current;
         const nextTask = recipe(current);
-        onUpdate?.(nextTask);
+        // Defer parent notify — calling onUpdate inside the updater updates TasksPage
+        // during TaskSheet's state/render phase (React "setState in render" warning).
+        queueMicrotask(() => onUpdate?.(nextTask));
         return nextTask;
       });
     },
