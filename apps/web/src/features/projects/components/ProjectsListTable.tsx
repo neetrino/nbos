@@ -35,6 +35,7 @@ export function ProjectsListTable({ projects, onProjectClick }: ProjectsListTabl
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Client</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Company</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Products</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Orders</TableHead>
           </TableRow>
         </TableHeader>
@@ -77,6 +78,9 @@ export function ProjectsListTable({ projects, onProjectClick }: ProjectsListTabl
                   ) : (
                     <EntityListMutedDash />
                   )}
+                </TableCell>
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-center font-medium`}>
+                  {project._count.products ?? 0}
                 </TableCell>
                 <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-center font-medium`}>
                   {project._count.orders}

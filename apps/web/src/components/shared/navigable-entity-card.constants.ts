@@ -41,7 +41,7 @@ export const PRODUCT_DETAIL_CARD_STATS_SHELL_CLASS =
 export const PRODUCT_DETAIL_CARD_STAT_CELL_CLASS =
   'flex min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-3 text-center';
 
-/** Project Hub directory card — icon tile, code pill, orders pill (mock-aligned). */
+/** Project Hub directory card — icon tile, code pill, products/orders pills (mock-aligned). */
 export const PROJECT_HUB_CARD_SHELL_CLASS =
   'group/project-hub-card border-border bg-card flex h-full flex-col rounded-3xl border';
 

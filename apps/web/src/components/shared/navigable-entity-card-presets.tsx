@@ -88,6 +88,8 @@ function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntit
 export function ProjectNavigableCard({ project }: { project: Project }) {
   const contactName =
     `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim();
+  const productCount = project._count.products ?? 0;
+  const productsLabel = `${productCount} product${productCount === 1 ? '' : 's'}`;
   const orderCount = project._count.orders;
   const ordersLabel = `${orderCount} order${orderCount === 1 ? '' : 's'}`;
 
@@ -134,7 +136,11 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
           </div>
         </div>
 
-        <div className="mt-auto flex justify-end pt-4">
+        <div className="mt-auto flex justify-end gap-2 pt-4">
+          <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+            <Package className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            {productsLabel}
+          </span>
           <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
             <ShoppingBag className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
             {ordersLabel}
