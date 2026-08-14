@@ -13,7 +13,7 @@ export const PARTNER_CARD_STAT_ICON_TILE_GREEN_CLASS =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400';
 
 export const PARTNER_CARD_STAT_ICON_TILE_MUTED_CLASS =
-  'flex size-8 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-600 dark:bg-stone-800/60 dark:text-stone-400';
+  'flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground';
 
 export const PARTNER_CARD_STATUS_BADGE_CLASS = 'rounded-full px-2.5 py-1 text-xs';
 

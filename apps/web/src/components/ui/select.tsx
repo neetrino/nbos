@@ -167,8 +167,8 @@ function SelectItem({
         state.selected
           ? 'bg-primary text-primary-foreground'
           : state.highlighted
-            ? 'bg-stone-100 text-foreground dark:bg-stone-900/70'
-            : 'text-foreground/90 hover:bg-stone-100 dark:hover:bg-stone-900/70',
+            ? 'bg-muted text-foreground'
+            : 'text-foreground/90 hover:bg-muted',
         userClass,
       );
     }

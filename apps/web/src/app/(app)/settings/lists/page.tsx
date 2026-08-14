@@ -230,7 +230,7 @@ export function SystemListsPage() {
                 description={`No options found for ${getListKeyLabel(selectedKey)}.`}
               />
             ) : (
-              <div className="overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
+              <div className="border-border overflow-hidden rounded-lg border">
                 <Table>
                   <TableHeader>
                     <TableRow>

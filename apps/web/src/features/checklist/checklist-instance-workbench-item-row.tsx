@@ -121,7 +121,7 @@ export function ChecklistWorkbenchItemRow({
   return (
     <div
       className={cn(
-        'border-border overflow-hidden rounded-lg border bg-white/40 dark:bg-black/10',
+        'border-border bg-muted/40 overflow-hidden rounded-lg border',
         ui.notDoneActive && !completionBlocked && 'border-amber-500/40',
         ui.doneChecked && !completionBlocked && 'border-emerald-500/35',
         completionBlocked &&

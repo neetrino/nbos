@@ -100,7 +100,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   return (
     <PermissionGate module="COMPANY" action="EDIT">
       <div className="min-w-0">
-        <section className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="border-border bg-card rounded-xl border p-4">
           <div className="flex items-start gap-3">
             <MessageCircle size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
             <div className="min-w-0 flex-1">

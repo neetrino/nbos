@@ -502,7 +502,7 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
 
   return (
     <div className={messengerShellClass(embedded)}>
-      <div className="flex gap-2 border-b border-black/[0.06] bg-white px-4 py-2">
+      <div className="border-border bg-card flex gap-2 border-b px-4 py-2">
         <button
           type="button"
           onClick={() => setZone('internal')}
@@ -532,7 +532,7 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
         </div>
       ) : null}
       {zone === 'external' ? (
-        <div className="flex flex-1 items-center justify-center bg-white p-8 text-center">
+        <div className="bg-background flex flex-1 items-center justify-center p-8 text-center">
           <div className="max-w-md">
             <h2 className="text-lg font-semibold text-black">
               External Messenger is not connected yet
@@ -565,7 +565,7 @@ export function MessengerClient({ embedded = false }: { embedded?: boolean }) {
             }}
           />
           {!active ? (
-            <div className="flex flex-1 items-center justify-center bg-white">
+            <div className="bg-background flex flex-1 items-center justify-center">
               <p className="text-sm text-black/40">Select a channel or conversation.</p>
             </div>
           ) : (

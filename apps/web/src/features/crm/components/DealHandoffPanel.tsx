@@ -166,7 +166,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Link a project in Deal &amp; project, or it will be created when delivery starts.
           </p>
         )}
@@ -183,7 +183,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Product link is missing or not applicable yet.
           </p>
         )}
@@ -200,7 +200,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Subscription link is missing or not applicable for this deal.
           </p>
         )}
@@ -217,7 +217,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Button>
         ) : (
           deal.type === 'PRODUCT' && (
-            <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+            <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
               Maintenance Deal is created after the Product handoff runs.
             </p>
           )

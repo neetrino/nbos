@@ -249,7 +249,7 @@ export function CompanySheet({
                 ) : (
                   <h2
                     onClick={startEditingName}
-                    className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                    className="text-foreground hover:bg-muted -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors"
                     title="Click to edit company name"
                   >
                     {draft.name.trim() || renderCompany.name}

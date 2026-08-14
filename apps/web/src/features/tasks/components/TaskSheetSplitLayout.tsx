@@ -107,7 +107,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
       <div
         className={cn(
           TASK_SHEET_CHAT_COLUMN_CLASS,
-          'min-h-0 min-w-0 bg-white',
+          'bg-background min-h-0 min-w-0',
           isSplitRow && 'relative z-10 shrink-0',
         )}
         style={chatColumnStyle(isSplitRow)}

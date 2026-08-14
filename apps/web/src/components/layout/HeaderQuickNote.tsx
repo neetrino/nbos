@@ -16,11 +16,10 @@ import {
   HEADER_QUICK_NOTE_WIDTH_COLLAPSED_REM,
   HEADER_QUICK_NOTE_WIDTH_EXPANDED_REM,
 } from '@/components/layout/header-quick-note-constants';
-
 const QUICK_NOTE_PLACEHOLDER = 'Write a note and press Enter...';
 const QUICK_NOTE_SAVE_HINT = '↵ Enter or';
 const QUICK_NOTE_CORNER_SAVE_CLASS =
-  'h-7 rounded-full border border-amber-800/30 bg-amber-900 px-2.5 text-xs font-medium text-amber-50 shadow-sm hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30';
+  'h-7 rounded-full border border-amber-800/30 bg-amber-900 px-2.5 text-xs font-medium text-amber-50 shadow-sm hover:bg-amber-800 disabled:border-amber-300 disabled:bg-amber-200/90 disabled:text-amber-900/30';
 
 const QUICK_NOTE_MAX_WIDTH = 'min(22rem, calc(100vw - 10rem))';
 
@@ -150,8 +149,8 @@ function QuickNoteComposer({
   return (
     <div
       className={cn(
-        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/95 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
-        expanded && 'shadow-lg ring-1 ring-amber-200/80',
+        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-300 bg-amber-200 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
+        expanded && 'shadow-lg ring-1 ring-amber-300/80',
       )}
       style={{
         width: '100%',

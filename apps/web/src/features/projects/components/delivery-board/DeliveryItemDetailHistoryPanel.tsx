@@ -85,7 +85,7 @@ export function DeliveryItemDetailHistoryPanel({
         return (
           <li
             key={entry.id}
-            className="border-border/60 rounded-lg border bg-white/40 px-3 py-2 text-sm dark:bg-stone-950/20"
+            className="border-border/60 bg-muted/40 rounded-lg border px-3 py-2 text-sm"
           >
             <p className="font-medium">{entry.action}</p>
             <p className="text-muted-foreground mt-1 text-xs">
