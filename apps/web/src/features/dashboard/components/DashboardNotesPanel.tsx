@@ -98,7 +98,7 @@ export function DashboardNotesPanel({
         {saving ? (
           <Loader2 className="absolute top-3 right-3 z-10 h-4 w-4 animate-spin text-amber-900/45" />
         ) : null}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200/90 shadow-inner transition-colors duration-200 focus-within:bg-amber-300/90 hover:bg-amber-300/90">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200 shadow-inner transition-colors duration-200">
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
