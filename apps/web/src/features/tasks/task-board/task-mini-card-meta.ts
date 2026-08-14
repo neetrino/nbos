@@ -17,7 +17,8 @@ export type TaskCardContextChip = {
   label: string;
 };
 
-const MAX_TASK_CARD_CONTEXT_CHIPS = 2;
+/** Work Space first (planning home), then Product / Project / other. */
+const MAX_TASK_CARD_CONTEXT_CHIPS = 3;
 
 /** Task board card due date — `dd.MM.yyyy`. */
 export function formatTaskCardDate(value: string): string {
@@ -57,8 +58,8 @@ export function taskCardContextChipClass(kind: TaskCardContextKind, entityType?:
 }
 
 /**
- * Compact delivery context for board cards: Product → Project → Work Space,
- * then other labeled links. Max two chips.
+ * Board card context chips. Work Space is first so it survives reload alongside
+ * project/product links (was previously crowded out by a 2-chip Product→Project order).
  */
 export function pickTaskCardContextChips(
   task: Pick<Task, 'links' | 'workspaceId' | 'workspace'>,
@@ -67,10 +68,19 @@ export function pickTaskCardContextChips(
   const chips: TaskCardContextChip[] = [];
   const links = task.links ?? [];
 
+  if (!options?.hideWorkspace && task.workspaceId) {
+    chips.push({
+      key: `ws:${task.workspaceId}`,
+      kind: 'WORK_SPACE',
+      entityType: 'WORK_SPACE',
+      label: task.workspace?.name?.trim() || taskLinkEntityLabel('WORK_SPACE'),
+    });
+  }
+
   const product = links.find((link) => link.entityType === 'PRODUCT');
   const project = links.find((link) => link.entityType === 'PROJECT');
 
-  if (product) {
+  if (product && chips.length < MAX_TASK_CARD_CONTEXT_CHIPS) {
     chips.push({
       key: product.id,
       kind: 'PRODUCT',
@@ -85,18 +95,6 @@ export function pickTaskCardContextChips(
       entityType: 'PROJECT',
       label: linkDisplayLabel(project),
     });
-  }
-
-  if (!options?.hideWorkspace && chips.length < MAX_TASK_CARD_CONTEXT_CHIPS && task.workspaceId) {
-    const workspaceName = task.workspace?.name?.trim();
-    if (workspaceName) {
-      chips.push({
-        key: `ws:${task.workspaceId}`,
-        kind: 'WORK_SPACE',
-        entityType: 'WORK_SPACE',
-        label: workspaceName,
-      });
-    }
   }
 
   if (chips.length >= MAX_TASK_CARD_CONTEXT_CHIPS) return chips;

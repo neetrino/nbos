@@ -23,7 +23,7 @@ function task(partial: Partial<Task>): Pick<Task, 'links' | 'workspaceId' | 'wor
 }
 
 describe('pickTaskCardContextChips', () => {
-  it('prefers product then project', () => {
+  it('puts work space first, then product and project', () => {
     const chips = pickTaskCardContextChips(
       task({
         links: [
@@ -46,33 +46,31 @@ describe('pickTaskCardContextChips', () => {
             entityLabel: 'Deal A',
           }),
         ],
-      }),
-    );
-
-    expect(chips).toEqual([
-      { key: 'l2', kind: 'PRODUCT', entityType: 'PRODUCT', label: 'Website' },
-      { key: 'l1', kind: 'PROJECT', entityType: 'PROJECT', label: 'Acme' },
-    ]);
-  });
-
-  it('includes work space when there is room', () => {
-    const chips = pickTaskCardContextChips(
-      task({
-        links: [
-          link({
-            id: 'l1',
-            entityType: 'PROJECT',
-            entityId: 'p1',
-            entityLabel: 'Acme',
-          }),
-        ],
         workspaceId: 'ws-1',
         workspace: { id: 'ws-1', name: 'Marketing 1' },
       }),
     );
 
-    expect(chips.map((chip) => chip.kind)).toEqual(['PROJECT', 'WORK_SPACE']);
-    expect(chips[1]?.label).toBe('Marketing 1');
+    expect(chips.map((chip) => chip.kind)).toEqual(['WORK_SPACE', 'PRODUCT', 'PROJECT']);
+    expect(chips[0]?.label).toBe('Marketing 1');
+  });
+
+  it('shows work space from workspaceId even when name is missing after list reload', () => {
+    const chips = pickTaskCardContextChips(
+      task({
+        workspaceId: 'ws-1',
+        workspace: null,
+      }),
+    );
+
+    expect(chips).toEqual([
+      {
+        key: 'ws:ws-1',
+        kind: 'WORK_SPACE',
+        entityType: 'WORK_SPACE',
+        label: 'Work Space',
+      },
+    ]);
   });
 
   it('can hide work space on a workspace board', () => {
@@ -100,6 +98,8 @@ describe('pickTaskCardContextChips', () => {
       }),
     );
 
-    expect(chips).toEqual([{ key: 'l1', kind: 'PROJECT', entityType: 'PROJECT', label: 'Project' }]);
+    expect(chips).toEqual([
+      { key: 'l1', kind: 'PROJECT', entityType: 'PROJECT', label: 'Project' },
+    ]);
   });
 });
