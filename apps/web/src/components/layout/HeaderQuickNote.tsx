@@ -149,7 +149,7 @@ function QuickNoteComposer({
   return (
     <div
       className={cn(
-        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-300 bg-amber-200/95 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
+        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-300 bg-amber-200/95 shadow-sm transition-[width,box-shadow,background-color] duration-200 ease-out focus-within:bg-amber-400/95 hover:bg-amber-400/95',
         expanded && 'shadow-lg ring-1 ring-amber-300/80',
       )}
       style={{

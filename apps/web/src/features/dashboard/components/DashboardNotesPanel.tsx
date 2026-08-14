@@ -39,7 +39,7 @@ const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
 
 /** Corner controls on sticky-note cards (composer + saved notes). */
 const NOTE_CORNER_PILL_CLASS =
-  'h-7 rounded-full border border-amber-300 bg-amber-200/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-300/90';
+  'h-7 rounded-full border border-amber-300 bg-amber-200/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-400/90';
 
 const NOTE_CORNER_SAVE_PRIMARY_CLASS = cn(
   NOTE_CORNER_PILL_CLASS,
@@ -98,7 +98,7 @@ export function DashboardNotesPanel({
         {saving ? (
           <Loader2 className="absolute top-3 right-3 z-10 h-4 w-4 animate-spin text-amber-900/45" />
         ) : null}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200/90 shadow-inner">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200/90 shadow-inner transition-colors duration-200 focus-within:bg-amber-400/90 hover:bg-amber-400/90">
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -303,9 +303,9 @@ function NoteCard({
       >
         <div
           className={cn(
-            'relative rounded-xl border border-amber-300 bg-amber-200 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+            'relative rounded-xl border border-amber-300 bg-amber-200 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md hover:bg-amber-400',
             !isEditing && 'cursor-text',
-            isEditing && 'group-hover:translate-y-0',
+            isEditing && 'bg-amber-400 group-hover:translate-y-0',
           )}
           onClick={() => {
             if (!isEditing) onStartEdit(note);
