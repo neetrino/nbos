@@ -9,9 +9,8 @@ export const SHEET_FILE_TILE_LIMIT = 12;
 /** Default section label in the attachment header (paperclip row). */
 export const SHEET_FILE_SECTION_TITLE = 'Files';
 
-/** White card — reference mockup (subtle stroke, no grey fill). */
-export const SHEET_FILE_ATTACHMENTS_SURFACE_CLASS =
-  'rounded-xl border border-black/[0.07] bg-white p-3 dark:border-white/[0.08] dark:bg-card';
+/** Card surface — reference mockup (subtle stroke, no grey fill). */
+export const SHEET_FILE_ATTACHMENTS_SURFACE_CLASS = 'rounded-xl border border-border bg-card p-3';
 
 /** When the parent already provides {@link SHEET_FILE_ATTACHMENTS_SURFACE_CLASS}. */
 export const SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS = 'min-w-0';
@@ -36,7 +35,7 @@ export const SHEET_FILE_TILE_HEIGHT_CLASS = 'h-[5.75rem]';
 export const SHEET_FILE_TILE_WIDTH_CLASS = 'w-[5.25rem]';
 
 export const SHEET_FILE_TILE_SHELL_CLASS =
-  'flex w-full flex-col overflow-hidden rounded-xl border-2 border-black/[0.08] bg-white dark:border-white/[0.1] dark:bg-card';
+  'flex w-full flex-col overflow-hidden rounded-xl border-2 border-border bg-card';
 
 export const SHEET_FILE_TILE_ICON_AREA_CLASS =
   'relative flex min-h-0 flex-1 items-center justify-center px-1.5 pt-1.5';
