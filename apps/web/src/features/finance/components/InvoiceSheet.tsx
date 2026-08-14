@@ -225,7 +225,7 @@ export function InvoiceSheet({
           </div>
 
           {onMoneyStatusChange ? (
-            <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+            <div className="border-border shrink-0 border-b px-5 py-2.5">
               <InvoiceMoneyStagesBar
                 currentStatus={renderInvoice.moneyStatus}
                 onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}

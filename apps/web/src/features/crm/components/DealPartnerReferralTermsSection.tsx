@@ -73,7 +73,7 @@ export function DealPartnerReferralTermsSection(props: {
   };
 
   return (
-    <div className="col-span-2 mt-2 rounded-xl border border-dashed border-stone-100 p-4 dark:border-stone-800">
+    <div className="border-border col-span-2 mt-2 rounded-xl border border-dashed p-4">
       <h5 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
         <Percent size={12} />
         Partner referral terms

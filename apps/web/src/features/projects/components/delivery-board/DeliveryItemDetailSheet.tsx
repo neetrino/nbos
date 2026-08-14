@@ -403,7 +403,7 @@ export function DeliveryItemDetailSheet({
               </div>
             ) : null}
 
-            <div className="border-border shrink-0 border-b border-stone-100 dark:border-stone-800">
+            <div className="border-border shrink-0 border-b">
               <DeliveryPipelineStages
                 lifecycle={lifecycle}
                 disabled={busy || !boardMutations}

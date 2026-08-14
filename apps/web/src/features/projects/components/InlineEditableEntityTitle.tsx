@@ -134,7 +134,7 @@ export function InlineEditableEntityTitle({
         title={disabled ? undefined : editHint}
         className={cn(
           'text-foreground -mx-1 max-w-[28rem] min-w-0 truncate rounded px-1 text-left transition-colors',
-          disabled ? 'cursor-default' : 'cursor-text hover:bg-stone-100 dark:hover:bg-stone-800',
+          disabled ? 'cursor-default' : 'hover:bg-muted cursor-text',
           titleClassName,
         )}
       >

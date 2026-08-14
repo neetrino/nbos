@@ -132,7 +132,7 @@ export function DeliveryItemDetailHeader({
                 onClick={startEditing}
                 className={cn(
                   'text-foreground -mx-1 max-w-[28rem] min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors',
-                  loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
+                  loading ? 'cursor-default' : 'hover:bg-muted',
                 )}
                 title={loading ? undefined : 'Click to edit name'}
               >
