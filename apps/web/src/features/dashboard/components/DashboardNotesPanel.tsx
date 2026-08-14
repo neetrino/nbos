@@ -23,6 +23,18 @@ import { GripVertical, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import {
+  DASHBOARD_NOTE_CARD_CLASS,
+  DASHBOARD_NOTE_COMPOSER_BOX_CLASS,
+  DASHBOARD_NOTE_CORNER_PILL_CLASS,
+  DASHBOARD_NOTE_CORNER_SAVE_PRIMARY_CLASS,
+  DASHBOARD_NOTE_DELETE_BUTTON_CLASS,
+  DASHBOARD_NOTE_DRAG_PREVIEW_CLASS,
+  DASHBOARD_NOTE_HINT_CLASS,
+  DASHBOARD_NOTE_INK_CLASS,
+  DASHBOARD_NOTE_MUTED_INK_CLASS,
+  DASHBOARD_NOTE_PLACEHOLDER_CLASS,
+} from '../constants/dashboard-note-surface';
 import type { DashboardNote } from '../dashboard-control-registry';
 
 const NOTE_TIME_FORMAT = new Intl.DateTimeFormat('en', {
@@ -36,15 +48,6 @@ const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 
 /** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
 const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
-
-/** Corner controls on cream cards (composer + saved notes). */
-const NOTE_CORNER_PILL_CLASS =
-  'h-7 rounded-full border border-amber-200 bg-amber-50/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-100/90';
-
-const NOTE_CORNER_SAVE_PRIMARY_CLASS = cn(
-  NOTE_CORNER_PILL_CLASS,
-  'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30',
-);
 
 /** Shown next to the composer Save control when the draft is non-empty. */
 const NOTE_COMPOSER_SAVE_ACTION_HINT = '↵ Enter or';
@@ -96,9 +99,14 @@ export function DashboardNotesPanel({
     <section className={cn('flex min-h-0 flex-col space-y-4', className)}>
       <div className="relative">
         {saving ? (
-          <Loader2 className="absolute top-3 right-3 z-10 h-4 w-4 animate-spin text-amber-900/45" />
+          <Loader2
+            className={cn(
+              'absolute top-3 right-3 z-10 h-4 w-4 animate-spin',
+              DASHBOARD_NOTE_MUTED_INK_CLASS,
+            )}
+          />
         ) : null}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/90 shadow-inner">
+        <div className={DASHBOARD_NOTE_COMPOSER_BOX_CLASS}>
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -106,19 +114,25 @@ export function DashboardNotesPanel({
             placeholder="Write a note and press Enter..."
             className={cn(
               'min-h-36 resize-none border-0 bg-transparent px-4 py-4 text-sm leading-7 shadow-none',
-              'placeholder:text-amber-900/40 focus-visible:ring-0',
+              DASHBOARD_NOTE_PLACEHOLDER_CLASS,
+              'focus-visible:ring-0',
               showComposerSave && 'pb-14',
             )}
           />
           {showComposerSave ? (
             <div className="absolute right-2 bottom-2 z-10 flex max-w-[calc(100%-1rem)] items-center justify-end gap-2">
-              <p className="min-w-0 text-right text-[10px] leading-snug font-medium text-amber-900/50 select-none">
+              <p
+                className={cn(
+                  'min-w-0 text-right text-[10px] leading-snug font-medium select-none',
+                  DASHBOARD_NOTE_HINT_CLASS,
+                )}
+              >
                 {NOTE_COMPOSER_SAVE_ACTION_HINT}
               </p>
               <Button
                 type="button"
                 size="xs"
-                className={cn(NOTE_CORNER_SAVE_PRIMARY_CLASS, 'shrink-0')}
+                className={cn(DASHBOARD_NOTE_CORNER_SAVE_PRIMARY_CLASS, 'shrink-0')}
                 disabled={!canSave}
                 onClick={() => void saveDraft()}
               >
@@ -303,7 +317,7 @@ function NoteCard({
       >
         <div
           className={cn(
-            'relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+            DASHBOARD_NOTE_CARD_CLASS,
             !isEditing && 'cursor-text',
             isEditing && 'group-hover:translate-y-0',
           )}
@@ -330,12 +344,22 @@ function NoteCard({
               value={editDraft}
               onChange={(event) => onChangeEditDraft(event.target.value)}
               onKeyDown={handleEditKeyDown}
-              className="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-amber-950 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45"
+              className={cn(
+                'min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45',
+                DASHBOARD_NOTE_INK_CLASS,
+              )}
             />
           ) : (
-            <p className="text-sm leading-6 whitespace-pre-wrap text-amber-950">{note.content}</p>
+            <p className={cn('text-sm leading-6 whitespace-pre-wrap', DASHBOARD_NOTE_INK_CLASS)}>
+              {note.content}
+            </p>
           )}
-          <span className="pointer-events-none absolute bottom-2 left-3 text-[10px] font-medium text-amber-900/45">
+          <span
+            className={cn(
+              'pointer-events-none absolute bottom-2 left-3 text-[10px] font-medium',
+              DASHBOARD_NOTE_MUTED_INK_CLASS,
+            )}
+          >
             {savedTime}
           </span>
         </div>
@@ -387,7 +411,7 @@ function NoteEditActions({
         type="button"
         variant="ghost"
         size="xs"
-        className={NOTE_CORNER_PILL_CLASS}
+        className={DASHBOARD_NOTE_CORNER_PILL_CLASS}
         onClick={(event) => {
           event.stopPropagation();
           onCancel();
@@ -398,7 +422,7 @@ function NoteEditActions({
       <Button
         type="button"
         size="xs"
-        className={NOTE_CORNER_SAVE_PRIMARY_CLASS}
+        className={DASHBOARD_NOTE_CORNER_SAVE_PRIMARY_CLASS}
         disabled={!canSave}
         onClick={(event) => {
           event.stopPropagation();
@@ -423,7 +447,7 @@ function NoteActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 rounded-full border border-amber-200 bg-amber-50/90 text-amber-900/45 shadow-sm backdrop-blur hover:text-red-700"
+        className={DASHBOARD_NOTE_DELETE_BUTTON_CLASS}
         onClick={(event) => {
           event.stopPropagation();
           void onDeleteNote(note.id);
@@ -439,15 +463,17 @@ function NoteActions({
 function NoteDragPreview({ note }: { note: DashboardNote }) {
   const tilt = stableTiltDegreesFromNoteId(note.id);
   return (
-    <div
-      className="max-w-sm rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 opacity-95 shadow-2xl ring-2 ring-amber-300/45"
-      style={{ transform: `rotate(${tilt}deg)` }}
-    >
+    <div className={DASHBOARD_NOTE_DRAG_PREVIEW_CLASS} style={{ transform: `rotate(${tilt}deg)` }}>
       <div className="mb-2 flex items-center gap-1.5">
-        <GripVertical className="h-3.5 w-3.5 text-amber-900/50" />
+        <GripVertical className={cn('h-3.5 w-3.5', DASHBOARD_NOTE_HINT_CLASS)} />
         <span className="text-xs font-semibold text-amber-900/70">Moving note</span>
       </div>
-      <p className="line-clamp-4 text-sm leading-6 whitespace-pre-wrap text-amber-950">
+      <p
+        className={cn(
+          'line-clamp-4 text-sm leading-6 whitespace-pre-wrap',
+          DASHBOARD_NOTE_INK_CLASS,
+        )}
+      >
         {note.content}
       </p>
     </div>

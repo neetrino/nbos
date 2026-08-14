@@ -16,11 +16,17 @@ import {
   HEADER_QUICK_NOTE_WIDTH_COLLAPSED_REM,
   HEADER_QUICK_NOTE_WIDTH_EXPANDED_REM,
 } from '@/components/layout/header-quick-note-constants';
+import {
+  DASHBOARD_NOTE_COMPOSER_HEADER_CLASS,
+  DASHBOARD_NOTE_CORNER_SAVE_PRIMARY_CLASS,
+  DASHBOARD_NOTE_EXPANDED_RING_CLASS,
+  DASHBOARD_NOTE_HINT_CLASS,
+  DASHBOARD_NOTE_MUTED_INK_CLASS,
+  DASHBOARD_NOTE_PLACEHOLDER_CLASS,
+} from '@/features/dashboard/constants/dashboard-note-surface';
 
 const QUICK_NOTE_PLACEHOLDER = 'Write a note and press Enter...';
 const QUICK_NOTE_SAVE_HINT = '↵ Enter or';
-const QUICK_NOTE_CORNER_SAVE_CLASS =
-  'h-7 rounded-full border border-amber-800/30 bg-amber-900 px-2.5 text-xs font-medium text-amber-50 shadow-sm hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30';
 
 const QUICK_NOTE_MAX_WIDTH = 'min(22rem, calc(100vw - 10rem))';
 
@@ -150,8 +156,8 @@ function QuickNoteComposer({
   return (
     <div
       className={cn(
-        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/95 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
-        expanded && 'shadow-lg ring-1 ring-amber-200/80',
+        DASHBOARD_NOTE_COMPOSER_HEADER_CLASS,
+        expanded && DASHBOARD_NOTE_EXPANDED_RING_CLASS,
       )}
       style={{
         width: '100%',
@@ -160,7 +166,10 @@ function QuickNoteComposer({
     >
       {saving ? (
         <Loader2
-          className="absolute top-2.5 right-2.5 z-10 h-4 w-4 animate-spin text-amber-900/45"
+          className={cn(
+            'absolute top-2.5 right-2.5 z-10 h-4 w-4 animate-spin',
+            DASHBOARD_NOTE_MUTED_INK_CLASS,
+          )}
           aria-hidden
         />
       ) : null}
@@ -176,19 +185,25 @@ function QuickNoteComposer({
         style={expanded ? { minHeight: HEADER_QUICK_NOTE_EXPANDED_MIN_HEIGHT_PX } : undefined}
         className={cn(
           'resize-none border-0 bg-transparent px-3.5 py-2 text-sm leading-6 shadow-none',
-          'placeholder:text-amber-900/40 focus-visible:ring-0',
+          DASHBOARD_NOTE_PLACEHOLDER_CLASS,
+          'focus-visible:ring-0',
           expanded ? 'min-h-[140px] pb-12' : 'max-h-9 min-h-9 overflow-hidden',
         )}
       />
       {showSave ? (
         <div className="absolute right-2 bottom-2 z-10 flex max-w-[calc(100%-1rem)] items-center justify-end gap-2">
-          <p className="min-w-0 text-right text-[10px] leading-snug font-medium text-amber-900/50 select-none">
+          <p
+            className={cn(
+              'min-w-0 text-right text-[10px] leading-snug font-medium select-none',
+              DASHBOARD_NOTE_HINT_CLASS,
+            )}
+          >
             {QUICK_NOTE_SAVE_HINT}
           </p>
           <Button
             type="button"
             size="xs"
-            className={cn(QUICK_NOTE_CORNER_SAVE_CLASS, 'shrink-0')}
+            className={cn(DASHBOARD_NOTE_CORNER_SAVE_PRIMARY_CLASS, 'shrink-0')}
             disabled={!canSave}
             onClick={onSave}
           >
