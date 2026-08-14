@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { ChevronsUpDown, Package } from 'lucide-react';
+import { toast } from 'sonner';
 import { StatusBadge } from '@/components/shared';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
-import type { FullProduct, Product } from '@/lib/api/products';
+import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
+import { getApiErrorMessage } from '@/lib/api-errors';
+import { productsApi, type FullProduct, type Product } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 
 export interface ProductDetailHeaderProps {
@@ -13,22 +16,35 @@ export interface ProductDetailHeaderProps {
   siblingProducts: Product[];
   projectHref: string;
   onSelectProduct: (productId: string) => void;
+  onProductUpdated: (product: FullProduct) => void;
 }
 
 const PRODUCT_TITLE_CLASS =
   'text-foreground truncate text-base font-semibold tracking-tight xl:text-lg';
-
-type StageBadge = ReturnType<typeof getProductDeliveryStageBadgeDisplay>;
 
 export function ProductDetailHeader({
   product,
   siblingProducts,
   projectHref,
   onSelectProduct,
+  onProductUpdated,
 }: ProductDetailHeaderProps) {
   const [showSwitcher, setShowSwitcher] = useState(false);
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const hasProductSwitcher = siblingProducts.length > 1;
+
+  const handleCommitName = useCallback(
+    async (trimmed: string) => {
+      try {
+        const updated = await productsApi.update(product.id, { name: trimmed });
+        onProductUpdated({ ...product, name: updated.name, updatedAt: updated.updatedAt });
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Product name could not be updated.'));
+        throw caught;
+      }
+    },
+    [onProductUpdated, product],
+  );
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
@@ -36,19 +52,31 @@ export function ProductDetailHeader({
         <Package className="size-4" />
       </div>
       <div className="min-w-0 flex-1">
-        {hasProductSwitcher ? (
-          <ProductNameSwitcher
-            productName={product.name}
-            stageStatus={stageStatus}
-            open={showSwitcher}
-            onOpenChange={setShowSwitcher}
-            siblingProducts={siblingProducts}
-            currentProductId={product.id}
-            onSelectProduct={onSelectProduct}
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+          <InlineEditableEntityTitle
+            value={product.name}
+            onCommit={handleCommitName}
+            editHint="Click to edit product name"
+            titleClassName={PRODUCT_TITLE_CLASS}
           />
-        ) : (
-          <ProductTitleRow productName={product.name} stageStatus={stageStatus} />
-        )}
+          {stageStatus ? (
+            <StatusBadge
+              label={stageStatus.label}
+              variant={stageStatus.variant}
+              className="shrink-0 self-center"
+            />
+          ) : null}
+          {hasProductSwitcher ? (
+            <ProductSwitcherTrigger
+              open={showSwitcher}
+              onOpenChange={setShowSwitcher}
+              productName={product.name}
+              siblingProducts={siblingProducts}
+              currentProductId={product.id}
+              onSelectProduct={onSelectProduct}
+            />
+          ) : null}
+        </div>
         <Link
           href={projectHref}
           className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors"
@@ -60,72 +88,41 @@ export function ProductDetailHeader({
   );
 }
 
-function ProductTitleRow({
-  productName,
-  stageStatus,
-}: {
-  productName: string;
-  stageStatus: StageBadge;
-}) {
-  return (
-    <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-      <span className={PRODUCT_TITLE_CLASS}>{productName}</span>
-      {stageStatus ? (
-        <StatusBadge
-          label={stageStatus.label}
-          variant={stageStatus.variant}
-          className="shrink-0 self-center"
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function ProductNameSwitcher({
-  productName,
-  stageStatus,
+function ProductSwitcherTrigger({
   open,
   onOpenChange,
+  productName,
   siblingProducts,
   currentProductId,
   onSelectProduct,
 }: {
-  productName: string;
-  stageStatus: StageBadge;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  productName: string;
   siblingProducts: Product[];
   currentProductId: string;
   onSelectProduct: (productId: string) => void;
 }) {
   return (
-    <div className="relative max-w-full min-w-0 shrink">
+    <div className="relative shrink-0">
       <button
         type="button"
         className={cn(
-          'hover:text-foreground/80 inline-flex max-w-full min-w-0 flex-wrap items-center gap-1.5 rounded-md transition-colors sm:gap-2',
-          open && 'text-foreground/80',
+          'text-muted-foreground hover:text-foreground inline-flex items-center rounded-md p-1 transition-colors',
+          open && 'text-foreground',
         )}
         onClick={() => onOpenChange(!open)}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-label={`Switch product, current: ${productName}`}
       >
-        <span className={cn(PRODUCT_TITLE_CLASS, 'min-w-0')}>{productName}</span>
-        {stageStatus ? (
-          <StatusBadge
-            label={stageStatus.label}
-            variant={stageStatus.variant}
-            className="shrink-0 self-center"
-          />
-        ) : null}
-        <ChevronsUpDown className="size-3.5 shrink-0 opacity-60" aria-hidden />
+        <ChevronsUpDown className="size-3.5 opacity-60" aria-hidden />
       </button>
       {open ? (
         <>
           <div className="fixed inset-0 z-40" onClick={() => onOpenChange(false)} aria-hidden />
           <ul
-            className="bg-popover border-border absolute top-full left-0 z-50 mt-1 min-w-[220px] rounded-lg border p-1 shadow-lg"
+            className="bg-popover border-border absolute top-full right-0 z-50 mt-1 min-w-[220px] rounded-lg border p-1 shadow-lg"
             role="listbox"
           >
             {siblingProducts.map((item) => {

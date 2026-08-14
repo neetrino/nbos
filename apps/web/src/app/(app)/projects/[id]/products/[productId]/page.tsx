@@ -31,6 +31,7 @@ import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-
 import { useProductSupportTab } from '@/features/projects/hooks/use-product-support-tab';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { useProductTechnicalTab } from '@/features/projects/hooks/use-product-technical-tab';
+import { applyRenamedProductToSiblings } from '@/features/projects/utils/apply-renamed-product-to-siblings';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import {
   parseProductDetailTab,
@@ -72,7 +73,17 @@ function ProductDetailPageContent() {
     () => searchParams.get('settings') === 'whatsapp',
   );
 
-  useProductDetailHeader(product, siblingProducts, params.id);
+  const handleProductUpdated = useCallback((next: FullProduct) => {
+    setProduct(next);
+    setSiblingProducts((prev) => applyRenamedProductToSiblings(prev, next));
+  }, []);
+
+  useProductDetailHeader({
+    product,
+    siblingProducts,
+    projectId: params.id,
+    onProductUpdated: handleProductUpdated,
+  });
 
   const workSpaceTab = useProductWorkSpaceTab(
     params.productId,
