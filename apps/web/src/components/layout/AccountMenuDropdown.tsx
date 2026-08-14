@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { useMyWalletSheet } from '@/features/account/components/my-wallet-sheet-provider';
 import type { MeResponse } from '@/lib/permissions/types';
+import { ThemeSwitcher } from '@/components/theme/theme-switcher';
 import {
   ACCOUNT_MENU_SIDE_OFFSET,
   ACCOUNT_MENU_WIDTH_CLASS,
@@ -114,6 +115,7 @@ function AccountMenuPanel({
           <span>My wallet</span>
         </DropdownMenuItem>
       </div>
+      <ThemeSwitcher />
       <div className="border-border bg-muted/25 rounded-b-2xl border-t p-2">
         <DropdownMenuItem
           variant="destructive"
