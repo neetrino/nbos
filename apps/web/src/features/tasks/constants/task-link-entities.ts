@@ -1,3 +1,16 @@
+import {
+  FileText,
+  FolderKanban,
+  Handshake,
+  Headphones,
+  Layers,
+  LayoutGrid,
+  Link2,
+  Puzzle,
+  Receipt,
+  type LucideIcon,
+} from 'lucide-react';
+
 /** Task link entity types used in the sheet (display + editable delivery context). */
 
 export const TASK_LINK_ENTITY_LABELS: Record<string, string> = {
@@ -23,4 +36,29 @@ export function isTaskEditableLinkType(entityType: string): entityType is TaskEd
 
 export function taskLinkEntityLabel(entityType: string): string {
   return TASK_LINK_ENTITY_LABELS[entityType] ?? entityType;
+}
+
+/** Canonical entity icons for task links / board chips (Deal = Handshake, etc.). */
+export function taskLinkEntityIcon(entityType: string): LucideIcon {
+  switch (entityType) {
+    case 'PROJECT':
+      return FolderKanban;
+    case 'PRODUCT':
+      return Layers;
+    case 'EXTENSION':
+      return Puzzle;
+    case 'WORK_SPACE':
+    case 'WORKSPACE':
+      return LayoutGrid;
+    case 'DEAL':
+      return Handshake;
+    case 'ORDER':
+      return FileText;
+    case 'INVOICE':
+      return Receipt;
+    case 'SUPPORT_TICKET':
+      return Headphones;
+    default:
+      return Link2;
+  }
 }

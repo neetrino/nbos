@@ -1,5 +1,6 @@
-import { FolderKanban, Layers, LayoutGrid, Link2, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { Task, TaskLink } from '@/lib/api/tasks';
+import { taskLinkEntityIcon, taskLinkEntityLabel } from '../constants/task-link-entities';
 
 export const TASK_CARD_CHIP_CLASS =
   'inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium leading-none';
@@ -12,6 +13,7 @@ export type TaskCardContextKind = 'PROJECT' | 'PRODUCT' | 'WORK_SPACE' | 'OTHER'
 export type TaskCardContextChip = {
   key: string;
   kind: TaskCardContextKind;
+  entityType: string;
   label: string;
 };
 
@@ -34,22 +36,22 @@ export function formatAssigneeShortName(firstName: string, lastName: string): st
   return `${initial}. ${last}`;
 }
 
-export function taskCardContextIcon(kind: TaskCardContextKind): LucideIcon {
-  if (kind === 'PROJECT') return FolderKanban;
-  if (kind === 'PRODUCT') return Layers;
-  if (kind === 'WORK_SPACE') return LayoutGrid;
-  return Link2;
+export function taskCardContextIcon(chip: Pick<TaskCardContextChip, 'entityType'>): LucideIcon {
+  return taskLinkEntityIcon(chip.entityType);
 }
 
-export function taskCardContextChipClass(kind: TaskCardContextKind): string {
-  if (kind === 'PROJECT') {
+export function taskCardContextChipClass(kind: TaskCardContextKind, entityType?: string): string {
+  if (kind === 'PROJECT' || entityType === 'PROJECT') {
     return 'bg-sky-500/10 text-sky-800 dark:text-sky-300';
   }
-  if (kind === 'PRODUCT') {
+  if (kind === 'PRODUCT' || entityType === 'PRODUCT') {
     return 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300';
   }
-  if (kind === 'WORK_SPACE') {
+  if (kind === 'WORK_SPACE' || entityType === 'WORK_SPACE' || entityType === 'WORKSPACE') {
     return 'bg-violet-500/10 text-violet-800 dark:text-violet-300';
+  }
+  if (entityType === 'DEAL') {
+    return 'bg-blue-500/10 text-blue-800 dark:text-blue-300';
   }
   return 'bg-muted/70 text-muted-foreground';
 }
@@ -65,21 +67,23 @@ export function pickTaskCardContextChips(
   const chips: TaskCardContextChip[] = [];
   const links = task.links ?? [];
 
-  const product = links.find((link) => link.entityType === 'PRODUCT' && Boolean(linkLabel(link)));
-  const project = links.find((link) => link.entityType === 'PROJECT' && Boolean(linkLabel(link)));
+  const product = links.find((link) => link.entityType === 'PRODUCT');
+  const project = links.find((link) => link.entityType === 'PROJECT');
 
   if (product) {
     chips.push({
       key: product.id,
       kind: 'PRODUCT',
-      label: linkLabel(product)!,
+      entityType: 'PRODUCT',
+      label: linkDisplayLabel(product),
     });
   }
   if (project && chips.length < MAX_TASK_CARD_CONTEXT_CHIPS) {
     chips.push({
       key: project.id,
       kind: 'PROJECT',
-      label: linkLabel(project)!,
+      entityType: 'PROJECT',
+      label: linkDisplayLabel(project),
     });
   }
 
@@ -89,6 +93,7 @@ export function pickTaskCardContextChips(
       chips.push({
         key: `ws:${task.workspaceId}`,
         kind: 'WORK_SPACE',
+        entityType: 'WORK_SPACE',
         label: workspaceName,
       });
     }
@@ -98,11 +103,12 @@ export function pickTaskCardContextChips(
 
   for (const link of links) {
     if (link.entityType === 'PROJECT' || link.entityType === 'PRODUCT') continue;
-    const label = linkLabel(link);
+    const label = link.entityLabel?.trim();
     if (!label) continue;
     chips.push({
       key: link.id,
       kind: 'OTHER',
+      entityType: link.entityType,
       label,
     });
     if (chips.length >= MAX_TASK_CARD_CONTEXT_CHIPS) break;
@@ -119,15 +125,11 @@ export function pickTaskCardLinkChips(links: TaskLink[]): TaskLink[] {
   });
 }
 
-/** @deprecated Prefer {@link taskCardContextIcon}. */
+/** @deprecated Prefer {@link taskLinkEntityIcon}. */
 export function linkChipIcon(entityType: string): LucideIcon {
-  if (entityType === 'PROJECT') return FolderKanban;
-  if (entityType === 'PRODUCT' || entityType === 'EXTENSION') return Layers;
-  if (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE') return LayoutGrid;
-  return Link2;
+  return taskLinkEntityIcon(entityType);
 }
 
-function linkLabel(link: TaskLink): string | null {
-  const label = link.entityLabel?.trim();
-  return label || null;
+function linkDisplayLabel(link: TaskLink): string {
+  return link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType);
 }

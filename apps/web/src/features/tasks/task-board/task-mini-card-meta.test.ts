@@ -50,8 +50,8 @@ describe('pickTaskCardContextChips', () => {
     );
 
     expect(chips).toEqual([
-      { key: 'l2', kind: 'PRODUCT', label: 'Website' },
-      { key: 'l1', kind: 'PROJECT', label: 'Acme' },
+      { key: 'l2', kind: 'PRODUCT', entityType: 'PRODUCT', label: 'Website' },
+      { key: 'l1', kind: 'PROJECT', entityType: 'PROJECT', label: 'Acme' },
     ]);
   });
 
@@ -84,5 +84,22 @@ describe('pickTaskCardContextChips', () => {
       { hideWorkspace: true },
     );
     expect(chips).toEqual([]);
+  });
+
+  it('shows project chip even when entityLabel is missing after reload', () => {
+    const chips = pickTaskCardContextChips(
+      task({
+        links: [
+          link({
+            id: 'l1',
+            entityType: 'PROJECT',
+            entityId: 'p1',
+            entityLabel: null,
+          }),
+        ],
+      }),
+    );
+
+    expect(chips).toEqual([{ key: 'l1', kind: 'PROJECT', entityType: 'PROJECT', label: 'Project' }]);
   });
 });

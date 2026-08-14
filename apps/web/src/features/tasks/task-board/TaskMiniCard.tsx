@@ -71,11 +71,14 @@ export function TaskMiniCard({
       {contextChips.length > 0 ? (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           {contextChips.map((chip) => {
-            const ChipIcon = taskCardContextIcon(chip.kind);
+            const ChipIcon = taskCardContextIcon(chip);
             return (
               <span
                 key={chip.key}
-                className={cn(TASK_CARD_CHIP_CLASS, taskCardContextChipClass(chip.kind))}
+                className={cn(
+                  TASK_CARD_CHIP_CLASS,
+                  taskCardContextChipClass(chip.kind, chip.entityType),
+                )}
                 title={chip.label}
               >
                 <ChipIcon size={11} className="shrink-0 opacity-80" aria-hidden />

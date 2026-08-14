@@ -2,14 +2,18 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, Layers, LayoutGrid, Link2, X } from 'lucide-react';
+import { FolderKanban, Layers, LayoutGrid, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { getDriveFileLinkEntityHref } from '@/features/drive/drive-file-link-entity-href';
 import { productsApi } from '@/lib/api/products';
 import { tasksApi, type Task, type TaskLink } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
-import { isTaskEditableLinkType, taskLinkEntityLabel } from '../constants/task-link-entities';
+import {
+  isTaskEditableLinkType,
+  taskLinkEntityIcon,
+  taskLinkEntityLabel,
+} from '../constants/task-link-entities';
 import {
   encodeTaskDeliveryContextValue,
   type TaskDeliveryContextKind,
@@ -194,23 +198,26 @@ export function TaskLinkedEntitiesSection({
 
       {contextLinks.length > 0 ? (
         <div className={cn(TASK_SHEET_META_BLOCK_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS, 'mt-3')}>
-          {contextLinks.map((link) => (
-            <TaskSheetCompactRow
-              key={link.id}
-              gridCells
-              label={taskLinkEntityLabel(link.entityType)}
-            >
-              <button
-                type="button"
-                className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
-                onClick={() => void openLink(link)}
-                title="Open linked entity"
+          {contextLinks.map((link) => {
+            const LinkIcon = taskLinkEntityIcon(link.entityType);
+            return (
+              <TaskSheetCompactRow
+                key={link.id}
+                gridCells
+                label={taskLinkEntityLabel(link.entityType)}
               >
-                <Link2 size={13} className="text-muted-foreground shrink-0" aria-hidden />
-                <span className="truncate">{link.entityLabel?.trim() || link.entityId}</span>
-              </button>
-            </TaskSheetCompactRow>
-          ))}
+                <button
+                  type="button"
+                  className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
+                  onClick={() => void openLink(link)}
+                  title="Open linked entity"
+                >
+                  <LinkIcon size={13} className="text-muted-foreground shrink-0" aria-hidden />
+                  <span className="truncate">{link.entityLabel?.trim() || link.entityId}</span>
+                </button>
+              </TaskSheetCompactRow>
+            );
+          })}
         </div>
       ) : null}
     </section>
