@@ -60,7 +60,7 @@ export function WalletProjectBreakdownSection({
                       href={`/projects/${row.projectId}`}
                       className="text-primary text-xs font-medium hover:underline"
                     >
-                      {row.project.code}
+                      {row.project.name}
                     </Link>
                   </TableCell>
                   <TableCell className="text-xs font-medium">{row.order.code}</TableCell>

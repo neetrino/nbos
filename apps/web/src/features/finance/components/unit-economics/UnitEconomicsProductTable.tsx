@@ -63,7 +63,6 @@ export function UnitEconomicsProductTable({ data }: { data: UnitEconomicsBoardDa
                 <tr key={row.rollupKey} className="hover:bg-muted/30">
                   <td className="border-border border-b px-3 py-2">
                     <p className="font-medium">{row.label}</p>
-                    <p className="text-muted-foreground text-[11px]">{row.projectCode}</p>
                   </td>
                   <td className="border-border border-b px-2 py-2">
                     {KIND_LABEL[row.kind] ?? row.kind}

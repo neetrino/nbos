@@ -42,6 +42,7 @@ import {
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
 import type { Expense } from '@/lib/api/finance';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 import {
   resolveExpensePayrollMonthLabel,
   resolveExpensePayrollRunId,
@@ -65,9 +66,7 @@ export function ExpenseGeneralTab({
 }: ExpenseGeneralTabProps) {
   const searchProjects = useProjectRelationSearch();
   const projectPicker = useRelationPickerActions('project');
-  const initialProjectLabel = expense.project
-    ? `${expense.project.code} — ${expense.project.name}`
-    : null;
+  const initialProjectLabel = projectDisplayName(expense.project);
   const [projectLabel, setProjectLabel] = useState<string | null>(initialProjectLabel);
   const projectSeed = `${expense.id}:${expense.projectId ?? ''}:${initialProjectLabel ?? ''}`;
   const [projectSeedSeen, setProjectSeedSeen] = useState(projectSeed);

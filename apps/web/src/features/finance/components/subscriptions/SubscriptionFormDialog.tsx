@@ -156,9 +156,7 @@ export function SubscriptionFormDialog({
             ) : (
               <div className="text-muted-foreground text-sm">
                 Product: {subscription?.product?.name ?? productLabel ?? form.productId}
-                {subscription?.project
-                  ? ` · Project ${subscription.project.code} — ${subscription.project.name}`
-                  : null}
+                {subscription?.project ? ` · Project ${subscription.project.name}` : null}
               </div>
             )}
 

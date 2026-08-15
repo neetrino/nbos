@@ -200,10 +200,6 @@ export function DeliveryItemDetailSheet({
           const productProjectId = item.product.projectId ?? item.product.project?.id ?? '';
           return {
             entityKind: 'PRODUCT' as const,
-            projectCode: item.product.project?.code ?? '—',
-            projectName: item.product.project?.name ?? '—',
-            projectHref: `/projects/${productProjectId}`,
-            deadline: item.product.deadline,
             workSpaceHref: buildProductDetailPageHref(
               productProjectId,
               item.product.id,
@@ -218,10 +214,6 @@ export function DeliveryItemDetailSheet({
             const extensionProjectId = item.extension.projectId ?? item.extension.project?.id ?? '';
             return {
               entityKind: 'EXTENSION' as const,
-              projectCode: item.extension.project?.code ?? '—',
-              projectName: item.extension.project?.name ?? '—',
-              projectHref: `/projects/${extensionProjectId}`,
-              deadline: null as string | null,
               workSpaceHref: buildProductDetailPageHref(
                 extensionProjectId,
                 item.extension.productId,

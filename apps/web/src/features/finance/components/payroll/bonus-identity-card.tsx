@@ -8,12 +8,12 @@ import { cn } from '@/lib/utils';
 
 export function BonusSourceIdentityCard({
   projectHref,
-  projectCode,
+  projectName,
   productLabel,
   orderCode,
 }: {
   projectHref: string;
-  projectCode: string;
+  projectName: string;
   productLabel: string;
   orderCode: string;
 }) {
@@ -23,7 +23,7 @@ export function BonusSourceIdentityCard({
         label="Project"
         value={
           <Link href={projectHref} className="text-primary font-semibold hover:underline">
-            {projectCode}
+            {projectName}
           </Link>
         }
       />

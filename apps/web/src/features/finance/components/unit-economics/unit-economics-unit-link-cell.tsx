@@ -15,7 +15,7 @@ export function UnitEconomicsUnitLinkCell({
     <td className="border-border border-b px-3 py-2">
       <span className="font-medium tabular-nums">{row.orderCode}</span>
       <p className="text-muted-foreground truncate text-[11px]">
-        {row.label} · {typeLabel} · {row.projectCode} · {row.deliveryOpen ? 'open' : 'closed'}
+        {row.label} · {typeLabel} · {row.projectName} · {row.deliveryOpen ? 'open' : 'closed'}
       </p>
     </td>
   );

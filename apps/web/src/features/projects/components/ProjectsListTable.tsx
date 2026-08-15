@@ -58,7 +58,7 @@ export function ProjectsListTable({ projects, onProjectClick }: ProjectsListTabl
                       icon={FolderKanban}
                       className="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
                     />
-                    <EntityListPrimaryCell title={project.name} subtitle={project.code} />
+                    <EntityListPrimaryCell title={project.name} />
                   </span>
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>

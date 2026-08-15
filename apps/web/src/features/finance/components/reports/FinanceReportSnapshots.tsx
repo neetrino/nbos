@@ -367,12 +367,8 @@ export function ProjectPnlSnapshot({ report }: { report: ProjectPnlReport }) {
       </div>
       {topProject ? (
         <p className="text-muted-foreground mt-4 text-sm">
-          Top project:{' '}
-          <span className="font-medium">
-            {topProject.projectCode ? `${topProject.projectCode} · ` : ''}
-            {topProject.projectName}
-          </span>{' '}
-          at {formatCompanyPnlAmount(topProject.netProfit)} net profit.
+          Top project: <span className="font-medium">{topProject.projectName}</span> at{' '}
+          {formatCompanyPnlAmount(topProject.netProfit)} net profit.
         </p>
       ) : null}
     </ReportSnapshot>

@@ -20,7 +20,7 @@ export function buildExpensePlanIntegratedFilterConfigs(
       label: 'Project',
       options: projects.map((p) => ({
         value: p.id,
-        label: `${p.code} — ${p.name}`,
+        label: p.name,
       })),
     });
   }

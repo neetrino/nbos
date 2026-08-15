@@ -91,7 +91,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             <MetaRow
               icon={<FolderKanban size={14} aria-hidden />}
               iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-              label={plan.project.code}
+              label={plan.project.name}
             />
           ) : null}
         </div>

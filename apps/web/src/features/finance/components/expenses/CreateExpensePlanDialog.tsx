@@ -35,6 +35,7 @@ import {
   type CreateExpensePlanPayload,
   type ExpensePlan,
 } from '@/lib/api/expense-plans';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 import {
   EMPTY_EXPENSE_PLAN_FORM,
   expensePlanToFormState,
@@ -42,11 +43,6 @@ import {
 } from '@/features/finance/utils/expense-plan-form-state';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
-
-function projectSelectionLabel(plan: ExpensePlan | null | undefined): string | null {
-  if (!plan?.project) return null;
-  return `${plan.project.code} — ${plan.project.name}`;
-}
 
 interface CreateExpensePlanDialogProps {
   open: boolean;
@@ -86,7 +82,7 @@ export function CreateExpensePlanDialog({
     setFormError(null);
     if (planToEdit) {
       setForm(expensePlanToFormState(planToEdit));
-      setProjectLabel(projectSelectionLabel(planToEdit));
+      setProjectLabel(projectDisplayName(planToEdit?.project));
     } else {
       setForm({ ...EMPTY_EXPENSE_PLAN_FORM, ...initialForm });
       setProjectLabel(null);

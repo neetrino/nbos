@@ -87,7 +87,7 @@ export function uniqueUnitEconomicsProjects(
   const map = new Map<string, string>();
   for (const row of items) {
     if (!map.has(row.projectId)) {
-      map.set(row.projectId, `${row.projectCode} · ${row.projectName}`);
+      map.set(row.projectId, row.projectName);
     }
   }
   return [...map.entries()]

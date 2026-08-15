@@ -95,7 +95,6 @@ export function ClientPortfolioTabPanels({
           <ul className="divide-border divide-y rounded-xl border">
             {projects.map((p) => {
               const id = String(p.id ?? '');
-              const code = String(p.code ?? '');
               const name = String(p.name ?? '');
               const counts = p._count as { products?: number; extensions?: number } | undefined;
               return (
@@ -104,9 +103,7 @@ export function ClientPortfolioTabPanels({
                   className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm"
                 >
                   <div>
-                    <p className="font-medium">
-                      {code} · {name}
-                    </p>
+                    <p className="font-medium">{name}</p>
                     <p className="text-muted-foreground text-xs">
                       Products {counts?.products ?? 0} · Extensions {counts?.extensions ?? 0}
                     </p>

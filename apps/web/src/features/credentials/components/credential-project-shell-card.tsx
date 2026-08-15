@@ -43,7 +43,7 @@ export function CredentialProjectShellCard({ shell, onOpen }: CredentialProjectS
           />
         </div>
         <p className="text-muted-foreground truncate text-center text-[10px] leading-none">
-          {shell.code} · {shell.credentialCount} credential
+          {shell.credentialCount} credential
           {shell.credentialCount === 1 ? '' : 's'}
         </p>
       </div>

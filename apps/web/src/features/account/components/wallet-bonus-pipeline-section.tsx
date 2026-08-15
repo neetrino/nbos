@@ -61,7 +61,7 @@ export function WalletBonusPipelineSection({
                           {b.productLabel}
                         </div>
                         <div className="text-muted-foreground mt-1 text-[11px]">
-                          {b.project.code} · {b.order.code}
+                          {b.project.name} · {b.order.code}
                         </div>
                         <div className="text-muted-foreground mt-0.5">{b.type}</div>
                         {b.policyBreakdownStatuses.length > 0 ? (

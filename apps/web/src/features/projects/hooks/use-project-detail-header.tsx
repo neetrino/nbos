@@ -65,9 +65,6 @@ export function useProjectDetailHeader({
               className={HEADER_CONTEXT_STATUS_BADGE_CLASS}
             />
           ) : null}
-          <span className="text-muted-foreground hidden truncate text-xs tabular-nums sm:inline">
-            {project.code}
-          </span>
         </div>
       ),
     };

@@ -70,7 +70,6 @@ export function DealGeneralTab({
     return data.items.map((project) => ({
       value: project.id,
       label: project.name,
-      subtitle: project.code,
     }));
   }, []);
 

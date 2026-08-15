@@ -21,4 +21,10 @@ describe('relationPickerChipLabel', () => {
     expect(relationPickerChipLabel('  ', EMPLOYEE_ID)).toBe('');
     expect(relationPickerChipLabel(null, EMPLOYEE_ID)).toBe('');
   });
+
+  it('strips project code prefixes from chip labels', () => {
+    expect(relationPickerChipLabel('BX-P-f36ec3ccb09b — 10xmarket.am', 'proj-1')).toBe(
+      '10xmarket.am',
+    );
+  });
 });

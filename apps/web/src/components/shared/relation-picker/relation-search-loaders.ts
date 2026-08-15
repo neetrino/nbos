@@ -58,7 +58,6 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
       return res.items.map((project) => ({
         value: project.id,
         label: project.name,
-        subtitle: project.code,
       }));
     },
     [pageSize],
@@ -137,7 +136,7 @@ export function useOrderRelationSearch(pageSize = DEFAULT_PAGE_SIZE): RelationPi
       return res.items.map((order) => ({
         value: order.id,
         label: order.code,
-        subtitle: `${order.project.code} — ${order.project.name}`,
+        subtitle: order.project.name,
       }));
     },
     [pageSize],

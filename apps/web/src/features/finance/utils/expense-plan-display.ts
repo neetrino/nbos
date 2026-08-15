@@ -1,4 +1,5 @@
-const GRID_PROJECT_LABEL_SEPARATOR = ' — ';
+import { stripEntityCodePrefix } from '@/lib/format/project-product-display';
+
 const YEARLY_PLAN_FREQUENCIES = new Set(['YEARLY', 'MULTI_YEAR']);
 
 export function formatExpensePlanShortDate(iso: string | null): string {
@@ -29,22 +30,9 @@ export function formatExpensePlanDueMonth(iso: string | null): string | null {
   return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
 }
 
-/** Grid API sends `${code} — ${name}`; sidebar shows the name only. */
+/** Grid API may send `${code} — ${name}`; UI shows the name only. */
 export function expensePlanGridProjectName(projectLabel: string | null): string | null {
-  if (!projectLabel) return null;
-  const separatorIndex = projectLabel.indexOf(GRID_PROJECT_LABEL_SEPARATOR);
-  if (separatorIndex === -1) {
-    return projectLabel.trim() || null;
-  }
-  const name = projectLabel.slice(separatorIndex + GRID_PROJECT_LABEL_SEPARATOR.length).trim();
-  return name || projectLabel.trim() || null;
-}
-
-export function expensePlanGridProjectCode(projectLabel: string | null): string | null {
-  if (!projectLabel) return null;
-  const separatorIndex = projectLabel.indexOf(GRID_PROJECT_LABEL_SEPARATOR);
-  if (separatorIndex <= 0) return null;
-  return projectLabel.slice(0, separatorIndex).trim() || null;
+  return stripEntityCodePrefix(projectLabel);
 }
 
 export function formatExpensePlanGridRowSubtitle(input: {
@@ -57,8 +45,6 @@ export function formatExpensePlanGridRowSubtitle(input: {
     ? formatExpensePlanDueMonth(input.nextDueDate ?? null)
     : null;
   const projectName = expensePlanGridProjectName(input.projectLabel);
-  const projectCode = expensePlanGridProjectCode(input.projectLabel);
   const text = [frequencyText, dueMonth, projectName].filter(Boolean).join(' · ');
-  const title = [frequencyText, dueMonth, projectName, projectCode].filter(Boolean).join(' · ');
-  return { text, title };
+  return { text, title: text };
 }
