@@ -81,6 +81,7 @@ const APP_STORE_PROVIDERS: CredentialProviderSeedRow[] = [
 const SAAS_TOOL_PROVIDERS: CredentialProviderSeedRow[] = [
   { name: 'Google', website: 'https://google.com' },
   { name: 'WordPress', website: 'https://wordpress.com' },
+  { name: 'Squarespace', website: 'https://www.squarespace.com' },
   { name: 'Adobe', website: 'https://www.adobe.com' },
   { name: 'Figma', website: 'https://www.figma.com' },
   { name: 'HubSpot', website: 'https://www.hubspot.com' },
