@@ -12,6 +12,13 @@ describe('expense-query-enum-guards', () => {
   it('accepts known enum members', () => {
     expect(pickExpenseTypeFilter('PLANNED')).toBe('PLANNED');
     expect(pickExpenseCategoryFilter('HOSTING')).toBe('HOSTING');
+    expect(pickExpenseCategoryFilter('OFFICE')).toBe('OFFICE');
+    expect(pickExpenseCategoryFilter('TAXES')).toBe('TAXES');
+    expect(pickExpenseCategoryFilter('BANK_FEES')).toBe('BANK_FEES');
+    expect(pickExpenseCategoryFilter('TRAINING')).toBe('TRAINING');
+    expect(pickExpenseCategoryFilter('INTERNAL_INFRA')).toBe('INTERNAL_INFRA');
+    expect(pickExpenseCategoryFilter('SALARY')).toBe('SALARY');
+    expect(pickExpenseCategoryFilter('BONUS')).toBe('BONUS');
     expect(pickExpenseFrequencyFilter('MONTHLY')).toBe('MONTHLY');
     expect(pickExpenseFrequencyFilter('WEEKLY')).toBe('WEEKLY');
     expect(pickExpenseFrequencyFilter('ONE_TIME')).toBe('ONE_TIME');

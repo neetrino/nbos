@@ -4,8 +4,12 @@ import {
   CircleHelp,
   Gift,
   Globe,
+  GraduationCap,
   Handshake,
   HardDrive,
+  Landmark,
+  Network,
+  Receipt,
   Server,
   Sparkles,
   UserRound,
@@ -60,6 +64,23 @@ const EXPENSE_CATEGORY_VISUAL: Record<string, ExpenseCategoryVisual> = {
   OFFICE: {
     icon: Building2,
     iconShellClassName: 'bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-300',
+  },
+  TAXES: {
+    icon: Landmark,
+    iconShellClassName: 'bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300',
+  },
+  BANK_FEES: {
+    icon: Receipt,
+    iconShellClassName: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-300',
+  },
+  TRAINING: {
+    icon: GraduationCap,
+    iconShellClassName: 'bg-lime-100 text-lime-700 dark:bg-lime-950/40 dark:text-lime-300',
+  },
+  INTERNAL_INFRA: {
+    icon: Network,
+    iconShellClassName:
+      'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-950/40 dark:text-fuchsia-300',
   },
   OTHER: DEFAULT_VISUAL,
 };
