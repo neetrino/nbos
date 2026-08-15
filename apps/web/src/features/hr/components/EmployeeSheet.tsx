@@ -23,12 +23,8 @@ import {
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
-import {
-  employeeAvatarColor,
-  employeeFullName,
-  employeeInitials,
-  employeePrimaryDepartment,
-} from '@/features/hr/utils/employee-display';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
 import {
   departmentsApi,
   employeesApi,
@@ -289,11 +285,11 @@ export function EmployeeSheet({
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>
             <div className="flex items-start gap-3">
-              <div
-                className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${employeeAvatarColor(fullName)}`}
-              >
-                {employeeInitials(displayEmployee)}
-              </div>
+              <EmployeePersonAvatar
+                label={fullName}
+                imageUrl={displayEmployee.avatar}
+                className="size-11 text-base"
+              />
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold">{fullName}</h2>

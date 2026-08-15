@@ -32,6 +32,7 @@ type RelationPickerChipProps = {
   /** Inline controls after the label (e.g. date + access level). */
   trailing?: ReactNode;
   onClear?: () => void;
+  imageUrl?: string | null;
 };
 
 function usesPersonAvatar(kind: RelationEntityKind | undefined): boolean {
@@ -42,10 +43,11 @@ function relationChipLeading(
   entityKind: RelationEntityKind | undefined,
   label: string,
   icon: ReactNode | undefined,
+  imageUrl?: string | null,
 ): ReactNode {
   if (icon) return icon;
   if (!entityKind) return null;
-  return relationPickerOptionLeading(entityKind, label, 'inline');
+  return relationPickerOptionLeading(entityKind, label, 'inline', imageUrl ?? undefined);
 }
 
 export function RelationPickerChip({
@@ -59,12 +61,13 @@ export function RelationPickerChip({
   onReplace,
   trailing,
   onClear,
+  imageUrl,
 }: RelationPickerChipProps) {
   const canOpen = Boolean(onOpen) && !disabled;
   const canReplace = Boolean(onReplace) && !disabled;
   const personLeading = usesPersonAvatar(entityKind);
 
-  const leading = relationChipLeading(entityKind, label, icon);
+  const leading = relationChipLeading(entityKind, label, icon, imageUrl);
 
   const labelClass = cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'font-semibold');
 

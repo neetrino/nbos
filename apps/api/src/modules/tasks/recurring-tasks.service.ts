@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma, type TaskPriorityEnum } from '@nbos/database';
+import { employeePersonSelect } from '../../common/employee-person.select';
 import { PRISMA_TOKEN } from '../../database.module';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -50,8 +51,8 @@ export class RecurringTasksService {
     return this.prisma.recurringTaskTemplate.findMany({
       where,
       include: {
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        creator: { select: employeePersonSelect },
+        assignee: { select: employeePersonSelect },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -61,8 +62,8 @@ export class RecurringTasksService {
     const template = await this.prisma.recurringTaskTemplate.findUnique({
       where: { id },
       include: {
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        creator: { select: employeePersonSelect },
+        assignee: { select: employeePersonSelect },
       },
     });
     if (!template) throw new NotFoundException(`Recurring template ${id} not found`);
@@ -102,8 +103,8 @@ export class RecurringTasksService {
         linksData: (data.linksData as any) ?? undefined,
       },
       include: {
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        creator: { select: employeePersonSelect },
+        assignee: { select: employeePersonSelect },
       },
     });
   }

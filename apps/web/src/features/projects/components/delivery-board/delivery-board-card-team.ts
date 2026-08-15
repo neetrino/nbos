@@ -10,6 +10,7 @@ export type DeliveryCardTeamMember = {
   fullName: string;
   roleLabel: string;
   tone: DeliveryCardTeamAvatarTone;
+  imageUrl?: string;
 };
 
 const AVATAR_TONE_CLASS: Record<DeliveryCardTeamAvatarTone, string> = {
@@ -31,12 +32,14 @@ function pushTeamMember(
 ): void {
   if (!person?.id || seenIds.has(person.id)) return;
   seenIds.add(person.id);
+  const imageUrl = person.avatar?.trim() || undefined;
   members.push({
     id: person.id,
     initials: employeeInitials(person),
     fullName: `${person.firstName} ${person.lastName}`.trim(),
     roleLabel,
     tone,
+    imageUrl,
   });
 }
 

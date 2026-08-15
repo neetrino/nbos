@@ -18,6 +18,10 @@ import {
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  employeePersonSelect,
+  employeePersonWithEmailSelect,
+} from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
 import {
   PRODUCT_STATUS_ORDER,
@@ -214,11 +218,11 @@ export class ProductsService {
               company: { select: { id: true, name: true } },
             },
           },
-          pm: { select: { id: true, firstName: true, lastName: true } },
-          developer: { select: { id: true, firstName: true, lastName: true } },
-          designer: { select: { id: true, firstName: true, lastName: true } },
-          technicalSpecialist: { select: { id: true, firstName: true, lastName: true } },
-          qaLead: { select: { id: true, firstName: true, lastName: true } },
+          pm: { select: employeePersonSelect },
+          developer: { select: employeePersonSelect },
+          designer: { select: employeePersonSelect },
+          technicalSpecialist: { select: employeePersonSelect },
+          qaLead: { select: employeePersonSelect },
           order: {
             select: {
               id: true,
@@ -317,14 +321,12 @@ export class ProductsService {
             },
           },
         },
-        pm: { select: { id: true, firstName: true, lastName: true, email: true } },
-        developer: { select: { id: true, firstName: true, lastName: true, email: true } },
-        designer: { select: { id: true, firstName: true, lastName: true, email: true } },
-        technicalSpecialist: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-        qaLead: { select: { id: true, firstName: true, lastName: true, email: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonWithEmailSelect },
+        developer: { select: employeePersonWithEmailSelect },
+        designer: { select: employeePersonWithEmailSelect },
+        technicalSpecialist: { select: employeePersonWithEmailSelect },
+        qaLead: { select: employeePersonWithEmailSelect },
+        closedBy: { select: employeePersonSelect },
         technicalProfiles: {
           select: {
             productionUrl: true,
@@ -353,7 +355,7 @@ export class ProductsService {
         },
         extensions: {
           include: {
-            assignee: { select: { id: true, firstName: true, lastName: true } },
+            assignee: { select: employeePersonSelect },
             order: {
               select: {
                 id: true,
@@ -418,7 +420,7 @@ export class ProductsService {
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonSelect },
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
@@ -459,13 +461,11 @@ export class ProductsService {
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
-        developer: { select: { id: true, firstName: true, lastName: true } },
-        designer: { select: { id: true, firstName: true, lastName: true } },
-        technicalSpecialist: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-        qaLead: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonSelect },
+        developer: { select: employeePersonSelect },
+        designer: { select: employeePersonSelect },
+        technicalSpecialist: { select: employeePersonSelect },
+        qaLead: { select: employeePersonSelect },
       },
     });
     await this.syncProductTeamAccess(product);

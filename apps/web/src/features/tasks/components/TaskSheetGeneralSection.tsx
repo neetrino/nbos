@@ -1,4 +1,4 @@
-import { Calendar, Copy, User, Users } from 'lucide-react';
+import { Calendar, Copy, Users } from 'lucide-react';
 import {
   DetailSheetOptionalDescriptionField,
   InlineField,
@@ -72,14 +72,18 @@ export function TaskSheetGeneralSection({
                   entityKind="employee"
                   value={draft.creatorId}
                   selectionLabel={draft.creatorLabel}
-                  icon={<User size={13} />}
+                  selectionAvatar={draft.creatorAvatar}
                   placeholder="Select creator…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) => {
+                  onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
-                    onPatchDraft({ creatorId: employeeId, creatorLabel: label });
+                    onPatchDraft({
+                      creatorId: employeeId,
+                      creatorLabel: label,
+                      creatorAvatar: avatar?.trim() || null,
+                    });
                   }}
                   {...creatorPicker}
                 />
@@ -91,16 +95,26 @@ export function TaskSheetGeneralSection({
                   entityKind="employee"
                   value={draft.assigneeId}
                   selectionLabel={draft.assigneeLabel}
-                  icon={<User size={13} />}
+                  selectionAvatar={draft.assigneeAvatar}
                   placeholder="Select assignee…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) => {
+                  onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
-                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label });
+                    onPatchDraft({
+                      assigneeId: employeeId,
+                      assigneeLabel: label,
+                      assigneeAvatar: avatar?.trim() || null,
+                    });
                   }}
-                  onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
+                  onClear={() =>
+                    onPatchDraft({
+                      assigneeId: null,
+                      assigneeLabel: null,
+                      assigneeAvatar: null,
+                    })
+                  }
                   {...assigneePicker}
                 />
               </TaskSheetCompactRow>

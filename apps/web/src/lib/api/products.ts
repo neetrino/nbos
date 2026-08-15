@@ -6,6 +6,7 @@ export interface ProductEmployee {
   firstName: string;
   lastName: string;
   email?: string;
+  avatar?: string | null;
 }
 
 export interface ProductClosedByRef {

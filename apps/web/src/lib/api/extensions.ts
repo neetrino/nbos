@@ -6,6 +6,7 @@ export interface ExtensionEmployee {
   firstName: string;
   lastName: string;
   email?: string;
+  avatar?: string | null;
 }
 
 export interface ExtensionClosedByRef {

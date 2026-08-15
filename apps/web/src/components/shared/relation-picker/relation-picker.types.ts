@@ -13,6 +13,8 @@ export type RelationPickerOption = {
   value: string;
   label: string;
   subtitle?: string;
+  /** Employee / contact profile photo URL when available. */
+  avatar?: string;
 };
 
 export type RelationPickerSearchFn = (query: string) => Promise<RelationPickerOption[]>;
@@ -57,7 +59,9 @@ export type RelationPickerSingleProps = RelationPickerBaseProps & {
   value: string | null | undefined;
   selectionLabel?: string | null;
   selectionSubtitle?: string | null;
-  onSelect: (id: string, label: string) => void;
+  /** Profile photo for the selected employee/contact chip. */
+  selectionAvatar?: string | null;
+  onSelect: (id: string, label: string, avatar?: string) => void;
   /** When omitted, chip shows no X (use for required links — replace via search instead). */
   onClear?: () => void;
 };

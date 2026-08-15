@@ -27,7 +27,7 @@ type RelationPickerDropdownProps = {
   createLabel: string;
   createEnabled: boolean;
   onCreateClick: () => void;
-  onSelect: (value: string, label: string) => void;
+  onSelect: (value: string, label: string, avatar?: string) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
   listMaxHeightClass: string;
@@ -104,14 +104,14 @@ export function RelationPickerDropdown({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => onSelect(option.value, option.label)}
+                  onClick={() => onSelect(option.value, option.label, option.avatar)}
                   className={cn(
                     'flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors',
                     selected ? 'bg-sky-50 dark:bg-sky-950/30' : 'hover:bg-muted',
                     index === highlightIdx && !selected && 'bg-muted',
                   )}
                 >
-                  {relationPickerOptionLeading(entityKind, option.label)}
+                  {relationPickerOptionLeading(entityKind, option.label, 'boxed', option.avatar)}
                   <div className="min-w-0 flex-1">
                     <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {kindLabel}

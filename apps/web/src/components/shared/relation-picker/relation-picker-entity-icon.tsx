@@ -51,12 +51,13 @@ export function relationPickerOptionLeading(
   kind: RelationEntityKind,
   label: string,
   variant: 'boxed' | 'inline' = 'boxed',
+  imageUrl?: string,
 ): ReactNode {
   if (usesPersonAvatar(kind)) {
     return variant === 'inline' ? (
-      <PersonSoftAvatar name={label} />
+      <PersonSoftAvatar name={label} imageUrl={imageUrl} />
     ) : (
-      <EmployeePersonAvatar label={label} />
+      <EmployeePersonAvatar label={label} imageUrl={imageUrl} />
     );
   }
   if (variant === 'inline') {

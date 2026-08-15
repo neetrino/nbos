@@ -3,10 +3,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { AppWindow, Calendar, Clock3 } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import {
   employeeDisplayName,
-  employeeInitials,
   type SalaryBoardEntry,
 } from '@/features/finance/components/payroll/salary-board-entries';
 import { formatAmount } from '@/features/finance/constants/finance';
@@ -15,7 +15,6 @@ import {
   parseSalaryBoardAmount,
 } from '@/features/finance/utils/salary-board-month-utils';
 import { SalaryBoardSalesKpiStrip } from '@/features/finance/components/payroll/salary-board-sales-kpi-strip';
-import { employeeAvatarSoftColor } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
 
 export function SalaryBoardPayoutLineCard({
@@ -60,7 +59,6 @@ export function SalaryBoardPayoutLineCard({
 function SalaryCardHeader({ entry }: { entry: SalaryBoardEntry }) {
   const lineUi = salaryLineStatusBoardUi(entry.cell.lineStatus);
   const name = employeeDisplayName(entry.employee);
-  const avatarTone = employeeAvatarSoftColor(name);
   const hideStatusInPaidColumn = entry.cell.payoutPhase === 'past_paid';
   const eyebrowParts = [
     hideStatusInPaidColumn ? null : lineUi.label,
@@ -69,15 +67,11 @@ function SalaryCardHeader({ entry }: { entry: SalaryBoardEntry }) {
 
   return (
     <header className="flex items-center gap-2.5">
-      <div
-        className={cn(
-          'flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-semibold',
-          avatarTone,
-        )}
-        aria-hidden
-      >
-        {employeeInitials(entry.employee)}
-      </div>
+      <EmployeePersonAvatar
+        label={name}
+        imageUrl={entry.employee.avatar}
+        className="size-10 rounded-xl text-xs"
+      />
       <div className="min-w-0 flex-1">
         {eyebrowParts.length > 0 ? (
           <p className="text-muted-foreground truncate text-[10px] font-semibold tracking-[0.14em] uppercase">

@@ -6,6 +6,7 @@ export interface EmployeeRef {
   lastName: string;
   email?: string;
   role?: string;
+  avatar?: string | null;
 }
 
 export interface DeliveryLifecycleProjection {

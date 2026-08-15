@@ -3,6 +3,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
@@ -43,9 +44,6 @@ export function TaskMiniCard({
   const assigneeLabel = task.assignee
     ? formatAssigneeShortName(task.assignee.firstName, task.assignee.lastName)
     : 'Unassigned';
-  const assigneeInitials = task.assignee
-    ? `${task.assignee.firstName.charAt(0)}${task.assignee.lastName.charAt(0)}`.toUpperCase()
-    : '?';
 
   return (
     <KanbanCardShell
@@ -90,14 +88,12 @@ export function TaskMiniCard({
       ) : null}
 
       <div className="border-border/60 mt-3 flex items-center justify-between gap-2 border-t pt-3">
-        <div className="flex min-w-0 items-center">
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
-            title={assigneeLabel}
-            aria-label={assigneeLabel}
-          >
-            {assigneeInitials}
-          </span>
+        <div className="flex min-w-0 items-center" title={assigneeLabel}>
+          <EmployeePersonAvatar
+            label={assigneeLabel}
+            imageUrl={task.assignee?.avatar}
+            className="size-8"
+          />
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
