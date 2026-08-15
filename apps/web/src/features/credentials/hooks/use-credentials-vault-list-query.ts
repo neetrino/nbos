@@ -14,6 +14,16 @@ import { vaultScopeToListTab } from '@/features/credentials/vault-scope';
 import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
 import { credentialsApi } from '@/lib/api/credentials';
 
+function appendUniqueCredentials(
+  prev: CredentialListItem[],
+  next: CredentialListItem[],
+): CredentialListItem[] {
+  if (next.length === 0) return prev;
+  const seen = new Set(prev.map((item) => item.id));
+  const unique = next.filter((item) => !seen.has(item.id));
+  return unique.length === 0 ? prev : [...prev, ...unique];
+}
+
 export interface CredentialsVaultListQueryParams {
   viewMode: CredentialVaultViewMode;
   page: number;
@@ -44,6 +54,8 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
   const [totalPages, setTotalPages] = useState(1);
   const [loadedBoardPage, setLoadedBoardPage] = useState(1);
   const fetchGenerationRef = useRef(0);
+  /** Blocks double append from IntersectionObserver before `loadingMore` commits. */
+  const appendInFlightRef = useRef(false);
 
   const quickFiltersKey = useMemo(
     () => [...params.quickFilters].sort().join(','),
@@ -99,6 +111,13 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
 
   const fetchPage = useCallback(
     async (targetPage: number, mode: 'replace' | 'append', options?: { silent?: boolean }) => {
+      if (mode === 'append') {
+        if (appendInFlightRef.current) return;
+        appendInFlightRef.current = true;
+      } else {
+        appendInFlightRef.current = false;
+      }
+
       const p = paramsRef.current;
       const generation = ++fetchGenerationRef.current;
       if (mode === 'replace' && !options?.silent) setLoading(true);
@@ -161,7 +180,9 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         if (generation !== fetchGenerationRef.current) return;
 
         const items = (data.items as unknown as CredentialListItem[]) ?? [];
-        setCredentials((prev) => (mode === 'append' ? [...prev, ...items] : items));
+        setCredentials((prev) =>
+          mode === 'append' ? appendUniqueCredentials(prev, items) : items,
+        );
         setTotal(data.meta.total);
         setTotalPages(data.meta.totalPages);
         setLoadedBoardPage(targetPage);
@@ -174,6 +195,9 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
           setLoadedBoardPage(1);
         }
       } finally {
+        if (mode === 'append' && generation === fetchGenerationRef.current) {
+          appendInFlightRef.current = false;
+        }
         if (generation === fetchGenerationRef.current) {
           setLoading(false);
           setLoadingMore(false);
