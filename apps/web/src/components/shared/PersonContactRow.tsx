@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { initialsFromEmployeeLabel } from '@/components/shared/EmployeePersonAvatar';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import {
   PERSON_CONTACT_AVATAR_CLASS,
@@ -9,7 +9,6 @@ import {
   PERSON_CONTACT_OPEN_BTN_CLASS,
   PERSON_CONTACT_ROW_CLASS,
 } from '@/components/shared/person-contact-row.constants';
-import { employeeAvatarSoftColor } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
 
 export type PersonContactRowProps = {
@@ -20,10 +19,11 @@ export type PersonContactRowProps = {
   trailing?: ReactNode;
   className?: string;
   onOpen?: () => void;
+  imageUrl?: string | null;
 };
 
 /**
- * Bordered person row — soft pastel initials + name (+ email), as on
+ * Bordered person row — soft pastel initials/photo + name (+ email), as on
  * Projects → About → Contacts.
  */
 export function PersonContactRow({
@@ -34,15 +34,16 @@ export function PersonContactRow({
   trailing,
   className,
   onOpen,
+  imageUrl,
 }: PersonContactRowProps) {
-  const avatarTone = employeeAvatarSoftColor(name);
-  const initials = initialsFromEmployeeLabel(name);
   const canOpen = Boolean(onOpen) && !disabled;
 
   const avatar = (
-    <span className={cn(PERSON_CONTACT_AVATAR_CLASS, avatarTone)} aria-hidden>
-      {initials}
-    </span>
+    <EmployeePersonAvatar
+      label={name}
+      imageUrl={imageUrl}
+      className={PERSON_CONTACT_AVATAR_CLASS}
+    />
   );
 
   const identity = (

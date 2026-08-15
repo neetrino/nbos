@@ -55,6 +55,7 @@ export interface SalaryBoardEmployeeDto {
   firstName: string;
   lastName: string;
   position: string | null;
+  avatar: string | null;
   /** All department memberships (for client-side board filter). */
   departmentIds: string[];
   primaryDepartmentId: string | null;
@@ -94,6 +95,7 @@ type EmployeeWithDepartments = {
   firstName: string;
   lastName: string;
   position: string | null;
+  avatar: string | null;
   departments: Array<{ departmentId: string; isPrimary: boolean }>;
 };
 
@@ -104,6 +106,7 @@ function mapSalaryBoardEmployee(emp: EmployeeWithDepartments): SalaryBoardEmploy
     firstName: emp.firstName,
     lastName: emp.lastName,
     position: emp.position,
+    avatar: emp.avatar,
     departmentIds: emp.departments.map((d) => d.departmentId),
     primaryDepartmentId: primary?.departmentId ?? emp.departments[0]?.departmentId ?? null,
   };
@@ -155,6 +158,7 @@ export async function querySalaryBoard(
         firstName: true,
         lastName: true,
         position: true,
+        avatar: true,
         departments: { select: { departmentId: true, isPrimary: true } },
       },
     }),

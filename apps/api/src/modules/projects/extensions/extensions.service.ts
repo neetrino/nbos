@@ -16,6 +16,10 @@ import {
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  employeePersonSelect,
+  employeePersonWithEmailSelect,
+} from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
@@ -162,7 +166,7 @@ export class ExtensionsService {
             },
           },
           product: { select: { id: true, name: true, productType: true } },
-          assignee: { select: { id: true, firstName: true, lastName: true } },
+          assignee: { select: employeePersonSelect },
           order: {
             select: {
               id: true,
@@ -261,8 +265,8 @@ export class ExtensionsService {
             },
           },
         },
-        assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonWithEmailSelect },
+        closedBy: { select: employeePersonSelect },
         order: {
           include: {
             deal: {
@@ -325,7 +329,7 @@ export class ExtensionsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true, productType: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonSelect },
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extension.id);
@@ -356,7 +360,7 @@ export class ExtensionsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true, productType: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonSelect },
       },
     });
     if (data.assignedTo !== undefined) {

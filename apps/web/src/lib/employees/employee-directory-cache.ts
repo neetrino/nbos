@@ -19,6 +19,7 @@ function employeeToOption(row: Employee): RelationPickerOption {
     value: row.id,
     label: `${row.firstName} ${row.lastName}`.trim(),
     subtitle: row.position ?? row.email,
+    avatar: row.avatar?.trim() || undefined,
   };
 }
 

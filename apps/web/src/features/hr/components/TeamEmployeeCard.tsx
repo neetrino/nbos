@@ -2,15 +2,10 @@
 
 import { FileText, Mail, Phone } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { PERSON_CONTACT_AVATAR_CLASS } from '@/components/shared/person-contact-row.constants';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
-import {
-  employeeAvatarSoftColor,
-  employeeFullName,
-  employeeInitials,
-} from '@/features/hr/utils/employee-display';
+import { employeeFullName } from '@/features/hr/utils/employee-display';
 import type { Employee } from '@/lib/api/employees';
-import { cn } from '@/lib/utils';
 
 interface TeamEmployeeCardProps {
   employee: Employee;
@@ -31,18 +26,12 @@ export function TeamEmployeeCard({ employee, onOpen }: TeamEmployeeCardProps) {
   const lvl = employee.level ? getEmployeeLevel(employee.level) : null;
   const st = getEmployeeStatus(employee.status);
   const roleLabel = employee.position || employee.role?.name || null;
-  const avatarTone = employeeAvatarSoftColor(name);
   const hasMeta = Boolean(lvl || employee.email || employee.phone);
 
   return (
     <button type="button" onClick={() => onOpen(employee)} className={TEAM_EMPLOYEE_CARD_CLASS}>
       <div className="flex w-full flex-col items-center">
-        <span
-          className={cn(PERSON_CONTACT_AVATAR_CLASS, 'size-16 text-lg', avatarTone)}
-          aria-hidden
-        >
-          {employeeInitials(employee)}
-        </span>
+        <EmployeePersonAvatar label={name} imageUrl={employee.avatar} className="size-16 text-lg" />
         {st ? (
           <StatusBadge
             label={st.label}

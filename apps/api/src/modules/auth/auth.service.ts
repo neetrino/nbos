@@ -16,6 +16,7 @@ import { CredentialVaultSessionService } from '../credentials/credential-vault-s
 import { AuthSessionService } from './auth-session.service';
 import { resolveAuthAccessTokenTtlSeconds, shouldIssueAuthSessionV2 } from './auth-session.flags';
 import { recordAuthMetric } from './auth-session.metrics';
+import { changeEmployeePassword } from './auth-change-password';
 import type { V2AccessTokenClaims } from './auth-session.tokens';
 
 interface LegacyJwtPayload {
@@ -261,6 +262,30 @@ export class AuthService {
     this.logger.log(`Employee ${employee.id} registered via invitation (${employee.email})`);
 
     return { message: 'Account created successfully. You can now sign in.' };
+  }
+
+  /**
+   * Changes the caller's account password after verifying the current one.
+   * Bumps authVersion, revokes all AuthSessions, locks the vault, and optionally
+   * denylists the current legacy access jti. Caller must re-authenticate.
+   */
+  async changePassword(
+    employeeId: string,
+    currentPassword: string,
+    newPassword: string,
+    opts?: { jti?: string; tokenExp?: number },
+  ): Promise<{ success: true; requiresReauth: true }> {
+    return changeEmployeePassword({
+      prisma: this.prisma,
+      tokenDenylist: this.tokenDenylist,
+      vaultSession: this.vaultSession,
+      logger: this.logger,
+      employeeId,
+      currentPassword,
+      newPassword,
+      jti: opts?.jti,
+      tokenExp: opts?.tokenExp,
+    });
   }
 
   async getInvitationInfo(token: string) {

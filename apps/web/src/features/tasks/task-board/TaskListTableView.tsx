@@ -19,6 +19,7 @@ import {
   EntityListPrimaryCell,
   StatusBadge,
 } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import { getTaskStatus } from '@/features/tasks/constants/tasks';
@@ -95,7 +96,18 @@ function TaskListRow({ task, onRowClick }: { task: Task; onRowClick: (task: Task
         <EntityListDate value={task.dueDate} />
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {assigneeLabel ? <span className="text-sm">{assigneeLabel}</span> : <EntityListMutedDash />}
+        {assigneeLabel && task.assignee ? (
+          <span className="flex min-w-0 items-center gap-2">
+            <EmployeePersonAvatar
+              label={assigneeLabel}
+              imageUrl={task.assignee.avatar}
+              className="size-7 text-[10px]"
+            />
+            <span className="truncate text-sm">{assigneeLabel}</span>
+          </span>
+        ) : (
+          <EntityListMutedDash />
+        )}
       </TableCell>
     </TableRow>
   );

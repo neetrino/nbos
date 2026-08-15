@@ -59,6 +59,7 @@ export interface SalaryBoardRow {
     firstName: string;
     lastName: string;
     position: string | null;
+    avatar?: string | null;
     departmentIds: string[];
     primaryDepartmentId: string | null;
   };

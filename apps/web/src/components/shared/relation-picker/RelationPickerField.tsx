@@ -102,7 +102,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleSelect = (id: string, itemLabel: string) => {
+  const handleSelect = (id: string, itemLabel: string, avatar?: string) => {
     if (disabled) return;
     if (multiple) {
       const nextIds = selectedIds.has(id)
@@ -117,7 +117,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       props.onChange(nextIds, nextLabels);
       return;
     }
-    props.onSelect(id, itemLabel);
+    props.onSelect(id, itemLabel, avatar);
     setOpen(false);
     setQuery('');
   };
@@ -138,7 +138,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       setHighlightIdx((index) => Math.max(index - 1, 0));
     } else if (event.key === 'Enter' && highlightIdx >= 0 && results[highlightIdx]) {
       event.preventDefault();
-      handleSelect(results[highlightIdx].value, results[highlightIdx].label);
+      handleSelect(
+        results[highlightIdx].value,
+        results[highlightIdx].label,
+        results[highlightIdx].avatar,
+      );
     } else if (event.key === 'Escape') {
       setOpen(false);
       setQuery('');
@@ -313,6 +317,7 @@ function ClosedRelationPicker({
             subtitle={props.selectionSubtitle}
             entityKind={entityKind}
             disabled={disabled}
+            imageUrl={props.selectionAvatar}
             onOpen={
               onOpenSelected && props.value
                 ? () => onOpenSelected(props.value as string)

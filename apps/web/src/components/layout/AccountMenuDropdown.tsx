@@ -149,7 +149,14 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         className="border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Avatar className="size-8 shadow-sm" size="default">
-          {photo ? <AvatarImage src={photo} alt={`${displayName} profile photo`} /> : null}
+          {photo ? (
+            <AvatarImage
+              src={photo}
+              alt={`${displayName} profile photo`}
+              loading="eager"
+              decoding="async"
+            />
+          ) : null}
           <AvatarFallback className="text-foreground text-xs font-semibold uppercase">
             {initials}
           </AvatarFallback>

@@ -16,8 +16,10 @@ export interface TaskGeneralDraft {
   dueDate: string;
   creatorId: string;
   creatorLabel: string;
+  creatorAvatar: string | null;
   assigneeId: string | null;
   assigneeLabel: string | null;
+  assigneeAvatar: string | null;
   coAssigneeIds: string[];
   coAssigneeLabels: Record<string, string>;
   observerIds: string[];
@@ -34,10 +36,12 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     dueDate: formatDueDateInput(task.dueDate),
     creatorId: task.creator.id,
     creatorLabel: formatEmployeeDisplayName(task.creator.firstName, task.creator.lastName),
+    creatorAvatar: task.creator.avatar?.trim() || null,
     assigneeId: task.assignee?.id ?? null,
     assigneeLabel: task.assignee
       ? formatEmployeeDisplayName(task.assignee.firstName, task.assignee.lastName)
       : null,
+    assigneeAvatar: task.assignee?.avatar?.trim() || null,
     coAssigneeIds: [...task.coAssignees],
     coAssigneeLabels: peekEmployeeLabels(task.coAssignees),
     observerIds: [...task.observers],

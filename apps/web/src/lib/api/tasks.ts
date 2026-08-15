@@ -69,9 +69,9 @@ export interface Task {
   trashedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  creator: { id: string; firstName: string; lastName: string };
-  assignee: { id: string; firstName: string; lastName: string } | null;
-  reviewer?: { id: string; firstName: string; lastName: string } | null;
+  creator: { id: string; firstName: string; lastName: string; avatar?: string | null };
+  assignee: { id: string; firstName: string; lastName: string; avatar?: string | null } | null;
+  reviewer?: { id: string; firstName: string; lastName: string; avatar?: string | null } | null;
   parent?: { id: string; code: string; title: string } | null;
   links: TaskLink[];
   checklists: TaskChecklist[];
