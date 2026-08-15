@@ -26,7 +26,16 @@ export function SubscriptionInvoicesTab({ subscription }: SubscriptionInvoicesTa
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const invoices = useMemo(() => subscription.invoices ?? [], [subscription.invoices]);
 
-  const itemSummaries = useMemo(() => invoices.map(subscriptionInvoiceToItemSummary), [invoices]);
+  const itemSummaries = useMemo(
+    () =>
+      invoices.map((row) =>
+        subscriptionInvoiceToItemSummary(row, {
+          name: subscription.name,
+          code: subscription.code,
+        }),
+      ),
+    [invoices, subscription.code, subscription.name],
+  );
 
   return (
     <DetailSheetSection title="Invoices" icon={<FileText size={12} />}>

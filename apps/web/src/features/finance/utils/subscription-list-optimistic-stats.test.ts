@@ -14,6 +14,7 @@ function yearlySubscription(): Subscription {
   return {
     id: 'sub-yearly',
     code: 'SUB-Y',
+    name: 'Yearly maintenance',
     projectId: 'p1',
     productId: 'prod-1',
     type: 'MAINTENANCE_ONLY',

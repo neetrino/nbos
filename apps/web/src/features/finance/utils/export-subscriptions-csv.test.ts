@@ -6,6 +6,7 @@ function minimalSubscription(overrides: Partial<Subscription>): Subscription {
   return {
     id: 'sub-1',
     code: 'SUB-001',
+    name: 'Export subscription',
     projectId: 'p1',
     productId: 'product-1',
     type: 'MONTHLY',

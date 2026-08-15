@@ -14,6 +14,7 @@ export interface SubscriptionListParams extends FinanceDateRangeParams {
 export interface Subscription {
   id: string;
   code: string;
+  name: string;
   projectId: string;
   productId: string;
   type: string;
@@ -55,6 +56,7 @@ export interface Subscription {
 
 export interface CreateSubscriptionPayload {
   productId: string;
+  name: string;
   projectId?: string;
   type: string;
   amount: number;
@@ -71,6 +73,7 @@ export interface CreateSubscriptionPayload {
 }
 
 export interface UpdateSubscriptionPayload {
+  name?: string;
   type?: string;
   productId?: string;
   projectId?: string;
@@ -113,6 +116,7 @@ export interface SubscriptionGridCell {
 
 export interface SubscriptionGridRow {
   subscriptionId: string;
+  subscriptionName: string;
   projectId: string;
   projectName: string;
   subscriptionType: string;

@@ -50,6 +50,7 @@ describe('create invoice dialog utils', () => {
   const subscription: Subscription = {
     id: 'sub-1',
     code: 'SUB-2026-0001',
+    name: 'Acme maintenance',
     projectId: 'project-1',
     productId: 'product-1',
     type: 'MAINTENANCE_ONLY',

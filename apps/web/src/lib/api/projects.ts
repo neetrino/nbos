@@ -171,6 +171,7 @@ export interface ProjectCredential {
 export interface ProjectSubscription {
   id: string;
   code: string;
+  name: string;
   type: string;
   productId?: string;
   reminderLanguage?: string;

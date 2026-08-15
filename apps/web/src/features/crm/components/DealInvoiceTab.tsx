@@ -18,7 +18,7 @@ import {
   canCreateDepositInvoice,
 } from '@/features/crm/utils/deal-invoice-eligibility';
 import { submitDealInvoiceCreation } from '@/features/crm/utils/submit-deal-invoice-creation';
-import type { Deal, DealInvoice } from '@/lib/api/deals';
+import type { Deal } from '@/lib/api/deals';
 
 interface DealInvoiceTabProps {
   deal: Deal;
@@ -42,11 +42,20 @@ export function DealInvoiceTab({
   const canCreate = canOpenDealCreateInvoiceDialog(deal, taxStatus);
   const isDepositBootstrap = canCreateDepositInvoice(deal, taxStatus);
 
-  const allInvoices: (DealInvoice & { orderCode: string })[] = (deal.orders ?? []).flatMap(
-    (order) => (order.invoices ?? []).map((inv) => ({ ...inv, orderCode: order.code })),
+  const allInvoices = (deal.orders ?? []).flatMap((order) =>
+    (order.invoices ?? []).map((inv) => ({ ...inv, order })),
   );
 
-  const itemSummaries = useMemo(() => allInvoices.map(dealInvoiceToItemSummary), [allInvoices]);
+  const itemSummaries = useMemo(
+    () =>
+      allInvoices.map((inv) =>
+        dealInvoiceToItemSummary(inv, {
+          code: inv.order.code,
+          deal: { name: deal.name, code: deal.code },
+        }),
+      ),
+    [allInvoices, deal.code, deal.name],
+  );
 
   const submitOverride = useCallback(
     async (form: { amount: string; dueDate: string }) => {

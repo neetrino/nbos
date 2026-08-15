@@ -12,6 +12,7 @@ vi.mock('@/lib/api/finance', () => ({
 const mockRow = (id: string): Subscription => ({
   id,
   code: `S-${id}`,
+  name: `Subscription ${id}`,
   projectId: 'p1',
   productId: 'product-1',
   type: 'MONTHLY',

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DetailSheetFieldSegmented, RelationPickerField } from '@/components/shared';
 import {
   usePartnerRelationSearch,
@@ -32,6 +33,7 @@ import {
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
 import { buildBillingPeriodChangeConfirmDescription } from '@/features/finance/utils/subscription-billing-period-change';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
 import { SubscriptionFormDialogBillingFields } from '@/features/finance/components/subscriptions/SubscriptionFormDialogBillingFields';
 import { SubscriptionFormDialogMetaFields } from '@/features/finance/components/subscriptions/SubscriptionFormDialogMetaFields';
@@ -138,6 +140,18 @@ export function SubscriptionFormDialog({
           <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
 
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="sub-name">Name</Label>
+              <Input
+                id="sub-name"
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                placeholder="Commercial subscription name"
+                autoComplete="off"
+                required
+              />
+            </div>
+
             {mode === 'create' ? (
               <RelationPickerField
                 label="Product"
@@ -233,7 +247,7 @@ export function SubscriptionFormDialog({
       {mode === 'edit' && editSnap && subscription ? (
         <SubscriptionBillingPeriodConfirmDialog
           open={periodConfirmOpen}
-          subscriptionCode={subscription.code}
+          subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
           description={buildBillingPeriodChangeConfirmDescription(
             editSnap,
             form,

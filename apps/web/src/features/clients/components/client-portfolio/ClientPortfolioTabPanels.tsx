@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { cn } from '@/lib/utils';
 import type {
   CompanyPortfolioResponse,
@@ -171,6 +172,7 @@ export function ClientPortfolioTabPanels({
     const subs = data.subscriptions as Array<{
       id: string;
       code: string;
+      name: string;
       status: string;
       amount: string | null;
       projectId: string;
@@ -191,7 +193,8 @@ export function ClientPortfolioTabPanels({
                 className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm"
               >
                 <div>
-                  <p className="font-mono text-xs font-medium">{s.code}</p>
+                  <p className="text-xs font-medium">{getSubscriptionDisplayTitle(s)}</p>
+                  <p className="text-muted-foreground font-mono text-xs">{s.code}</p>
                   <p className="text-muted-foreground text-xs">
                     {s.status}
                     {s.amount ? ` · ${s.amount}` : ''}

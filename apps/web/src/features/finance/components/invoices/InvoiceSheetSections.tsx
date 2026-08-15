@@ -5,6 +5,7 @@ import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
 export type InvoiceSheetInvoice = Invoice;
@@ -50,8 +51,12 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
           value: `${invoice.contact.firstName} ${invoice.contact.lastName}`,
         }
       : null,
-    invoice.subscriptionId
-      ? { icon: Repeat, label: 'Subscription', value: invoice.subscriptionId }
+    invoice.subscription
+      ? {
+          icon: Repeat,
+          label: 'Subscription',
+          value: getSubscriptionDisplayTitle(invoice.subscription),
+        }
       : null,
   ].filter((row): row is { icon: typeof FileText; label: string; value: string } => row != null);
 

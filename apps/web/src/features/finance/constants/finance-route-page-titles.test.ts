@@ -77,6 +77,7 @@ describe('finance route page titles', () => {
       subscriptionDetailPageTitle({
         loading: true,
         loadFailed: false,
+        subscriptionName: 'Acme maintenance',
         subscriptionCode: 'SUB-1',
       }),
     ).toBeUndefined();
@@ -85,6 +86,7 @@ describe('finance route page titles', () => {
       subscriptionDetailPageTitle({
         loading: false,
         loadFailed: true,
+        subscriptionName: null,
         subscriptionCode: null,
       }),
     ).toBe('Subscription');
@@ -93,6 +95,7 @@ describe('finance route page titles', () => {
       subscriptionDetailPageTitle({
         loading: false,
         loadFailed: false,
+        subscriptionName: '  ',
         subscriptionCode: '  ',
       }),
     ).toBe('Subscription');
@@ -101,6 +104,16 @@ describe('finance route page titles', () => {
       subscriptionDetailPageTitle({
         loading: false,
         loadFailed: false,
+        subscriptionName: 'Acme maintenance',
+        subscriptionCode: 'SUB-42',
+      }),
+    ).toBe('Acme maintenance');
+
+    expect(
+      subscriptionDetailPageTitle({
+        loading: false,
+        loadFailed: false,
+        subscriptionName: '  ',
         subscriptionCode: 'SUB-42',
       }),
     ).toBe('SUB-42');

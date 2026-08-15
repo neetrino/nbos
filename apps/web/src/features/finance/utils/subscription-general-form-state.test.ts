@@ -8,6 +8,7 @@ import {
 const baseSubscription: Subscription = {
   id: 'sub-1',
   code: 'SUB-001',
+  name: 'Maintenance plan',
   projectId: 'proj-1',
   productId: 'prod-1',
   type: 'MAINTENANCE_ONLY',

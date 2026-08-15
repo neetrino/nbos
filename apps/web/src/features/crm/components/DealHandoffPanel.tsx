@@ -15,6 +15,7 @@ import {
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Deal } from '@/lib/api/deals';
 import {
   COMMERCIAL_DEAL_TYPES,
@@ -143,7 +144,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const projectHref = project ? `/projects/${project.id}` : null;
   const productHref = project && product ? `/projects/${project.id}/products/${product.id}` : null;
   const subscriptionHref = subscription
-    ? `/finance/subscriptions?search=${encodeURIComponent(subscription.code)}`
+    ? `/finance/subscriptions?search=${encodeURIComponent(getSubscriptionDisplayTitle(subscription))}`
     : null;
 
   return (
@@ -195,7 +196,9 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           >
             <span className="flex min-w-0 items-center gap-2">
               <RefreshCw className="text-muted-foreground size-3.5 shrink-0" />
-              <span className="truncate">{subscription?.code}</span>
+              <span className="truncate">
+                {subscription ? getSubscriptionDisplayTitle(subscription) : ''}
+              </span>
             </span>
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>

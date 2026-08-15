@@ -12,7 +12,7 @@ import {
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
 } from '@/components/shared';
-import { invoicePreviewToItemSummary } from '@/features/finance/entity-item/invoice-item-summary';
+import { orderInvoiceToItemSummary } from '@/features/finance/entity-item/invoice-item-summary';
 import { cn } from '@/lib/utils';
 import type { Order } from '@/lib/api/finance';
 
@@ -27,8 +27,14 @@ export function OrderInvoicesTab({ order, onCreateInvoice }: OrderInvoicesTabPro
   const invoices = useMemo(() => order.invoices ?? [], [order.invoices]);
 
   const itemSummaries = useMemo(
-    () => invoices.map((row) => invoicePreviewToItemSummary(row)),
-    [invoices],
+    () =>
+      invoices.map((row) =>
+        orderInvoiceToItemSummary(row, {
+          code: order.code,
+          deal: order.deal ?? null,
+        }),
+      ),
+    [invoices, order.code, order.deal],
   );
 
   return (

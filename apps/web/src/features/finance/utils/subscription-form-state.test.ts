@@ -13,6 +13,7 @@ import {
 const baseSubscription: Subscription = {
   id: 'sub-1',
   code: 'SUB-001',
+  name: 'Maintenance plan',
   projectId: 'proj-1',
   productId: 'prod-1',
   type: 'MAINTENANCE_ONLY',
@@ -107,6 +108,7 @@ describe('buildSubscriptionCreatePayload', () => {
   it('includes coverageMonthCount only for custom billing', () => {
     const customPayload = buildSubscriptionCreatePayload({
       ...EMPTY_SUBSCRIPTION_FORM,
+      name: 'Acme maintenance',
       productId: 'prod-1',
       amount: '40000',
       billingStartDate: '2026-03-01',
@@ -121,6 +123,7 @@ describe('buildSubscriptionCreatePayload', () => {
 
     const monthlyPayload = buildSubscriptionCreatePayload({
       ...EMPTY_SUBSCRIPTION_FORM,
+      name: 'Acme maintenance',
       productId: 'prod-1',
       amount: '10000',
       billingStartDate: '2026-03-01',
