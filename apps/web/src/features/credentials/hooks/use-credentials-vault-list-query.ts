@@ -1,68 +1,44 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CredentialVaultViewMode } from '@/features/credentials/constants/credential-vault';
+import { CREDENTIAL_VAULT_KANBAN_COLUMN_PAGE_SIZE } from '@/features/credentials/constants/credential-vault-pagination';
 import {
-  CREDENTIAL_VAULT_BOARD_CHUNK_SIZE,
-  type CredentialVaultPageSizeOption,
-} from '@/features/credentials/constants/credential-vault-pagination';
-import type { CredentialQuickFilterKey } from '@/features/credentials/constants/credential-vault';
-import type { CredentialVaultListSort } from '@/features/credentials/constants/credential-vault-list-sort';
+  categoriesForVaultScope,
+  categoryBoardColumnsForQuickFilter,
+} from '@/features/credentials/constants/credential-vault-categories';
+import { useCredentialsCategoryColumnBoard } from '@/features/credentials/hooks/use-credentials-category-column-board';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
-import { vaultScopeToListTab } from '@/features/credentials/vault-scope';
-import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
+import {
+  buildCredentialsVaultListRequest,
+  resolveCredentialsVaultListCategory,
+  type CredentialsVaultListQueryParams,
+} from '@/features/credentials/utils/build-credentials-vault-list-request';
 import { credentialsApi } from '@/lib/api/credentials';
 
-function appendUniqueCredentials(
-  prev: CredentialListItem[],
-  next: CredentialListItem[],
-): CredentialListItem[] {
-  if (next.length === 0) return prev;
-  const seen = new Set(prev.map((item) => item.id));
-  const unique = next.filter((item) => !seen.has(item.id));
-  return unique.length === 0 ? prev : [...prev, ...unique];
-}
+export type { CredentialsVaultListQueryParams };
 
-export interface CredentialsVaultListQueryParams {
-  viewMode: CredentialVaultViewMode;
-  page: number;
-  pageSize: CredentialVaultPageSizeOption;
-  search: string;
-  filters: Record<string, string>;
-  quickCategory: string | null;
-  quickFilters: Set<CredentialQuickFilterKey>;
-  activeTab: CredentialVaultScope;
-  vaultListScope: VaultListScope;
-  listSort: CredentialVaultListSort;
-  meId?: string;
-  folderId?: string | null;
-  withoutFolder?: boolean;
-  projectId?: string | null;
+function emptyBoardPage(pageSize: number) {
+  return {
+    items: [] as CredentialListItem[],
+    meta: { total: 0, page: 1, pageSize, totalPages: 0 },
+  };
 }
 
 export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryParams) {
   const isBoard = params.viewMode === 'category-board';
-  const requestPageSize = isBoard ? CREDENTIAL_VAULT_BOARD_CHUNK_SIZE : params.pageSize;
   const paramsRef = useRef(params);
   paramsRef.current = params;
 
   const [credentials, setCredentials] = useState<CredentialListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [loadedBoardPage, setLoadedBoardPage] = useState(1);
   const fetchGenerationRef = useRef(0);
-  /** Blocks double append from IntersectionObserver before `loadingMore` commits. */
-  const appendInFlightRef = useRef(false);
 
   const quickFiltersKey = useMemo(
     () => [...params.quickFilters].sort().join(','),
     [params.quickFilters],
   );
-
-  /** Only affects API when quick filter "mine" is on; avoid refetch when `/api/me` arrives. */
   const ownerIdKey = params.quickFilters.has('mine') ? (params.meId ?? '') : '';
 
   const filterKey = useMemo(
@@ -74,7 +50,7 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
         params.filters.accessLevel,
         params.filters.project,
         params.filters.sort,
-        ...(isBoard ? [] : [params.quickCategory ?? '']),
+        params.quickCategory ?? '',
         quickFiltersKey,
         params.activeTab,
         params.vaultListScope,
@@ -109,139 +85,111 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
     ],
   );
 
-  const fetchPage = useCallback(
-    async (targetPage: number, mode: 'replace' | 'append', options?: { silent?: boolean }) => {
-      if (mode === 'append') {
-        if (appendInFlightRef.current) return;
-        appendInFlightRef.current = true;
-      } else {
-        appendInFlightRef.current = false;
-      }
+  const boardColumnKeys = useMemo(() => {
+    const chips = categoriesForVaultScope(params.activeTab);
+    return categoryBoardColumnsForQuickFilter(chips, params.quickCategory).map((col) => col.value);
+  }, [params.activeTab, params.quickCategory]);
 
+  const fetchBoardPage = useCallback(
+    async (args: { page: number; pageSize: number; columnKey: string }) => {
       const p = paramsRef.current;
-      const generation = ++fetchGenerationRef.current;
-      if (mode === 'replace' && !options?.silent) setLoading(true);
-      else if (mode === 'append') setLoadingMore(true);
-
-      try {
-        const skipProjectRoot =
-          p.viewMode === 'folders' && p.activeTab === 'project' && !p.projectId;
-        if (skipProjectRoot) {
-          if (generation !== fetchGenerationRef.current) return;
-          setCredentials([]);
-          setTotal(0);
-          setTotalPages(1);
-          setLoadedBoardPage(1);
-          return;
-        }
-
-        const isBoardView = p.viewMode === 'category-board';
-        const category = isBoardView
-          ? p.filters.category && p.filters.category !== 'all'
-            ? p.filters.category
-            : undefined
-          : (p.quickCategory ??
-            (p.filters.category && p.filters.category !== 'all' ? p.filters.category : undefined));
-        const data = await credentialsApi.getAll({
-          page: targetPage,
-          pageSize: requestPageSize,
-          search: p.search || undefined,
-          category,
-          credentialType:
-            p.filters.credentialType && p.filters.credentialType !== 'all'
-              ? p.filters.credentialType
-              : undefined,
-          accessLevel:
-            p.activeTab === 'all' && p.filters.accessLevel && p.filters.accessLevel !== 'all'
-              ? p.filters.accessLevel
-              : undefined,
-          ownerId:
-            p.activeTab === 'all' && p.quickFilters.has('mine') && p.meId ? p.meId : undefined,
-          needsRotation: p.quickFilters.has('needsRotation') ? true : undefined,
-          favoritesOnly: p.quickFilters.has('favorites') ? true : undefined,
-          folderId: p.viewMode === 'folders' && p.folderId ? p.folderId : undefined,
-          withoutFolder:
-            p.viewMode === 'folders' && p.activeTab !== 'project' && !p.folderId && p.withoutFolder
-              ? true
-              : undefined,
-          projectId: (() => {
-            if (p.vaultListScope === 'trash' && p.filters.project && p.filters.project !== 'all') {
-              return p.filters.project;
-            }
-            if (p.viewMode === 'folders' && p.activeTab === 'project' && p.projectId) {
-              return p.projectId;
-            }
-            return undefined;
-          })(),
-          tab: p.vaultListScope === 'trash' ? undefined : vaultScopeToListTab(p.activeTab),
-          scope: p.vaultListScope === 'trash' ? 'trash' : 'active',
-          sort: p.listSort,
-        });
-        if (generation !== fetchGenerationRef.current) return;
-
-        const items = (data.items as unknown as CredentialListItem[]) ?? [];
-        setCredentials((prev) =>
-          mode === 'append' ? appendUniqueCredentials(prev, items) : items,
-        );
-        setTotal(data.meta.total);
-        setTotalPages(data.meta.totalPages);
-        setLoadedBoardPage(targetPage);
-      } catch {
-        if (generation !== fetchGenerationRef.current) return;
-        if (mode === 'replace') {
-          setCredentials([]);
-          setTotal(0);
-          setTotalPages(1);
-          setLoadedBoardPage(1);
-        }
-      } finally {
-        if (mode === 'append' && generation === fetchGenerationRef.current) {
-          appendInFlightRef.current = false;
-        }
-        if (generation === fetchGenerationRef.current) {
-          setLoading(false);
-          setLoadingMore(false);
-        }
+      const filterCategory =
+        p.filters.category && p.filters.category !== 'all' ? p.filters.category : undefined;
+      if (filterCategory && filterCategory !== args.columnKey) {
+        return emptyBoardPage(args.pageSize);
       }
+      const data = await credentialsApi.getAll(
+        buildCredentialsVaultListRequest(p, {
+          page: args.page,
+          pageSize: args.pageSize,
+          category: args.columnKey,
+        }),
+      );
+      return {
+        items: (data.items as unknown as CredentialListItem[]) ?? [],
+        meta: data.meta,
+      };
     },
-    [requestPageSize],
+    [],
   );
 
-  useEffect(() => {
-    if (isBoard) {
-      void fetchPage(1, 'replace');
-      return;
+  const {
+    items: boardItems,
+    columnMeta,
+    total: boardTotal,
+    loading: boardLoading,
+    reload: reloadBoard,
+    loadMoreColumn,
+    setItems: setBoardItems,
+  } = useCredentialsCategoryColumnBoard({
+    enabled: isBoard,
+    columnKeys: boardColumnKeys,
+    pageSize: CREDENTIAL_VAULT_KANBAN_COLUMN_PAGE_SIZE,
+    queryKey: filterKey,
+    fetchPage: fetchBoardPage,
+  });
+
+  const fetchPage = useCallback(async (targetPage: number, options?: { silent?: boolean }) => {
+    const p = paramsRef.current;
+    const generation = ++fetchGenerationRef.current;
+    if (!options?.silent) setLoading(true);
+
+    try {
+      const skipProjectRoot = p.viewMode === 'folders' && p.activeTab === 'project' && !p.projectId;
+      if (skipProjectRoot) {
+        if (generation !== fetchGenerationRef.current) return;
+        setCredentials([]);
+        setTotal(0);
+        setTotalPages(1);
+        return;
+      }
+
+      const data = await credentialsApi.getAll(
+        buildCredentialsVaultListRequest(p, {
+          page: targetPage,
+          pageSize: p.pageSize,
+          category: resolveCredentialsVaultListCategory(p),
+        }),
+      );
+      if (generation !== fetchGenerationRef.current) return;
+
+      setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
+      setTotal(data.meta.total);
+      setTotalPages(data.meta.totalPages);
+    } catch {
+      if (generation !== fetchGenerationRef.current) return;
+      setCredentials([]);
+      setTotal(0);
+      setTotalPages(1);
+    } finally {
+      if (generation === fetchGenerationRef.current) setLoading(false);
     }
-    void fetchPage(params.page, 'replace');
+  }, []);
+
+  useEffect(() => {
+    if (isBoard) return;
+    void fetchPage(params.page);
   }, [filterKey, isBoard, fetchPage, params.page]);
-
-  const hasMore = isBoard && credentials.length < total;
-
-  const loadMore = useCallback(() => {
-    if (!isBoard || loading || loadingMore || !hasMore) return;
-    void fetchPage(loadedBoardPage + 1, 'append');
-  }, [fetchPage, hasMore, isBoard, loadedBoardPage, loading, loadingMore]);
 
   const refetch = useCallback(
     (options?: { silent?: boolean }) => {
       if (isBoard) {
-        void fetchPage(1, 'replace', options);
+        void reloadBoard(options);
         return;
       }
-      void fetchPage(params.page, 'replace', options);
+      void fetchPage(params.page, options);
     },
-    [fetchPage, isBoard, params.page],
+    [fetchPage, isBoard, params.page, reloadBoard],
   );
 
   return {
-    credentials,
-    setCredentials,
-    loading,
-    loadingMore,
-    total,
+    credentials: isBoard ? boardItems : credentials,
+    setCredentials: isBoard ? setBoardItems : setCredentials,
+    loading: isBoard ? boardLoading : loading,
+    total: isBoard ? boardTotal : total,
     totalPages,
-    hasMore,
-    loadMore,
+    columnMeta,
+    loadMoreColumn,
     refetch,
   };
 }
