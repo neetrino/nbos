@@ -13,6 +13,7 @@ import {
   PageHero,
   ViewModeSwitch,
 } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
@@ -47,6 +48,9 @@ export function ProductSupportTab({
   setView,
   refetch,
   actions,
+  hasMoreAny,
+  loadMoreColumn,
+  loadMoreAll,
 }: ProductSupportTabProps) {
   const router = useRouter();
   const { me } = usePermission();
@@ -131,13 +135,18 @@ export function ProductSupportTab({
           description="Support tickets linked to this product will appear here."
         />
       ) : view === 'list' ? (
-        <SupportTicketsListView
-          tickets={displayTickets}
-          actionId={actions.actionId}
-          onOpenDetail={handleOpenDetail}
-          onStatusSelect={actions.handleStatusSelect}
-          onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
-        />
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <SupportTicketsListView
+            tickets={displayTickets}
+            actionId={actions.actionId}
+            onOpenDetail={handleOpenDetail}
+            onStatusSelect={actions.handleStatusSelect}
+            onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
+          />
+          {hasMoreAny ? (
+            <InfiniteScrollSentinel disabled={loading} onReach={loadMoreAll} rootMargin="240px" />
+          ) : null}
+        </div>
       ) : (
         <SupportTicketsKanbanView
           columns={kanbanColumns}
@@ -146,6 +155,7 @@ export function ProductSupportTab({
           onMove={actions.handleKanbanMove}
           onOpenDetail={handleOpenDetail}
           onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
+          onColumnLoadMore={loadMoreColumn}
         />
       )}
 

@@ -7,6 +7,7 @@ import {
 import { INVOICE_MONEY_STAGES } from '@/features/finance/constants/finance';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import type { StageColumnMeta } from '@/features/shared/kanban/use-stage-column-board';
 import { createInvoiceKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Invoice } from '@/lib/api/finance';
@@ -15,6 +16,8 @@ import { InvoiceKanbanCard } from './InvoiceKanbanCard';
 interface InvoiceKanbanProps {
   invoices: Invoice[];
   boardScope: BoardLifecycleScope;
+  columnMeta?: Record<string, StageColumnMeta>;
+  onColumnLoadMore?: (columnKey: string) => void;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
   onOpenQuickCreate?: () => void;
@@ -32,6 +35,8 @@ const STAGE_COLORS: Record<string, string> = {
 export function InvoiceKanban({
   invoices,
   boardScope,
+  columnMeta,
+  onColumnLoadMore,
   onInvoiceClick,
   onMove,
   onOpenQuickCreate,
@@ -40,12 +45,16 @@ export function InvoiceKanban({
   const columns = INVOICE_MONEY_STAGES.filter((stage) => visibleKeys.includes(stage.value)).map(
     (stage) => {
       const color = STAGE_COLORS[stage.value] ?? 'bg-gray-400';
+      const meta = columnMeta?.[stage.value];
       return {
         key: stage.value,
         label: stage.label,
         color,
         hexColor: resolveKanbanStageHex(color),
         items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
+        totalCount: meta?.totalCount,
+        hasMore: meta?.hasMore,
+        loadingMore: meta?.loadingMore,
       };
     },
   );
@@ -77,6 +86,7 @@ export function InvoiceKanban({
       columns={columns}
       getItemId={(invoice: Invoice) => invoice.id}
       onMove={onMove}
+      onColumnLoadMore={onColumnLoadMore}
       columnQuickCreate={invoiceQuickCreate}
       terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
       columnWidth={boardScope === 'CLOSED' ? 288 : 270}

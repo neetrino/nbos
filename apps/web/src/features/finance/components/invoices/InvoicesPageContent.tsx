@@ -1,8 +1,10 @@
 import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import type { Invoice } from '@/lib/api/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import type { StageColumnMeta } from '@/features/shared/kanban/use-stage-column-board';
 import type { InvoiceViewMode } from './invoice-page-types';
 import { InvoiceKanban } from './InvoiceKanban';
 import { InvoicesTable } from './InvoicesTable';
@@ -19,6 +21,10 @@ interface InvoicesPageContentProps {
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
   onOpenQuickCreate?: () => void;
+  columnMeta?: Record<string, StageColumnMeta>;
+  hasMoreAny?: boolean;
+  onColumnLoadMore?: (columnKey: string) => void;
+  onLoadMoreAll?: () => void;
 }
 
 export function InvoicesPageContent({
@@ -33,6 +39,10 @@ export function InvoicesPageContent({
   onInvoiceClick,
   onMove,
   onOpenQuickCreate,
+  columnMeta,
+  hasMoreAny = false,
+  onColumnLoadMore,
+  onLoadMoreAll,
 }: InvoicesPageContentProps) {
   if (loading) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
@@ -56,17 +66,24 @@ export function InvoicesPageContent({
           <InvoiceKanban
             invoices={invoices}
             boardScope={boardScope}
+            columnMeta={columnMeta}
+            onColumnLoadMore={onColumnLoadMore}
             onInvoiceClick={onInvoiceClick}
             onMove={onMove}
             onOpenQuickCreate={onOpenQuickCreate}
           />
         </div>
       ) : (
-        <InvoicesTable
-          invoices={invoices}
-          boardScope={boardScope}
-          onInvoiceClick={onInvoiceClick}
-        />
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <InvoicesTable
+            invoices={invoices}
+            boardScope={boardScope}
+            onInvoiceClick={onInvoiceClick}
+          />
+          {hasMoreAny && onLoadMoreAll ? (
+            <InfiniteScrollSentinel disabled={loading} onReach={onLoadMoreAll} rootMargin="240px" />
+          ) : null}
+        </div>
       )}
     </div>
   );

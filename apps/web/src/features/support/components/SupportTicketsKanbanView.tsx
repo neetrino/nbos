@@ -17,6 +17,9 @@ export interface SupportKanbanColumn {
   label: string;
   color: string;
   items: SupportTicket[];
+  totalCount?: number;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 }
 
 const SUPPORT_TICKET_STATUS_LABELS = Object.fromEntries(
@@ -30,6 +33,7 @@ export interface SupportTicketsKanbanViewProps {
   onMove: (itemId: string, from: string, toColumn: string) => void;
   onOpenDetail: (ticketId: string) => void;
   onReopen: (ticket: SupportTicket) => void;
+  onColumnLoadMore?: (columnKey: string) => void;
 }
 
 export function SupportTicketsKanbanView({
@@ -39,6 +43,7 @@ export function SupportTicketsKanbanView({
   onMove,
   onOpenDetail,
   onReopen,
+  onColumnLoadMore,
 }: SupportTicketsKanbanViewProps) {
   const terminalDropZones = useMemo(
     () =>
@@ -52,6 +57,7 @@ export function SupportTicketsKanbanView({
         columns={columns}
         getItemId={(ticket: SupportTicket) => ticket.id}
         onMove={onMove}
+        onColumnLoadMore={onColumnLoadMore}
         terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
         renderCard={(ticket: SupportTicket) => (
           <SupportTicketCard

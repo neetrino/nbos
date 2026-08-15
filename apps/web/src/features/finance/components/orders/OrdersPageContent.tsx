@@ -1,8 +1,10 @@
 import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import type { OrderReconciliationGap } from '@/features/finance/constants/order-reconciliation-drilldown';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import type { StageColumnMeta } from '@/features/shared/kanban/use-stage-column-board';
 import type { Order } from '@/lib/api/finance';
 import type { OrderViewMode } from './order-page-types';
 import { OrdersBoardView } from './OrdersBoardView';
@@ -25,6 +27,10 @@ interface OrdersPageContentProps {
   onClearPartnerDrilldown: () => void;
   onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
+  columnMeta?: Record<string, StageColumnMeta>;
+  hasMoreAny?: boolean;
+  onColumnLoadMore?: (columnKey: string) => void;
+  onLoadMoreAll?: () => void;
 }
 
 export function OrdersPageContent({
@@ -42,6 +48,10 @@ export function OrdersPageContent({
   onClearPartnerDrilldown,
   onOrderClick,
   onCreateInvoice,
+  columnMeta,
+  hasMoreAny = false,
+  onColumnLoadMore,
+  onLoadMoreAll,
 }: OrdersPageContentProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -68,6 +78,11 @@ export function OrdersPageContent({
               view={view}
               boardScope={boardScope}
               orders={orders}
+              columnMeta={gap ? undefined : columnMeta}
+              onColumnLoadMore={gap ? undefined : onColumnLoadMore}
+              hasMoreAny={!gap && hasMoreAny}
+              onLoadMoreAll={gap ? undefined : onLoadMoreAll}
+              loading={loading}
               onOrderClick={onOrderClick}
               onCreateInvoice={onCreateInvoice}
             />
@@ -82,26 +97,49 @@ function OrdersListOrBoard({
   view,
   boardScope,
   orders,
+  columnMeta,
+  onColumnLoadMore,
+  hasMoreAny,
+  onLoadMoreAll,
+  loading,
   onOrderClick,
   onCreateInvoice,
 }: {
   view: OrderViewMode;
   boardScope: BoardLifecycleScope;
   orders: Order[];
+  columnMeta?: Record<string, StageColumnMeta>;
+  onColumnLoadMore?: (columnKey: string) => void;
+  hasMoreAny: boolean;
+  onLoadMoreAll?: () => void;
+  loading: boolean;
   onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
 }) {
   if (view === 'board') {
-    return <OrdersBoardView orders={orders} boardScope={boardScope} onOrderClick={onOrderClick} />;
+    return (
+      <OrdersBoardView
+        orders={orders}
+        boardScope={boardScope}
+        columnMeta={columnMeta}
+        onColumnLoadMore={onColumnLoadMore}
+        onOrderClick={onOrderClick}
+      />
+    );
   }
 
   return (
-    <OrdersTable
-      orders={orders}
-      boardScope={boardScope}
-      onOrderClick={onOrderClick}
-      onCreateInvoice={onCreateInvoice}
-    />
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <OrdersTable
+        orders={orders}
+        boardScope={boardScope}
+        onOrderClick={onOrderClick}
+        onCreateInvoice={onCreateInvoice}
+      />
+      {hasMoreAny && onLoadMoreAll ? (
+        <InfiniteScrollSentinel disabled={loading} onReach={onLoadMoreAll} rootMargin="240px" />
+      ) : null}
+    </div>
   );
 }
 

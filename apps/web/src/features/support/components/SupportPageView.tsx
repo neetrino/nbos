@@ -66,6 +66,9 @@ export function SupportPageView() {
         onOpenDetail={page.openSupportDetail}
         onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
         onStatusSelect={actions.handleStatusSelect}
+        onColumnLoadMore={page.loadMoreColumn}
+        hasMoreAny={page.hasMoreAny}
+        onLoadMoreAll={page.loadMoreAll}
       />
 
       <SupportTicketActionOverlays

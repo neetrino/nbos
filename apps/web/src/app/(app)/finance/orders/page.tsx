@@ -64,12 +64,14 @@ function OrdersPageInner() {
   const boardScope = resolveBoardLifecycleScope(state.filters.boardScope);
   const hasOrderStatusFilter = Boolean(state.filters.status) && state.filters.status !== 'all';
 
+  /** Gap drill-down is a flat list; Active/Closed still applied client-side there. */
   const displayOrders = useMemo(() => {
+    if (!gap) return state.orders;
     if (hasOrderStatusFilter) return state.orders;
     return state.orders.filter((order) =>
       matchesBoardLifecycleScope(order.status, ORDER_BOARD_STAGES, boardScope),
     );
-  }, [state.orders, boardScope, hasOrderStatusFilter]);
+  }, [gap, state.orders, boardScope, hasOrderStatusFilter]);
 
   const orderFilterConfigs = useMemo(() => buildOrderFilterConfigs(), []);
 
@@ -184,6 +186,10 @@ function OrdersPageInner() {
           onClearPartnerDrilldown={clearPartnerDrilldown}
           onOrderClick={state.handleOrderClick}
           onCreateInvoice={state.handleCreateInvoice}
+          columnMeta={state.columnMeta}
+          hasMoreAny={state.hasMoreAny}
+          onColumnLoadMore={state.loadMoreColumn}
+          onLoadMoreAll={state.loadMoreAll}
         />
       </div>
       <OrderDetailSheet
