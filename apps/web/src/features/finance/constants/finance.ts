@@ -68,6 +68,10 @@ export const EXPENSE_CATEGORIES = [
   { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
   { value: 'TOOLS', label: 'Tools' },
   { value: 'OFFICE', label: 'Office' },
+  { value: 'TAXES', label: 'Taxes' },
+  { value: 'BANK_FEES', label: 'Bank fees' },
+  { value: 'TRAINING', label: 'Training' },
+  { value: 'INTERNAL_INFRA', label: 'Internal infra' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
 

@@ -39,8 +39,7 @@ import {
   type ExpensePlanFormState,
 } from '@/features/finance/utils/expense-plan-form-state';
 
-/** Prisma `ExpenseCategoryEnum` has no `OFFICE`; UI list includes it for legacy cards only. */
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
+const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
 interface CreateExpensePlanDialogProps {
   open: boolean;

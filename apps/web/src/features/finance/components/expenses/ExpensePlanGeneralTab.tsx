@@ -24,7 +24,7 @@ import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
+const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
 interface ExpensePlanGeneralTabProps {
   plan: ExpensePlan;
