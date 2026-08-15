@@ -91,6 +91,7 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 | Partners          | Partner payouts depend on Finance rules and must not bypass journal/idempotency logic.                                                                                                                                                                                  |
 | Subscription term | `termMonths` counts **covered months** from subscription invoices, not a calendar end date. A paused/skipped month does not consume the term. When covered months reach the term, billing stops and status becomes `COMPLETED` (reachable from `ACTIVE` and `ON_HOLD`). |
 | Term divisibility | When `termMonths` is set: `coverageMonthCount <= termMonths` and `termMonths % coverageMonthCount === 0` (no partial billing period).                                                                                                                                   |
+| Expense frequency | `ExpenseFrequency` includes `WEEKLY` (+7 days) for recurring Expense Plans / Expenses. Existing values (`ONE_TIME`, `MONTHLY`, `QUARTERLY`, `YEARLY`, `MULTI_YEAR`) unchanged. Do not map weekly Bitrix masters to `ONE_TIME`.                                          |
 
 ### Projects Hub, Tasks And Support
 

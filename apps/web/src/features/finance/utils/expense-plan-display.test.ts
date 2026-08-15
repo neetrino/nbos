@@ -4,6 +4,7 @@ import { expensePlanFrequencyLabel, formatExpensePlanShortDate } from './expense
 describe('expensePlanFrequencyLabel', () => {
   it('maps known frequencies', () => {
     expect(expensePlanFrequencyLabel('MONTHLY')).toBe('Monthly');
+    expect(expensePlanFrequencyLabel('WEEKLY')).toBe('Weekly');
     expect(expensePlanFrequencyLabel('UNKNOWN')).toBe('UNKNOWN');
   });
 });

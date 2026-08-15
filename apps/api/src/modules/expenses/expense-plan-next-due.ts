@@ -11,6 +11,11 @@ export function planNextDueAfterOccurrence(
   switch (frequency) {
     case 'ONE_TIME':
       return null;
+    case 'WEEKLY': {
+      const d = new Date(base);
+      d.setUTCDate(d.getUTCDate() + 7);
+      return d;
+    }
     case 'MONTHLY': {
       const d = new Date(base);
       d.setUTCMonth(d.getUTCMonth() + 1);

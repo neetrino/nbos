@@ -13,6 +13,9 @@ describe('expense-query-enum-guards', () => {
     expect(pickExpenseTypeFilter('PLANNED')).toBe('PLANNED');
     expect(pickExpenseCategoryFilter('HOSTING')).toBe('HOSTING');
     expect(pickExpenseFrequencyFilter('MONTHLY')).toBe('MONTHLY');
+    expect(pickExpenseFrequencyFilter('WEEKLY')).toBe('WEEKLY');
+    expect(pickExpenseFrequencyFilter('ONE_TIME')).toBe('ONE_TIME');
+    expect(pickExpenseFrequencyFilter('YEARLY')).toBe('YEARLY');
     expect(pickExpenseStatusFilter('BACKLOG')).toBe('BACKLOG');
     expect(pickExpenseStatusFilter('PLANNED')).toBe('PLANNED');
   });

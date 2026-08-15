@@ -320,6 +320,7 @@ enum ExpenseCategoryEnum {
 
 enum ExpenseFrequency {
   ONE_TIME
+  WEEKLY
   MONTHLY
   QUARTERLY
   YEARLY

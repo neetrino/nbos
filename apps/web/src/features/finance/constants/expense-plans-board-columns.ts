@@ -2,6 +2,7 @@ import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
 
 export const EXPENSE_PLAN_BOARD_COLUMN_ORDER = [
+  'WEEKLY',
   'MONTHLY',
   'QUARTERLY',
   'YEARLY',
@@ -12,6 +13,7 @@ export const EXPENSE_PLAN_BOARD_COLUMN_ORDER = [
 export type ExpensePlanBoardColumnKey = (typeof EXPENSE_PLAN_BOARD_COLUMN_ORDER)[number] | 'OTHER';
 
 const COLUMN_COLORS: Record<ExpensePlanBoardColumnKey, string> = {
+  WEEKLY: 'bg-sky-500',
   MONTHLY: 'bg-blue-500',
   QUARTERLY: 'bg-violet-500',
   YEARLY: 'bg-indigo-600',
