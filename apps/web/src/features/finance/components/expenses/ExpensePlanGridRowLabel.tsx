@@ -1,6 +1,6 @@
 'use client';
 
-import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
+import { formatExpensePlanGridRowSubtitle } from '@/features/finance/utils/expense-plan-display';
 
 interface ExpensePlanGridRowLabelProps {
   planName: string;
@@ -22,8 +22,7 @@ export function ExpensePlanGridRowLabel({
   frequency,
   projectLabel,
 }: ExpensePlanGridRowLabelProps) {
-  const frequencyText = expensePlanFrequencyLabel(frequency);
-  const subtitle = [projectLabel, frequencyText].filter(Boolean).join(' · ');
+  const subtitle = formatExpensePlanGridRowSubtitle({ frequency, projectLabel });
 
   return (
     <div className="flex items-center gap-2.5">
@@ -37,9 +36,9 @@ export function ExpensePlanGridRowLabel({
         <div className="truncate font-medium" title={planName}>
           {planName}
         </div>
-        {subtitle ? (
-          <div className="text-muted-foreground truncate text-xs" title={subtitle}>
-            {subtitle}
+        {subtitle.text ? (
+          <div className="text-muted-foreground truncate text-xs" title={subtitle.title}>
+            {subtitle.text}
           </div>
         ) : null}
       </div>
