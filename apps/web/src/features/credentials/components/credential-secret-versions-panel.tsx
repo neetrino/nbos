@@ -35,13 +35,13 @@ export function CredentialSecretVersionsPanel({
   sheetOpen,
   embedded = false,
 }: CredentialSecretVersionsPanelProps) {
-  const { me } = usePermission();
+  const { me, scope } = usePermission();
   const vault = useCredentialVaultSession();
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
   const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
   const canReveal =
     canUseCredentialEmergencyAccess(me?.role.slug) ||
-    Boolean(me?.permissions.CREDENTIALS_BYPASS_ROW_VISIBILITY);
+    scope('BYPASS_ROW_VISIBILITY', 'CREDENTIALS') === 'ALL';
 
   const revealVersion = async (version: CredentialSecretVersion, password?: string) => {
     try {

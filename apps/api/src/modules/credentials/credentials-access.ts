@@ -5,6 +5,9 @@ export type CredentialsRbacAction = 'view' | 'edit' | 'delete';
 /** Permission key: administrative bypass of credential row-level visibility. */
 export const CREDENTIALS_BYPASS_ROW_VISIBILITY_KEY = 'CREDENTIALS_BYPASS_ROW_VISIBILITY';
 
+/** Only a full ALL scope grants vault-wide row-visibility bypass. */
+export const CREDENTIALS_BYPASS_REQUIRED_SCOPE = 'ALL';
+
 /** Caller identity + RBAC scopes for row-level credential access. */
 export interface CredentialsAccessContext {
   employeeId: string;
@@ -17,7 +20,7 @@ export interface CredentialsAccessContext {
   deleteScope?: string;
   /**
    * When true, credential `accessLevel` row filter is not applied.
-   * Granted only via CREDENTIALS_BYPASS_ROW_VISIBILITY (Owner/CEO).
+   * Granted only via CREDENTIALS_BYPASS_ROW_VISIBILITY with scope ALL (Owner/CEO).
    */
   bypassRowVisibility: boolean;
 }
@@ -30,12 +33,12 @@ export function credentialsRbacBypassesRowFilter(
   return access?.bypassRowVisibility === true;
 }
 
-/** Non-NONE CREDENTIALS_BYPASS_ROW_VISIBILITY scope enables vault-wide row bypass. */
+/** CREDENTIALS_BYPASS_ROW_VISIBILITY scope ALL enables vault-wide row bypass. */
 export function hasCredentialsRowVisibilityBypass(
   permissions: Record<string, string | undefined>,
 ): boolean {
   const scope = permissions[CREDENTIALS_BYPASS_ROW_VISIBILITY_KEY]?.trim().toUpperCase();
-  return scope != null && scope.length > 0 && scope !== 'NONE';
+  return scope === CREDENTIALS_BYPASS_REQUIRED_SCOPE;
 }
 
 export function resolveCredentialsRbacScope(

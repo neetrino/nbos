@@ -17,14 +17,26 @@ describe('credentialsRbacBypassesRowFilter', () => {
 });
 
 describe('hasCredentialsRowVisibilityBypass', () => {
-  it('requires non-NONE CREDENTIALS_BYPASS_ROW_VISIBILITY', () => {
+  it('requires exact ALL scope on CREDENTIALS_BYPASS_ROW_VISIBILITY', () => {
     expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'ALL' })).toBe(
       true,
     );
-    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'OWN' })).toBe(
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: ' all ' })).toBe(
       true,
     );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'OWN' })).toBe(
+      false,
+    );
+    expect(
+      hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'DEPARTMENT' }),
+    ).toBe(false);
     expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'NONE' })).toBe(
+      false,
+    );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: 'READ' })).toBe(
+      false,
+    );
+    expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_BYPASS_ROW_VISIBILITY: '' })).toBe(
       false,
     );
     expect(hasCredentialsRowVisibilityBypass({ CREDENTIALS_VIEW: 'ALL' })).toBe(false);
@@ -93,5 +105,23 @@ describe('credentialsAccessFromUser', () => {
 
     expect(ctx.bypassRowVisibility).toBe(true);
     expect(credentialsRbacBypassesRowFilter(ctx)).toBe(true);
+  });
+
+  it('does not enable bypass when CREDENTIALS_BYPASS_ROW_VISIBILITY is OWN', () => {
+    const ctx = credentialsAccessFromUser({
+      id: 'emp-1',
+      email: 'o@example.com',
+      role: 'role-owner',
+      roleLevel: 100,
+      departmentIds: ['dept-1'],
+      firstName: 'Owner',
+      lastName: 'User',
+      permissions: {
+        CREDENTIALS_VIEW: 'ALL',
+        CREDENTIALS_BYPASS_ROW_VISIBILITY: 'OWN',
+      },
+    });
+
+    expect(ctx.bypassRowVisibility).toBe(false);
   });
 });
