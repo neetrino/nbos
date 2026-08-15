@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@nbos/database';
+import { resolvePartnerServiceSubscriptionName } from '../finance/subscriptions/subscription-commercial-name';
 
 const PARTNER_SERVICE_TYPES = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PARTNER_SERVICE_PAYMENT_MODELS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -219,7 +220,7 @@ export async function createFinanceFromPartnerServiceTerm(
 
     const product = await prisma.product.findUnique({
       where: { id: term.productId },
-      select: { id: true, projectId: true },
+      select: { id: true, projectId: true, name: true },
     });
     if (!product || product.projectId !== term.projectId) {
       throw new BadRequestException('productId must belong to the service term projectId');
@@ -232,6 +233,7 @@ export async function createFinanceFromPartnerServiceTerm(
     const subscription = await prisma.subscription.create({
       data: {
         code,
+        name: resolvePartnerServiceSubscriptionName(term.serviceType, product.name),
         projectId: term.projectId,
         productId: product.id,
         type: 'PARTNER_SERVICE',

@@ -104,6 +104,7 @@ async function syncAllProductBonusPools(prisma: PrismaClient): Promise<void> {
 const RICH_PROJECT_START = 6;
 const RICH_PROJECT_END = 20;
 const ARCHIVED_PROJECT_SUFFIXES = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
+const RICH_DEMO_MAINTENANCE_NAME_SEPARATOR = ' — ';
 
 /** Realistic client engagements for rich demo matrix columns. */
 const RICH_DEMO_ENGAGEMENTS = [
@@ -744,6 +745,7 @@ async function createRichProjectBundle(
     const sub = await prisma.subscription.create({
       data: {
         code: subCode,
+        name: `Maintenance${RICH_DEMO_MAINTENANCE_NAME_SEPARATOR}${engagement.product}`,
         projectId: project.id,
         productId: product.id,
         type: 'MAINTENANCE_ONLY',

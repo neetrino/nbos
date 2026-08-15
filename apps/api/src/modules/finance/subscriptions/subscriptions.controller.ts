@@ -100,6 +100,7 @@ export class SubscriptionsController {
     body: {
       productId: string;
       projectId?: string;
+      name: string;
       type: string;
       amount?: number;
       billingDay: number;
@@ -125,6 +126,7 @@ export class SubscriptionsController {
     @Body()
     body: {
       type?: string;
+      name?: string;
       amount?: number;
       billingDay?: number;
       billingFrequency?: string;

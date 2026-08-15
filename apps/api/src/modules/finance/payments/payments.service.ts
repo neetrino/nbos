@@ -71,7 +71,12 @@ export class PaymentsService {
                 },
                 {
                   subscription: {
-                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                    OR: [
+                      { code: ic },
+                      { name: ic },
+                      { project: { name: ic } },
+                      { project: { code: ic } },
+                    ],
                   },
                 },
               ],
@@ -114,6 +119,9 @@ export class PaymentsService {
               },
               subscription: {
                 select: {
+                  id: true,
+                  code: true,
+                  name: true,
                   project: { select: { id: true, name: true } },
                 },
               },
@@ -152,7 +160,12 @@ export class PaymentsService {
               select: { id: true, code: true, project: { select: { id: true, name: true } } },
             },
             subscription: {
-              select: { id: true, code: true, project: { select: { id: true, name: true } } },
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                project: { select: { id: true, name: true } },
+              },
             },
           },
         },

@@ -263,6 +263,8 @@ enum SubscriptionReminderLanguage {
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
+  /// Commercial display name (source of truth for UI titles); distinct from system `code`.
+  name       String
   /// Denormalized from Product.projectId; must match Product on create/update.
   projectId  String                 @map("project_id")
   /// Required ownership: Project → Product → Subscription → Invoice → Payment.
