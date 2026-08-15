@@ -6,8 +6,8 @@ export const CREDENTIAL_VAULT_PAGE_SIZE_OPTIONS = [15, 30, 50] as const;
 
 export type CredentialVaultPageSizeOption = (typeof CREDENTIAL_VAULT_PAGE_SIZE_OPTIONS)[number];
 
-/** Records fetched per scroll chunk in Category Board view. */
-export const CREDENTIAL_VAULT_BOARD_CHUNK_SIZE = 30;
+/** Initial cards per category-board column; more load on that column's scroll. */
+export const CREDENTIAL_VAULT_KANBAN_COLUMN_PAGE_SIZE = 8;
 
 export function isCredentialVaultPageSizeOption(
   value: number,

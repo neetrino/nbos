@@ -113,7 +113,7 @@ export function useCredentialsVaultPage() {
     projectId: isProjectFoldersMode ? activeProjectId : null,
   });
 
-  const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
+  const { credentials, loading, total, totalPages, refetch, columnMeta, loadMoreColumn } =
     listQuery;
 
   const { pushOpenCredentialToUrl, stripOpenCredentialFromUrl } = useCredentialVaultSheetUrlSync({
@@ -547,9 +547,8 @@ export function useCredentialsVaultPage() {
   return {
     credentials,
     loading,
-    loadingMore,
-    hasMore,
-    loadMore,
+    columnMeta,
+    loadMoreColumn,
     page,
     setPage,
     pageSize,
