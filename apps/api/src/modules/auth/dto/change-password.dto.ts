@@ -7,29 +7,22 @@ import {
   ACCOUNT_PASSWORD_MIN_LENGTH,
 } from '../auth-password.policy';
 
-export class AcceptInviteDto {
-  @ApiProperty({ description: 'Invitation token from the invite link' })
-  @IsString()
-  token!: string;
-
-  @ApiProperty({ example: 'John' })
+export class ChangePasswordDto {
+  @ApiProperty({ description: 'Current account password' })
   @IsString()
   @MinLength(1)
-  @MaxLength(50)
-  firstName!: string;
+  @MaxLength(ACCOUNT_PASSWORD_MAX_LENGTH)
+  currentPassword!: string;
 
-  @ApiProperty({ example: 'Doe' })
-  @IsString()
-  @MinLength(1)
-  @MaxLength(50)
-  lastName!: string;
-
-  @ApiProperty({ minLength: ACCOUNT_PASSWORD_MIN_LENGTH })
+  @ApiProperty({
+    minLength: ACCOUNT_PASSWORD_MIN_LENGTH,
+    description: 'New password (min length + letter and digit)',
+  })
   @IsString()
   @MinLength(ACCOUNT_PASSWORD_MIN_LENGTH)
   @MaxLength(ACCOUNT_PASSWORD_MAX_LENGTH)
   @Matches(ACCOUNT_PASSWORD_COMPLEXITY, {
     message: ACCOUNT_PASSWORD_COMPLEXITY_MESSAGE,
   })
-  password!: string;
+  newPassword!: string;
 }

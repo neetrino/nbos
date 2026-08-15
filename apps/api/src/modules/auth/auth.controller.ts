@@ -17,6 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AcceptInviteDto } from './dto/accept-invite.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { Public, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import {
@@ -31,9 +32,11 @@ import { toAuthPublicResponse, type AuthPublicResponse } from './auth-public-res
 const ONE_MINUTE_MS = 60_000;
 const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 const TEN_MINUTES_MS = 10 * ONE_MINUTE_MS;
+const FIFTEEN_MINUTES_MS = 15 * ONE_MINUTE_MS;
 
 const LOGIN_THROTTLE = { default: { limit: 10, ttl: ONE_MINUTE_MS } } as const;
 const ACCEPT_INVITE_THROTTLE = { default: { limit: 5, ttl: TEN_MINUTES_MS } } as const;
+const CHANGE_PASSWORD_THROTTLE = { default: { limit: 5, ttl: FIFTEEN_MINUTES_MS } } as const;
 const INVITE_INFO_THROTTLE = { default: { limit: 20, ttl: FIVE_MINUTES_MS } } as const;
 const REFRESH_THROTTLE = { default: { limit: 30, ttl: ONE_MINUTE_MS } } as const;
 
@@ -122,6 +125,33 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
   acceptInvite(@Body() dto: AcceptInviteDto) {
     return this.authService.acceptInvite(dto.token, dto.firstName, dto.lastName, dto.password);
+  }
+
+  @Post('change-password')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle(CHANGE_PASSWORD_THROTTLE)
+  @ApiOperation({
+    summary: 'Change the current user account password',
+    description:
+      'Requires the current password. Revokes all sessions and clears the refresh cookie; the client must sign in again.',
+  })
+  @ApiResponse({ status: 200, description: 'Password updated; re-authentication required' })
+  @ApiResponse({ status: 401, description: 'Current password incorrect or unauthenticated' })
+  async changePassword(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true })
+    res: { setHeader: (name: string, value: string | string[]) => void },
+  ): Promise<{ success: true; requiresReauth: true }> {
+    const result = await this.authService.changePassword(
+      user.id,
+      dto.currentPassword,
+      dto.newPassword,
+      { jti: user.jti, tokenExp: user.tokenExp },
+    );
+    res.setHeader('Set-Cookie', serializeRefreshCookie(buildClearRefreshCookieOptions()));
+    return result;
   }
 
   @Post('logout')

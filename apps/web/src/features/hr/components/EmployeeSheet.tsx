@@ -48,6 +48,7 @@ import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
 import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
+import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
 import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
@@ -263,6 +264,9 @@ export function EmployeeSheet({
     { value: 'general', label: 'General' },
     { value: 'departments', label: 'Departments' },
   ];
+  if (selfProfile) {
+    employeeTabs.push({ value: 'security', label: 'Security' });
+  }
   if (displayEmployee.status === 'TERMINATED') {
     employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
   } else if (hasOnboardingChecklist) {
@@ -374,6 +378,7 @@ export function EmployeeSheet({
                   }}
                 />
               ) : null}
+              {activeTab === 'security' && selfProfile ? <ChangePasswordPanel /> : null}
               {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
                 <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />
               ) : null}
@@ -386,7 +391,7 @@ export function EmployeeSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={canEdit && displayEmployee.status !== 'TERMINATED'}
+            visible={canEdit && displayEmployee.status !== 'TERMINATED' && activeTab !== 'security'}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}

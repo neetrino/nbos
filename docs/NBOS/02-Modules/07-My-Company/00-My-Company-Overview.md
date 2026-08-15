@@ -210,6 +210,7 @@ Reusable checklist template - практическое руководство п
 | SOP                    | Security defaults          |
 
 `My Account` не находится в Settings. Он открывается из header user menu.
+Вкладка **Security** в My Account позволяет сотруднику сменить свой пароль входа в платформу.
 
 ---
 
