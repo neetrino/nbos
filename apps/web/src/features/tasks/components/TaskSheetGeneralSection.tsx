@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
+import { rememberEmployeeLabel, rememberEmployeeLabels } from '../task-employee-labels';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
@@ -76,9 +77,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ creatorId: employeeId, creatorLabel: label })
-                  }
+                  onSelect={(employeeId, label) => {
+                    rememberEmployeeLabel(employeeId, label);
+                    onPatchDraft({ creatorId: employeeId, creatorLabel: label });
+                  }}
                   {...creatorPicker}
                 />
               </TaskSheetCompactRow>
@@ -94,9 +96,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label })
-                  }
+                  onSelect={(employeeId, label) => {
+                    rememberEmployeeLabel(employeeId, label);
+                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label });
+                  }}
                   onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
                   {...assigneePicker}
                 />
@@ -138,9 +141,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) =>
-                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels })
-                  }
+                  onChange={(ids, labels) => {
+                    rememberEmployeeLabels(labels);
+                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels });
+                  }}
                   {...assistantPicker}
                 />
               </TaskSheetCompactRow>
@@ -161,9 +165,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) =>
-                    onPatchDraft({ observerIds: ids, observerLabels: labels })
-                  }
+                  onChange={(ids, labels) => {
+                    rememberEmployeeLabels(labels);
+                    onPatchDraft({ observerIds: ids, observerLabels: labels });
+                  }}
                   {...observerPicker}
                 />
               </TaskSheetCompactRow>

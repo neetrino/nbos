@@ -8,6 +8,7 @@ import { searchEmployeesForPicker } from '@/lib/employees';
 import { tasksApi, type Task, type TaskLink } from '@/lib/api/tasks';
 import { toggleTaskUrgentPriority } from '../constants/tasks';
 import {
+  applyResolvedEmployeeLabels,
   buildTaskGeneralPatch,
   createTaskGeneralDraft,
   enrichTaskGeneralDraft,
@@ -106,6 +107,11 @@ export function useTaskSheetState({
         setGeneralDraft(quickDraft);
         setGeneralSnap(quickDraft);
         setLoading(false);
+        void enrichTaskGeneralDraft(seed).then((enriched) => {
+          if (cancelled || generalDirtyRef.current) return;
+          setGeneralDraft((current) => applyResolvedEmployeeLabels(current, enriched));
+          setGeneralSnap((current) => applyResolvedEmployeeLabels(current, enriched));
+        });
       } else if (!cancelled) {
         setLoading(true);
       }

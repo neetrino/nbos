@@ -152,7 +152,7 @@ export function TaskLinkedEntitiesSection({
     [onLinksChange, task.id, task.links],
   );
 
-  const workspaceLabel = task.workspace?.name?.trim() || task.workspaceId;
+  const workspaceLabel = task.workspace?.name?.trim() || taskLinkEntityLabel('WORK_SPACE');
 
   return (
     <section className={TASK_SHEET_CARD_CLASS} aria-label="Linked entities">
@@ -178,7 +178,7 @@ export function TaskLinkedEntitiesSection({
             <ContextChip
               key={link.id}
               kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
-              label={link.entityLabel?.trim() || link.entityId}
+              label={link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
               contextLabel={
                 link.entityType === 'PRODUCT' ? productProjectNames[link.entityId] || null : null
               }
@@ -213,7 +213,9 @@ export function TaskLinkedEntitiesSection({
                   title="Open linked entity"
                 >
                   <LinkIcon size={13} className="text-muted-foreground shrink-0" aria-hidden />
-                  <span className="truncate">{link.entityLabel?.trim() || link.entityId}</span>
+                  <span className="truncate">
+                    {link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
+                  </span>
                 </button>
               </TaskSheetCompactRow>
             );
