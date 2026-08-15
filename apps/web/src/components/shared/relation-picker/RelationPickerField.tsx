@@ -10,6 +10,7 @@ import {
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
+import { relationPickerChipLabel } from './relation-picker-display-label';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
@@ -265,7 +266,7 @@ function ClosedRelationPicker({
   if (multiple && isMultiProps(props)) {
     const chips = props.value.map((id) => ({
       id,
-      label: props.selectionLabels[id] ?? id,
+      label: relationPickerChipLabel(props.selectionLabels[id], id),
     }));
 
     return (
@@ -302,9 +303,9 @@ function ClosedRelationPicker({
 
   if (!isMultiProps(props)) {
     const hasValue = Boolean(props.value);
-    const chipLabel = props.selectionLabel ?? (hasValue ? String(props.value) : null);
+    const chipLabel = relationPickerChipLabel(props.selectionLabel, props.value);
 
-    if (hasValue && chipLabel) {
+    if (hasValue) {
       return (
         <div className="w-full min-w-0">
           <RelationPickerChip

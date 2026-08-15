@@ -1,7 +1,8 @@
 import type { ExpenseFrequency } from '@nbos/database';
 import { planNextDueAfterOccurrence } from './expense-plan-next-due';
 
-const MAX_OCCURRENCE_STEPS = 240;
+/** Headroom for WEEKLY (~52/year); MONTHLY/YEARLY need far fewer steps. */
+const MAX_OCCURRENCE_STEPS = 1040;
 
 /** Previous occurrence before `due` for recurring frequencies; `ONE_TIME` has no prior step. */
 export function planOccurrenceBefore(due: Date, frequency: ExpenseFrequency): Date | null {
@@ -9,6 +10,11 @@ export function planOccurrenceBefore(due: Date, frequency: ExpenseFrequency): Da
   switch (frequency) {
     case 'ONE_TIME':
       return null;
+    case 'WEEKLY': {
+      const d = new Date(base);
+      d.setUTCDate(d.getUTCDate() - 7);
+      return d;
+    }
     case 'MONTHLY': {
       const d = new Date(base);
       d.setUTCMonth(d.getUTCMonth() - 1);

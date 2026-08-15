@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
+import { rememberEmployeeLabel, rememberEmployeeLabels } from '../task-employee-labels';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
@@ -21,6 +22,7 @@ import {
 import { formatTaskSheetDateTime } from './task-sheet-format';
 import { TASK_SHEET_COMPACT_FIELD_CLASS, TaskSheetCompactRow } from './task-sheet-compact-row';
 import { TaskFilesBlock } from './TaskFilesBlock';
+import { TaskLinkedEntitiesSection } from './TaskLinkedEntitiesSection';
 
 interface TaskSheetGeneralSectionProps {
   task: Task;
@@ -28,6 +30,8 @@ interface TaskSheetGeneralSectionProps {
   draft: TaskGeneralDraft;
   disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
+  onLinksChange: (links: Task['links']) => void;
+  onTaskChange: (task: Task) => void;
   onSearchEmployees: (
     query: string,
   ) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
@@ -39,6 +43,8 @@ export function TaskSheetGeneralSection({
   draft,
   disabled = false,
   onPatchDraft,
+  onLinksChange,
+  onTaskChange,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
   const creatorPicker = useRelationPickerActions('employee', 'task-creator');
@@ -71,9 +77,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ creatorId: employeeId, creatorLabel: label })
-                  }
+                  onSelect={(employeeId, label) => {
+                    rememberEmployeeLabel(employeeId, label);
+                    onPatchDraft({ creatorId: employeeId, creatorLabel: label });
+                  }}
                   {...creatorPicker}
                 />
               </TaskSheetCompactRow>
@@ -89,9 +96,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label })
-                  }
+                  onSelect={(employeeId, label) => {
+                    rememberEmployeeLabel(employeeId, label);
+                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label });
+                  }}
                   onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
                   {...assigneePicker}
                 />
@@ -133,9 +141,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) =>
-                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels })
-                  }
+                  onChange={(ids, labels) => {
+                    rememberEmployeeLabels(labels);
+                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels });
+                  }}
                   {...assistantPicker}
                 />
               </TaskSheetCompactRow>
@@ -156,9 +165,10 @@ export function TaskSheetGeneralSection({
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) =>
-                    onPatchDraft({ observerIds: ids, observerLabels: labels })
-                  }
+                  onChange={(ids, labels) => {
+                    rememberEmployeeLabels(labels);
+                    onPatchDraft({ observerIds: ids, observerLabels: labels });
+                  }}
                   {...observerPicker}
                 />
               </TaskSheetCompactRow>
@@ -186,6 +196,13 @@ export function TaskSheetGeneralSection({
           </div>
         </div>
       </section>
+
+      <TaskLinkedEntitiesSection
+        task={task}
+        disabled={disabled}
+        onLinksChange={onLinksChange}
+        onTaskChange={onTaskChange}
+      />
 
       <TaskFilesBlock taskId={taskId} />
 

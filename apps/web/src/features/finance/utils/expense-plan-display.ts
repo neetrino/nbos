@@ -10,6 +10,7 @@ export function formatExpensePlanShortDate(iso: string | null): string {
 export function expensePlanFrequencyLabel(value: string): string {
   const map: Record<string, string> = {
     ONE_TIME: 'One-time',
+    WEEKLY: 'Weekly',
     MONTHLY: 'Monthly',
     QUARTERLY: 'Quarterly',
     YEARLY: 'Yearly',

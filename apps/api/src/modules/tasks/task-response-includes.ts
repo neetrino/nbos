@@ -5,6 +5,8 @@ export const TASK_INCLUDE = {
   assignee: { select: { id: true, firstName: true, lastName: true } },
   reviewer: { select: { id: true, firstName: true, lastName: true } },
   links: true,
+  /** Name for board chips after refresh (detail include overrides with richer shape). */
+  workspace: { select: { id: true, name: true } },
   checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
   subtasks: {
     select: { id: true, code: true, title: true, status: true, assigneeId: true },

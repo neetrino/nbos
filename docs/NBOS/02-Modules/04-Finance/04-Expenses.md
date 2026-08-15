@@ -39,6 +39,8 @@
 
 План расхода сам по себе не означает, что деньги уже ушли. Он только говорит системе, когда нужно создать конкретную `Expense Card / Карточку расхода`.
 
+`frequency = WEEKLY` — поддерживаемая периодичность: после генерации карточки `next_due_date` сдвигается на +7 дней (как у `MONTHLY` на +1 месяц). Не использовать `ONE_TIME` как замену недельному плану.
+
 ### Поля плана расхода
 
 | Поле                    | Описание                                                        |
@@ -47,7 +49,7 @@
 | `category`              | Domain / Hosting / Service / Office / Tools / Marketing / Other |
 | `amount`                | Ожидаемая сумма                                                 |
 | `currency`              | Валюта                                                          |
-| `frequency`             | Monthly / Quarterly / Yearly / One-time / Custom                |
+| `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time   |
 | `next_due_date`         | Следующая дата оплаты                                           |
 | `provider`              | Поставщик                                                       |
 | `project`               | Проект, если расход проектный                                   |
