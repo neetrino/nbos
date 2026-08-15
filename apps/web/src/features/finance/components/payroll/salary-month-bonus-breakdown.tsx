@@ -172,7 +172,7 @@ function SourceBonusCard({ group }: { group: SalaryBonusBreakdownSourceGroup }) 
       <div className="grid gap-3 lg:grid-cols-[minmax(8.5rem,11rem)_minmax(0,1fr)]">
         <BonusSourceIdentityCard
           projectHref={bonusBoardHref(group.projectId)}
-          projectCode={group.projectCode}
+          projectName={group.projectName}
           productLabel={group.productLabel}
           orderCode={group.orderCode}
         />

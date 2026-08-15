@@ -82,7 +82,6 @@ function BonusEntryIdentityCard({ entry }: { entry: BonusEntryListRow }) {
   const percent = Number.parseFloat(entry.percent);
   const showPercent = Number.isFinite(percent) && percent > 0;
   const salesHint = bonusSalesAccrualHint(entry);
-  const projectCode = entry.project?.code?.trim() || null;
   const projectName = entry.project?.name?.trim() || null;
 
   return (
@@ -91,7 +90,7 @@ function BonusEntryIdentityCard({ entry }: { entry: BonusEntryListRow }) {
         <h3 className="text-foreground min-w-0 truncate text-lg font-bold tracking-tight">
           {employeeDisplayName(entry.employee)}
         </h3>
-        {projectCode || projectName ? (
+        {projectName ? (
           <div className="flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-1.5">
             <span
               className={cn(
@@ -101,26 +100,14 @@ function BonusEntryIdentityCard({ entry }: { entry: BonusEntryListRow }) {
             >
               <FolderKanban size={13} aria-hidden />
             </span>
-            {projectCode ? (
-              <span className="text-foreground text-sm font-medium tabular-nums">
-                {projectCode}
-              </span>
-            ) : null}
-            {projectCode && projectName ? (
-              <span className="text-muted-foreground text-xs" aria-hidden>
-                ·
-              </span>
-            ) : null}
-            {projectName ? (
-              <span
-                className={cn(
-                  'rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
-                )}
-              >
-                {projectName}
-              </span>
-            ) : null}
+            <span
+              className={cn(
+                'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
+              )}
+            >
+              {projectName}
+            </span>
           </div>
         ) : null}
       </div>

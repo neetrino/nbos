@@ -138,7 +138,7 @@ export function UnitEconomicsDrilldownSheet({
               </div>
               <p className="text-muted-foreground mt-1 text-sm">
                 {displayedDetail
-                  ? `${displayedDetail.orderCode} · ${displayedDetail.projectCode} · ${displayedDetail.orderType}`
+                  ? `${displayedDetail.orderCode} · ${displayedDetail.orderType}`
                   : 'Invoices, payments, expenses, and bonuses for the selected delivery unit.'}
               </p>
             </div>

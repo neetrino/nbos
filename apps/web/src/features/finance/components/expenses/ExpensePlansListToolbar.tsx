@@ -54,7 +54,7 @@ export function ExpensePlansListToolbar(props: {
   const projectSelectItems = useMemo(
     () => [
       { value: 'ALL', label: 'All projects' },
-      ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
+      ...projects.map((p) => ({ value: p.id, label: p.name })),
     ],
     [projects],
   );
@@ -108,7 +108,7 @@ export function ExpensePlansListToolbar(props: {
             <SelectItem value="ALL">All projects</SelectItem>
             {projects.map((p) => (
               <SelectItem key={p.id} value={p.id}>
-                {p.code} — {p.name}
+                {p.name}
               </SelectItem>
             ))}
           </SelectContent>

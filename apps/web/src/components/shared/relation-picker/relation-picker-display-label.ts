@@ -1,3 +1,5 @@
+import { stripEntityCodePrefix } from '@/lib/format/project-product-display';
+
 const UUID_LIKE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** True when the chip would show a raw entity id instead of a human name. */
@@ -11,11 +13,11 @@ export function isRawEntityIdLabel(
   return UUID_LIKE.test(trimmed);
 }
 
-/** Chip text: real name only — never a UUID / raw id fallback. */
+/** Chip text: real name only — never a UUID / raw id / internal code prefix. */
 export function relationPickerChipLabel(
   label: string | null | undefined,
   id: string | null | undefined,
 ): string {
   if (isRawEntityIdLabel(label, id)) return '';
-  return label?.trim() ?? '';
+  return stripEntityCodePrefix(label) ?? '';
 }

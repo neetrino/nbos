@@ -16,7 +16,7 @@ export function useExpenseProjectBannerLabel(projectIdFromUrl: string | null): s
       .getById(projectIdFromUrl)
       .then((p) => {
         if (!cancelled) {
-          setProjectBanner({ id: projectIdFromUrl, text: `${p.code} · ${p.name}` });
+          setProjectBanner({ id: projectIdFromUrl, text: p.name });
         }
       })
       .catch(() => {

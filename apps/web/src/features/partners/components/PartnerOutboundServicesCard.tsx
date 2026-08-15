@@ -18,7 +18,6 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
   const { partnerId, reloadKey = 0 } = props;
   const [rows, setRows] = useState<PartnerServiceTerm[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -32,6 +31,7 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
     billingStartDate: '',
     notes: '',
   });
+  const [projectLabel, setProjectLabel] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
     const amount = Number(form.amount);
@@ -56,7 +56,6 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
 
   useEffect(() => {
     let cancelled = false;
-    setProjectsLoading(true);
     projectsApi
       .getAll({ page: 1, pageSize: PARTNER_OUTBOUND_PROJECT_PICKER_PAGE_SIZE })
       .then((res) => {
@@ -64,9 +63,6 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
       })
       .catch(() => {
         if (!cancelled) setProjects([]);
-      })
-      .finally(() => {
-        if (!cancelled) setProjectsLoading(false);
       });
     return () => {
       cancelled = true;
@@ -99,6 +95,7 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
         billingStartDate: '',
         notes: '',
       });
+      setProjectLabel(null);
       await load();
     } catch (caught) {
       setActionError(getApiErrorMessage(caught, 'Service term could not be created.'));
@@ -168,8 +165,8 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
       <PartnerOutboundServiceTermCreateForm
         form={form}
         onFormChange={setForm}
-        projects={projects}
-        projectsLoading={projectsLoading}
+        projectLabel={projectLabel}
+        onProjectLabelChange={setProjectLabel}
         canSubmit={canSubmit}
         saving={saving}
         onSubmit={submit}

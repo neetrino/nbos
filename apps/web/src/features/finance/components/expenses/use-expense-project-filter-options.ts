@@ -13,9 +13,7 @@ export function useExpenseProjectFilterOptions() {
       .getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE })
       .then((res) => {
         if (!cancelled) {
-          setProjectFilterOptions(
-            res.items.map((p) => ({ value: p.id, label: `${p.code} · ${p.name}` })),
-          );
+          setProjectFilterOptions(res.items.map((p) => ({ value: p.id, label: p.name })));
         }
       })
       .catch(() => {

@@ -11,13 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SUBSCRIPTION_REMINDER_LANGUAGES } from '@/features/finance/constants/finance';
-import type { Partner } from '@/lib/api/partners';
 import type { SubscriptionFormState } from '@/features/finance/utils/subscription-form-state';
 
 interface SubscriptionFormDialogMetaFieldsProps {
   form: SubscriptionFormState;
-  partners: Partner[];
-  optionsLoading: boolean;
   onFormChange: (partial: Partial<SubscriptionFormState>) => void;
 }
 
@@ -27,8 +24,6 @@ function normalizeSelectValue(value: string | null): string {
 
 export function SubscriptionFormDialogMetaFields({
   form,
-  partners,
-  optionsLoading,
   onFormChange,
 }: SubscriptionFormDialogMetaFieldsProps) {
   return (
@@ -53,30 +48,6 @@ export function SubscriptionFormDialogMetaFields({
             aria-label="End date"
           />
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="sub-partner">Partner (optional)</Label>
-        <Select
-          value={form.partnerId || 'NONE'}
-          onValueChange={(v) => {
-            const nextValue = normalizeSelectValue(v);
-            onFormChange({ partnerId: nextValue === 'NONE' ? '' : nextValue });
-          }}
-          disabled={optionsLoading}
-        >
-          <SelectTrigger id="sub-partner">
-            <SelectValue placeholder="None" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NONE">None</SelectItem>
-            {partners.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="flex flex-col gap-1.5">

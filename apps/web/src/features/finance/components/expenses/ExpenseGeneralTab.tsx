@@ -1,15 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { DollarSign, FolderKanban, Layers, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
   DetailSheetSection,
   InlineField,
+  RelationPickerField,
   StatusBadge,
 } from '@/components/shared';
+import {
+  useProjectRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -33,12 +38,11 @@ import {
   EXPENSE_SHEET_FIELD_ROW_2_CLASS,
   EXPENSE_SHEET_FIELD_ROW_3_CLASS,
   EXPENSE_TYPES,
-  PROJECTS_PAGE_SIZE,
   TAX_STATUSES,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
 import type { Expense } from '@/lib/api/finance';
-import { projectsApi, type Project } from '@/lib/api/projects';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 import {
   resolveExpensePayrollMonthLabel,
   resolveExpensePayrollRunId,
@@ -60,22 +64,17 @@ export function ExpenseGeneralTab({
   gateRequiredFields,
   formDisabled = false,
 }: ExpenseGeneralTabProps) {
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    projectsApi
-      .getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) setProjects(res.items);
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
+  const initialProjectLabel = projectDisplayName(expense.project);
+  const [projectLabel, setProjectLabel] = useState<string | null>(initialProjectLabel);
+  const projectSeed = `${expense.id}:${expense.projectId ?? ''}:${initialProjectLabel ?? ''}`;
+  const [projectSeedSeen, setProjectSeedSeen] = useState(projectSeed);
+  if (projectSeed !== projectSeedSeen) {
+    setProjectSeedSeen(projectSeed);
+    setProjectLabel(initialProjectLabel);
+  }
+  const projectValue = draft.projectId === 'none' ? null : draft.projectId;
 
   const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = EXPENSE_CATEGORIES.map((c) => ({
@@ -109,11 +108,6 @@ export function ExpenseGeneralTab({
     }
     return items;
   }, [expense.frequency]);
-
-  const projectOptions = [
-    { value: 'none', label: 'None' },
-    ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
-  ];
 
   const payrollRunId = resolveExpensePayrollRunId(expense);
   const payrollMonth = resolveExpensePayrollMonthLabel(expense);
@@ -261,16 +255,25 @@ export function ExpenseGeneralTab({
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && patchDraft({ taxStatus: v })}
             />
-            <InlineField
-              variant="controlled"
+            <RelationPickerField
               label="Project"
-              type="select"
-              value={draft.projectId}
-              options={projectOptions}
+              entityKind="project"
+              value={projectValue}
+              selectionLabel={projectLabel}
+              placeholder="Optional — search project…"
+              icon={<FolderKanban size={12} />}
               disabled={formDisabled}
-              selectMenuTone="highlight"
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-              onValueChange={(v) => v && patchDraft({ projectId: v })}
+              onSearch={searchProjects}
+              onSelect={(id, label) => {
+                patchDraft({ projectId: id });
+                setProjectLabel(label);
+              }}
+              onClear={() => {
+                patchDraft({ projectId: 'none' });
+                setProjectLabel(null);
+              }}
+              {...projectPicker}
             />
           </div>
           <div className="flex items-center gap-2 pt-1">

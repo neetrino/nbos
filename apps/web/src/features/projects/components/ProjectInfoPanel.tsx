@@ -33,9 +33,6 @@ export function ProjectInfoPanel({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">About project</h2>
-          <p className="text-muted-foreground mt-0.5 text-xs font-medium tabular-nums">
-            {project.code}
-          </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <EntityDriveNavAction href={buildDriveHrefWithProject(project.id)} />

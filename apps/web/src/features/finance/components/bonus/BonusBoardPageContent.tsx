@@ -185,7 +185,7 @@ export function BonusBoardPageContent() {
     if (projectFilter === 'ALL') return uniqueProjects;
     if (uniqueProjects.some((p) => p.id === projectFilter)) return uniqueProjects;
     return [
-      { id: projectFilter, code: '—', label: 'Project filter (no matching rows loaded)' },
+      { id: projectFilter, label: 'Project filter (no matching rows loaded)' },
       ...uniqueProjects,
     ];
   }, [uniqueProjects, projectFilter]);

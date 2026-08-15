@@ -10,7 +10,7 @@ function parseAmount(value: string): number {
 export type SalaryBonusBreakdownSourceGroup = {
   key: string;
   projectId: string;
-  projectCode: string;
+  projectName: string;
   productLabel: string;
   orderCode: string;
   planned: number;
@@ -49,7 +49,7 @@ export function groupSalaryBonusBreakdownBySource(
       acc = {
         key,
         projectId: row.projectId,
-        projectCode: row.projectCode,
+        projectName: row.projectName,
         productLabel: row.productLabel,
         orderCode: row.orderCode,
         planned: 0,
@@ -91,7 +91,7 @@ export function groupSalaryBonusBreakdownBySource(
     .map((acc) => ({
       key: acc.key,
       projectId: acc.projectId,
-      projectCode: acc.projectCode,
+      projectName: acc.projectName,
       productLabel: acc.productLabel,
       orderCode: acc.orderCode,
       planned: [...acc.plannedByEntry.values()].reduce((sum, v) => sum + v, 0),

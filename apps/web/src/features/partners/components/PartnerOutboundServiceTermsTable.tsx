@@ -68,7 +68,7 @@ export function PartnerOutboundServiceTermsTable(props: {
                       href={`/projects/${row.projectId}`}
                       className="text-primary hover:underline"
                     >
-                      {proj ? `${proj.code} · ${proj.name}` : `${row.projectId.slice(0, 8)}…`}
+                      {proj ? proj.name : `${row.projectId.slice(0, 8)}…`}
                     </Link>
                   ) : (
                     '—'

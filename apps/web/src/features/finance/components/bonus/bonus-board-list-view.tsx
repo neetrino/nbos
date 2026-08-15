@@ -82,7 +82,7 @@ export function BonusBoardListView({
         <TableBody>
           {rows.map((row) => {
             const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
-            const projectCode = row.project?.code ?? null;
+            const projectName = row.project?.name?.trim() || null;
             return (
               <TableRow
                 key={row.id}
@@ -91,17 +91,17 @@ export function BonusBoardListView({
                 onKeyDown={(event) => handleBonusRowKeyDown(event, row, onOpenReleases)}
                 tabIndex={0}
                 role="button"
-                aria-label={`${employeeDisplayName(row.employee)} · ${projectCode ?? '—'} · bonus`}
+                aria-label={`${employeeDisplayName(row.employee)} · ${projectName ?? '—'} · bonus`}
               >
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <EntityListPrimaryCell title={employeeDisplayName(row.employee)} />
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {projectCode ? (
+                  {projectName ? (
                     <EntityListIconLabel
                       icon={FolderKanban}
                       iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                      label={projectCode}
+                      label={projectName}
                     />
                   ) : (
                     <EntityListMutedDash />

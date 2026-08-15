@@ -41,6 +41,7 @@ import {
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -65,7 +66,7 @@ export function ClientServiceGeneralTab({
   const projectPicker = useRelationPickerActions('project');
 
   const linkedProject = projects.find((p) => p.id === draft.projectId);
-  const projectLabel = linkedProject ? `${linkedProject.code} — ${linkedProject.name}` : null;
+  const projectLabel = projectDisplayName(linkedProject);
 
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-3`}>

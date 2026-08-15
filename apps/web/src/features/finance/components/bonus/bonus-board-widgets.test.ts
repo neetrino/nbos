@@ -29,7 +29,7 @@ function row(
 }
 
 describe('uniqueProjectsFromRows', () => {
-  it('dedupes by project id and sorts by code', () => {
+  it('dedupes by project id and sorts by label', () => {
     const rows = [
       row({ id: 'b1', project: { id: 'p2', code: 'Z', name: 'Zed' } }),
       row({ id: 'b2', project: { id: 'p1', code: 'A', name: 'Alpha' } }),
@@ -37,7 +37,7 @@ describe('uniqueProjectsFromRows', () => {
     ];
     const list = uniqueProjectsFromRows(rows);
     expect(list.map((x) => x.id)).toEqual(['p1', 'p2']);
-    expect(list.at(0)?.label).toContain('Alpha');
+    expect(list.at(0)?.label).toBe('Alpha');
   });
 
   it('returns empty when no projects', () => {

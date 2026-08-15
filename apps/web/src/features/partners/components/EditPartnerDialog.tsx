@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RelationPickerField } from '@/components/shared';
+import {
+  useContactRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import {
   PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
@@ -32,10 +38,7 @@ import {
 import { sliceIsoToDateInput } from '@/features/partners/utils/partner-detail-format';
 import { PartnerNotesStartFields } from '@/features/partners/components/PartnerNotesStartFields';
 import { partnersApi, type Partner } from '@/lib/api/partners';
-import { contactsApi, type Contact } from '@/lib/api/clients';
 import { getApiErrorMessage } from '@/lib/api-errors';
-
-import { PARTNER_CONTACTS_PAGE_SIZE } from '@/features/partners/constants/partner-contacts-page-size';
 
 interface EditPartnerDialogProps {
   partner: Partner | null;
@@ -53,10 +56,8 @@ export function EditPartnerDialog({
   forceNestedBackdrop = false,
 }: EditPartnerDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [contactsLoading, setContactsLoading] = useState(false);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [contactsError, setContactsError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [contactLabel, setContactLabel] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     level: 'REGULAR',
@@ -67,38 +68,8 @@ export function EditPartnerDialog({
     notes: '',
     startDate: '',
   });
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setContactsLoading(true);
-    setContactsError(null);
-    contactsApi
-      .getAll({ page: 1, pageSize: PARTNER_CONTACTS_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) {
-          setContacts(res.items);
-          setContactsError(null);
-        }
-      })
-      .catch((caught) => {
-        if (!cancelled) {
-          setContacts([]);
-          setContactsError(
-            getApiErrorMessage(
-              caught,
-              'Contacts could not be loaded. You can still save without changing the linked contact.',
-            ),
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setContactsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
+  const searchContacts = useContactRelationSearch();
+  const contactPicker = useRelationPickerActions('contact');
 
   useEffect(() => {
     if (!open || !partner) return;
@@ -112,11 +83,15 @@ export function EditPartnerDialog({
       notes: partner.notes ?? '',
       startDate: sliceIsoToDateInput(partner.startDate),
     });
+    setContactLabel(
+      partner.contact ? `${partner.contact.firstName} ${partner.contact.lastName}`.trim() : null,
+    );
     setFormError(null);
   }, [open, partner]);
 
   const pct = parsePartnerDefaultPercentInput(form.defaultPercent);
   const canSubmit = Boolean(partner && form.name.trim()) && pct !== null;
+  const contactValue = form.contactId === 'none' ? null : form.contactId;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,33 +238,24 @@ export function EditPartnerDialog({
             onStartDateChange={(startDate) => setForm({ ...form, startDate })}
           />
 
-          <div className="space-y-1.5">
-            <Label>Primary contact</Label>
-            {contactsError ? (
-              <p className="text-destructive mb-1 text-sm" role="alert">
-                {contactsError}
-              </p>
-            ) : null}
-            <Select
-              value={form.contactId}
-              onValueChange={(v) => {
-                if (v) setForm({ ...form, contactId: v });
-              }}
-              disabled={contactsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={contactsLoading ? 'Loading contacts…' : 'Optional'} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {contacts.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.firstName} {c.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <RelationPickerField
+            label="Primary contact"
+            entityKind="contact"
+            value={contactValue}
+            selectionLabel={contactLabel}
+            placeholder="Optional — search contacts…"
+            icon={<User size={12} />}
+            onSearch={searchContacts}
+            onSelect={(id, label) => {
+              setForm((prev) => ({ ...prev, contactId: id }));
+              setContactLabel(label);
+            }}
+            onClear={() => {
+              setForm((prev) => ({ ...prev, contactId: 'none' }));
+              setContactLabel(null);
+            }}
+            {...contactPicker}
+          />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FolderKanban } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,13 +11,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RelationPickerField } from '@/components/shared';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  useProjectRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
   CLIENT_SERVICE_STATUSES,
@@ -30,7 +29,6 @@ import {
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { ClientServiceFormFooter, ClientServiceSelectField } from './client-service-form-controls';
-import { useClientServiceProjects } from './use-client-service-projects';
 
 interface ClientServiceCreateDialogProps {
   open: boolean;
@@ -44,13 +42,16 @@ export function ClientServiceCreateDialog({
   onSaved,
 }: ClientServiceCreateDialogProps) {
   const [form, setForm] = useState<ClientServiceFormState>({ ...EMPTY_CLIENT_SERVICE_FORM });
+  const [projectLabel, setProjectLabel] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const projects = useClientServiceProjects(open);
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
 
   useEffect(() => {
     if (!open) return;
     setFormError(null);
+    setProjectLabel(null);
     setForm({ ...EMPTY_CLIENT_SERVICE_FORM });
   }, [open]);
 
@@ -85,24 +86,20 @@ export function ClientServiceCreateDialog({
             </p>
           ) : null}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Project *</Label>
-              <Select
-                value={form.projectId}
-                onValueChange={(projectId) => setForm({ ...form, projectId: projectId ?? '' })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.code} - {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <RelationPickerField
+              label="Project *"
+              entityKind="project"
+              value={form.projectId || null}
+              selectionLabel={projectLabel}
+              placeholder="Search projects…"
+              icon={<FolderKanban size={12} />}
+              onSearch={searchProjects}
+              onSelect={(projectId, label) => {
+                setForm((prev) => ({ ...prev, projectId }));
+                setProjectLabel(label);
+              }}
+              {...projectPicker}
+            />
             <div className="space-y-2">
               <Label>Name *</Label>
               <Input

@@ -133,7 +133,7 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
     if (item.kind === 'PRODUCT') {
       const p = item.product.project;
       if (p && !projectMap.has(p.id)) {
-        projectMap.set(p.id, `${p.name} (${p.code})`);
+        projectMap.set(p.id, p.name);
       }
       if (p) {
         const cid = p.company?.id ?? p.companyId;
@@ -154,7 +154,7 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
     } else {
       const p = item.extension.project;
       if (p && !projectMap.has(p.id)) {
-        projectMap.set(p.id, `${p.name} (${p.code})`);
+        projectMap.set(p.id, p.name);
       }
       if (p) {
         const cid = p.company?.id ?? p.companyId;
