@@ -1,10 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Receipt, UserCog } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NbosMonthPicker } from '@/components/shared/date-picker';
+import { RelationPickerField } from '@/components/shared';
+import {
+  useEmployeeRelationSearch,
+  useOrderRelationSearch,
+} from '@/components/shared/relation-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -16,8 +22,6 @@ import {
 import {
   MANUAL_BONUS_CREATE_STATUSES,
   MANUAL_BONUS_DEFAULT_STATUS,
-  MANUAL_BONUS_EMPLOYEES_PAGE_SIZE,
-  MANUAL_BONUS_ORDERS_PAGE_SIZE,
   MANUAL_BONUS_TYPE_OPTIONS,
 } from '@/features/finance/constants/manual-bonus-create';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -29,7 +33,6 @@ import {
   type CreateBonusEntryPayload,
 } from '@/lib/api/bonus';
 import { ordersApi, type Order } from '@/lib/api/finance';
-import { employeesApi, type Employee } from '@/lib/api/employees';
 
 interface CreateManualBonusDialogProps {
   open: boolean;
@@ -42,14 +45,6 @@ function currentPayrollMonthValue(): string {
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
-function employeeLabel(employee: Employee): string {
-  return `${employee.firstName} ${employee.lastName}`.trim();
-}
-
-function orderLabel(order: Order): string {
-  return `${order.code} · ${order.project.code}`;
-}
-
 const FORM_FIELD_GROUP_CLASS = 'space-y-2';
 
 export function CreateManualBonusDialog({
@@ -58,14 +53,14 @@ export function CreateManualBonusDialog({
   onCreated,
 }: CreateManualBonusDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [employeesLoading, setEmployeesLoading] = useState(false);
-  const [ordersLoading, setOrdersLoading] = useState(false);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orderResolving, setOrderResolving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [employeeId, setEmployeeId] = useState('');
+  const [employeeLabel, setEmployeeLabel] = useState<string | null>(null);
   const [orderId, setOrderId] = useState('');
+  const [orderLabel, setOrderLabel] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [type, setType] = useState<BonusType>('MARKETING');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
@@ -73,47 +68,16 @@ export function CreateManualBonusDialog({
   const [status, setStatus] = useState<BonusStatus>(MANUAL_BONUS_DEFAULT_STATUS);
   const [payoutMonth, setPayoutMonth] = useState(currentPayrollMonthValue);
 
-  const selectedOrder = useMemo(
-    () => orders.find((order) => order.id === orderId) ?? null,
-    [orderId, orders],
-  );
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setEmployeesLoading(true);
-    void employeesApi
-      .getAll({ page: 1, pageSize: MANUAL_BONUS_EMPLOYEES_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) setEmployees(res.items);
-      })
-      .catch(() => {
-        if (!cancelled) setEmployees([]);
-      })
-      .finally(() => {
-        if (!cancelled) setEmployeesLoading(false);
-      });
-    setOrdersLoading(true);
-    void ordersApi
-      .getAll({ page: 1, pageSize: MANUAL_BONUS_ORDERS_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) setOrders(res.items);
-      })
-      .catch(() => {
-        if (!cancelled) setOrders([]);
-      })
-      .finally(() => {
-        if (!cancelled) setOrdersLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
+  const searchEmployees = useEmployeeRelationSearch();
+  const searchOrders = useOrderRelationSearch();
 
   useEffect(() => {
     if (!open) return;
     setEmployeeId('');
+    setEmployeeLabel(null);
     setOrderId('');
+    setOrderLabel(null);
+    setSelectedOrder(null);
     setType('MARKETING');
     setTitle('');
     setAmount('');
@@ -121,6 +85,7 @@ export function CreateManualBonusDialog({
     setStatus(MANUAL_BONUS_DEFAULT_STATUS);
     setPayoutMonth(currentPayrollMonthValue());
     setFormError(null);
+    setOrderResolving(false);
   }, [open]);
 
   const parsedAmount = parseFloat(amount.replace(/\s/g, ''));
@@ -130,8 +95,25 @@ export function CreateManualBonusDialog({
     title.trim().length > 0 &&
     reason.trim().length > 0 &&
     selectedOrder != null &&
+    !orderResolving &&
     Number.isFinite(parsedAmount) &&
     parsedAmount > 0;
+
+  const handleOrderSelect = async (id: string, label: string) => {
+    setOrderId(id);
+    setOrderLabel(label);
+    setOrderResolving(true);
+    setFormError(null);
+    try {
+      const order = await ordersApi.getById(id);
+      setSelectedOrder(order);
+    } catch (caught) {
+      setSelectedOrder(null);
+      setFormError(getApiErrorMessage(caught, 'Order could not be loaded. Try again.'));
+    } finally {
+      setOrderResolving(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,48 +170,33 @@ export function CreateManualBonusDialog({
               placeholder="e.g. Manual support bonus — launch"
             />
           </div>
-          <div className={FORM_FIELD_GROUP_CLASS}>
-            <Label>Employee *</Label>
-            <Select
-              value={employeeId || undefined}
-              disabled={loading || employeesLoading}
-              onValueChange={(value) => {
-                if (value) setEmployeeId(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={employeesLoading ? 'Loading…' : 'Select employee…'} />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.map((employee) => (
-                  <SelectItem key={employee.id} value={employee.id}>
-                    {employeeLabel(employee)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className={FORM_FIELD_GROUP_CLASS}>
-            <Label>Order (funding anchor) *</Label>
-            <Select
-              value={orderId || undefined}
-              disabled={loading || ordersLoading}
-              onValueChange={(value) => {
-                if (value) setOrderId(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={ordersLoading ? 'Loading…' : 'Select order…'} />
-              </SelectTrigger>
-              <SelectContent>
-                {orders.map((order) => (
-                  <SelectItem key={order.id} value={order.id}>
-                    {orderLabel(order)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <RelationPickerField
+            label="Employee *"
+            entityKind="employee"
+            value={employeeId || null}
+            selectionLabel={employeeLabel}
+            placeholder="Search employees…"
+            icon={<UserCog size={12} />}
+            disabled={loading}
+            onSearch={searchEmployees}
+            onSelect={(id, label) => {
+              setEmployeeId(id);
+              setEmployeeLabel(label);
+            }}
+          />
+          <RelationPickerField
+            label="Order (funding anchor) *"
+            entityKind="order"
+            value={orderId || null}
+            selectionLabel={orderLabel}
+            placeholder={orderResolving ? 'Resolving order…' : 'Search orders…'}
+            icon={<Receipt size={12} />}
+            disabled={loading || orderResolving}
+            onSearch={searchOrders}
+            onSelect={(id, label) => {
+              void handleOrderSelect(id, label);
+            }}
+          />
           <div className="grid grid-cols-2 gap-3">
             <div className={FORM_FIELD_GROUP_CLASS}>
               <Label>Type *</Label>
@@ -253,28 +220,7 @@ export function CreateManualBonusDialog({
               </Select>
             </div>
             <div className={FORM_FIELD_GROUP_CLASS}>
-              <Label>Amount *</Label>
-              <Input
-                inputMode="decimal"
-                value={amount}
-                disabled={loading}
-                placeholder="0"
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className={FORM_FIELD_GROUP_CLASS}>
-            <Label>Reason *</Label>
-            <Input
-              value={reason}
-              disabled={loading}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Why this manual bonus is granted"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className={FORM_FIELD_GROUP_CLASS}>
-              <Label>Status</Label>
+              <Label>Status *</Label>
               <Select
                 value={status}
                 disabled={loading}
@@ -294,18 +240,38 @@ export function CreateManualBonusDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div className={FORM_FIELD_GROUP_CLASS}>
-              <Label htmlFor="bonus-earned-month">Earned month</Label>
+              <Label>Amount *</Label>
+              <Input
+                inputMode="decimal"
+                value={amount}
+                disabled={loading}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className={FORM_FIELD_GROUP_CLASS}>
+              <Label>Payout month *</Label>
               <NbosMonthPicker
-                id="bonus-earned-month"
                 value={payoutMonth}
                 disabled={loading}
                 onChange={setPayoutMonth}
-                aria-label="Earned month"
+                aria-label="Payout month"
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-1">
+          <div className={FORM_FIELD_GROUP_CLASS}>
+            <Label>Reason *</Label>
+            <Input
+              value={reason}
+              disabled={loading}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Why this bonus is awarded"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -314,7 +280,7 @@ export function CreateManualBonusDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!canSubmit || loading}>
+            <Button type="submit" disabled={loading || !canSubmit}>
               {loading ? 'Creating…' : 'Create bonus'}
             </Button>
           </div>

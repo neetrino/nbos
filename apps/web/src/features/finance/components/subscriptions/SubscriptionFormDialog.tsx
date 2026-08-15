@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Receipt } from 'lucide-react';
+import { Handshake, Layers, Receipt } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { DetailSheetFieldSegmented } from '@/components/shared';
+import { DetailSheetFieldSegmented, RelationPickerField } from '@/components/shared';
+import {
+  usePartnerRelationSearch,
+  useProductRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -21,7 +26,6 @@ import {
 } from '@/components/ui/select';
 import { SUBSCRIPTION_TYPES } from '@/features/finance/constants/finance';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
-import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
   EMPTY_SUBSCRIPTION_FORM,
   subscriptionToFormState,
@@ -33,12 +37,7 @@ import { SubscriptionFormDialogBillingFields } from '@/features/finance/componen
 import { SubscriptionFormDialogMetaFields } from '@/features/finance/components/subscriptions/SubscriptionFormDialogMetaFields';
 import { useSubscriptionFormDialogActions } from '@/features/finance/components/subscriptions/use-subscription-form-dialog-actions';
 import type { Subscription } from '@/lib/api/finance';
-import { projectsApi, type Project } from '@/lib/api/projects';
-import { productsApi, type Product } from '@/lib/api/products';
-import { partnersApi, type Partner } from '@/lib/api/partners';
-
-const PARTNERS_PAGE_SIZE = 100;
-const PRODUCTS_PAGE_SIZE = 100;
+import { productsApi } from '@/lib/api/products';
 
 function normalizeSelectValue(value: string | null): string {
   return value ?? '';
@@ -61,10 +60,14 @@ export function SubscriptionFormDialog({
 }: SubscriptionFormDialogProps) {
   const [form, setForm] = useState<SubscriptionFormState>({ ...EMPTY_SUBSCRIPTION_FORM });
   const [editSnap, setEditSnap] = useState<SubscriptionFormState | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [optionsLoading, setOptionsLoading] = useState(false);
+  const [productLabel, setProductLabel] = useState<string | null>(null);
+  const [partnerLabel, setPartnerLabel] = useState<string | null>(null);
+  const [productResolving, setProductResolving] = useState(false);
+
+  const searchProducts = useProductRelationSearch(null);
+  const searchPartners = usePartnerRelationSearch();
+  const productPicker = useRelationPickerActions('product');
+  const partnerPicker = useRelationPickerActions('partner');
 
   const {
     loading,
@@ -86,49 +89,43 @@ export function SubscriptionFormDialog({
     onOpenChange,
   });
 
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    void (async () => {
-      setOptionsLoading(true);
-      try {
-        const [projectRes, productRes, partnerRes] = await Promise.all([
-          projectsApi.getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE }),
-          productsApi.getAll({ page: 1, pageSize: PRODUCTS_PAGE_SIZE }),
-          partnersApi.getAll({ page: 1, pageSize: PARTNERS_PAGE_SIZE, scope: 'active' }),
-        ]);
-        if (!cancelled) {
-          setProjects(projectRes.items);
-          setProducts(productRes.items);
-          setPartners(partnerRes.items);
-        }
-      } catch {
-        if (!cancelled) {
-          setProjects([]);
-          setProducts([]);
-          setPartners([]);
-        }
-      } finally {
-        if (!cancelled) setOptionsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
-
   const handleOpenChange = (next: boolean) => {
     if (next) {
       if (mode === 'edit' && subscription) {
         const state = subscriptionToFormState(subscription);
         setForm(state);
         setEditSnap(state);
+        setProductLabel(subscription.product?.name ?? null);
+        setPartnerLabel(subscription.partner?.name ?? null);
       } else {
         setForm({ ...EMPTY_SUBSCRIPTION_FORM });
         setEditSnap(null);
+        setProductLabel(null);
+        setPartnerLabel(null);
       }
     }
     onOpenChange(next);
+  };
+
+  useEffect(() => {
+    if (!open) setProductResolving(false);
+  }, [open]);
+
+  const handleProductSelect = async (productId: string, label: string) => {
+    setProductLabel(label);
+    setProductResolving(true);
+    try {
+      const product = await productsApi.getById(productId);
+      setForm((prev) => ({
+        ...prev,
+        productId,
+        projectId: product.projectId,
+      }));
+    } catch {
+      setForm((prev) => ({ ...prev, productId, projectId: prev.projectId }));
+    } finally {
+      setProductResolving(false);
+    }
   };
 
   return (
@@ -142,44 +139,23 @@ export function SubscriptionFormDialog({
             {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
 
             {mode === 'create' ? (
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="sub-product">Product</Label>
-                <Select
-                  value={form.productId || undefined}
-                  onValueChange={(v) => {
-                    const product = products.find((p) => p.id === v);
-                    setForm({
-                      ...form,
-                      productId: normalizeSelectValue(v),
-                      projectId: product?.projectId ?? form.projectId,
-                    });
-                  }}
-                  disabled={optionsLoading}
-                >
-                  <SelectTrigger id="sub-product">
-                    <SelectValue placeholder={optionsLoading ? 'Loading…' : 'Select product'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((p) => {
-                      const project = projects.find((proj) => proj.id === p.projectId);
-                      const projectLabel = project
-                        ? `${project.code} — ${project.name}`
-                        : p.projectId;
-                      return (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name} ({projectLabel})
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
+              <RelationPickerField
+                label="Product"
+                entityKind="product"
+                value={form.productId || null}
+                selectionLabel={productLabel}
+                placeholder={productResolving ? 'Resolving product…' : 'Search products…'}
+                icon={<Layers size={12} />}
+                disabled={productResolving}
+                onSearch={searchProducts}
+                onSelect={(id, label) => {
+                  void handleProductSelect(id, label);
+                }}
+                {...productPicker}
+              />
             ) : (
               <div className="text-muted-foreground text-sm">
-                Product:{' '}
-                {subscription?.product?.name ??
-                  products.find((p) => p.id === form.productId)?.name ??
-                  form.productId}
+                Product: {subscription?.product?.name ?? productLabel ?? form.productId}
                 {subscription?.project
                   ? ` · Project ${subscription.project.code} — ${subscription.project.name}`
                   : null}
@@ -221,10 +197,27 @@ export function SubscriptionFormDialog({
               onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
             />
 
+            <RelationPickerField
+              label="Partner (optional)"
+              entityKind="partner"
+              value={form.partnerId || null}
+              selectionLabel={partnerLabel}
+              placeholder="Search partners…"
+              icon={<Handshake size={12} />}
+              onSearch={searchPartners}
+              onSelect={(id, label) => {
+                setForm((prev) => ({ ...prev, partnerId: id }));
+                setPartnerLabel(label);
+              }}
+              onClear={() => {
+                setForm((prev) => ({ ...prev, partnerId: '' }));
+                setPartnerLabel(null);
+              }}
+              {...partnerPicker}
+            />
+
             <SubscriptionFormDialogMetaFields
               form={form}
-              partners={partners}
-              optionsLoading={optionsLoading}
               onFormChange={(partial) => setForm({ ...form, ...partial })}
             />
 
@@ -232,7 +225,7 @@ export function SubscriptionFormDialog({
               <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || !canSubmit}>
+              <Button type="submit" disabled={loading || !canSubmit || productResolving}>
                 {loading ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create subscription'}
               </Button>
             </DialogFooter>

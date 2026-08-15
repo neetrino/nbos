@@ -6,7 +6,8 @@ export type RelationEntityKind =
   | 'project'
   | 'partner'
   | 'product'
-  | 'employee';
+  | 'employee'
+  | 'order';
 
 export type RelationPickerOption = {
   value: string;
@@ -77,6 +78,7 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   partner: 'Partner',
   product: 'Product',
   employee: 'Employee',
+  order: 'Order',
 };
 
 export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
@@ -86,4 +88,5 @@ export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   partner: 'Create partner',
   product: 'Create product',
   employee: 'Add employee',
+  order: 'Create order',
 };
