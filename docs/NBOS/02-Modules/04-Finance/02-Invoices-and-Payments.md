@@ -62,23 +62,35 @@ Payment confirmed
 
 ### Основные поля карточки
 
-| Поле                    | Описание                                                          |
-| ----------------------- | ----------------------------------------------------------------- |
-| `code`                  | Уникальный номер карточки                                         |
-| `type`                  | Development / Extension / Subscription / Domain / Service / Other |
-| `source_entity`         | Из чего создана карточка                                          |
-| `project`               | Проект                                                            |
-| `product`               | Продукт, если применимо                                           |
-| `company`               | Компания-плательщик                                               |
-| `contact`               | Контактное лицо                                                   |
-| `amount`                | Сумма                                                             |
-| `currency`              | Валюта                                                            |
-| `tax_status`            | `Tax` или `Free`                                                  |
-| `notifications_enabled` | Разрешены ли клиентские напоминания                               |
-| `created_at`            | Дата создания                                                     |
-| `due_date`              | Крайняя дата оплаты                                               |
-| `money_status`          | Статус денег                                                      |
-| `notes`                 | Заметки                                                           |
+| Поле                    | Описание                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `code`                  | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
+| `type`                  | Development / Extension / Subscription / Domain / Service / Other                        |
+| `source_entity`         | Из чего создана карточка                                                                 |
+| `project`               | Проект                                                                                   |
+| `product`               | Продукт, если применимо                                                                  |
+| `company`               | Компания-плательщик                                                                      |
+| `contact`               | Контактное лицо                                                                          |
+| `amount`                | Сумма                                                                                    |
+| `currency`              | Валюта                                                                                   |
+| `tax_status`            | `Tax` или `Free`                                                                         |
+| `notifications_enabled` | Разрешены ли клиентские напоминания                                                      |
+| `created_at`            | Дата создания                                                                            |
+| `due_date`              | Крайняя дата оплаты                                                                      |
+| `money_status`          | Статус денег                                                                             |
+| `notes`                 | Заметки                                                                                  |
+
+### Display title (UI)
+
+Коммерческое название счёта **не копируется** на `Invoice Card` — UI читает его live из источника.
+
+Каскад заголовка (kanban, list, detail sheet):
+
+1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
+2. иначе есть `subscription` → `Subscription.name`;
+3. иначе → `Invoice.code`.
+
+`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком. На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
 
 ### Что наследуется из источника
 

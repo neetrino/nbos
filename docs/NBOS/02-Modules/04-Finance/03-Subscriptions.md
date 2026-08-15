@@ -67,29 +67,31 @@ Ownership rule (required):
 
 ## Поля подписки
 
-| Поле                        | Описание                                                                                                                                              |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `subscription_id`           | Уникальный идентификатор                                                                                                                              |
-| `product`                   | **Обязательный** продукт (FK). Источник ownership для биллинга, паузы deadline и WhatsApp reminders                                                   |
-| `project`                   | Проект (denormalized = `Product.projectId`; валидируется при create/update)                                                                           |
-| `company`                   | Компания-плательщик                                                                                                                                   |
-| `contact`                   | Контактное лицо                                                                                                                                       |
-| `type`                      | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                                                                   |
-| `amount`                    | Сумма за **один** период биллинга — ровно то, что клиент платит и что попадает на `Invoice Card` (единственное денежное поле, которое вводит человек) |
-| `coverage_month_count`      | Длина периода в месяцах: `Monthly` = 1, `Yearly` = 12, `Custom` = произвольное (2–60). Заменяет устаревшее `prepaid_month_count`                      |
-| `monthly_equivalent_amount` | `amount / coverage_month_count` — generated stored column в БД; **не редактируется вручную**; только MRR и аналитика                                  |
-| `currency`                  | Валюта                                                                                                                                                |
-| `billing_start_date`        | Дата старта биллинга                                                                                                                                  |
-| `billing_frequency`         | Monthly / Yearly / Custom. **Обязательно при создании** (нет тихого default `MONTHLY`): `amount` — сумма периода и без частоты бессмысленна           |
-| `billing_day`               | День месяца для выставления карточек, если применяется месячная логика                                                                                |
-| `end_date`                  | Дата окончания (календарная; null = не задана). Не является счётчиком срока                                                                           |
-| `term_months`               | Срок в **покрытых месяцах** (`Int?`, 1–120). `null` = бессрочная. Пропущенный (пауза) месяц срок **не** расходует                                     |
-| `tax_status`                | Tax / Free                                                                                                                                            |
-| `notifications_enabled`     | Разрешены ли автоматические уведомления по карточкам оплат                                                                                            |
-| `reminder_language`         | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                                                                         |
-| `status`                    | Pending / Active / On Hold / Cancelled / Completed                                                                                                    |
-| `partner`                   | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals                                                  |
-| `amount_history`            | История изменений `amount` за период                                                                                                                  |
+| Поле                        | Описание                                                                                                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `subscription_id`           | Уникальный идентификатор                                                                                                                                                                                                                                              |
+| `code`                      | Системный код `SUB-[SEQ]`; идентификатор записи, **не** display title в UI                                                                                                                                                                                            |
+| `name`                      | **Обязательное** коммерческое название договора/услуги (аналог `Deal.name`). Auto-create Routes A/B: `Deal.name`, fallback `Deal.code`; Route C (Finance manual): ввод пользователя; Route D (Partner Service): `{serviceType} — {Product.name}`. Редактируется позже |
+| `product`                   | **Обязательный** продукт (FK). Источник ownership для биллинга, паузы deadline и WhatsApp reminders                                                                                                                                                                   |
+| `project`                   | Проект (denormalized = `Product.projectId`; валидируется при create/update)                                                                                                                                                                                           |
+| `company`                   | Компания-плательщик                                                                                                                                                                                                                                                   |
+| `contact`                   | Контактное лицо                                                                                                                                                                                                                                                       |
+| `type`                      | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                                                                                                                                                                                   |
+| `amount`                    | Сумма за **один** период биллинга — ровно то, что клиент платит и что попадает на `Invoice Card` (единственное денежное поле, которое вводит человек)                                                                                                                 |
+| `coverage_month_count`      | Длина периода в месяцах: `Monthly` = 1, `Yearly` = 12, `Custom` = произвольное (2–60). Заменяет устаревшее `prepaid_month_count`                                                                                                                                      |
+| `monthly_equivalent_amount` | `amount / coverage_month_count` — generated stored column в БД; **не редактируется вручную**; только MRR и аналитика                                                                                                                                                  |
+| `currency`                  | Валюта                                                                                                                                                                                                                                                                |
+| `billing_start_date`        | Дата старта биллинга                                                                                                                                                                                                                                                  |
+| `billing_frequency`         | Monthly / Yearly / Custom. **Обязательно при создании** (нет тихого default `MONTHLY`): `amount` — сумма периода и без частоты бессмысленна                                                                                                                           |
+| `billing_day`               | День месяца для выставления карточек, если применяется месячная логика                                                                                                                                                                                                |
+| `end_date`                  | Дата окончания (календарная; null = не задана). Не является счётчиком срока                                                                                                                                                                                           |
+| `term_months`               | Срок в **покрытых месяцах** (`Int?`, 1–120). `null` = бессрочная. Пропущенный (пауза) месяц срок **не** расходует                                                                                                                                                     |
+| `tax_status`                | Tax / Free                                                                                                                                                                                                                                                            |
+| `notifications_enabled`     | Разрешены ли автоматические уведомления по карточкам оплат                                                                                                                                                                                                            |
+| `reminder_language`         | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                                                                                                                                                                                         |
+| `status`                    | Pending / Active / On Hold / Cancelled / Completed                                                                                                                                                                                                                    |
+| `partner`                   | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals                                                                                                                                                                  |
+| `amount_history`            | История изменений `amount` за период                                                                                                                                                                                                                                  |
 
 ### Client WhatsApp payment reminders (D-10 / D-2)
 
@@ -140,7 +142,7 @@ Flow:
 2. Finance confirms the first payment.
 3. Deal moves to `Deal Won`.
 4. Order / Project / Product are created (`ensureProduct`).
-5. Subscription record is created immediately as `Active` with that `productId` (+ matching `projectId`).
+5. Subscription record is created immediately as `Active` with that `productId` (+ matching `projectId`); `name` = `Deal.name`, fallback `Deal.code`.
 
 Important rules:
 
@@ -164,7 +166,7 @@ Flow:
 
 1. Maintenance deal reaches `Deal Won`.
 2. `existingProductId` is **required** — without a Product, Subscription is **not** created.
-3. Subscription record is created immediately in `Pending` on that Product.
+3. Subscription record is created immediately in `Pending` on that Product; `name` = `Deal.name`, fallback `Deal.code`.
 4. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
 5. Finance later confirms / edits `billing_start_date` and activates billing.
 
@@ -177,13 +179,13 @@ Important rules:
 
 ### Route C: Finance manual create
 
-- DTO requires `productId`;
+- DTO requires `productId` and **`name`** (non-empty);
 - `projectId` is taken from Product, or must match `Product.projectId` if also sent.
 
 ### Route D: Partner Service (outbound)
 
 - Project + Product are required;
-- `PARTNER_SERVICE` Subscription is created on that Product (`PartnerServiceTerm.productId`);
+- `PARTNER_SERVICE` Subscription is created on that Product (`PartnerServiceTerm.productId`); `name` = `{serviceType} — {Product.name}`;
 - create-finance must **link** the existing Product — it must not spawn a second Product;
 - WhatsApp group is ensured for that Product;
 - delivery-deadline auto-pause does **not** apply to `PARTNER_SERVICE`.
@@ -291,19 +293,19 @@ Important rules:
 
 ### Структура сетки
 
-Подпись строки (например, `(80 000/мес экв.)`) — `monthly_equivalent_amount`, не цена периода.
+Подпись строки: первая строка — `Subscription.name`; вторая — название проекта; суммы в ячейках — факт оплаты за месяц.
 
 ```
                   Янв    Фев    Мар    Апр    Май    ...    Дек
 ┌────────────────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┐
-│ Project Alpha  │  ██  │  ██  │  ██  │  ░░  │      │      │      │
-│ (80,000/мес)   │ 80k  │ 80k  │ 80k  │ 80k  │  —   │  —   │  —   │
+│ Maint. Alpha   │  ██  │  ██  │  ██  │  ░░  │      │      │      │
+│ Project Alpha  │ 80k  │ 80k  │ 80k  │ 80k  │  —   │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ Project Beta   │  ██  │  ██  │  ░░  │  ░░  │  ░░  │      │      │
-│ (120,000/мес)  │ 120k │ 120k │ 120k │ 120k │ 120k │  —   │  —   │
+│ Dev monthly    │  ██  │  ██  │  ░░  │  ░░  │  ░░  │      │      │
+│ Project Beta   │ 120k │ 120k │ 120k │ 120k │ 120k │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ Project Gamma  │      │      │  ██  │  ██  │  ░░  │      │      │
-│ (50,000/мес)   │  —   │  —   │ 50k  │ 50k  │ 50k  │  —   │  —   │
+│ Email widget   │      │      │  ██  │  ██  │  ░░  │      │      │
+│ Project Beta   │  —   │  —   │ 50k  │ 50k  │ 50k  │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
 │ ИТОГО:         │ 200k │ 200k │ 250k │ 250k │ 170k │  —   │  —   │
 └────────────────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┘
@@ -326,7 +328,7 @@ Important rules:
 ### Взаимодействие с сеткой
 
 - **Клик на ячейку** → переход к конкретному счёту (Invoice)
-- **Клик на строку (проект)** → детали подписки
+- **Клик на строку** → детали подписки (Subscription Detail Sheet)
 - **Изменение суммы** → выбор месяца, с которого действует новая сумма
 - **Итоговая строка** → помесячные суммы (ожидаемый доход)
 
