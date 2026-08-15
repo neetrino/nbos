@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
 import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
@@ -29,6 +30,9 @@ export type SupportTicketsPageBodyProps = {
   onOpenDetail: (id: string) => void;
   onReopen: (ticket: SupportTicket) => void;
   onStatusSelect: (ticket: SupportTicket, status: string) => void;
+  onColumnLoadMore?: (columnKey: string) => void;
+  hasMoreAny?: boolean;
+  onLoadMoreAll?: () => void;
 };
 
 export function SupportTicketsPageBody({
@@ -49,6 +53,9 @@ export function SupportTicketsPageBody({
   onOpenDetail,
   onReopen,
   onStatusSelect,
+  onColumnLoadMore,
+  hasMoreAny = false,
+  onLoadMoreAll,
 }: SupportTicketsPageBodyProps) {
   if (loading) {
     return <LoadingState />;
@@ -82,16 +89,22 @@ export function SupportTicketsPageBody({
         onMove={onKanbanMove}
         onOpenDetail={onOpenDetail}
         onReopen={onReopen}
+        onColumnLoadMore={onColumnLoadMore}
       />
     );
   }
   return (
-    <SupportTicketsListView
-      tickets={tickets}
-      actionId={actionId}
-      onOpenDetail={onOpenDetail}
-      onStatusSelect={onStatusSelect}
-      onReopen={onReopen}
-    />
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <SupportTicketsListView
+        tickets={tickets}
+        actionId={actionId}
+        onOpenDetail={onOpenDetail}
+        onStatusSelect={onStatusSelect}
+        onReopen={onReopen}
+      />
+      {hasMoreAny && onLoadMoreAll ? (
+        <InfiniteScrollSentinel disabled={loading} onReach={onLoadMoreAll} rootMargin="240px" />
+      ) : null}
+    </div>
   );
 }

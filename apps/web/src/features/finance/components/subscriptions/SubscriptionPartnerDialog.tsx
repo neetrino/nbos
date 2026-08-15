@@ -16,6 +16,7 @@ import {
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Subscription } from '@/lib/api/finance';
 import { subscriptionsApi } from '@/lib/api/finance';
 
@@ -78,7 +79,7 @@ export function SubscriptionPartnerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>Partner for {subscription.code}</DialogTitle>
+          <DialogTitle>Partner for {getSubscriptionDisplayTitle(subscription)}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionCancelDialogProps {
@@ -29,7 +30,7 @@ export function SubscriptionCancelDialog({
   onConfirm,
   forceNestedBackdrop = false,
 }: SubscriptionCancelDialogProps) {
-  const code = subscription?.code ?? '';
+  const title = subscription ? getSubscriptionDisplayTitle(subscription) : '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +46,7 @@ export function SubscriptionCancelDialog({
           </DialogTitle>
           <DialogDescription>
             This stops future billing runs for{' '}
-            <span className="text-foreground font-medium">{code}</span>. Existing invoices are
+            <span className="text-foreground font-medium">{title}</span>. Existing invoices are
             unchanged.
           </DialogDescription>
         </DialogHeader>

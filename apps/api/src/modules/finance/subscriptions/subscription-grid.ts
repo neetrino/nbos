@@ -33,6 +33,7 @@ export interface SubscriptionGridInvoiceInput {
 
 export interface SubscriptionGridRowInput {
   id: string;
+  name: string;
   type: string;
   status: string;
   /** Analytics/display monthly equivalent; never used for invoice amounts. */
@@ -47,7 +48,10 @@ export interface SubscriptionGridRowInput {
 
 export interface SubscriptionGridRow {
   subscriptionId: string;
+  /** Commercial display name — primary row label. */
+  subscriptionName: string;
   projectId: string;
+  /** Secondary line under the subscription name. */
   projectName: string;
   subscriptionType: string;
   amountMonthly: number;
@@ -257,6 +261,7 @@ export function buildSubscriptionGridPayload(
     }, 0);
     return {
       subscriptionId: sub.id,
+      subscriptionName: sub.name,
       projectId: sub.project.id,
       projectName: sub.project.name,
       subscriptionType: sub.type,

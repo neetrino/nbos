@@ -40,7 +40,7 @@ function getProjectHandoff(prisma: PrismaInstance, projectId: string) {
         take: 1,
       },
       subscriptions: {
-        select: { id: true, code: true, type: true, status: true, amount: true },
+        select: { id: true, code: true, name: true, type: true, status: true, amount: true },
         orderBy: { billingStartDate: 'desc' },
       },
     },

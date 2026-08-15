@@ -1183,9 +1183,11 @@ async function main() {
     update: {
       productId: prod1.id,
       projectId: project1.id,
+      name: 'ACME Website Care',
     },
     create: {
       code: 'SUB-2026-0001',
+      name: 'ACME Website Care',
       projectId: project1.id,
       productId: prod1.id,
       type: 'DEV_AND_MAINTENANCE',
@@ -1203,9 +1205,11 @@ async function main() {
     update: {
       productId: prod4.id,
       projectId: project2.id,
+      name: 'TechStart App Maintenance',
     },
     create: {
       code: 'SUB-2026-0002',
+      name: 'TechStart App Maintenance',
       projectId: project2.id,
       productId: prod4.id,
       type: 'MAINTENANCE_ONLY',

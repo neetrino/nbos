@@ -53,7 +53,7 @@ export function filterProductFinanceSubscriptions(
   const needle = search.trim().toLowerCase();
   return subscriptions.filter((sub) => {
     if (needle) {
-      const haystack = `${sub.code} ${sub.type}`.toLowerCase();
+      const haystack = `${sub.name} ${sub.code} ${sub.type}`.toLowerCase();
       if (!haystack.includes(needle)) return false;
     }
     if (matchesFilterValue(filters.type, sub.type)) return false;

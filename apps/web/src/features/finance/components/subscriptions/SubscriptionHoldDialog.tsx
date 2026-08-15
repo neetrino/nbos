@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionHoldDialogProps {
@@ -29,7 +30,7 @@ export function SubscriptionHoldDialog({
   onConfirm,
   forceNestedBackdrop = false,
 }: SubscriptionHoldDialogProps) {
-  const code = subscription?.code ?? '';
+  const title = subscription ? getSubscriptionDisplayTitle(subscription) : '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -44,8 +45,8 @@ export function SubscriptionHoldDialog({
             Put subscription on hold?
           </DialogTitle>
           <DialogDescription>
-            Billing pauses for <span className="text-foreground font-medium">{code}</span> until you
-            resume. Existing invoices are unchanged.
+            Billing pauses for <span className="text-foreground font-medium">{title}</span> until
+            you resume. Existing invoices are unchanged.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-end">

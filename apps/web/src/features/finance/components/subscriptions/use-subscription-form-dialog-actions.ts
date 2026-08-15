@@ -39,6 +39,7 @@ export function useSubscriptionFormDialogActions({
   const parsedBillingDay = parseInt(form.billingDay, 10);
   const billingValidationError = getSubscriptionBillingValidationError(form);
   const canSubmit =
+    Boolean(form.name.trim()) &&
     (mode === 'edit' || Boolean(form.productId)) &&
     Boolean(form.type) &&
     Boolean(form.billingStartDate) &&

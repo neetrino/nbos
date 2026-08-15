@@ -220,10 +220,10 @@ export function SubscriptionCoverageGrid({
                   onClick={() => onOpenSubscription(row.subscriptionId)}
                 >
                   <SubscriptionGridRowLabel
+                    subscriptionName={row.subscriptionName}
                     projectName={row.projectName}
                     subscription={subscription}
                     fallbackStatus={row.subscriptionStatus}
-                    fallbackType={subscription?.type ?? row.subscriptionType}
                   />
                 </td>
                 {row.months.map((cell, idx) => (

@@ -27,6 +27,7 @@ import {
 import { InvoiceSheetBadge, type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import {
   buildInvoiceGeneralPatch,
   createInvoiceGeneralDraft,
@@ -187,6 +188,8 @@ export function InvoiceSheet({
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
   const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(renderInvoice) : null;
+  const displayTitle = getInvoiceDisplayTitle(renderInvoice);
+  const showCodeSubline = displayTitle !== renderInvoice.code;
 
   return (
     <>
@@ -203,9 +206,16 @@ export function InvoiceSheet({
               <div className="min-w-0 flex-1">
                 <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                   <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {renderInvoice.code}
-                  </h2>
+                  <div className="min-w-0">
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {displayTitle}
+                    </h2>
+                    {showCodeSubline ? (
+                      <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                        {renderInvoice.code}
+                      </p>
+                    ) : null}
+                  </div>
                   <InvoiceSheetBadge invoice={renderInvoice} />
                 </div>
               </div>

@@ -22,12 +22,18 @@ import {
 } from './subscription-reminder-language';
 import { mergeFinanceWhere, type FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolveSubscriptionParticipationWhere } from '../finance-module-participation.where';
+import {
+  parseOptionalSubscriptionName,
+  parseRequiredSubscriptionName,
+} from './subscription-commercial-name';
 import { resolveSubscriptionProductOwnership } from './subscription-product-ownership';
 
 interface CreateSubscriptionDto {
   productId: string;
   /** Optional; must match Product.projectId when provided. */
   projectId?: string;
+  /** Commercial display name (required). */
+  name: string;
   type: string;
   /** Period sum (one billing cycle). */
   amount?: number;
@@ -49,6 +55,8 @@ interface CreateSubscriptionDto {
 
 interface UpdateSubscriptionDto {
   type?: string;
+  /** Commercial display name; when sent must be non-empty after trim. */
+  name?: string;
   /** Optional re-link; must match Product.projectId when projectId also sent. */
   productId?: string;
   projectId?: string;
@@ -125,6 +133,7 @@ export class SubscriptionsService {
       andParts.push({
         OR: [
           { code: ic },
+          { name: ic },
           { project: { name: ic } },
           { project: { code: ic } },
           { project: { company: { name: ic } } },
@@ -193,6 +202,7 @@ export class SubscriptionsService {
       const ic = { contains: q, mode: 'insensitive' as const };
       where.OR = [
         { code: ic },
+        { name: ic },
         { project: { name: ic } },
         { project: { code: ic } },
         { project: { company: { name: ic } } },
@@ -263,6 +273,7 @@ export class SubscriptionsService {
   }
 
   async create(data: CreateSubscriptionDto) {
+    const name = parseRequiredSubscriptionName(data.name);
     const ownership = await resolveSubscriptionProductOwnership(this.prisma, {
       productId: data.productId,
       projectId: data.projectId,
@@ -276,6 +287,7 @@ export class SubscriptionsService {
     const created = await this.prisma.subscription.create({
       data: {
         code,
+        name,
         projectId: ownership.projectId,
         productId: ownership.productId,
         type: data.type as SubscriptionTypeEnum,
@@ -301,6 +313,8 @@ export class SubscriptionsService {
 
     const updateData: Prisma.SubscriptionUpdateInput = {};
     if (data.type) updateData.type = data.type as SubscriptionTypeEnum;
+    const name = parseOptionalSubscriptionName(data.name);
+    if (name !== undefined) updateData.name = name;
     if (data.productId !== undefined) {
       const ownership = await resolveSubscriptionProductOwnership(this.prisma, {
         productId: data.productId,

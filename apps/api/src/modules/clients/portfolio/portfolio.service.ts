@@ -76,6 +76,7 @@ export class PortfolioService {
             select: {
               id: true,
               code: true,
+              name: true,
               status: true,
               monthlyEquivalentAmount: true,
               projectId: true,
@@ -224,6 +225,7 @@ export class PortfolioService {
             select: {
               id: true,
               code: true,
+              name: true,
               status: true,
               monthlyEquivalentAmount: true,
               projectId: true,

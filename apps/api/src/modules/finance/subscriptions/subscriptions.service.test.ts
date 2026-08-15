@@ -12,11 +12,13 @@ function mockSubscriptionForFindById(
     termMonths: number | null;
     coverageMonthCount: number;
     billingFrequency: string;
+    name: string;
   }> = {},
 ) {
   return {
     id: '1',
     code: 'SUB-2026-0001',
+    name: 'Website Care',
     amount: 5000,
     coverageMonthCount: 1,
     monthlyEquivalentAmount: 5000,
@@ -150,6 +152,7 @@ describe('SubscriptionsService', () => {
       const result = await service.create({
         productId: 'prod-1',
         projectId: 'p1',
+        name: 'Website Care Plan',
         type: 'MAINTENANCE_ONLY',
         amount: 50000,
         billingDay: 1,
@@ -162,6 +165,7 @@ describe('SubscriptionsService', () => {
           data: expect.objectContaining({
             productId: 'prod-1',
             projectId: 'p1',
+            name: 'Website Care Plan',
             amount: 50000,
             billingFrequency: 'MONTHLY',
             coverageMonthCount: 1,
@@ -174,6 +178,62 @@ describe('SubscriptionsService', () => {
       expect(createData?.data).not.toHaveProperty('monthlyEquivalentAmount');
     });
 
+    it('rejects create when name is missing or blank', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
+
+      await expect(
+        service.create({
+          productId: 'prod-1',
+          projectId: 'p1',
+          type: 'MAINTENANCE_ONLY',
+          amount: 50000,
+          billingDay: 1,
+          billingFrequency: 'MONTHLY',
+          startDate: '2026-01-01',
+        } as never),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.create({
+          productId: 'prod-1',
+          projectId: 'p1',
+          name: '   ',
+          type: 'MAINTENANCE_ONLY',
+          amount: 50000,
+          billingDay: 1,
+          billingFrequency: 'MONTHLY',
+          startDate: '2026-01-01',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
+    });
+
+    it('trims and persists commercial name on create', async () => {
+      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
+      prisma.subscription.create.mockResolvedValue({ id: '1', code: 'SUB-2026-0001' });
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ name: 'Trimmed Care' }),
+      );
+
+      await service.create({
+        productId: 'prod-1',
+        projectId: 'p1',
+        name: '  Trimmed Care  ',
+        type: 'MAINTENANCE_ONLY',
+        amount: 50000,
+        billingDay: 1,
+        billingFrequency: 'MONTHLY',
+        startDate: '2026-01-01',
+      });
+
+      expect(prisma.subscription.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ name: 'Trimmed Care' }),
+        }),
+      );
+    });
+
     it('rejects create when billingFrequency is omitted', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
 
@@ -181,6 +241,7 @@ describe('SubscriptionsService', () => {
         service.create({
           productId: 'prod-1',
           projectId: 'p1',
+          name: 'Care',
           type: 'MAINTENANCE_ONLY',
           amount: 50000,
           billingDay: 1,
@@ -192,6 +253,26 @@ describe('SubscriptionsService', () => {
   });
 
   describe('update', () => {
+    it('updates commercial name when provided', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { name: '  Renamed Care  ' });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ name: 'Renamed Care' }),
+        }),
+      );
+    });
+
+    it('rejects blank name on update', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+
+      await expect(service.update('1', { name: '   ' })).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
     it('clears endDate when blank string is sent', async () => {
       prisma.subscription.findUnique.mockResolvedValue(
         mockSubscriptionForFindById({ endDate: new Date('2026-06-01T00:00:00.000Z') }),

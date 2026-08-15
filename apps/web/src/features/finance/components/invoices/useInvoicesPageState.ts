@@ -5,12 +5,15 @@ import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/c
 import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
+import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
 import {
   getLocalInvoiceMoneyStatusGateErrors,
   mapInvoiceMoneyStatusApiMessage,
 } from '@/features/finance/constants/invoice-money-status-gate-client';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { getBoardStageKeys, resolveBoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
 import { ApiError, getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import {
   invoicesApi,
@@ -43,10 +46,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
   const portfolioCreateInvoiceFromUrl = options?.portfolioCreateInvoiceFromUrl === true;
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -57,6 +57,55 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     useState<InvoiceSheetStageGateHighlight | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (filters.moneyStatus && filters.moneyStatus !== 'all') return [filters.moneyStatus];
+    return getBoardStageKeys(INVOICE_MONEY_BOARD_STAGES, boardScope);
+  }, [boardScope, filters.moneyStatus]);
+
+  const listFilterBase = useMemo(
+    () =>
+      buildInvoiceListApiParams({
+        search,
+        filters: { ...filters, moneyStatus: 'all' },
+        subscriptionIdFromUrl,
+        period,
+      }),
+    [search, filters, subscriptionIdFromUrl, period],
+  );
+
+  const fetchInvoicePage = useCallback(
+    (params: { page: number; pageSize: number; status: string }) =>
+      invoicesApi.getAll({
+        ...listFilterBase,
+        moneyStatus: params.status,
+        page: params.page,
+        pageSize: params.pageSize,
+      }),
+    [listFilterBase],
+  );
+
+  const board = useStageColumnBoard<Invoice>({
+    stageKeys,
+    getStageKey: (invoice) => invoice.moneyStatus,
+    fetchPage: fetchInvoicePage,
+    loadErrorMessage: 'Invoices could not be loaded. Check your connection and try again.',
+  });
+
+  const {
+    items: invoices,
+    columnMeta,
+    hasMoreAny,
+    loading,
+    error,
+    reload,
+    loadMoreColumn,
+    loadMoreAll,
+    setItems,
+    upsertItem,
+    removeItem,
+  } = board;
 
   const invoiceListExportParams: Omit<InvoiceListParams, 'page' | 'pageSize'> = useMemo(
     () =>
@@ -81,17 +130,45 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
-  const fetchInvoices = useFetchInvoices({
-    search,
-    filters,
-    period,
-    subscriptionIdFromUrl,
-    setInvoices,
-    setStats,
-    setError,
-    setLoading,
-    setMutationError,
-  });
+  const fetchStats = useCallback(async () => {
+    try {
+      const periodParams = getFinancePeriodParams(period);
+      setStats(
+        await invoicesApi.getStats({
+          ...periodParams,
+          ...(subscriptionIdFromUrl ? { subscriptionId: subscriptionIdFromUrl } : {}),
+        }),
+      );
+    } catch {
+      setStats(null);
+    }
+  }, [period, subscriptionIdFromUrl]);
+
+  const fetchInvoices = useCallback(async () => {
+    await reload();
+    await fetchStats();
+    setMutationError(null);
+  }, [reload, fetchStats]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const periodParams = getFinancePeriodParams(period);
+        const next = await invoicesApi.getStats({
+          ...periodParams,
+          ...(subscriptionIdFromUrl ? { subscriptionId: subscriptionIdFromUrl } : {}),
+        });
+        if (!cancelled) setStats(next);
+      } catch {
+        if (!cancelled) setStats(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [period, subscriptionIdFromUrl]);
+
   const pushOpenInvoiceToUrl = useCallback(
     (invoiceId: string) => {
       const p = new URLSearchParams(searchParams.toString());
@@ -113,7 +190,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
 
   const handleMoneyStatusChange = useInvoiceMoneyStatusChange({
     invoices,
-    setInvoices,
+    setItems,
     selectedInvoice,
     setSelectedInvoice,
     showInvoiceStageGateRequirements,
@@ -126,10 +203,6 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   );
 
   useEffect(() => {
-    fetchInvoices();
-  }, [fetchInvoices]);
-
-  useEffect(() => {
     if (!openInvoiceIdFromUrl) return;
     const fromList = invoices.find((row) => row.id === openInvoiceIdFromUrl);
     if (fromList) {
@@ -140,12 +213,13 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
       return;
     }
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const inv = await invoicesApi.getById(openInvoiceIdFromUrl);
         if (!cancelled) {
           setSelectedInvoice(inv);
           setSheetOpen(true);
+          upsertItem(inv);
         }
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Could not open invoice from link.'));
@@ -155,11 +229,9 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     return () => {
       cancelled = true;
     };
-  }, [openInvoiceIdFromUrl, invoices, stripOpenInvoiceFromUrl]);
+  }, [openInvoiceIdFromUrl, invoices, stripOpenInvoiceFromUrl, upsertItem]);
 
-  const portfolioCreateIntent = portfolioCreateInvoiceFromUrl;
-
-  const createDialogOpen = createOpen || portfolioCreateIntent;
+  const createDialogOpen = createOpen || portfolioCreateInvoiceFromUrl;
 
   const stripPortfolioCreateFromUrl = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
@@ -201,29 +273,30 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     [pushOpenInvoiceToUrl],
   );
 
-  const handleInvoiceUpdated = useCallback((updated: Invoice) => {
-    setSelectedInvoice(updated);
-    setInvoices((current) => replaceInvoice(current, updated));
-  }, []);
+  const handleInvoiceUpdated = useCallback(
+    (updated: Invoice) => {
+      setSelectedInvoice(updated);
+      upsertItem(updated);
+    },
+    [upsertItem],
+  );
 
   const handleInvoiceDeleted = useCallback(
     (invoiceId: string) => {
       setSelectedInvoice(null);
       setSheetOpen(false);
       setStageGateHighlight(null);
-      setInvoices((current) => current.filter((row) => row.id !== invoiceId));
+      removeItem(invoiceId);
       stripOpenInvoiceFromUrl();
     },
-    [stripOpenInvoiceFromUrl],
+    [removeItem, stripOpenInvoiceFromUrl],
   );
 
   const handleInvoiceCreated = useCallback(
     async (created?: Invoice) => {
       await fetchInvoices();
       setStageGateHighlight(null);
-      if (!created) {
-        return;
-      }
+      if (!created) return;
       setSelectedInvoice(created);
       setSheetOpen(true);
       pushOpenInvoiceToUrl(created.id);
@@ -233,6 +306,11 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
 
   return {
     invoices,
+    columnMeta,
+    hasMoreAny,
+    loadMoreColumn,
+    loadMoreAll,
+    boardScope,
     stats,
     loading,
     error,
@@ -266,81 +344,16 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   };
 }
 
-function useFetchInvoices({
-  search,
-  filters,
-  period,
-  subscriptionIdFromUrl,
-  setInvoices,
-  setStats,
-  setError,
-  setLoading,
-  setMutationError,
-}: {
-  search: string;
-  filters: Record<string, string>;
-  period: FinancePeriod;
-  subscriptionIdFromUrl: string | null;
-  setInvoices: (invoices: Invoice[]) => void;
-  setStats: (stats: InvoiceStats) => void;
-  setError: (error: string | null) => void;
-  setLoading: (loading: boolean) => void;
-  setMutationError: (message: string | null) => void;
-}) {
-  return useCallback(async () => {
-    setLoading(true);
-    try {
-      const periodParams = getFinancePeriodParams(period);
-      const listParams = buildInvoiceListApiParams({
-        search,
-        filters,
-        subscriptionIdFromUrl,
-        period,
-      });
-      const [data, invoiceStats] = await Promise.all([
-        invoicesApi.getAll({ ...listParams, pageSize: 200 }),
-        invoicesApi.getStats({
-          ...periodParams,
-          ...(subscriptionIdFromUrl ? { subscriptionId: subscriptionIdFromUrl } : {}),
-        }),
-      ]);
-      setInvoices(data.items);
-      setStats(invoiceStats);
-      setError(null);
-      setMutationError(null);
-    } catch (caught) {
-      setError(
-        getApiErrorMessage(
-          caught,
-          'Invoices could not be loaded. Check your connection and try again.',
-        ),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    filters,
-    period,
-    search,
-    subscriptionIdFromUrl,
-    setError,
-    setInvoices,
-    setLoading,
-    setMutationError,
-    setStats,
-  ]);
-}
-
 function useInvoiceMoneyStatusChange({
   invoices,
-  setInvoices,
+  setItems,
   selectedInvoice,
   setSelectedInvoice,
   showInvoiceStageGateRequirements,
   onTransitionSuccess,
 }: {
   invoices: Invoice[];
-  setInvoices: (updater: (current: Invoice[]) => Invoice[]) => void;
+  setItems: (updater: (prev: Invoice[]) => Invoice[]) => void;
   selectedInvoice: Invoice | null;
   setSelectedInvoice: (invoice: Invoice | null) => void;
   showInvoiceStageGateRequirements: (
@@ -362,7 +375,7 @@ function useInvoiceMoneyStatusChange({
 
       const previousInvoices = invoices;
       const previousSelected = selectedInvoice;
-      setInvoices((current) =>
+      setItems((current) =>
         current.map((invoice) => (invoice.id === id ? { ...invoice, moneyStatus } : invoice)),
       );
       if (selectedInvoice?.id === id) {
@@ -371,13 +384,13 @@ function useInvoiceMoneyStatusChange({
 
       try {
         const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
-        setInvoices((current) => replaceInvoice(current, updated));
+        setItems((current) => replaceInvoice(current, updated));
         if (selectedInvoice?.id === id) {
           setSelectedInvoice(updated);
         }
         onTransitionSuccess();
       } catch (caught) {
-        setInvoices(() => previousInvoices);
+        setItems(() => previousInvoices);
         if (previousSelected?.id === id) {
           setSelectedInvoice(previousSelected);
         }
@@ -403,7 +416,7 @@ function useInvoiceMoneyStatusChange({
       invoices,
       onTransitionSuccess,
       selectedInvoice,
-      setInvoices,
+      setItems,
       setSelectedInvoice,
       showInvoiceStageGateRequirements,
     ],

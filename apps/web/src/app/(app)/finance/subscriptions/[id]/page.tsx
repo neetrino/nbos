@@ -18,6 +18,7 @@ import {
 } from '@/features/finance/utils/subscription-general-form-state';
 import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
 import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -122,6 +123,7 @@ export default function SubscriptionDetailPage() {
     subscriptionDetailPageTitle({
       loading,
       loadFailed: Boolean(error || !subscription),
+      subscriptionName: subscription?.name,
       subscriptionCode: subscription?.code,
     }),
   );
@@ -155,6 +157,8 @@ export default function SubscriptionDetailPage() {
   const subType = getSubscriptionType(subscription.type);
   const subStatus = getSubscriptionStatus(subscription.status);
   const termSummary = formatSubscriptionTermSummary(subscription);
+  const displayTitle = getSubscriptionDisplayTitle(subscription);
+  const showCodeSubline = displayTitle !== subscription.code;
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -170,9 +174,16 @@ export default function SubscriptionDetailPage() {
           <div className="min-w-0 flex-1">
             <div className="inline-flex flex-wrap items-center gap-2">
               <Repeat className="text-muted-foreground size-5" aria-hidden />
-              <h1 className="text-foreground text-2xl font-bold tracking-tight">
-                {subscription.code}
-              </h1>
+              <div className="min-w-0">
+                <h1 className="text-foreground text-2xl font-bold tracking-tight">
+                  {displayTitle}
+                </h1>
+                {showCodeSubline ? (
+                  <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                    {subscription.code}
+                  </p>
+                ) : null}
+              </div>
               {subType ? (
                 <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
                   {subType.label}
@@ -216,7 +227,7 @@ export default function SubscriptionDetailPage() {
 
       <SubscriptionBillingPeriodConfirmDialog
         open={periodConfirmOpen}
-        subscriptionCode={subscription.code}
+        subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
         description={periodConfirmDescription}
         isSubmitting={saving}
         onOpenChange={setPeriodConfirmOpen}

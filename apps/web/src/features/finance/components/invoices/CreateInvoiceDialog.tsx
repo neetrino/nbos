@@ -15,6 +15,7 @@ import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { Label } from '@/components/ui/label';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
@@ -76,7 +77,9 @@ function dialogDescription(
   clientServiceContext?: { name: string; projectLabel: string },
 ) {
   if (order) return `Generate an invoice for ${getOrderDisplayTitle(order)}.`;
-  if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
+  if (subscriptionDetail) {
+    return `Bill against subscription ${getSubscriptionDisplayTitle(subscriptionDetail)}.`;
+  }
   if (subscriptionId) return 'Loading subscription context…';
   if (clientServiceContext) {
     return `Invoice for ${clientServiceContext.name} · ${clientServiceContext.projectLabel}`;
@@ -192,9 +195,15 @@ function OrderInvoiceContext({ order }: { order: Order }) {
 }
 
 function SubscriptionInvoiceContext({ subscription }: { subscription: Subscription }) {
+  const displayTitle = getSubscriptionDisplayTitle(subscription);
+  const showCodeSubline = displayTitle !== subscription.code;
+
   return (
     <div className="bg-muted/40 rounded-lg border p-3 text-sm">
-      <p className="font-medium">{subscription.code}</p>
+      <p className="font-medium">{displayTitle}</p>
+      {showCodeSubline ? (
+        <p className="text-muted-foreground text-xs">{subscription.code}</p>
+      ) : null}
       <p className="text-muted-foreground">
         {subscription.project.name}
         {subscription.company?.name ? ` · ${subscription.company.name}` : ''}

@@ -9,8 +9,11 @@ import {
 import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
+import { getBoardStageKeys, resolveBoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   ordersApi,
@@ -35,10 +38,10 @@ export function useOrdersPageState({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [gapOrders, setGapOrders] = useState<Order[]>([]);
+  const [gapLoading, setGapLoading] = useState(false);
+  const [gapError, setGapError] = useState<string | null>(null);
   const [stats, setStats] = useState<OrderStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -49,6 +52,55 @@ export function useOrdersPageState({
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [sheetRefreshKey, setSheetRefreshKey] = useState(0);
   const [view, setView] = useOrdersBoardViewMode();
+
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(ORDER_BOARD_STAGES, boardScope);
+  }, [boardScope, filters.status]);
+
+  const listFilterBase = useMemo(
+    () =>
+      buildOrderListApiParams({
+        search: debouncedSearch,
+        filters: { ...filters, status: 'all' },
+        partnerIdFromUrl,
+        period,
+        gap: null,
+      }),
+    [debouncedSearch, filters, partnerIdFromUrl, period],
+  );
+
+  const fetchOrderPage = useCallback(
+    (params: { page: number; pageSize: number; status: string }) =>
+      ordersApi.getAll({
+        ...listFilterBase,
+        status: params.status,
+        page: params.page,
+        pageSize: params.pageSize,
+      }),
+    [listFilterBase],
+  );
+
+  const board = useStageColumnBoard<Order>({
+    stageKeys,
+    enabled: !gap,
+    getStageKey: (order) => order.status,
+    fetchPage: fetchOrderPage,
+    loadErrorMessage: 'Orders could not be loaded. Check your connection and try again.',
+  });
+
+  const {
+    items: boardItems,
+    columnMeta,
+    hasMoreAny,
+    loading: boardLoading,
+    error: boardError,
+    reload: reloadBoard,
+    loadMoreColumn,
+    loadMoreAll,
+    upsertItem,
+  } = board;
 
   const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
     () =>
@@ -99,10 +151,10 @@ export function useOrdersPageState({
     [pathname, router, searchParams],
   );
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
+  const fetchGapOrders = useCallback(async () => {
+    if (!gap) return;
+    setGapLoading(true);
     try {
-      const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
       const listParams: OrderListParams = {
         ...buildOrderListApiParams({
           search: debouncedSearch,
@@ -111,31 +163,73 @@ export function useOrdersPageState({
           period,
           gap,
         }),
-        pageSize,
+        pageSize: ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
       };
       const [data, orderStats] = await Promise.all([
         ordersApi.getAll(listParams),
         ordersApi.getStats(orderStatsQueryParams),
       ]);
-      setOrders(data.items);
+      setGapOrders(data.items);
       setStats(orderStats);
-      setError(null);
+      setGapError(null);
       setMutationError(null);
     } catch (caught) {
-      setError(
+      setGapError(
         getApiErrorMessage(
           caught,
           'Orders could not be loaded. Check your connection and try again.',
         ),
       );
     } finally {
-      setLoading(false);
+      setGapLoading(false);
     }
   }, [debouncedSearch, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      setStats(await ordersApi.getStats(orderStatsQueryParams));
+    } catch {
+      setStats(null);
+    }
+  }, [orderStatsQueryParams]);
+
   useEffect(() => {
-    void fetchOrders();
-  }, [fetchOrders]);
+    if (gap) {
+      let cancelled = false;
+      void (async () => {
+        await fetchGapOrders();
+        if (cancelled) return;
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const next = await ordersApi.getStats(orderStatsQueryParams);
+        if (!cancelled) setStats(next);
+      } catch {
+        if (!cancelled) setStats(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [gap, fetchGapOrders, orderStatsQueryParams]);
+
+  const orders = gap ? gapOrders : boardItems;
+  const loading = gap ? gapLoading : boardLoading;
+  const error = gap ? gapError : boardError;
+
+  const fetchOrders = useCallback(async () => {
+    if (gap) {
+      await fetchGapOrders();
+      return;
+    }
+    await reloadBoard();
+    await fetchStats();
+  }, [gap, fetchGapOrders, reloadBoard, fetchStats]);
 
   useEffect(() => {
     if (!openOrderIdFromUrl) return;
@@ -152,6 +246,7 @@ export function useOrdersPageState({
         if (!cancelled) {
           setSelectedOrder(order);
           setSheetOpen(true);
+          if (!gap) upsertItem(order);
         }
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Could not open order from link.'));
@@ -161,7 +256,7 @@ export function useOrdersPageState({
     return () => {
       cancelled = true;
     };
-  }, [openOrderIdFromUrl, orders, stripOpenOrderFromUrl]);
+  }, [openOrderIdFromUrl, orders, stripOpenOrderFromUrl, gap, upsertItem]);
 
   const refreshOrdersAfterInvoice = useCallback(async () => {
     try {
@@ -207,6 +302,11 @@ export function useOrdersPageState({
 
   return {
     orders,
+    boardScope,
+    columnMeta: gap ? undefined : columnMeta,
+    hasMoreAny: gap ? false : hasMoreAny,
+    loadMoreColumn,
+    loadMoreAll,
     stats,
     loading,
     error,

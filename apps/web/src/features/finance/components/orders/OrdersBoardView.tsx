@@ -5,6 +5,7 @@ import { KanbanBoard, KanbanColumnMoneyTotal } from '@/components/shared';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import type { StageColumnMeta } from '@/features/shared/kanban/use-stage-column-board';
 import type { Order } from '@/lib/api/finance';
 import {
   ORDER_BOARD_COLUMN_WIDTH,
@@ -18,10 +19,18 @@ import { orderStatusLabel } from './order-statuses';
 interface OrdersBoardViewProps {
   orders: Order[];
   boardScope: BoardLifecycleScope;
+  columnMeta?: Record<string, StageColumnMeta>;
+  onColumnLoadMore?: (columnKey: string) => void;
   onOrderClick: (order: Order) => void;
 }
 
-export function OrdersBoardView({ orders, boardScope, onOrderClick }: OrdersBoardViewProps) {
+export function OrdersBoardView({
+  orders,
+  boardScope,
+  columnMeta,
+  onColumnLoadMore,
+  onOrderClick,
+}: OrdersBoardViewProps) {
   const lanes = useMemo(() => groupOrdersByStatus(orders), [orders]);
   const visibleKeys = getBoardStageKeys(ORDER_BOARD_STAGES, boardScope);
 
@@ -29,6 +38,7 @@ export function OrdersBoardView({ orders, boardScope, onOrderClick }: OrdersBoar
     () =>
       visibleKeys.map((status) => {
         const color = ORDER_BOARD_STAGE_COLORS[status as keyof typeof ORDER_BOARD_STAGE_COLORS];
+        const meta = columnMeta?.[status];
         return {
           key: status,
           label: orderStatusLabel(status),
@@ -36,9 +46,12 @@ export function OrdersBoardView({ orders, boardScope, onOrderClick }: OrdersBoar
           hexColor: resolveKanbanStageHex(color ?? 'bg-gray-400'),
           items: lanes[status] ?? [],
           readonly: true,
+          totalCount: meta?.totalCount,
+          hasMore: meta?.hasMore,
+          loadingMore: meta?.loadingMore,
         };
       }),
-    [lanes, visibleKeys],
+    [columnMeta, lanes, visibleKeys],
   );
 
   return (
@@ -50,6 +63,7 @@ export function OrdersBoardView({ orders, boardScope, onOrderClick }: OrdersBoar
         }
         emptyMessage="No orders"
         getItemId={(order) => order.id}
+        onColumnLoadMore={onColumnLoadMore}
         renderColumnHeader={(column) => (
           <KanbanColumnMoneyTotal
             column={column}

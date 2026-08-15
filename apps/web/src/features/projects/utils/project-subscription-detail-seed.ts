@@ -9,6 +9,7 @@ export function buildProjectSubscriptionSeed(
   return {
     id: row.id,
     code: row.code,
+    name: row.name,
     projectId,
     productId: row.productId ?? '',
     type: row.type,

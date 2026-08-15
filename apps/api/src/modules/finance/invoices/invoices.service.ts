@@ -156,7 +156,12 @@ export class InvoicesService {
             },
             {
               subscription: {
-                OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                OR: [
+                  { code: ic },
+                  { name: ic },
+                  { project: { name: ic } },
+                  { project: { code: ic } },
+                ],
               },
             },
             ...(matchedProjectIds.length > 0 ? [{ projectId: { in: matchedProjectIds } }] : []),
@@ -181,7 +186,14 @@ export class InvoicesService {
           order: {
             select: INVOICE_ORDER_SELECT,
           },
-          subscription: { select: { project: { select: { id: true, name: true } } } },
+          subscription: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              project: { select: { id: true, name: true } },
+            },
+          },
           company: { select: { id: true, name: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },

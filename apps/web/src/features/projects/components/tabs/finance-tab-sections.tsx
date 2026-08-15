@@ -4,6 +4,7 @@ import {
   formatProjectFinanceAmount,
   projectSubscriptionMonthlyAmount,
 } from '@/features/projects/utils/project-finance-amount';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { cn } from '@/lib/utils';
 
 const SUB_STATUS_MAP: Record<
@@ -44,7 +45,7 @@ export function FinanceSubscriptionsSection({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">{sub.code}</p>
+                  <p className="text-sm font-medium">{getSubscriptionDisplayTitle(sub)}</p>
                   {st ? <StatusBadge label={st.label} variant={st.variant} /> : null}
                 </div>
                 <p className="font-bold">

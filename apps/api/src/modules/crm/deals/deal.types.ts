@@ -66,6 +66,7 @@ export interface DealHandoffReferences {
   subscriptions: Array<{
     id: string;
     code: string;
+    name: string;
     type: string;
     status: string;
     amount: unknown;

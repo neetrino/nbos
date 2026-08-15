@@ -7,6 +7,7 @@ function baseSub(overrides: Partial<Subscription> = {}): Subscription {
   return {
     id: 's1',
     code: 'SUB-1',
+    name: 'Partner subscription',
     projectId: 'p1',
     productId: 'product-1',
     type: 'MONTHLY',

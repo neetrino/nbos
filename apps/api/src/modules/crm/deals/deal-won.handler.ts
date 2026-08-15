@@ -8,6 +8,7 @@ import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.t
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
+import { resolveDealSubscriptionName } from '../../finance/subscriptions/subscription-commercial-name';
 import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
 import { linkDealDepositInvoiceToSubscription } from './link-deal-deposit-invoice';
 
@@ -398,6 +399,7 @@ export class DealWonHandler {
     const created = await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
+        name: resolveDealSubscriptionName(deal),
         projectId,
         productId,
         type: subscriptionType,
@@ -492,6 +494,7 @@ export class DealWonHandler {
     await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
+        name: resolveDealSubscriptionName(deal),
         projectId: deal.projectId,
         productId: product.id,
         type: 'MAINTENANCE_ONLY',

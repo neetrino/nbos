@@ -92,6 +92,7 @@ describe('DealWonHandler', () => {
         data: expect.objectContaining({
           projectId: 'proj-1',
           productId: 'product-1',
+          name: 'Website build',
           type: 'DEV_AND_MAINTENANCE',
           status: 'ACTIVE',
           amount: 5000,
@@ -102,6 +103,34 @@ describe('DealWonHandler', () => {
       }),
     );
     expect(prisma.subscription.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('termMonths');
+  });
+
+  it('falls back to deal.code for Route A when deal.name is null', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+
+    await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION', name: null }));
+
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'D-2026-0001' }),
+      }),
+    );
+  });
+
+  it('falls back to deal.code for Route A when deal.name is blank', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+
+    await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION', name: '   ' }));
+
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'D-2026-0001' }),
+      }),
+    );
   });
 
   it('creates DEV_ONLY term subscription with deal amount copied as-is', async () => {
@@ -127,6 +156,7 @@ describe('DealWonHandler', () => {
         data: expect.objectContaining({
           projectId: 'proj-1',
           productId: 'product-1',
+          name: 'Website build',
           type: 'DEV_ONLY',
           status: 'ACTIVE',
           amount: 1_000_000,
@@ -339,6 +369,7 @@ describe('DealWonHandler', () => {
         data: expect.objectContaining({
           projectId: 'proj-1',
           productId: 'prod-maint',
+          name: 'Website build',
           type: 'MAINTENANCE_ONLY',
           status: 'PENDING',
           amount: 80000,

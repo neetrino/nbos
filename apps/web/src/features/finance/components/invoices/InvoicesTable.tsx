@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Invoice } from '@/lib/api/finance';
 import {
   FINANCE_LIST_BADGE_CLASS,
@@ -70,16 +71,12 @@ function InvoiceTableRow({
 }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   const typeLabel = invoice.type.replace(/_/g, ' ').toUpperCase();
-  const linkedCode = invoice.order?.deal?.code ?? invoice.order?.code ?? null;
+  const title = getInvoiceDisplayTitle(invoice);
 
   return (
     <TableRow className={FINANCE_LIST_ROW_HOVER_CLASS} onClick={() => onInvoiceClick(invoice)}>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
-        <FinanceListPrimaryCell
-          title={invoice.code}
-          subtitle={linkedCode}
-          subtitleIcon={FileText}
-        />
+        <FinanceListPrimaryCell title={title} subtitle={invoice.code} subtitleIcon={FileText} />
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         {invoice.company?.name ? (

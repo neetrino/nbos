@@ -6,6 +6,7 @@ const NOW = new Date('2026-06-15T12:00:00.000Z');
 function baseSub(overrides: Partial<SubscriptionGridRowInput> = {}): SubscriptionGridRowInput {
   return {
     id: 'sub-1',
+    name: 'Alpha Care',
     type: 'MAINTENANCE_ONLY',
     status: 'ACTIVE',
     monthlyEquivalentAmount: 80000,
@@ -95,6 +96,8 @@ describe('buildSubscriptionGridPayload', () => {
   it('uses forecast for future active months without invoices', () => {
     const payload = buildSubscriptionGridPayload([baseSub()], 2026, NOW);
     expect(payload.rows[0].months[10].kind).toBe('FORECAST');
+    expect(payload.rows[0].subscriptionName).toBe('Alpha Care');
+    expect(payload.rows[0].projectName).toBe('Alpha');
   });
 
   it('uses subscription pending styling for pending subscriptions', () => {

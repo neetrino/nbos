@@ -1,28 +1,25 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { TICKET_STATUSES } from '@/features/support/constants/support';
 import { SUPPORT_TICKET_BOARD_STAGES } from '@/features/support/constants/support-board-lifecycle';
 import { useSupportPageViewMode } from '@/features/support/constants/support-page-view-storage';
 import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   getBoardStageKeys,
-  matchesBoardLifecycleScope,
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
+import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
 import { useSupportTicketActions } from '@/features/support/hooks/use-support-ticket-actions';
+import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 
 export interface UseProductSupportTabResult {
   tickets: SupportTicket[];
   displayTickets: SupportTicket[];
-  kanbanColumns: Array<{
-    key: string;
-    label: string;
-    color: string;
-    items: SupportTicket[];
-  }>;
+  kanbanColumns: SupportKanbanColumn[];
   boardScope: BoardLifecycleScope;
   loading: boolean;
   error: string | null;
@@ -35,57 +32,76 @@ export interface UseProductSupportTabResult {
   setView: ReturnType<typeof useSupportPageViewMode>[1];
   refetch: () => Promise<void>;
   actions: ReturnType<typeof useSupportTicketActions>;
+  hasMoreAny: boolean;
+  loadMoreColumn: (columnKey: string) => void;
+  loadMoreAll: () => void;
 }
 
 export function useProductSupportTab(
   productId: string,
   enabled: boolean,
 ): UseProductSupportTabResult {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useSupportPageViewMode();
+  const [errorOverride, setErrorOverride] = useState<string | null>(null);
+
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
+  }, [boardScope, filters.status]);
+
+  const fetchPage = useCallback(
+    (params: { page: number; pageSize: number; status: string }) =>
+      supportApi.getAll({
+        productId,
+        page: params.page,
+        pageSize: params.pageSize,
+        status: params.status,
+        search: debouncedSearch || undefined,
+        category: filters.category && filters.category !== 'all' ? filters.category : undefined,
+        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
+        waitingState:
+          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
+      }),
+    [productId, debouncedSearch, filters.category, filters.priority, filters.waitingState],
+  );
+
+  const board = useStageColumnBoard<SupportTicket>({
+    stageKeys,
+    enabled: Boolean(productId) && enabled,
+    getStageKey: (ticket) => ticket.status,
+    fetchPage,
+    loadErrorMessage: 'Support tickets could not be loaded.',
+  });
+
+  const {
+    items: tickets,
+    columnMeta,
+    hasMoreAny,
+    loading,
+    error: boardError,
+    reload,
+    loadMoreColumn,
+    loadMoreAll,
+  } = board;
 
   const fetchTickets = useCallback(async () => {
     if (!productId) return;
-    setLoading(true);
-    try {
-      const { items } = await supportApi.getAll({
-        productId,
-        pageSize: 100,
-        search: search || undefined,
-        category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        waitingState:
-          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
-      });
-      setTickets(items);
-      setError(null);
-    } catch {
-      setError('Support tickets could not be loaded.');
-      setTickets([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [productId, search, filters]);
+    await reload();
+    setErrorOverride(null);
+  }, [productId, reload]);
 
   const refreshSupportViews = useCallback(async () => {
     await fetchTickets();
   }, [fetchTickets]);
 
-  useEffect(() => {
-    if (enabled) {
-      void fetchTickets();
-    }
-  }, [enabled, fetchTickets]);
-
   const actions = useSupportTicketActions({
     tickets,
     refreshSupportViews,
-    setError,
+    setError: setErrorOverride,
   });
 
   const handleFilterChange = useCallback((key: string, value: string) => {
@@ -103,33 +119,29 @@ export function useProductSupportTab(
     setFilters({});
   }, []);
 
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
-  const hasStatusFilter = Boolean(filters.status) && filters.status !== 'all';
-
-  const displayTickets = useMemo(() => {
-    if (hasStatusFilter) return tickets;
-    return tickets.filter((ticket) =>
-      matchesBoardLifecycleScope(ticket.status, SUPPORT_TICKET_BOARD_STAGES, boardScope),
-    );
-  }, [tickets, boardScope, hasStatusFilter]);
-
-  const kanbanColumns = useMemo(() => {
+  const kanbanColumns = useMemo((): SupportKanbanColumn[] => {
     const visibleKeys = getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
-    return TICKET_STATUSES.filter((status) => visibleKeys.includes(status.value)).map((status) => ({
-      key: status.value,
-      label: status.label,
-      color: status.color,
-      items: displayTickets.filter((ticket) => ticket.status === status.value),
-    }));
-  }, [displayTickets, boardScope]);
+    return TICKET_STATUSES.filter((status) => visibleKeys.includes(status.value)).map((status) => {
+      const meta = columnMeta[status.value];
+      return {
+        key: status.value,
+        label: status.label,
+        color: status.color,
+        items: tickets.filter((ticket) => ticket.status === status.value),
+        totalCount: meta?.totalCount,
+        hasMore: meta?.hasMore,
+        loadingMore: meta?.loadingMore,
+      };
+    });
+  }, [boardScope, columnMeta, tickets]);
 
   return {
     tickets,
-    displayTickets,
+    displayTickets: tickets,
     kanbanColumns,
     boardScope: boardScope as BoardLifecycleScope,
     loading,
-    error,
+    error: errorOverride ?? boardError,
     search,
     setSearch,
     filters,
@@ -139,5 +151,8 @@ export function useProductSupportTab(
     setView,
     refetch: fetchTickets,
     actions,
+    hasMoreAny,
+    loadMoreColumn,
+    loadMoreAll,
   };
 }

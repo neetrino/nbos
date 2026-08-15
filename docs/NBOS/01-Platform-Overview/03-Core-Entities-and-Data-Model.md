@@ -287,26 +287,27 @@ Contact (человек)
 
 Карточка денег, которые клиент должен нам заплатить. В интерфейсе пока может называться `Invoice`, но по бизнес-смыслу это control card ожидаемой оплаты. Один Order может иметь несколько Invoice Card.
 
-| Поле                          | Тип               | Описание                                                       |
-| ----------------------------- | ----------------- | -------------------------------------------------------------- |
-| id                            | UUID              | Уникальный идентификатор                                       |
-| order_id                      | FK → Order        | Заказ                                                          |
-| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                           |
-| project_id                    | FK → Project      | Проект                                                         |
-| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                        |
-| amount                        | Decimal           | Сумма счёта                                                    |
-| currency                      | Enum              | AMD, USD, EUR                                                  |
-| tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)   |
-| type                          | Enum              | Development, Extension, Subscription, Domain, Service, Other   |
-| money_status                  | Enum              | New, Awaiting Payment, Overdue, On Hold, Paid, Cancelled       |
-| notifications_enabled         | Boolean           | Разрешены ли клиентские напоминания                            |
-| due_date                      | Date              | Дата, до которой нужно оплатить                                |
-| paid_date                     | Date              | Фактическая дата оплаты                                        |
-| official_request_sent         | Boolean           | Отправлен ли запрос на официальный счёт в бухгалтерскую группу |
-| official_request_sent_at      | DateTime?         | Когда отправили запрос                                         |
-| official_request_cancelled_at | DateTime?         | Когда отменили предыдущий запрос                               |
-| notes                         | Text              | Заметки                                                        |
-| created_at                    | DateTime          | Дата создания                                                  |
+| Поле                          | Тип               | Описание                                                                                 |
+| ----------------------------- | ----------------- | ---------------------------------------------------------------------------------------- |
+| id                            | UUID              | Уникальный идентификатор                                                                 |
+| code                          | String            | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
+| order_id                      | FK → Order        | Заказ                                                                                    |
+| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                                                     |
+| project_id                    | FK → Project      | Проект                                                                                   |
+| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                                                  |
+| amount                        | Decimal           | Сумма счёта                                                                              |
+| currency                      | Enum              | AMD, USD, EUR                                                                            |
+| tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)                             |
+| type                          | Enum              | Development, Extension, Subscription, Domain, Service, Other                             |
+| money_status                  | Enum              | New, Awaiting Payment, Overdue, On Hold, Paid, Cancelled                                 |
+| notifications_enabled         | Boolean           | Разрешены ли клиентские напоминания                                                      |
+| due_date                      | Date              | Дата, до которой нужно оплатить                                                          |
+| paid_date                     | Date              | Фактическая дата оплаты                                                                  |
+| official_request_sent         | Boolean           | Отправлен ли запрос на официальный счёт в бухгалтерскую группу                           |
+| official_request_sent_at      | DateTime?         | Когда отправили запрос                                                                   |
+| official_request_cancelled_at | DateTime?         | Когда отменили предыдущий запрос                                                         |
+| notes                         | Text              | Заметки                                                                                  |
+| created_at                    | DateTime          | Дата создания                                                                            |
 
 **Принципы Invoice Card:**
 
@@ -314,6 +315,7 @@ Contact (человек)
 2. `Tax = Tax` — может потребоваться запрос в бухгалтерскую WhatsApp-группу.
 3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
 4. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
+5. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
 
 **Связи:**
 
@@ -352,6 +354,8 @@ Contact (человек)
 | Поле                      | Тип          | Описание                                                                                                  |
 | ------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
 | id                        | UUID         | Уникальный идентификатор                                                                                  |
+| code                      | String       | Системный код `SUB-[SEQ]`; идентификатор, не display title в UI                                           |
+| name                      | String       | **Обязательное** коммерческое название договора/услуги (аналог `Deal.name`); редактируется                |
 | product_id                | FK → Product | **Обязательный** продукт-owner                                                                            |
 | project_id                | FK → Project | Denormalized = Product.projectId (валидируется при create/update)                                         |
 | type                      | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service                            |

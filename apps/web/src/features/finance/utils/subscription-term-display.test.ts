@@ -11,6 +11,7 @@ function baseSubscription(overrides: Partial<Subscription> = {}): Subscription {
   return {
     id: 'sub-1',
     code: 'SUB-001',
+    name: 'Dev subscription',
     projectId: 'p1',
     productId: 'prod-1',
     type: 'DEV_ONLY',
