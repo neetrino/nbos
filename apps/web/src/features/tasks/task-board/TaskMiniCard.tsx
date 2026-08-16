@@ -13,6 +13,9 @@ import {
   pickTaskCardContextChips,
   TASK_CARD_ACTION_BTN_CLASS,
   TASK_CARD_CHIP_CLASS,
+  TASK_CARD_DUE_BADGE_CLASS,
+  TASK_CARD_DUE_BADGE_TONE_CLASS,
+  TASK_CARD_HOVER_ACTIONS_CLASS,
   taskCardContextChipClass,
   taskCardContextIcon,
 } from './task-mini-card-meta';
@@ -48,7 +51,7 @@ export function TaskMiniCard({
       baseShadow="sm"
       hoverShadow="md"
       transition="all"
-      className="group w-full min-w-0 cursor-pointer"
+      className="group w-full min-w-0 cursor-pointer pb-2"
       onClick={() => onClick(task)}
     >
       <div className="flex items-start gap-2">
@@ -60,6 +63,18 @@ export function TaskMiniCard({
         </p>
         <TaskUrgentFlameIndicator priority={task.priority} className="mt-0.5 shrink-0" />
       </div>
+
+      {task.dueDate ? (
+        <span
+          className={cn(
+            TASK_CARD_DUE_BADGE_CLASS,
+            'mt-2',
+            isOverdue ? TASK_CARD_DUE_BADGE_TONE_CLASS.overdue : TASK_CARD_DUE_BADGE_TONE_CLASS.default,
+          )}
+        >
+          {formatTaskCardDate(task.dueDate)}
+        </span>
+      ) : null}
 
       {contextChips.length > 0 ? (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -82,10 +97,10 @@ export function TaskMiniCard({
         </div>
       ) : null}
 
-      <div className="border-border/60 mt-3 flex items-center justify-between gap-2 border-t pt-3">
+      <div className="mt-3 flex items-center justify-between gap-2">
         <TaskCardPeoplePair creator={task.creator} assignee={task.assignee} />
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className={TASK_CARD_HOVER_ACTIONS_CLASS}>
           {canStart ? (
             <QuickActionButton
               label="Start task"
@@ -121,18 +136,6 @@ export function TaskMiniCard({
             >
               <RotateCcw size={13} aria-hidden />
             </QuickActionButton>
-          ) : null}
-          {task.dueDate ? (
-            <span
-              className={cn(
-                'text-xs tabular-nums',
-                isOverdue
-                  ? 'font-bold text-red-600 dark:text-red-400'
-                  : 'text-muted-foreground font-semibold',
-              )}
-            >
-              {formatTaskCardDate(task.dueDate)}
-            </span>
           ) : null}
         </div>
       </div>
