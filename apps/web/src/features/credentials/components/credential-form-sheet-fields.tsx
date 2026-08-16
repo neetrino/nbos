@@ -27,6 +27,7 @@ import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
 import { CredentialAppStoreFields } from './credential-app-store-fields';
 import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
+import { CredentialFormCategoryMenu } from '@/features/credentials/components/credential-form-category-menu';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -109,6 +110,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     folderId,
     setFolderId,
     folderOptions,
+    category,
+    setCategory,
+    categoryOptions,
+    categoryLocked,
+    categoryLabel,
     contextLinks,
   } = form;
 
@@ -141,18 +147,33 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
       />
     ) : null;
 
+  const categoryBlock = (
+    <CredentialFormCategoryMenu
+      category={category}
+      categoryLabel={categoryLabel}
+      categoryOptions={categoryOptions}
+      categoryLocked={categoryLocked}
+      onCategoryChange={setCategory}
+    />
+  );
+
   return (
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {typeBlock}
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {typeBlock}
+          {categoryBlock}
+        </div>
         {folderOptions.length > 0 ? (
-          <div className="grid gap-2">
-            <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
-            <CredentialFolderTreePicker
-              folders={folderOptions}
-              value={folderId}
-              onChange={setFolderId}
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
+              <CredentialFolderTreePicker
+                folders={folderOptions}
+                value={folderId}
+                onChange={setFolderId}
+              />
+            </div>
           </div>
         ) : null}
       </div>

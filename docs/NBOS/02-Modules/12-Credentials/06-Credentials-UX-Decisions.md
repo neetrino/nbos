@@ -189,16 +189,16 @@ DB сохраняет оба поля:
 Принято не чистое C, а **C-hybrid**:
 
 - scope выбран через vault tab: `My`, `Team`, `Company`, `Project`, `Secret`;
-- category задается/preset-ится контекстом: Category Board column, Delivery slot, Product/Project context или compact category control;
+- category задается/preset-ится контекстом: Category Board column, Delivery slot, Product/Project context или поле **Category** в форме;
 - credentialType выбирается как `What is stored?` / secret format;
-- если category уже задана контекстом, не заставлять пользователя выбирать ее снова;
-- Sheet не показывает два параллельных dropdown `Category` + `Credential Type` как sibling controls.
+- если category уже задана контекстом, поле **Category** показывается read-only (один допустимый вариант), а не скрывается;
+- **Category** и `What is stored?` — sibling поля в первой строке формы (два labeled Select рядом); это осознанное решение: category = vault column, type = secret format.
 
 ### UI rules
 
 1. `Create` возможен только из конкретного scope, не из `All`.
 2. `Category Board` column `+` открывает Sheet с preset category.
-3. Delivery slot открывает Sheet с slot category, optional `defaultCredentialType`, и title = имя родительского Product (в т.ч. с карточки Extension; не имя доработки и не label слота). UNIVERSAL / Other / not listed slot presets category **Other** (full allowed list remains editable in header).
+3. Delivery slot открывает Sheet с slot category, optional `defaultCredentialType`, и title = имя родительского Product (в т.ч. с карточки Extension; не имя доработки и не label слота). UNIVERSAL / Other / not listed slot presets category **Other** (полный allowed list остаётся редактируемым в поле **Category**, если не locked одним вариантом).
 4. Product/Project context передается в Sheet и может preset-ить category.
 5. `credentialType` управляет dynamic fields:
    - `LOGIN_PASSWORD` → login/password/url;
@@ -207,7 +207,7 @@ DB сохраняет оба поля:
    - `SSH_PRIVATE_KEY` → key/passphrase/host-like fields;
    - `RECOVERY_CODES` → encrypted codes/secure field UX;
    - etc.
-6. Category can still be changed in Sheet when user explicitly needs it, but it must not duplicate type selection visually.
+6. **Category** — labeled form field (`Category` + icon + full-width Select) в первой строке формы, справа от `What is stored?`; не header chip. Folder — отдельное поле на следующей строке, когда доступен folder picker. Category можно менять в Sheet, когда не locked контекстом; UNIVERSAL slot по-прежнему preset **Other**, поле остаётся editable.
 
 ### Vault scope category sets (2026-06-02)
 
