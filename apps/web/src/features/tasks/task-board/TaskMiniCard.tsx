@@ -38,9 +38,9 @@ export function TaskMiniCard({
     hideWorkspace: hideWorkspaceContext,
   });
   const canStart = task.status === 'OPEN' || task.status === 'NEW';
-  const canComplete = task.status === 'IN_PROGRESS';
   const canReopen =
     task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'ON_HOLD';
+  const canComplete = !canReopen;
   const isOverdue = task.dueDate ? getDeadlineColumn(task) === 'overdue' : false;
 
   return (
@@ -115,7 +115,7 @@ export function TaskMiniCard({
           ) : null}
           {canComplete ? (
             <QuickActionButton
-              label="Complete task"
+              label="Finish task"
               className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400"
               onClick={(event) => {
                 event.stopPropagation();
