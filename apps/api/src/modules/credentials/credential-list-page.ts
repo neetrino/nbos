@@ -5,6 +5,7 @@ import { mapCredentialForApi } from './credential-api.mapper';
 import type { CredentialQueryParams } from './credential-domain.types';
 import type { CredentialListSort } from './credential-list-sort';
 import { loadRecentOrderedCredentialIds } from './credential-list-recent-ids';
+import { attachCredentialProducts } from './credential-product-context';
 import type { CredentialsAccessContext } from './credentials-access';
 import type { CredentialsRuntime } from './credentials-runtime';
 
@@ -44,23 +45,27 @@ async function withListMetadata(
   employeeId?: string,
 ): Promise<ReturnType<typeof mapCredentialForApi>[]> {
   const withPresence = await withSecretsPresence(runtime, items);
-  if (!employeeId || withPresence.length === 0) return withPresence;
+  let withFavorites = withPresence;
 
-  const delegate = favoriteDelegate(runtime);
-  if (!delegate) return withPresence;
+  if (employeeId && withPresence.length > 0) {
+    const delegate = favoriteDelegate(runtime);
+    if (delegate) {
+      const favorites = await delegate.findMany({
+        where: {
+          employeeId,
+          credentialId: { in: withPresence.map((item) => item.id) },
+        },
+        select: { credentialId: true },
+      });
+      const favoriteIds = new Set(favorites.map((favorite) => favorite.credentialId));
+      withFavorites = withPresence.map((item) => ({
+        ...item,
+        isFavorite: favoriteIds.has(item.id),
+      }));
+    }
+  }
 
-  const favorites = await delegate.findMany({
-    where: {
-      employeeId,
-      credentialId: { in: withPresence.map((item) => item.id) },
-    },
-    select: { credentialId: true },
-  });
-  const favoriteIds = new Set(favorites.map((favorite) => favorite.credentialId));
-  return withPresence.map((item) => ({
-    ...item,
-    isFavorite: favoriteIds.has(item.id),
-  }));
+  return attachCredentialProducts(runtime.prisma, withFavorites);
 }
 
 async function fetchCredentialsByOrderedIds(
