@@ -22,6 +22,7 @@ export function ClosedRelationPicker({
   props,
   multiple,
   disabled,
+  readOnly = false,
   placeholder,
   onOpen,
   onOpenSelected,
@@ -33,6 +34,7 @@ export function ClosedRelationPicker({
   props: RelationPickerFieldProps;
   multiple: boolean;
   disabled: boolean;
+  readOnly?: boolean;
   placeholder: string;
   onOpen: () => void;
   onOpenSelected?: (id: string) => void;
@@ -41,11 +43,13 @@ export function ClosedRelationPicker({
   chipAvatars?: Record<string, string | null>;
   onRemoveChip?: (id: string) => void;
 }) {
+  const interactionLocked = disabled || readOnly;
+
   if (selectionDisplay === 'none') {
     return (
       <button
         type="button"
-        disabled={disabled}
+        disabled={interactionLocked}
         onClick={onOpen}
         className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, multiple && 'border-dashed')}
       >
@@ -60,6 +64,7 @@ export function ClosedRelationPicker({
       <ClosedMultiChips
         props={props}
         disabled={disabled}
+        interactionLocked={interactionLocked}
         placeholder={placeholder}
         onOpen={onOpen}
         onOpenSelected={onOpenSelected}
@@ -75,6 +80,7 @@ export function ClosedRelationPicker({
       <ClosedSingleChip
         props={props}
         disabled={disabled}
+        interactionLocked={interactionLocked}
         placeholder={placeholder}
         onOpen={onOpen}
         onOpenSelected={onOpenSelected}
@@ -89,6 +95,7 @@ export function ClosedRelationPicker({
 function ClosedMultiChips({
   props,
   disabled,
+  interactionLocked,
   placeholder,
   onOpen,
   onOpenSelected,
@@ -98,6 +105,7 @@ function ClosedMultiChips({
 }: {
   props: RelationPickerMultiProps;
   disabled: boolean;
+  interactionLocked: boolean;
   placeholder: string;
   onOpen: () => void;
   onOpenSelected?: (id: string) => void;
@@ -126,7 +134,7 @@ function ClosedMultiChips({
       {chips.length === 0 ? (
         <button
           type="button"
-          disabled={disabled}
+          disabled={interactionLocked}
           onClick={onOpen}
           className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'border-dashed')}
         >
@@ -141,6 +149,7 @@ function ClosedMultiChips({
 function ClosedSingleChip({
   props,
   disabled,
+  interactionLocked,
   placeholder,
   onOpen,
   onOpenSelected,
@@ -148,6 +157,7 @@ function ClosedSingleChip({
 }: {
   props: Exclude<RelationPickerFieldProps, RelationPickerMultiProps>;
   disabled: boolean;
+  interactionLocked: boolean;
   placeholder: string;
   onOpen: () => void;
   onOpenSelected?: (id: string) => void;
@@ -168,7 +178,7 @@ function ClosedSingleChip({
           onOpen={
             onOpenSelected && props.value ? () => onOpenSelected(props.value as string) : undefined
           }
-          onReplace={disabled ? undefined : onOpen}
+          onReplace={interactionLocked ? undefined : onOpen}
           onClear={props.onClear}
         />
       </div>
@@ -178,7 +188,7 @@ function ClosedSingleChip({
   return (
     <button
       type="button"
-      disabled={disabled}
+      disabled={interactionLocked}
       onClick={onOpen}
       className={RELATION_PICKER_EMPTY_TRIGGER_CLASS}
     >

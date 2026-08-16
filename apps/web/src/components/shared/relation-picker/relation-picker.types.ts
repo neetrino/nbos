@@ -38,6 +38,8 @@ type RelationPickerBaseProps = {
   kindLabel?: string;
   createLabel?: string;
   disabled?: boolean;
+  /** Display-only: full opacity, no search/replace/clear; `onOpenSelected` still works. */
+  readOnly?: boolean;
   className?: string;
   onSearch: RelationPickerSearchFn;
   maxResults?: number;

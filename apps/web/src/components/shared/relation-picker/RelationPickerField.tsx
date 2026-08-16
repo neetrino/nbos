@@ -39,6 +39,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     kindLabel = RELATION_KIND_LABELS[entityKind],
     createLabel = RELATION_CREATE_LABELS[entityKind],
     disabled = false,
+    readOnly = false,
     className,
     onSearch,
     maxResults = DEFAULT_MAX_RESULTS,
@@ -64,6 +65,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const { knownAvatars, rememberAvatar } = useMergedPickerAvatars(selectionAvatars, results);
 
+  const interactionLocked = disabled || readOnly;
   const selectedIds = new Set<string>(multiple ? props.value : props.value ? [props.value] : []);
 
   const doSearch = useCallback(
@@ -85,7 +87,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
 
   useRelationPickerOpenEffects({
     open,
-    disabled,
+    disabled: interactionLocked,
     doSearch,
     containerRef,
     inputRef,
@@ -105,7 +107,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   };
 
   const handleSelect = (id: string, itemLabel: string, avatar?: string) => {
-    if (disabled) return;
+    if (interactionLocked) return;
     rememberAvatar(id, avatar);
     if (multiple && isMultiProps(props)) {
       applyMultiSelect(props, selectedIds, id, itemLabel, avatar, emitMultiChange);
@@ -125,7 +127,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   };
 
   const handleCreate = () => {
-    if (disabled || !onCreate) return;
+    if (interactionLocked || !onCreate) return;
     onCreate(query.trim());
     setOpen(false);
     setQuery('');
@@ -177,7 +179,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       {showOutlinedAdd ? (
         <button
           type="button"
-          disabled={disabled}
+          disabled={interactionLocked}
           onClick={() => setOpen(true)}
           className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
           aria-label={`Add ${kindLabel.toLowerCase()}`}
@@ -191,7 +193,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           icon={icon}
           showAdd={multiple && multiChipCount > 0 && !open && showSelectionChips}
           addAriaLabel={`Add ${kindLabel.toLowerCase()}`}
-          disabled={disabled}
+          disabled={interactionLocked}
           onAdd={() => setOpen(true)}
         />
       ) : null}
@@ -229,6 +231,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           props={props}
           multiple={multiple}
           disabled={disabled}
+          readOnly={readOnly}
           placeholder={searchPlaceholder}
           onOpen={() => setOpen(true)}
           onOpenSelected={onOpenSelected}

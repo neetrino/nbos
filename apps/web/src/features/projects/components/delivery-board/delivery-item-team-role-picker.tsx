@@ -23,7 +23,7 @@ export function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null |
       selectionAvatar={seller?.avatar}
       selectionSubtitle={seller?.email ?? null}
       placeholder="Not assigned"
-      disabled
+      readOnly
       onSearch={async () => []}
       onSelect={() => {}}
       {...employeePicker}
