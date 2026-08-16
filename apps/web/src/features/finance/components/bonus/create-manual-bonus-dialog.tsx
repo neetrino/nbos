@@ -178,7 +178,6 @@ export function CreateManualBonusDialog({
             value={employeeId || null}
             selectionLabel={employeeLabel}
             selectionAvatar={employeeAvatar}
-            placeholder="Search employees…"
             icon={<UserCog size={12} />}
             disabled={loading}
             onSearch={searchEmployees}

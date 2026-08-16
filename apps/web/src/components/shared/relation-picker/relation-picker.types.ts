@@ -98,6 +98,9 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   order: 'Order',
 };
 
+/** Empty-state trigger when an employee relation has no selection. */
+export const RELATION_PICKER_EMPLOYEE_PLACEHOLDER = 'Choose…';
+
 export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   contact: 'Create contact',
   company: 'Create company',

@@ -24,6 +24,7 @@ import {
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
+  RELATION_PICKER_EMPLOYEE_PLACEHOLDER,
   type RelationPickerFieldProps,
   type RelationPickerOption,
 } from './relation-picker.types';
@@ -154,7 +155,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     }
   };
 
-  const searchPlaceholder = placeholder ?? `Search ${kindLabel.toLowerCase()}s…`;
+  const searchPlaceholder =
+    placeholder ??
+    (entityKind === 'employee'
+      ? RELATION_PICKER_EMPLOYEE_PLACEHOLDER
+      : `Search ${kindLabel.toLowerCase()}s…`);
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
   const showSelectionChips = selectionDisplay === 'chips';
   const showOutlinedAdd =

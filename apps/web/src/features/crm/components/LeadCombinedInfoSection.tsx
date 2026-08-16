@@ -121,7 +121,6 @@ export function LeadCombinedInfoSection({
                   (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
                 }
                 selectionAvatar={draft.sellerAvatar}
-                placeholder="Search seller…"
                 icon={<User size={12} />}
                 disabled={formDisabled}
                 onSearch={searchEmployees}

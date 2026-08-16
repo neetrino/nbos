@@ -124,7 +124,6 @@ export function ProjectParticipantsSection({
       entityKind="employee"
       value={null}
       selectionLabel={null}
-      placeholder="Search employee…"
       icon={<User size={12} />}
       disabled={addingMember || busyEmployeeId !== null}
       onSearch={searchEmployees}

@@ -157,7 +157,6 @@ export function SupportTicketDetailTriageFields({
             value={draft.assignedTo || null}
             selectionLabel={assigneeLabel || null}
             selectionAvatar={assigneeAvatar}
-            placeholder="Unassigned — search employee…"
             icon={<UserCog size={12} />}
             disabled={terminal}
             onSearch={searchEmployees}

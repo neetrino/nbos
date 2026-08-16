@@ -122,7 +122,6 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               value={form.assigneeId || null}
               selectionLabel={form.assigneeLabel || null}
               selectionAvatar={form.assigneeAvatar}
-              placeholder="Select assignee…"
               disabled={form.saving || form.creatorBlocked}
               onSearch={form.searchEmployees}
               onSelect={form.selectAssignee}

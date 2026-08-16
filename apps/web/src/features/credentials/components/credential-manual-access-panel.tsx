@@ -68,7 +68,6 @@ export function CredentialManualAccessPanel({
         entityKind="employee"
         value={null}
         selectionLabel={null}
-        placeholder="Choose…"
         icon={<User size={12} />}
         onSearch={searchEmployees}
         onSelect={(id, label) => addEmployee(id, label)}

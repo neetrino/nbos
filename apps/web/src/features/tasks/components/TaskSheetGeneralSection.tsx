@@ -94,7 +94,6 @@ export function TaskSheetGeneralSection({
                   value={draft.creatorId}
                   selectionLabel={draft.creatorLabel}
                   selectionAvatar={draft.creatorAvatar}
-                  placeholder="Select creator…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
@@ -118,7 +117,6 @@ export function TaskSheetGeneralSection({
                   value={draft.assigneeId}
                   selectionLabel={draft.assigneeLabel}
                   selectionAvatar={draft.assigneeAvatar}
-                  placeholder="Select assignee…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
@@ -176,7 +174,6 @@ export function TaskSheetGeneralSection({
                   value={draft.coAssigneeIds}
                   selectionLabels={draft.coAssigneeLabels}
                   selectionAvatars={draft.coAssigneeAvatars}
-                  placeholder="Add assistant…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
@@ -201,7 +198,6 @@ export function TaskSheetGeneralSection({
                   value={draft.observerIds}
                   selectionLabels={draft.observerLabels}
                   selectionAvatars={draft.observerAvatars}
-                  placeholder="Add observer…"
                   disabled={disabled}
                   className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}

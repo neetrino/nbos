@@ -200,7 +200,6 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           value={form.agreementOwnerId || null}
           selectionLabel={ownerDisplay || null}
           selectionAvatar={ownerAvatar}
-          placeholder="Search employees…"
           onSearch={loadEmployees}
           onSelect={(id, label, avatar) => {
             setForm((p) => ({ ...p, agreementOwnerId: id }));

@@ -57,7 +57,6 @@ export function DealContactTeamSection({
               (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
             }
             selectionAvatar={draft.sellerAvatar}
-            placeholder="Select seller…"
             icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
@@ -82,7 +81,6 @@ export function DealContactTeamSection({
                 : null)
             }
             selectionAvatar={draft.sellerAssistantAvatar}
-            placeholder="Optional — search employee…"
             icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
@@ -112,7 +110,6 @@ export function DealContactTeamSection({
             }
             selectionAvatar={draft.pmAvatar}
             className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
-            placeholder="Select project manager…"
             icon={<UserCog size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}

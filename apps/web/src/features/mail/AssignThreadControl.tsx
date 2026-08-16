@@ -140,7 +140,6 @@ export function AssignThreadControl({
                 entityKind="employee"
                 value={selected || null}
                 selectionLabel={selectionLabel}
-                placeholder="Select user…"
                 icon={<User size={12} />}
                 disabled={busy}
                 onSearch={searchMailboxUsers}

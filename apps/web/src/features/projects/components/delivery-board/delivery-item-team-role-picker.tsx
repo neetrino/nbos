@@ -62,7 +62,6 @@ export function ProductRolePicker({
         value={employeeId}
         selectionLabel={employeeLabel || null}
         selectionAvatar={employeeAvatar}
-        placeholder="Choose…"
         onSearch={onSearchEmployees}
         onSelect={onSelect}
         onClear={onClear}
