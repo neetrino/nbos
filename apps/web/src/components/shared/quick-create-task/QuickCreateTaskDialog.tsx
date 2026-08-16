@@ -5,6 +5,8 @@ import { Calendar, Flame, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { RelationPickerField } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -23,7 +25,6 @@ import {
   QuickCreateTaskAutoGrowTextarea,
   QUICK_CREATE_TASK_TITLE_MIN_HEIGHT_PX,
 } from './QuickCreateTaskAutoGrowTextarea';
-import { QuickCreateTaskAssigneePicker } from './QuickCreateTaskAssigneePicker';
 import {
   useQuickCreateTaskForm,
   type QuickCreateTaskDialogProps,
@@ -35,6 +36,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   const { me } = usePermission();
   const { onOpenFull, open, onOpenChange } = props;
   const form = useQuickCreateTaskForm({ ...props, me });
+  const assigneePicker = useRelationPickerActions('employee');
   const dueDateFieldRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -114,17 +116,19 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
           </div>
 
           <div className="border-border/70 mt-3 space-y-2 border-t pt-3">
-            <div className="flex min-h-9 items-center gap-3">
-              <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>Assignee</span>
-              <QuickCreateTaskAssigneePicker
-                assigneeId={form.assigneeId}
-                assigneeLabel={form.assigneeLabel}
-                assigneeAvatar={form.assigneeAvatar}
-                disabled={form.saving || form.creatorBlocked}
-                onSearch={form.searchEmployees}
-                onSelect={form.selectAssignee}
-              />
-            </div>
+            <RelationPickerField
+              label="Assignee"
+              entityKind="employee"
+              value={form.assigneeId || null}
+              selectionLabel={form.assigneeLabel || null}
+              selectionAvatar={form.assigneeAvatar}
+              placeholder="Select assignee…"
+              disabled={form.saving || form.creatorBlocked}
+              onSearch={form.searchEmployees}
+              onSelect={form.selectAssignee}
+              onClear={() => form.selectAssignee('', '', undefined)}
+              {...assigneePicker}
+            />
 
             <div className="flex min-h-9 items-center gap-3">
               <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>Due date</span>

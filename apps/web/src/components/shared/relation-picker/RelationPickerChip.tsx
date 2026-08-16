@@ -63,7 +63,7 @@ export function RelationPickerChip({
   onClear,
   imageUrl,
 }: RelationPickerChipProps) {
-  const canOpen = Boolean(onOpen) && !disabled;
+  const canOpen = Boolean(onOpen);
   const canReplace = Boolean(onReplace) && !disabled;
   const personLeading = usesPersonAvatar(entityKind);
 

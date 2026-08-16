@@ -167,7 +167,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       ref={containerRef}
       className={cn(
         isOutlined ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'relative w-full min-w-0',
-        disabled && 'pointer-events-none opacity-60',
+        disabled && 'opacity-60',
         className,
       )}
     >

@@ -1,16 +1,8 @@
 'use client';
 
 import { RelationPickerField } from '@/components/shared';
-import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
-import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import {
-  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
-  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
-  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-} from '@/components/shared/detail-sheet-classes';
 import type { ProductEmployee } from '@/lib/api/products';
-import { cn } from '@/lib/utils';
 import type { EmployeeSearchFn } from './delivery-item-detail-employee-search';
 
 function personName(p: ProductEmployee | null | undefined): string {
@@ -19,31 +11,23 @@ function personName(p: ProductEmployee | null | undefined): string {
 }
 
 export function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefined }) {
-  const relations = useEntityRelations();
+  const employeePicker = useRelationPickerActions('employee');
   const name = personName(seller);
 
   return (
-    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Seller</span>
-      {name && seller ? (
-        <RelationPickerChip
-          label={name}
-          subtitle={seller.email ?? null}
-          entityKind="employee"
-          imageUrl={seller.avatar}
-          onOpen={() => void relations.openEntity('employee', seller.id)}
-        />
-      ) : (
-        <div
-          className={cn(
-            RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-            'pointer-events-none border-dashed italic',
-          )}
-        >
-          Not assigned
-        </div>
-      )}
-    </div>
+    <RelationPickerField
+      label="Seller"
+      entityKind="employee"
+      value={seller?.id ?? null}
+      selectionLabel={name || null}
+      selectionAvatar={seller?.avatar}
+      selectionSubtitle={seller?.email ?? null}
+      placeholder="Not assigned"
+      disabled
+      onSearch={async () => []}
+      onSelect={() => {}}
+      {...employeePicker}
+    />
   );
 }
 
