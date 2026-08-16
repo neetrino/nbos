@@ -6,7 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_NOTCH_CLASS,
 } from './detail-sheet-classes';
 
 export interface DetailSheetCollapsibleSectionProps {
@@ -31,16 +31,21 @@ export function DetailSheetCollapsibleSection({
   className,
 }: DetailSheetCollapsibleSectionProps) {
   return (
-    <section id={id} className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS, className)}>
+    <section
+      id={id}
+      className={cn(
+        DETAIL_SHEET_SECTION_SURFACE_CLASS,
+        'relative overflow-visible pt-6',
+        className,
+      )}
+    >
       <Collapsible open={open} onOpenChange={onOpenChange}>
-        <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 rounded-lg outline-none select-none">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-              {icon ? <span className="text-primary">{icon}</span> : null}
-              {title}
-            </h4>
-            {titleTrailing}
-          </div>
+        <CollapsibleTrigger className="group flex min-h-6 w-full items-start justify-end gap-2 rounded-lg outline-none select-none">
+          <h4 className={DETAIL_SHEET_SECTION_TITLE_NOTCH_CLASS}>
+            {icon ? <span className="text-primary">{icon}</span> : null}
+            {title}
+          </h4>
+          {titleTrailing}
           <ChevronDown
             size={14}
             className={cn(
