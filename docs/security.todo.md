@@ -98,7 +98,7 @@
 | 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено) | 400 на слабый                       |
 | 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + Redis/in-memory denylist + logout                  | После logout → 401                  |
 | 2.8  | P0  | ✅     | 🤖 BFF: JWT в httpOnly cookie, `/api/bff` + realtime-token для WS         | DevTools: нет accessToken в session |
-| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                        | Phase 2+                            |
+| 2.9  | P2  | ✅     | 🤖 Password reset (TECH_CARD §5.6)                                        | Email link + hashed token           |
 | 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                      | Нет перебора                        |
 | 2.11 | P0  | ✅     | 🤖 argon2id                                                               | —                                   |
 | 2.12 | P0  | ✅     | 🤖 Invite-only                                                            | —                                   |
@@ -268,7 +268,7 @@
 | ------------------ | -------- | ----------------------------------------- |
 | 10.2 CSRF          | ✅       | 🔄 Проверить cookies + Origin             |
 | 10.6 Rate limit    | ✅       | 🔄 Auth endpoints слабее REG-SEC-EDGE-001 |
-| 5.6 Password reset | ⬜       | ⬜ v1 — закрыть brute-force               |
+| 5.6 Password reset | ✅       | Email token 60m; 5 req / 10 min / IP      |
 
 ---
 
