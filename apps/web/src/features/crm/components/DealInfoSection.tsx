@@ -11,12 +11,7 @@ import {
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { PAYMENT_TYPES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
-import {
-  buildDealProjectChangePatch,
-  isLinkedProductDealType,
-  isProductLikeDealType,
-  type DealGeneralDraft,
-} from './deal-general-form-state';
+import { buildDealProjectChangePatch, type DealGeneralDraft } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import {
@@ -36,7 +31,7 @@ interface DealInfoProjectBillingFieldsProps {
   gateRequiredFields?: ReadonlySet<string>;
 }
 
-/** Left column: commercial basics, project (when needed), and company (when Tax). */
+/** Left column: commercial basics, then always-visible Project and Company. */
 export function DealInfoProjectBillingFields({
   draft,
   patchDraft,
@@ -60,15 +55,13 @@ export function DealInfoProjectBillingFields({
         disabled={disabled}
         gateRequiredFields={gateRequiredFields}
       />
-      {(draft.taxStatus ?? 'TAX') === 'TAX' && (
-        <DealInfoCompanyField
-          draft={draft}
-          patchDraft={patchDraft}
-          searchCompanies={searchCompanies}
-          disabled={disabled}
-          gateRequiredFields={gateRequiredFields}
-        />
-      )}
+      <DealInfoCompanyField
+        draft={draft}
+        patchDraft={patchDraft}
+        searchCompanies={searchCompanies}
+        disabled={disabled}
+        gateRequiredFields={gateRequiredFields}
+      />
     </div>
   );
 }
@@ -134,9 +127,7 @@ function DealInfoProjectField({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchCompanies'>) {
-  const showProject = isProductLikeDealType(draft.type) || isLinkedProductDealType(draft.type);
   const projectPicker = useRelationPickerActions('project');
-  if (!showProject) return null;
 
   return (
     <RelationPickerField
@@ -151,8 +142,7 @@ function DealInfoProjectField({
       onSearch={searchProjects}
       onSelect={(id, label) => patchDraft(buildDealProjectChangePatch(id, label))}
       onClear={() => patchDraft(buildDealProjectChangePatch(null, null))}
-      onOpenSelected={projectPicker.onOpenSelected}
-      {...(isProductLikeDealType(draft.type) ? { onCreate: projectPicker.onCreate } : {})}
+      {...projectPicker}
     />
   );
 }
