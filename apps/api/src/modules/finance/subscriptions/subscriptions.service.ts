@@ -359,6 +359,9 @@ export class SubscriptionsService {
     if (status === 'ACTIVE' && !current.billingStartDate) {
       updateData.billingStartDate = new Date();
     }
+    if (status === 'ACTIVE' && current.status === 'CANCELLED') {
+      updateData.endDate = null;
+    }
     if (status === 'CANCELLED') {
       updateData.endDate = new Date();
     }

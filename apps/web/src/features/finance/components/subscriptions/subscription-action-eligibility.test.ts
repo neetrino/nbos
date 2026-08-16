@@ -33,11 +33,11 @@ function subscriptionWithStatus(status: Subscription['status']): Subscription {
 }
 
 describe('subscriptionCanActivateOrResume', () => {
-  it('allows PENDING and ON_HOLD only', () => {
+  it('allows PENDING, ON_HOLD, and CANCELLED', () => {
     expect(subscriptionCanActivateOrResume(subscriptionWithStatus('PENDING'))).toBe(true);
     expect(subscriptionCanActivateOrResume(subscriptionWithStatus('ON_HOLD'))).toBe(true);
+    expect(subscriptionCanActivateOrResume(subscriptionWithStatus('CANCELLED'))).toBe(true);
     expect(subscriptionCanActivateOrResume(subscriptionWithStatus('ACTIVE'))).toBe(false);
-    expect(subscriptionCanActivateOrResume(subscriptionWithStatus('CANCELLED'))).toBe(false);
     expect(subscriptionCanActivateOrResume(subscriptionWithStatus('COMPLETED'))).toBe(false);
   });
 });

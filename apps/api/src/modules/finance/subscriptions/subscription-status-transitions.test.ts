@@ -25,8 +25,12 @@ describe('assertSubscriptionStatusTransition', () => {
     );
   });
 
-  it('rejects CANCELLED → ACTIVE', () => {
-    expect(() => assertSubscriptionStatusTransition('CANCELLED', 'ACTIVE')).toThrow(
+  it('allows CANCELLED → ACTIVE', () => {
+    expect(() => assertSubscriptionStatusTransition('CANCELLED', 'ACTIVE')).not.toThrow();
+  });
+
+  it('rejects CANCELLED → ON_HOLD', () => {
+    expect(() => assertSubscriptionStatusTransition('CANCELLED', 'ON_HOLD')).toThrow(
       BadRequestException,
     );
   });

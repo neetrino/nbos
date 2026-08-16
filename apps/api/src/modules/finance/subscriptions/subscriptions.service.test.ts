@@ -434,9 +434,30 @@ describe('SubscriptionsService', () => {
       expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
 
-    it('rejects disallowed transition from CANCELLED', async () => {
+    it('resumes cancelled subscription and clears endDate', async () => {
+      const billingStartDate = new Date('2026-01-15T00:00:00.000Z');
+      const endDate = new Date('2026-06-01T00:00:00.000Z');
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(
+          mockSubscriptionForFindById({ status: 'CANCELLED', billingStartDate, endDate }),
+        )
+        .mockResolvedValueOnce(
+          mockSubscriptionForFindById({ status: 'ACTIVE', billingStartDate, endDate: null }),
+        );
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'ACTIVE');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'ACTIVE', endDate: null },
+        }),
+      );
+    });
+
+    it('rejects COMPLETED → ACTIVE', async () => {
       prisma.subscription.findUnique.mockResolvedValue(
-        mockSubscriptionForFindById({ status: 'CANCELLED', endDate: new Date() }),
+        mockSubscriptionForFindById({ status: 'COMPLETED' }),
       );
 
       await expect(service.updateStatus('1', 'ACTIVE')).rejects.toThrow(BadRequestException);

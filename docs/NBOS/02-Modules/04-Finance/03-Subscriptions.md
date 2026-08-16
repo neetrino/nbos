@@ -422,10 +422,10 @@ Client Subscription Invoice Paid
 | **Pending**   | Подписка создана, billing_start_date можно менять, активный биллинг ещё не запущен |
 | **Active**    | Подписка активна и участвует в регулярном биллинге                                 |
 | **On Hold**   | Биллинг и обслуживание временно остановлены                                        |
-| **Cancelled** | Подписка прекращена досрочно (churn)                                               |
+| **Cancelled** | Подписка прекращена досрочно (churn); обратима через Resume → Active               |
 | **Completed** | Срок покрытых месяцев исчерпан или штатное завершение; новые invoice не создаются  |
 
-Ручные переходы: `Pending` → `Active` / `Cancelled`; `Active` → `On Hold` / `Cancelled` / `Completed`; `On Hold` → `Active` / `Cancelled` / `Completed`. `Cancelled` и `Completed` — терминальные. Биллинг ставит `Completed` только с `Active` (в прогон другие статусы не попадают).
+Ручные переходы: `Pending` → `Active` / `Cancelled`; `Active` → `On Hold` / `Cancelled` / `Completed`; `On Hold` → `Active` / `Cancelled` / `Completed`; `Cancelled` → `Active` (Resume). `Completed` остаётся терминальным. Resume с `Cancelled` очищает `endDate`, чтобы биллинг и active MRR снова считали подписку живой. Биллинг ставит `Completed` только с `Active` (в прогон другие статусы не попадают).
 
 ### Процесс отмены
 
