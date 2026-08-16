@@ -212,6 +212,13 @@ export const DETAIL_SHEET_FIELD_LEADING_ICON_CLASS =
 /** Row wrapper for a field with an external leading icon. */
 export const DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS = '-ml-3 flex gap-0.5';
 
+/** Outlined h-10 shell wrapping a segmented pill track (notch caption fields). */
+export const DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+  'flex h-10 w-full items-center rounded-xl p-0.5',
+].join(' ');
+
 /** Compact pill segmented control inside detail sheet forms (CRM Dashboard nav style). */
 export const DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS =
   'bg-muted/70 relative flex w-full items-center gap-0.5 rounded-full px-1 py-1';

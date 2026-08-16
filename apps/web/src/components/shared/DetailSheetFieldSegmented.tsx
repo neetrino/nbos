@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
   DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+  DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS,
 } from './detail-sheet-classes';
 import { SlidingPillBackdrop, useSlidingPillIndicator } from './page-hero/sliding-pill-indicator';
 
@@ -26,7 +29,6 @@ export interface DetailSheetFieldSegmentedProps<T extends string> {
 
 export function DetailSheetFieldSegmented<T extends string>({
   label,
-  icon,
   value,
   options,
   onValueChange,
@@ -50,48 +52,56 @@ export function DetailSheetFieldSegmented<T extends string>({
   );
 
   return (
-    <div className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}>
-      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-        {icon ? <span className="text-muted-foreground/70">{icon}</span> : null}
-        {label}
-      </div>
+    <div
+      className={cn(
+        DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+        disabled && 'pointer-events-none opacity-60',
+        className,
+      )}
+    >
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
 
-      <div
-        ref={groupRef}
-        className={DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS}
-        role="tablist"
-        aria-label={ariaLabel ?? label}
-      >
-        <SlidingPillBackdrop
-          indicator={indicator}
-          ready={ready}
-          className="bg-primary top-1 bottom-1 shadow-sm"
-        />
-        {options.map((option) => {
-          const active = option.value === value;
-          return (
-            <button
-              key={option.value}
-              ref={(node) => {
-                if (node) buttonRefs.current.set(option.value, node);
-                else buttonRefs.current.delete(option.value);
-              }}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              disabled={disabled}
-              onClick={() => onValueChange(option.value)}
-              className={cn(
-                DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
-                active
-                  ? 'text-primary-foreground'
-                  : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
-              )}
-            >
-              {option.label}
-            </button>
-          );
-        })}
+      <div className={DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS}>
+        <div
+          ref={groupRef}
+          className={cn(
+            DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
+            'h-full bg-transparent px-0.5 py-0',
+          )}
+          role="tablist"
+          aria-label={ariaLabel ?? label}
+        >
+          <SlidingPillBackdrop
+            indicator={indicator}
+            ready={ready}
+            className="bg-primary top-1 bottom-1 shadow-sm"
+          />
+          {options.map((option) => {
+            const active = option.value === value;
+            return (
+              <button
+                key={option.value}
+                ref={(node) => {
+                  if (node) buttonRefs.current.set(option.value, node);
+                  else buttonRefs.current.delete(option.value);
+                }}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                disabled={disabled}
+                onClick={() => onValueChange(option.value)}
+                className={cn(
+                  DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+                  active
+                    ? 'text-primary-foreground'
+                    : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
