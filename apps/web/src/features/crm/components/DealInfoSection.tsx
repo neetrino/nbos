@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, CreditCard, FolderKanban } from 'lucide-react';
+import { Building2, FolderKanban } from 'lucide-react';
 import {
   AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -90,7 +90,7 @@ function DealInfoCommercialFields({
 
       <DetailSheetFieldSegmented
         label="Payment Type"
-        icon={<CreditCard size={12} />}
+        hideLabel
         value={draft.paymentType}
         options={PAYMENT_TYPES}
         disabled={disabled}
