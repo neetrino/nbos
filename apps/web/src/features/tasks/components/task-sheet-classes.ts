@@ -45,10 +45,6 @@ export const TASK_SHEET_TEAM_COLUMN_CLASS = 'min-w-0';
 /** Stack of outlined fields (label sits on the field border). */
 export const TASK_SHEET_TEAM_META_GRID_CLASS = 'flex flex-col gap-y-3';
 
-/** Label hugs text; used for “Linked to” and similar side captions. */
-export const TASK_SHEET_META_LABEL_CLASS =
-  'text-muted-foreground w-auto min-w-0 shrink-0 text-xs leading-snug';
-
 /** Field fills its column so empty space is used instead of wrapping early. */
 export const TASK_SHEET_META_VALUE_COLUMN_CLASS = 'w-full min-w-0 max-w-full';
 

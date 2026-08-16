@@ -52,6 +52,10 @@ interface TaskDeliveryContextSearchProps {
   linkedValues: ReadonlySet<string>;
   onSelect: (option: TaskDeliveryContextOption) => void;
   className?: string;
+  /** Closed-state trigger; `none` when the parent owns add via the border notch. */
+  trigger?: 'button' | 'none';
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /** Unified project / product / work space typeahead with nested rows. */
@@ -60,8 +64,22 @@ export function TaskDeliveryContextSearch({
   linkedValues,
   onSelect,
   className,
+  trigger = 'button',
+  open: openProp,
+  onOpenChange,
 }: TaskDeliveryContextSearchProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+
+  const setOpen = useCallback(
+    (next: boolean) => {
+      if (!isControlled) setInternalOpen(next);
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange],
+  );
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TaskDeliveryContextOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -92,7 +110,7 @@ export function TaskDeliveryContextSearch({
 
   useEffect(() => {
     if (disabled) setOpen(false);
-  }, [disabled]);
+  }, [disabled, setOpen]);
 
   useEffect(() => {
     if (!open) return;
@@ -103,7 +121,7 @@ export function TaskDeliveryContextSearch({
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
-  }, [open]);
+  }, [open, setOpen]);
 
   useEffect(
     () => () => {
@@ -145,6 +163,7 @@ export function TaskDeliveryContextSearch({
   }
 
   if (!open) {
+    if (trigger === 'none') return null;
     return (
       <button
         type="button"
