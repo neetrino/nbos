@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
 import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import { CredentialFormSelectOption } from '@/features/credentials/components/credential-form-select-option';
 import {
   CREDENTIAL_COMMENT_ICON,
   CREDENTIAL_FOLDER_ICON,
@@ -54,13 +55,21 @@ function TypeSelect({
       <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
         <SelectTrigger>
           <SelectValue placeholder="Select type">
-            {(value: string | null) => (value ? formatCredentialTypeLabel(value) : null)}
+            {(value: string | null) =>
+              value ? (
+                <CredentialFormSelectOption
+                  kind="type"
+                  value={value}
+                  label={formatCredentialTypeLabel(value)}
+                />
+              ) : null
+            }
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {types.map((type) => (
             <SelectItem key={type.value} value={type.value}>
-              {type.label}
+              <CredentialFormSelectOption kind="type" value={type.value} label={type.label} />
             </SelectItem>
           ))}
         </SelectContent>
