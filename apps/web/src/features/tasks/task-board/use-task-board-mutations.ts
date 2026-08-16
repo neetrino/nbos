@@ -13,6 +13,7 @@ import {
 } from '@/features/tasks/task-board';
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
+import { TASK_CARD_COMPLETE_FLASH_MS, waitAtLeast } from './task-card-complete-flash';
 
 export type TaskBoardViewMode = 'deadline' | 'my-plan' | 'kanban' | 'list' | 'planning';
 
@@ -43,7 +44,11 @@ export function useTaskBoardMutations({
 }: UseTaskBoardMutationsParams) {
   const handleAction = useCallback(
     async (taskId: string, action: TaskBoardAction) => {
+      const startedAt = Date.now();
       const updated = await tasksApi[action](taskId);
+      if (action === 'complete') {
+        await waitAtLeast(startedAt, TASK_CARD_COMPLETE_FLASH_MS);
+      }
       setTasks((prev) => prev.map((task) => (task.id === updated.id ? updated : task)));
     },
     [setTasks],
