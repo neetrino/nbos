@@ -29,6 +29,8 @@ interface CreateContactDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: (contact?: Contact) => void;
   prefill?: RelationCreatePrefill | null;
+  /** When opened above an entity sheet floating rail. */
+  forceNestedBackdrop?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -48,6 +50,7 @@ export function CreateContactDialog({
   open,
   onOpenChange,
   onCreated,
+  forceNestedBackdrop = false,
   prefill = null,
 }: CreateContactDialogProps) {
   const [loading, setLoading] = useState(false);
@@ -101,7 +104,7 @@ export function CreateContactDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px]">
+      <DialogContent className="sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>New Contact</DialogTitle>
         </DialogHeader>

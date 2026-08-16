@@ -21,6 +21,8 @@ export type CreateProjectHubDialogProps = {
   onOpenChange: (open: boolean) => void;
   onCreated: (project: Project) => void;
   defaultName?: string;
+  /** When opened above an entity sheet floating rail. */
+  forceNestedBackdrop?: boolean;
 };
 
 async function createProjectRecord(input: {
@@ -42,6 +44,7 @@ export function CreateProjectHubDialog({
   onOpenChange,
   onCreated,
   defaultName = '',
+  forceNestedBackdrop = false,
 }: CreateProjectHubDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -116,7 +119,7 @@ export function CreateProjectHubDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
         </DialogHeader>

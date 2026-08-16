@@ -35,6 +35,8 @@ interface CreateCompanyDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: (company?: Company) => void;
   defaultName?: string;
+  /** When opened above an entity sheet floating rail. */
+  forceNestedBackdrop?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -58,6 +60,7 @@ export function CreateCompanyDialog({
   onOpenChange,
   onCreated,
   defaultName = '',
+  forceNestedBackdrop = false,
 }: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
   const contactRelationSearch = useContactRelationSearch();
@@ -118,7 +121,7 @@ export function CreateCompanyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px]">
+      <DialogContent className="sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>New Company</DialogTitle>
         </DialogHeader>

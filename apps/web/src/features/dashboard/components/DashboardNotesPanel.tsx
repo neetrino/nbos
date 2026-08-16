@@ -203,7 +203,7 @@ function NoteStack({
       >
         <SortableContext items={noteIds} strategy={verticalListSortingStrategy}>
           <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-            <div className="flex flex-col gap-3 px-0.5 pt-2 pb-4">
+            <div className="flex flex-col gap-5 px-0 pt-2 pb-4 md:px-1.5">
               <AnimatePresence initial={false}>
                 {notes.map((note) => (
                   <NoteCard
@@ -419,7 +419,7 @@ function NoteActions({
   onDeleteNote: (id: string) => Promise<void>;
 }) {
   return (
-    <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+    <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
       <Button
         variant="ghost"
         size="icon"

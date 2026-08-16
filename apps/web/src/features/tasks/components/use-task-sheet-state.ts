@@ -25,6 +25,7 @@ import {
   type TaskWorkflowFooterAction,
 } from './task-workflow-optimistic';
 import { runTaskWorkflowApi } from './task-workflow-api';
+import { applyTaskSheetPipelineStatus } from './apply-task-sheet-pipeline-status';
 import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
 
 interface UseTaskSheetStateParams {
@@ -356,6 +357,51 @@ export function useTaskSheetState({
     [drainWorkflowQueue, onUpdate, syncDraftStatusFromTask, task],
   );
 
+  const handlePipelineStatusClick = useCallback(
+    (statusKey: string) => {
+      if (!task || workflowSavingRef.current) return;
+      const current = normalizeTaskStatusForDraft(task.status);
+      const target = normalizeTaskStatusForDraft(statusKey);
+      if (current === target) return;
+
+      const previousTask = task;
+      const optimisticTask: Task = { ...task, status: target };
+      flushSync(() => {
+        setTask(optimisticTask);
+        setWorkflowFooterStatus(target);
+        setGeneralError(null);
+        setCompletionBlockers([]);
+        syncDraftStatusFromTask(optimisticTask);
+      });
+      queueMicrotask(() => onUpdate?.(optimisticTask));
+
+      workflowSavingRef.current = true;
+      setWorkflowSaving(true);
+      void (async () => {
+        try {
+          const updated = await applyTaskSheetPipelineStatus(previousTask, target);
+          commitWorkflowTask(updated);
+          setCompletionBlockers([]);
+        } catch (caught) {
+          setTask(previousTask);
+          setWorkflowFooterStatus(normalizeTaskStatusForDraft(previousTask.status));
+          syncDraftStatusFromTask(previousTask);
+          queueMicrotask(() => onUpdate?.(previousTask));
+          const message = getApiErrorMessage(caught, 'Status could not be updated.');
+          setGeneralError(message);
+          toast.error(message);
+          if (target === 'COMPLETED') {
+            setCompletionBlockers(parseTaskCompletionBlockers(caught));
+          }
+        } finally {
+          workflowSavingRef.current = false;
+          setWorkflowSaving(false);
+        }
+      })();
+    },
+    [commitWorkflowTask, onUpdate, syncDraftStatusFromTask, task],
+  );
+
   const handleAddChecklist = useCallback(async () => {
     if (!task || !newChecklistTitle.trim()) return;
     try {
@@ -528,6 +574,7 @@ export function useTaskSheetState({
     handleGeneralSave,
     handleGeneralCancel,
     handleAction,
+    handlePipelineStatusClick,
     handleAddChecklist,
     handleDeleteChecklist,
     handleAddItem,

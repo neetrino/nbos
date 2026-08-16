@@ -40,7 +40,7 @@ export function DetailSheetSection({
         )}
       >
         <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-          {icon ? <span className="text-muted-foreground/80">{icon}</span> : null}
+          {icon ? <span className="text-primary">{icon}</span> : null}
           {title}
         </h4>
         {titleTrailing}

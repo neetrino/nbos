@@ -75,6 +75,7 @@ export function SupportTicketActionOverlays({
         refreshKey={detailRefreshKey}
         meId={meId}
         onListInvalidate={onListInvalidate}
+        onStatusSelect={actions.handleStatusSelect}
         onRequestResolve={actions.openResolveDialog}
         onRequestClose={actions.openCloseDialog}
         onRequestEscalate={actions.openEscalateDialog}

@@ -21,6 +21,7 @@ import {
 } from '@/components/shared';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import type { FullProduct } from '@/lib/api/products';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
@@ -69,6 +70,9 @@ export function WorkSpacesPage() {
     error,
     refetch,
   } = directory;
+  const isMobileViewport = useIsMobileViewport();
+  const showDesktopDirectoryChrome = !isMobileViewport;
+  const directoryView = isMobileViewport ? 'grid' : view;
 
   const handleOpenProductDelivery = useCallback(
     async (productId: string) => {
@@ -132,21 +136,31 @@ export function WorkSpacesPage() {
             search={searchInput}
             onSearchChange={setSearchInput}
             searchPlaceholder="Search by name, project, product…"
-            filters={workSpaceFilterConfigs}
-            filterValues={{ mode }}
-            onFilterChange={(key, value) => {
-              if (key === 'mode') {
-                setMode(value as 'all' | 'scrum' | 'kanban');
-              }
-            }}
-            onClearAll={() => {
-              setMode('all');
-              setSearchInput('');
-            }}
+            filters={showDesktopDirectoryChrome ? workSpaceFilterConfigs : undefined}
+            filterValues={showDesktopDirectoryChrome ? { mode } : undefined}
+            onFilterChange={
+              showDesktopDirectoryChrome
+                ? (key, value) => {
+                    if (key === 'mode') {
+                      setMode(value as 'all' | 'scrum' | 'kanban');
+                    }
+                  }
+                : undefined
+            }
+            onClearAll={
+              showDesktopDirectoryChrome
+                ? () => {
+                    setMode('all');
+                    setSearchInput('');
+                  }
+                : undefined
+            }
           />
         }
         viewMode={
-          <ViewModeSwitch value={view} onChange={setView} options={WORKSPACE_VIEW_OPTIONS} />
+          showDesktopDirectoryChrome ? (
+            <ViewModeSwitch value={view} onChange={setView} options={WORKSPACE_VIEW_OPTIONS} />
+          ) : null
         }
         trailing={
           <>
@@ -192,7 +206,7 @@ export function WorkSpacesPage() {
             ) : undefined
           }
         />
-      ) : view === 'grid' ? (
+      ) : directoryView === 'grid' ? (
         <div
           className={
             tab === 'product'

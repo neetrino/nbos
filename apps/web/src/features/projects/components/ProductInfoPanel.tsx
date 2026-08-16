@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LoadingState, StatusBadge } from '@/components/shared';
+import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
@@ -14,13 +14,11 @@ import {
 } from '@/features/projects/components/product-tabs/product-overview-ui';
 import { productStageGateFieldClass } from '@/features/projects/product-stage-gate-highlight';
 import type { FullProduct } from '@/lib/api/products';
-import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { DeliveryDealPanelActions } from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import { DetailInfoSubsection } from './detail-info-subsection';
-import { ProjectContactsSection } from './ProjectContactsSection';
 
 interface ProductInfoPanelProps {
   product: FullProduct;
@@ -33,25 +31,6 @@ export function ProductInfoPanel({
   gateRequiredFields,
   className,
 }: ProductInfoPanelProps) {
-  const [project, setProject] = useState<FullProject | null>(null);
-  const [projectLoading, setProjectLoading] = useState(true);
-
-  const loadProject = useCallback(async () => {
-    setProjectLoading(true);
-    try {
-      const data = await projectsApi.getById(product.projectId);
-      setProject(data);
-    } catch {
-      setProject(null);
-    } finally {
-      setProjectLoading(false);
-    }
-  }, [product.projectId]);
-
-  useEffect(() => {
-    void loadProject();
-  }, [loadProject]);
-
   const description = product.description?.trim();
   const hasDescription = Boolean(description);
   const forceDescription = gateRequiredFields.has('description');
@@ -104,6 +83,8 @@ export function ProductInfoPanel({
           <OverviewMetaGrid>
             <OverviewMetaTile
               label="Stage"
+              icon={Layers}
+              iconTone="purple"
               value={
                 stageStatus ? (
                   <StatusBadge label={stageStatus.label} variant={stageStatus.variant} />
@@ -115,21 +96,29 @@ export function ProductInfoPanel({
             {product.pm ? (
               <OverviewMetaTile
                 label="PM"
+                icon={User}
+                iconTone="sky"
                 value={`${product.pm.firstName} ${product.pm.lastName}`}
               />
             ) : null}
             <OverviewMetaTile
               label="Deadline"
+              icon={Calendar}
+              iconTone="amber"
               className={productStageGateFieldClass(gateRequiredFields, 'deadline', undefined)}
               value={product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
             />
             <OverviewMetaTile
               label="Order"
+              icon={Wallet}
+              iconTone="emerald"
               className={productStageGateFieldClass(gateRequiredFields, 'order', undefined)}
               value={product.order ? 'Linked' : '—'}
             />
             <OverviewMetaTile
               label="Project"
+              icon={FolderKanban}
+              iconTone="blue"
               value={
                 <Link
                   href={`/projects/${product.projectId}`}
@@ -141,23 +130,11 @@ export function ProductInfoPanel({
             />
             <OverviewMetaTile
               label="Created"
+              icon={CalendarPlus}
+              iconTone="slate"
               value={new Date(product.createdAt).toLocaleDateString()}
             />
           </OverviewMetaGrid>
-          <div className="mt-4">
-            {projectLoading ? (
-              <LoadingState count={2} />
-            ) : project ? (
-              <ProjectContactsSection
-                embedded
-                contactLayout="grid"
-                project={project}
-                onProjectUpdated={setProject}
-              />
-            ) : (
-              <p className="text-muted-foreground text-xs">Could not load project contacts.</p>
-            )}
-          </div>
         </DetailInfoSubsection>
 
         <DetailInfoSubsection title="Product team" className="mt-4 pt-6">

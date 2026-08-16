@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { ApiError, getApiErrorMessage } from '@/lib/api-errors';
 import {
   applyChecklistInstanceItemMarkOptimistic,
@@ -22,7 +24,6 @@ import {
   ChecklistWorkbenchStatusIcon,
   computeChecklistWorkbenchTriggerVariant,
 } from '@/features/checklist/checklist-instance-workbench-sheet';
-import { cn } from '@/lib/utils';
 
 interface DeliveryStageChecklistPanelProps {
   ownerEntityType: 'PRODUCT' | 'EXTENSION';
@@ -191,9 +192,7 @@ export function DeliveryStageChecklistPanel({
     <>
       <section className="border-border bg-card/40 rounded-xl border p-4">
         <div className="mb-3">
-          <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-            Stage checklists
-          </h3>
+          <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage checklists</h3>
           <p className="text-muted-foreground mt-1 text-xs">
             Open the drawer to review all items — up to many steps stay scrollable there.
           </p>

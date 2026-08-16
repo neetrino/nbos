@@ -77,15 +77,6 @@ export function DeliveryStageActionBar({
         />
       )}
       <Button
-        variant="ghost"
-        size="sm"
-        className={sizeClass}
-        disabled={disabled}
-        onClick={onComplete}
-      >
-        <CheckCircle2 size={12} /> Done
-      </Button>
-      <Button
         variant={variant === 'drawer' ? 'ghost' : 'destructive'}
         size="sm"
         className={
@@ -95,6 +86,15 @@ export function DeliveryStageActionBar({
         onClick={onCancel}
       >
         <XCircle size={12} /> Cancel
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={sizeClass}
+        disabled={disabled}
+        onClick={onComplete}
+      >
+        <CheckCircle2 size={12} /> Done
       </Button>
     </div>
   );

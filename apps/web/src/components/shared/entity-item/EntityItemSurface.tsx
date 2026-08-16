@@ -111,18 +111,18 @@ function EntityItemCompactCardBody({
 
 function EntityItemTrailing({ item }: { item: EntityItemSummary }) {
   return (
-    <div className="flex shrink-0 flex-col items-end gap-1">
-      {item.status ? (
-        <StatusBadge
-          label={item.status.label}
-          variant={item.status.variant}
-          className="text-[10px]"
-        />
-      ) : null}
+    <div className="flex shrink-0 items-center justify-end gap-2">
       {item.primaryMetric ? (
         <span className={ENTITY_ITEM_METRIC_CLASS}>{item.primaryMetric}</span>
       ) : null}
       {item.trailing ? <span className={ENTITY_ITEM_TRAILING_CLASS}>{item.trailing}</span> : null}
+      {item.status ? (
+        <StatusBadge
+          label={item.status.label}
+          variant={item.status.variant}
+          className="shrink-0 text-[10px]"
+        />
+      ) : null}
     </div>
   );
 }

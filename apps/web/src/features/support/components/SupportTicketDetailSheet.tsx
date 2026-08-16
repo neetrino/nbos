@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetTabBar,
@@ -14,7 +13,6 @@ import {
   getTicketCoverage,
   getTicketPriority,
   getTicketSlaState,
-  getTicketStatus,
 } from '@/features/support/constants/support';
 import { auditApi, type AuditLogEntry } from '@/lib/api/audit';
 import { contactsApi, type Contact } from '@/lib/api/clients';
@@ -23,9 +21,15 @@ import { projectsApi, type ProjectProductSummary } from '@/lib/api/projects';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
+import {
+  SUPPORT_TICKET_SHEET_CONTENT_CLASS,
+  SUPPORT_TICKET_SHEET_RAIL_ANCHOR_CLASS,
+} from '@/features/support/constants/support-ticket-sheet-layout';
 import { SupportTicketCreateExecutionTaskDialog } from './support-ticket-create-execution-task-dialog';
 import { SupportTicketDetailActivityTab } from './support-ticket-detail-activity-tab';
 import { SupportTicketDetailGeneralTab } from './support-ticket-detail-general-tab';
+import { SupportTicketPipelineStages } from './SupportTicketPipelineStages';
+import { SupportTicketSheetQuickActions } from './SupportTicketSheetQuickActions';
 import {
   buildSupportTicketTriageUpdatePatch,
   isSupportTriageDirty,
@@ -42,6 +46,7 @@ export interface SupportTicketDetailSheetProps {
   refreshKey: number;
   meId: string | null;
   onListInvalidate: () => void;
+  onStatusSelect: (ticket: SupportTicket, status: string) => void;
   onRequestResolve: (ticket: SupportTicket) => void;
   onRequestClose: (ticket: SupportTicket) => void;
   onRequestEscalate: (ticket: SupportTicket) => void;
@@ -56,6 +61,7 @@ export function SupportTicketDetailSheet({
   refreshKey,
   meId,
   onListInvalidate,
+  onStatusSelect,
   onRequestResolve,
   onRequestClose,
   onRequestEscalate,
@@ -248,7 +254,6 @@ export function SupportTicketDetailSheet({
 
   const cat = ticket ? getTicketCategory(ticket.category) : undefined;
   const pri = ticket ? getTicketPriority(ticket.priority) : undefined;
-  const st = ticket ? getTicketStatus(ticket.status) : undefined;
   const cov = ticket ? getTicketCoverage(ticket.coverageDecision) : undefined;
   const sla = ticket ? getTicketSlaState(ticket.slaState.state) : undefined;
 
@@ -259,52 +264,104 @@ export function SupportTicketDetailSheet({
   const workspaceHref =
     ticket?.projectId && ticket.projectId.length > 0 ? `/projects/${ticket.projectId}` : null;
 
+  const handlePipelineSelect = useCallback(
+    (status: string) => {
+      if (!ticket || ticket.status === status) return;
+      onStatusSelect(ticket, status);
+    },
+    [onStatusSelect, ticket],
+  );
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <EntityDetailSheetContent
           open={open}
           layout="full"
+          contentClassName={SUPPORT_TICKET_SHEET_CONTENT_CLASS}
+          railAnchorClassName={SUPPORT_TICKET_SHEET_RAIL_ANCHOR_CLASS}
           sourcePageHref={sourcePageHref}
           workspaceHref={workspaceHref}
         >
-          <div className="border-border flex h-full min-h-0 flex-col border-l">
-            <div className="border-border bg-background shrink-0 border-b px-7 pt-5 pb-3">
+          <div className="border-border flex min-h-0 flex-1 flex-col overflow-hidden border-l">
+            <div className="bg-background shrink-0 px-7 pt-5 pb-3">
               {loading && !ticket ? (
                 <p className="text-muted-foreground text-sm">Loading…</p>
               ) : ticket ? (
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-foreground line-clamp-2 text-xl font-bold tracking-tight">
+                <div className="min-w-0">
+                  <div className="flex h-8 min-w-0 flex-nowrap items-center gap-3">
+                    <h2 className="text-foreground max-w-[min(100%,32rem)] min-w-0 truncate text-xl leading-8 font-bold tracking-tight">
                       {ticket.title}
                     </h2>
-                    <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wide">
-                      {ticket.code}
-                      {ticket.project ? (
-                        <>
-                          <span className="mx-1.5 font-sans">·</span>
-                          {ticket.project.name}
-                        </>
+                    <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                      {cat ? (
+                        <StatusBadge
+                          label={cat.label}
+                          variant={cat.variant}
+                          className="shrink-0 self-center"
+                        />
                       ) : null}
-                    </p>
+                      {pri ? (
+                        <StatusBadge
+                          label={pri.label}
+                          variant={pri.variant}
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                      {cov ? (
+                        <StatusBadge
+                          label={cov.label}
+                          variant={cov.variant}
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                      {sla ? (
+                        <StatusBadge
+                          label={sla.label}
+                          variant={sla.variant}
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                      <SupportTicketSheetQuickActions
+                        ticket={ticket}
+                        onRequestEscalate={onRequestEscalate}
+                        onRequestTechnical={onRequestTechnical}
+                        onRequestResolve={onRequestResolve}
+                        onRequestClose={onRequestClose}
+                        onReloadTicket={loadTicket}
+                        onListInvalidate={onListInvalidate}
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
-                    {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
-                    {st && <StatusBadge label={st.label} variant={st.variant} />}
-                    {cov && <StatusBadge label={cov.label} variant={cov.variant} />}
-                    {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
-                  </div>
+                  <p className="text-muted-foreground mt-1.5 font-mono text-xs tracking-wide">
+                    {ticket.code}
+                    {ticket.project ? (
+                      <>
+                        <span className="mx-1.5 font-sans">·</span>
+                        {ticket.project.name}
+                      </>
+                    ) : null}
+                  </p>
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm">No ticket</p>
               )}
             </div>
 
+            {ticket ? (
+              <div className="shrink-0 pb-3">
+                <SupportTicketPipelineStages
+                  currentStatus={ticket.status}
+                  disabled={saving}
+                  onSelect={handlePipelineSelect}
+                />
+              </div>
+            ) : null}
+
             {error ? <p className="text-destructive shrink-0 px-6 py-2 text-sm">{error}</p> : null}
 
             {ticket && draft ? (
-              <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <DetailSheetTabBar
                   tabs={supportTicketTabs}
                   activeTab={activeTab}
@@ -315,7 +372,10 @@ export function SupportTicketDetailSheet({
                   }}
                 />
 
-                <DetailSheetTabPanel tabKey={activeTab}>
+                <DetailSheetTabPanel
+                  tabKey={activeTab}
+                  className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                >
                   {activeTab === 'general' ? (
                     <SupportTicketDetailGeneralTab
                       ticket={ticket}
@@ -333,17 +393,13 @@ export function SupportTicketDetailSheet({
                       onOpenCreateTask={() => setTaskDialogOpen(true)}
                       onListInvalidate={onListInvalidate}
                       onReloadTicket={loadTicket}
-                      onRequestResolve={onRequestResolve}
-                      onRequestClose={onRequestClose}
-                      onRequestEscalate={onRequestEscalate}
-                      onRequestTechnical={onRequestTechnical}
                     />
                   ) : null}
 
                   {activeTab === 'activity' ? (
-                    <ScrollArea className="min-h-0 flex-1">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
                       <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
-                    </ScrollArea>
+                    </div>
                   ) : null}
                 </DetailSheetTabPanel>
               </div>

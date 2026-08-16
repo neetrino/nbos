@@ -39,6 +39,10 @@ interface DealGeneralTabProps {
 
 const SECTION_STRETCH = DETAIL_SHEET_SECTION_STRETCH_CLASS;
 
+/** Two-col kicks in inside the shorter deal sheet (56rem − horizontal padding). */
+const DEAL_GENERAL_WIDE_GRID_CLASS =
+  'grid grid-cols-1 gap-5 @[48rem]/deal-general:grid-cols-[minmax(0,1fr)_auto] @[48rem]/deal-general:items-start @[48rem]/deal-general:gap-6';
+
 export function DealGeneralTab({
   deal,
   draft,
@@ -138,8 +142,8 @@ export function DealGeneralTab({
 
   return (
     <div className="@container/deal-general">
-      <div className="grid grid-cols-1 gap-5 @[64rem]/deal-general:grid-cols-[minmax(0,48rem)_auto] @[64rem]/deal-general:items-start @[64rem]/deal-general:gap-6">
-        <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} max-w-[48rem] min-w-0 gap-4`}>
+      <div className={DEAL_GENERAL_WIDE_GRID_CLASS}>
+        <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} min-w-0 gap-4`}>
           <DealCombinedInfoSection
             draft={draft}
             patchDraft={patchDraft}
@@ -190,7 +194,7 @@ export function DealGeneralTab({
           />
         </div>
 
-        <aside className="flex w-full shrink-0 flex-col gap-4 @[64rem]/deal-general:w-72">
+        <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-72">
           <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
           <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         </aside>

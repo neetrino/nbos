@@ -1,19 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -33,19 +31,19 @@ export function ProductSettingsSheet({
   open: openProp,
   onOpenChange,
 }: ProductSettingsSheetProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-  const open = openProp ?? uncontrolledOpen;
+  const [localOpen, setLocalOpen] = useState(false);
   const [state, setState] = useState<ProductWhatsAppState | null>(null);
   const [groups, setGroups] = useState<WhatsAppAvailableGroup[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState('');
+  const sheetOpen = openProp ?? localOpen;
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
       onOpenChange?.(next);
-      if (openProp === undefined) setUncontrolledOpen(next);
+      if (openProp === undefined) setLocalOpen(next);
     },
     [onOpenChange, openProp],
   );
@@ -68,9 +66,9 @@ export function ProductSettingsSheet({
   }, [productId, search]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!sheetOpen) return;
     void refresh();
-  }, [open, refresh]);
+  }, [sheetOpen, refresh]);
 
   async function run(action: () => Promise<unknown>, successMessage: string) {
     setBusy(true);
@@ -89,180 +87,201 @@ export function ProductSettingsSheet({
   const status = binding?.status ?? 'NOT_STARTED';
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <PermissionGate module="PROJECTS" action="EDIT">
-        <SheetTrigger
-          render={(props) => (
-            <Button
-              {...props}
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label="Product settings"
-              title="Product settings"
-            >
-              <Settings className="size-4" aria-hidden />
-            </Button>
-          )}
-        />
-      </PermissionGate>
-      <SheetContent
-        side="right"
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS}
-        className="flex min-h-0 w-full flex-col gap-0 overflow-hidden sm:max-w-md"
+    <PermissionGate module="PROJECTS" action="EDIT">
+      <PageSettingsSheet
+        title="Product settings"
+        description="WhatsApp group for this product only."
+        triggerAriaLabel="Product settings"
+        open={openProp}
+        onOpenChange={handleOpenChange}
       >
-        <SheetHeader className="border-border shrink-0 border-b pb-4">
-          <SheetTitle>Product settings</SheetTitle>
-          <SheetDescription>WhatsApp group for this Product only.</SheetDescription>
-        </SheetHeader>
-
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
-          <section className="space-y-4">
-            <h3 className="text-sm font-semibold tracking-tight">WhatsApp Group</h3>
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-foreground mb-2 text-sm font-semibold tracking-tight">
+              WhatsApp group
+            </h3>
             {loading && !state ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : (
-              <div className="space-y-2 text-sm">
-                <p>
-                  Status: <span className="font-medium">{status}</span>
-                </p>
-                <p>Group name: {binding?.groupName ?? '—'}</p>
-                <p className="break-all">Group ID: {binding?.groupChatId ?? '—'}</p>
-                <p>Last sync: {binding?.lastSuccessfulSyncAt ?? '—'}</p>
-                <p>Invitation: {state?.invitation?.status ?? '—'}</p>
+              <dl className="text-muted-foreground space-y-1.5 text-sm">
+                <div className="flex justify-between gap-3">
+                  <dt>Status</dt>
+                  <dd className="text-foreground font-medium">{status}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>Group name</dt>
+                  <dd className="text-foreground min-w-0 truncate text-right font-medium">
+                    {binding?.groupName ?? '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>Group ID</dt>
+                  <dd className="text-foreground min-w-0 truncate text-right font-medium">
+                    {binding?.groupChatId ?? '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>Last sync</dt>
+                  <dd className="text-foreground text-right font-medium">
+                    {binding?.lastSuccessfulSyncAt ?? '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>Invitation</dt>
+                  <dd className="text-foreground font-medium">
+                    {state?.invitation?.status ?? '—'}
+                  </dd>
+                </div>
                 {binding?.lastErrorMessage ? (
-                  <p className="text-destructive">{binding.lastErrorMessage}</p>
+                  <p className="text-destructive pt-1">{binding.lastErrorMessage}</p>
                 ) : null}
-              </div>
+              </dl>
             )}
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                disabled={busy || status === 'ACTIVE' || status === 'CREATING'}
-                onClick={() =>
-                  void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
-                }
-              >
-                {status === 'FAILED' ? 'Retry' : 'Create group'}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={busy || status !== 'ACTIVE'}
-                onClick={() =>
-                  void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
-                }
-              >
-                Sync participants
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={busy || status !== 'ACTIVE'}
-                onClick={() =>
-                  void run(
-                    () => productWhatsAppApi.clientInvite(productId),
-                    'Client invitation queued',
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-start"
+              disabled={busy || status === 'ACTIVE' || status === 'CREATING'}
+              onClick={() =>
+                void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
+              }
+            >
+              {status === 'FAILED' ? 'Retry create group' : 'Create group'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-start"
+              disabled={busy || status !== 'ACTIVE'}
+              onClick={() =>
+                void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
+              }
+            >
+              Sync participants
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-start"
+              disabled={busy || status !== 'ACTIVE'}
+              onClick={() =>
+                void run(
+                  () => productWhatsAppApi.clientInvite(productId),
+                  'Client invitation queued',
+                )
+              }
+            >
+              Send client invitation
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="justify-start"
+              disabled={busy || status !== 'ACTIVE'}
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    'Resend client invitation? Only confirm if the previous send is safe to retry.',
                   )
+                ) {
+                  return;
                 }
-              >
-                Send client invitation
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={busy || status !== 'ACTIVE'}
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      'Resend client invitation? Only confirm if the previous send is safe to retry.',
-                    )
-                  ) {
-                    return;
-                  }
-                  void run(
-                    () => productWhatsAppApi.clientInvite(productId, { forceResend: true }),
-                    'Client invitation resend queued',
-                  );
+                void run(
+                  () => productWhatsAppApi.clientInvite(productId, { forceResend: true }),
+                  'Client invitation resend queued',
+                );
+              }}
+            >
+              Resend invitation
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="wa-group-search">
+              Select existing group
+            </label>
+            <Input
+              id="wa-group-search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search groups"
+            />
+            {groups.length > 0 ? (
+              <Select
+                value={selectedGroupId || undefined}
+                onValueChange={(value) => {
+                  if (value) setSelectedGroupId(value);
                 }}
               >
-                Resend invitation
-              </Button>
-            </div>
+                <SelectTrigger className="w-full" aria-label="Select WhatsApp group">
+                  <SelectValue placeholder="Select a group…">
+                    {(value: string | null) => {
+                      if (!value) return null;
+                      const group = groups.find((item) => item.id === value);
+                      if (!group) return value;
+                      return formatWhatsAppGroupOptionLabel(group);
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent align="start">
+                  {groups.map((group) => (
+                    <SelectItem key={group.id} value={group.id}>
+                      {formatWhatsAppGroupOptionLabel(group)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : !loading ? (
+              <p className="text-muted-foreground text-xs">No groups match this search.</p>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start"
+              disabled={busy || !selectedGroupId}
+              onClick={() => {
+                const replace = Boolean(
+                  binding?.groupChatId && binding.groupChatId !== selectedGroupId,
+                );
+                if (
+                  replace &&
+                  !window.confirm(
+                    'Replace the current Product WhatsApp binding? The old WhatsApp group will not be deleted.',
+                  )
+                ) {
+                  return;
+                }
+                void run(
+                  () =>
+                    productWhatsAppApi.bind(productId, {
+                      groupChatId: selectedGroupId,
+                      replace,
+                    }),
+                  replace ? 'Binding replaced' : 'Group bound',
+                );
+              }}
+            >
+              Bind selected group
+            </Button>
+          </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="wa-group-search">
-                Select existing group
-              </label>
-              <Input
-                id="wa-group-search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search groups"
-              />
-              <select
-                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                value={selectedGroupId}
-                onChange={(event) => setSelectedGroupId(event.target.value)}
-              >
-                <option value="">Select a group…</option>
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                    {group.missingFromGateway ? ' (missing from Gateway)' : ''}
-                    {typeof group.participantCount === 'number'
-                      ? ` · ${group.participantCount}`
-                      : ''}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={busy || !selectedGroupId}
-                onClick={() => {
-                  const replace = Boolean(
-                    binding?.groupChatId && binding.groupChatId !== selectedGroupId,
-                  );
-                  if (
-                    replace &&
-                    !window.confirm(
-                      'Replace the current Product WhatsApp binding? The old WhatsApp group will not be deleted.',
-                    )
-                  ) {
-                    return;
-                  }
-                  void run(
-                    () =>
-                      productWhatsAppApi.bind(productId, {
-                        groupChatId: selectedGroupId,
-                        replace,
-                      }),
-                    replace ? 'Binding replaced' : 'Group bound',
-                  );
-                }}
-              >
-                Bind selected group
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Recent operations</h4>
-              <OperationHistory productId={productId} open={open} />
-            </div>
-          </section>
-        </div>
-      </SheetContent>
-    </Sheet>
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Recent operations</h4>
+            <OperationHistory productId={productId} open={sheetOpen} />
+          </div>
+        </section>
+      </PageSettingsSheet>
+    </PermissionGate>
   );
+}
+
+function formatWhatsAppGroupOptionLabel(group: WhatsAppAvailableGroup): string {
+  const missing = group.missingFromGateway ? ' (missing from Gateway)' : '';
+  const count = typeof group.participantCount === 'number' ? ` · ${group.participantCount}` : '';
+  return `${group.name}${missing}${count}`;
 }
 
 function OperationHistory({ productId, open }: { productId: string; open: boolean }) {
@@ -283,12 +302,13 @@ function OperationHistory({ productId, open }: { productId: string; open: boolea
   }
 
   return (
-    <ul className="space-y-1 text-xs">
+    <ul className="space-y-1.5 text-xs">
       {items.map((item) => (
-        <li key={item.id} className="border-border rounded-md border px-2 py-1.5">
-          <span className="font-medium">{item.type}</span> · {item.status}
-          {item.errorCode ? ` · ${item.errorCode}` : ''}
-          <div className="text-muted-foreground">{item.createdAt}</div>
+        <li key={item.id} className="border-border bg-muted/30 rounded-lg border px-2.5 py-2">
+          <span className="text-foreground font-medium">{item.type}</span>
+          <span className="text-muted-foreground"> · {item.status}</span>
+          {item.errorCode ? <span className="text-destructive"> · {item.errorCode}</span> : null}
+          <div className="text-muted-foreground mt-0.5">{item.createdAt}</div>
         </li>
       ))}
     </ul>

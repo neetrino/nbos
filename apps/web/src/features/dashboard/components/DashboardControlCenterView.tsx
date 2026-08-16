@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import type {
   DashboardData,
   DashboardNote,
@@ -16,8 +17,18 @@ import { PinnedActions } from './DashboardPinnedActions';
 
 const PINNED_SKELETON_COUNT = 6;
 
-/** Topbar (4rem) + main inset pt-4 (1rem) — keeps notes column inside `main` without page scroll. */
-const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[calc(100dvh-5rem)]';
+/**
+ * Side column only (xl): topbar (4rem) + main inset pt-4 (1rem).
+ * Below xl, notes sit under Priority Feed in the stacked / 2-col grid.
+ */
+const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'xl:max-h-[calc(100dvh-5rem)]';
+
+const DASHBOARD_GRID_CLASS = cn(
+  'grid min-h-0 items-start gap-5',
+  'grid-cols-1',
+  'lg:grid-cols-2',
+  'xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(320px,400px)]',
+);
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
@@ -66,10 +77,10 @@ export function DashboardControlCenterView({
   const [editMode, setEditMode] = useState(false);
 
   return (
-    <div className="flex min-h-0 flex-col gap-5">
+    <div className="flex min-h-0 w-full max-w-none flex-col gap-5 max-md:gap-4">
       {error ? <DashboardError message={error} /> : null}
-      <section className="grid min-h-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
-        <div className="min-h-0 space-y-5">
+      <section className={DASHBOARD_GRID_CLASS}>
+        <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
           <PinnedActions
             actions={actions}
             editMode={editMode}
@@ -81,19 +92,29 @@ export function DashboardControlCenterView({
             personalLinks={personalLinks}
             saving={savingPreference}
           />
-          <div className="grid gap-5 lg:grid-cols-2">
-            <MiniAnalytics
-              data={data}
-              editMode={editMode}
-              hiddenMetrics={hiddenMiniMetrics}
-              onApplyWidgetLayout={applyWidgetLayout}
-              visibleMetrics={visibleMiniMetrics}
-            />
-            <PriorityFeed priorities={priorities} />
-          </div>
         </div>
+
+        <div className="min-w-0 xl:col-start-1 xl:row-start-2">
+          <MiniAnalytics
+            data={data}
+            editMode={editMode}
+            hiddenMetrics={hiddenMiniMetrics}
+            onApplyWidgetLayout={applyWidgetLayout}
+            visibleMetrics={visibleMiniMetrics}
+          />
+        </div>
+
+        <div className="min-w-0 xl:col-start-2 xl:row-start-2">
+          <PriorityFeed priorities={priorities} />
+        </div>
+
         <div
-          className={`flex min-h-0 w-full min-w-0 flex-col self-start ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`}
+          className={cn(
+            'flex min-h-0 w-full min-w-0 flex-col',
+            'lg:col-start-2',
+            'xl:col-start-3 xl:row-span-2 xl:row-start-1',
+            DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS,
+          )}
         >
           <DashboardNotesPanel
             className="min-h-0 flex-1"
@@ -111,20 +132,25 @@ export function DashboardControlCenterView({
 
 export function DashboardLoadingSkeleton() {
   return (
-    <div className="flex min-h-0 flex-col gap-5">
-      <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
-        <div className="min-h-0 space-y-5">
+    <div className="flex min-h-0 w-full max-w-none flex-col gap-5 max-md:gap-4">
+      <div className={DASHBOARD_GRID_CLASS}>
+        <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
               <Skeleton key={index} className="min-h-[4.75rem] rounded-xl" />
             ))}
           </div>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Skeleton className="h-64 rounded-2xl" />
-            <Skeleton className="h-28 rounded-2xl" />
-          </div>
         </div>
-        <Skeleton className={`min-h-0 rounded-2xl ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`} />
+        <Skeleton className="h-64 min-w-0 rounded-2xl xl:col-start-1 xl:row-start-2" />
+        <Skeleton className="h-28 min-w-0 rounded-2xl xl:col-start-2 xl:row-start-2" />
+        <Skeleton
+          className={cn(
+            'min-h-40 min-w-0 rounded-2xl',
+            'lg:col-start-2',
+            'xl:col-start-3 xl:row-span-2 xl:row-start-1',
+            DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS,
+          )}
+        />
       </div>
     </div>
   );

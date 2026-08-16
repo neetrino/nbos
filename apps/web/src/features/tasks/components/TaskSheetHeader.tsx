@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   QUICK_CREATE_TASK_HEADER_ICONS_CLASS,
   QUICK_CREATE_TASK_TITLE_ROW_CLASS,
@@ -24,18 +27,71 @@ export function TaskSheetHeader({
   onToggleUrgent,
 }: TaskSheetHeaderProps) {
   const urgent = isTaskUrgentPriority(draft.priority);
+  const [editing, setEditing] = useState(false);
+  const [titleValue, setTitleValue] = useState(draft.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!editing) return;
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [editing]);
+
+  const startEditing = () => {
+    if (disabled) return;
+    setTitleValue(draft.title);
+    setEditing(true);
+  };
+
+  const commitTitle = () => {
+    const next = titleValue.trim();
+    if (next !== draft.title) onPatchDraft({ title: next || draft.title });
+    setEditing(false);
+  };
+
+  const handleTitleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitTitle();
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setTitleValue(draft.title);
+      setEditing(false);
+    }
+  };
+
+  const displayTitle = draft.title.trim() || 'Untitled task';
 
   return (
     <header>
       <div className={QUICK_CREATE_TASK_TITLE_ROW_CLASS}>
-        <input
-          value={draft.title}
-          onChange={(e) => onPatchDraft({ title: e.target.value })}
-          disabled={disabled}
-          placeholder="Task title…"
-          aria-label="Task title"
-          className="text-foreground placeholder:text-muted-foreground/55 w-full border-0 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none disabled:opacity-60 sm:text-[1.65rem]"
-        />
+        {editing && !disabled ? (
+          <input
+            ref={inputRef}
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={handleTitleKeyDown}
+            placeholder="Task title…"
+            aria-label="Task title"
+            className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full border-0 border-b-2 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
+          />
+        ) : (
+          <h2
+            onClick={startEditing}
+            className={cn(
+              'text-foreground -mx-1 min-w-0 truncate rounded px-1 text-2xl leading-snug font-bold tracking-tight sm:text-[1.65rem]',
+              disabled
+                ? 'cursor-default opacity-60'
+                : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
+            )}
+            title={disabled ? displayTitle : 'Click to edit task title'}
+          >
+            {displayTitle}
+          </h2>
+        )}
         <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
           <button
             type="button"

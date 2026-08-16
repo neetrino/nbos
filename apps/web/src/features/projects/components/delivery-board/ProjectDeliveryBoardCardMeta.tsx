@@ -12,10 +12,12 @@ import {
 import type { DealTypePresentation } from '@/lib/deal-type-visual';
 import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
 import {
+  DELIVERY_BOARD_CARD_BODY_STACK_CLASS,
   DELIVERY_BOARD_CARD_DATE_ICON_SIZE,
   DELIVERY_BOARD_CARD_DATE_LABEL_CLASS,
   DELIVERY_BOARD_CARD_DATE_ROW_CLASS,
   DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS,
+  DELIVERY_BOARD_CARD_META_ROW_CLASS,
 } from './delivery-board-card-ui.constants';
 import { formatDeliveryBoardCardDate } from './format-delivery-board-card-date';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
@@ -65,7 +67,7 @@ function ProductBoardMeta({
 }) {
   const holdCopy = getHoldCopy(product.deliveryLifecycle);
   return (
-    <div className="space-y-2.5 text-left">
+    <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {product.project ? (
         <BoardMetaLine
           icon={FolderKanban}
@@ -98,7 +100,7 @@ function ExtensionBoardMeta({
 }) {
   const holdCopy = getHoldCopy(extension.deliveryLifecycle);
   return (
-    <div className="space-y-2.5 text-left">
+    <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {extension.project ? (
         <BoardMetaLine
           icon={FolderKanban}
@@ -191,7 +193,7 @@ function BoardMetaLine({
   icon: Icon,
   label,
   metaIconClass,
-  labelClassName = 'text-foreground min-w-0 truncate text-xs leading-snug',
+  labelClassName = 'text-foreground min-w-0 truncate text-sm leading-snug',
   iconSize = 14,
 }: {
   icon: LucideIcon;
@@ -201,11 +203,11 @@ function BoardMetaLine({
   iconSize?: number;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className={DELIVERY_BOARD_CARD_META_ROW_CLASS}>
       <span className={cn(DELIVERY_BOARD_CARD_META_ICON_BASE_CLASS, metaIconClass)}>
         <Icon size={iconSize} aria-hidden />
       </span>
-      <span className={labelClassName}>{label}</span>
+      <span className={cn('min-w-0 flex-1', labelClassName)}>{label}</span>
     </div>
   );
 }

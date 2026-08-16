@@ -28,10 +28,12 @@ export const PAGE_HERO_TABS_SLOT = 'min-w-0 max-w-full shrink-0';
 export const PAGE_HERO_TOOLS_ROW = [
   'flex min-w-0 max-w-full flex-nowrap items-center gap-2 overflow-hidden',
   'min-w-[24rem] flex-[1_1_24rem]',
+  // Mobile: drop the 24rem floor so search + trailing fit the hero frame.
+  'max-md:min-w-0 max-md:w-full max-md:flex-[1_1_100%]',
 ].join(' ');
 
 export const PAGE_HERO_SEARCH_SLOT =
-  'min-w-0 w-full flex-1 basis-0 transition-[flex-grow] duration-200';
+  'min-w-0 w-full max-w-full flex-1 basis-0 overflow-hidden transition-[flex-grow] duration-200';
 
 export const PAGE_HERO_SEARCH_SLOT_EXPANDED = 'min-w-0 flex-1';
 

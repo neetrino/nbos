@@ -1,19 +1,15 @@
 'use client';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import { ChevronDown } from 'lucide-react';
 import { CredentialCategoryIcon } from '@/features/credentials/components/credential-meta-icon';
-import { credentialCategoryIcon } from '@/features/credentials/utils/credential-vault-card-meta';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
-
-/** Dropdown list — wide enough for long labels (e.g. Admin). */
-const CATEGORY_SELECT_DROPDOWN_MIN_WIDTH_CLASS = 'min-w-52';
 
 export interface CredentialFormCategoryMenuProps {
   category: string;
@@ -23,19 +19,6 @@ export interface CredentialFormCategoryMenuProps {
   onCategoryChange: (value: string) => void;
 }
 
-function CategoryOptionLabel({ value, label }: { value: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <CredentialCategoryIcon
-        category={value}
-        className="size-3.5 shrink-0 opacity-80"
-        aria-hidden
-      />
-      {label}
-    </span>
-  );
-}
-
 export function CredentialFormCategoryMenu({
   category,
   categoryLabel,
@@ -43,31 +26,55 @@ export function CredentialFormCategoryMenu({
   categoryLocked,
   onCategoryChange,
 }: CredentialFormCategoryMenuProps) {
-  const CategoryIcon = credentialCategoryIcon(category);
+  if (categoryLocked) {
+    return (
+      <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-sm font-medium">
+        <CredentialCategoryIcon
+          category={category}
+          className="size-3.5 shrink-0 opacity-80"
+          aria-hidden
+        />
+        {categoryLabel}
+      </span>
+    );
+  }
 
   return (
-    <div className="grid gap-2">
-      <CredentialFormFieldLabel label="Category" icon={CategoryIcon} />
-      <Select
-        value={category}
-        onValueChange={(v) => onCategoryChange(v ?? category)}
-        disabled={categoryLocked}
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        type="button"
+        className={cn(
+          'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1',
+          'rounded-md px-1.5 py-1 text-sm font-medium outline-none',
+        )}
       >
-        <SelectTrigger>
-          <SelectValue placeholder="Select category">
-            {(value: string | null) =>
-              value ? <CategoryOptionLabel value={value} label={categoryLabel} /> : null
-            }
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className={CATEGORY_SELECT_DROPDOWN_MIN_WIDTH_CLASS}>
-          {categoryOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              <CategoryOptionLabel value={opt.value} label={opt.label} />
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+        <CredentialCategoryIcon
+          category={category}
+          className="size-3.5 shrink-0 opacity-80"
+          aria-hidden
+        />
+        {categoryLabel}
+        <ChevronDown className="size-3.5 opacity-70" aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-max min-w-(--anchor-width)">
+        {categoryOptions.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            onClick={() => onCategoryChange(opt.value)}
+            className={cn(
+              'gap-2 whitespace-nowrap',
+              opt.value === category ? 'bg-accent text-accent-foreground' : undefined,
+            )}
+          >
+            <CredentialCategoryIcon
+              category={opt.value}
+              className="size-3.5 shrink-0 opacity-80"
+              aria-hidden
+            />
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -50,6 +50,7 @@ import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentin
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import {
   getApiErrorMessage,
@@ -82,6 +83,10 @@ const DEAL_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
     ariaLabel: 'List view',
   },
 ];
+
+const DEAL_SEARCH_PLACEHOLDER = 'Search deals by code, name, contact, company, orders, marketing…';
+const DEAL_SEARCH_PLACEHOLDER_MOBILE = 'Search deals by code…';
+const DEAL_SEARCH_MOBILE_CLASS = '[&>div]:min-h-9';
 
 interface PendingDealTransition {
   id: string;
@@ -138,6 +143,9 @@ function DealsPipelinePageContent() {
       stripOpenDealFromUrl();
     },
   });
+  const isMobileViewport = useIsMobileViewport();
+  const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
+  const effectiveView: ViewMode = isTrashView || !isMobileViewport ? view : 'kanban';
 
   const pushOpenDealToUrl = useCallback(
     (id: string) => {
@@ -579,51 +587,75 @@ function DealsPipelinePageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
-          filters={filterConfigs}
-          filterValues={{
-            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-            ...filters,
-          }}
-          onFilterChange={(key: string, value: string) =>
-            setFilters((prev) => {
-              if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-                const next = { ...prev };
-                delete next.boardScope;
-                return next;
-              }
-              return { ...prev, [key]: value };
-            })
+          searchPlaceholder={
+            isMobileViewport ? DEAL_SEARCH_PLACEHOLDER_MOBILE : DEAL_SEARCH_PLACEHOLDER
           }
-          onClearAll={() => setFilters({})}
+          className={isMobileViewport ? DEAL_SEARCH_MOBILE_CLASS : undefined}
+          filters={showDesktopBoardChrome ? filterConfigs : undefined}
+          filterValues={
+            showDesktopBoardChrome
+              ? {
+                  boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+                  ...filters,
+                }
+              : undefined
+          }
+          onFilterChange={
+            showDesktopBoardChrome
+              ? (key: string, value: string) =>
+                  setFilters((prev) => {
+                    if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+                      const next = { ...prev };
+                      delete next.boardScope;
+                      return next;
+                    }
+                    return { ...prev, [key]: value };
+                  })
+              : undefined
+          }
+          onClearAll={showDesktopBoardChrome ? () => setFilters({}) : undefined}
         />
       ),
-      viewMode: isTrashView ? null : (
+      viewMode: showDesktopBoardChrome ? (
         <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />
-      ),
+      ) : null,
       trailing: (
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <ClientsDirectorySettingsSheet
             listScope={scope}
             onListScopeChange={setScope}
             entityLabel="deals"
           />
           {!isTrashView ? (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button
+              onClick={() => setShowCreate(true)}
+              size={isMobileViewport ? 'icon-sm' : 'default'}
+              aria-label="New Deal"
+            >
               <Plus size={16} aria-hidden />
-              New Deal
+              {isMobileViewport ? null : 'New Deal'}
             </Button>
           ) : null}
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
+    [
+      filterConfigs,
+      filters,
+      isMobileViewport,
+      isTrashView,
+      scope,
+      search,
+      setScope,
+      showDesktopBoardChrome,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="deals"
@@ -652,8 +684,8 @@ function DealsPipelinePageContent() {
             )
           }
         />
-      ) : !isTrashView && view === 'kanban' ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
+      ) : !isTrashView && effectiveView === 'kanban' ? (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <KanbanBoard
             columns={kanbanColumns}

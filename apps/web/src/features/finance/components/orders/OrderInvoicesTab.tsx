@@ -38,20 +38,25 @@ export function OrderInvoicesTab({ order, onCreateInvoice }: OrderInvoicesTabPro
   );
 
   return (
-    <DetailSheetSection title="Invoices" icon={<FileText size={12} />}>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <Button type="button" size="sm" onClick={onCreateInvoice}>
-          <Plus size={14} aria-hidden />
-          Create Invoice
-        </Button>
-        <ViewModeSwitch
-          value={viewVariant}
-          onChange={setViewVariant}
-          options={ENTITY_ITEM_VIEW_OPTIONS}
-          ariaLabel="Invoice list view"
-        />
-      </div>
-
+    <DetailSheetSection
+      title="Invoices"
+      icon={<FileText size={12} />}
+      titleTrailing={
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <Button type="button" size="sm" onClick={onCreateInvoice}>
+            <Plus size={14} aria-hidden />
+            Create Invoice
+          </Button>
+          <ViewModeSwitch
+            value={viewVariant}
+            onChange={setViewVariant}
+            options={ENTITY_ITEM_VIEW_OPTIONS}
+            ariaLabel="Invoice list view"
+          />
+        </div>
+      }
+      titleRowClassName="flex-nowrap"
+    >
       <EntityItemList
         items={itemSummaries}
         variant={viewVariant}

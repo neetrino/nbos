@@ -77,6 +77,9 @@ export {
   type ActionTileTone,
 } from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
+export { EntityNavPillLink } from './EntityNavPillLink';
+export { DetailSheetEntityLinkCard } from './DetailSheetEntityLinkCard';
+export { DetailSheetEntityLinkGrid } from './DetailSheetEntityLinkGrid';
 export { ErrorState } from './ErrorState';
 export { PersonAvatarName, PersonSoftAvatar, type PersonAvatarSize } from './PersonAvatarName';
 export { PersonContactRow, type PersonContactRowProps } from './PersonContactRow';
@@ -170,6 +173,8 @@ export {
   SHEET_CENTER_VIEWPORT_HEIGHT_CLASS,
   SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET,
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
+  SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS,
+  SHEET_MOBILE_PANEL_WIDTH_CLASS,
   SHEET_VIEWPORT_INSET_CLASS,
   SHEET_VIEWPORT_MAX_HEIGHT_CLASS,
   SHEET_VIEWPORT_TOP_INSET_CLASS,

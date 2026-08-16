@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Calendar, Layers, Package, Tag } from 'lucide-react';
+import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
-  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   EntityNotesField,
   InlineField,
@@ -16,17 +16,23 @@ import {
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
+import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
+
+/** Wider than the narrow field trigger so long type labels fit in the menu. */
+const PRODUCT_TYPE_SELECT_MENU_CLASS = 'w-max min-w-[14rem] max-w-[min(20rem,calc(100vw-2rem))]';
 
 export function ProductPlanningSection({
   entityId,
   draft,
   onDraftChange,
+  paymentType,
   disabled = false,
   gateRequiredFields = new Set<string>(),
 }: {
   entityId: string;
   draft: ProductPlanSnapshot;
   onDraftChange: (next: ProductPlanSnapshot) => void;
+  paymentType?: string | null;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }) {
@@ -43,22 +49,22 @@ export function ProductPlanningSection({
     onDraftChange({ ...draft, ...partial });
   };
 
+  const paymentLabel = paymentType?.replace(/_/g, ' ') ?? '—';
+
   return (
-    <section className="border-border bg-card/40 w-full min-w-0 rounded-xl border p-4">
-      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card w-full max-w-full min-w-0 rounded-xl border p-4 shadow-sm">
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
+        <ClipboardList size={13} aria-hidden />
         Delivery plan
       </h3>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
-        <div className="min-w-0 space-y-3 sm:pr-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="min-w-0 space-y-3">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
           <InlineField
-            variant="controlled"
-            label="Product name"
-            value={draft.name}
-            icon={<Package size={12} />}
-            placeholder="Name…"
-            disabled={disabled}
-            onValueChange={(v) => patchDraft({ name: v })}
+            label="Payment"
+            value={paymentLabel}
+            icon={<Wallet size={12} />}
+            editable={false}
           />
           <InlineField
             variant="controlled"
@@ -73,7 +79,7 @@ export function ProductPlanningSection({
             onValueChange={(v) => patchDraft({ deadline: v })}
           />
         </div>
-        <div className={`min-w-0 space-y-3 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+        <div className="border-border min-w-0 space-y-3 border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Product</p>
           <InlineField
             variant="controlled"
@@ -100,6 +106,7 @@ export function ProductPlanningSection({
             options={typeOptions}
             icon={<Tag size={12} />}
             disabled={disabled}
+            selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
             onValueChange={(v) => {
               if (v) patchDraft({ productType: v });
             }}
@@ -115,6 +122,13 @@ export function ProductPlanningSection({
           value={draft.description}
           onChange={(description) => patchDraft({ description: description ?? '' })}
           placeholder="Plan, milestones, client context…"
+          disabled={disabled}
+        />
+      </div>
+      <div className="mt-3">
+        <DeliveryItemLanguagesMultiselect
+          value={draft.languages}
+          onChange={(languages) => patchDraft({ languages })}
           disabled={disabled}
         />
       </div>

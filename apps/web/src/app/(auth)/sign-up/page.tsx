@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SignUpInfoPage() {
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center px-4">
+    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -20,10 +20,10 @@ export default function SignUpInfoPage() {
               width={168}
               height={28}
               fetchPriority="high"
-              className="h-7 w-auto"
+              className="h-6 w-auto sm:h-7"
             />
           </div>
-          <h1 className="text-foreground text-xl font-semibold tracking-tight">
+          <h1 className="text-foreground text-lg font-semibold tracking-tight sm:text-xl">
             Join your workspace
           </h1>
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
@@ -33,7 +33,7 @@ export default function SignUpInfoPage() {
           </p>
         </div>
 
-        <div className="border-border bg-card space-y-4 rounded-2xl border p-6">
+        <div className="border-border bg-card space-y-4 rounded-2xl border p-4 sm:p-6">
           <div className="flex gap-3">
             <div className="bg-accent/10 text-accent flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
               <Mail className="size-5" aria-hidden />

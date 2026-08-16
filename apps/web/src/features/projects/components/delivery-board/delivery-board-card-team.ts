@@ -20,7 +20,7 @@ const AVATAR_TONE_CLASS: Record<DeliveryCardTeamAvatarTone, string> = {
 };
 
 export function deliveryCardTeamAvatarClassName(tone: DeliveryCardTeamAvatarTone): string {
-  return `ring-card relative flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ring-2 ${AVATAR_TONE_CLASS[tone]}`;
+  return `relative flex h-8 w-8 items-center justify-center rounded-full border border-border/40 text-[10px] font-bold ${AVATAR_TONE_CLASS[tone]}`;
 }
 
 function pushTeamMember(

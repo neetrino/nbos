@@ -5,6 +5,7 @@ import {
   HeaderModuleTitleLockedContext,
   useHeaderModuleTitle,
 } from '@/components/layout/header-context';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
@@ -29,6 +30,11 @@ export interface PageHeroProps {
   /** When false, does not update the app header module title (e.g. entity detail with its own title). */
   syncModuleTitle?: boolean;
   tabs?: ReactNode;
+  /**
+   * Renders on the same row as `tabs`, trailing edge (e.g. mobile primary +).
+   * When set, the tabs row takes the full first toolbar line so tools wrap below.
+   */
+  tabsEnd?: ReactNode;
   search?: ReactNode;
   secondaryTabs?: ReactNode;
   viewMode?: ReactNode;
@@ -48,6 +54,7 @@ function PageHeroInner({
   title,
   syncModuleTitle = true,
   tabs,
+  tabsEnd,
   search,
   secondaryTabs,
   viewMode,
@@ -62,15 +69,19 @@ function PageHeroInner({
 
   const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
-  const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
+  const hasTabsRow = Boolean(tabs || tabsEnd);
+  const hasToolbar = Boolean(hasTabsRow || hasSearch || hasTrailing);
 
+  const isMobileViewport = useIsMobileViewport();
   const { searchActive, filterPanelOpen } = usePageHeroToolbar();
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
   const toolsRowOverflow = usePageHeroToolsRowOverflow(
     toolsRowRef,
-    hasSearch && hasTrailing && isCompactToolbar,
+    hasSearch && hasTrailing && isCompactToolbar && !isMobileViewport,
   );
-  const searchExpanded = isCompactToolbar && (searchActive || toolsRowOverflow);
+  /** Mobile keeps trailing (settings / primary) visible; search just shares the row. */
+  const searchExpanded =
+    !isMobileViewport && isCompactToolbar && (searchActive || toolsRowOverflow);
   const filterOverflowClass = filterPanelOpen ? PAGE_HERO_OVERFLOW_FILTERS_OPEN : undefined;
 
   if (!hasToolbar && !secondaryTabs) {
@@ -95,8 +106,20 @@ function PageHeroInner({
     >
       {hasToolbar ? (
         <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
-          {tabs ? (
-            <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
+          {hasTabsRow ? (
+            <div
+              className={cn(
+                PAGE_HERO_TABS_SLOT,
+                tabsEnd
+                  ? 'flex w-full min-w-0 flex-1 basis-full items-center gap-2 overflow-hidden'
+                  : cn(PAGE_HERO_TAB_SCROLL),
+              )}
+            >
+              {tabs ? (
+                <div className={cn(PAGE_HERO_TAB_SCROLL, tabsEnd && 'min-w-0 flex-1')}>{tabs}</div>
+              ) : null}
+              {tabsEnd ? <div className="shrink-0">{tabsEnd}</div> : null}
+            </div>
           ) : null}
           {hasSearch || trailingNode ? (
             <div
@@ -142,7 +165,11 @@ function HeroTrailingActions({
 }) {
   return (
     <div
-      className={cn(PAGE_HERO_TRAILING_SLOT, searchExpanded && PAGE_HERO_TRAILING_COLLAPSED)}
+      className={cn(
+        PAGE_HERO_TRAILING_SLOT,
+        'max-md:shrink-0',
+        searchExpanded && PAGE_HERO_TRAILING_COLLAPSED,
+      )}
       aria-hidden={searchExpanded}
     >
       {viewMode}

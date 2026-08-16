@@ -18,7 +18,7 @@ import {
 } from '@/components/shared/entity-sheet-floating-rail';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { EntityDetailSheetContent } from '@/components/shared';
+import { EntityDetailSheetContent, DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
 import { DriveCreateFolderDialog } from '@/features/drive/DriveFolderActionDialogs';
 import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
@@ -31,7 +31,8 @@ import { useWorkSpaceDriveBrowser } from './use-work-space-drive-browser';
 
 /** Matches `SheetContent` width and `floatingRailAnchorClassName`. */
 const WORKSPACE_DRIVE_SHEET_WIDTH_CLASS = 'sm:data-[side=right]:w-[min(92vw,52rem)]';
-const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS = 'sm:right-[min(92vw,52rem)]';
+const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[min(92vw,52rem)]';
 
 export function WorkSpaceDriveSheet({
   open,
@@ -63,7 +64,7 @@ export function WorkSpaceDriveSheet({
         <EntityDetailSheetContent
           open={open}
           contentClassName={cn(
-            'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none',
+            'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none',
             WORKSPACE_DRIVE_SHEET_WIDTH_CLASS,
           )}
           railAnchorClassName={WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS}
@@ -76,9 +77,7 @@ export function WorkSpaceDriveSheet({
           showRailActions={false}
         >
           <header className="border-border bg-background shrink-0 border-b px-5 pt-4 pb-3">
-            <p className="text-muted-foreground mb-0.5 text-[11px] font-semibold tracking-wide uppercase">
-              Drive
-            </p>
+            <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0.5')}>Drive</p>
             <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
               {workSpaceName}
             </h2>

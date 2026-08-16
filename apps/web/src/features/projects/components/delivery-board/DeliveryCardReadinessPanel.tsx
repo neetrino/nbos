@@ -27,15 +27,17 @@ export function DeliveryCardReadinessPanel({
   const holdLabel = readinessHoldLabel(lifecycle);
 
   return (
-    <div className="shrink-0 text-center">
-      <p className="text-foreground text-sm leading-none font-bold tabular-nums">{fractionLabel}</p>
+    <div className="flex shrink-0 flex-col items-end gap-0.5">
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums',
+          visual.headerBadgeClassName,
+        )}
+      >
+        {fractionLabel}
+      </span>
       {holdLabel ? (
-        <p
-          className={cn(
-            'mt-0.5 text-[10px] leading-none font-medium',
-            chrome.readinessAccentTextClass,
-          )}
-        >
+        <p className={cn('text-[10px] leading-none font-medium', chrome.readinessAccentTextClass)}>
           {holdLabel}
         </p>
       ) : null}

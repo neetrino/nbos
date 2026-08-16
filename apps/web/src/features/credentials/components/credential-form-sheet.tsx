@@ -45,7 +45,14 @@ export function CredentialFormSheet(props: CredentialFormSheetProps) {
 }
 
 function CredentialFormSheetInner(props: CredentialFormSheetProps) {
-  const { open, onOpenChange, onRequestMoveToTrash, isTrashView, onRestore } = props;
+  const {
+    open,
+    onOpenChange,
+    forceNestedBackdrop = false,
+    onRequestMoveToTrash,
+    isTrashView,
+    onRestore,
+  } = props;
   const { me } = usePermission();
   const form = useCredentialFormSheet(props);
   const {
@@ -102,6 +109,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
           open={open}
           layout="full"
           width="medium"
+          forceNestedBackdrop={forceNestedBackdrop}
           sourcePageHref={sourcePageHref}
         >
           {!accessDenied && (

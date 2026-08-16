@@ -4,6 +4,13 @@ export const SIDEBAR_WIDTH_EXPANDED_PX = 260;
 /** Collapsed rail width — must match `AppLayout` grid column and `Sidebar` root width. */
 export const SIDEBAR_WIDTH_COLLAPSED_PX = 56;
 
+/**
+ * Mobile nav drawer — half viewport width, flush top/bottom.
+ * Uses `data-[side=left]:*` so overrides beat default Sheet left-edge insets/rounding.
+ */
+export const SIDEBAR_MOBILE_SHEET_CLASS =
+  'bg-sidebar border-sidebar-border data-[side=left]:top-0 data-[side=left]:right-auto data-[side=left]:bottom-0 data-[side=left]:left-0 data-[side=left]:h-dvh data-[side=left]:max-h-dvh data-[side=left]:w-1/2 data-[side=left]:max-w-none data-[side=left]:rounded-none gap-0 border-r p-0 shadow-xl';
+
 /** Matches `Topbar` (`h-16`) so the logo row and main header share one baseline. */
 export const SIDEBAR_HEADER_HEIGHT_CLASS = 'h-16';
 

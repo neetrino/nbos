@@ -33,6 +33,8 @@ interface CreateProductDialogProps {
   onCreated?: (product?: Product) => void;
   projectId: string;
   defaultName?: string;
+  /** When opened above an entity sheet floating rail. */
+  forceNestedBackdrop?: boolean;
 }
 
 export function CreateProductDialog({
@@ -41,6 +43,7 @@ export function CreateProductDialog({
   onCreated,
   projectId,
   defaultName = '',
+  forceNestedBackdrop = false,
 }: CreateProductDialogProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -91,7 +94,7 @@ export function CreateProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>New Product</DialogTitle>
         </DialogHeader>

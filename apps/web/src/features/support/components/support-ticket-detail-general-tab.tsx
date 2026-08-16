@@ -2,15 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
-import {
-  AlertTriangle,
-  CheckSquare,
-  ExternalLink,
-  FilePlus2,
-  Headphones,
-  RotateCcw,
-  Server,
-} from 'lucide-react';
+import { CheckSquare, ExternalLink, FilePlus2, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,7 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, DetailSheetSection } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
@@ -52,10 +43,6 @@ export interface SupportTicketDetailGeneralTabProps {
   onOpenCreateTask: () => void;
   onListInvalidate: () => void;
   onReloadTicket: () => Promise<void>;
-  onRequestResolve: (ticket: SupportTicket) => void;
-  onRequestClose: (ticket: SupportTicket) => void;
-  onRequestEscalate: (ticket: SupportTicket) => void;
-  onRequestTechnical: (ticket: SupportTicket) => void;
 }
 
 export function SupportTicketDetailGeneralTab({
@@ -71,10 +58,6 @@ export function SupportTicketDetailGeneralTab({
   onOpenCreateTask,
   onListInvalidate,
   onReloadTicket,
-  onRequestResolve,
-  onRequestClose,
-  onRequestEscalate,
-  onRequestTechnical,
 }: SupportTicketDetailGeneralTabProps) {
   const terminal = ['RESOLVED', 'CLOSED'].includes(ticket.status);
   const executionTasks = ticket.executionTasks ?? [];
@@ -113,11 +96,11 @@ export function SupportTicketDetailGeneralTab({
   }, [meId, onListInvalidate, onReloadTicket, ticket.id]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <ScrollArea className="min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="space-y-4 px-5 py-4 sm:px-7">
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:gap-5">
-            <div className="flex flex-col gap-4 xl:col-span-7">
+            <div className="flex flex-col gap-4 xl:col-span-8">
               <DetailSheetSection title="Case & triage" icon={<Headphones size={12} />}>
                 <div className="space-y-4">
                   <SupportTicketDetailTriageFields
@@ -142,69 +125,7 @@ export function SupportTicketDetailGeneralTab({
               </DetailSheetSection>
             </div>
 
-            <div className="flex flex-col gap-4 xl:col-span-5">
-              <DetailSheetSection title="Quick actions">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={terminal}
-                    onClick={() => onRequestEscalate(ticket)}
-                  >
-                    <AlertTriangle size={14} />
-                    Escalate
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={terminal}
-                    onClick={() => onRequestTechnical(ticket)}
-                  >
-                    <Server size={14} />
-                    Technical
-                  </Button>
-                  {terminal ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        void (async () => {
-                          await supportApi.reopen(ticket.id);
-                          await onReloadTicket();
-                          onListInvalidate();
-                        })();
-                      }}
-                    >
-                      <RotateCcw size={14} />
-                      Reopen
-                    </Button>
-                  ) : null}
-                  {!terminal ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRequestResolve(ticket)}
-                    >
-                      Mark resolved
-                    </Button>
-                  ) : null}
-                  {ticket.status === 'RESOLVED' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onRequestClose(ticket)}
-                    >
-                      Close
-                    </Button>
-                  ) : null}
-                </div>
-              </DetailSheetSection>
-
+            <div className="flex flex-col gap-4 xl:col-span-4">
               <DetailSheetSection title="Waiting overlay">
                 <div className="space-y-2">
                   <Label htmlFor={`st-wait-${ticket.id}`} className="sr-only">
@@ -224,7 +145,10 @@ export function SupportTicketDetailGeneralTab({
                     >
                       <SelectValue placeholder="Waiting overlay" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent
+                      align="start"
+                      className="w-auto min-w-[min(100vw-2rem,12rem)] p-1.5"
+                    >
                       {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
@@ -317,7 +241,7 @@ export function SupportTicketDetailGeneralTab({
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
       <DetailSheetFormFooter
         visible
         dirty={dirty}

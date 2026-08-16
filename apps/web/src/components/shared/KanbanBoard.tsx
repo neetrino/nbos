@@ -1,8 +1,9 @@
 'use client';
 
 import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, Check } from 'lucide-react';
+import { Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { KanbanColorPicker } from './kanban/KanbanColorPicker';
 import { KanbanColumnHeader } from './kanban/KanbanColumnHeader';
 import {
@@ -22,10 +23,11 @@ import { isReorderNoop, mapFilteredInsertToFullIndex } from './kanban/kanban-reo
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
 import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
-import { KanbanColumnLoadMore } from './kanban/KanbanColumnLoadMore';
+import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
 import {
   SCROLL_SPEED,
-  EDGE_ZONE_WIDTH,
+  KANBAN_CARD_MOVED_HIGHLIGHT_MS,
+  KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
   COLOR_PALETTE,
   contrastText,
   type KanbanBoardProps,
@@ -49,9 +51,9 @@ export function KanbanBoard<T>({
   onAddItemInColumn,
   addButtonLabel = 'Quick',
   terminalDropZones,
-  onColumnLoadMore,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
+  const isMobileViewport = useIsMobileViewport();
 
   const resolvedQuickCreate =
     columnQuickCreate ??
@@ -74,8 +76,10 @@ export function KanbanBoard<T>({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [mobileColumnWidth, setMobileColumnWidth] = useState(columnWidth);
   const autoScrollDir = useRef<'left' | 'right' | null>(null);
   const rafId = useRef<number>(0);
+  const resolvedColumnWidth = isMobileViewport ? mobileColumnWidth : columnWidth;
 
   const [addingAfter, setAddingAfter] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -86,8 +90,10 @@ export function KanbanBoard<T>({
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 2);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+    const nextLeft = el.scrollLeft > 2;
+    const nextRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 2;
+    setCanScrollLeft((prev) => (prev === nextLeft ? prev : nextLeft));
+    setCanScrollRight((prev) => (prev === nextRight ? prev : nextRight));
   }, []);
 
   useEffect(() => {
@@ -101,7 +107,28 @@ export function KanbanBoard<T>({
       el.removeEventListener('scroll', updateScrollState);
       ro.disconnect();
     };
-  }, [updateScrollState, columns]);
+  }, [updateScrollState, columns.length]);
+
+  /**
+   * Mobile full-width columns: measure the scrollport once (and on window resize).
+   * Do NOT use ResizeObserver here — writing width from clientWidth into column
+   * styles can expand an unconstrained flex parent and loop forever.
+   */
+  useEffect(() => {
+    if (!isMobileViewport) return;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const next = Math.round(el.clientWidth - KANBAN_COLUMN_X_MARGIN_TOTAL_PX);
+      if (next <= 0) return;
+      setMobileColumnWidth((prev) => (prev === next ? prev : next));
+    };
+
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [isMobileViewport]);
 
   const startAutoScroll = useCallback((dir: 'left' | 'right') => {
     autoScrollDir.current = dir;
@@ -120,6 +147,16 @@ export function KanbanBoard<T>({
     cancelAnimationFrame(rafId.current);
   }, []);
 
+  const scrollByOneColumn = useCallback(
+    (side: 'left' | 'right') => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const step = resolvedColumnWidth + KANBAN_COLUMN_X_MARGIN_TOTAL_PX;
+      el.scrollBy({ left: side === 'left' ? -step : step, behavior: 'auto' });
+    },
+    [resolvedColumnWidth],
+  );
+
   useEffect(() => () => cancelAnimationFrame(rafId.current), []);
 
   /* ── Move animation tracking ── */
@@ -137,7 +174,10 @@ export function KanbanBoard<T>({
     prevItemsRef.current = currentMap;
     if (movedIds.size > 0) {
       const showTimer = window.setTimeout(() => setRecentlyMoved(movedIds), 0);
-      const clearTimer = window.setTimeout(() => setRecentlyMoved(new Set()), 350);
+      const clearTimer = window.setTimeout(
+        () => setRecentlyMoved(new Set()),
+        KANBAN_CARD_MOVED_HIGHLIGHT_MS,
+      );
       return () => {
         window.clearTimeout(showTimer);
         window.clearTimeout(clearTimer);
@@ -249,33 +289,6 @@ export function KanbanBoard<T>({
     setShowAddPicker(false);
   };
 
-  /* ── Scroll edge zones ── */
-  const edgeZone = (side: 'left' | 'right', canScroll: boolean) => (
-    <div
-      onMouseEnter={() => canScroll && startAutoScroll(side)}
-      onMouseLeave={stopAutoScroll}
-      className={cn(
-        'absolute top-0 z-20 flex h-full items-center',
-        side === 'left'
-          ? 'from-background/80 left-0 bg-gradient-to-r'
-          : 'from-background/80 right-0 bg-gradient-to-l',
-        'to-transparent transition-opacity duration-200',
-        canScroll ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
-      )}
-      style={{ width: EDGE_ZONE_WIDTH }}
-    >
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="bg-background/80 border-border flex h-7 w-7 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
-          {side === 'left' ? (
-            <ChevronLeft size={14} className="text-muted-foreground" />
-          ) : (
-            <ChevronRight size={14} className="text-muted-foreground" />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   /* ── "+" button between columns ── */
   const addBetweenBtn = (afterKey: string) =>
     editable && onAddColumn && addingAfter === null ? (
@@ -292,7 +305,10 @@ export function KanbanBoard<T>({
 
   /* ── Inline new-column form ── */
   const addForm = (
-    <div className="mx-1 flex h-full flex-shrink-0 flex-col pt-0" style={{ width: columnWidth }}>
+    <div
+      className="mx-1 flex h-full flex-shrink-0 flex-col pt-0"
+      style={{ width: resolvedColumnWidth }}
+    >
       <div className="relative flex w-full items-center gap-1">
         <button
           onClick={() => setShowAddPicker(!showAddPicker)}
@@ -338,20 +354,30 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full flex-col">
-      {edgeZone('left', canScrollLeft)}
-      {edgeZone('right', canScrollRight)}
+    <div className="relative flex h-full min-w-0 flex-col">
+      <KanbanScrollEdgeControls
+        canScrollLeft={canScrollLeft}
+        canScrollRight={canScrollRight}
+        isMobile={isMobileViewport}
+        onStep={scrollByOneColumn}
+        onHoverStart={startAutoScroll}
+        onHoverEnd={stopAutoScroll}
+      />
 
       <div
         ref={scrollRef}
         className={cn(
-          'min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
+          'min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
+          '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          isMobileViewport && 'snap-x snap-mandatory',
           dragItem && terminalDropZones?.length && 'pb-28',
         )}
       >
         <div
           className="flex h-full gap-0"
-          style={{ minWidth: `${(columns.length + (editable ? 1 : 0)) * (columnWidth + 16)}px` }}
+          style={{
+            minWidth: `${(columns.length + (editable ? 1 : 0)) * (resolvedColumnWidth + KANBAN_COLUMN_X_MARGIN_TOTAL_PX)}px`,
+          }}
         >
           {columns.map((column, idx) => {
             const isDropTarget = dropTarget === column.key && dragItem !== null;
@@ -364,7 +390,7 @@ export function KanbanBoard<T>({
               showDropPreview && dropInsert?.columnKey === column.key ? dropInsert.index : null;
 
             return (
-              <div key={column.key} className="flex h-full">
+              <div key={column.key} className={cn('flex h-full', isMobileViewport && 'snap-start')}>
                 {/* "+" between columns (before this column, except first) */}
                 {idx > 0 &&
                   addingAfter !== columns[idx - 1]?.key &&
@@ -376,7 +402,7 @@ export function KanbanBoard<T>({
                 {/* Column */}
                 <div
                   className="relative mx-2 flex h-full flex-shrink-0 flex-col"
-                  style={{ width: columnWidth }}
+                  style={{ width: resolvedColumnWidth }}
                 >
                   {idx > 0 ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
                   <div className="group/header mb-3 shrink-0 space-y-2">
@@ -393,7 +419,7 @@ export function KanbanBoard<T>({
                   </div>
 
                   <div
-                    className="min-h-0 flex-1 overflow-y-auto pr-1"
+                    className="min-h-0 flex-1 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
                     onDragOver={(event) => handleColumnDragOver(event, column.key)}
                     onDrop={() => handleDrop(column.key, column.items)}
@@ -425,10 +451,9 @@ export function KanbanBoard<T>({
                               {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
                               data-item-id={id}
                               className={cn(
-                                'min-w-0 cursor-grab transition-all duration-300 active:cursor-grabbing',
+                                'min-w-0 cursor-grab transition-opacity duration-150 active:cursor-grabbing',
                                 dragItem?.id === id && 'scale-[0.97] opacity-50',
-                                recentlyMoved.has(id) &&
-                                  'animate-in fade-in slide-in-from-left-3 duration-300',
+                                recentlyMoved.has(id) && 'animate-in fade-in duration-150',
                               )}
                             >
                               {renderCard(item, column.key)}
@@ -450,13 +475,6 @@ export function KanbanBoard<T>({
                       {showDropPreview ? (
                         <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden />
                       ) : null}
-                      <KanbanColumnLoadMore
-                        hasMore={column.hasMore}
-                        loadingMore={column.loadingMore}
-                        onLoadMore={
-                          onColumnLoadMore ? () => onColumnLoadMore(column.key) : undefined
-                        }
-                      />
                     </div>
                   </div>
                 </div>

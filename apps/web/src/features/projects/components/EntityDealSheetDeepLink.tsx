@@ -11,12 +11,14 @@ interface EntityDealSheetDeepLinkProps {
   dealId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function EntityDealSheetDeepLink({
   dealId,
   open,
   onOpenChange,
+  forceNestedBackdrop = false,
 }: EntityDealSheetDeepLinkProps) {
   const { persistedValue: renderDealId, onOpenChangeComplete: clearRenderDealId } =
     useSheetPersistedValue(dealId);
@@ -118,6 +120,7 @@ export function EntityDealSheetDeepLink({
       onStatusChange={handleStatusChange}
       onRefresh={handleRefresh}
       onOpenDeal={(id) => void handleOpenDeal(id)}
+      forceNestedBackdrop={forceNestedBackdrop}
     />
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { BonusPoolRiskBadges } from '@/features/finance/components/bonus/bonus-pool-risk-badges';
@@ -53,9 +54,7 @@ export function BonusPoolSheetGeneralTab({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            Client funding
-          </p>
+          <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Client funding</p>
           <div className="grid grid-cols-2 gap-2">
             <SnapshotTile
               label="Funded"
@@ -85,9 +84,7 @@ export function BonusPoolSheetGeneralTab({
         </div>
 
         <div className="space-y-2">
-          <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            Team bonuses
-          </p>
+          <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Team bonuses</p>
           <div className="grid grid-cols-2 gap-2">
             <SnapshotTile label="Planned" value={formatBonusPoolMoney(pool.ledgerPlannedAmount)} />
             <SnapshotTile

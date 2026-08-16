@@ -13,6 +13,7 @@ import {
   EntityItemHost,
   ErrorState,
   LoadingState,
+  StatusBadge,
 } from '@/components/shared';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
@@ -25,6 +26,14 @@ import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
 import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
+import { ORDER_STATUSES } from './order-statuses';
+
+/** Order detail: single-column general — narrower than shared auxiliary (36rem). */
+const ORDER_DETAIL_SHEET_WIDTH_CLASS =
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[30rem]';
+
+const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[30rem]';
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -33,6 +42,7 @@ interface OrderDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onCreateInvoice: (order: Order) => void;
   refreshSignal?: number;
+  forceNestedBackdrop?: boolean;
 }
 
 export function OrderDetailSheet({
@@ -42,6 +52,7 @@ export function OrderDetailSheet({
   onOpenChange,
   onCreateInvoice,
   refreshSignal = 0,
+  forceNestedBackdrop = false,
 }: OrderDetailSheetProps) {
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(orderId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -103,6 +114,7 @@ export function OrderDetailSheet({
 
   const sourcePageHref = ordersListWithOpenOrderHref(sheetId ?? '');
   const lifecycleMode = order ? orderLifecycleAction(order) : null;
+  const statusCfg = order ? ORDER_STATUSES[order.status] : undefined;
 
   return (
     <EntityItemHost nested onEntityChanged={() => void fetchOrder()}>
@@ -114,20 +126,26 @@ export function OrderDetailSheet({
         <EntityDetailSheetContent
           open={open}
           layout="full"
-          width="medium"
+          width="compact"
+          contentClassName={ORDER_DETAIL_SHEET_WIDTH_CLASS}
+          railAnchorClassName={ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
           sourcePageHref={sourcePageHref}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             {loading && !order ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : order ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                     <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
                     <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                       {getOrderDisplayTitle(order)}
                     </h2>
+                    {statusCfg ? (
+                      <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
+                    ) : null}
                   </div>
                 </div>
                 {lifecycleMode ? (
@@ -190,11 +208,9 @@ function OrderDetailSheetBody({
   order: Order;
   onCreateInvoice: () => void;
 }) {
+  if (activeTab === 'general') return <OrderGeneralTab order={order} />;
   if (activeTab === 'invoices') {
     return <OrderInvoicesTab order={order} onCreateInvoice={onCreateInvoice} />;
   }
-  if (activeTab === 'reconciliation') {
-    return <OrderReconciliationTab order={order} />;
-  }
-  return <OrderGeneralTab order={order} />;
+  return <OrderReconciliationTab order={order} />;
 }

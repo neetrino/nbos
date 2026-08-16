@@ -27,7 +27,6 @@ import {
 import { InvoiceSheetBadge, type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
-import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import {
   buildInvoiceGeneralPatch,
   createInvoiceGeneralDraft,
@@ -188,8 +187,6 @@ export function InvoiceSheet({
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
   const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(renderInvoice) : null;
-  const displayTitle = getInvoiceDisplayTitle(renderInvoice);
-  const showCodeSubline = displayTitle !== renderInvoice.code;
 
   return (
     <>
@@ -201,21 +198,14 @@ export function InvoiceSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                   <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <div className="min-w-0">
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {displayTitle}
-                    </h2>
-                    {showCodeSubline ? (
-                      <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                        {renderInvoice.code}
-                      </p>
-                    ) : null}
-                  </div>
+                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    {renderInvoice.code}
+                  </h2>
                   <InvoiceSheetBadge invoice={renderInvoice} />
                 </div>
               </div>
@@ -235,7 +225,7 @@ export function InvoiceSheet({
           </div>
 
           {onMoneyStatusChange ? (
-            <div className="border-border shrink-0 border-b px-5 py-2.5">
+            <div className="shrink-0 pb-3">
               <InvoiceMoneyStagesBar
                 currentStatus={renderInvoice.moneyStatus}
                 onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
@@ -250,7 +240,7 @@ export function InvoiceSheet({
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-5 py-5">
+            <div className="px-7 py-5">
               <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
 
               <DetailSheetTabPanel tabKey={activeTab}>

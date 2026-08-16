@@ -27,8 +27,9 @@ export function partitionVaultPreviewItems(items: VaultPreviewItem[]): {
   bottom: VaultPreviewItem[];
 } {
   return {
-    top: items.filter((item) => item.type !== 'copy-secret'),
-    bottom: items.filter((item) => item.type === 'copy-secret'),
+    /** Badge/info rows stay above; login + secrets stay together as one cluster. */
+    top: items.filter((item) => item.type === 'info'),
+    bottom: items.filter((item) => item.type !== 'info'),
   };
 }
 

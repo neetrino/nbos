@@ -5,6 +5,7 @@ import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
 } from '@/components/shared/entity-list-table';
+import { VAULT_LIST_CENTER_CELL_CLASS } from '@/features/credentials/constants/credential-vault-table-layout';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { CredentialVaultTableRowCells } from '@/features/credentials/components/credential-vault-table-row-cells';
 import { CredentialVaultTableUrlCell } from '@/features/credentials/components/credential-vault-table-row-actions';
@@ -78,8 +79,10 @@ export function CredentialVaultTableRow({
         onCopySecret={onCopySecret}
         onSetFavorite={onSetFavorite}
       />
-      <TableCell className={ENTITY_LIST_CELL_CLASS} onClick={(e) => e.stopPropagation()}>
-        <CredentialVaultTableUrlCell cred={cred} isTrashList={isTrashList} />
+      <TableCell className={VAULT_LIST_CENTER_CELL_CLASS} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center">
+          <CredentialVaultTableUrlCell cred={cred} isTrashList={isTrashList} />
+        </div>
       </TableCell>
     </TableRow>
   );

@@ -40,7 +40,11 @@ import {
 } from './delivery-stage-gate-highlight';
 import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
-import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
+import {
+  DELIVERY_DETAIL_SHEET_CONTENT_CLASS,
+  DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  type DeliveryDetailTabId,
+} from './delivery-item-detail.constants';
 import {
   extensionToDeliveryBoardItem,
   productToDeliveryBoardItem,
@@ -200,6 +204,10 @@ export function DeliveryItemDetailSheet({
           const productProjectId = item.product.projectId ?? item.product.project?.id ?? '';
           return {
             entityKind: 'PRODUCT' as const,
+            projectCode: item.product.project?.code ?? '—',
+            projectName: item.product.project?.name ?? '—',
+            projectHref: `/projects/${productProjectId}`,
+            deadline: item.product.deadline,
             workSpaceHref: buildProductDetailPageHref(
               productProjectId,
               item.product.id,
@@ -214,6 +222,10 @@ export function DeliveryItemDetailSheet({
             const extensionProjectId = item.extension.projectId ?? item.extension.project?.id ?? '';
             return {
               entityKind: 'EXTENSION' as const,
+              projectCode: item.extension.project?.code ?? '—',
+              projectName: item.extension.project?.name ?? '—',
+              projectHref: `/projects/${extensionProjectId}`,
+              deadline: null as string | null,
               workSpaceHref: buildProductDetailPageHref(
                 extensionProjectId,
                 item.extension.productId,
@@ -356,6 +368,8 @@ export function DeliveryItemDetailSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
+        contentClassName={DELIVERY_DETAIL_SHEET_CONTENT_CLASS}
+        railAnchorClassName={DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
         showRailActions={Boolean(headerProps)}
         sourcePageHref={headerProps?.sourcePageHref ?? '#'}
         workspaceHref={headerProps?.workSpaceHref}
@@ -371,7 +385,7 @@ export function DeliveryItemDetailSheet({
             />
 
             {lifecycle?.isTerminal ? (
-              <div className="border-border bg-muted/40 shrink-0 border-b px-7 py-2.5">
+              <div className="bg-muted/40 shrink-0 px-7 py-2.5">
                 <p className="text-muted-foreground text-sm">
                   {lifecycle.resolution === 'DONE'
                     ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
@@ -381,7 +395,7 @@ export function DeliveryItemDetailSheet({
             ) : null}
 
             {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
-              <div className="border-border flex shrink-0 items-center justify-between gap-3 border-b bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
+              <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
                 <p className="text-muted-foreground text-sm">Delivery is paused.</p>
                 <Button
                   type="button"
@@ -395,7 +409,7 @@ export function DeliveryItemDetailSheet({
               </div>
             ) : null}
 
-            <div className="border-border shrink-0 border-b">
+            <div className="shrink-0 pb-3">
               <DeliveryPipelineStages
                 lifecycle={lifecycle}
                 disabled={busy || !boardMutations}

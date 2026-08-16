@@ -18,8 +18,24 @@ export const SHEET_FLOATING_RAIL_PANEL_TOP_OFFSET = '1.5rem';
 /** Floating rail vertical anchor — clears {@code rounded-l-2xl} on inset right sheets. */
 export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]';
 
-/** Horizontal anchor for {@code sm:max-w-md} page settings sheets. */
-export const PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS = 'sm:right-[28rem]';
+/**
+ * Mobile right-sheet panel width — leaves ~20% of the page visible (not full-bleed).
+ * Prefer this over {@code data-[side=right]:w-full} for entity / settings sheets.
+ */
+export const SHEET_MOBILE_PANEL_WIDTH_CLASS = 'data-[side=right]:w-[85vw]';
+
+/**
+ * Floating rail at the left seam of an 85vw mobile right sheet.
+ * {@code translate-x-px} pulls the rail flush into the panel edge (no hairline gap).
+ */
+export const SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS =
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px';
+
+/**
+ * Horizontal anchor for page settings sheets.
+ * Mobile: 85vw seam; desktop: left seam of `max-w-md` (28rem).
+ */
+export const PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[28rem]`;
 
 /** Bottom-center sheet height — flush with viewport bottom (mirrors right sheet edge attach). */
 export const SHEET_CENTER_VIEWPORT_HEIGHT_CLASS = 'h-[90vh] max-h-[90vh]';
@@ -46,43 +62,43 @@ export const CENTER_SHEET_WIDTH_COMPACT_CLASS = 'flex w-[min(42rem,calc(100vw-2r
 
 export const CENTER_SHEET_WIDTH_AUXILIARY_CLASS = 'flex w-[min(36rem,calc(100vw-2rem-2.75rem))]';
 
-/** Matches Lead/Deal detail width: 75vw on `sm+`. */
+/** Matches Lead/Deal detail width: 75vw on `sm+`; 85vw on mobile. */
 export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[75vw]';
 
-/** Anchor floating rail to the left edge of a 75vw right sheet. */
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = 'sm:right-[75vw]';
+/** Anchor floating rail to the left edge of a 75vw / mobile 85vw right sheet. */
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[75vw]`;
 
 /** Narrower detail sheet for entities with less form density (e.g. Finance invoice). */
 export const DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[42rem]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[42rem]';
 
 /** Anchor floating rail to the left edge of a {@link DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS} sheet. */
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS = 'sm:right-[42rem]';
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[42rem]`;
 
 /** Medium detail sheet (e.g. client service with more fields than invoice). */
 export const DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[48rem]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[48rem]';
 
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = 'sm:right-[48rem]';
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[48rem]`;
 
 /**
  * Narrow auxiliary panel (bonus ledger, HR peek) — use with
  * {@link EntityDetailSheetContent} `layout="auxiliary"` (Close only by default).
  */
 export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[36rem]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[36rem]';
 
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = 'sm:right-[36rem]';
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[36rem]`;
 
 /** Block surface aligned with Deal General sections. */
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-border bg-card p-5';
 
-/** Section heading style (uppercase micro label). */
+/** Section heading style (uppercase micro label) — primary blue, matches Delivery. */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
-  'text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase';
+  'text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase';
 
-/** Sub-label inside a merged multi-column section. */
+/** Sub-label inside a merged multi-column section (not primary — stays muted). */
 export const DETAIL_SHEET_SUBSECTION_LABEL_CLASS =
   'text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase';
 
@@ -276,7 +292,7 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'border-border shrink-0 border-b px-5 pb-0';
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'shrink-0 px-5 pb-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 

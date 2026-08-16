@@ -1,22 +1,21 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { DollarSign, ExternalLink, FolderKanban, Handshake } from 'lucide-react';
+import { Building2, DollarSign, FolderKanban, Handshake, User } from 'lucide-react';
 import {
-  DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetEntityLinkCard,
+  DetailSheetEntityLinkGrid,
   DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
-  StatusBadge,
 } from '@/components/shared';
-import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
+import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
-import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderGeneralTabProps {
   order: Order;
@@ -31,100 +30,90 @@ function formatShortDate(value: string): string {
 }
 
 export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
-  const statusCfg = ORDER_STATUSES[order.status];
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
 
   return (
-    <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
-      <div className="flex min-w-0 flex-col gap-4">
-        <DetailSheetCollapsibleSection
-          title="Order"
-          icon={<DollarSign size={12} />}
-          titleTrailing={
-            statusCfg ? (
-              <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
-            ) : undefined
-          }
-          open={orderOpen}
-          onOpenChange={setOrderOpen}
-        >
-          <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-            <InlineField label="Code" value={order.code} />
-            <InlineField label="Title" value={getOrderDisplayTitle(order)} />
-            <div className="grid grid-cols-2 gap-4">
-              <InlineField label="Type" value={order.type} />
-              <InlineField label="Payment type" value={order.paymentType} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <InlineField label="Amount" value={formatAmount(total)} />
-              <InlineField label="Currency" value={order.currency} />
-            </div>
-            <div className="border-border mt-4 border-t pt-4">
-              <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
-            </div>
+    <div className="flex min-w-0 flex-col gap-4">
+      <DetailSheetCollapsibleSection
+        title="Order"
+        icon={<DollarSign size={12} />}
+        open={orderOpen}
+        onOpenChange={setOrderOpen}
+      >
+        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <InlineField label="Code" value={order.code} />
+          <InlineField label="Title" value={getOrderDisplayTitle(order)} />
+          <div className="grid grid-cols-2 gap-4">
+            <InlineField label="Type" value={order.type} />
+            <InlineField label="Payment type" value={order.paymentType} />
           </div>
-        </DetailSheetCollapsibleSection>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InlineField label="Amount" value={formatAmount(total)} />
+            <InlineField label="Currency" value={order.currency} />
+          </div>
+          <div className="border-border mt-4 border-t pt-4">
+            <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
+          </div>
+        </div>
+      </DetailSheetCollapsibleSection>
 
-      <div className="flex min-w-0 flex-col gap-4">
-        <OrderLinkedPanel order={order} />
-      </div>
+      <OrderLinkedPanel order={order} />
     </div>
   );
 }
 
 function OrderLinkedPanel({ order }: { order: Order }) {
-  return (
-    <DetailSheetSection title="Linked">
-      <div className="space-y-2 text-sm">
-        <LinkRow
-          icon={FolderKanban}
-          value={order.project.name}
-          href={`/projects/${order.projectId}`}
-        />
-        {order.company ? (
-          <p className="text-muted-foreground">
-            Company: <span className="text-foreground font-medium">{order.company.name}</span>
-          </p>
-        ) : null}
-        {order.contact ? (
-          <p className="text-muted-foreground">
-            Contact:{' '}
-            <span className="text-foreground font-medium">
-              {order.contact.firstName} {order.contact.lastName}
-            </span>
-          </p>
-        ) : null}
-        {order.deal ? (
-          <LinkRow
-            icon={Handshake}
-            value={getOrderDisplayTitle(order)}
-            href={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(order.deal.id)}`}
-          />
-        ) : null}
-      </div>
-    </DetailSheetSection>
-  );
-}
+  const relations = useEntityRelations();
+  const [dealSheetOpen, setDealSheetOpen] = useState(false);
+  const contactName = order.contact
+    ? `${order.contact.firstName} ${order.contact.lastName}`.trim()
+    : null;
+  const dealId = order.deal?.id ?? null;
 
-function LinkRow({
-  icon: Icon,
-  value,
-  href,
-}: {
-  icon: typeof FolderKanban;
-  value: string;
-  href: string;
-}) {
   return (
-    <Link
-      href={href}
-      className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
-    >
-      <Icon size={14} aria-hidden />
-      {value}
-      <ExternalLink size={12} className="opacity-70" aria-hidden />
-    </Link>
+    <>
+      <DetailSheetSection title="Linked">
+        <DetailSheetEntityLinkGrid>
+          <DetailSheetEntityLinkCard
+            href={`/projects/${order.projectId}`}
+            label="Project"
+            title={order.project.name}
+            icon={FolderKanban}
+          />
+          {order.company ? (
+            <DetailSheetEntityLinkCard
+              label="Company"
+              title={order.company.name}
+              icon={Building2}
+              onOpen={() => relations.openEntity('company', order.company!.id)}
+            />
+          ) : null}
+          {order.contact && contactName ? (
+            <DetailSheetEntityLinkCard
+              label="Contact"
+              title={contactName}
+              icon={User}
+              onOpen={() => relations.openEntity('contact', order.contact!.id)}
+            />
+          ) : null}
+          {dealId && order.deal ? (
+            <DetailSheetEntityLinkCard
+              label="Deal"
+              title={order.deal.name?.trim() || order.deal.code}
+              icon={Handshake}
+              onOpen={() => setDealSheetOpen(true)}
+            />
+          ) : null}
+        </DetailSheetEntityLinkGrid>
+      </DetailSheetSection>
+
+      <EntityDealSheetDeepLink
+        dealId={dealSheetOpen ? dealId : null}
+        open={dealSheetOpen && Boolean(dealId)}
+        onOpenChange={setDealSheetOpen}
+        forceNestedBackdrop
+      />
+    </>
   );
 }

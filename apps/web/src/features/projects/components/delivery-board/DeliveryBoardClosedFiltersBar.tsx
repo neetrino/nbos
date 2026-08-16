@@ -41,8 +41,8 @@ export function DeliveryBoardClosedFiltersBar({
     () => ({
       result: [
         { value: 'ALL', label: 'All results' },
-        { value: 'DONE', label: 'Done' },
         { value: 'CANCELLED', label: 'Cancelled' },
+        { value: 'DONE', label: 'Done' },
       ],
       projects: [
         { value: 'ALL', label: 'All projects' },
@@ -99,8 +99,8 @@ export function DeliveryBoardClosedFiltersBar({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All results</SelectItem>
-              <SelectItem value="DONE">Done</SelectItem>
               <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              <SelectItem value="DONE">Done</SelectItem>
             </SelectContent>
           </Select>
         </div>

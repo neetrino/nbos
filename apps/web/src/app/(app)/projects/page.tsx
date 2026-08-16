@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, LayoutGrid, List, Loader2, Plus } from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHero,
@@ -24,6 +24,7 @@ import { CreateProjectHubDialog } from '@/features/projects/components/CreatePro
 import { ProjectsListTable } from '@/features/projects/components/ProjectsListTable';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import type { Project } from '@/lib/api/projects';
 
 const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
@@ -44,6 +45,8 @@ const PROJECT_VIEW_OPTIONS: ViewModeOption<ProjectsHubViewMode>[] = [
 export default function ProjectsPage() {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
+  const isMobileViewport = useIsMobileViewport();
+  const directory = useProjectsHubDirectory();
   const {
     activeTab,
     setActiveTab,
@@ -58,7 +61,9 @@ export default function ProjectsPage() {
     loadMore,
     error,
     refetch,
-  } = useProjectsHubDirectory();
+  } = directory;
+
+  const effectiveView: ProjectsHubViewMode = isMobileViewport ? 'grid' : view;
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -76,6 +81,19 @@ export default function ProjectsPage() {
             ariaLabel="Project Hub filters"
           />
         }
+        tabsEnd={
+          isMobileViewport ? (
+            <Button
+              type="button"
+              size="icon-sm"
+              className="shrink-0"
+              aria-label="Create new project"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus size={16} aria-hidden />
+            </Button>
+          ) : null
+        }
         search={
           <IntegratedSearchFilters
             search={searchInput}
@@ -84,19 +102,25 @@ export default function ProjectsPage() {
             onClearAll={() => setSearchInput('')}
           />
         }
-        viewMode={<ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />}
+        viewMode={
+          isMobileViewport ? null : (
+            <ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />
+          )
+        }
         trailing={
           <>
             <ProjectsPageSettingsSheet items={projects} />
-            <Button
-              type="button"
-              className="shrink-0 gap-2"
-              aria-label="Create new project"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus size={16} aria-hidden />
-              Project
-            </Button>
+            {isMobileViewport ? null : (
+              <Button
+                type="button"
+                className="shrink-0 gap-2"
+                aria-label="Create new project"
+                onClick={() => setCreateOpen(true)}
+              >
+                <Plus size={16} aria-hidden />
+                Project
+              </Button>
+            )}
           </>
         }
       />
@@ -122,30 +146,28 @@ export default function ProjectsPage() {
               </Button>
             }
           />
+        ) : effectiveView === 'grid' ? (
+          <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
+            {projects.map((project) => (
+              <ProjectNavigableCard key={project.id} project={project} />
+            ))}
+          </div>
         ) : (
-          <>
-            {view === 'grid' ? (
-              <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
-                {projects.map((project) => (
-                  <ProjectNavigableCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <ProjectsListTable projects={projects} onProjectClick={handleClick} />
-            )}
-            {loadingMore ? (
-              <div className="text-muted-foreground flex items-center justify-center py-4">
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-                <span className="sr-only">Loading more projects</span>
-              </div>
-            ) : null}
-            <InfiniteScrollSentinel
-              onReach={loadMore}
-              disabled={loading || loadingMore || !hasMore}
-            />
-          </>
+          <ProjectsListTable projects={projects} onProjectClick={handleClick} />
         )}
       </DetailSheetTabPanel>
+
+      {!loading && !error && projects.length > 0 ? (
+        <>
+          {loadingMore ? (
+            <p className="text-muted-foreground py-3 text-center text-xs">Loading more…</p>
+          ) : null}
+          <InfiniteScrollSentinel
+            onReach={loadMore}
+            disabled={loading || loadingMore || !hasMore}
+          />
+        </>
+      ) : null}
 
       <CreateProjectHubDialog
         open={createOpen}

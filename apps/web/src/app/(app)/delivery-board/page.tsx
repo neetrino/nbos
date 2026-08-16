@@ -38,6 +38,7 @@ import {
 import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/delivery-board-open-query';
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
 import type { DeliverySheetStageGateHighlight } from '@/features/projects/components/delivery-board/delivery-stage-gate-highlight';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
 import {
   buildProductDetailPageHref,
@@ -82,6 +83,9 @@ function DeliveryBoardPageContent() {
   }));
   const [stageGateHighlight, setStageGateHighlight] =
     useState<DeliverySheetStageGateHighlight | null>(null);
+  const isMobileViewport = useIsMobileViewport();
+  const displayActiveViewMode = isMobileViewport ? 'BOARD' : activeViewMode;
+  const displayClosedViewMode = isMobileViewport ? 'BOARD' : closedViewMode;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -257,7 +261,7 @@ function DeliveryBoardPageContent() {
               value="active"
               className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
             >
-              {activeViewMode === 'LIST' ? (
+              {displayActiveViewMode === 'LIST' ? (
                 <DeliveryBoardItemsTable
                   mode="active"
                   items={activeFilteredItems}
@@ -283,7 +287,7 @@ function DeliveryBoardPageContent() {
               value="closed"
               className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
             >
-              {closedViewMode === 'LIST' ? (
+              {displayClosedViewMode === 'LIST' ? (
                 <DeliveryBoardItemsTable
                   mode="closed"
                   items={closedFilteredItems}

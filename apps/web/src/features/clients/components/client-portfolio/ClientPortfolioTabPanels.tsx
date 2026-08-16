@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { FileText, FolderKanban, LifeBuoy, Repeat } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
+import { DetailSheetEntityLinkCard, DetailSheetEntityLinkGrid } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type {
   CompanyPortfolioResponse,
@@ -16,6 +17,10 @@ import {
   buildDriveHrefWithCompany,
   buildDriveHrefWithContact,
 } from '@/features/drive/drive-deep-link';
+import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
+import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
+import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
+import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import type { ClientPortfolioTabId } from './client-portfolio-tabs';
 
 export type { ClientPortfolioTabId } from './client-portfolio-tabs';
@@ -33,6 +38,10 @@ function AccessNote({ message }: { message: string }) {
       {message}
     </p>
   );
+}
+
+function PortfolioEmpty({ children }: { children: ReactNode }) {
+  return <p className="text-muted-foreground text-sm">{children}</p>;
 }
 
 export function ClientPortfolioTabPanels({
@@ -88,39 +97,32 @@ export function ClientPortfolioTabPanels({
         : data.scope === 'company'
           ? ((data.company as { projects?: Array<Record<string, unknown>> }).projects ?? [])
           : [];
+    if (projects.length === 0) {
+      return (
+        <DetailSheetEntityLinkGrid empty={<PortfolioEmpty>No active projects.</PortfolioEmpty>} />
+      );
+    }
     return (
-      <div className="space-y-2">
-        {projects.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No active projects.</p>
-        ) : (
-          <ul className="divide-border divide-y rounded-xl border">
-            {projects.map((p) => {
-              const id = String(p.id ?? '');
-              const name = String(p.name ?? '');
-              const counts = p._count as { products?: number; extensions?: number } | undefined;
-              return (
-                <li
-                  key={id}
-                  className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm"
-                >
-                  <div>
-                    <p className="font-medium">{name}</p>
-                    <p className="text-muted-foreground text-xs">
-                      Products {counts?.products ?? 0} · Extensions {counts?.extensions ?? 0}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/projects/${id}`}
-                    className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-                  >
-                    Open hub
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+      <DetailSheetEntityLinkGrid>
+        {projects.map((p) => {
+          const id = String(p.id ?? '');
+          const code = String(p.code ?? '');
+          const name = String(p.name ?? '');
+          const counts = p._count as { products?: number; extensions?: number } | undefined;
+          const productCount = counts?.products ?? 0;
+          const extensionCount = counts?.extensions ?? 0;
+          return (
+            <DetailSheetEntityLinkCard
+              key={id}
+              href={`/projects/${id}`}
+              icon={FolderKanban}
+              label={code || 'Project'}
+              title={name || code || 'Untitled project'}
+              description={`${productCount} product${productCount === 1 ? '' : 's'} · ${extensionCount} extension${extensionCount === 1 ? '' : 's'}`}
+            />
+          );
+        })}
+      </DetailSheetEntityLinkGrid>
     );
   }
 
@@ -134,35 +136,31 @@ export function ClientPortfolioTabPanels({
     }>;
     const m = data.accessMask;
     return (
-      <div className="space-y-2">
-        {m.finance && !m.financeAmounts && (
+      <div className="space-y-3">
+        {m.finance && !m.financeAmounts ? (
           <AccessNote message="Monetary amounts are hidden for your role; invoice status and codes are still visible." />
-        )}
+        ) : null}
         {invoices.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No invoices in this view.</p>
+          <DetailSheetEntityLinkGrid
+            empty={<PortfolioEmpty>No invoices in this view.</PortfolioEmpty>}
+          />
         ) : (
-          <ul className="divide-border divide-y rounded-xl border">
-            {invoices.map((inv) => (
-              <li
-                key={inv.id}
-                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm"
-              >
-                <div>
-                  <p className="font-mono text-xs font-medium">{inv.code}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {inv.moneyStatus}
-                    {inv.amount ? ` · ${inv.amount}` : ''}
-                  </p>
-                </div>
-                <Link
-                  href={`/projects/${inv.projectId}`}
-                  className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
-                >
-                  Project
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <DetailSheetEntityLinkGrid>
+            {invoices.map((inv) => {
+              const money = getInvoiceMoneyStage(inv.moneyStatus);
+              const statusLabel = money?.label ?? inv.moneyStatus;
+              return (
+                <DetailSheetEntityLinkCard
+                  key={inv.id}
+                  href={`/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(inv.id)}`}
+                  icon={FileText}
+                  label={inv.code}
+                  title={statusLabel}
+                  description={inv.amount ? String(inv.amount) : undefined}
+                />
+              );
+            })}
+          </DetailSheetEntityLinkGrid>
         )}
       </div>
     );
@@ -172,43 +170,31 @@ export function ClientPortfolioTabPanels({
     const subs = data.subscriptions as Array<{
       id: string;
       code: string;
-      name: string;
       status: string;
       amount: string | null;
       projectId: string;
     }>;
     const m = data.accessMask;
     return (
-      <div className="space-y-2">
-        {m.subscriptions && !m.financeAmounts && (
+      <div className="space-y-3">
+        {m.subscriptions && !m.financeAmounts ? (
           <AccessNote message="Subscription amounts are hidden for your role; status and codes remain visible." />
-        )}
+        ) : null}
         {subs.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No subscriptions.</p>
+          <DetailSheetEntityLinkGrid empty={<PortfolioEmpty>No subscriptions.</PortfolioEmpty>} />
         ) : (
-          <ul className="divide-border divide-y rounded-xl border">
+          <DetailSheetEntityLinkGrid>
             {subs.map((s) => (
-              <li
+              <DetailSheetEntityLinkCard
                 key={s.id}
-                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm"
-              >
-                <div>
-                  <p className="text-xs font-medium">{getSubscriptionDisplayTitle(s)}</p>
-                  <p className="text-muted-foreground font-mono text-xs">{s.code}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {s.status}
-                    {s.amount ? ` · ${s.amount}` : ''}
-                  </p>
-                </div>
-                <Link
-                  href={`/projects/${s.projectId}`}
-                  className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
-                >
-                  Project
-                </Link>
-              </li>
+                href={subscriptionsListWithOpenSubscriptionHref(s.id)}
+                icon={Repeat}
+                label={s.code}
+                title={s.status}
+                description={s.amount ? String(s.amount) : undefined}
+              />
             ))}
-          </ul>
+          </DetailSheetEntityLinkGrid>
         )}
       </div>
     );
@@ -222,27 +208,22 @@ export function ClientPortfolioTabPanels({
       title: string;
       projectId: string;
     }>;
+    if (tickets.length === 0) {
+      return <DetailSheetEntityLinkGrid empty={<PortfolioEmpty>No tickets.</PortfolioEmpty>} />;
+    }
     return (
-      <div className="space-y-2">
-        {tickets.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No tickets.</p>
-        ) : (
-          <ul className="divide-border divide-y rounded-xl border">
-            {tickets.map((t) => (
-              <li key={t.id} className="px-3 py-2.5 text-sm">
-                <p className="font-mono text-xs font-medium">{t.code}</p>
-                <p className="font-medium">{t.title}</p>
-                <p className="text-muted-foreground text-xs">
-                  {t.status} ·{' '}
-                  <Link className="text-primary hover:underline" href={`/projects/${t.projectId}`}>
-                    Project
-                  </Link>
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <DetailSheetEntityLinkGrid>
+        {tickets.map((t) => (
+          <DetailSheetEntityLinkCard
+            key={t.id}
+            href={`/support?${SUPPORT_TICKET_OPEN_QUERY}=${encodeURIComponent(t.id)}`}
+            icon={LifeBuoy}
+            label={t.code}
+            title={t.title}
+            description={t.status}
+          />
+        ))}
+      </DetailSheetEntityLinkGrid>
     );
   }
 

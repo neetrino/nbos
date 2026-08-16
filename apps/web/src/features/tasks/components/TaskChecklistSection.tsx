@@ -1,8 +1,10 @@
 import { ListChecks, Plus, Trash2 } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import type { Task, TaskChecklistItem } from '@/lib/api/tasks';
 
 interface TaskChecklistSectionProps {
@@ -33,7 +35,7 @@ export function TaskChecklistSection({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide">
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
           <ListChecks size={13} /> Checklists
         </h4>
         <span className="text-muted-foreground text-xs">{task.checklists.length} lists</span>

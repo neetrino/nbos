@@ -66,9 +66,14 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
 
   return (
     <button type="button" onClick={() => onOpen(partner)} className={PARTNERS_DIRECTORY_CARD_CLASS}>
-      <div className="flex items-start justify-between gap-3">
-        <div className={PARTNER_CARD_AVATAR_CLASS}>
-          <Handshake size={20} aria-hidden />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className={PARTNER_CARD_AVATAR_CLASS}>
+            <Handshake size={20} aria-hidden />
+          </div>
+          <h3 className="text-foreground min-w-0 flex-1 truncate text-base font-bold tracking-tight">
+            {partner.name}
+          </h3>
         </div>
         {st ? (
           <StatusBadge
@@ -77,20 +82,6 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
             className={PARTNER_CARD_STATUS_BADGE_CLASS}
           />
         ) : null}
-      </div>
-
-      <div className="mt-4 min-w-0">
-        <h3 className="text-foreground truncate text-base font-bold tracking-tight">
-          {partner.name}
-        </h3>
-        {partner.contact ? (
-          <PersonAvatarName
-            name={`${partner.contact.firstName} ${partner.contact.lastName}`.trim()}
-            className="mt-3"
-          />
-        ) : (
-          <p className="text-muted-foreground mt-0.5 truncate text-sm">No linked contact</p>
-        )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -111,6 +102,15 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
           />
         ) : null}
       </div>
+
+      {partner.contact ? (
+        <PersonAvatarName
+          name={`${partner.contact.firstName} ${partner.contact.lastName}`.trim()}
+          className="mt-3"
+        />
+      ) : (
+        <p className="text-muted-foreground mt-3 truncate text-sm">No linked contact</p>
+      )}
 
       <div className="border-border mt-5 border-t pt-4">
         <div className="space-y-3">

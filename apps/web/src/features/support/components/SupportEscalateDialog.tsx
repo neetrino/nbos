@@ -39,7 +39,7 @@ export function SupportEscalateDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>Managerial escalation</DialogTitle>
           <DialogDescription>

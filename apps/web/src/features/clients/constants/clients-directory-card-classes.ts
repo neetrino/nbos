@@ -41,16 +41,19 @@ export const CONTACT_CARD_METRIC_CELL_CLASS = CLIENTS_DIRECTORY_METRIC_CELL_CLAS
 
 export const CONTACT_CARD_ROLE_BADGE_CLASS = 'rounded-full px-2.5 py-1 text-xs';
 
-export const COMPANY_CARD_STATUS_BADGE_CLASS = 'rounded-full px-2.5 py-1 text-xs';
+export const COMPANY_CARD_STATUS_BADGE_CLASS = 'rounded-full px-2 py-0.5 text-[11px]';
 
-/** Client directory grid base — column count at `xl` depends on app sidebar width. */
+/** Compact status chips in companies table. */
+export const COMPANY_TABLE_STATUS_BADGE_CLASS = 'rounded-full px-2 text-[10px]';
+
+/** Client directory grid — compact counts only on very large screens. */
 const CLIENTS_DIRECTORY_CARD_GRID_BASE_CLASS =
-  'grid w-full min-w-0 gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+  'grid w-full min-w-0 gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
-/** 4 cards per row when sidebar is open; 5 when collapsed. */
+/** xl: 4 cards; 2xl: 5 with sidebar open, 6 when collapsed. */
 export function clientsDirectoryCardGridClass(sidebarCollapsed: boolean): string {
   return [
     CLIENTS_DIRECTORY_CARD_GRID_BASE_CLASS,
-    sidebarCollapsed ? 'xl:grid-cols-5' : 'xl:grid-cols-4',
+    sidebarCollapsed ? '2xl:grid-cols-6' : '2xl:grid-cols-5',
   ].join(' ');
 }

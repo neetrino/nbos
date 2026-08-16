@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/table';
 import { PersonAvatarName, StatusBadge } from '@/components/shared';
 import {
-  ENTITY_LIST_BADGE_CLASS,
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
@@ -22,6 +21,7 @@ import {
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
+import { COMPANY_TABLE_STATUS_BADGE_CLASS } from '@/features/clients/constants/clients-directory-card-classes';
 import type { Company } from '@/lib/api/clients';
 
 interface CompaniesTableProps {
@@ -72,7 +72,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
                     <StatusBadge
                       label={compType.label}
                       variant={compType.variant}
-                      className={ENTITY_LIST_BADGE_CLASS}
+                      className={COMPANY_TABLE_STATUS_BADGE_CLASS}
                     />
                   ) : null}
                 </TableCell>
@@ -81,7 +81,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
                     <StatusBadge
                       label={taxSt.label}
                       variant={taxSt.variant}
-                      className={ENTITY_LIST_BADGE_CLASS}
+                      className={COMPANY_TABLE_STATUS_BADGE_CLASS}
                     />
                   ) : null}
                 </TableCell>

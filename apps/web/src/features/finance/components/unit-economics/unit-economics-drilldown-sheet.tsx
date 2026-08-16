@@ -127,7 +127,7 @@ export function UnitEconomicsDrilldownSheet({
         sourcePageHref={sourcePageHref}
         className="gap-0 p-0"
       >
-        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+        <div className="bg-background shrink-0 px-5 pt-5 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">

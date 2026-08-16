@@ -10,6 +10,7 @@ import {
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_SHELL_CLASS,
 } from '@/components/shared/entity-list-table';
+import { VAULT_LIST_CENTER_HEAD_CLASS } from '@/features/credentials/constants/credential-vault-table-layout';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { PermissionGate } from '@/lib/permissions';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
@@ -116,15 +117,15 @@ export function CredentialVaultTable({
               </TableHead>
             ) : null}
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Login</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Password</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Category</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Risk</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Access</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Rotation</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>URL</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Login</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Password</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Category</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Type</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Risk</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Access</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Rotation</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>URL</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

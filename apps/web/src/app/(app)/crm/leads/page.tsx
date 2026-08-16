@@ -47,6 +47,7 @@ import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentin
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import {
   getApiErrorMessage,
@@ -129,6 +130,9 @@ function LeadsPipelinePageContent() {
       stripOpenLeadFromUrl();
     },
   });
+  const isMobileViewport = useIsMobileViewport();
+  const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
+  const effectiveView: ViewMode = isTrashView || !isMobileViewport ? view : 'kanban';
 
   const pushOpenLeadToUrl = useCallback(
     (id: string) => {
@@ -537,27 +541,34 @@ function LeadsPipelinePageContent() {
           search={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search leads by name, email, phone…"
-          filters={filterConfigs}
-          filterValues={{
-            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-            ...filters,
-          }}
-          onFilterChange={(key: string, value: string) =>
-            setFilters((prev) => {
-              if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-                const next = { ...prev };
-                delete next.boardScope;
-                return next;
-              }
-              return { ...prev, [key]: value };
-            })
+          filters={showDesktopBoardChrome ? filterConfigs : undefined}
+          filterValues={
+            showDesktopBoardChrome
+              ? {
+                  boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+                  ...filters,
+                }
+              : undefined
           }
-          onClearAll={() => setFilters({})}
+          onFilterChange={
+            showDesktopBoardChrome
+              ? (key: string, value: string) =>
+                  setFilters((prev) => {
+                    if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+                      const next = { ...prev };
+                      delete next.boardScope;
+                      return next;
+                    }
+                    return { ...prev, [key]: value };
+                  })
+              : undefined
+          }
+          onClearAll={showDesktopBoardChrome ? () => setFilters({}) : undefined}
         />
       ),
-      viewMode: isTrashView ? null : (
+      viewMode: showDesktopBoardChrome ? (
         <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />
-      ),
+      ) : null,
       trailing: (
         <div className="flex items-center gap-2">
           <ClientsDirectorySettingsSheet
@@ -574,13 +585,13 @@ function LeadsPipelinePageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
+    [filterConfigs, filters, isTrashView, scope, search, setScope, showDesktopBoardChrome, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="leads"
@@ -609,8 +620,8 @@ function LeadsPipelinePageContent() {
             )
           }
         />
-      ) : !isTrashView && view === 'kanban' ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
+      ) : !isTrashView && effectiveView === 'kanban' ? (
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
             columns={kanbanColumns}

@@ -63,6 +63,8 @@ export interface ControlledInlineFieldProps {
   datePickerMode?: NbosDatePickerMode;
   /** Select dropdown item styling (`highlight` = blue selected, gray hover, no checkmark). */
   selectMenuTone?: 'default' | 'highlight';
+  /** Extra classes for the select popup (menu width, etc.). */
+  selectContentClassName?: string;
   /** Field shell width follows content (select, money). */
   fitContent?: boolean;
   /** Overrides select trigger label (e.g. status badge). */
@@ -86,6 +88,7 @@ export function ControlledInlineField({
   datePickerMode = 'date',
   fitContent = false,
   selectMenuTone = 'default',
+  selectContentClassName,
   displayValue,
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
@@ -186,7 +189,7 @@ export function ControlledInlineField({
                     }
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={selectContentClassName}>
                   {options.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value} tone={selectMenuTone}>
                       <span className="flex items-center gap-2">

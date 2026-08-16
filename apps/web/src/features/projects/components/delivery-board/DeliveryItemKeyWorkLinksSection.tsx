@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ExternalLink, FolderKanban, GitBranch, Globe, Rocket } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
@@ -62,9 +63,7 @@ export function DeliveryItemKeyWorkLinksSection({
 
   return (
     <section className={cn('border-border bg-card/40 rounded-xl border p-4', workLinksGateClass)}>
-      <h3 className="text-muted-foreground mb-2.5 text-[10px] font-semibold tracking-wider uppercase">
-        Key work links
-      </h3>
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2.5')}>Key work links</h3>
       <div className="flex flex-col gap-1.5">
         {workSpaceHref && workSpaceHref !== '#' ? (
           <Link

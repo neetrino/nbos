@@ -12,7 +12,7 @@ import {
   type ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
 import { ClientPortfolioTabPanels } from './ClientPortfolioTabPanels';
-import { CONTACT_SHEET_HIDDEN_SCROLLBAR_CLASS } from '../contact-sheet-layout';
+import { CONTACT_SHEET_TAB_BAR_SCROLL_CLASS } from '../contact-sheet-layout';
 import {
   CLIENT_DETAIL_GENERAL_TAB,
   CLIENT_DETAIL_PORTFOLIO_TABS,
@@ -88,7 +88,7 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
       tabs={tabs.map((tab) => ({ value: tab.id, label: tab.label, icon: tab.icon }))}
       activeTab={activeTab}
       onTabChange={(value) => onSelect(value as ClientDetailTabId)}
-      scrollClassName={CONTACT_SHEET_HIDDEN_SCROLLBAR_CLASS}
+      scrollClassName={CONTACT_SHEET_TAB_BAR_SCROLL_CLASS}
     />
   );
 }

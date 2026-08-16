@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
@@ -73,9 +74,7 @@ export function DeliveryItemDetailSecondaryPanels({
 function SecondaryCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-border bg-card/50 rounded-xl border p-5">
-      <h4 className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-        {title}
-      </h4>
+      <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>{title}</h4>
       {children}
     </section>
   );

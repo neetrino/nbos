@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { PublicSiteFooterLinks } from '@/components/legal/public-site-footer-links';
-import { ForgotPasswordForm } from '@/features/account/components/forgot-password-form';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
@@ -34,7 +33,6 @@ function SignInForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [view, setView] = useState<'sign-in' | 'forgot'>('sign-in');
 
   const {
     register,
@@ -72,7 +70,7 @@ function SignInForm() {
   }
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center px-4">
+    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -83,100 +81,85 @@ function SignInForm() {
               width={168}
               height={28}
               fetchPriority="high"
-              className="h-7 w-auto"
+              className="h-6 w-auto sm:h-7"
             />
           </div>
-          <p className="text-muted-foreground text-base font-medium">
-            {view === 'forgot' ? 'Reset your password' : 'Enter your credentials and sign in'}
+          <p className="text-muted-foreground text-sm font-medium sm:text-base">
+            Enter your credentials and sign in
           </p>
         </div>
 
-        {view === 'forgot' ? (
-          <ForgotPasswordForm onBack={() => setView('sign-in')} />
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post">
-            <div>
-              <label htmlFor="email" className="text-foreground mb-1.5 block text-sm font-medium">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                autoFocus
-                {...register('email')}
-                className={cn(
-                  'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
-                  errors.email && 'border-destructive',
-                )}
-                placeholder="you@company.com"
-              />
-              {errors.email && (
-                <p className="text-destructive mt-1 text-xs">{errors.email.message}</p>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post">
+          <div>
+            <label htmlFor="email" className="text-foreground mb-1.5 block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              autoFocus
+              {...register('email')}
+              className={cn(
+                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
+                errors.email && 'border-destructive',
               )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="text-foreground mb-1.5 block text-sm font-medium"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  {...register('password')}
-                  className={cn(
-                    'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 pr-10 text-sm transition-colors outline-none focus-visible:ring-2',
-                    errors.password && 'border-destructive',
-                  )}
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-destructive mt-1 text-xs">{errors.password.message}</p>
-              )}
-            </div>
-
-            {authError && (
-              <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
-                {authError}
-              </div>
+              placeholder="you@company.com"
+            />
+            {errors.email && (
+              <p className="text-destructive mt-1 text-xs">{errors.email.message}</p>
             )}
+          </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
-            >
-              {isSubmitting ? (
-                <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-              ) : (
-                <LogIn size={16} />
-              )}
-              {isSubmitting ? 'Signing in…' : 'Sign In'}
-            </button>
+          <div>
+            <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                {...register('password')}
+                className={cn(
+                  'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 pr-10 text-sm transition-colors outline-none focus-visible:ring-2',
+                  errors.password && 'border-destructive',
+                )}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-destructive mt-1 text-xs">{errors.password.message}</p>
+            )}
+          </div>
 
-            <button
-              type="button"
-              onClick={() => setView('forgot')}
-              className="text-muted-foreground hover:text-foreground w-full text-center text-sm font-medium underline-offset-4 hover:underline"
-            >
-              Forgot password?
-            </button>
-          </form>
-        )}
+          {authError && (
+            <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
+              {authError}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+            ) : (
+              <LogIn size={16} />
+            )}
+            {isSubmitting ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
 
         <div className="mt-8 flex justify-center">
           <PublicSiteFooterLinks />

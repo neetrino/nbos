@@ -1,4 +1,7 @@
-import type { PointerEvent as ReactPointerEvent } from 'react';
+'use client';
+
+import { useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { FolderKanban, ListChecks } from 'lucide-react';
 import {
   ActionTileButton,
@@ -20,8 +23,10 @@ import {
 } from '@/features/projects/constants/projects';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import { DeliveryBoardKanbanCardHeader } from './DeliveryBoardKanbanCardHeader';
-import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
-import { DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS } from './delivery-board-card-ui.constants';
+import {
+  DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS,
+  DELIVERY_BOARD_KANBAN_CARD_SHELL_CLASS,
+} from './delivery-board-card-ui.constants';
 import {
   getItemId,
   getItemLifecycle,
@@ -73,6 +78,12 @@ interface ProjectDeliveryBoardCardProps {
   quickTaskDisabled?: boolean;
 }
 
+function blurActiveElement() {
+  if (typeof document === 'undefined') return;
+  const active = document.activeElement;
+  if (active instanceof HTMLElement) active.blur();
+}
+
 export function ProjectDeliveryBoardCard({
   item,
   isActionBusy,
@@ -90,6 +101,7 @@ export function ProjectDeliveryBoardCard({
   onOpenQuickTaskForProject,
   quickTaskDisabled = false,
 }: ProjectDeliveryBoardCardProps) {
+  const [hoverActionsVisible, setHoverActionsVisible] = useState(false);
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
   const isExtension = item.kind === 'EXTENSION';
@@ -104,7 +116,13 @@ export function ProjectDeliveryBoardCard({
     : undefined;
 
   const projectId = getProjectId(item);
-  const boardChrome = getDeliveryBoardCardChrome(dealTypeVisual);
+  const canShowHoverActions =
+    kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && Boolean(projectId);
+
+  function hideHoverActions() {
+    setHoverActionsVisible(false);
+    blurActiveElement();
+  }
 
   return (
     <KanbanCardShell
@@ -115,14 +133,23 @@ export function ProjectDeliveryBoardCard({
       hoverShadow="md"
       transition="all"
       shellClassName={cn(
-        kanbanMinimal ? 'group/kanban-card w-full text-left' : 'group w-full text-left',
-        dealTypeVisual.cardShellClassName,
+        kanbanMinimal
+          ? cn(
+              'group/kanban-card relative w-full text-left',
+              DELIVERY_BOARD_KANBAN_CARD_SHELL_CLASS,
+            )
+          : cn('group w-full text-left', dealTypeVisual.cardShellClassName),
       )}
+      onPointerEnter={() => {
+        if (canShowHoverActions) setHoverActionsVisible(true);
+      }}
+      onPointerLeave={hideHoverActions}
     >
       <button
         type="button"
         disabled={!productId && !onOpenDetails}
         onClick={() => {
+          hideHoverActions();
           if (onOpenDetails) {
             onOpenDetails();
             return;
@@ -140,7 +167,7 @@ export function ProjectDeliveryBoardCard({
               lifecycle={lifecycle ?? null}
             />
             <div
-              className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, boardChrome.dividerClass)}
+              className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
               aria-hidden
             />
             <DeliveryCardMeta item={item} metaDensity="board" visual={dealTypeVisual} />
@@ -181,9 +208,11 @@ export function ProjectDeliveryBoardCard({
           </>
         )}
       </button>
-      {kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && projectId ? (
+      {canShowHoverActions && projectId ? (
         <DeliveryKanbanCardHoverActions
           projectId={projectId}
+          revealed={hoverActionsVisible}
+          onHide={hideHoverActions}
           onPointerDown={stopKanbanPointerBubble}
           onOpenQuickTaskForProject={onOpenQuickTaskForProject}
           quickTaskDisabled={quickTaskDisabled}
@@ -250,18 +279,24 @@ const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';
 
 function DeliveryKanbanCardHoverActions({
   projectId,
+  revealed,
+  onHide,
   onPointerDown,
   onOpenQuickTaskForProject,
   quickTaskDisabled,
 }: {
   projectId: string;
+  revealed: boolean;
+  onHide: () => void;
   onPointerDown?: (event: ReactPointerEvent) => void;
   onOpenQuickTaskForProject?: (projectId: string) => void;
   quickTaskDisabled: boolean;
 }) {
+  const router = useRouter();
+
   return (
     <div onPointerDown={onPointerDown}>
-      <ActionTileHoverBar variant="kanban-card">
+      <ActionTileHoverBar variant="kanban-card" revealed={revealed}>
         {onOpenQuickTaskForProject ? (
           <ActionTileButton
             label="Task"
@@ -270,7 +305,10 @@ function DeliveryKanbanCardHoverActions({
             size="card"
             disabled={quickTaskDisabled}
             title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
-            onClick={() => onOpenQuickTaskForProject(projectId)}
+            onClick={() => {
+              onHide();
+              onOpenQuickTaskForProject(projectId);
+            }}
           />
         ) : null}
         <ActionTileButton
@@ -278,7 +316,10 @@ function DeliveryKanbanCardHoverActions({
           icon={<FolderKanban aria-hidden />}
           tone="neutral"
           size="card"
-          href={`/projects/${projectId}`}
+          onClick={() => {
+            onHide();
+            router.push(`/projects/${projectId}`);
+          }}
         />
       </ActionTileHoverBar>
     </div>

@@ -6,6 +6,8 @@ import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 export interface CredentialFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Blur overlay when opened above another sheet (e.g. delivery detail). */
+  forceNestedBackdrop?: boolean;
   credentialId?: string | null;
   /** Cached list row for the opened credential; enables instant render before detail loads. */
   initialItem?: CredentialListItem | null;

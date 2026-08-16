@@ -38,16 +38,20 @@ export function SubscriptionInvoicesTab({ subscription }: SubscriptionInvoicesTa
   );
 
   return (
-    <DetailSheetSection title="Invoices" icon={<FileText size={12} />}>
-      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+    <DetailSheetSection
+      title="Invoices"
+      icon={<FileText size={12} />}
+      titleTrailing={
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}
           options={ENTITY_ITEM_VIEW_OPTIONS}
           ariaLabel="Invoice list view"
+          className="ml-auto"
         />
-      </div>
-
+      }
+      titleRowClassName="flex-nowrap"
+    >
       <EntityItemList
         items={itemSummaries}
         variant={viewVariant}

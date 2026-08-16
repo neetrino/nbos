@@ -19,10 +19,7 @@ import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessS
 import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
-import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
-import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
-import { DeliveryItemPaymentSummary } from './DeliveryItemLanguagesPanel';
 import {
   DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
   DELIVERY_DETAIL_GENERAL_COLUMN_CLASS,
@@ -72,10 +69,6 @@ export function DeliveryItemDetailGeneralTab({
       ? (item.product.projectId ?? item.product.project?.id ?? '')
       : (item.extension.projectId ?? item.extension.project?.id ?? '');
   const productId = item.kind === 'PRODUCT' ? item.product.id : item.extension.productId;
-  const productName =
-    item.kind === 'PRODUCT'
-      ? (product?.name ?? item.product.name)
-      : (extension?.product.name ?? item.extension.product.name);
 
   const kind = item.kind;
   const checklistProgress =
@@ -90,7 +83,57 @@ export function DeliveryItemDetailGeneralTab({
   return (
     <div className="space-y-4 px-5 py-4 sm:px-7">
       <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
+        <div className="flex w-full min-w-0 flex-col gap-4">
+          {product && productPlan ? (
+            <ProductPlanningSection
+              entityId={product.id}
+              draft={productPlan}
+              onDraftChange={onProductPlanChange}
+              paymentType={product.order?.paymentType}
+              disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
+            />
+          ) : null}
+          {extension && extensionPlan ? (
+            <ExtensionPlanningSection
+              extension={extension}
+              draft={extensionPlan}
+              onDraftChange={onExtensionPlanChange}
+              disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
+            />
+          ) : null}
+
+          <DeliveryAccessInfrastructureSection
+            projectId={projectId}
+            productId={productId}
+            onRefreshDetail={onRefreshDetail}
+          />
+
+          <DeliveryItemTeamSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            productPlan={productPlan}
+            extensionPlan={extensionPlan}
+            onProductPlanChange={onProductPlanChange}
+            onExtensionPlanChange={onExtensionPlanChange}
+            disabled={planningDisabled}
+            gateRequiredFields={gateRequiredFields}
+          />
+        </div>
+
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+          <DeliveryItemCommercialSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            financeTabHref={financeTabHref}
+            projectHubHref={projectHubHref}
+            sourcePageHref={sourcePageHref}
+            credentialsTabHref={credentialsTabHref}
+            gateRequiredFields={gateRequiredFields}
+          />
           <DeliveryItemStageReadinessSection
             kind={kind}
             product={product}
@@ -114,85 +157,6 @@ export function DeliveryItemDetailGeneralTab({
               }}
             />
           </div>
-          <DeliveryItemTeamSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            productPlan={productPlan}
-            extensionPlan={extensionPlan}
-            onProductPlanChange={onProductPlanChange}
-            onExtensionPlanChange={onExtensionPlanChange}
-            disabled={planningDisabled}
-            gateRequiredFields={gateRequiredFields}
-          />
-          {kind === 'PRODUCT' && productPlan && product ? (
-            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemLanguagesMultiselect
-                value={productPlan.languages}
-                onChange={(languages) => onProductPlanChange({ ...productPlan, languages })}
-                disabled={planningDisabled}
-              />
-              <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
-            </section>
-          ) : null}
-          {kind === 'EXTENSION' && extension ? (
-            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
-              <DeliveryItemLanguagesMultiselect
-                value={extension.product.languages ?? []}
-                readOnly
-                disabled={planningDisabled}
-              />
-              <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
-            </section>
-          ) : null}
-        </div>
-
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          {product && productPlan ? (
-            <ProductPlanningSection
-              entityId={product.id}
-              draft={productPlan}
-              onDraftChange={onProductPlanChange}
-              disabled={planningDisabled}
-              gateRequiredFields={gateRequiredFields}
-            />
-          ) : null}
-          {extension && extensionPlan ? (
-            <ExtensionPlanningSection
-              extension={extension}
-              draft={extensionPlan}
-              onDraftChange={onExtensionPlanChange}
-              disabled={planningDisabled}
-              gateRequiredFields={gateRequiredFields}
-            />
-          ) : null}
-          <DeliveryItemCommercialSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            financeTabHref={financeTabHref}
-            projectHubHref={projectHubHref}
-            sourcePageHref={sourcePageHref}
-            credentialsTabHref={credentialsTabHref}
-            gateRequiredFields={gateRequiredFields}
-          />
-          <DeliveryItemKeyWorkLinksSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            workSpaceHref={workSpaceHref}
-            gateRequiredFields={gateRequiredFields}
-          />
-        </div>
-
-        <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryAccessInfrastructureSection
-            projectId={projectId}
-            productId={productId}
-            productName={productName}
-            productCredentialsHref={credentialsTabHref}
-            onRefreshDetail={onRefreshDetail}
-          />
           <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
         </div>
       </div>

@@ -58,11 +58,12 @@ function ContactsPageContent() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showCreate, setShowCreate] = useState(false);
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [fetchedContact, setFetchedContact] = useState<Contact | null>(null);
   const deleteConfirm = useDeleteConfirm();
   const permanentDeleteConfirm = useDeleteConfirm();
   const [purging, setPurging] = useState(false);
+
+  const openContactId = searchParams.get(OPEN_CONTACT_QUERY)?.trim() || null;
 
   function contactDisplayName(contact: Contact): string {
     return `${contact.firstName} ${contact.lastName}`.trim() || 'Contact';
@@ -76,11 +77,19 @@ function ContactsPageContent() {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
+  const openContactSheet = useCallback(
+    (contact: Contact) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_CONTACT_QUERY, contact.id);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
   const { scope, setScope, isTrashView } = useListScope({
     onScopeChange: () => {
-      setSheetOpen(false);
-      setSelectedContact(null);
       stripOpenContactFromUrl();
+      setFetchedContact(null);
     },
   });
 
@@ -113,28 +122,24 @@ function ContactsPageContent() {
     fetchContacts();
   }, [fetchContacts]);
 
-  const openContactId = searchParams.get(OPEN_CONTACT_QUERY);
+  const listContact = useMemo(
+    () => (openContactId ? (contacts.find((c) => c.id === openContactId) ?? null) : null),
+    [contacts, openContactId],
+  );
+
+  const sheetContact =
+    listContact ?? (fetchedContact?.id === openContactId ? fetchedContact : null);
+
   const deepLinkContactAttemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
     deepLinkContactAttemptedRef.current = null;
   }, [openContactId]);
 
-  const pushOpenContactToUrl = useCallback(
-    (id: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(OPEN_CONTACT_QUERY, id);
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams],
-  );
-
   useEffect(() => {
     if (!openContactId || loading) return;
-    const match = contacts.find((c) => c.id === openContactId);
-    if (match) {
-      setSelectedContact(match);
-      setSheetOpen(true);
+    if (listContact) {
+      setFetchedContact(null);
       return;
     }
     if (deepLinkContactAttemptedRef.current === openContactId) return;
@@ -144,9 +149,8 @@ function ContactsPageContent() {
       try {
         const contact = await contactsApi.getById(openContactId);
         if (cancelled) return;
+        setFetchedContact(contact);
         setContacts((prev) => (prev.some((c) => c.id === contact.id) ? prev : [contact, ...prev]));
-        setSelectedContact(contact);
-        setSheetOpen(true);
       } catch {
         if (!cancelled) {
           toast.error('Contact not found or you cannot open it.');
@@ -157,27 +161,28 @@ function ContactsPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [openContactId, loading, contacts, stripOpenContactFromUrl]);
+  }, [openContactId, loading, listContact, stripOpenContactFromUrl]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
     const updated = await contactsApi.update(id, data);
-    setSelectedContact(updated);
+    setFetchedContact((prev) => (prev?.id === id ? updated : prev));
+    setContacts((prev) => prev.map((c) => (c.id === id ? updated : c)));
     await fetchContacts();
   };
 
   const handleMoveToTrash = async (id: string) => {
     await contactsApi.moveToTrash(id);
     toast.success('Contact moved to Trash');
-    setSheetOpen(false);
-    setSelectedContact(null);
     stripOpenContactFromUrl();
+    setFetchedContact(null);
     await fetchContacts();
   };
 
   const handleRestore = async (id: string) => {
     const restored = await contactsApi.restore(id);
     toast.success('Contact restored');
-    setSelectedContact(restored);
+    setFetchedContact((prev) => (prev?.id === id ? restored : prev));
+    setContacts((prev) => prev.map((c) => (c.id === id ? restored : c)));
     await fetchContacts();
   };
 
@@ -189,21 +194,14 @@ function ContactsPageContent() {
       await contactsApi.permanentDelete(id);
       toast.success('Contact permanently deleted');
       permanentDeleteConfirm.clear();
-      setSheetOpen(false);
-      setSelectedContact(null);
       stripOpenContactFromUrl();
+      setFetchedContact(null);
       await fetchContacts();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not delete contact');
     } finally {
       setPurging(false);
     }
-  };
-
-  const handleRowClick = (contact: Contact) => {
-    setSelectedContact(contact);
-    setSheetOpen(true);
-    pushOpenContactToUrl(contact.id);
   };
 
   const filterConfigs = useMemo(
@@ -293,12 +291,12 @@ function ContactsPageContent() {
         <div className="min-h-0 flex-1 overflow-auto">
           <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
             {contacts.map((contact) => (
-              <ContactCard key={contact.id} contact={contact} onOpen={handleRowClick} />
+              <ContactCard key={contact.id} contact={contact} onOpen={openContactSheet} />
             ))}
           </div>
         </div>
       ) : (
-        <ContactsTable contacts={contacts} onOpen={handleRowClick} />
+        <ContactsTable contacts={contacts} onOpen={openContactSheet} />
       )}
 
       {!loading && !error && contacts.length > 0 ? (
@@ -312,13 +310,12 @@ function ContactsPageContent() {
       />
 
       <ContactSheet
-        contact={selectedContact}
-        open={sheetOpen}
-        onOpenChange={(open) => {
-          setSheetOpen(open);
-          if (!open) {
-            setSelectedContact(null);
+        contact={sheetContact}
+        open={Boolean(openContactId)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
             stripOpenContactFromUrl();
+            setFetchedContact(null);
           }
         }}
         onUpdate={handleUpdate}
@@ -328,9 +325,7 @@ function ContactsPageContent() {
             ? undefined
             : (id) => {
                 const contact =
-                  selectedContact?.id === id
-                    ? selectedContact
-                    : contacts.find((item) => item.id === id);
+                  sheetContact?.id === id ? sheetContact : contacts.find((item) => item.id === id);
                 if (!contact) return;
                 deleteConfirm.request({ id, name: contactDisplayName(contact) });
               }
@@ -340,9 +335,7 @@ function ContactsPageContent() {
           isTrashView
             ? (id) => {
                 const contact =
-                  selectedContact?.id === id
-                    ? selectedContact
-                    : contacts.find((item) => item.id === id);
+                  sheetContact?.id === id ? sheetContact : contacts.find((item) => item.id === id);
                 if (!contact) return;
                 permanentDeleteConfirm.request({ id, name: contactDisplayName(contact) });
               }

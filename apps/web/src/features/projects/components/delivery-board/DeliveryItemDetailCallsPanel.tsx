@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { FileText, FolderKanban, LayoutGrid } from 'lucide-react';
+import { EntityNavPillLink } from '@/components/shared';
 
 export function DeliveryItemDetailCallsPanel({
   projectHubHref,
@@ -19,23 +20,21 @@ export function DeliveryItemDetailCallsPanel({
         Use the project and CRM deal for client conversations until telephony or activity APIs are
         connected.
       </p>
-      <ul className="space-y-2 text-sm">
+      <ul className="flex flex-col items-start gap-2">
         <li>
-          <Link href={projectHubHref} className="text-primary font-semibold hover:underline">
-            Open project →
-          </Link>
+          <EntityNavPillLink href={projectHubHref} label="Open project" icon={FolderKanban} />
         </li>
         {openDealHref ? (
           <li>
-            <Link href={openDealHref} className="text-primary font-semibold hover:underline">
-              Open linked deal{dealCode ? ` (${dealCode})` : ''} →
-            </Link>
+            <EntityNavPillLink
+              href={openDealHref}
+              label={dealCode ? `Open linked deal (${dealCode})` : 'Open linked deal'}
+              icon={FileText}
+            />
           </li>
         ) : null}
         <li>
-          <Link href="/crm/deals" className="text-primary font-semibold hover:underline">
-            Deal pipeline →
-          </Link>
+          <EntityNavPillLink href="/crm/deals" label="Deal pipeline" icon={LayoutGrid} />
         </li>
       </ul>
     </div>

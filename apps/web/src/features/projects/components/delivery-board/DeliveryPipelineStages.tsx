@@ -36,8 +36,8 @@ const SHEET_STAGES = toSheetPipelineStages([
     label: ACTIVE_SHORT[key],
     shortLabel: ACTIVE_SHORT[key],
   })),
-  { key: DELIVERY_PIPELINE_DONE_KEY, label: 'Done', shortLabel: 'Done' },
   { key: DELIVERY_PIPELINE_CANCEL_KEY, label: 'Cancel', shortLabel: 'Cancel' },
+  { key: DELIVERY_PIPELINE_DONE_KEY, label: 'Done', shortLabel: 'Done' },
 ]);
 
 function resolveSheetCurrentStatus(lifecycle: DeliveryLifecycleProjection | undefined): string {

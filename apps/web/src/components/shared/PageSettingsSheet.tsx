@@ -64,7 +64,7 @@ export function PageSettingsSheet({
         floatingClose
         floatingRailVisible={open}
         floatingRailAnchorClassName={PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS}
-        className="flex w-full flex-col gap-0 sm:max-w-md"
+        className="flex flex-col gap-0 data-[side=right]:w-[85vw] sm:max-w-md sm:data-[side=right]:w-full"
       >
         <SheetHeader className="border-border border-b pb-4">
           <SheetTitle>{title}</SheetTitle>

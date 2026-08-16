@@ -57,7 +57,7 @@ export function SupportStatusDialogs({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" forceNestedBackdrop>
           <DialogHeader>
             <DialogTitle>Mark resolved</DialogTitle>
             <DialogDescription>
@@ -98,7 +98,7 @@ export function SupportStatusDialogs({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" forceNestedBackdrop>
           <DialogHeader>
             <DialogTitle>Close ticket</DialogTitle>
             <DialogDescription>
