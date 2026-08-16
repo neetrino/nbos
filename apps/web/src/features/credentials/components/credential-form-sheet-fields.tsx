@@ -159,8 +159,6 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
       {providerBlock}
       {appStoreBlock}
 
-      <CredentialFormContextLinks {...contextLinks} />
-
       <CredentialFormDynamicFields
         credentialType={credentialType}
         credentialId={credentialId}
@@ -224,6 +222,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
           onNextRotationAtChange={setNextRotationAt}
         />
       )}
+
+      <CredentialFormContextLinks {...contextLinks} />
     </form>
   );
 }

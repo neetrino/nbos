@@ -23,9 +23,9 @@ function ContextLink({
   return (
     <Link
       href={href}
-      className="text-foreground hover:text-primary inline-flex max-w-full min-w-0 items-center gap-1.5 text-sm font-medium transition-colors"
+      className="text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors"
     >
-      <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
+      <Icon className="size-3.5 shrink-0" aria-hidden />
       <span className="truncate">{label}</span>
     </Link>
   );
@@ -48,11 +48,12 @@ export function CredentialFormContextLinks({
   }
 
   return (
-    <section className="border-border space-y-2 border-t pt-4" aria-label="Context links">
-      <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-        Context links
-      </h3>
-      <div className="flex flex-col gap-2">
+    <section
+      className="border-border flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4"
+      aria-label="Context links"
+    >
+      <span className="text-muted-foreground shrink-0 text-xs">Context</span>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         {productHref && productRecord ? (
           <ContextLink href={productHref} icon={Package} label={productRecord.name} />
         ) : null}
