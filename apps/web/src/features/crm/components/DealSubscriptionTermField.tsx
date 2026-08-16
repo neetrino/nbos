@@ -2,10 +2,7 @@
 
 import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
-import {
-  DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
-  DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
-} from '@/components/shared/detail-sheet-classes';
+import { DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS } from '@/components/shared/detail-sheet-classes';
 import { formatAmount } from '../constants/dealPipeline';
 import { deriveDealSubscriptionContractTotal } from '@/features/crm/utils/deal-subscription-contract-total';
 import { DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS } from '@/features/crm/constants/deal-subscription-term';
@@ -30,7 +27,7 @@ function parseTermMonthsInput(value: string): number | null {
   return parsed;
 }
 
-/** Fixed subscription term (months) for PRODUCT/EXTENSION + SUBSCRIPTION deals. */
+/** Fixed subscription term (months) for SUBSCRIPTION deals. */
 export function DealSubscriptionTermField({
   draft,
   patchDraft,
@@ -46,7 +43,7 @@ export function DealSubscriptionTermField({
 
   return (
     <>
-      <div className={cn('flex items-end gap-2', gateClass)}>
+      <div className={cn('flex flex-wrap items-end gap-2', gateClass)}>
         <button
           type="button"
           aria-pressed={isAnnual}
@@ -55,22 +52,15 @@ export function DealSubscriptionTermField({
             patchDraft({ subscriptionTermMonths: DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS })
           }
           className={cn(
-            DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
-            'w-auto flex-none shrink-0',
+            DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+            'shrink-0 px-4',
+            isAnnual
+              ? 'bg-primary text-primary-foreground rounded-full shadow-sm'
+              : 'bg-muted/70 text-foreground/85 hover:bg-muted/80 hover:text-foreground rounded-full',
             disabled && 'pointer-events-none opacity-60',
           )}
         >
-          <span
-            className={cn(
-              DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
-              'flex-none px-4',
-              isAnnual
-                ? 'bg-primary text-primary-foreground rounded-full shadow-sm'
-                : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
-            )}
-          >
-            Annual
-          </span>
+          Annual
         </button>
         <InlineField
           variant="controlled"
@@ -79,7 +69,7 @@ export function DealSubscriptionTermField({
           value={draft.subscriptionTermMonths ?? ''}
           placeholder={`${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX}`}
           disabled={disabled}
-          className="min-w-0 flex-1"
+          className="min-w-[8rem] flex-1 basis-[10rem]"
           onValueChange={(value) =>
             patchDraft({ subscriptionTermMonths: parseTermMonthsInput(value) })
           }
@@ -98,8 +88,7 @@ export function DealSubscriptionTermField({
 }
 
 export function showDealSubscriptionTermFields(draft: DealGeneralDraft): boolean {
-  if (draft.paymentType !== 'SUBSCRIPTION') return false;
-  return draft.type === 'PRODUCT' || draft.type === 'EXTENSION';
+  return draft.paymentType === 'SUBSCRIPTION';
 }
 
 export function dealAmountFieldLabel(paymentType: string | null): string {
