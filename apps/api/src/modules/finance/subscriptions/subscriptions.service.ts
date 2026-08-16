@@ -9,6 +9,7 @@ import {
 import { PRISMA_TOKEN } from '../../../database.module';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
 import { buildSubscriptionGridPayload } from './subscription-grid';
+import { parseSubscriptionStatusQuery } from './subscription-status-query';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 import {
   applySubscriptionBillingPatch,
@@ -120,12 +121,12 @@ export class SubscriptionsService {
     const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
 
     const andParts: Prisma.SubscriptionWhereInput[] = [
-      { billingStartDate: { lte: yearEnd } },
-      { OR: [{ endDate: null }, { endDate: { gte: yearStart } }] },
+      ...subscriptionGridYearWindow(yearStart, yearEnd),
     ];
 
     if (projectId) andParts.push({ projectId });
-    if (status) andParts.push({ status: status as SubscriptionStatusEnum });
+    const statusWhere = parseSubscriptionStatusQuery(status);
+    if (statusWhere) andParts.push({ status: statusWhere });
     if (type) andParts.push({ type: type as SubscriptionTypeEnum });
     if (search?.trim()) {
       const q = search.trim();
@@ -173,7 +174,7 @@ export class SubscriptionsService {
           orderBy: { createdAt: 'desc' },
         },
       },
-      orderBy: { project: { name: 'asc' } },
+      orderBy: SUBSCRIPTION_INBOX_ORDER_BY,
     });
 
     return buildSubscriptionGridPayload(subscriptions, year, new Date());
@@ -195,7 +196,8 @@ export class SubscriptionsService {
 
     if (projectId) where.projectId = projectId;
     Object.assign(where, this.subscriptionPartnerWhere(partnerId));
-    if (status) where.status = status as SubscriptionStatusEnum;
+    const statusWhere = parseSubscriptionStatusQuery(status);
+    if (statusWhere) where.status = statusWhere;
     if (type) where.type = type as SubscriptionTypeEnum;
     if (search?.trim()) {
       const q = search.trim();
@@ -240,7 +242,7 @@ export class SubscriptionsService {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: SUBSCRIPTION_INBOX_ORDER_BY,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -452,6 +454,20 @@ export class SubscriptionsService {
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
+}
+
+const SUBSCRIPTION_INBOX_ORDER_BY = [{ status: 'asc' as const }, { createdAt: 'desc' as const }];
+
+function subscriptionGridYearWindow(
+  yearStart: Date,
+  yearEnd: Date,
+): Prisma.SubscriptionWhereInput[] {
+  return [
+    {
+      OR: [{ billingStartDate: { lte: yearEnd } }, { status: 'PENDING', billingStartDate: null }],
+    },
+    { OR: [{ endDate: null }, { endDate: { gte: yearStart } }] },
+  ];
 }
 
 /** `undefined` untouched; blank string clears to null; valid ISO sets the date. */

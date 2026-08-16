@@ -10,7 +10,8 @@ import {
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { SUBSCRIPTION_TYPES } from '@/features/finance/constants/finance';
+import { buildSubscriptionStatusFilterConfig } from '@/features/finance/constants/subscription-status-filter';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import {
   buildFinancePeriodFilterConfig,
@@ -42,11 +43,7 @@ const SUBSCRIPTION_STATIC_FILTER_CONFIGS: FilterConfig[] = [
     label: 'Type',
     options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
   },
-  {
-    key: 'status',
-    label: 'Status',
-    options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-  },
+  buildSubscriptionStatusFilterConfig(),
 ];
 
 function SubscriptionsPageInner() {

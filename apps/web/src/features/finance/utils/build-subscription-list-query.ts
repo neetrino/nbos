@@ -1,3 +1,4 @@
+import { resolveSubscriptionStatusApiParam } from '@/features/finance/constants/subscription-status-filter';
 import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
 import type { SubscriptionGridQueryParams, SubscriptionListParams } from '@/lib/api/subscriptions';
 
@@ -26,8 +27,7 @@ export function buildSubscriptionListApiParams(
   return {
     search: params.search || undefined,
     type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
-    status:
-      params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
+    status: resolveSubscriptionStatusApiParam(params.filters.status),
     partnerId: resolveSubscriptionPartnerId(params),
     ...periodParams,
   };
@@ -44,8 +44,7 @@ export function buildSubscriptionGridQueryParams(params: {
     year: params.year,
     search: params.search || undefined,
     type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
-    status:
-      params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
+    status: resolveSubscriptionStatusApiParam(params.filters.status),
     partnerId: resolveSubscriptionPartnerId(params),
   };
 }

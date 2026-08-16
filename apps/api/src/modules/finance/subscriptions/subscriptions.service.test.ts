@@ -91,6 +91,36 @@ describe('SubscriptionsService', () => {
       expect(prisma.subscription.findMany).toHaveBeenCalled();
     });
 
+    it('filters a single status with equals and inbox order', async () => {
+      await service.findAll({ status: 'CANCELLED' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: 'CANCELLED' }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('filters a comma-separated status list with in and inbox order', async () => {
+      await service.findAll({ status: 'PENDING,ACTIVE' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: { in: ['PENDING', 'ACTIVE'] } }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('omits status and still uses inbox order when status is absent', async () => {
+      await service.findAll({});
+      const call = prisma.subscription.findMany.mock.calls[0]?.[0] as {
+        where?: { status?: unknown };
+        orderBy?: unknown;
+      };
+      expect(call?.where).not.toHaveProperty('status');
+      expect(call?.orderBy).toEqual([{ status: 'asc' }, { createdAt: 'desc' }]);
+    });
+
     it('filters by partner id', async () => {
       await service.findAll({ partnerId: 'part-1' });
       expect(prisma.subscription.findMany).toHaveBeenCalledWith(
@@ -132,6 +162,48 @@ describe('SubscriptionsService', () => {
               lte: expect.any(Date),
             }),
           }),
+        }),
+      );
+    });
+  });
+
+  describe('getGrid', () => {
+    it('filters a single status with equals and inbox order', async () => {
+      await service.getGrid({ year: 2026, status: 'CANCELLED' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([{ status: 'CANCELLED' }]),
+          }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('filters a comma-separated status list with in and inbox order', async () => {
+      await service.getGrid({ year: 2026, status: 'PENDING,ACTIVE' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([{ status: { in: ['PENDING', 'ACTIVE'] } }]),
+          }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('includes Pending rows with null billingStartDate in the year window', async () => {
+      await service.getGrid({ year: 2026 });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([{ status: 'PENDING', billingStartDate: null }]),
+              }),
+            ]),
+          }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
         }),
       );
     });

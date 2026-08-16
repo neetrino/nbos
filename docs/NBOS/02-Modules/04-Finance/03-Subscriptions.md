@@ -457,10 +457,14 @@ Client Subscription Invoice Paid
 
 ## Фильтры и отображение
 
+Inbox по умолчанию (список и grid) показывает только **Pending + Active**. On Hold, Cancelled и Completed скрыты, пока пользователь не выберет их в фильтре статуса. **All statuses** показывает все строки; фильтр одного статуса (например **Cancelled**) — только его.
+
+Сортировка всегда одна и та же: ранг статуса `PENDING → ACTIVE → ON_HOLD → CANCELLED → COMPLETED`, внутри статуса — `createdAt` desc (новые сверху). Первая строка — самый новый Pending; после всех Pending — самый новый Active.
+
 ### Фильтры Subscription Grid
 
 - **По типу**: Maintenance / Dev+Maint / Dev Only / Partner
-- **По статусу**: Pending / Active / On Hold / Cancelled / Completed
+- **По статусу**: Pending + Active (default) / Pending / Active / On Hold / Cancelled / Completed / All statuses
 - **По проекту**: выбор конкретного проекта
 - **По клиенту (компании)**: все подписки одного клиента
 - **По году**: переключение между годами
