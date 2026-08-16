@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { KeyRound, Loader2 } from 'lucide-react';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
+import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -83,7 +84,7 @@ export function DeliveryAccessInfrastructureSection({
     }
     return (
       <div className="grid grid-cols-2 items-start gap-3">
-        {slots.map((slot) => (
+        {visibleDeliveryAccessSlots(slots).map((slot) => (
           <DeliveryAccessSlotField
             key={slot.slotKey}
             slot={slot}
@@ -156,4 +157,31 @@ export function DeliveryAccessInfrastructureSection({
       ) : null}
     </section>
   );
+}
+
+const DELIVERY_ACCESS_SLOT_KEYS = ['DOMAIN', 'HOSTING', 'ADMIN', UNIVERSAL_ACCESS_SLOT_KEY] as const;
+const DELIVERY_ACCESS_SLOT_KEY_SET = new Set<string>(DELIVERY_ACCESS_SLOT_KEYS);
+const DELIVERY_REQUIRED_SLOT_KEYS = new Set(['DOMAIN', 'HOSTING']);
+
+function visibleDeliveryAccessSlots(slots: ProductAccessSlotRow[]): ProductAccessSlotRow[] {
+  const byKey = new Map(slots.map((slot) => [slot.slotKey, slot]));
+  const visible: ProductAccessSlotRow[] = [];
+
+  for (const key of DELIVERY_ACCESS_SLOT_KEYS) {
+    const slot = byKey.get(key);
+    if (slot) visible.push(withDeliveryAccessRequired(slot));
+  }
+
+  for (const slot of slots) {
+    if (DELIVERY_ACCESS_SLOT_KEY_SET.has(slot.slotKey) || slot.bindings.length === 0) continue;
+    visible.push(slot);
+  }
+
+  return visible;
+}
+
+function withDeliveryAccessRequired(slot: ProductAccessSlotRow): ProductAccessSlotRow {
+  if (slot.slotKey === 'ADMIN') return { ...slot, required: false };
+  if (DELIVERY_REQUIRED_SLOT_KEYS.has(slot.slotKey)) return { ...slot, required: true };
+  return slot;
 }
