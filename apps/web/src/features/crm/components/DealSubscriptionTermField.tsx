@@ -46,7 +46,7 @@ export function DealSubscriptionTermField({
 
   return (
     <>
-      <div className={cn('flex flex-wrap items-end gap-2', gateClass)}>
+      <div className={cn('flex flex-nowrap items-end gap-2', gateClass)}>
         <div className="shrink-0 pt-2">
           <div className={cn(DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS, 'w-auto shrink-0')}>
             <button
@@ -76,7 +76,7 @@ export function DealSubscriptionTermField({
           value={draft.subscriptionTermMonths ?? ''}
           placeholder="e.g. 12"
           disabled={disabled}
-          className="min-w-[8rem] flex-1 basis-[10rem]"
+          className="min-w-0 flex-1"
           onValueChange={(value) =>
             patchDraft({ subscriptionTermMonths: parseTermMonthsInput(value) })
           }
