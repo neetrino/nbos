@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildDealExistingProductChangePatch,
   buildDealProjectChangePatch,
   buildDealTypeChangePatch,
   type DealGeneralDraft,
@@ -35,10 +36,13 @@ const baseDraft: DealGeneralDraft = {
   contactLabels: {},
   sellerId: null,
   sellerDisplayLabel: null,
+  sellerAvatar: null,
   sellerAssistantId: null,
   sellerAssistantDisplayLabel: null,
+  sellerAssistantAvatar: null,
   pmId: null,
   pmDisplayLabel: null,
+  pmAvatar: null,
   deadline: null,
   outsourceGoesToDelivery: false,
 };
@@ -88,6 +92,26 @@ describe('buildDealProjectChangePatch', () => {
       linkedProjectLabel: 'Beta',
       existingProductId: null,
       existingProductPickLabel: null,
+    });
+  });
+});
+
+describe('buildDealExistingProductChangePatch', () => {
+  it('sets product and fills project without clearing the product', () => {
+    expect(buildDealExistingProductChangePatch('prod-1', 'Website', 'proj-2', 'Beta')).toEqual({
+      existingProductId: 'prod-1',
+      existingProductPickLabel: 'Website',
+      projectId: 'proj-2',
+      linkedProjectLabel: 'Beta',
+    });
+  });
+
+  it('clears product and derived project together', () => {
+    expect(buildDealExistingProductChangePatch(null, null, null, null)).toEqual({
+      existingProductId: null,
+      existingProductPickLabel: null,
+      projectId: null,
+      linkedProjectLabel: null,
     });
   });
 });

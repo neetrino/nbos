@@ -47,6 +47,6 @@ describe('getDeliveryBoardItemTeamMembers', () => {
     const members = getDeliveryBoardItemTeamMembers(item);
     expect(members).toHaveLength(1);
     expect(members[0]?.roleLabel).toBe('Developer');
-    expect(members[0]?.initials).toBe('AS');
+    expect(members[0]?.fullName).toBe('Anna Smith');
   });
 });

@@ -1,6 +1,7 @@
 import { contactIdListsEqual } from '@nbos/shared';
 import type { Lead } from '@/lib/api/leads';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
+import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
 
 /** Editable General tab fields + labels for staged search fields. */
 export interface LeadGeneralDraft {
@@ -20,6 +21,7 @@ export interface LeadGeneralDraft {
   notes: string | null;
   assignedTo: string | null;
   sellerDisplayLabel: string | null;
+  sellerAvatar: string | null;
   contactIds: string[];
   contactLabels: Record<string, string>;
 }
@@ -55,6 +57,7 @@ export function createLeadGeneralDraft(lead: Lead): LeadGeneralDraft {
     sellerDisplayLabel: lead.assignee
       ? `${lead.assignee.firstName} ${lead.assignee.lastName}`
       : null,
+    sellerAvatar: employeeAvatarUrl(lead.assignee),
     contactIds,
     contactLabels,
   };

@@ -113,6 +113,7 @@ export function SupportTicketDetailGeneralTab({
                         ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
                         : null
                     }
+                    assigneeAvatar={ticket.assignee?.avatar ?? null}
                     productLabel={ticket.product?.name ?? null}
                     contactLabel={
                       ticket.contact

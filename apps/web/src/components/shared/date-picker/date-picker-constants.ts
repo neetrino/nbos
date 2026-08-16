@@ -26,3 +26,14 @@ export const NBOS_MONTH_STORAGE_FORMAT = 'yyyy-MM';
 
 /** Default locale for picker chrome (Bitrix-style RU labels available via prop). */
 export const NBOS_DATE_PICKER_DEFAULT_LOCALE = 'en-US';
+
+/** Placeholders inside the day / month / year cells. */
+export const NBOS_TYPED_DATE_PART_PLACEHOLDERS = {
+  day: '15',
+  month: '12',
+  year: '2026',
+} as const;
+
+export const NBOS_TYPED_DATE_YEAR_MIN = 1900;
+export const NBOS_TYPED_DATE_YEAR_MAX = 2100;
+export const NBOS_TYPED_DATE_TWO_DIGIT_YEAR_BASE = 2000;

@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Task } from '@/lib/api/tasks';
-import { clearEmployeeLabelCache, rememberEmployeeLabel } from './task-employee-labels';
+import {
+  clearEmployeeLabelCache,
+  rememberEmployeeAvatar,
+  rememberEmployeeLabel,
+} from './task-employee-labels';
 import { applyResolvedEmployeeLabels, createTaskGeneralDraft } from './task-general-form-state';
 
 const ASSISTANT_ID = '14b22deb-5998-4bb5-aaba-f3ad5a0a8ff8';
@@ -66,6 +70,24 @@ describe('createTaskGeneralDraft', () => {
     });
     expect(draft.coAssigneeLabels).toEqual({});
   });
+
+  it('seeds assistant avatars from cache on first paint', () => {
+    rememberEmployeeAvatar(ASSISTANT_ID, 'https://cdn.example/a.png');
+    const draft = createTaskGeneralDraft({
+      ...baseTask,
+      coAssignees: [ASSISTANT_ID],
+    });
+    expect(draft.coAssigneeAvatars[ASSISTANT_ID]).toBe('https://cdn.example/a.png');
+  });
+
+  it('uses creator avatar when the same person is an assistant', () => {
+    const draft = createTaskGeneralDraft({
+      ...baseTask,
+      creator: { ...baseTask.creator, avatar: 'https://cdn.example/j.png' },
+      coAssignees: [baseTask.creator.id],
+    });
+    expect(draft.coAssigneeAvatars[baseTask.creator.id]).toBe('https://cdn.example/j.png');
+  });
 });
 
 describe('applyResolvedEmployeeLabels', () => {
@@ -80,5 +102,18 @@ describe('applyResolvedEmployeeLabels', () => {
     };
     const next = applyResolvedEmployeeLabels(current, resolved);
     expect(next?.coAssigneeLabels[ASSISTANT_ID]).toBe('Anna Petrosyan');
+  });
+
+  it('merges assistant avatars from the resolved draft', () => {
+    const current = createTaskGeneralDraft({
+      ...baseTask,
+      coAssignees: [ASSISTANT_ID],
+    });
+    const resolved = {
+      ...current,
+      coAssigneeAvatars: { [ASSISTANT_ID]: 'https://cdn.example/a.png' },
+    };
+    const next = applyResolvedEmployeeLabels(current, resolved);
+    expect(next?.coAssigneeAvatars[ASSISTANT_ID]).toBe('https://cdn.example/a.png');
   });
 });

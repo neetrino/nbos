@@ -37,6 +37,7 @@ export function CredentialManualAccessGrantRow({
       label={label}
       subtitle={grant.employee.email || null}
       entityKind="employee"
+      imageUrl={grant.employee.avatar}
       onOpen={() => void relations.openEntity('employee', grant.employeeId)}
       onClear={() => onRemove(grant.employeeId)}
       trailing={

@@ -1,4 +1,4 @@
-import { Calendar, Copy, Users } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import {
   DetailSheetOptionalDescriptionField,
   InlineField,
@@ -8,11 +8,17 @@ import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
-import { rememberEmployeeLabel, rememberEmployeeLabels } from '../task-employee-labels';
+import {
+  rememberEmployeeAvatar,
+  rememberEmployeeAvatars,
+  rememberEmployeeLabel,
+  rememberEmployeeLabels,
+} from '../task-employee-labels';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,
+  TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS,
   TASK_SHEET_TEAM_COLUMN_CLASS,
   TASK_SHEET_TEAM_COLUMNS_CLASS,
   TASK_SHEET_TEAM_DIVIDER_CLASS,
@@ -20,7 +26,10 @@ import {
   TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
 } from './task-sheet-classes';
 import { formatTaskSheetDateTime } from './task-sheet-format';
-import { TASK_SHEET_COMPACT_FIELD_CLASS, TaskSheetCompactRow } from './task-sheet-compact-row';
+import {
+  TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS,
+  TaskSheetCompactRow,
+} from './task-sheet-compact-row';
 import { TaskFilesBlock } from './TaskFilesBlock';
 import { TaskLinkedEntitiesSection } from './TaskLinkedEntitiesSection';
 
@@ -62,23 +71,34 @@ export function TaskSheetGeneralSection({
 
   return (
     <>
+      <DetailSheetOptionalDescriptionField
+        entityType="task"
+        entityId={taskId}
+        value={draft.description}
+        onChange={(description) => onPatchDraft({ description })}
+        disabled={disabled}
+        label={null}
+        placeholder="Description"
+        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
+      />
+
       <section className={TASK_SHEET_CARD_CLASS}>
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
             <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS)}>
-              <TaskSheetCompactRow gridCells label="Creator">
+              <TaskSheetCompactRow hideLabel label="Creator">
                 <RelationPickerField
                   label="Creator"
                   entityKind="employee"
                   value={draft.creatorId}
                   selectionLabel={draft.creatorLabel}
                   selectionAvatar={draft.creatorAvatar}
-                  placeholder="Select creator…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
+                    rememberEmployeeAvatar(employeeId, avatar);
                     onPatchDraft({
                       creatorId: employeeId,
                       creatorLabel: label,
@@ -89,19 +109,19 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow gridCells label="Assignee">
+              <TaskSheetCompactRow hideLabel label="Assignee">
                 <RelationPickerField
                   label="Assignee"
                   entityKind="employee"
                   value={draft.assigneeId}
                   selectionLabel={draft.assigneeLabel}
                   selectionAvatar={draft.assigneeAvatar}
-                  placeholder="Select assignee…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
+                    rememberEmployeeAvatar(employeeId, avatar);
                     onPatchDraft({
                       assigneeId: employeeId,
                       assigneeLabel: label,
@@ -119,7 +139,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow gridCells label="Deadline">
+              <TaskSheetCompactRow hideLabel label="Deadline">
                 <InlineField
                   variant="controlled"
                   label="Deadline"
@@ -127,10 +147,8 @@ export function TaskSheetGeneralSection({
                   type="date"
                   datePickerVariant="extended"
                   datePickerMode="datetime"
-                  icon={<Calendar size={13} />}
                   clearable
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onValueChange={(value) => onPatchDraft({ dueDate: value })}
                 />
               </TaskSheetCompactRow>
@@ -138,57 +156,63 @@ export function TaskSheetGeneralSection({
 
             <div className={TASK_SHEET_TEAM_DIVIDER_CLASS} role="presentation" />
 
-            <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS)}>
-              <TaskSheetCompactRow
-                label="Assistant"
-                alignEnd
-                hideLabel={draft.coAssigneeIds.length === 0}
-              >
+            <div
+              className={cn(
+                TASK_SHEET_TEAM_COLUMN_CLASS,
+                TASK_SHEET_TEAM_META_GRID_CLASS,
+                TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
+              )}
+            >
+              <TaskSheetCompactRow hideLabel label="Assistant">
                 <RelationPickerField
                   label="Assistant"
                   entityKind="employee"
                   multiple
                   value={draft.coAssigneeIds}
                   selectionLabels={draft.coAssigneeLabels}
-                  icon={<Users size={13} />}
-                  placeholder="Add assistant…"
+                  selectionAvatars={draft.coAssigneeAvatars}
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) => {
+                  onChange={(ids, labels, avatars) => {
                     rememberEmployeeLabels(labels);
-                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels });
+                    if (avatars) rememberEmployeeAvatars(avatars);
+                    onPatchDraft({
+                      coAssigneeIds: ids,
+                      coAssigneeLabels: labels,
+                      coAssigneeAvatars: avatars ?? {},
+                    });
                   }}
                   {...assistantPicker}
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow
-                label="Observer"
-                alignEnd
-                hideLabel={draft.observerIds.length === 0}
-              >
+              <TaskSheetCompactRow hideLabel label="Observer">
                 <RelationPickerField
                   label="Observer"
                   entityKind="employee"
                   multiple
                   value={draft.observerIds}
                   selectionLabels={draft.observerLabels}
-                  icon={<Users size={13} />}
-                  placeholder="Add observer…"
+                  selectionAvatars={draft.observerAvatars}
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) => {
+                  onChange={(ids, labels, avatars) => {
                     rememberEmployeeLabels(labels);
-                    onPatchDraft({ observerIds: ids, observerLabels: labels });
+                    if (avatars) rememberEmployeeAvatars(avatars);
+                    onPatchDraft({
+                      observerIds: ids,
+                      observerLabels: labels,
+                      observerAvatars: avatars ?? {},
+                    });
                   }}
                   {...observerPicker}
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow label="Created" alignEnd>
-                <div className="flex min-w-0 items-center gap-1.5 text-sm">
+              <TaskSheetCompactRow label="Created">
+                <div className={TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS}>
                   <span className="truncate">{formatTaskSheetDateTime(task.createdAt)}</span>
                   <span className="text-muted-foreground shrink-0">·</span>
                   <span className="text-muted-foreground shrink-0 font-mono text-xs">
@@ -219,15 +243,6 @@ export function TaskSheetGeneralSection({
       />
 
       <TaskFilesBlock taskId={taskId} />
-
-      <DetailSheetOptionalDescriptionField
-        entityType="task"
-        entityId={taskId}
-        value={draft.description}
-        onChange={(description) => onPatchDraft({ description })}
-        disabled={disabled}
-        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
-      />
     </>
   );
 }

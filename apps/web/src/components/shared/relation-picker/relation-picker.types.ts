@@ -38,6 +38,8 @@ type RelationPickerBaseProps = {
   kindLabel?: string;
   createLabel?: string;
   disabled?: boolean;
+  /** Display-only: full opacity, no search/replace/clear; `onOpenSelected` still works. */
+  readOnly?: boolean;
   className?: string;
   onSearch: RelationPickerSearchFn;
   maxResults?: number;
@@ -70,7 +72,13 @@ export type RelationPickerMultiProps = RelationPickerBaseProps & {
   multiple: true;
   value: string[];
   selectionLabels: Record<string, string>;
-  onChange: (ids: string[], labels: Record<string, string>) => void;
+  /** Profile photos for selected chips (employee / contact). */
+  selectionAvatars?: Record<string, string | null>;
+  onChange: (
+    ids: string[],
+    labels: Record<string, string>,
+    avatars?: Record<string, string | null>,
+  ) => void;
 };
 
 export type RelationPickerFieldProps = RelationPickerSingleProps | RelationPickerMultiProps;
@@ -84,6 +92,9 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   employee: 'Employee',
   order: 'Order',
 };
+
+/** Empty-state trigger when an employee relation has no selection. */
+export const RELATION_PICKER_EMPLOYEE_PLACEHOLDER = 'Choose…';
 
 export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   contact: 'Create contact',

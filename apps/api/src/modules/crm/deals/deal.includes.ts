@@ -1,4 +1,5 @@
-const userSummarySelect = { id: true, firstName: true, lastName: true } as const;
+import { employeePersonSelect } from '../../../common/employee-person.select';
+
 const companySummarySelect = { id: true, name: true } as const;
 const productSummarySelect = { id: true, name: true, productType: true, status: true } as const;
 const partnerSummarySelect = { id: true, name: true, defaultPercent: true } as const;
@@ -42,16 +43,16 @@ export const dealOrderSelect = {
 } as const;
 
 export const dealCommercialRelationsInclude = {
-  exceptionApprovedBy: { select: userSummarySelect },
+  exceptionApprovedBy: { select: employeePersonSelect },
 } as const;
 
 export const dealListInclude = {
   lead: { select: { id: true, code: true, contactName: true } },
   contact: { select: contactSummarySelect },
   company: { select: companySummarySelect },
-  seller: { select: userSummarySelect },
-  sellerAssistant: { select: userSummarySelect },
-  pm: { select: userSummarySelect },
+  seller: { select: employeePersonSelect },
+  sellerAssistant: { select: employeePersonSelect },
+  pm: { select: employeePersonSelect },
   ...dealCommercialRelationsInclude,
   orders: {
     select: dealOrderSelect,
@@ -88,8 +89,8 @@ export const dealDetailInclude = {
 
 export const dealCreateInclude = {
   contact: { select: { id: true, firstName: true, lastName: true } },
-  seller: { select: userSummarySelect },
-  sellerAssistant: { select: userSummarySelect },
+  seller: { select: employeePersonSelect },
+  sellerAssistant: { select: employeePersonSelect },
   marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
   marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
   partnerReferralTerms: { select: partnerReferralTermsSelect },

@@ -12,6 +12,7 @@ export type {
   RelationPickerSearchFn,
   RelationCreatePrefill,
 } from './relation-picker.types';
+export { RELATION_PICKER_EMPLOYEE_PLACEHOLDER } from './relation-picker.types';
 export type { RelationCreatedEvent } from './relation-created-event';
 export { buildRelationCreatePrefill } from './build-relation-create-prefill';
 export {

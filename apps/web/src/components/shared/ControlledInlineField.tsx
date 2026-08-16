@@ -23,6 +23,9 @@ import {
   DETAIL_SHEET_FIELD_LEADING_ICON_CLASS,
   DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS,
   DETAIL_SHEET_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
@@ -93,6 +96,10 @@ export function ControlledInlineField({
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
+  const showOutlinedLabel = !hideLabel && Boolean(label.trim());
+  const fieldShellClass = showOutlinedLabel
+    ? DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS
+    : DETAIL_SHEET_FIELD_SHELL_CLASS;
   const dateFieldShellRef = useRef<HTMLDivElement>(null);
   const externalIcon =
     hideLabel && icon ? (
@@ -141,22 +148,19 @@ export function ControlledInlineField({
   return (
     <div
       className={cn(
-        'group relative',
+        showOutlinedLabel ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'group relative',
         disabled && 'pointer-events-none opacity-60',
         fitContent && 'w-fit shrink-0',
         className,
       )}
     >
-      {hideLabel ? null : (
-        <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-          {icon ? <span className="text-muted-foreground/70">{icon}</span> : null}
-          {label}
-        </div>
-      )}
+      {showOutlinedLabel ? (
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      ) : null}
 
       {type === 'select' && options ? (
         wrapShell(
-          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
+          cn(fieldShellClass, fitContent && 'w-auto'),
           <>
             <div className={cn('min-w-0', fitContent ? 'w-auto' : 'flex-1')}>
               <Select
@@ -206,7 +210,7 @@ export function ControlledInlineField({
         )
       ) : type === 'textarea' ? (
         wrapShell(
-          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2'),
+          cn(fieldShellClass, 'min-h-[88px] items-start py-2'),
           <Textarea
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
@@ -225,10 +229,7 @@ export function ControlledInlineField({
         externalIcon ? (
           <div className={cn(DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS, 'items-center')}>
             {externalIcon}
-            <div
-              ref={dateFieldShellRef}
-              className={cn('min-w-0 flex-1', DETAIL_SHEET_FIELD_SHELL_CLASS)}
-            >
+            <div ref={dateFieldShellRef} className={cn('min-w-0 flex-1', fieldShellClass)}>
               <NbosDatePicker
                 value={str}
                 onChange={onValueChange}
@@ -246,7 +247,7 @@ export function ControlledInlineField({
             </div>
           </div>
         ) : (
-          <div ref={dateFieldShellRef} className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
+          <div ref={dateFieldShellRef} className={fieldShellClass}>
             <NbosDatePicker
               value={str}
               onChange={onValueChange}
@@ -265,7 +266,7 @@ export function ControlledInlineField({
         )
       ) : type === 'money' ? (
         wrapShell(
-          cn(DETAIL_SHEET_FIELD_SHELL_CLASS, fitContent && 'w-auto'),
+          cn(fieldShellClass, fitContent && 'w-auto'),
           <>
             <MoneyInput
               value={str}
@@ -285,7 +286,7 @@ export function ControlledInlineField({
         )
       ) : (
         wrapShell(
-          DETAIL_SHEET_FIELD_SHELL_CLASS,
+          fieldShellClass,
           <>
             <Input
               type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}

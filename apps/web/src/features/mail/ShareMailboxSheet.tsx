@@ -187,7 +187,6 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
                   entityKind="employee"
                   value={grantEmployeeId || null}
                   selectionLabel={grantEmployeeLabel}
-                  placeholder="Search employee…"
                   icon={<User size={12} />}
                   disabled={busy}
                   onSearch={searchEmployees}

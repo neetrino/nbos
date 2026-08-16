@@ -37,6 +37,7 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
   const [formError, setFormError] = useState<string | null>(null);
   const [fileDisplay, setFileDisplay] = useState('');
   const [ownerDisplay, setOwnerDisplay] = useState('');
+  const [ownerAvatar, setOwnerAvatar] = useState<string | null>(null);
   const [form, setForm] = useState({
     agreementStatus: partner.agreementStatus,
     agreementStartDate: sliceIsoToDateInput(partner.agreementStartDate),
@@ -73,6 +74,7 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
         ? `${partner.agreementOwner.firstName} ${partner.agreementOwner.lastName}`
         : '',
     );
+    setOwnerAvatar(partner.agreementOwner?.avatar?.trim() || null);
     setFormError(null);
   }, [partner]);
 
@@ -197,15 +199,17 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           entityKind="employee"
           value={form.agreementOwnerId || null}
           selectionLabel={ownerDisplay || null}
-          placeholder="Search employees…"
+          selectionAvatar={ownerAvatar}
           onSearch={loadEmployees}
-          onSelect={(id, label) => {
+          onSelect={(id, label, avatar) => {
             setForm((p) => ({ ...p, agreementOwnerId: id }));
             setOwnerDisplay(label);
+            setOwnerAvatar(avatar?.trim() || null);
           }}
           onClear={() => {
             setForm((p) => ({ ...p, agreementOwnerId: '' }));
             setOwnerDisplay('');
+            setOwnerAvatar(null);
           }}
           {...employeePicker}
         />

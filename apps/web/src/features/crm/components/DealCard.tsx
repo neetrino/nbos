@@ -10,11 +10,34 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { employeeFullName } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
 import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
-import type { Deal } from '@/lib/api/deals';
+import type { Deal, DealEmployeeRef } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import { getDealCardMetaLabel, getDealDisplayTitle } from '../utils/crm-entity-display';
+
+const DEAL_CARD_PERSON_AVATAR_CLASS = 'ring-card size-7 text-[10px] ring-2';
+
+function DealCardPersonAvatar({
+  person,
+  roleLabel,
+}: {
+  person: DealEmployeeRef;
+  roleLabel: string;
+}) {
+  const name = employeeFullName(person);
+  return (
+    <span title={`${roleLabel}: ${name}`}>
+      <EmployeePersonAvatar
+        label={name}
+        imageUrl={person.avatar}
+        className={DEAL_CARD_PERSON_AVATAR_CLASS}
+      />
+    </span>
+  );
+}
 
 interface DealCardProps {
   deal: Deal;
@@ -107,21 +130,9 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
       <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex shrink-0 -space-x-1.5">
-            <span
-              className="ring-card relative flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-[10px] font-bold text-amber-700 ring-2 dark:bg-amber-950/40 dark:text-amber-300"
-              title={`Seller: ${deal.seller.firstName} ${deal.seller.lastName}`}
-            >
-              {deal.seller.firstName[0]}
-              {deal.seller.lastName[0]}
-            </span>
+            <DealCardPersonAvatar person={deal.seller} roleLabel="Seller" />
             {deal.sellerAssistant ? (
-              <span
-                className="ring-card relative flex h-7 w-7 items-center justify-center rounded-full bg-violet-50 text-[10px] font-bold text-violet-700 ring-2 dark:bg-violet-950/40 dark:text-violet-300"
-                title={`Assistant: ${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`}
-              >
-                {deal.sellerAssistant.firstName[0]}
-                {deal.sellerAssistant.lastName[0]}
-              </span>
+              <DealCardPersonAvatar person={deal.sellerAssistant} roleLabel="Assistant" />
             ) : null}
           </div>
           {deal.existingProduct ? (

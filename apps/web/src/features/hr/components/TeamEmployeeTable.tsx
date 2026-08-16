@@ -19,9 +19,9 @@ import {
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   employeeFullName,
-  employeeInitials,
   employeePrimaryDepartment,
   employeeTenure,
 } from '@/features/hr/utils/employee-display';
@@ -61,9 +61,11 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
               >
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <div className="flex items-center gap-2">
-                    <div className="bg-accent/15 text-accent flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold">
-                      {employeeInitials(emp)}
-                    </div>
+                    <EmployeePersonAvatar
+                      label={employeeFullName(emp)}
+                      imageUrl={emp.avatar}
+                      className="size-8 text-[10px]"
+                    />
                     <EntityListPrimaryCell title={employeeFullName(emp)} />
                   </div>
                 </TableCell>

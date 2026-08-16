@@ -10,6 +10,7 @@ export interface CredentialManualGrant {
     firstName: string;
     lastName: string;
     email: string;
+    avatar?: string | null;
   };
   grantedAt: string;
   grantedBy: { id: string; firstName: string; lastName: string } | null;

@@ -2,8 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FolderKanban, Layers, LayoutGrid, X } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { getDriveFileLinkEntityHref } from '@/features/drive/drive-file-link-entity-href';
 import { productsApi } from '@/lib/api/products';
@@ -16,15 +20,18 @@ import {
 } from '../constants/task-link-entities';
 import {
   encodeTaskDeliveryContextValue,
-  type TaskDeliveryContextKind,
   type TaskDeliveryContextOption,
 } from '../utils/search-task-delivery-context';
 import { addTaskEntityLink, removeTaskEntityLink } from '../utils/sync-task-entity-links';
 import { TaskDeliveryContextSearch } from './TaskDeliveryContextSearch';
 import {
+  LinkedContextChip,
+  LinkedToNotchCaption,
+  TASK_LINKED_TO_PLACEHOLDER,
+} from './TaskLinkedContextChip';
+import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,
-  TASK_SHEET_META_LABEL_CLASS,
   TASK_SHEET_TEAM_META_GRID_CLASS,
 } from './task-sheet-classes';
 import { TaskSheetCompactRow } from './task-sheet-compact-row';
@@ -45,6 +52,7 @@ export function TaskLinkedEntitiesSection({
 }: TaskLinkedEntitiesSectionProps) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   /** Product id → project name from the last picker selection (sheet session). */
   const [productProjectNames, setProductProjectNames] = useState<Record<string, string>>({});
 
@@ -69,6 +77,8 @@ export function TaskLinkedEntitiesSection({
     }
     return values;
   }, [editableLinks, task.workspaceId]);
+
+  const hasEditableLinks = Boolean(task.workspaceId) || editableLinks.length > 0;
 
   const openLink = useCallback(
     async (link: TaskLink) => {
@@ -156,44 +166,57 @@ export function TaskLinkedEntitiesSection({
 
   return (
     <section className={TASK_SHEET_CARD_CLASS} aria-label="Linked entities">
-      <div className="flex w-full min-w-0 items-start gap-x-3">
-        <span className={cn(TASK_SHEET_META_LABEL_CLASS, 'pt-2')}>Linked to</span>
-        <div className="min-w-0 flex-1 space-y-1.5">
-          {task.workspaceId && workspaceLabel ? (
-            <ContextChip
-              kind="WORK_SPACE"
-              label={workspaceLabel}
-              contextLabel={
-                task.workspace?.product?.name?.trim() ||
-                task.workspace?.extension?.product?.name?.trim() ||
-                null
-              }
-              locked={locked}
-              onOpen={() => router.push(`/work-spaces/${task.workspaceId}`)}
-              onUnlink={() => void setWorkspace(null)}
-            />
-          ) : null}
+      <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+        <LinkedToNotchCaption locked={locked} onAdd={() => setSearchOpen(true)} />
 
-          {editableLinks.map((link) => (
-            <ContextChip
-              key={link.id}
-              kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
-              label={link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
-              contextLabel={
-                link.entityType === 'PRODUCT' ? productProjectNames[link.entityId] || null : null
-              }
-              locked={locked}
-              onOpen={() => void openLink(link)}
-              onUnlink={() => void handleUnlink(link.id)}
-            />
-          ))}
-
+        {searchOpen ? (
           <TaskDeliveryContextSearch
+            trigger="none"
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
             disabled={locked}
             linkedValues={linkedValues}
             onSelect={(option) => void handleSelect(option)}
           />
-        </div>
+        ) : hasEditableLinks ? (
+          <ul className={RELATION_PICKER_CHIP_STACK_CLASS}>
+            {task.workspaceId && workspaceLabel ? (
+              <LinkedContextChip
+                kind="WORK_SPACE"
+                label={workspaceLabel}
+                contextLabel={
+                  task.workspace?.product?.name?.trim() ||
+                  task.workspace?.extension?.product?.name?.trim() ||
+                  null
+                }
+                locked={locked}
+                onOpen={() => router.push(`/work-spaces/${task.workspaceId}`)}
+                onUnlink={() => void setWorkspace(null)}
+              />
+            ) : null}
+
+            {editableLinks.map((link) => (
+              <LinkedContextChip
+                key={link.id}
+                kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
+                label={link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
+                contextLabel={
+                  link.entityType === 'PRODUCT' ? productProjectNames[link.entityId] || null : null
+                }
+                locked={locked}
+                onOpen={() => void openLink(link)}
+                onUnlink={() => void handleUnlink(link.id)}
+              />
+            ))}
+          </ul>
+        ) : (
+          <div
+            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'pointer-events-none italic')}
+            aria-hidden
+          >
+            {TASK_LINKED_TO_PLACEHOLDER}
+          </div>
+        )}
       </div>
 
       {contextLinks.length > 0 ? (
@@ -201,11 +224,7 @@ export function TaskLinkedEntitiesSection({
           {contextLinks.map((link) => {
             const LinkIcon = taskLinkEntityIcon(link.entityType);
             return (
-              <TaskSheetCompactRow
-                key={link.id}
-                gridCells
-                label={taskLinkEntityLabel(link.entityType)}
-              >
+              <TaskSheetCompactRow key={link.id} label={taskLinkEntityLabel(link.entityType)}>
                 <button
                   type="button"
                   className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
@@ -223,74 +242,5 @@ export function TaskLinkedEntitiesSection({
         </div>
       ) : null}
     </section>
-  );
-}
-
-function ContextChip({
-  kind,
-  label,
-  contextLabel,
-  locked,
-  onOpen,
-  onUnlink,
-}: {
-  kind: TaskDeliveryContextKind;
-  label: string;
-  contextLabel: string | null;
-  locked: boolean;
-  onOpen: () => void;
-  onUnlink: () => void;
-}) {
-  const Icon = kind === 'PRODUCT' ? Layers : kind === 'WORK_SPACE' ? LayoutGrid : FolderKanban;
-  const iconClass =
-    kind === 'PRODUCT'
-      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-      : kind === 'WORK_SPACE'
-        ? 'bg-violet-500/10 text-violet-700 dark:text-violet-300'
-        : 'bg-sky-500/10 text-sky-700 dark:text-sky-300';
-  const kindClass =
-    kind === 'PRODUCT'
-      ? 'text-emerald-700/80 dark:text-emerald-300/80'
-      : kind === 'WORK_SPACE'
-        ? 'text-violet-700/80 dark:text-violet-300/80'
-        : 'text-sky-700/80 dark:text-sky-300/80';
-  const kindLabel =
-    kind === 'PRODUCT' ? 'Product' : kind === 'WORK_SPACE' ? 'Work Space' : 'Project';
-
-  return (
-    <div className="border-border/60 bg-muted/40 flex min-w-0 items-start gap-2 rounded-xl border px-2.5 py-1.5">
-      <span
-        className={cn(
-          'mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md',
-          iconClass,
-        )}
-      >
-        <Icon size={14} aria-hidden />
-      </span>
-      <button type="button" className="min-w-0 flex-1 text-left" onClick={onOpen} title="Open">
-        {contextLabel ? (
-          <span className="text-muted-foreground block truncate text-[11px] leading-tight">
-            {contextLabel}
-          </span>
-        ) : null}
-        <span className="text-foreground block truncate text-sm font-medium">{label}</span>
-        <span
-          className={cn('mt-0.5 block text-[10px] font-medium tracking-wide uppercase', kindClass)}
-        >
-          {kindLabel}
-        </span>
-      </button>
-      {!locked ? (
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0 rounded-md p-1"
-          title="Unlink"
-          aria-label={`Unlink ${label}`}
-          onClick={onUnlink}
-        >
-          <X size={12} aria-hidden />
-        </button>
-      ) : null}
-    </div>
   );
 }

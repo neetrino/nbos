@@ -8,14 +8,14 @@ import { marketingApi } from '@/lib/api/marketing';
 import { partnersApi } from '@/lib/api/partners';
 import { projectsApi } from '@/lib/api/projects';
 import { systemListsApi } from '@/lib/api/systemLists';
-import { employeesApi } from '@/lib/api/employees';
 import {
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
 } from '@/components/shared';
-import { useProductRelationSearch } from '@/components/shared/relation-picker';
+import { useEmployeeRelationSearch } from '@/components/shared/relation-picker';
+import { searchDealExistingProducts } from './deal-existing-product-search';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
@@ -110,15 +110,6 @@ export function DealGeneralTab({
     return data.items.map((partner) => ({ value: partner.id, label: partner.name }));
   }, []);
 
-  const searchProductsInProject = useProductRelationSearch(draft.projectId);
-  const searchProducts = useCallback(
-    async (query: string) => {
-      if (!draft.projectId) return [];
-      return searchProductsInProject(query);
-    },
-    [draft.projectId, searchProductsInProject],
-  );
-
   const searchCompanies = useCallback(async (query: string) => {
     const data = await companiesApi.getAll({
       pageSize: 10,
@@ -127,14 +118,7 @@ export function DealGeneralTab({
     return data.items.map((company) => ({ value: company.id, label: company.name }));
   }, []);
 
-  const searchEmployees = useCallback(async (query: string) => {
-    const data = await employeesApi.getAll({ pageSize: 20, search: query || undefined });
-    return data.items.map((employee) => ({
-      value: employee.id,
-      label: `${employee.firstName} ${employee.lastName}`,
-      subtitle: employee.position ?? employee.email,
-    }));
-  }, []);
+  const searchEmployees = useEmployeeRelationSearch();
 
   const firstOrder = deal.orders?.[0];
 
@@ -149,10 +133,17 @@ export function DealGeneralTab({
             patchDraft={patchDraft}
             filteredProductTypeOptions={filteredProductTypeOptions}
             searchProjects={searchProjects}
-            searchProducts={searchProducts}
+            searchProducts={searchDealExistingProducts}
             searchCompanies={searchCompanies}
             disabled={formDisabled}
             outsourceToggleLocked={deal.status === 'WON'}
+            gateRequiredFields={gateRequiredFields}
+          />
+          <DealNotesSection
+            entityId={deal.id}
+            draft={draft}
+            patchDraft={patchDraft}
+            disabled={formDisabled}
             gateRequiredFields={gateRequiredFields}
           />
           <DealOfferContractSection
@@ -185,13 +176,6 @@ export function DealGeneralTab({
             <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
           </div>
           <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
-          <DealNotesSection
-            entityId={deal.id}
-            draft={draft}
-            patchDraft={patchDraft}
-            disabled={formDisabled}
-            gateRequiredFields={gateRequiredFields}
-          />
         </div>
 
         <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-72">

@@ -16,10 +16,10 @@ import {
   parseDatetimeLocalValue,
   parseIsoDateValue,
 } from './date-picker-format';
-import { NbosCalendarGrid } from './nbos-calendar-grid';
+import { NbosDatePickerMainColumn } from './nbos-date-picker-main-column';
 import { NbosDatePresetsPanel } from './nbos-date-presets-panel';
 import { NbosDatePickerTrigger } from './nbos-date-picker-trigger';
-import { NbosTimePicker } from './nbos-time-picker';
+import { useDatePickerTypedDraft } from './use-date-picker-typed-draft';
 
 export type NbosDatePickerVariant = 'compact' | 'extended';
 export type NbosDatePickerMode = 'date' | 'datetime';
@@ -69,16 +69,34 @@ export function NbosDatePicker({
   const anchor = useMemo(() => parsed ?? new Date(), [parsed]);
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => parsed ?? new Date());
-  const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '09:00'));
+  const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '19:00'));
+
+  const { typedDraft, resetTypedDraft, handlePartChange, commitTypedDraft } =
+    useDatePickerTypedDraft();
+
+  const applyDate = useCallback(
+    (date: Date, closeAfter = mode === 'date', syncTyped = true) => {
+      setViewMonth(date);
+      if (syncTyped) resetTypedDraft(date);
+      if (mode === 'datetime') {
+        onChange(commitDatetimeValue(date, timeValue));
+        return;
+      }
+      onChange(formatIsoDateValue(date));
+      if (closeAfter) setOpen(false);
+    },
+    [mode, onChange, resetTypedDraft, timeValue],
+  );
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
       setOpen(nextOpen);
       if (!nextOpen) return;
       setViewMonth(parsed ?? new Date());
+      resetTypedDraft(parsed);
       if (parsed) setTimeValue(format(parsed, 'HH:mm'));
     },
-    [parsed],
+    [parsed, resetTypedDraft],
   );
 
   const displayText = useMemo(() => {
@@ -86,47 +104,15 @@ export function NbosDatePicker({
     return formatDateDisplay(parsed, locale, mode === 'datetime');
   }, [iconButtonShell, locale, mode, parsed]);
 
-  const applyDate = useCallback(
-    (date: Date) => {
-      if (mode === 'datetime') {
-        const [hourPart, minutePart] = timeValue.split(':');
-        const hours = Number(hourPart ?? 9);
-        const minutes = Number(minutePart ?? 0);
-        const next = new Date(date);
-        next.setHours(
-          Number.isFinite(hours) ? hours : 9,
-          Number.isFinite(minutes) ? minutes : 0,
-          0,
-          0,
-        );
-        onChange(formatDatetimeLocalValue(next));
-        return;
-      }
-      onChange(formatIsoDateValue(date));
-      setOpen(false);
-    },
-    [mode, onChange, timeValue],
-  );
-
   const handleClear = useCallback(() => {
     onChange('');
-  }, [onChange]);
+    resetTypedDraft(undefined);
+  }, [onChange, resetTypedDraft]);
 
   const handleTimeChange = useCallback(
     (nextTime: string) => {
       setTimeValue(nextTime);
-      if (!parsed) return;
-      const [hourPart, minutePart] = nextTime.split(':');
-      const hours = Number(hourPart ?? 9);
-      const minutes = Number(minutePart ?? 0);
-      const next = new Date(parsed);
-      next.setHours(
-        Number.isFinite(hours) ? hours : 9,
-        Number.isFinite(minutes) ? minutes : 0,
-        0,
-        0,
-      );
-      onChange(formatDatetimeLocalValue(next));
+      if (parsed) onChange(commitDatetimeValue(parsed, nextTime));
     },
     [onChange, parsed],
   );
@@ -170,34 +156,31 @@ export function NbosDatePicker({
             : { maxWidth: 'min(100vw - 2rem, 100%)' }
         }
       >
-        <div className={cn('min-w-0 flex-1', variant === 'extended' && 'pr-1')}>
-          <NbosCalendarGrid
-            viewMonth={viewMonth}
-            selectedDate={parsed}
-            locale={locale}
-            onViewMonthChange={setViewMonth}
-            onSelectDate={applyDate}
-          />
-          {mode === 'datetime' ? (
-            <div className="border-border/50 mt-3 border-t pt-3">
-              <NbosTimePicker value={timeValue} onChange={handleTimeChange} />
-            </div>
-          ) : null}
-          <PickerFooter
-            onClear={handleClear}
-            onToday={() => applyDate(new Date())}
-            showToday={mode === 'date'}
-          />
-        </div>
+        <NbosDatePickerMainColumn
+          typedDraft={typedDraft}
+          onTypedPartChange={(part, raw) =>
+            handlePartChange(part, raw, (date) => applyDate(date, false, false))
+          }
+          onTypedCommit={() => commitTypedDraft((date) => applyDate(date, true))}
+          disabled={disabled}
+          viewMonth={viewMonth}
+          selectedDate={parsed}
+          locale={locale}
+          onViewMonthChange={setViewMonth}
+          onSelectDate={applyDate}
+          mode={mode}
+          timeValue={timeValue}
+          onTimeChange={handleTimeChange}
+          onClear={handleClear}
+          onToday={() => applyDate(new Date())}
+          extended={variant === 'extended'}
+        />
         {variant === 'extended' ? (
           <NbosDatePresetsPanel
             anchorDate={anchor}
             selectedDate={parsed}
             locale={locale}
-            onSelectPreset={(date) => {
-              setViewMonth(date);
-              applyDate(date);
-            }}
+            onSelectPreset={(date) => applyDate(date)}
           />
         ) : null}
       </PopoverContent>
@@ -205,33 +188,11 @@ export function NbosDatePicker({
   );
 }
 
-function PickerFooter({
-  onClear,
-  onToday,
-  showToday,
-}: {
-  onClear: () => void;
-  onToday: () => void;
-  showToday: boolean;
-}) {
-  return (
-    <div className="border-border/50 mt-3 flex items-center justify-between gap-2 border-t pt-2">
-      <button
-        type="button"
-        onClick={onClear}
-        className="text-primary hover:text-primary/80 text-sm font-medium"
-      >
-        Clear
-      </button>
-      {showToday ? (
-        <button
-          type="button"
-          onClick={onToday}
-          className="text-primary hover:text-primary/80 text-sm font-medium"
-        >
-          Today
-        </button>
-      ) : null}
-    </div>
-  );
+function commitDatetimeValue(date: Date, timeValue: string): string {
+  const [hourPart, minutePart] = timeValue.split(':');
+  const hours = Number(hourPart ?? 19);
+  const minutes = Number(minutePart ?? 0);
+  const next = new Date(date);
+  next.setHours(Number.isFinite(hours) ? hours : 19, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+  return formatDatetimeLocalValue(next);
 }

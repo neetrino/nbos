@@ -125,7 +125,6 @@ export function DriveAccessGrantsPanel({
         entityKind="employee"
         value={null}
         selectionLabel={null}
-        placeholder="Choose…"
         icon={<User size={12} />}
         disabled={busy}
         onSearch={searchEmployees}

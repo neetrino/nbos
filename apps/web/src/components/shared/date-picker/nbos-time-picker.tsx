@@ -14,7 +14,7 @@ const TIME_OPTION_CLASS =
 
 function parseTimeParts(value: string): { hour: string; minute: string } {
   const [hourPart, minutePart] = value.split(':');
-  const hour = HOUR_OPTIONS.includes(hourPart ?? '') ? (hourPart as string) : '09';
+  const hour = HOUR_OPTIONS.includes(hourPart ?? '') ? (hourPart as string) : '19';
   const minute = MINUTE_OPTIONS.includes(minutePart ?? '') ? (minutePart as string) : '00';
   return { hour, minute };
 }

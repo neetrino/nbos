@@ -17,7 +17,10 @@ export function reorderArrayAtIndex<T>(items: T[], fromIndex: number, toIndex: n
   const [removed] = next.splice(fromIndex, 1);
   if (removed === undefined) return items;
 
-  const clamped = Math.max(0, Math.min(toIndex, next.length));
+  // `toIndex` is a full-list insert index (dragged row still counted). After
+  // splice, slots below `fromIndex` shift up by one.
+  const dest = toIndex > fromIndex ? toIndex - 1 : toIndex;
+  const clamped = Math.max(0, Math.min(dest, next.length));
   next.splice(clamped, 0, removed);
   return next;
 }

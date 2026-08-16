@@ -1,19 +1,22 @@
 'use client';
 
-import type { MouseEvent, ReactNode } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
+import { TaskCardPeoplePair } from './TaskCardPeoplePair';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
+import { TASK_CARD_COMPLETE_FLASH_CLASS } from './task-card-complete-flash';
 import { getDeadlineColumn } from './task-board-constants';
 import {
-  formatAssigneeShortName,
   formatTaskCardDate,
   pickTaskCardContextChips,
   TASK_CARD_ACTION_BTN_CLASS,
   TASK_CARD_CHIP_CLASS,
+  TASK_CARD_DUE_BADGE_CLASS,
+  TASK_CARD_DUE_BADGE_TONE_CLASS,
+  TASK_CARD_HOVER_ACTIONS_CLASS,
   taskCardContextChipClass,
   taskCardContextIcon,
 } from './task-mini-card-meta';
@@ -28,7 +31,7 @@ export function TaskMiniCard({
   hideWorkspaceContext = false,
 }: {
   task: Task;
-  onAction: (taskId: string, action: TaskBoardAction) => void;
+  onAction: (taskId: string, action: TaskBoardAction) => void | Promise<void>;
   onClick: (task: Task) => void;
   hideWorkspaceContext?: boolean;
 }) {
@@ -36,14 +39,22 @@ export function TaskMiniCard({
     hideWorkspace: hideWorkspaceContext,
   });
   const canStart = task.status === 'OPEN' || task.status === 'NEW';
-  const canComplete = task.status === 'IN_PROGRESS';
   const canReopen =
     task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'ON_HOLD';
+  const canComplete = !canReopen;
   const isOverdue = task.dueDate ? getDeadlineColumn(task) === 'overdue' : false;
+  const [isCompleting, setIsCompleting] = useState(false);
 
-  const assigneeLabel = task.assignee
-    ? formatAssigneeShortName(task.assignee.firstName, task.assignee.lastName)
-    : 'Unassigned';
+  const runAction = async (action: TaskBoardAction, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (isCompleting) return;
+    if (action === 'complete') setIsCompleting(true);
+    try {
+      await Promise.resolve(onAction(task.id, action));
+    } finally {
+      if (action === 'complete') setIsCompleting(false);
+    }
+  };
 
   return (
     <KanbanCardShell
@@ -53,7 +64,10 @@ export function TaskMiniCard({
       baseShadow="sm"
       hoverShadow="md"
       transition="all"
-      className="group w-full min-w-0 cursor-pointer"
+      className={cn(
+        'group w-full min-w-0 cursor-pointer pb-2',
+        isCompleting && TASK_CARD_COMPLETE_FLASH_CLASS,
+      )}
       onClick={() => onClick(task)}
     >
       <div className="flex items-start gap-2">
@@ -65,6 +79,20 @@ export function TaskMiniCard({
         </p>
         <TaskUrgentFlameIndicator priority={task.priority} className="mt-0.5 shrink-0" />
       </div>
+
+      {task.dueDate ? (
+        <span
+          className={cn(
+            TASK_CARD_DUE_BADGE_CLASS,
+            'mt-2',
+            isOverdue
+              ? TASK_CARD_DUE_BADGE_TONE_CLASS.overdue
+              : TASK_CARD_DUE_BADGE_TONE_CLASS.default,
+          )}
+        >
+          {formatTaskCardDate(task.dueDate)}
+        </span>
+      ) : null}
 
       {contextChips.length > 0 ? (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -87,23 +115,16 @@ export function TaskMiniCard({
         </div>
       ) : null}
 
-      <div className="border-border/60 mt-3 flex items-center justify-between gap-2 border-t pt-3">
-        <div className="flex min-w-0 items-center" title={assigneeLabel}>
-          <EmployeePersonAvatar
-            label={assigneeLabel}
-            imageUrl={task.assignee?.avatar}
-            className="size-8"
-          />
-        </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <TaskCardPeoplePair creator={task.creator} assignee={task.assignee} />
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className={TASK_CARD_HOVER_ACTIONS_CLASS}>
           {canStart ? (
             <QuickActionButton
               label="Start task"
               className="bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/60"
               onClick={(event) => {
-                event.stopPropagation();
-                onAction(task.id, 'start');
+                void runAction('start', event);
               }}
             >
               <Play size={14} className="ml-0.5" aria-hidden />
@@ -111,11 +132,10 @@ export function TaskMiniCard({
           ) : null}
           {canComplete ? (
             <QuickActionButton
-              label="Complete task"
+              label="Finish task"
               className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400"
               onClick={(event) => {
-                event.stopPropagation();
-                onAction(task.id, 'complete');
+                void runAction('complete', event);
               }}
             >
               <CheckCircle2 size={14} aria-hidden />
@@ -126,24 +146,11 @@ export function TaskMiniCard({
               label="Reopen task"
               className="bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-400"
               onClick={(event) => {
-                event.stopPropagation();
-                onAction(task.id, 'reopen');
+                void runAction('reopen', event);
               }}
             >
               <RotateCcw size={13} aria-hidden />
             </QuickActionButton>
-          ) : null}
-          {task.dueDate ? (
-            <span
-              className={cn(
-                'text-xs tabular-nums',
-                isOverdue
-                  ? 'font-bold text-red-600 dark:text-red-400'
-                  : 'text-muted-foreground font-semibold',
-              )}
-            >
-              {formatTaskCardDate(task.dueDate)}
-            </span>
           ) : null}
         </div>
       </div>

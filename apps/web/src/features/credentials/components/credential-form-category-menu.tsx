@@ -1,15 +1,16 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
-import { CredentialCategoryIcon } from '@/features/credentials/components/credential-meta-icon';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
+import { CredentialFormSelectOption } from '@/features/credentials/components/credential-form-select-option';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
+import { credentialCategoryIcon } from '@/features/credentials/utils/credential-vault-card-meta';
 
 export interface CredentialFormCategoryMenuProps {
   category: string;
@@ -19,6 +20,14 @@ export interface CredentialFormCategoryMenuProps {
   onCategoryChange: (value: string) => void;
 }
 
+function formatCategoryOptionLabel(
+  value: string,
+  options: readonly CredentialCategoryOption[],
+  fallback: string,
+): string {
+  return options.find((opt) => opt.value === value)?.label ?? fallback;
+}
+
 export function CredentialFormCategoryMenu({
   category,
   categoryLabel,
@@ -26,55 +35,37 @@ export function CredentialFormCategoryMenu({
   categoryLocked,
   onCategoryChange,
 }: CredentialFormCategoryMenuProps) {
-  if (categoryLocked) {
-    return (
-      <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-sm font-medium">
-        <CredentialCategoryIcon
-          category={category}
-          className="size-3.5 shrink-0 opacity-80"
-          aria-hidden
-        />
-        {categoryLabel}
-      </span>
-    );
-  }
+  const CategoryIcon = credentialCategoryIcon(category);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        type="button"
-        className={cn(
-          'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1',
-          'rounded-md px-1.5 py-1 text-sm font-medium outline-none',
-        )}
+    <div className="grid gap-2">
+      <CredentialFormFieldLabel label="Category" icon={CategoryIcon} />
+      <Select
+        value={category}
+        onValueChange={(value) => onCategoryChange(value ?? category)}
+        disabled={categoryLocked}
       >
-        <CredentialCategoryIcon
-          category={category}
-          className="size-3.5 shrink-0 opacity-80"
-          aria-hidden
-        />
-        {categoryLabel}
-        <ChevronDown className="size-3.5 opacity-70" aria-hidden />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-max min-w-(--anchor-width)">
-        {categoryOptions.map((opt) => (
-          <DropdownMenuItem
-            key={opt.value}
-            onClick={() => onCategoryChange(opt.value)}
-            className={cn(
-              'gap-2 whitespace-nowrap',
-              opt.value === category ? 'bg-accent text-accent-foreground' : undefined,
-            )}
-          >
-            <CredentialCategoryIcon
-              category={opt.value}
-              className="size-3.5 shrink-0 opacity-80"
-              aria-hidden
-            />
-            {opt.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <SelectTrigger>
+          <SelectValue placeholder="Select category">
+            {(value: string | null) =>
+              value ? (
+                <CredentialFormSelectOption
+                  kind="category"
+                  value={value}
+                  label={formatCategoryOptionLabel(value, categoryOptions, categoryLabel)}
+                />
+              ) : null
+            }
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {categoryOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              <CredentialFormSelectOption kind="category" value={opt.value} label={opt.label} />
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

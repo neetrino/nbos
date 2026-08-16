@@ -5,7 +5,7 @@ import { searchEmployeesForPicker } from '@/lib/employees';
 
 export type EmployeeSearchFn = (
   query: string,
-) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
+) => Promise<Array<{ value: string; label: string; subtitle?: string; avatar?: string }>>;
 
 export function useEmployeeSearchLoader(): EmployeeSearchFn {
   return useCallback(async (query: string) => searchEmployeesForPicker(query), []);

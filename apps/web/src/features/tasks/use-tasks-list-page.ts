@@ -12,6 +12,10 @@ import {
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import {
+  parseTasksBoardView,
+  useTasksBoardViewMode,
+} from '@/features/tasks/constants/tasks-board-view-storage';
 import { useTaskBoardMutations } from '@/features/tasks/task-board';
 import { TasksListKanbanViews } from '@/features/tasks/tasks-list-kanban-views';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -59,7 +63,13 @@ export function useTasksListPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [boardView, setBoardView] = useState<TasksListBoardView>('kanban');
+  const [boardView, persistBoardView] = useTasksBoardViewMode();
+  const setBoardView = useCallback(
+    (value: TasksListBoardView) => {
+      persistBoardView(parseTasksBoardView(value));
+    },
+    [persistBoardView],
+  );
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
@@ -162,10 +172,6 @@ export function useTasksListPage() {
       /* non-blocking */
     }
   }, [creatorId]);
-
-  useEffect(() => {
-    if (isTrashView) setBoardView('list');
-  }, [isTrashView]);
 
   useEffect(() => {
     void fetchTasks();

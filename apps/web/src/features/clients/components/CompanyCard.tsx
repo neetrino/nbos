@@ -2,7 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Building2, FileText } from 'lucide-react';
-import { PersonAvatarName, StatusBadge } from '@/components/shared';
+import { PersonContactRow, StatusBadge } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
 import {
   CLIENTS_DIRECTORY_METRIC_CELL_CLASS,
@@ -75,7 +75,7 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
       </div>
 
       {contactName ? (
-        <PersonAvatarName name={contactName} className="mt-4" />
+        <PersonContactRow name={contactName} className="mt-4" />
       ) : (
         <p className="text-muted-foreground mt-4 truncate text-sm">No linked contact</p>
       )}

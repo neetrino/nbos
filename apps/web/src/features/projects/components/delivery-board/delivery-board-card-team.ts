@@ -1,12 +1,11 @@
 import type { EmployeeRef } from '@/lib/api/projects';
-import { employeeInitials } from '@/features/hr/utils/employee-display';
+import { employeeFullName } from '@/features/hr/utils/employee-display';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
 
 export type DeliveryCardTeamAvatarTone = 'amber' | 'blue' | 'cyan';
 
 export type DeliveryCardTeamMember = {
   id: string;
-  initials: string;
   fullName: string;
   roleLabel: string;
   tone: DeliveryCardTeamAvatarTone;
@@ -35,8 +34,7 @@ function pushTeamMember(
   const imageUrl = person.avatar?.trim() || undefined;
   members.push({
     id: person.id,
-    initials: employeeInitials(person),
-    fullName: `${person.firstName} ${person.lastName}`.trim(),
+    fullName: employeeFullName(person),
     roleLabel,
     tone,
     imageUrl,

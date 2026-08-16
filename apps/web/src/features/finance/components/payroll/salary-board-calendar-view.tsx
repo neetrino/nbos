@@ -10,10 +10,8 @@ import {
   salaryLineCalendarCellClass,
   salaryLineStatusBoardUi,
 } from '@/features/finance/constants/salary-board-line-status';
-import {
-  employeeDisplayName,
-  employeeInitials,
-} from '@/features/finance/components/payroll/salary-board-entries';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import {
   formatPayrollMonthAbbrev,
   parseSalaryBoardAmount,
@@ -195,12 +193,11 @@ export function SalaryBoardCalendarView({
               <tr key={row.employee.id} className="hover:bg-muted/15">
                 <td className={STICKY_EMPLOYEE_CELL_CLASS}>
                   <div className="flex items-center gap-2.5">
-                    <span
-                      className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-                      aria-hidden
-                    >
-                      {employeeInitials(row.employee)}
-                    </span>
+                    <EmployeePersonAvatar
+                      label={employeeDisplayName(row.employee)}
+                      imageUrl={row.employee.avatar}
+                      className="size-8 text-xs"
+                    />
                     <div className="min-w-0">
                       <div className="truncate font-medium">
                         {employeeDisplayName(row.employee)}

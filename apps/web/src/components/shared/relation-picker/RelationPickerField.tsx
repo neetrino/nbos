@@ -1,20 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  RELATION_PICKER_CHIP_STACK_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   RELATION_PICKER_DROPDOWN_LIST_CLASS,
-  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
 } from '../detail-sheet-classes';
-import { RelationPickerChip } from './RelationPickerChip';
+import { ClosedRelationPicker, isMultiProps } from './ClosedRelationPicker';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
-import { relationPickerChipLabel } from './relation-picker-display-label';
+import {
+  mergeAvatarRecords,
+  pickAvatarRecord,
+  useMergedPickerAvatars,
+} from './relation-picker-avatars';
+import { useRelationPickerOpenEffects } from './relation-picker-field-helpers';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
-  type RelationEntityKind,
+  RELATION_PICKER_EMPLOYEE_PLACEHOLDER,
   type RelationPickerFieldProps,
   type RelationPickerOption,
 } from './relation-picker.types';
@@ -22,21 +29,15 @@ import {
 const DEFAULT_MAX_RESULTS = 8;
 const SEARCH_DEBOUNCE_MS = 150;
 
-function isMultiProps(props: RelationPickerFieldProps): props is RelationPickerFieldProps & {
-  multiple: true;
-} {
-  return props.multiple === true;
-}
-
 export function RelationPickerField(props: RelationPickerFieldProps) {
   const {
     label,
     placeholder,
-    icon,
     entityKind,
     kindLabel = RELATION_KIND_LABELS[entityKind],
     createLabel = RELATION_CREATE_LABELS[entityKind],
     disabled = false,
+    readOnly = false,
     className,
     onSearch,
     maxResults = DEFAULT_MAX_RESULTS,
@@ -47,6 +48,8 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
 
   const selectionDisplay = props.selectionDisplay ?? 'chips';
   const multiple = isMultiProps(props);
+  const selectionAvatars = multiple ? props.selectionAvatars : undefined;
+
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<RelationPickerOption[]>([]);
@@ -55,7 +58,9 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const { knownAvatars, rememberAvatar } = useMergedPickerAvatars(selectionAvatars, results);
 
+  const interactionLocked = disabled || readOnly;
   const selectedIds = new Set<string>(multiple ? props.value : props.value ? [props.value] : []);
 
   const doSearch = useCallback(
@@ -75,61 +80,55 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     [onSearch, maxResults],
   );
 
-  useEffect(() => {
-    if (open && !disabled) {
-      doSearch('');
-      const timer = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(timer);
-    }
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [open, disabled, doSearch]);
+  useRelationPickerOpenEffects({
+    open,
+    disabled: interactionLocked,
+    doSearch,
+    containerRef,
+    inputRef,
+    debounceRef,
+    setOpen,
+    setQuery,
+  });
 
-  useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-        setQuery('');
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  const emitMultiChange = (
+    nextIds: string[],
+    nextLabels: Record<string, string>,
+    extra?: Record<string, string | null>,
+  ) => {
+    if (!isMultiProps(props)) return;
+    const merged = mergeAvatarRecords(knownAvatars, props.selectionAvatars, extra);
+    props.onChange(nextIds, nextLabels, pickAvatarRecord(nextIds, merged));
+  };
 
   const handleSelect = (id: string, itemLabel: string, avatar?: string) => {
-    if (disabled) return;
-    if (multiple) {
-      const nextIds = selectedIds.has(id)
-        ? props.value.filter((value) => value !== id)
-        : [...props.value, id];
-      const nextLabels = { ...props.selectionLabels };
-      if (selectedIds.has(id)) {
-        delete nextLabels[id];
-      } else {
-        nextLabels[id] = itemLabel;
-      }
-      props.onChange(nextIds, nextLabels);
+    if (interactionLocked) return;
+    rememberAvatar(id, avatar);
+    if (multiple && isMultiProps(props)) {
+      applyMultiSelect(props, selectedIds, id, itemLabel, avatar, emitMultiChange);
       return;
     }
-    props.onSelect(id, itemLabel, avatar);
+    if (!isMultiProps(props)) props.onSelect(id, itemLabel, avatar);
     setOpen(false);
     setQuery('');
   };
 
+  const handleRemoveChip = (id: string) => {
+    if (!isMultiProps(props)) return;
+    const nextIds = props.value.filter((value) => value !== id);
+    const nextLabels = { ...props.selectionLabels };
+    delete nextLabels[id];
+    emitMultiChange(nextIds, nextLabels);
+  };
+
   const handleCreate = () => {
-    if (disabled || !onCreate) return;
+    if (interactionLocked || !onCreate) return;
     onCreate(query.trim());
     setOpen(false);
     setQuery('');
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       setHighlightIdx((index) => Math.min(index + 1, results.length - 1));
@@ -149,45 +148,34 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     }
   };
 
-  const searchPlaceholder = placeholder ?? `Search ${kindLabel.toLowerCase()}s…`;
+  const searchPlaceholder =
+    placeholder ??
+    (entityKind === 'employee'
+      ? RELATION_PICKER_EMPLOYEE_PLACEHOLDER
+      : `Search ${kindLabel.toLowerCase()}s…`);
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
   const showSelectionChips = selectionDisplay === 'chips';
-  const showFieldHeader =
-    Boolean(label.trim()) ||
-    Boolean(icon) ||
-    (multiple && multiChipCount > 0 && !open && showSelectionChips);
+  const showOutlinedAdd = multiple && multiChipCount > 0 && !open && showSelectionChips;
 
   return (
     <div
       ref={containerRef}
-      className={cn(
-        'relative w-full min-w-0',
-        disabled && 'pointer-events-none opacity-60',
-        className,
-      )}
+      className={cn(DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS, disabled && 'opacity-60', className)}
     >
-      {showFieldHeader ? (
-        <div className="text-foreground/85 mb-1.5 flex h-5 items-center justify-between gap-2 text-sm font-medium">
-          {label.trim() || icon ? (
-            <div className="flex min-w-0 items-center gap-1.5">
-              {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
-              {label.trim() ? <span className="truncate">{label}</span> : null}
-            </div>
-          ) : (
-            <span aria-hidden />
-          )}
-          {multiple && multiChipCount > 0 && !open && showSelectionChips ? (
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => setOpen(true)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
-              aria-label={`Add ${kindLabel.toLowerCase()}`}
-            >
-              <Plus size={14} />
-            </button>
-          ) : null}
-        </div>
+      {label.trim() ? (
+        showOutlinedAdd && !interactionLocked ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
+            aria-label={`Add ${kindLabel.toLowerCase()}`}
+          >
+            <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
+            {label}
+          </button>
+        ) : (
+          <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+        )
       ) : null}
 
       {open ? (
@@ -223,125 +211,37 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           props={props}
           multiple={multiple}
           disabled={disabled}
+          readOnly={readOnly}
           placeholder={searchPlaceholder}
           onOpen={() => setOpen(true)}
           onOpenSelected={onOpenSelected}
           entityKind={entityKind}
           selectionDisplay={selectionDisplay}
+          chipAvatars={knownAvatars}
+          onRemoveChip={handleRemoveChip}
         />
       )}
     </div>
   );
 }
 
-function ClosedRelationPicker({
-  props,
-  multiple,
-  disabled,
-  placeholder,
-  onOpen,
-  onOpenSelected,
-  entityKind,
-  selectionDisplay,
-}: {
-  props: RelationPickerFieldProps;
-  multiple: boolean;
-  disabled: boolean;
-  placeholder: string;
-  onOpen: () => void;
-  onOpenSelected?: (id: string) => void;
-  entityKind: RelationEntityKind;
-  selectionDisplay: 'chips' | 'none';
-}) {
-  if (selectionDisplay === 'none') {
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onOpen}
-        className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, multiple && 'border-dashed')}
-      >
-        <Search size={14} className="shrink-0 opacity-70" />
-        <span>{placeholder}</span>
-      </button>
-    );
-  }
-
-  if (multiple && isMultiProps(props)) {
-    const chips = props.value.map((id) => ({
-      id,
-      label: relationPickerChipLabel(props.selectionLabels[id], id),
-    }));
-
-    return (
-      <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
-        {chips.map((chip) => (
-          <RelationPickerChip
-            key={chip.id}
-            label={chip.label}
-            entityKind={entityKind}
-            disabled={disabled}
-            onOpen={onOpenSelected ? () => onOpenSelected(chip.id) : undefined}
-            onClear={() => {
-              const nextIds = props.value.filter((value) => value !== chip.id);
-              const nextLabels = { ...props.selectionLabels };
-              delete nextLabels[chip.id];
-              props.onChange(nextIds, nextLabels);
-            }}
-          />
-        ))}
-        {chips.length === 0 ? (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onOpen}
-            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'border-dashed')}
-          >
-            <Search size={14} className="shrink-0 opacity-70" />
-            <span>{placeholder}</span>
-          </button>
-        ) : null}
-      </div>
-    );
-  }
-
-  if (!isMultiProps(props)) {
-    const hasValue = Boolean(props.value);
-    const chipLabel = relationPickerChipLabel(props.selectionLabel, props.value);
-
-    if (hasValue) {
-      return (
-        <div className="w-full min-w-0">
-          <RelationPickerChip
-            label={chipLabel}
-            subtitle={props.selectionSubtitle}
-            entityKind={entityKind}
-            disabled={disabled}
-            imageUrl={props.selectionAvatar}
-            onOpen={
-              onOpenSelected && props.value
-                ? () => onOpenSelected(props.value as string)
-                : undefined
-            }
-            onReplace={disabled ? undefined : onOpen}
-            onClear={props.onClear}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onOpen}
-        className={RELATION_PICKER_EMPTY_TRIGGER_CLASS}
-      >
-        <Search size={14} className="shrink-0 opacity-70" />
-        <span>{placeholder}</span>
-      </button>
-    );
-  }
-
-  return null;
+function applyMultiSelect(
+  props: Extract<RelationPickerFieldProps, { multiple: true }>,
+  selectedIds: Set<string>,
+  id: string,
+  itemLabel: string,
+  avatar: string | undefined,
+  emit: (
+    ids: string[],
+    labels: Record<string, string>,
+    extra?: Record<string, string | null>,
+  ) => void,
+): void {
+  const removing = selectedIds.has(id);
+  const nextIds = removing ? props.value.filter((value) => value !== id) : [...props.value, id];
+  const nextLabels = { ...props.selectionLabels };
+  if (removing) delete nextLabels[id];
+  else nextLabels[id] = itemLabel;
+  const extra = !removing && avatar?.trim() ? { [id]: avatar } : undefined;
+  emit(nextIds, nextLabels, extra);
 }

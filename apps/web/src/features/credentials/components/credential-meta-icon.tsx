@@ -5,6 +5,7 @@ import {
   credentialAccessIcon,
   credentialCategoryIcon,
   credentialCriticalityIcon,
+  credentialTypeIcon,
 } from '@/features/credentials/utils/credential-vault-card-meta';
 
 type CredentialMetaIconProps = SVGProps<SVGSVGElement> & {
@@ -17,6 +18,10 @@ type CredentialAccessIconProps = SVGProps<SVGSVGElement> & {
 
 type CredentialCriticalityIconProps = SVGProps<SVGSVGElement> & {
   criticality: string;
+};
+
+type CredentialTypeIconProps = SVGProps<SVGSVGElement> & {
+  credentialType: string;
 };
 
 /** Renders a category icon without dynamic JSX component references. */
@@ -35,4 +40,9 @@ export function CredentialCriticalityIcon({
   ...props
 }: CredentialCriticalityIconProps) {
   return createElement(credentialCriticalityIcon(criticality), props);
+}
+
+/** Renders a credential-type icon without dynamic JSX component references. */
+export function CredentialTypeIcon({ credentialType, ...props }: CredentialTypeIconProps) {
+  return createElement(credentialTypeIcon(credentialType), props);
 }

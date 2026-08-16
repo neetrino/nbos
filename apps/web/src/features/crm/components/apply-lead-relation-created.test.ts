@@ -19,6 +19,7 @@ const baseDraft: LeadGeneralDraft = {
   notes: null,
   assignedTo: null,
   sellerDisplayLabel: null,
+  sellerAvatar: null,
   contactIds: [],
   contactLabels: {},
 };

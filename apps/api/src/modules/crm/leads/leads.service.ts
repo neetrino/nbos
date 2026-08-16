@@ -7,6 +7,7 @@ import { assertAttributionUpdateAllowed, type AttributionForValidation } from '.
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
+import { employeePersonSelect } from '../../../common/employee-person.select';
 import { leadDetailInclude } from './lead.includes';
 import {
   mapMetaConversationForLead,
@@ -123,7 +124,7 @@ export class LeadsService {
       this.prisma.lead.findMany({
         where,
         include: {
-          assignee: { select: { id: true, firstName: true, lastName: true } },
+          assignee: { select: employeePersonSelect },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
           marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
@@ -205,7 +206,7 @@ export class LeadsService {
     return this.prisma.lead.create({
       data: createData,
       include: {
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonSelect },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
         marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },

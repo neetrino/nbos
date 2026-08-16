@@ -39,6 +39,13 @@ export type OrderPaymentMode = 'STANDARD_PREPAY' | 'POSTPAID' | 'FREE';
 export type OrderDeliveryStartMode = 'AFTER_PAYMENT' | 'EARLY_START' | 'EXCEPTION_IMMEDIATE';
 export type DealExceptionType = 'FREE' | 'POSTPAID';
 
+export type DealEmployeeRef = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string | null;
+};
+
 export interface DealHandoffReferences {
   project: { id: string; code: string; name: string } | null;
   product: { id: string; name: string; productType: string; status?: string | null } | null;
@@ -86,7 +93,7 @@ export interface Deal {
   productType: string | null;
   pmId: string | null;
   deadline: string | null;
-  pm: { id: string; firstName: string; lastName: string } | null;
+  pm: DealEmployeeRef | null;
   existingProductId: string | null;
   existingProduct: { id: string; name: string; productType: string } | null;
   offerSentAt: string | null;
@@ -103,7 +110,7 @@ export interface Deal {
   exceptionReason?: string | null;
   exceptionApprovedAt?: string | null;
   exceptionPaymentExpectedAt?: string | null;
-  exceptionApprovedBy?: { id: string; firstName: string; lastName: string } | null;
+  exceptionApprovedBy?: DealEmployeeRef | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
@@ -111,8 +118,8 @@ export interface Deal {
   additionalContacts?: Array<{
     contact: { id: string; firstName: string; lastName: string; email: string | null };
   }>;
-  seller: { id: string; firstName: string; lastName: string };
-  sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
+  seller: DealEmployeeRef;
+  sellerAssistant?: DealEmployeeRef | null;
   orders: DealOrder[];
   handoff?: DealHandoffReferences;
   sourcePartner: { id: string; name: string; defaultPercent?: number | string | null } | null;

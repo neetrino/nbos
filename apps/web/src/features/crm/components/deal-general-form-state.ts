@@ -1,6 +1,7 @@
 import { contactIdListsEqual } from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
+import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
 import { toDateInputValue } from './deal-general-tab.helpers';
 
 /** Editable General tab state (includes UI labels for search fields). */
@@ -34,10 +35,13 @@ export interface DealGeneralDraft {
   contactLabels: Record<string, string>;
   sellerId: string | null;
   sellerDisplayLabel: string | null;
+  sellerAvatar: string | null;
   sellerAssistantId: string | null;
   sellerAssistantDisplayLabel: string | null;
+  sellerAssistantAvatar: string | null;
   pmId: string | null;
   pmDisplayLabel: string | null;
+  pmAvatar: string | null;
   deadline: string | null;
   outsourceGoesToDelivery: boolean;
 }
@@ -86,12 +90,15 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     contactLabels,
     sellerId: deal.seller?.id ?? null,
     sellerDisplayLabel: deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null,
+    sellerAvatar: employeeAvatarUrl(deal.seller),
     sellerAssistantId: deal.sellerAssistant?.id ?? null,
     sellerAssistantDisplayLabel: deal.sellerAssistant
       ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
       : null,
+    sellerAssistantAvatar: employeeAvatarUrl(deal.sellerAssistant),
     pmId: deal.pmId,
     pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
+    pmAvatar: employeeAvatarUrl(deal.pm),
     deadline: toDateInputValue(deal.deadline),
     outsourceGoesToDelivery: deal.outsourceGoesToDelivery === true,
   };
@@ -173,6 +180,14 @@ export function isDealGeneralDirty(a: DealGeneralDraft, b: DealGeneralDraft): bo
 const PRODUCT_LIKE_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
 const LINKED_PRODUCT_TYPES = new Set(['EXTENSION', 'MAINTENANCE']);
 
+export function isProductLikeDealType(type: string | null): boolean {
+  return PRODUCT_LIKE_TYPES.has(type ?? '');
+}
+
+export function isLinkedProductDealType(type: string | null): boolean {
+  return LINKED_PRODUCT_TYPES.has(type ?? '');
+}
+
 /** Clears taxonomy / linked-product fields that do not apply to the next deal type. */
 export function buildDealTypeChangePatch(
   draft: DealGeneralDraft,
@@ -206,5 +221,20 @@ export function buildDealProjectChangePatch(
     linkedProjectLabel,
     existingProductId: null,
     existingProductPickLabel: null,
+  };
+}
+
+/** Product pick fills Project from the product; does not clear the product (unlike project change). */
+export function buildDealExistingProductChangePatch(
+  existingProductId: string | null,
+  existingProductPickLabel: string | null,
+  projectId: string | null,
+  linkedProjectLabel: string | null,
+): Partial<DealGeneralDraft> {
+  return {
+    existingProductId,
+    existingProductPickLabel,
+    projectId,
+    linkedProjectLabel,
   };
 }

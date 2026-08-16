@@ -9,7 +9,11 @@ export {
 } from './task-board-constants';
 export { reorderTasksInColumn } from './reorder-tasks-in-column';
 export { persistColumnTaskReorder } from './persist-column-task-reorder';
-export { sortTasksByBoardOrder } from './sort-tasks-by-board-order';
+export {
+  applySequentialBoardSortOrder,
+  sortFieldForReorderScope,
+  sortTasksByBoardOrder,
+} from './sort-tasks-by-board-order';
 export { useTaskBoardMutations } from './use-task-board-mutations';
 export type { TaskBoardViewMode } from './use-task-board-mutations';
 export { TaskMiniCard, type TaskBoardAction } from './TaskMiniCard';

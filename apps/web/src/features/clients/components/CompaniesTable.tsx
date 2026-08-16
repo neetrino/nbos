@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PersonAvatarName, StatusBadge } from '@/components/shared';
+import { PersonContactRow, StatusBadge } from '@/components/shared';
 import {
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
@@ -91,7 +91,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
                   {company.taxId ? company.taxId : <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {contactName ? <PersonAvatarName name={contactName} /> : <EntityListMutedDash />}
+                  {contactName ? <PersonContactRow name={contactName} /> : <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-center font-medium`}>
                   {company._count.projects}

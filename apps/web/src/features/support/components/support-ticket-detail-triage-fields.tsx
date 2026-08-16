@@ -31,6 +31,7 @@ export interface SupportTicketDetailTriageFieldsProps {
   terminal: boolean;
   projectId: string | null;
   assigneeLabel?: string | null;
+  assigneeAvatar?: string | null;
   productLabel?: string | null;
   contactLabel?: string | null;
   onPatchDraft: (partial: Partial<SupportTriageDraft>) => void;
@@ -41,11 +42,13 @@ export function SupportTicketDetailTriageFields({
   terminal,
   projectId,
   assigneeLabel: assigneeLabelProp,
+  assigneeAvatar: assigneeAvatarProp,
   productLabel: productLabelProp,
   contactLabel: contactLabelProp,
   onPatchDraft,
 }: SupportTicketDetailTriageFieldsProps) {
   const [assigneeLabel, setAssigneeLabel] = useState(assigneeLabelProp ?? '');
+  const [assigneeAvatar, setAssigneeAvatar] = useState(assigneeAvatarProp ?? null);
   const [productLabel, setProductLabel] = useState(productLabelProp ?? '');
   const [contactLabel, setContactLabel] = useState(contactLabelProp ?? '');
 
@@ -153,17 +156,19 @@ export function SupportTicketDetailTriageFields({
             entityKind="employee"
             value={draft.assignedTo || null}
             selectionLabel={assigneeLabel || null}
-            placeholder="Unassigned — search employee…"
+            selectionAvatar={assigneeAvatar}
             icon={<UserCog size={12} />}
             disabled={terminal}
             onSearch={searchEmployees}
-            onSelect={(id, label) => {
+            onSelect={(id, label, avatar) => {
               onPatchDraft({ assignedTo: id });
               setAssigneeLabel(label);
+              setAssigneeAvatar(avatar?.trim() || null);
             }}
             onClear={() => {
               onPatchDraft({ assignedTo: '' });
               setAssigneeLabel('');
+              setAssigneeAvatar(null);
             }}
             {...employeePicker}
           />

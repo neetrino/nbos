@@ -15,8 +15,10 @@ vi.mock('@/lib/employees', () => ({
 
 import {
   clearEmployeeLabelCache,
+  peekEmployeeAvatars,
   peekEmployeeLabels,
   pickEmployeeLabels,
+  rememberEmployeeAvatar,
   rememberEmployeeLabel,
   resolveEmployeeLabelMap,
 } from './task-employee-labels';
@@ -64,5 +66,28 @@ describe('resolveEmployeeLabelMap', () => {
     const labels = await resolveEmployeeLabelMap([KARAM_ID]);
     expect(labels).toEqual({});
     expect(peekEmployeeLabels([KARAM_ID])).toEqual({});
+  });
+
+  it('caches avatars from the picker first page', async () => {
+    searchEmployeesForPicker.mockResolvedValue([
+      { value: JASMINE_ID, label: 'Jasmine Ghazaryan', avatar: 'https://cdn.example/j.png' },
+    ]);
+    await resolveEmployeeLabelMap([JASMINE_ID]);
+    expect(peekEmployeeAvatars([JASMINE_ID])).toEqual({
+      [JASMINE_ID]: 'https://cdn.example/j.png',
+    });
+  });
+});
+
+describe('employeeAvatarCache', () => {
+  beforeEach(() => {
+    clearEmployeeLabelCache();
+  });
+
+  it('clears avatars with the label cache', () => {
+    rememberEmployeeAvatar(KARAM_ID, 'https://cdn.example/k.png');
+    expect(peekEmployeeAvatars([KARAM_ID])).toEqual({ [KARAM_ID]: 'https://cdn.example/k.png' });
+    clearEmployeeLabelCache();
+    expect(peekEmployeeAvatars([KARAM_ID])).toEqual({});
   });
 });

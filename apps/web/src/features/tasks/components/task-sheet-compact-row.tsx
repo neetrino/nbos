@@ -1,71 +1,47 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  TASK_SHEET_META_LABEL_CLASS,
   TASK_SHEET_META_VALUE_COLUMN_CLASS,
+  TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  TASK_SHEET_OUTLINED_LABEL_CLASS,
 } from './task-sheet-classes';
 
 interface TaskSheetCompactRowProps {
   label: string;
   children: ReactNode;
   className?: string;
-  /** When true, only the value column is shown (placeholder carries the role hint). */
+  /** When true, only the value is shown (child draws its own outlined caption). */
   hideLabel?: boolean;
-  /** Align label + field to the right (assistant / observer column). */
-  alignEnd?: boolean;
-  /** Two grid cells for aligned label column inside {@link TASK_SHEET_TEAM_META_GRID_CLASS}. */
-  gridCells?: boolean;
 }
 
-/** Bitrix-style label (left) + value (right) row inside task sheet cards. */
+/** Outlined field row — caption on the border, or width wrapper when `hideLabel`. */
 export function TaskSheetCompactRow({
   label,
   children,
   className,
   hideLabel = false,
-  alignEnd = false,
-  gridCells = false,
 }: TaskSheetCompactRowProps) {
-  if (gridCells) {
-    return (
-      <div
-        className={cn(
-          'flex w-full min-w-0 items-center gap-x-3 py-1',
-          '@min-[42rem]/task-sheet-meta:contents @min-[42rem]/task-sheet-meta:py-0',
-          className,
-        )}
-      >
-        {hideLabel ? null : <span className={TASK_SHEET_META_LABEL_CLASS}>{label}</span>}
-        <div className={cn(TASK_SHEET_META_VALUE_COLUMN_CLASS, hideLabel && 'col-span-2')}>
-          {children}
-        </div>
-      </div>
-    );
+  if (hideLabel) {
+    return <div className={cn(TASK_SHEET_META_VALUE_COLUMN_CLASS, className)}>{children}</div>;
   }
 
   return (
-    <div
-      className={cn(
-        'flex w-full min-w-0 items-center gap-x-3 py-1',
-        alignEnd && '@min-[42rem]/task-sheet-meta:justify-end',
-        className,
-      )}
-    >
-      {hideLabel ? null : <span className={TASK_SHEET_META_LABEL_CLASS}>{label}</span>}
-      <div className={cn(TASK_SHEET_META_VALUE_COLUMN_CLASS, hideLabel && 'max-w-[15.5rem]')}>
-        {children}
-      </div>
+    <div className={cn(TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS, className)}>
+      <span className={TASK_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      <div className={TASK_SHEET_META_VALUE_COLUMN_CLASS}>{children}</div>
     </div>
   );
 }
 
-/** Fills the meta value column; defers border/height to detail-sheet shells. */
-export const TASK_SHEET_COMPACT_FIELD_CLASS = [
-  'w-full min-w-0 max-w-[15.5rem]',
-  '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
-  '[&>div:last-child]:w-full [&>div:last-child]:max-w-[15.5rem]',
+const TASK_SHEET_COMPACT_FIELD_BASE_CLASS = [
+  'w-full min-w-0 max-w-full',
+  '[&>div:last-child]:w-full [&>div:last-child]:max-w-full',
   '[&_.w-full]:w-full',
+  '[&_.border]:border-border/50',
   '[&_.person-soft-avatar]:size-8 [&_.person-soft-avatar]:text-[10px]',
   '[&_button_span.block.truncate]:overflow-visible',
   '[&_button_span.block.truncate]:whitespace-nowrap',
 ].join(' ');
+
+/** Employee pickers draw their own outlined label — do not hide the first child. */
+export const TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS = TASK_SHEET_COMPACT_FIELD_BASE_CLASS;

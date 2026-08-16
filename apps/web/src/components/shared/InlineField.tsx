@@ -19,6 +19,9 @@ import {
   DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
 import { MoneyInput } from './MoneyInput';
@@ -161,13 +164,18 @@ function InlineFieldUncontrolled({
       : rawDisplayStr && type === 'money'
         ? formatGroupedNumber(parseMoneyAmount(rawDisplayStr))
         : rawDisplayStr;
+  const showOutlinedLabel = Boolean(label.trim());
 
   return (
-    <div className={cn('group relative', className)}>
-      <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
-        {icon && <span className="text-muted-foreground/70">{icon}</span>}
-        {label}
-      </div>
+    <div
+      className={cn(
+        showOutlinedLabel ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'group relative',
+        className,
+      )}
+    >
+      {showOutlinedLabel ? (
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      ) : null}
 
       {editing ? (
         <div className="flex items-start gap-1.5">
@@ -289,9 +297,13 @@ function InlineFieldUncontrolled({
         <div
           onClick={editable && onSave ? startEdit : undefined}
           className={cn(
-            DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-            DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-            'rounded-xl px-3 py-2 text-sm',
+            showOutlinedLabel
+              ? DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS
+              : [
+                  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+                  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+                  'rounded-xl px-3 py-2 text-sm',
+                ].join(' '),
             editable && onSave ? 'cursor-pointer' : 'cursor-default',
           )}
         >

@@ -345,7 +345,7 @@ export class ProductsService {
                 code: true,
                 offerFileUrl: true,
                 contractFileUrl: true,
-                seller: { select: { id: true, firstName: true, lastName: true } },
+                seller: { select: employeePersonSelect },
               },
             },
             invoices: {

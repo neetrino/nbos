@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState, type SetStateAction } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowUpRight, Plus } from 'lucide-react';
@@ -23,7 +23,7 @@ import { WorkSpaceAreaSegmented } from './WorkSpaceAreaSegmented';
 import { WorkSpaceScrumPlanningEnable } from './WorkSpaceScrumPlanningEnable';
 import { buildWorkSpaceContextHref, buildDefaultTaskLink } from './work-space-utils';
 import type { WorkspaceBoardView } from './use-workspace-runtime-board';
-import type { WorkspaceArea } from './workspace-area';
+import { useWorkspaceBoardViewState } from './use-workspace-board-view-state';
 import { WORKSPACE_AREA_ACTIVE, WORKSPACE_AREA_PLANNING } from './workspace-area';
 import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
 import {
@@ -54,8 +54,8 @@ export function WorkSpaceDetailPage() {
   } = useWorkSpaceDetail(params.id);
   const [editOpen, setEditOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
-  const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
-  const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
+  const { boardView, handleBoardViewChange, workspaceArea, setWorkspaceArea } =
+    useWorkspaceBoardViewState();
   const openQuickCreateRef = useRef<(() => void) | null>(null);
   const isMobileViewport = useIsMobileViewport();
 
@@ -65,19 +65,6 @@ export function WorkSpaceDetailPage() {
   const effectiveBoardView: WorkspaceBoardView =
     isMobileViewport && !isPlanningArea ? 'kanban' : boardView;
 
-  const handleBoardViewChange = useCallback(
-    (next: SetStateAction<WorkspaceBoardView>) => {
-      const resolved = typeof next === 'function' ? next(boardView) : next;
-      if (resolved === 'planning') {
-        setWorkspaceArea(WORKSPACE_AREA_PLANNING);
-        setBoardView('kanban');
-        return;
-      }
-      setBoardView(resolved);
-    },
-    [boardView],
-  );
-
   const onWorkspaceUpdate = useCallback(
     async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
       await handleWorkspaceUpdate(updated);
@@ -85,7 +72,7 @@ export function WorkSpaceDetailPage() {
         setWorkspaceArea(WORKSPACE_AREA_ACTIVE);
       }
     },
-    [handleWorkspaceUpdate],
+    [handleWorkspaceUpdate, setWorkspaceArea],
   );
 
   const contextHref = workspace ? buildWorkSpaceContextHref(workspace) : null;

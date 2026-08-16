@@ -32,10 +32,13 @@ const baseDraft: DealGeneralDraft = {
   contactLabels: {},
   sellerId: null,
   sellerDisplayLabel: null,
+  sellerAvatar: null,
   sellerAssistantId: null,
   sellerAssistantDisplayLabel: null,
+  sellerAssistantAvatar: null,
   pmId: null,
   pmDisplayLabel: null,
+  pmAvatar: null,
   deadline: null,
   outsourceGoesToDelivery: false,
 };

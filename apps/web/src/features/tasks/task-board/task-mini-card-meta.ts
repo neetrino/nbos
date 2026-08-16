@@ -8,6 +8,22 @@ export const TASK_CARD_CHIP_CLASS =
 export const TASK_CARD_ACTION_BTN_CLASS =
   'flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors';
 
+export const TASK_CARD_HOVER_ACTIONS_CLASS =
+  'pointer-events-none flex shrink-0 items-center gap-2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100';
+
+export const TASK_CARD_DUE_BADGE_CLASS =
+  'inline-flex w-fit max-w-full items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium leading-none';
+
+export const TASK_CARD_DUE_BADGE_TONE_CLASS = {
+  default: 'border-sky-400 text-sky-500 dark:border-sky-500 dark:text-sky-400',
+  overdue: 'border-red-400 text-red-600 dark:border-red-500 dark:text-red-400',
+} as const;
+
+/** Compact creator/assignee avatars on task board cards (20px). */
+export const TASK_CARD_PERSON_AVATAR_CLASS = 'size-5 text-[8px]';
+
+export const TASK_CARD_PEOPLE_CHEVRON_SIZE = 12;
+
 export type TaskCardContextKind = 'PROJECT' | 'PRODUCT' | 'WORK_SPACE' | 'OTHER';
 
 export type TaskCardContextChip = {
@@ -20,13 +36,18 @@ export type TaskCardContextChip = {
 /** Work Space first (planning home), then Product / Project / other. */
 const MAX_TASK_CARD_CONTEXT_CHIPS = 3;
 
-/** Task board card due date — `dd.MM.yyyy`. */
+/** Task board card due date — `19 August, 19:00` (time omitted at midnight). */
 export function formatTaskCardDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${day}.${month}.${date.getFullYear()}`;
+  const day = date.getDate();
+  const month = date.toLocaleDateString(undefined, { month: 'long' });
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  if (hours === 0 && minutes === 0) return `${day} ${month}`;
+  const hh = String(hours).padStart(2, '0');
+  const mm = String(minutes).padStart(2, '0');
+  return `${day} ${month}, ${hh}:${mm}`;
 }
 
 export function formatAssigneeShortName(firstName: string, lastName: string): string {
@@ -35,6 +56,17 @@ export function formatAssigneeShortName(firstName: string, lastName: string): st
   if (!initial && !last) return 'Unassigned';
   if (!last) return initial;
   return `${initial}. ${last}`;
+}
+
+export function formatTaskCardPeoplePairLabel(
+  creator: { firstName: string; lastName: string },
+  assignee: { firstName: string; lastName: string } | null,
+): string {
+  const creatorName = formatAssigneeShortName(creator.firstName, creator.lastName);
+  const assigneeName = assignee
+    ? formatAssigneeShortName(assignee.firstName, assignee.lastName)
+    : 'Unassigned';
+  return `Set by ${creatorName} → ${assigneeName}`;
 }
 
 export function taskCardContextIcon(chip: Pick<TaskCardContextChip, 'entityType'>): LucideIcon {
