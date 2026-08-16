@@ -1,4 +1,4 @@
-import { Calendar, Copy, Users } from 'lucide-react';
+import { Calendar, Copy } from 'lucide-react';
 import {
   DetailSheetOptionalDescriptionField,
   InlineField,
@@ -8,7 +8,12 @@ import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
-import { rememberEmployeeLabel, rememberEmployeeLabels } from '../task-employee-labels';
+import {
+  rememberEmployeeAvatar,
+  rememberEmployeeAvatars,
+  rememberEmployeeLabel,
+  rememberEmployeeLabels,
+} from '../task-employee-labels';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
@@ -21,7 +26,11 @@ import {
   TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
 } from './task-sheet-classes';
 import { formatTaskSheetDateTime } from './task-sheet-format';
-import { TASK_SHEET_COMPACT_FIELD_CLASS, TaskSheetCompactRow } from './task-sheet-compact-row';
+import {
+  TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS,
+  TASK_SHEET_COMPACT_FIELD_CLASS,
+  TaskSheetCompactRow,
+} from './task-sheet-compact-row';
 import { TaskFilesBlock } from './TaskFilesBlock';
 import { TaskLinkedEntitiesSection } from './TaskLinkedEntitiesSection';
 
@@ -78,7 +87,7 @@ export function TaskSheetGeneralSection({
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
             <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS)}>
-              <TaskSheetCompactRow gridCells label="Creator">
+              <TaskSheetCompactRow gridCells hideLabel label="Creator">
                 <RelationPickerField
                   label="Creator"
                   entityKind="employee"
@@ -87,10 +96,11 @@ export function TaskSheetGeneralSection({
                   selectionAvatar={draft.creatorAvatar}
                   placeholder="Select creator…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
+                    rememberEmployeeAvatar(employeeId, avatar);
                     onPatchDraft({
                       creatorId: employeeId,
                       creatorLabel: label,
@@ -101,7 +111,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow gridCells label="Assignee">
+              <TaskSheetCompactRow gridCells hideLabel label="Assignee">
                 <RelationPickerField
                   label="Assignee"
                   entityKind="employee"
@@ -110,10 +120,11 @@ export function TaskSheetGeneralSection({
                   selectionAvatar={draft.assigneeAvatar}
                   placeholder="Select assignee…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label, avatar) => {
                     rememberEmployeeLabel(employeeId, label);
+                    rememberEmployeeAvatar(employeeId, avatar);
                     onPatchDraft({
                       assigneeId: employeeId,
                       assigneeLabel: label,
@@ -157,41 +168,51 @@ export function TaskSheetGeneralSection({
                 TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
               )}
             >
-              <TaskSheetCompactRow gridCells label="Assistant">
+              <TaskSheetCompactRow gridCells hideLabel label="Assistant">
                 <RelationPickerField
                   label="Assistant"
                   entityKind="employee"
                   multiple
                   value={draft.coAssigneeIds}
                   selectionLabels={draft.coAssigneeLabels}
-                  icon={<Users size={13} />}
+                  selectionAvatars={draft.coAssigneeAvatars}
                   placeholder="Add assistant…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) => {
+                  onChange={(ids, labels, avatars) => {
                     rememberEmployeeLabels(labels);
-                    onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels });
+                    if (avatars) rememberEmployeeAvatars(avatars);
+                    onPatchDraft({
+                      coAssigneeIds: ids,
+                      coAssigneeLabels: labels,
+                      coAssigneeAvatars: avatars ?? {},
+                    });
                   }}
                   {...assistantPicker}
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow gridCells label="Observer">
+              <TaskSheetCompactRow gridCells hideLabel label="Observer">
                 <RelationPickerField
                   label="Observer"
                   entityKind="employee"
                   multiple
                   value={draft.observerIds}
                   selectionLabels={draft.observerLabels}
-                  icon={<Users size={13} />}
+                  selectionAvatars={draft.observerAvatars}
                   placeholder="Add observer…"
                   disabled={disabled}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                  className={TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS}
                   onSearch={onSearchEmployees}
-                  onChange={(ids, labels) => {
+                  onChange={(ids, labels, avatars) => {
                     rememberEmployeeLabels(labels);
-                    onPatchDraft({ observerIds: ids, observerLabels: labels });
+                    if (avatars) rememberEmployeeAvatars(avatars);
+                    onPatchDraft({
+                      observerIds: ids,
+                      observerLabels: labels,
+                      observerAvatars: avatars ?? {},
+                    });
                   }}
                   {...observerPicker}
                 />

@@ -52,6 +52,11 @@ type RelationPickerBaseProps = {
    * Search still tracks current selection ids.
    */
   selectionDisplay?: 'chips' | 'none';
+  /**
+   * `outlined` — name sits on the top-right field border.
+   * Default: outlined for employees, header for other kinds.
+   */
+  labelPlacement?: 'header' | 'outlined';
 };
 
 export type RelationPickerSingleProps = RelationPickerBaseProps & {
@@ -70,7 +75,13 @@ export type RelationPickerMultiProps = RelationPickerBaseProps & {
   multiple: true;
   value: string[];
   selectionLabels: Record<string, string>;
-  onChange: (ids: string[], labels: Record<string, string>) => void;
+  /** Profile photos for selected chips (employee / contact). */
+  selectionAvatars?: Record<string, string | null>;
+  onChange: (
+    ids: string[],
+    labels: Record<string, string>,
+    avatars?: Record<string, string | null>,
+  ) => void;
 };
 
 export type RelationPickerFieldProps = RelationPickerSingleProps | RelationPickerMultiProps;

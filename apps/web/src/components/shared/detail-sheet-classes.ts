@@ -302,3 +302,14 @@ export const DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS = 'detail-sheet-tab-panel-t
 /** Full-width page tab bar (no horizontal sheet padding). */
 export const PAGE_TAB_BAR_WRAPPER_CLASS =
   'border-border flex shrink-0 items-center gap-1 border-b pb-0';
+
+/** Employee (and similar) fields — room for a border-notch label. */
+export const DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';
+
+/** Field name on the top-right border; card fill breaks the line under the text. */
+export const DETAIL_SHEET_OUTLINED_LABEL_CLASS =
+  'bg-card text-muted-foreground pointer-events-none absolute top-2 right-3 z-10 -translate-y-1/2 px-1 text-[10px] font-medium leading-none';
+
+/** Multi-select Add (`+`) on the top-left border, opposite the outlined label. */
+export const DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS =
+  'text-muted-foreground hover:text-foreground hover:bg-muted/40 absolute top-2 left-3 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors';

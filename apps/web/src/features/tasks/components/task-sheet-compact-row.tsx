@@ -25,18 +25,20 @@ export function TaskSheetCompactRow({
   className,
   hideLabel = false,
 }: TaskSheetCompactRowProps) {
+  if (hideLabel) {
+    return <div className={cn(TASK_SHEET_META_VALUE_COLUMN_CLASS, className)}>{children}</div>;
+  }
+
   return (
     <div className={cn(TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS, className)}>
-      {hideLabel ? null : <span className={TASK_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>}
+      <span className={TASK_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
       <div className={TASK_SHEET_META_VALUE_COLUMN_CLASS}>{children}</div>
     </div>
   );
 }
 
-/** Fills the meta value column; defers height to detail-sheet shells. */
-export const TASK_SHEET_COMPACT_FIELD_CLASS = [
+const TASK_SHEET_COMPACT_FIELD_BASE_CLASS = [
   'w-full min-w-0 max-w-full',
-  '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
   '[&>div:last-child]:w-full [&>div:last-child]:max-w-full',
   '[&_.w-full]:w-full',
   '[&_.border]:border-border/50',
@@ -44,3 +46,12 @@ export const TASK_SHEET_COMPACT_FIELD_CLASS = [
   '[&_button_span.block.truncate]:overflow-visible',
   '[&_button_span.block.truncate]:whitespace-nowrap',
 ].join(' ');
+
+/** Fills the meta value column; hides the picker’s old header row. */
+export const TASK_SHEET_COMPACT_FIELD_CLASS = [
+  TASK_SHEET_COMPACT_FIELD_BASE_CLASS,
+  '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
+].join(' ');
+
+/** Employee pickers draw their own outlined label — do not hide the first child. */
+export const TASK_SHEET_COMPACT_EMPLOYEE_FIELD_CLASS = TASK_SHEET_COMPACT_FIELD_BASE_CLASS;

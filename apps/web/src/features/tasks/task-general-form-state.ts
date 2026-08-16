@@ -1,8 +1,11 @@
 import type { Task } from '@/lib/api/tasks';
 import {
   formatEmployeeDisplayName,
+  peekEmployeeAvatars,
   peekEmployeeLabels,
+  pickEmployeeAvatars,
   pickEmployeeLabels,
+  rememberEmployeeAvatar,
   rememberEmployeeLabel,
   resolveEmployeeLabelMap,
 } from './task-employee-labels';
@@ -22,8 +25,10 @@ export interface TaskGeneralDraft {
   assigneeAvatar: string | null;
   coAssigneeIds: string[];
   coAssigneeLabels: Record<string, string>;
+  coAssigneeAvatars: Record<string, string | null>;
   observerIds: string[];
   observerLabels: Record<string, string>;
+  observerAvatars: Record<string, string | null>;
 }
 
 export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
@@ -44,8 +49,10 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     assigneeAvatar: task.assignee?.avatar?.trim() || null,
     coAssigneeIds: [...task.coAssignees],
     coAssigneeLabels: peekEmployeeLabels(task.coAssignees),
+    coAssigneeAvatars: peekEmployeeAvatars(task.coAssignees),
     observerIds: [...task.observers],
     observerLabels: peekEmployeeLabels(task.observers),
+    observerAvatars: peekEmployeeAvatars(task.observers),
   };
 }
 
@@ -59,7 +66,9 @@ export async function enrichTaskGeneralDraft(task: Task): Promise<TaskGeneralDra
   return {
     ...base,
     coAssigneeLabels: pickEmployeeLabels(base.coAssigneeIds, labelMap),
+    coAssigneeAvatars: peekEmployeeAvatars(base.coAssigneeIds),
     observerLabels: pickEmployeeLabels(base.observerIds, labelMap),
+    observerAvatars: peekEmployeeAvatars(base.observerIds),
   };
 }
 
@@ -100,9 +109,17 @@ export function applyResolvedEmployeeLabels(
       ...current.coAssigneeLabels,
       ...resolved.coAssigneeLabels,
     }),
+    coAssigneeAvatars: pickEmployeeAvatars(current.coAssigneeIds, {
+      ...current.coAssigneeAvatars,
+      ...resolved.coAssigneeAvatars,
+    }),
     observerLabels: pickEmployeeLabels(current.observerIds, {
       ...current.observerLabels,
       ...resolved.observerLabels,
+    }),
+    observerAvatars: pickEmployeeAvatars(current.observerIds, {
+      ...current.observerAvatars,
+      ...resolved.observerAvatars,
     }),
   };
 }
@@ -112,11 +129,13 @@ function rememberTaskEmployeeNames(task: Task): void {
     task.creator.id,
     formatEmployeeDisplayName(task.creator.firstName, task.creator.lastName),
   );
+  rememberEmployeeAvatar(task.creator.id, task.creator.avatar);
   if (!task.assignee) return;
   rememberEmployeeLabel(
     task.assignee.id,
     formatEmployeeDisplayName(task.assignee.firstName, task.assignee.lastName),
   );
+  rememberEmployeeAvatar(task.assignee.id, task.assignee.avatar);
 }
 
 function sameIdList(a: string[], b: string[]): boolean {

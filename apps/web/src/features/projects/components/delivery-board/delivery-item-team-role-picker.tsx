@@ -1,11 +1,14 @@
 'use client';
 
-import { User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import { RELATION_PICKER_EMPTY_TRIGGER_CLASS } from '@/components/shared/detail-sheet-classes';
+import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import type { ProductEmployee } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 import type { EmployeeSearchFn } from './delivery-item-detail-employee-search';
@@ -20,15 +23,8 @@ export function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null |
   const name = personName(seller);
 
   return (
-    <div className="relative w-full min-w-0">
-      <div className="text-foreground/85 mb-1.5 flex h-5 items-center gap-2 text-sm font-medium">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="text-muted-foreground/70 shrink-0">
-            <User size={12} aria-hidden />
-          </span>
-          <span className="truncate">Seller</span>
-        </div>
-      </div>
+    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Seller</span>
       {name && seller ? (
         <RelationPickerChip
           label={name}
@@ -83,7 +79,6 @@ export function ProductRolePicker({
         selectionLabel={employeeLabel || null}
         selectionAvatar={employeeAvatar}
         placeholder="Choose…"
-        icon={<User size={12} />}
         onSearch={onSearchEmployees}
         onSelect={onSelect}
         onClear={onClear}

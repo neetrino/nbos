@@ -53,11 +53,10 @@ export const TASK_SHEET_META_LABEL_CLASS =
 export const TASK_SHEET_META_VALUE_COLUMN_CLASS = 'w-full min-w-0 max-w-full';
 
 /** Wrapper so the field name can sit on the top border. */
-export const TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';
-
-/** Field name on the top edge — card fill breaks the border under the text. */
-export const TASK_SHEET_OUTLINED_LABEL_CLASS =
-  'bg-card text-muted-foreground pointer-events-none absolute top-2 right-3 z-10 -translate-y-1/2 px-1 text-[10px] font-medium leading-none';
+export {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS as TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS as TASK_SHEET_OUTLINED_LABEL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 
 /** Static value (Created) — same outline as picker shells. */
 export const TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS =
