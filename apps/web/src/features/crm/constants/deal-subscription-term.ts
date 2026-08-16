@@ -1,9 +1,2 @@
-/** Quick preset term lengths (months). */
-const DEAL_SUBSCRIPTION_TERM_PRESET_SIX = 6;
-
-const DEAL_SUBSCRIPTION_TERM_PRESET_TWELVE = 12;
-
-export const DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS = [
-  { value: String(DEAL_SUBSCRIPTION_TERM_PRESET_SIX), label: '6 mo' },
-  { value: String(DEAL_SUBSCRIPTION_TERM_PRESET_TWELVE), label: '12 mo' },
-] as const;
+/** One-click annual subscription term length (months). */
+export const DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS = 12;

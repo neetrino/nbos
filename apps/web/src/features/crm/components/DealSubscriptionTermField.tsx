@@ -1,12 +1,16 @@
 'use client';
 
-import { CalendarDays } from 'lucide-react';
 import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
-import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
+import { InlineField } from '@/components/shared';
+import {
+  DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+  DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { formatAmount } from '../constants/dealPipeline';
 import { deriveDealSubscriptionContractTotal } from '@/features/crm/utils/deal-subscription-contract-total';
-import { DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS } from '@/features/crm/constants/deal-subscription-term';
+import { DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS } from '@/features/crm/constants/deal-subscription-term';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import { cn } from '@/lib/utils';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealSubscriptionTermFieldProps {
@@ -26,14 +30,6 @@ function parseTermMonthsInput(value: string): number | null {
   return parsed;
 }
 
-function presetValueForTerm(termMonths: number | null): string | null {
-  if (termMonths == null) return null;
-  const preset = DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS.find(
-    (option) => Number(option.value) === termMonths,
-  );
-  return preset?.value ?? null;
-}
-
 /** Fixed subscription term (months) for PRODUCT/EXTENSION + SUBSCRIPTION deals. */
 export function DealSubscriptionTermField({
   draft,
@@ -42,7 +38,7 @@ export function DealSubscriptionTermField({
   gateRequiredFields = new Set(),
 }: DealSubscriptionTermFieldProps) {
   const gateClass = dealStageGateFieldClass(gateRequiredFields, 'subscriptionTermMonths');
-  const presetValue = presetValueForTerm(draft.subscriptionTermMonths);
+  const isAnnual = draft.subscriptionTermMonths === DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS;
   const contractTotal = deriveDealSubscriptionContractTotal(
     draft.amount,
     draft.subscriptionTermMonths,
@@ -50,29 +46,45 @@ export function DealSubscriptionTermField({
 
   return (
     <>
-      <DetailSheetFieldSegmented
-        label="Term presets"
-        icon={<CalendarDays size={12} />}
-        value={presetValue}
-        options={DEAL_SUBSCRIPTION_TERM_PRESET_OPTIONS}
-        disabled={disabled}
-        className={gateClass}
-        ariaLabel="Subscription term presets"
-        onValueChange={(value) => patchDraft({ subscriptionTermMonths: Number(value) })}
-      />
-      <InlineField
-        variant="controlled"
-        label={`Subscription term (${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
-        type="number"
-        value={draft.subscriptionTermMonths ?? ''}
-        placeholder={`${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX}`}
-        icon={<CalendarDays size={12} />}
-        disabled={disabled}
-        className={gateClass}
-        onValueChange={(value) =>
-          patchDraft({ subscriptionTermMonths: parseTermMonthsInput(value) })
-        }
-      />
+      <div className={cn('flex items-end gap-2', gateClass)}>
+        <button
+          type="button"
+          aria-pressed={isAnnual}
+          disabled={disabled}
+          onClick={() =>
+            patchDraft({ subscriptionTermMonths: DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS })
+          }
+          className={cn(
+            DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
+            'w-auto flex-none shrink-0',
+            disabled && 'pointer-events-none opacity-60',
+          )}
+        >
+          <span
+            className={cn(
+              DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+              'flex-none px-4',
+              isAnnual
+                ? 'bg-primary text-primary-foreground rounded-full shadow-sm'
+                : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
+            )}
+          >
+            Annual
+          </span>
+        </button>
+        <InlineField
+          variant="controlled"
+          label={`Term (${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
+          type="number"
+          value={draft.subscriptionTermMonths ?? ''}
+          placeholder={`${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX}`}
+          disabled={disabled}
+          className="min-w-0 flex-1"
+          onValueChange={(value) =>
+            patchDraft({ subscriptionTermMonths: parseTermMonthsInput(value) })
+          }
+        />
+      </div>
       {contractTotal != null ? (
         <div className="text-sm">
           <div className="text-foreground/85 mb-1.5 font-medium">Contract total</div>

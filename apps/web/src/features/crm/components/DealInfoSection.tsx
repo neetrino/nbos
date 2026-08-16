@@ -67,6 +67,16 @@ export function DealInfoProjectBillingFields({
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
 
+      <DetailSheetFieldSegmented
+        label="Payment Type"
+        icon={<CreditCard size={12} />}
+        value={draft.paymentType}
+        options={PAYMENT_TYPES}
+        disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
+        onValueChange={(paymentType) => patchDraft({ paymentType })}
+      />
+
       {showSubscriptionTerm ? (
         <DealSubscriptionTermField
           draft={draft}
@@ -84,16 +94,6 @@ export function DealInfoProjectBillingFields({
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'taxStatus')}
         onValueChange={(taxStatus) => patchDraft({ taxStatus })}
-      />
-
-      <DetailSheetFieldSegmented
-        label="Payment Type"
-        icon={<CreditCard size={12} />}
-        value={draft.paymentType}
-        options={PAYMENT_TYPES}
-        disabled={disabled}
-        className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
-        onValueChange={(paymentType) => patchDraft({ paymentType })}
       />
 
       {(draft.taxStatus ?? 'TAX') === 'TAX' && (
@@ -237,7 +237,7 @@ export function DealInfoDealProductFields({
 
       {isLinkedProductDeal && (
         <RelationPickerField
-          label="Existing"
+          label="Product"
           entityKind="product"
           value={draft.existingProductId}
           selectionLabel={draft.existingProductPickLabel}
