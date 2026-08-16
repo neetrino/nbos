@@ -12,9 +12,9 @@ export function applyCredentialTabFilter(
   tab: CredentialTab,
   employeeId: string,
   visibilityCtx: CredentialVisibilityContext | undefined,
-  viewScope?: string,
+  bypassRowVisibility?: boolean,
 ): void {
-  const rbacBypass = credentialsRbacBypassesRowFilter(viewScope);
+  const rbacBypass = credentialsRbacBypassesRowFilter(bypassRowVisibility);
   const searchOr = where.OR;
   delete where.OR;
   delete where.accessLevel;
@@ -61,6 +61,16 @@ export function applyCredentialTabFilter(
         : undefined;
       if (!rbacBypass && projectBranch) andParts.push(projectBranch);
       else andParts.push({ accessLevel: 'PROJECT_TEAM' });
+      break;
+    }
+    case 'company': {
+      const allBranch = visibilityCtx
+        ? buildCredentialVisibilityOr(visibilityCtx).find(
+            (b) => 'accessLevel' in b && b.accessLevel === 'ALL',
+          )
+        : undefined;
+      if (!rbacBypass && allBranch) andParts.push(allBranch);
+      else andParts.push({ accessLevel: 'ALL' });
       break;
     }
     case 'all':

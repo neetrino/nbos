@@ -7,6 +7,7 @@ import { toDateInputValue } from './deal-general-tab.helpers';
 export interface DealGeneralDraft {
   name: string | null;
   amount: number | null;
+  subscriptionTermMonths: number | null;
   paymentType: string | null;
   taxStatus: string | null;
   projectId: string | null;
@@ -38,6 +39,7 @@ export interface DealGeneralDraft {
   pmId: string | null;
   pmDisplayLabel: string | null;
   deadline: string | null;
+  outsourceGoesToDelivery: boolean;
 }
 
 /** Payload allowed by PUT /deals/:id (includes ids not on Deal view model). */
@@ -55,6 +57,7 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
   return {
     name: deal.name,
     amount: deal.amount,
+    subscriptionTermMonths: deal.subscriptionTermMonths ?? null,
     paymentType: deal.paymentType,
     taxStatus: deal.taxStatus ?? null,
     projectId: deal.projectId,
@@ -90,6 +93,7 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     pmId: deal.pmId,
     pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
     deadline: toDateInputValue(deal.deadline),
+    outsourceGoesToDelivery: deal.outsourceGoesToDelivery === true,
   };
 }
 
@@ -106,6 +110,9 @@ export function buildDealGeneralPatch(
 
   if (draft.name !== snap.name) out.name = draft.name;
   if (draft.amount !== snap.amount) out.amount = draft.amount;
+  if (draft.subscriptionTermMonths !== snap.subscriptionTermMonths) {
+    out.subscriptionTermMonths = draft.subscriptionTermMonths;
+  }
   if (draft.paymentType !== snap.paymentType) out.paymentType = draft.paymentType;
   if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus ?? undefined;
   if (draft.projectId !== snap.projectId) out.projectId = draft.projectId;
@@ -152,10 +159,52 @@ export function buildDealGeneralPatch(
   if (dateOrNull(draft.deadline) !== dateOrNull(snap.deadline)) {
     out.deadline = dateOrNull(draft.deadline);
   }
+  if (draft.outsourceGoesToDelivery !== snap.outsourceGoesToDelivery) {
+    out.outsourceGoesToDelivery = draft.outsourceGoesToDelivery;
+  }
 
   return out;
 }
 
 export function isDealGeneralDirty(a: DealGeneralDraft, b: DealGeneralDraft): boolean {
   return JSON.stringify(a) !== JSON.stringify(b);
+}
+
+const PRODUCT_LIKE_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
+const LINKED_PRODUCT_TYPES = new Set(['EXTENSION', 'MAINTENANCE']);
+
+/** Clears taxonomy / linked-product fields that do not apply to the next deal type. */
+export function buildDealTypeChangePatch(
+  draft: DealGeneralDraft,
+  nextType: string,
+): Partial<DealGeneralDraft> {
+  const patch: Partial<DealGeneralDraft> = { type: nextType };
+  const prevType = draft.type ?? '';
+
+  if (PRODUCT_LIKE_TYPES.has(prevType) && !PRODUCT_LIKE_TYPES.has(nextType)) {
+    patch.productCategory = null;
+    patch.productType = null;
+  }
+  if (prevType === 'OUTSOURCE' && nextType !== 'OUTSOURCE') {
+    patch.outsourceGoesToDelivery = false;
+  }
+  if (LINKED_PRODUCT_TYPES.has(prevType) && !LINKED_PRODUCT_TYPES.has(nextType)) {
+    patch.existingProductId = null;
+    patch.existingProductPickLabel = null;
+  }
+
+  return patch;
+}
+
+/** Project change always clears Existing Product (may not belong to the new project). */
+export function buildDealProjectChangePatch(
+  projectId: string | null,
+  linkedProjectLabel: string | null,
+): Partial<DealGeneralDraft> {
+  return {
+    projectId,
+    linkedProjectLabel,
+    existingProductId: null,
+    existingProductPickLabel: null,
+  };
 }

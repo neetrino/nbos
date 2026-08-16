@@ -146,18 +146,26 @@ Deal связывает продажу с человеком и биллинго
 
 После Deal Won система создаёт или связывает delivery и finance сущности.
 
-Для Product / Extension / Outsource:
+Для Product / Extension:
 
 - создаётся или обновляется Project;
 - создаётся Product или Extension;
 - создаётся Order;
 - создаётся Invoice или Subscription flow по правилам CRM / Finance;
-- связи Contact и Company передаются в Project / Product / Order / Invoice.
+- связи Contact и Company передаются в Project / Product / Order / Invoice;
+- Subscription всегда на Product (`productId`); client reminders — Product WhatsApp Group.
+
+Для Outsource:
+
+- создаются Order + Project + Product (Deal Type остаётся OUTSOURCE);
+- `outsourceGoesToDelivery` (default OFF): ON → active Delivery Board; OFF → Product в Hub/Finance/WhatsApp без active Starting…Transfer;
+- toggle меняется только до Won.
 
 Для Maintenance:
 
-- Maintenance Deal связан с уже существующим Product;
-- после Won создаётся Pending Subscription;
+- Maintenance Deal связан с уже существующим Product (`existingProductId` required);
+- после Won создаётся Pending Subscription на этом Product;
+- без Product Subscription не создаётся;
 - Company и Contact берутся из основного Product / Project, если не требуется override.
 
 ---
@@ -195,7 +203,7 @@ Invoice всегда должен быть привязан к Company. Юрид
 
 ### Subscriptions
 
-Subscription связана с Project / Product / Company. Client Portfolio показывает подписки через эти связи.
+Subscription связана с **Product** (required) и Project (denormalized). Client Portfolio показывает подписки через эти связи.
 
 ### Support
 

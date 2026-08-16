@@ -89,18 +89,28 @@ export async function syncInvoiceOrderStatus(
   prisma: InstanceType<typeof PrismaClient>,
   orderId: string,
 ) {
-  const invoices = await prisma.invoice.findMany({
-    where: { orderId },
-    select: {
-      moneyStatus: true,
-      payments: { select: { amount: true } },
-    },
-  });
+  const [invoices, order] = await Promise.all([
+    prisma.invoice.findMany({
+      where: { orderId },
+      select: {
+        moneyStatus: true,
+        payments: { select: { amount: true } },
+      },
+    }),
+    prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        paymentType: true,
+        subscriptionTermMonths: true,
+        totalAmount: true,
+      },
+    }),
+  ]);
   if (invoices.length === 0) return;
 
   await prisma.order.update({
     where: { id: orderId },
-    data: { status: resolveOrderStatus(invoices) },
+    data: { status: resolveOrderStatus(invoices, order) },
   });
 }
 

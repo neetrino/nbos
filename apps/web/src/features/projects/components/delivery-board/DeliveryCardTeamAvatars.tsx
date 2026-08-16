@@ -1,3 +1,6 @@
+'use client';
+
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   deliveryCardTeamAvatarClassName,
   getDeliveryBoardItemTeamMembers,
@@ -12,12 +15,12 @@ export function DeliveryCardTeamAvatars({ item }: { item: DeliveryBoardItem }) {
     <div className="mt-2.5 flex items-center justify-start gap-2">
       <div className="flex shrink-0 -space-x-1.5">
         {members.map((member) => (
-          <span
-            key={member.id}
-            className={deliveryCardTeamAvatarClassName(member.tone)}
-            title={`${member.roleLabel}: ${member.fullName}`}
-          >
-            {member.initials}
+          <span key={member.id} title={`${member.roleLabel}: ${member.fullName}`}>
+            <EmployeePersonAvatar
+              label={member.fullName}
+              imageUrl={member.imageUrl}
+              className={deliveryCardTeamAvatarClassName(member.tone)}
+            />
           </span>
         ))}
       </div>

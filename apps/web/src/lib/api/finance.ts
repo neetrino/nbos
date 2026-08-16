@@ -44,6 +44,12 @@ export interface InvoiceOrderSummary {
   deal?: InvoiceDealSummary | null;
 }
 
+export interface InvoiceSubscriptionSummary {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export interface Invoice {
   id: string;
   code: string;
@@ -66,6 +72,7 @@ export interface Invoice {
   description: string | null;
   createdAt: string;
   order: InvoiceOrderSummary | null;
+  subscription?: InvoiceSubscriptionSummary | null;
   company: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;

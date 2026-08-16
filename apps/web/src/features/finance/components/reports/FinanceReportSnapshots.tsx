@@ -226,9 +226,19 @@ export function MrrSubscriptionRevenueSnapshot({
           value={formatCompanyPnlAmount(report.movement.churnedMrr)}
         />
         <SnapshotMetric
+          icon={CalendarRange}
+          label="Completed MRR"
+          value={formatCompanyPnlAmount(report.movement.completedMrr)}
+        />
+        <SnapshotMetric
           label="Active subscriptions"
           value={String(report.active.activeSubscriptionCount)}
           icon={Users}
+        />
+        <SnapshotMetric
+          label="Completed subscriptions"
+          value={String(report.movement.completedSubscriptionCount)}
+          icon={FileText}
         />
         <SnapshotMetric
           label="Subscription payments"
@@ -236,7 +246,7 @@ export function MrrSubscriptionRevenueSnapshot({
           icon={CreditCard}
         />
         <SnapshotMetric
-          icon={FileText}
+          icon={Receipt}
           label="Subscription invoices"
           value={String(report.paidRevenue.invoiceCount)}
           fullWidth
@@ -357,12 +367,8 @@ export function ProjectPnlSnapshot({ report }: { report: ProjectPnlReport }) {
       </div>
       {topProject ? (
         <p className="text-muted-foreground mt-4 text-sm">
-          Top project:{' '}
-          <span className="font-medium">
-            {topProject.projectCode ? `${topProject.projectCode} · ` : ''}
-            {topProject.projectName}
-          </span>{' '}
-          at {formatCompanyPnlAmount(topProject.netProfit)} net profit.
+          Top project: <span className="font-medium">{topProject.projectName}</span> at{' '}
+          {formatCompanyPnlAmount(topProject.netProfit)} net profit.
         </p>
       ) : null}
     </ReportSnapshot>

@@ -15,7 +15,7 @@ import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoic
 import { cn } from '@/lib/utils';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 
-const MONEY_METRIC_DIVIDER_CLASS = 'border-stone-100 dark:border-stone-800';
+const MONEY_METRIC_DIVIDER_CLASS = 'border-border';
 
 interface InvoiceMoneyCardProps {
   invoice: InvoiceSheetInvoice;

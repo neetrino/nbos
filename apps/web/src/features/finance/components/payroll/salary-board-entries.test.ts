@@ -10,6 +10,7 @@ const entry = (employeeId: string, departmentIds: string[]): SalaryBoardEntry =>
     firstName: 'A',
     lastName: 'B',
     position: null,
+    avatar: null,
     departmentIds,
     primaryDepartmentId: departmentIds[0] ?? null,
   },

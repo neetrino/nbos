@@ -91,7 +91,7 @@ describe('CredentialsService findAll', () => {
     );
   });
 
-  it('should search by name, provider, login', async () => {
+  it('should search by name, provider, login within visible rows only', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
     await service.findAll(
@@ -101,20 +101,33 @@ describe('CredentialsService findAll', () => {
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          OR: expect.arrayContaining([
-            { name: { contains: 'aws', mode: 'insensitive' } },
-            { provider: { is: { name: { contains: 'aws', mode: 'insensitive' } } } },
+          AND: expect.arrayContaining([
+            {
+              OR: expect.arrayContaining([
+                { name: { contains: 'aws', mode: 'insensitive' } },
+                { provider: { is: { name: { contains: 'aws', mode: 'insensitive' } } } },
+                { login: { contains: 'aws', mode: 'insensitive' } },
+              ]),
+            },
+            {
+              OR: expect.arrayContaining([{ accessLevel: 'ALL' }]),
+            },
           ]),
         }),
       }),
     );
   });
 
-  it('skips credential-level visibility filter when RBAC viewScope is ALL', async () => {
+  it('skips credential-level visibility filter when row bypass is enabled', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
     await service.findAll(
-      { employeeId: 'owner-1', departmentIds: [], viewScope: 'ALL', sort: 'created_desc' },
+      {
+        employeeId: 'owner-1',
+        departmentIds: [],
+        bypassRowVisibility: true,
+        sort: 'created_desc',
+      },
       accessOwnerAll,
     );
     const call = prisma.credential.findMany.mock.calls[0]?.[0] as { where: { OR?: unknown } };
@@ -129,7 +142,7 @@ describe('CredentialsService findAll', () => {
         tab: 'personal',
         employeeId: 'emp-1',
         departmentIds: ['dept-1'],
-        viewScope: 'ALL',
+        bypassRowVisibility: true,
         sort: 'created_desc',
       },
       accessOwnerAll,
@@ -149,7 +162,7 @@ describe('CredentialsService findAll', () => {
         tab: 'project',
         employeeId: 'emp-1',
         departmentIds: [],
-        viewScope: 'ALL',
+        bypassRowVisibility: true,
         sort: 'created_desc',
       },
       accessOwnerAll,
@@ -161,7 +174,7 @@ describe('CredentialsService findAll', () => {
     );
   });
 
-  it('lists all SECRET credentials on secret tab when RBAC viewScope is ALL', async () => {
+  it('lists all SECRET credentials on secret tab when row bypass is enabled', async () => {
     prisma.credential.findMany.mockResolvedValue([]);
     prisma.credential.count.mockResolvedValue(0);
     await service.findAll(
@@ -169,7 +182,7 @@ describe('CredentialsService findAll', () => {
         tab: 'secret',
         employeeId: 'owner-1',
         departmentIds: [],
-        viewScope: 'ALL',
+        bypassRowVisibility: true,
         sort: 'created_desc',
       },
       accessOwnerAll,
@@ -177,6 +190,26 @@ describe('CredentialsService findAll', () => {
     expect(prisma.credential.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ accessLevel: 'SECRET' }),
+      }),
+    );
+  });
+
+  it('scopes company tab to ALL access level when row bypass is enabled', async () => {
+    prisma.credential.findMany.mockResolvedValue([]);
+    prisma.credential.count.mockResolvedValue(0);
+    await service.findAll(
+      {
+        tab: 'company',
+        employeeId: 'owner-1',
+        departmentIds: [],
+        bypassRowVisibility: true,
+        sort: 'created_desc',
+      },
+      accessOwnerAll,
+    );
+    expect(prisma.credential.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ accessLevel: 'ALL' }),
       }),
     );
   });
@@ -251,7 +284,7 @@ describe('CredentialsService findById', () => {
     expect(auditService.log).not.toHaveBeenCalled();
   });
 
-  it('returns foreign SECRET credential when RBAC viewScope is ALL', async () => {
+  it('returns foreign SECRET credential when row bypass is enabled', async () => {
     prisma.credential.findFirst.mockResolvedValue({
       id: 'secret-1',
       name: 'Root vault',
@@ -265,5 +298,21 @@ describe('CredentialsService findById', () => {
     expect(result).toEqual(expect.objectContaining({ id: 'secret-1' }));
     const call = prisma.credential.findFirst.mock.calls[0]?.[0] as { where: { OR?: unknown } };
     expect(call.where.OR).toBeUndefined();
+  });
+
+  it('does not bypass row filter for CREDENTIALS_VIEW=ALL without bypass permission', async () => {
+    prisma.resourceAccessGrant.findMany.mockResolvedValue([]);
+    prisma.credential.findFirst.mockResolvedValue(null);
+    await expect(
+      service.findById('secret-1', {
+        employeeId: 'pm-1',
+        departmentIds: [],
+        viewScope: 'ALL',
+        editScope: 'OWN',
+        bypassRowVisibility: false,
+      }),
+    ).rejects.toThrow(NotFoundException);
+    const call = prisma.credential.findFirst.mock.calls[0]?.[0] as { where: { OR?: unknown } };
+    expect(call.where.OR).toBeDefined();
   });
 });

@@ -107,7 +107,7 @@ export function QuickCreateTaskAssigneePicker({
 
       {open ? (
         <div className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border shadow-lg">
-          <div className="relative border-b border-stone-100 p-2 dark:border-stone-800">
+          <div className="border-border relative border-b p-2">
             <Search
               size={14}
               className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"

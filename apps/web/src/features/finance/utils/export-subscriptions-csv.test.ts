@@ -6,15 +6,21 @@ function minimalSubscription(overrides: Partial<Subscription>): Subscription {
   return {
     id: 'sub-1',
     code: 'SUB-001',
+    name: 'Export subscription',
     projectId: 'p1',
+    productId: 'product-1',
     type: 'MONTHLY',
-    baseMonthlyAmount: '100.00',
+    amount: '100.00',
+    coverageMonthCount: 1,
+    monthlyEquivalentAmount: '100.00',
     billingFrequency: 'MONTHLY',
     billingDay: 1,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-01-01',
     notificationsEnabled: true,
+    reminderLanguage: 'HY',
     endDate: null,
     createdAt: '2026-04-28T12:00:00.000Z',
     project: { id: 'p1', code: 'PRJ', name: 'Alpha' },
@@ -36,6 +42,8 @@ describe('buildSubscriptionsCsvContent', () => {
     const csv = buildSubscriptionsCsvContent([]);
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('coverageAnnualizedAmount');
+    expect(csv).toContain('monthlyEquivalentAmount');
+    expect(csv).toContain('termMonths');
   });
 
   it('escapes project name with comma', () => {
@@ -45,18 +53,20 @@ describe('buildSubscriptionsCsvContent', () => {
     expect(csv).toContain('"A, B"');
   });
 
-  it('appends grand total for amount and roll-ups', () => {
+  it('appends grand total for MRR equivalent and roll-ups', () => {
     const csv = buildSubscriptionsCsvContent([
       minimalSubscription({
         id: 'a',
-        baseMonthlyAmount: '10.00',
+        amount: '10.00',
+        monthlyEquivalentAmount: '10.00',
         invoices: [{ id: 'i1', code: 'I1', moneyStatus: 'NEW', amount: '1' }],
         coverage: { firstCoveredMonth: 1, activeMonthCount: 2, annualizedAmount: 100 },
       }),
       minimalSubscription({
         id: 'b',
         code: 'SUB-B',
-        baseMonthlyAmount: '20.50',
+        amount: '20.50',
+        monthlyEquivalentAmount: '20.50',
         invoices: [],
         coverage: { firstCoveredMonth: 2, activeMonthCount: 1, annualizedAmount: 50.25 },
       }),

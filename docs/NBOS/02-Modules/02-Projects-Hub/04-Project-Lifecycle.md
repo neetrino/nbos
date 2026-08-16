@@ -40,16 +40,20 @@ Extension создаётся внутри уже существующего:
 Для `Deal Type = MAINTENANCE`:
 
 - обычный product delivery-flow заново не создаётся;
-- создаётся maintenance / subscription context для существующего продукта;
+- создаётся `Subscription` на существующий продукт (`MAINTENANCE_ONLY` или `DEV_AND_MAINTENANCE`, `PENDING` / `ACTIVE`);
 - billing truth живёт в Finance.
 
 ---
 
 ## 2. Основной active lifecycle
 
-Для `Product` и `Extension` действует одна базовая рабочая цепочка:
+Состояние `Product` и `Extension` — три оси, а не одно поле `status`:
 
-`Starting -> Development -> QA -> Transfer`
+- `deliveryStage`: `STARTING` → `DEVELOPMENT` → `QA` → `TRANSFER`;
+- `deliveryWorkStatus`: `ACTIVE` | `ON_HOLD` (пауза поверх стадии);
+- `deliveryResolution`: `null` | `DONE` | `CANCELLED`.
+
+«Открыт» = `deliveryResolution IS NULL`. `ON_HOLD` — не закрытие. Поле `status` (`CREATING` и др.) — legacy-зеркало; канон читает `deliveryStage` (`CREATING` ≡ `STARTING`).
 
 Terminal outcomes:
 
@@ -204,29 +208,23 @@ Closed view должен поддерживать:
 
 ## 7. Project-level views
 
-Lifecycle board работает на уровне `Product` и `Extension`, но проектные views считаются на уровне `Project`.
+Lifecycle board работает на уровне `Product` и `Extension`. У `Project` нет lifecycle-статуса (в схеме только `trashedAt`); проектные views считаются из детей. Статус проекта не хранить, не кэшировать и не денормализовать.
+
+Признак «продукт на maintenance»: `Subscription` с `type` ∈ { `MAINTENANCE_ONLY`, `DEV_AND_MAINTENANCE` } и `status` ∈ { `PENDING`, `ACTIVE` }. Отдельного поля на `Product` нет. Maintenance — view, не сущность.
 
 ### Development view
 
-Проект виден в `Development`, если у него есть хотя бы одна delivery-карточка в:
-
-- `Starting`
-- `Development`
-- `QA`
-- `Transfer`
-
-Карточки на `On Hold` остаются частью этого рабочего контекста.
+Проект виден в `Development`, если есть ≥1 `Product` **или** `Extension` с `deliveryResolution IS NULL` (любая стадия, включая `STARTING` и `ON_HOLD`).
 
 ### Maintenance view
 
-Проект виден в `Maintenance`, если у существующего продукта есть maintenance / subscription context.
+Проект виден в `Maintenance`, если есть ≥1 `Product` с maintenance-подпиской (`PENDING` / `ACTIVE`). Проект может одновременно попадать в `Development` и `Maintenance`.
 
 ### Closed view
 
-Проект виден в `Closed`, если active delivery work больше нет и рабочие сущности завершены как:
+Проект виден в `Closed`, если нет ни одного `Product` / `Extension` с `deliveryResolution IS NULL` **и нет** активной maintenance-подписки.
 
-- `Done`
-- `Cancelled`
+«Проект активен» = `Development` ∪ `Maintenance`.
 
 ---
 
@@ -238,7 +236,8 @@ Lifecycle board работает на уровне `Product` и `Extension`, н�
 
 - delivery lifecycle заканчивается на `Done` или `Cancelled`;
 - maintenance не продолжает эту же board-stage цепочку;
-- maintenance живёт как отдельный контекст существующего продукта;
+- признак maintenance — `Subscription` (`PENDING` / `ACTIVE`, типы `MAINTENANCE_ONLY` или `DEV_AND_MAINTENANCE`); ручного флага на `Product` нет;
+- исключения (внутренний продукт, спецпроект, бесплатное ведение) = та же подписка с `amount = 0`;
 - финансовая активация и billing управляются Finance / Subscription Board.
 
 ---

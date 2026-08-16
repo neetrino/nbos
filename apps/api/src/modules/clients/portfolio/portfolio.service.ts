@@ -76,8 +76,9 @@ export class PortfolioService {
             select: {
               id: true,
               code: true,
+              name: true,
               status: true,
-              baseMonthlyAmount: true,
+              monthlyEquivalentAmount: true,
               projectId: true,
               project: { select: { code: true, name: true } },
             },
@@ -153,8 +154,12 @@ export class PortfolioService {
       clientHealth: 'good' as const,
       contact,
       subscriptions: subscriptions.map((s) => ({
-        ...s,
-        amount: decimalToString(s.baseMonthlyAmount),
+        id: s.id,
+        code: s.code,
+        status: s.status,
+        projectId: s.projectId,
+        project: s.project,
+        amount: decimalToString(s.monthlyEquivalentAmount),
       })),
       invoices: invoices.map((inv) => ({
         ...inv,
@@ -220,8 +225,9 @@ export class PortfolioService {
             select: {
               id: true,
               code: true,
+              name: true,
               status: true,
-              baseMonthlyAmount: true,
+              monthlyEquivalentAmount: true,
               projectId: true,
               project: { select: { code: true, name: true } },
             },
@@ -277,8 +283,12 @@ export class PortfolioService {
       clientHealth: 'good' as const,
       company,
       subscriptions: subscriptions.map((s) => ({
-        ...s,
-        amount: decimalToString(s.baseMonthlyAmount),
+        id: s.id,
+        code: s.code,
+        status: s.status,
+        projectId: s.projectId,
+        project: s.project,
+        amount: decimalToString(s.monthlyEquivalentAmount),
       })),
       invoices: invoices.map((inv) => ({
         ...inv,

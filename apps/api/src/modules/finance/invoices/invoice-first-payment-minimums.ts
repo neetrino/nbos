@@ -9,7 +9,8 @@ export interface FirstInvoiceMinimumCheckInput {
 }
 
 /**
- * Enforces first-invoice floors: classic order ≥10% of order total; subscription ≥ monthly amount.
+ * Enforces first-invoice floors: classic order ≥10% of order total;
+ * subscription ≥ one billing-period `amount` (the real invoice charge).
  * @see `docs/NBOS/03-Business-Logic/03-Bonus-Payroll-Logic.md` (first paid invoice) and finance invoice flow.
  */
 export async function assertFirstInvoiceMinimums(
@@ -41,7 +42,7 @@ export async function assertFirstInvoiceMinimums(
   if (data.subscriptionId?.trim()) {
     const subscription = await prisma.subscription.findUnique({
       where: { id: data.subscriptionId },
-      select: { baseMonthlyAmount: true },
+      select: { amount: true },
     });
     if (!subscription) {
       throw new BadRequestException(`Subscription ${data.subscriptionId} not found`);
@@ -50,10 +51,10 @@ export async function assertFirstInvoiceMinimums(
       where: { subscriptionId: data.subscriptionId },
     });
     if (priorCount === 0) {
-      const minAmount = Number(subscription.baseMonthlyAmount);
+      const minAmount = Number(subscription.amount);
       if (data.amount < minAmount) {
         throw new BadRequestException(
-          `First subscription invoice must be at least the monthly amount (${minAmount})`,
+          `First subscription invoice must be at least the period amount (${minAmount})`,
         );
       }
     }

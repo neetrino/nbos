@@ -9,6 +9,9 @@ export const invoiceAccrualJournalKey = (invoiceId: string): string =>
 export const expenseAccrualJournalKey = (expenseId: string): string =>
   `expense-accrual:${expenseId}`;
 
+export const partnerAccrualJournalKey = (partnerAccrualId: string): string =>
+  `partner-accrual:${partnerAccrualId}`;
+
 export function assertInvoiceDraftDeletable(input: {
   moneyStatus: InvoiceMoneyStatusEnum;
   paymentCount: number;

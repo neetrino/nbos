@@ -1,58 +1,74 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { useSupportChangeControlPageViewMode } from '@/features/support/constants/support-change-control-page-view-storage';
-import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import { SUPPORT_TICKET_BOARD_STAGES } from '@/features/support/constants/support-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  getBoardStageKeys,
+  resolveBoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 
 export function useSupportChangeControlQuery() {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, handleViewModeChange] = useSupportChangeControlPageViewMode();
   const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
+  const [errorOverride, setErrorOverride] = useState<string | null>(null);
 
-  const fetchTickets = useCallback(
-    async (options?: { soft?: boolean }) => {
-      if (!options?.soft) {
-        setLoading(true);
-      }
-      try {
-        const { items } = await supportApi.getAll({
-          pageSize: 100,
-          category: 'CHANGE_REQUEST',
-          search: search || undefined,
-          priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          waitingState:
-            filters.waitingState && filters.waitingState !== 'all'
-              ? filters.waitingState
-              : undefined,
-        });
-        setTickets(items);
-        setError(null);
-      } catch {
-        setError('Change control tickets could not be loaded.');
-      } finally {
-        if (!options?.soft) {
-          setLoading(false);
-        }
-      }
-    },
-    [search, filters],
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
+  }, [boardScope, filters.status]);
+
+  const fetchPage = useCallback(
+    (params: { page: number; pageSize: number; status: string }) =>
+      supportApi.getAll({
+        page: params.page,
+        pageSize: params.pageSize,
+        status: params.status,
+        category: 'CHANGE_REQUEST',
+        search: debouncedSearch || undefined,
+        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
+        waitingState:
+          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
+      }),
+    [debouncedSearch, filters.priority, filters.waitingState],
   );
 
-  const refreshSupportViews = useCallback(async () => {
-    await fetchTickets({ soft: true });
-    setDetailRefreshKey((key) => key + 1);
-  }, [fetchTickets]);
+  const board = useStageColumnBoard<SupportTicket>({
+    stageKeys,
+    getStageKey: (ticket) => ticket.status,
+    fetchPage,
+    loadErrorMessage: 'Change control tickets could not be loaded.',
+  });
 
-  useEffect(() => {
-    void fetchTickets();
+  const {
+    items: tickets,
+    columnMeta,
+    hasMoreAny,
+    loading,
+    error: boardError,
+    reload,
+    loadMoreColumn,
+    loadMoreAll,
+  } = board;
+
+  const fetchTickets = useCallback(async () => {
+    await reload();
+    setErrorOverride(null);
+  }, [reload]);
+
+  const refreshSupportViews = useCallback(async () => {
+    await fetchTickets();
+    setDetailRefreshKey((key) => key + 1);
   }, [fetchTickets]);
 
   useEffect(() => {
@@ -82,10 +98,19 @@ export function useSupportChangeControlQuery() {
     setFilters({});
   }, []);
 
+  const setError = useCallback((message: string | null) => {
+    setErrorOverride(message);
+  }, []);
+
   return {
     tickets,
+    columnMeta,
+    hasMoreAny,
+    loadMoreColumn,
+    loadMoreAll,
+    boardScope,
     loading,
-    error,
+    error: errorOverride ?? boardError,
     setError,
     search,
     setSearch,

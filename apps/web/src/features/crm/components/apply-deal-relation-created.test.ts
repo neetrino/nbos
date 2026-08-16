@@ -5,6 +5,7 @@ import type { DealGeneralDraft } from './deal-general-form-state';
 const baseDraft: DealGeneralDraft = {
   name: null,
   amount: null,
+  subscriptionTermMonths: null,
   paymentType: null,
   taxStatus: null,
   projectId: null,
@@ -36,6 +37,7 @@ const baseDraft: DealGeneralDraft = {
   pmId: null,
   pmDisplayLabel: null,
   deadline: null,
+  outsourceGoesToDelivery: false,
 };
 
 describe('applyDealRelationCreated', () => {

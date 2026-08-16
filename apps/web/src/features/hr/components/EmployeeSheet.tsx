@@ -23,12 +23,8 @@ import {
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
-import {
-  employeeAvatarColor,
-  employeeFullName,
-  employeeInitials,
-  employeePrimaryDepartment,
-} from '@/features/hr/utils/employee-display';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
 import {
   departmentsApi,
   employeesApi,
@@ -52,6 +48,7 @@ import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
 import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
+import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
 import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
@@ -267,6 +264,9 @@ export function EmployeeSheet({
     { value: 'general', label: 'General' },
     { value: 'departments', label: 'Departments' },
   ];
+  if (selfProfile) {
+    employeeTabs.push({ value: 'security', label: 'Security' });
+  }
   if (displayEmployee.status === 'TERMINATED') {
     employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
   } else if (hasOnboardingChecklist) {
@@ -289,11 +289,11 @@ export function EmployeeSheet({
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>
             <div className="flex items-start gap-3">
-              <div
-                className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white ${employeeAvatarColor(fullName)}`}
-              >
-                {employeeInitials(displayEmployee)}
-              </div>
+              <EmployeePersonAvatar
+                label={fullName}
+                imageUrl={displayEmployee.avatar}
+                className="size-11 text-base"
+              />
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold">{fullName}</h2>
@@ -378,6 +378,7 @@ export function EmployeeSheet({
                   }}
                 />
               ) : null}
+              {activeTab === 'security' && selfProfile ? <ChangePasswordPanel /> : null}
               {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
                 <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />
               ) : null}
@@ -390,7 +391,7 @@ export function EmployeeSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={canEdit && displayEmployee.status !== 'TERMINATED'}
+            visible={canEdit && displayEmployee.status !== 'TERMINATED' && activeTab !== 'security'}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}

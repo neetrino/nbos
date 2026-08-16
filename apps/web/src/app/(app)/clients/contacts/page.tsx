@@ -11,9 +11,11 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  ListPagination,
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
+  type ListPaginationMeta,
 } from '@/components/shared';
 import { ContactCard } from '@/features/clients/components/ContactCard';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
@@ -25,6 +27,7 @@ import {
 } from '@/features/clients/constants/clients-directory-view-options';
 import { CONTACT_ROLES } from '@/features/clients/constants/clients';
 import { clientsDirectoryCardGridClass } from '@/features/clients/constants/clients-directory-card-classes';
+import { CLIENTS_DIRECTORY_PAGE_SIZE } from '@/features/clients/constants/clients-directory-page-size';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
@@ -34,12 +37,21 @@ import { toast } from 'sonner';
 
 const OPEN_CONTACT_QUERY = 'openId';
 
+const emptyContactsListMeta = (): ListPaginationMeta => ({
+  total: 0,
+  page: 1,
+  pageSize: CLIENTS_DIRECTORY_PAGE_SIZE,
+  totalPages: 0,
+});
+
 function ContactsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sidebarCollapsed = useAppSidebarCollapsed();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyContactsListMeta);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -85,19 +97,25 @@ function ContactsPageContent() {
     setLoading(true);
     try {
       const data = await contactsApi.getAll({
-        pageSize: 100,
+        page,
+        pageSize: CLIENTS_DIRECTORY_PAGE_SIZE,
         scope,
         search: search || undefined,
         contactType:
           filters.contactType && filters.contactType !== 'all' ? filters.contactType : undefined,
       });
       setContacts(data.items);
+      setListMeta(data.meta);
       setError(null);
     } catch {
       setError('Contacts could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
+  }, [page, search, filters, scope]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, filters, scope]);
 
   useEffect(() => {
@@ -280,6 +298,10 @@ function ContactsPageContent() {
       ) : (
         <ContactsTable contacts={contacts} onOpen={openContactSheet} />
       )}
+
+      {!loading && !error && contacts.length > 0 ? (
+        <ListPagination meta={listMeta} onPageChange={setPage} />
+      ) : null}
 
       <CreateContactDialog
         open={showCreate}

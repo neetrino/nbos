@@ -39,7 +39,9 @@ function CompanyCardMetric({ icon: Icon, value, label }: CompanyCardMetricProps)
 export function CompanyCard({ company, onOpen }: CompanyCardProps) {
   const compType = getCompanyType(company.type);
   const taxSt = getTaxStatus(company.taxStatus);
-  const contactName = `${company.contact.firstName} ${company.contact.lastName}`.trim();
+  const contactName = company.contact
+    ? `${company.contact.firstName} ${company.contact.lastName}`.trim()
+    : '';
 
   return (
     <button type="button" onClick={() => onOpen(company)} className={COMPANY_DIRECTORY_CARD_CLASS}>

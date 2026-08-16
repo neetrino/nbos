@@ -155,6 +155,8 @@ export function TaskSheet({
                         draft={state.generalDraft}
                         disabled={state.loading || readOnly}
                         onPatchDraft={state.patchGeneralDraft}
+                        onLinksChange={state.handleLinksChange}
+                        onTaskChange={state.handleTaskChange}
                         onSearchEmployees={state.searchEmployees}
                       />
 

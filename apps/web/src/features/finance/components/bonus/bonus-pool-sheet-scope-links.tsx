@@ -41,7 +41,7 @@ export function BonusPoolSheetScopeLinks({
         <DetailSheetEntityLinkCard
           icon={FolderKanban}
           label="Project"
-          title={`${pool.projectCode} · ${pool.projectName}`}
+          title={pool.projectName}
           href={`/projects/${pool.projectId}`}
         />
         {codes.map((code, index) => (

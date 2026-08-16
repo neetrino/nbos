@@ -30,13 +30,14 @@ import { createDealKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kan
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
-import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { DEAL_STAGES, DEAL_TYPES } from '@/features/crm/constants/dealPipeline';
+import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  matchesBoardLifecycleScope,
+  getBoardStageKeys,
   resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import {
   buildScopedKanbanColumns,
@@ -44,6 +45,8 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
+import { useCrmStageColumnBoard } from '@/features/crm/hooks/use-crm-stage-column-board';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
@@ -98,9 +101,9 @@ function DealsPipelinePageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [trashDeals, setTrashDeals] = useState<Deal[]>([]);
+  const [trashLoading, setTrashLoading] = useState(false);
+  const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
@@ -153,36 +156,115 @@ function DealsPipelinePageContent() {
     [pathname, router, searchParams],
   );
 
-  const fetchDeals = useCallback(async () => {
-    setLoading(true);
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (isTrashView) return [] as string[];
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(DEAL_STAGES, boardScope);
+  }, [boardScope, filters.status, isTrashView]);
+
+  const fetchDealPage = useCallback(
+    (params: {
+      page: number;
+      pageSize: number;
+      status: string;
+      search?: string;
+      type?: string;
+      scope: typeof scope;
+    }) =>
+      dealsApi.getAll({
+        page: params.page,
+        pageSize: params.pageSize,
+        status: params.status,
+        search: params.search,
+        type: params.type,
+        scope: params.scope,
+      }),
+    [],
+  );
+
+  const board = useCrmStageColumnBoard<Deal>({
+    stageKeys,
+    listScope: scope,
+    search,
+    type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+    enabled: !isTrashView,
+    fetchPage: fetchDealPage,
+  });
+  const {
+    items: boardItems,
+    columnMeta,
+    hasMoreAny,
+    loading: boardLoading,
+    error: boardError,
+    reload: reloadBoard,
+    loadMoreColumn,
+    loadMoreAll,
+    setItems: setBoardItems,
+    upsertItem: upsertBoardItem,
+    removeItem: removeBoardItem,
+  } = board;
+
+  const fetchTrashDeals = useCallback(async () => {
+    setTrashLoading(true);
     try {
       const data = await dealsApi.getAll({
-        pageSize: 200,
+        pageSize: CRM_TRASH_LIST_PAGE_SIZE,
         scope,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
-      setDeals(data.items);
-      setSelectedDeal((prev) => {
-        if (!prev) return prev;
-        return data.items.find((deal) => deal.id === prev.id) ?? prev;
-      });
-      setError(null);
+      setTrashDeals(data.items);
+      setTrashError(null);
     } catch {
-      setError('Deals could not be loaded. Check your connection and try again.');
+      setTrashError('Deals could not be loaded. Check your connection and try again.');
     } finally {
-      setLoading(false);
+      setTrashLoading(false);
     }
-  }, [search, filters, scope]);
+  }, [filters.status, filters.type, scope, search]);
+
+  useEffect(() => {
+    if (isTrashView) void fetchTrashDeals();
+  }, [fetchTrashDeals, isTrashView]);
+
+  const deals = isTrashView ? trashDeals : boardItems;
+  const loading = isTrashView ? trashLoading : boardLoading;
+  const error = isTrashView ? trashError : boardError;
+
+  const setDeals = useCallback(
+    (updater: (prev: Deal[]) => Deal[]) => {
+      if (isTrashView) {
+        setTrashDeals(updater);
+        return;
+      }
+      setBoardItems(updater);
+    },
+    [setBoardItems, isTrashView],
+  );
+
+  const fetchDeals = useCallback(async () => {
+    if (isTrashView) {
+      await fetchTrashDeals();
+      return;
+    }
+    await reloadBoard();
+  }, [reloadBoard, fetchTrashDeals, isTrashView]);
 
   useEffect(() => {
     if (isTrashView && view === 'kanban') setView('list');
   }, [isTrashView, view]);
 
+  useEffect(() => {
+    setSelectedDeal((prev) => {
+      if (!prev) return prev;
+      return deals.find((deal) => deal.id === prev.id) ?? prev;
+    });
+  }, [deals]);
+
   const handleDealCreated = async (deal: Deal, options?: { openFull?: boolean }) => {
-    setDeals((prev) => [deal, ...prev.filter((item) => item.id !== deal.id)]);
-    setError(null);
+    if (!isTrashView) upsertBoardItem(deal);
+    else setTrashDeals((prev) => [deal, ...prev.filter((item) => item.id !== deal.id)]);
 
     if (options?.openFull) {
       setSelectedDeal(deal);
@@ -193,11 +275,6 @@ function DealsPipelinePageContent() {
 
     await fetchDeals();
   };
-
-  useEffect(() => {
-    fetchDeals();
-  }, [fetchDeals]);
-
   const openDealId = searchParams.get(CRM_OPEN_DEAL_QUERY)?.trim() || null;
   const portfolioContactId = searchParams.get(PORTFOLIO_DEEP_LINK.contactId)?.trim() ?? null;
   const createDealFromPortfolio = searchParams.get(PORTFOLIO_DEEP_LINK.createDeal) === '1';
@@ -248,7 +325,7 @@ function DealsPipelinePageContent() {
     return () => {
       cancelled = true;
     };
-  }, [openDealId, loading, deals, stripOpenDealFromUrl]);
+  }, [openDealId, loading, deals, setDeals, stripOpenDealFromUrl]);
 
   const showStageGateRequirements = useCallback(
     (deal: Deal, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
@@ -290,7 +367,7 @@ function DealsPipelinePageContent() {
       setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
       setStageGateHighlight(null);
     } catch (err) {
-      setDeals(previousDeals);
+      setDeals(() => previousDeals);
       if (selectedDeal?.id === id) {
         setSelectedDeal(previousSelected);
       }
@@ -305,7 +382,7 @@ function DealsPipelinePageContent() {
         toast.error(getApiErrorMessage(err, 'Deal stage change is not available.'));
         return;
       }
-      setError(err instanceof Error ? err.message : 'Deal stage change was blocked.');
+      toast.error(err instanceof Error ? err.message : 'Deal stage change was blocked.');
     }
   };
 
@@ -360,7 +437,7 @@ function DealsPipelinePageContent() {
       setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
       setSelectedDeal((prev) => (prev?.id === id ? updated : prev));
     } catch (err) {
-      setDeals(previousDeals);
+      setDeals(() => previousDeals);
       setSelectedDeal(previousSelected);
       throw err;
     }
@@ -372,13 +449,14 @@ function DealsPipelinePageContent() {
     setSheetOpen(false);
     setSelectedDeal(null);
     stripOpenDealFromUrl();
-    setDeals((prev) => prev.filter((d) => d.id !== id));
+    if (isTrashView) setTrashDeals((prev) => prev.filter((d) => d.id !== id));
+    else removeBoardItem(id);
 
     try {
       await dealsApi.moveToTrash(id);
       toast.success('Deal moved to Trash');
     } catch {
-      setDeals(previousDeals);
+      setDeals(() => previousDeals);
       toast.error('Could not move deal to Trash');
     }
   };
@@ -430,40 +508,44 @@ function DealsPipelinePageContent() {
     setSheetOpen(true);
     const fullDeal = await dealsApi.getById(id);
     setSelectedDeal(fullDeal);
-    setDeals((prev) => {
-      const hasDeal = prev.some((deal) => deal.id === fullDeal.id);
-      if (!hasDeal) return [fullDeal, ...prev];
-      return prev.map((deal) => (deal.id === fullDeal.id ? fullDeal : deal));
-    });
+    if (isTrashView) {
+      setTrashDeals((prev) => {
+        const hasDeal = prev.some((deal) => deal.id === fullDeal.id);
+        if (!hasDeal) return [fullDeal, ...prev];
+        return prev.map((deal) => (deal.id === fullDeal.id ? fullDeal : deal));
+      });
+      return;
+    }
+    upsertBoardItem(fullDeal);
   };
 
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
     requestStatusChange(itemId, toColumn);
   };
 
-  const handleReorder = useCallback((itemId: string, columnKey: string, toIndex: number) => {
-    setDeals((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
-  }, []);
+  const handleReorder = useCallback(
+    (itemId: string, columnKey: string, toIndex: number) => {
+      setDeals((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
+    },
+    [setDeals],
+  );
 
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
-
-  const displayDeals = useMemo(() => {
-    return deals.filter((deal) => {
-      if (filters.status && filters.status !== 'all') {
-        return deal.status === filters.status;
-      }
-      return matchesBoardLifecycleScope(deal.status, DEAL_STAGES, boardScope);
-    });
-  }, [deals, filters.status, boardScope]);
+  const kanbanStages = useMemo(() => {
+    if (filters.status && filters.status !== 'all') {
+      return DEAL_STAGES.filter((stage) => stage.key === filters.status);
+    }
+    return DEAL_STAGES;
+  }, [filters.status]);
 
   const kanbanColumns = useMemo(
     () =>
       buildScopedKanbanColumns({
-        items: displayDeals,
-        stages: DEAL_STAGES,
-        scopeValue: boardScope,
+        items: deals,
+        stages: kanbanStages,
+        scopeValue: filters.status && filters.status !== 'all' ? 'ALL' : boardScope,
+        columnMeta: isTrashView ? undefined : columnMeta,
       }),
-    [displayDeals, boardScope],
+    [columnMeta, boardScope, deals, filters.status, isTrashView, kanbanStages],
   );
 
   const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);
@@ -584,7 +666,7 @@ function DealsPipelinePageContent() {
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchDeals} />
-      ) : displayDeals.length === 0 ? (
+      ) : deals.length === 0 ? (
         <EmptyState
           icon={Handshake}
           title={isTrashView ? 'Trash is empty' : 'No deals yet'}
@@ -617,6 +699,7 @@ function DealsPipelinePageContent() {
             getItemId={(deal) => deal.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
+            onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
             emptyMessage="No deals"
             terminalDropZones={
@@ -632,10 +715,17 @@ function DealsPipelinePageContent() {
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <DealsListTable
-            deals={displayDeals}
+            deals={deals}
             boardScope={boardScope as BoardLifecycleScope}
             onDealClick={handleCardClick}
           />
+          {!isTrashView && hasMoreAny ? (
+            <InfiniteScrollSentinel
+              disabled={boardLoading}
+              onReach={loadMoreAll}
+              rootMargin="240px"
+            />
+          ) : null}
         </div>
       )}
 

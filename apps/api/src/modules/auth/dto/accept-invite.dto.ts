@@ -1,10 +1,11 @@
 import { IsString, MinLength, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
-/** Account-creation password: length + at least one letter and one digit. */
-const PASSWORD_MIN_LENGTH = 10;
-const PASSWORD_MAX_LENGTH = 128;
-const PASSWORD_COMPLEXITY = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+import {
+  ACCOUNT_PASSWORD_COMPLEXITY,
+  ACCOUNT_PASSWORD_COMPLEXITY_MESSAGE,
+  ACCOUNT_PASSWORD_MAX_LENGTH,
+  ACCOUNT_PASSWORD_MIN_LENGTH,
+} from '../auth-password.policy';
 
 export class AcceptInviteDto {
   @ApiProperty({ description: 'Invitation token from the invite link' })
@@ -23,12 +24,12 @@ export class AcceptInviteDto {
   @MaxLength(50)
   lastName!: string;
 
-  @ApiProperty({ minLength: PASSWORD_MIN_LENGTH })
+  @ApiProperty({ minLength: ACCOUNT_PASSWORD_MIN_LENGTH })
   @IsString()
-  @MinLength(PASSWORD_MIN_LENGTH)
-  @MaxLength(PASSWORD_MAX_LENGTH)
-  @Matches(PASSWORD_COMPLEXITY, {
-    message: 'password must contain at least one letter and one number',
+  @MinLength(ACCOUNT_PASSWORD_MIN_LENGTH)
+  @MaxLength(ACCOUNT_PASSWORD_MAX_LENGTH)
+  @Matches(ACCOUNT_PASSWORD_COMPLEXITY, {
+    message: ACCOUNT_PASSWORD_COMPLEXITY_MESSAGE,
   })
   password!: string;
 }

@@ -38,7 +38,13 @@ describe('PartnersService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PartnersService(prisma as never, { log: vi.fn() } as never);
+    service = new PartnersService(
+      prisma as never,
+      { log: vi.fn() } as never,
+      {
+        ensureGroupForProduct: vi.fn().mockResolvedValue({}),
+      } as never,
+    );
   });
 
   describe('findAll', () => {

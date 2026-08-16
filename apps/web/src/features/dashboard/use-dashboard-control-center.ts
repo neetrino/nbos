@@ -16,11 +16,9 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import {
   loadDashboardControlData,
-  loadDashboardControlMetrics,
   type DashboardControlProjection,
 } from './dashboard-control-data';
 import {
-  mergeDashboardControlCacheMetrics,
   prependDashboardControlCacheNote,
   readDashboardControlCache,
   writeDashboardControlCache,
@@ -82,45 +80,24 @@ export function useDashboardControlCenter() {
     setPriorities(projection.priorities);
   }, []);
 
-  const applyMetrics = useCallback((metrics: DashboardData, nextPriorities: PriorityCard[]) => {
-    setData(metrics);
-    setPriorities(nextPriorities);
-  }, []);
-
   const fetchDashboard = useCallback(
-    async (options?: { metricsOnly?: boolean; showLoading?: boolean }) => {
+    async (options?: { showLoading?: boolean }) => {
       const generation = ++fetchGenerationRef.current;
       const showLoading = options?.showLoading ?? true;
       if (showLoading) setLoading(true);
       setError(null);
 
       try {
-        if (options?.metricsOnly) {
-          const metricsProjection = await loadDashboardControlMetrics();
-          if (generation !== fetchGenerationRef.current) return;
-          applyMetrics(metricsProjection.metrics, metricsProjection.priorities);
-          if (userId) {
-            mergeDashboardControlCacheMetrics(
-              userId,
-              metricsProjection.metrics,
-              metricsProjection.priorities,
-            );
-          }
-          return;
-        }
-
         const projection = await loadDashboardControlData();
         if (generation !== fetchGenerationRef.current) return;
         applyProjection(projection);
         if (userId) writeDashboardControlCache(userId, projection);
       } catch (caught) {
         if (generation !== fetchGenerationRef.current) return;
-        if (!options?.metricsOnly) {
-          setData(null);
-          setPersonalLinks([]);
-          setNotes([]);
-          setPriorities([]);
-        }
+        setData(null);
+        setPersonalLinks([]);
+        setNotes([]);
+        setPriorities([]);
         setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
       } finally {
         if (generation === fetchGenerationRef.current && showLoading) {
@@ -128,7 +105,7 @@ export function useDashboardControlCenter() {
         }
       }
     },
-    [applyMetrics, applyProjection, userId],
+    [applyProjection, userId],
   );
 
   useEffect(() => {
@@ -142,7 +119,8 @@ export function useDashboardControlCenter() {
     if (cached) {
       applyProjection(cached);
       setLoading(false);
-      void fetchDashboard({ metricsOnly: true, showLoading: false });
+      // Full soft refresh so notes/links/prefs sync across devices (not metrics-only).
+      void fetchDashboard({ showLoading: false });
       return;
     }
 

@@ -1,8 +1,14 @@
 'use client';
 
+import { FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
+import { RelationPickerField } from '@/components/shared';
+import {
+  useProjectRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -12,7 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Project } from '@/lib/api/projects';
 
 const SERVICE_TYPE_OPTIONS = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PAYMENT_MODEL_OPTIONS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -29,38 +34,40 @@ export type PartnerOutboundCreateFormState = {
 export function PartnerOutboundServiceTermCreateForm(props: {
   form: PartnerOutboundCreateFormState;
   onFormChange: React.Dispatch<React.SetStateAction<PartnerOutboundCreateFormState>>;
-  projects: Project[];
-  projectsLoading: boolean;
+  projectLabel: string | null;
+  onProjectLabelChange: (label: string | null) => void;
   canSubmit: boolean;
   saving: boolean;
   onSubmit: (event: React.FormEvent) => void;
 }) {
-  const { form, onFormChange, projects, projectsLoading, canSubmit, saving, onSubmit } = props;
+  const { form, onFormChange, projectLabel, onProjectLabelChange, canSubmit, saving, onSubmit } =
+    props;
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
+  const projectValue = form.projectId === 'none' ? null : form.projectId;
 
   return (
     <form className="border-border mt-4 grid gap-3 rounded-lg border p-3" onSubmit={onSubmit}>
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="pst-project-id">Project</Label>
-          <Select
-            value={form.projectId}
-            disabled={projectsLoading}
-            onValueChange={(value) =>
-              onFormChange((prev) => ({ ...prev, projectId: value ?? 'none' }))
-            }
-          >
-            <SelectTrigger id="pst-project-id">
-              <SelectValue placeholder={projectsLoading ? 'Loading projects…' : 'Optional'} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None</SelectItem>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.code} · {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <RelationPickerField
+            label="Project"
+            entityKind="project"
+            value={projectValue}
+            selectionLabel={projectLabel}
+            placeholder="Optional — search project…"
+            icon={<FolderKanban size={12} />}
+            onSearch={searchProjects}
+            onSelect={(id, label) => {
+              onFormChange((prev) => ({ ...prev, projectId: id }));
+              onProjectLabelChange(label);
+            }}
+            onClear={() => {
+              onFormChange((prev) => ({ ...prev, projectId: 'none' }));
+              onProjectLabelChange(null);
+            }}
+            {...projectPicker}
+          />
           <p className="text-muted-foreground mt-1 text-xs">
             Required before creating Finance from a term.
           </p>

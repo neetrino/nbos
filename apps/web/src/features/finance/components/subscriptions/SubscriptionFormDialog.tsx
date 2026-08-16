@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Receipt, Repeat } from 'lucide-react';
+import { Handshake, Layers, Receipt } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,11 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { DetailSheetFieldSegmented } from '@/components/shared';
+import { DetailSheetFieldSegmented, RelationPickerField } from '@/components/shared';
+import {
+  usePartnerRelationSearch,
+  useProductRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -23,25 +25,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  SUBSCRIPTION_BILLING_FREQUENCIES,
-  SUBSCRIPTION_TYPES,
-} from '@/features/finance/constants/finance';
+import { SUBSCRIPTION_TYPES } from '@/features/finance/constants/finance';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
-import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
-  buildSubscriptionCreatePayload,
-  buildSubscriptionUpdatePayload,
   EMPTY_SUBSCRIPTION_FORM,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
-import { getApiErrorMessage } from '@/lib/api-errors';
-import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
-import { projectsApi, type Project } from '@/lib/api/projects';
-import { partnersApi, type Partner } from '@/lib/api/partners';
-
-const PARTNERS_PAGE_SIZE = 100;
+import { buildBillingPeriodChangeConfirmDescription } from '@/features/finance/utils/subscription-billing-period-change';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
+import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
+import { SubscriptionFormDialogBillingFields } from '@/features/finance/components/subscriptions/SubscriptionFormDialogBillingFields';
+import { SubscriptionFormDialogMetaFields } from '@/features/finance/components/subscriptions/SubscriptionFormDialogMetaFields';
+import { useSubscriptionFormDialogActions } from '@/features/finance/components/subscriptions/use-subscription-form-dialog-actions';
+import type { Subscription } from '@/lib/api/finance';
+import { productsApi } from '@/lib/api/products';
 
 function normalizeSelectValue(value: string | null): string {
   return value ?? '';
@@ -62,239 +60,205 @@ export function SubscriptionFormDialog({
   subscription = null,
   onSaved,
 }: SubscriptionFormDialogProps) {
-  const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<SubscriptionFormState>({ ...EMPTY_SUBSCRIPTION_FORM });
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [optionsLoading, setOptionsLoading] = useState(false);
+  const [editSnap, setEditSnap] = useState<SubscriptionFormState | null>(null);
+  const [productLabel, setProductLabel] = useState<string | null>(null);
+  const [partnerLabel, setPartnerLabel] = useState<string | null>(null);
+  const [productResolving, setProductResolving] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    setFormError(null);
-    if (mode === 'edit' && subscription) {
-      setForm(subscriptionToFormState(subscription));
-    } else {
-      setForm({ ...EMPTY_SUBSCRIPTION_FORM });
+  const searchProducts = useProductRelationSearch(null);
+  const searchPartners = usePartnerRelationSearch();
+  const productPicker = useRelationPickerActions('product');
+  const partnerPicker = useRelationPickerActions('partner');
+
+  const {
+    loading,
+    formError,
+    canSubmit,
+    billingValidationError,
+    periodConfirmOpen,
+    setPeriodConfirmOpen,
+    handleSubmit,
+    submitForm,
+    applyPeriodChange,
+  } = useSubscriptionFormDialogActions({
+    mode,
+    form,
+    setForm,
+    editSnap,
+    subscription,
+    onSaved,
+    onOpenChange,
+  });
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      if (mode === 'edit' && subscription) {
+        const state = subscriptionToFormState(subscription);
+        setForm(state);
+        setEditSnap(state);
+        setProductLabel(subscription.product?.name ?? null);
+        setPartnerLabel(subscription.partner?.name ?? null);
+      } else {
+        setForm({ ...EMPTY_SUBSCRIPTION_FORM });
+        setEditSnap(null);
+        setProductLabel(null);
+        setPartnerLabel(null);
+      }
     }
-  }, [open, mode, subscription]);
+    onOpenChange(next);
+  };
 
   useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setOptionsLoading(true);
-    Promise.all([
-      projectsApi.getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE }),
-      partnersApi.getAll({ page: 1, pageSize: PARTNERS_PAGE_SIZE, scope: 'active' }),
-    ])
-      .then(([projectRes, partnerRes]) => {
-        if (!cancelled) {
-          setProjects(projectRes.items);
-          setPartners(partnerRes.items);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setProjects([]);
-          setPartners([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setOptionsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    if (!open) setProductResolving(false);
   }, [open]);
 
-  const parsedAmount = parseFloat(form.baseMonthlyAmount.replace(/\s/g, ''));
-  const parsedBillingDay = parseInt(form.billingDay, 10);
-  const canSubmit =
-    (mode === 'edit' || Boolean(form.projectId)) &&
-    Boolean(form.type) &&
-    Boolean(form.billingStartDate) &&
-    Number.isFinite(parsedAmount) &&
-    parsedAmount > 0 &&
-    Number.isFinite(parsedBillingDay) &&
-    parsedBillingDay >= 1 &&
-    parsedBillingDay <= 28;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    setLoading(true);
-    setFormError(null);
+  const handleProductSelect = async (productId: string, label: string) => {
+    setProductLabel(label);
+    setProductResolving(true);
     try {
-      const saved =
-        mode === 'edit' && subscription
-          ? await subscriptionsApi.update(subscription.id, buildSubscriptionUpdatePayload(form))
-          : await subscriptionsApi.create(buildSubscriptionCreatePayload(form));
-      onSaved(saved);
-      onOpenChange(false);
-    } catch (caught) {
-      setFormError(getApiErrorMessage(caught, 'Could not save subscription.'));
+      const product = await productsApi.getById(productId);
+      setForm((prev) => ({
+        ...prev,
+        productId,
+        projectId: product.projectId,
+      }));
+    } catch {
+      setForm((prev) => ({ ...prev, productId, projectId: prev.projectId }));
     } finally {
-      setLoading(false);
+      setProductResolving(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{mode === 'edit' ? 'Edit subscription' : 'New subscription'}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-          {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{mode === 'edit' ? 'Edit subscription' : 'New subscription'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
+            {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
 
-          {mode === 'create' ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-project">Project</Label>
+              <Label htmlFor="sub-name">Name</Label>
+              <Input
+                id="sub-name"
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                placeholder="Commercial subscription name"
+                autoComplete="off"
+                required
+              />
+            </div>
+
+            {mode === 'create' ? (
+              <RelationPickerField
+                label="Product"
+                entityKind="product"
+                value={form.productId || null}
+                selectionLabel={productLabel}
+                placeholder={productResolving ? 'Resolving product…' : 'Search products…'}
+                icon={<Layers size={12} />}
+                disabled={productResolving}
+                onSearch={searchProducts}
+                onSelect={(id, label) => {
+                  void handleProductSelect(id, label);
+                }}
+                {...productPicker}
+              />
+            ) : (
+              <div className="text-muted-foreground text-sm">
+                Product: {subscription?.product?.name ?? productLabel ?? form.productId}
+                {subscription?.project ? ` · Project ${subscription.project.name}` : null}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="sub-type">Type</Label>
               <Select
-                value={form.projectId || undefined}
-                onValueChange={(v) => setForm({ ...form, projectId: normalizeSelectValue(v) })}
-                disabled={optionsLoading}
+                value={form.type}
+                onValueChange={(v) => setForm({ ...form, type: normalizeSelectValue(v) })}
               >
-                <SelectTrigger id="sub-project">
-                  <SelectValue placeholder={optionsLoading ? 'Loading…' : 'Select project'} />
+                <SelectTrigger id="sub-type">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.code} — {p.name}
+                  {SUBSCRIPTION_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          ) : null}
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="sub-type">Type</Label>
-            <Select
-              value={form.type}
-              onValueChange={(v) => setForm({ ...form, type: normalizeSelectValue(v) })}
-            >
-              <SelectTrigger id="sub-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SUBSCRIPTION_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <NbosMoneyInput
-              id="sub-amount"
-              label="Base monthly amount"
-              value={form.baseMonthlyAmount}
-              onChange={(baseMonthlyAmount) => setForm({ ...form, baseMonthlyAmount })}
-              required
+            <SubscriptionFormDialogBillingFields
+              form={form}
+              billingValidationError={billingValidationError}
+              onAmountChange={(amount) => setForm({ ...form, amount })}
+              onBillingDayChange={(billingDay) => setForm({ ...form, billingDay })}
+              onPeriodChange={applyPeriodChange}
             />
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-billing-day">Billing day (1–28)</Label>
-              <Input
-                id="sub-billing-day"
-                type="number"
-                min={1}
-                max={28}
-                value={form.billingDay}
-                onChange={(e) => setForm({ ...form, billingDay: e.target.value })}
-                required
-              />
-            </div>
-          </div>
 
-          <DetailSheetFieldSegmented
-            label="Billing frequency"
-            icon={<Repeat size={12} />}
-            value={form.billingFrequency}
-            options={SUBSCRIPTION_BILLING_FREQUENCIES}
-            onValueChange={(billingFrequency) => setForm({ ...form, billingFrequency })}
-          />
+            <DetailSheetFieldSegmented
+              label="Tax status"
+              icon={<Receipt size={12} />}
+              value={form.taxStatus}
+              options={TAX_STATUSES}
+              onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
+            />
 
-          <DetailSheetFieldSegmented
-            label="Tax status"
-            icon={<Receipt size={12} />}
-            value={form.taxStatus}
-            options={TAX_STATUSES}
-            onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-start">Billing start date</Label>
-              <NbosDatePicker
-                id="sub-start"
-                value={form.billingStartDate}
-                onChange={(billingStartDate) => setForm({ ...form, billingStartDate })}
-                aria-label="Billing start date"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-end">End date (optional)</Label>
-              <NbosDatePicker
-                id="sub-end"
-                value={form.endDate}
-                onChange={(endDate) => setForm({ ...form, endDate })}
-                clearable
-                aria-label="End date"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="sub-partner">Partner (optional)</Label>
-            <Select
-              value={form.partnerId || 'NONE'}
-              onValueChange={(v) => {
-                const nextValue = normalizeSelectValue(v);
-                setForm({ ...form, partnerId: nextValue === 'NONE' ? '' : nextValue });
+            <RelationPickerField
+              label="Partner (optional)"
+              entityKind="partner"
+              value={form.partnerId || null}
+              selectionLabel={partnerLabel}
+              placeholder="Search partners…"
+              icon={<Handshake size={12} />}
+              onSearch={searchPartners}
+              onSelect={(id, label) => {
+                setForm((prev) => ({ ...prev, partnerId: id }));
+                setPartnerLabel(label);
               }}
-              disabled={optionsLoading}
-            >
-              <SelectTrigger id="sub-partner">
-                <SelectValue placeholder="None" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NONE">None</SelectItem>
-                {partners.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="sub-notifications"
-              checked={form.notificationsEnabled}
-              onCheckedChange={(checked) =>
-                setForm({ ...form, notificationsEnabled: checked === true })
-              }
+              onClear={() => {
+                setForm((prev) => ({ ...prev, partnerId: '' }));
+                setPartnerLabel(null);
+              }}
+              {...partnerPicker}
             />
-            <Label htmlFor="sub-notifications" className="font-normal">
-              Enable billing notifications for this subscription
-            </Label>
-          </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create subscription'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <SubscriptionFormDialogMetaFields
+              form={form}
+              onFormChange={(partial) => setForm({ ...form, ...partial })}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !canSubmit || productResolving}>
+                {loading ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create subscription'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {mode === 'edit' && editSnap && subscription ? (
+        <SubscriptionBillingPeriodConfirmDialog
+          open={periodConfirmOpen}
+          subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
+          description={buildBillingPeriodChangeConfirmDescription(
+            editSnap,
+            form,
+            subscription.monthlyEquivalentAmount,
+          )}
+          isSubmitting={loading}
+          onOpenChange={setPeriodConfirmOpen}
+          onConfirm={() => void submitForm().finally(() => setPeriodConfirmOpen(false))}
+          forceNestedBackdrop
+        />
+      ) : null}
+    </>
   );
 }

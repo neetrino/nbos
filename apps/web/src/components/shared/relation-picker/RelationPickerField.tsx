@@ -10,6 +10,7 @@ import {
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
+import { relationPickerChipLabel } from './relation-picker-display-label';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
@@ -101,7 +102,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleSelect = (id: string, itemLabel: string) => {
+  const handleSelect = (id: string, itemLabel: string, avatar?: string) => {
     if (disabled) return;
     if (multiple) {
       const nextIds = selectedIds.has(id)
@@ -116,7 +117,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       props.onChange(nextIds, nextLabels);
       return;
     }
-    props.onSelect(id, itemLabel);
+    props.onSelect(id, itemLabel, avatar);
     setOpen(false);
     setQuery('');
   };
@@ -137,7 +138,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       setHighlightIdx((index) => Math.max(index - 1, 0));
     } else if (event.key === 'Enter' && highlightIdx >= 0 && results[highlightIdx]) {
       event.preventDefault();
-      handleSelect(results[highlightIdx].value, results[highlightIdx].label);
+      handleSelect(
+        results[highlightIdx].value,
+        results[highlightIdx].label,
+        results[highlightIdx].avatar,
+      );
     } else if (event.key === 'Escape') {
       setOpen(false);
       setQuery('');
@@ -265,7 +270,7 @@ function ClosedRelationPicker({
   if (multiple && isMultiProps(props)) {
     const chips = props.value.map((id) => ({
       id,
-      label: props.selectionLabels[id] ?? id,
+      label: relationPickerChipLabel(props.selectionLabels[id], id),
     }));
 
     return (
@@ -302,9 +307,9 @@ function ClosedRelationPicker({
 
   if (!isMultiProps(props)) {
     const hasValue = Boolean(props.value);
-    const chipLabel = props.selectionLabel ?? (hasValue ? String(props.value) : null);
+    const chipLabel = relationPickerChipLabel(props.selectionLabel, props.value);
 
-    if (hasValue && chipLabel) {
+    if (hasValue) {
       return (
         <div className="w-full min-w-0">
           <RelationPickerChip
@@ -312,6 +317,7 @@ function ClosedRelationPicker({
             subtitle={props.selectionSubtitle}
             entityKind={entityKind}
             disabled={disabled}
+            imageUrl={props.selectionAvatar}
             onOpen={
               onOpenSelected && props.value
                 ? () => onOpenSelected(props.value as string)

@@ -2,6 +2,8 @@
 
 import { useCallback } from 'react';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
+import { ordersApi } from '@/lib/api/finance';
+import { partnersApi } from '@/lib/api/partners';
 import { projectsApi } from '@/lib/api/projects';
 import { productsApi } from '@/lib/api/products';
 import { searchEmployeesForPicker } from '@/lib/employees';
@@ -56,7 +58,6 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
       return res.items.map((project) => ({
         value: project.id,
         label: project.name,
-        subtitle: project.code,
       }));
     },
     [pageSize],
@@ -102,5 +103,42 @@ export function useProductRelationSearch(
       }));
     },
     [projectId, pageSize],
+  );
+}
+
+/** Search partners for {@link RelationPickerField}. */
+export function usePartnerRelationSearch(pageSize = DEFAULT_PAGE_SIZE): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => {
+      const res = await partnersApi.getAll({
+        pageSize,
+        search: query.trim() || undefined,
+        scope: 'active',
+      });
+      return res.items.map((partner) => ({
+        value: partner.id,
+        label: partner.name,
+        subtitle: partner.level,
+      }));
+    },
+    [pageSize],
+  );
+}
+
+/** Search orders for {@link RelationPickerField}. */
+export function useOrderRelationSearch(pageSize = DEFAULT_PAGE_SIZE): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => {
+      const res = await ordersApi.getAll({
+        pageSize,
+        search: query.trim() || undefined,
+      });
+      return res.items.map((order) => ({
+        value: order.id,
+        label: order.code,
+        subtitle: order.project.name,
+      }));
+    },
+    [pageSize],
   );
 }

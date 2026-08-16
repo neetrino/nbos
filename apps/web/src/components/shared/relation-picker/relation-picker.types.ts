@@ -6,12 +6,15 @@ export type RelationEntityKind =
   | 'project'
   | 'partner'
   | 'product'
-  | 'employee';
+  | 'employee'
+  | 'order';
 
 export type RelationPickerOption = {
   value: string;
   label: string;
   subtitle?: string;
+  /** Employee / contact profile photo URL when available. */
+  avatar?: string;
 };
 
 export type RelationPickerSearchFn = (query: string) => Promise<RelationPickerOption[]>;
@@ -56,7 +59,9 @@ export type RelationPickerSingleProps = RelationPickerBaseProps & {
   value: string | null | undefined;
   selectionLabel?: string | null;
   selectionSubtitle?: string | null;
-  onSelect: (id: string, label: string) => void;
+  /** Profile photo for the selected employee/contact chip. */
+  selectionAvatar?: string | null;
+  onSelect: (id: string, label: string, avatar?: string) => void;
   /** When omitted, chip shows no X (use for required links — replace via search instead). */
   onClear?: () => void;
 };
@@ -77,6 +82,7 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   partner: 'Partner',
   product: 'Product',
   employee: 'Employee',
+  order: 'Order',
 };
 
 export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
@@ -86,4 +92,5 @@ export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   partner: 'Create partner',
   product: 'Create product',
   employee: 'Add employee',
+  order: 'Create order',
 };

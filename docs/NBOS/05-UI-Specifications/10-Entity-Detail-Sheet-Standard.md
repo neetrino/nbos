@@ -118,6 +118,7 @@ Files / proofs / history
 Rules:
 
 - The top title is the entity title. Do not label it again as `Name` or `Title`.
+- **Entity title resolution (Finance):** `Invoice` — display title по каскаду в `04-Finance-Pages.md` §2.2.1 / `02-Invoices-and-Payments.md`; `Subscription` — `Subscription.name` (код `SUB-[SEQ]` — вторично, не заголовок sheet).
 - The main description area is self-explanatory. Do not label it as `Description` unless the context is unclear.
 - Use labels only where the field would be ambiguous without them.
 - When labels are needed, make them small, quiet, and secondary.

@@ -71,7 +71,12 @@ export class PaymentsService {
                 },
                 {
                   subscription: {
-                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                    OR: [
+                      { code: ic },
+                      { name: ic },
+                      { project: { name: ic } },
+                      { project: { code: ic } },
+                    ],
                   },
                 },
               ],
@@ -114,6 +119,9 @@ export class PaymentsService {
               },
               subscription: {
                 select: {
+                  id: true,
+                  code: true,
+                  name: true,
                   project: { select: { id: true, name: true } },
                 },
               },
@@ -152,7 +160,12 @@ export class PaymentsService {
               select: { id: true, code: true, project: { select: { id: true, name: true } } },
             },
             subscription: {
-              select: { id: true, code: true, project: { select: { id: true, name: true } } },
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                project: { select: { id: true, name: true } },
+              },
             },
           },
         },
@@ -379,17 +392,27 @@ export class PaymentsService {
   }
 
   private async syncOrderStatus(orderId: string) {
-    const invoices = await this.prisma.invoice.findMany({
-      where: { orderId },
-      select: {
-        moneyStatus: true,
-        amount: true,
-        payments: { select: { amount: true } },
-      },
-    });
+    const [invoices, order] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: { orderId },
+        select: {
+          moneyStatus: true,
+          amount: true,
+          payments: { select: { amount: true } },
+        },
+      }),
+      this.prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+          paymentType: true,
+          subscriptionTermMonths: true,
+          totalAmount: true,
+        },
+      }),
+    ]);
     if (invoices.length === 0) return;
 
-    const status = resolveOrderStatus(invoices);
+    const status = resolveOrderStatus(invoices, order);
 
     await this.prisma.order.update({
       where: { id: orderId },

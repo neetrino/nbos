@@ -139,7 +139,7 @@ export class FinanceSummaryService {
           billingStartDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
         },
-        _sum: { baseMonthlyAmount: true },
+        _sum: { monthlyEquivalentAmount: true },
       }),
       this.prisma.subscription.count({
         where: {
@@ -151,7 +151,7 @@ export class FinanceSummaryService {
     ]);
 
     return {
-      monthlyRevenue: monthlyRevenue._sum?.baseMonthlyAmount ?? null,
+      monthlyRevenue: monthlyRevenue._sum?.monthlyEquivalentAmount ?? null,
       activeSubscriptions,
     };
   }

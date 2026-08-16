@@ -7,6 +7,7 @@ import {
 } from '@nbos/database';
 import { randomUUID } from 'node:crypto';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { partnerAccrualJournalKey } from '../../../common/lifecycle/finance-record-lifecycle-guards';
 import { assertPostingPeriodOpenForBookedAt } from './posting-period-guard';
 import {
   resolvePostingMonthKey,
@@ -326,7 +327,7 @@ export class OperationalJournalService {
       input.description ?? `Partner accrual ${input.partnerAccrualId.slice(0, 8)}`;
 
     return this.upsertJournalLine({
-      idempotencyKey: `partner-accrual:${input.partnerAccrualId}`,
+      idempotencyKey: partnerAccrualJournalKey(input.partnerAccrualId),
       amount: input.amount,
       functionalAmount: input.amount,
       bookedAt: input.bookedAt,

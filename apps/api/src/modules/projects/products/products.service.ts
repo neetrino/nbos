@@ -18,6 +18,10 @@ import {
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  employeePersonSelect,
+  employeePersonWithEmailSelect,
+} from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
 import {
   PRODUCT_STATUS_ORDER,
@@ -38,6 +42,7 @@ import { buildProductCurrentStageReadiness } from './product-current-stage-readi
 import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../../finance/partner-accrual/partner-accrual-subscription.service';
 import { AuditService } from '../../audit/audit.service';
 import {
   DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
@@ -148,6 +153,7 @@ export class ProductsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
@@ -212,16 +218,17 @@ export class ProductsService {
               company: { select: { id: true, name: true } },
             },
           },
-          pm: { select: { id: true, firstName: true, lastName: true } },
-          developer: { select: { id: true, firstName: true, lastName: true } },
-          designer: { select: { id: true, firstName: true, lastName: true } },
-          technicalSpecialist: { select: { id: true, firstName: true, lastName: true } },
-          qaLead: { select: { id: true, firstName: true, lastName: true } },
+          pm: { select: employeePersonSelect },
+          developer: { select: employeePersonSelect },
+          designer: { select: employeePersonSelect },
+          technicalSpecialist: { select: employeePersonSelect },
+          qaLead: { select: employeePersonSelect },
           order: {
             select: {
               id: true,
               code: true,
               status: true,
+              paymentType: true,
               invoices: { select: { moneyStatus: true } },
             },
           },
@@ -314,14 +321,12 @@ export class ProductsService {
             },
           },
         },
-        pm: { select: { id: true, firstName: true, lastName: true, email: true } },
-        developer: { select: { id: true, firstName: true, lastName: true, email: true } },
-        designer: { select: { id: true, firstName: true, lastName: true, email: true } },
-        technicalSpecialist: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-        qaLead: { select: { id: true, firstName: true, lastName: true, email: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonWithEmailSelect },
+        developer: { select: employeePersonWithEmailSelect },
+        designer: { select: employeePersonWithEmailSelect },
+        technicalSpecialist: { select: employeePersonWithEmailSelect },
+        qaLead: { select: employeePersonWithEmailSelect },
+        closedBy: { select: employeePersonSelect },
         technicalProfiles: {
           select: {
             productionUrl: true,
@@ -350,7 +355,7 @@ export class ProductsService {
         },
         extensions: {
           include: {
-            assignee: { select: { id: true, firstName: true, lastName: true } },
+            assignee: { select: employeePersonSelect },
             order: {
               select: {
                 id: true,
@@ -415,7 +420,7 @@ export class ProductsService {
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonSelect },
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
@@ -456,13 +461,11 @@ export class ProductsService {
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
-        developer: { select: { id: true, firstName: true, lastName: true } },
-        designer: { select: { id: true, firstName: true, lastName: true } },
-        technicalSpecialist: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-        qaLead: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: employeePersonSelect },
+        developer: { select: employeePersonSelect },
+        designer: { select: employeePersonSelect },
+        technicalSpecialist: { select: employeePersonSelect },
+        qaLead: { select: employeePersonSelect },
       },
     });
     await this.syncProductTeamAccess(product);
@@ -498,6 +501,7 @@ export class ProductsService {
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
       await this.audit.log({
         entityType: 'PRODUCT',
@@ -533,6 +537,7 @@ export class ProductsService {
       include: { project: { select: { id: true, code: true, name: true } } },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
@@ -593,6 +598,7 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.applyDeliveryOutcomeSideEffects(id, 'LOST');
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -626,14 +632,7 @@ export class ProductsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { productId: id },
-      select: { id: true },
-    });
-    if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-    }
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.audit.log({
       entityType: 'PRODUCT',
       entityId: id,
@@ -735,6 +734,25 @@ export class ProductsService {
         }`,
       );
     }
+  }
+
+  private async applyDeliveryOutcomeSideEffects(
+    productId: string,
+    targetStatus: string,
+  ): Promise<void> {
+    if (targetStatus !== 'DONE' && targetStatus !== 'LOST') return;
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { productId },
+      select: { id: true },
+    });
+    if (!linkedOrder) return;
+    if (targetStatus === 'DONE') {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
+      return;
+    }
+    await this.partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery(linkedOrder.id);
   }
 
   private async loadLinkedProductSellerId(productId: string): Promise<string | null> {

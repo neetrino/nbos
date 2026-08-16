@@ -6,6 +6,7 @@ export interface ProductEmployee {
   firstName: string;
   lastName: string;
   email?: string;
+  avatar?: string | null;
 }
 
 export interface ProductClosedByRef {
@@ -57,6 +58,7 @@ export interface Product {
     id: string;
     code?: string;
     status?: string;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
   } | null;
   _count: { extensions: number; tasks: number; tickets: number };

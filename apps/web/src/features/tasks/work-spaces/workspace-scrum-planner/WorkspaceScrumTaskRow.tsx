@@ -18,7 +18,7 @@ export function WorkspaceScrumTaskRow({
 
   return (
     <div draggable onDragStart={onDragStart} className="cursor-grab active:cursor-grabbing">
-      <TaskMiniCard task={task} onClick={onOpen} onAction={() => undefined} />
+      <TaskMiniCard task={task} onClick={onOpen} onAction={() => undefined} hideWorkspaceContext />
     </div>
   );
 }

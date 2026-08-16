@@ -8,6 +8,10 @@ export interface KanbanColumn<T> {
   hexColor?: string;
   items: T[];
   readonly?: boolean;
+  /** Server-side total for the stage (may exceed loaded `items`). */
+  totalCount?: number;
+  hasMore?: boolean;
+  loadingMore?: boolean;
 }
 
 export interface KanbanColumnQuickCreateInput {
@@ -59,6 +63,8 @@ export interface KanbanBoardProps<T> {
   addButtonLabel?: string;
   /** Bottom drop targets shown while dragging (closed / terminal stages). */
   terminalDropZones?: KanbanTerminalDropZone[];
+  /** Fired when a column scroll sentinel is reached (`column.hasMore`). */
+  onColumnLoadMore?: (columnKey: string) => void;
 }
 
 export const SCROLL_SPEED = 6;

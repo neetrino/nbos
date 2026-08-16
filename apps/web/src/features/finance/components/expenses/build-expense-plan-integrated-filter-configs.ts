@@ -1,7 +1,7 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
+const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
 export function buildExpensePlanIntegratedFilterConfigs(
   projects: Array<{ id: string; code: string; name: string }>,
@@ -20,7 +20,7 @@ export function buildExpensePlanIntegratedFilterConfigs(
       label: 'Project',
       options: projects.map((p) => ({
         value: p.id,
-        label: `${p.code} — ${p.name}`,
+        label: p.name,
       })),
     });
   }

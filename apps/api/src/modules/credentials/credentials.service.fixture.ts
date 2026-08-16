@@ -13,13 +13,18 @@ vi.mock('argon2', () => ({
 }));
 
 export const TEST_KEY = 'test-key-for-credentials';
-export const accessUser1 = { employeeId: 'user-1', departmentIds: [] as string[] };
+export const accessUser1 = {
+  employeeId: 'user-1',
+  departmentIds: [] as string[],
+  bypassRowVisibility: false,
+};
 export const accessOwnerAll = {
   employeeId: 'owner-1',
   departmentIds: [] as string[],
   viewScope: 'ALL',
   editScope: 'ALL',
   deleteScope: 'ALL',
+  bypassRowVisibility: true,
 };
 
 export function createCredentialsServiceTestContext() {
@@ -31,7 +36,7 @@ export function createCredentialsServiceTestContext() {
       meta: { total: 0, page: 1, pageSize: 20, totalPages: 0 },
     }),
   };
-  const notifications = { create: vi.fn() };
+  const notifications = { create: vi.fn(), createMany: vi.fn() };
   const vaultSession = {
     getSession: vi.fn().mockResolvedValue({ unlocked: false, expiresAt: null }),
     isUnlocked: vi.fn().mockResolvedValue(false),

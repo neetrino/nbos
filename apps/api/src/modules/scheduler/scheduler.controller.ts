@@ -38,9 +38,9 @@ export class SchedulerController {
   @Post('invoice-card-reminders')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Create due Invoice Card reminder notification jobs (external cron)',
+    summary: 'Invoice Card reminders: Tax official-request + subscription D-10/D-2 WhatsApp',
     description:
-      'Creates idempotent NotificationEvent/NotificationJob records from Invoice Card rules. It does not send external client messages.',
+      'Yerevan calendar asOf. Official-request-due for Tax invoices past due without request. Subscription payment reminders at dueDate−10 and dueDate−2 (idempotent per invoice+offset); sends to Product WhatsApp Group when gateway is configured.',
   })
   async runInvoiceCardReminders() {
     return this.schedulerService.runInvoiceCardReminders();
@@ -143,5 +143,27 @@ export class SchedulerController {
   })
   async runWhatsAppProductGroupsReconcile() {
     return this.schedulerService.runWhatsAppProductGroupsReconcile();
+  }
+
+  @Post('notification-inbox-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reconcile NotificationInboxState vs actual unread COUNT',
+    description:
+      'Requires NOTIFICATION_INBOX_STATE_RECONCILE_ENABLED=true. Repairs drift in batches and publishes SSE snapshots.',
+  })
+  async runNotificationInboxReconcile() {
+    return this.schedulerService.runNotificationInboxReconcile();
+  }
+
+  @Post('notification-enqueue-reconcile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Scan PENDING notification jobs/deliveries after enqueue failures',
+    description:
+      'Requires NOTIFICATION_ENQUEUE_RECONCILE_ENABLED=true. Logs recoverable PENDING rows (outbox deferred).',
+  })
+  async runNotificationEnqueueReconcile() {
+    return this.schedulerService.runNotificationEnqueueReconcile();
   }
 }

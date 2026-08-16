@@ -29,6 +29,7 @@ import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -54,7 +55,9 @@ import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { QueueWorkersModule } from './runtime/queue-workers.module';
 
+/** Public HTTP API (+ workers only when PROCESS_ROLE=all for local/dev). */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -90,11 +93,12 @@ import { PermissionGuard } from './common/guards/permission.guard';
     DriveModule,
     DocumentsModule,
     NotificationModule,
+    RealtimeModule,
     AutomationModule,
     CalendarModule,
     DashboardModule,
     ReportsModule,
-    SchedulerModule,
+    SchedulerModule.forRoot(),
     PartnersModule,
     MarketingModule,
     MessengerModule,
@@ -108,6 +112,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ChecklistTemplatesModule,
     PlatformAccessModule,
     PlatformLifecycleModule,
+    QueueWorkersModule.register(),
   ],
   controllers: [HealthController],
   providers: [

@@ -130,6 +130,7 @@ Required zones:
 Rules:
 
 - The same module card component should render in active and closed board states.
+- **Finance Invoice card:** зона Header — display title (§2.2.1 в `04-Finance-Pages.md`); зона Primary meta — **сумма** как доминирующий элемент (amount-first; заголовок меньше суммы).
 - Closed cards can reduce actions but should not become a different design family.
 - Density variants are allowed (`normal`, `compact`) only when they preserve the same visual language.
 - Card colors indicate entity type/risk consistently across active and closed scopes.

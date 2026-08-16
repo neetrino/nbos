@@ -93,7 +93,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PROJECTS: F,
     TASKS: F,
     SUPPORT_TICKETS: F,
-    CREDENTIALS: ['ALL', 'OWN', 'ALL', 'NONE'],
+    CREDENTIALS: ['OWN', 'OWN', 'ALL', 'NONE'],
     DRIVE: F,
     DOCUMENTS: F,
     MESSENGER: F,
@@ -213,7 +213,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PROJECTS: L,
     TASKS: L,
     SUPPORT_TICKETS: L,
-    CREDENTIALS: ['ALL', 'ALL', 'ALL', 'OWN'],
+    CREDENTIALS: ['OWN', 'ALL', 'ALL', 'OWN'],
     DRIVE: L,
     DOCUMENTS: F,
     MESSENGER: L,
@@ -309,7 +309,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PROJECTS: F,
     TASKS: F,
     SUPPORT_TICKETS: F,
-    CREDENTIALS: ['ALL', 'ALL', 'ALL', 'NONE'],
+    CREDENTIALS: ['OWN', 'ALL', 'ALL', 'NONE'],
     DRIVE: F,
     DOCUMENTS: F,
     MESSENGER: F,
@@ -371,7 +371,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
 };
 
 async function main() {
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
   console.log('Seeding RBAC permissions...');
 
@@ -406,6 +406,11 @@ async function main() {
     id: 'perm-checklist-templates-archive',
     module: 'CHECKLIST_TEMPLATES',
     action: 'ARCHIVE',
+  });
+  permissionRecords.push({
+    id: 'perm-credentials-bypass-row-visibility',
+    module: 'CREDENTIALS',
+    action: 'BYPASS_ROW_VISIBILITY',
   });
 
   await prisma.permission.createMany({
@@ -499,6 +504,14 @@ async function main() {
         scope: writeScope,
       });
     }
+  }
+
+  for (const roleId of GLOBAL_OWNER_ROLE_IDS) {
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-credentials-bypass-row-visibility',
+      scope: 'ALL',
+    });
   }
 
   await prisma.rolePermission.deleteMany({});

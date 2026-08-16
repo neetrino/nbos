@@ -18,14 +18,22 @@ export function initialsFromEmployeeLabel(label: string): string {
 type EmployeePersonAvatarProps = {
   label: string;
   className?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
+  /** Prefer lazy for list/board thumbnails; eager for the current user chrome. */
+  loading?: 'lazy' | 'eager';
 };
 
 /**
  * Person avatar with soft pastel initials (Projects Contacts language).
  * Used by relation chips (Creator / Assignee / …) and directory rows.
+ * Photos use lazy decoding so board/card grids do not block the main thread.
  */
-export function EmployeePersonAvatar({ label, className, imageUrl }: EmployeePersonAvatarProps) {
+export function EmployeePersonAvatar({
+  label,
+  className,
+  imageUrl,
+  loading = 'lazy',
+}: EmployeePersonAvatarProps) {
   const initials = initialsFromEmployeeLabel(label);
   const tone = employeeAvatarSoftColor(label);
   const shellClass = cn(PERSON_PICKER_AVATAR_CLASS, tone, className);
@@ -33,8 +41,14 @@ export function EmployeePersonAvatar({ label, className, imageUrl }: EmployeePer
 
   if (trimmedImage) {
     return (
-      <Avatar className={cn(shellClass, 'overflow-hidden p-0')}>
-        <AvatarImage src={trimmedImage} alt={label} />
+      <Avatar className={cn(shellClass, 'overflow-hidden p-0 after:hidden')}>
+        <AvatarImage
+          src={trimmedImage}
+          alt={label}
+          loading={loading}
+          decoding="async"
+          referrerPolicy="no-referrer"
+        />
         <AvatarFallback className={cn('text-xs font-semibold uppercase', tone)}>
           {initials}
         </AvatarFallback>

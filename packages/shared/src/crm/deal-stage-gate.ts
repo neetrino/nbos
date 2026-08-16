@@ -12,6 +12,7 @@ export interface DealStageGateInput extends AttributionForValidation {
   productType: string | null;
   pmId: string | null;
   deadline: Date | string | null;
+  projectId: string | null;
   existingProductId: string | null;
   companyId?: string | null;
   taxStatus?: string | null;
@@ -68,7 +69,7 @@ export function getDealStageGateErrors(
   const errors: import('./attribution-gate').StageGateError[] = [];
   const dealType = deal.type;
   const isProductLike = dealType === 'PRODUCT' || dealType === 'OUTSOURCE';
-  const isExtension = dealType === 'EXTENSION';
+  const isLinkedProductDeal = dealType === 'EXTENSION' || dealType === 'MAINTENANCE';
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>
@@ -83,6 +84,12 @@ export function getDealStageGateErrors(
     }
     if (!deal.taxStatus) {
       errors.push({ field: 'taxStatus', message: 'Tax status is required at DISCUSS_NEEDS' });
+    }
+    if (isLinkedProductDeal && !deal.projectId) {
+      errors.push({
+        field: 'projectId',
+        message: 'Project is required for EXTENSION/MAINTENANCE deals at DISCUSS_NEEDS',
+      });
     }
     errors.push(...getAttributionValidationErrors(deal));
   }
@@ -128,6 +135,12 @@ export function getDealStageGateErrors(
   }
 
   if (reachesStage('DEPOSIT_AND_CONTRACT')) {
+    if (isProductLike && !deal.projectId) {
+      errors.push({
+        field: 'projectId',
+        message: 'Project is required for PRODUCT/OUTSOURCE deals at DEPOSIT_AND_CONTRACT',
+      });
+    }
     if (deal.taxStatus === 'TAX' && !deal.companyId) {
       errors.push({
         field: 'companyId',
@@ -140,10 +153,11 @@ export function getDealStageGateErrors(
         message: 'Deadline is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
       });
     }
-    if (isExtension && !deal.existingProductId) {
+    if (isLinkedProductDeal && !deal.existingProductId) {
       errors.push({
         field: 'existingProductId',
-        message: 'Existing product must be selected for EXTENSION deals at DEPOSIT_AND_CONTRACT',
+        message:
+          'Existing product must be selected for EXTENSION/MAINTENANCE deals at DEPOSIT_AND_CONTRACT',
       });
     }
   }

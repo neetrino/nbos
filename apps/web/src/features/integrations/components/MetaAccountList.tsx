@@ -62,10 +62,7 @@ export function MetaAccountList({ accounts, marketingAccounts, onChanged }: Meta
       {accounts.map((account) => {
         const needsMarketingLink = !account.marketingAccountId;
         return (
-          <div
-            key={account.id}
-            className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-950/40"
-          >
+          <div key={account.id} className="border-border bg-muted rounded-lg border p-3">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-medium">{account.displayName}</p>
@@ -105,7 +102,7 @@ export function MetaAccountList({ accounts, marketingAccounts, onChanged }: Meta
               </label>
               <select
                 id={`marketing-link-${account.id}`}
-                className="w-full rounded-md border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-700 dark:bg-stone-950"
+                className="border-border bg-background w-full rounded-md border px-2 py-1.5 text-sm"
                 value={account.marketingAccountId ?? ''}
                 disabled={linkingId === account.id}
                 onChange={(event) => void handleLink(account.id, event.target.value)}

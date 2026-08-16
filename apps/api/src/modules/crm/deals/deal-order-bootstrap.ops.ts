@@ -9,6 +9,7 @@ import type {
   PrismaClient,
   TaxStatus,
 } from '@nbos/database';
+import { deriveSubscriptionContractTotal } from './deal-subscription-contract-total';
 
 interface DealOrderBootstrapInput {
   id: string;
@@ -16,6 +17,7 @@ interface DealOrderBootstrapInput {
   type: DealTypeEnum | null;
   amount: unknown;
   paymentType: PaymentTypeEnum | null;
+  subscriptionTermMonths?: number | null;
   taxStatus: TaxStatus | null;
   projectId: string | null;
   contactId: string | null;
@@ -75,6 +77,7 @@ export async function createOrderForDeal(
       type: orderType,
       paymentType: (input.deal.paymentType ?? 'CLASSIC') as PaymentTypeEnum,
       totalAmount: input.totalAmount,
+      subscriptionTermMonths: input.deal.subscriptionTermMonths ?? null,
       taxStatus: (input.deal.taxStatus ?? 'TAX') as TaxStatus,
       status: input.status,
       paymentMode: input.paymentMode,
@@ -99,6 +102,21 @@ export function assertDealHasCommercialAmount(deal: DealOrderBootstrapInput): nu
     throw new BadRequestException('Deal amount must be greater than zero for this action');
   }
   return amount;
+}
+
+/**
+ * Order.totalAmount for handoff: CLASSIC / open-ended subscription = period (deal) amount;
+ * SUBSCRIPTION with a term = period × term (contract total).
+ */
+export function resolveDealOrderTotalAmount(
+  deal: Pick<DealOrderBootstrapInput, 'amount' | 'paymentType' | 'subscriptionTermMonths'>,
+  fallbackPeriodAmount?: number,
+): number {
+  const periodAmount = Number(deal.amount ?? fallbackPeriodAmount ?? 0);
+  if (deal.paymentType === 'SUBSCRIPTION' && deal.subscriptionTermMonths != null) {
+    return deriveSubscriptionContractTotal(periodAmount, deal.subscriptionTermMonths);
+  }
+  return periodAmount;
 }
 
 async function generateProjectCode(prisma: InstanceType<typeof PrismaClient>): Promise<string> {

@@ -134,11 +134,6 @@ export function PayrollEmployeeBonusHistoryGrid({
                 <td className={STICKY_PROJECT_CELL}>
                   <div className="min-w-0">
                     <div className="truncate font-medium">{project.label}</div>
-                    {project.projectCode ? (
-                      <div className="text-muted-foreground truncate text-xs">
-                        {project.projectCode}
-                      </div>
-                    ) : null}
                   </div>
                 </td>
                 {data.months.map((col, monthIndex) => (

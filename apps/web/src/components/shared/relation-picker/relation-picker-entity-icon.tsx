@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Building2, FolderKanban, Handshake, Layers, User, UserCog } from 'lucide-react';
+import { Building2, FolderKanban, Handshake, Layers, Receipt, User, UserCog } from 'lucide-react';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { PersonSoftAvatar } from '@/components/shared/PersonAvatarName';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,7 @@ const ENTITY_ICON_COMPONENTS: Record<RelationEntityKind, typeof User> = {
   partner: Handshake,
   product: Layers,
   employee: UserCog,
+  order: Receipt,
 };
 
 function usesPersonAvatar(kind: RelationEntityKind): boolean {
@@ -50,12 +51,13 @@ export function relationPickerOptionLeading(
   kind: RelationEntityKind,
   label: string,
   variant: 'boxed' | 'inline' = 'boxed',
+  imageUrl?: string,
 ): ReactNode {
   if (usesPersonAvatar(kind)) {
     return variant === 'inline' ? (
-      <PersonSoftAvatar name={label} />
+      <PersonSoftAvatar name={label} imageUrl={imageUrl} />
     ) : (
-      <EmployeePersonAvatar label={label} />
+      <EmployeePersonAvatar label={label} imageUrl={imageUrl} />
     );
   }
   if (variant === 'inline') {

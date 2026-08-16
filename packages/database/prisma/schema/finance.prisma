@@ -42,6 +42,8 @@ model Order {
   type                 OrderTypeEnum
   paymentType          PaymentTypeEnum @map("payment_type")
   totalAmount          Decimal         @map("total_amount") @db.Decimal(12, 2)
+  /// Historical record of the agreed subscription term (covered months) from the Deal.
+  subscriptionTermMonths Int?          @map("subscription_term_months")
   currency             String          @default("AMD")
   taxStatus            TaxStatus       @default(TAX) @map("tax_status")
   status               OrderStatusEnum @default(PENDING_PAYMENT)
@@ -251,29 +253,53 @@ enum SubscriptionBillingFrequencyEnum {
   CUSTOM
 }
 
+/// Language for client WhatsApp subscription payment reminders (D-10 / D-2).
+enum SubscriptionReminderLanguage {
+  HY
+  RU
+  EN
+}
+
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
+  /// Commercial display name (source of truth for UI titles); distinct from system `code`.
+  name       String
+  /// Denormalized from Product.projectId; must match Product on create/update.
   projectId  String                 @map("project_id")
+  /// Required ownership: Project → Product → Subscription → Invoice → Payment.
+  productId  String                 @map("product_id")
   type       SubscriptionTypeEnum
-  baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
+  /// Amount for one billing period (yearly => full yearly sum). Source of truth for money.
+  amount     Decimal                @map("amount") @db.Decimal(12, 2)
   billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
+  /// Coverage length in months: MONTHLY=1, YEARLY=12, CUSTOM=2..60. Required on every create.
+  coverageMonthCount Int            @map("coverage_month_count")
+  /// Analytics-only: amount / coverageMonthCount. Postgres GENERATED ALWAYS STORED; never written by application code.
+  monthlyEquivalentAmount Decimal   @default(dbgenerated()) @map("monthly_equivalent_amount") @db.Decimal(12, 2)
   billingDay Int                    @map("billing_day")
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
   billingStartDate DateTime         @map("billing_start_date")
   notificationsEnabled Boolean      @default(true) @map("notifications_enabled")
+  /// Client WhatsApp payment reminder language (Product group D-10 / D-2).
+  reminderLanguage SubscriptionReminderLanguage @default(HY) @map("reminder_language")
   endDate    DateTime?              @map("end_date")
+  /// null = open-ended; when set, billing stops after this many covered months (skipped months do not consume the term).
+  termMonths Int?                   @map("term_months")
   status     SubscriptionStatusEnum @default(ACTIVE)
   partnerId  String?                @map("partner_id")
   createdAt  DateTime               @default(now()) @map("created_at")
   updatedAt  DateTime               @updatedAt @map("updated_at")
 
   project             Project              @relation(fields: [projectId], references: [id])
+  product             Product              @relation(fields: [productId], references: [id])
   partner             Partner?             @relation(fields: [partnerId], references: [id])
   invoices            Invoice[]
   partnerAccruals     PartnerAccrual[]
   partnerServiceTerms PartnerServiceTerm[]
 
+  @@index([productId])
+  @@index([projectId])
   @@map("subscriptions")
 }
 
@@ -291,11 +317,17 @@ enum ExpenseCategoryEnum {
   BONUS
   PARTNER_PAYOUT
   TOOLS
+  OFFICE
+  TAXES
+  BANK_FEES
+  TRAINING
+  INTERNAL_INFRA
   OTHER
 }
 
 enum ExpenseFrequency {
   ONE_TIME
+  WEEKLY
   MONTHLY
   QUARTERLY
   YEARLY

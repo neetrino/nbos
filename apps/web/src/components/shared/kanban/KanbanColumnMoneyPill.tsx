@@ -16,8 +16,7 @@ export function KanbanColumnMoneyPill({ total }: KanbanColumnMoneyPillProps) {
       <p
         className={cn(
           'max-w-full rounded-full border px-3 py-1 text-center text-sm leading-tight font-semibold tabular-nums',
-          'text-foreground/85 border-white/30 bg-white/25 shadow-sm backdrop-blur-md',
-          'dark:text-foreground/90 dark:border-white/10 dark:bg-white/8',
+          'text-foreground/85 border-border/50 bg-card/70 shadow-sm backdrop-blur-md',
         )}
         aria-label={`Column total: ${formatted}`}
       >

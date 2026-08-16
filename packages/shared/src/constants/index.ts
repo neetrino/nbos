@@ -138,6 +138,11 @@ export const EXPENSE_CATEGORIES = [
   'BONUS',
   'PARTNER_PAYOUT',
   'TOOLS',
+  'OFFICE',
+  'TAXES',
+  'BANK_FEES',
+  'TRAINING',
+  'INTERNAL_INFRA',
   'OTHER',
 ] as const;
 

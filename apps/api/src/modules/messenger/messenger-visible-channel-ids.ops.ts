@@ -1,15 +1,32 @@
 import type { PrismaClient } from '@nbos/database';
+import {
+  canAccessMessengerChannel,
+  loadMessengerLegacyAccess,
+  type MessengerLegacyAccessContext,
+} from './access/messenger-legacy-channel-access.op';
 
 /**
- * Channel ids the viewer may see in search and listings.
- * Internal MVP: all messenger channels (aligned with `getChannels`). When project/channel ACL lands,
- * narrow here so search never leaks non-member channel text.
+ * Channel ids the viewer may see in search and listings (Phase 4 ACL).
  */
 export async function listMessengerVisibleChannelIds(
   prisma: InstanceType<typeof PrismaClient>,
-  _viewerEmployeeId: string,
+  viewerEmployeeId: string,
+  access?: MessengerLegacyAccessContext | null,
 ): Promise<string[]> {
-  void _viewerEmployeeId;
-  const rows = await prisma.messengerChannel.findMany({ select: { id: true } });
-  return rows.map((r) => r.id);
+  const resolved =
+    access === undefined ? await loadMessengerLegacyAccess(prisma, viewerEmployeeId) : access;
+  if (!resolved || resolved.viewScope === 'NONE') return [];
+
+  const rows = await prisma.messengerChannel.findMany({
+    select: { id: true, projectId: true, type: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const visible: string[] = [];
+  for (const row of rows) {
+    if (await canAccessMessengerChannel(prisma, resolved, row)) {
+      visible.push(row.id);
+    }
+  }
+  return visible;
 }

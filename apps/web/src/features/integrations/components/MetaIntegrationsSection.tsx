@@ -129,7 +129,7 @@ export function MetaIntegrationsSection() {
         <WhatsAppGatewayIntegrationsCard />
       </div>
 
-      <section className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="border-border bg-card rounded-xl border p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-semibold">Connected Meta accounts</h3>
           <Button type="button" size="sm" variant="outline" onClick={() => void loadMeta()}>
@@ -248,7 +248,7 @@ function MetaProviderCard({
   loading,
 }: MetaProviderCardProps) {
   return (
-    <section className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <section className="border-border bg-card rounded-xl border p-4">
       <div className="flex items-start gap-3">
         <Icon size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -273,7 +273,7 @@ function PlaceholderProviderCard({
   icon?: typeof MessageCircle;
 }) {
   return (
-    <section className="rounded-xl border border-dashed border-stone-300 bg-stone-50/50 p-4 dark:border-stone-700 dark:bg-stone-950/20">
+    <section className="border-border bg-muted/50 rounded-xl border border-dashed p-4">
       <div className="flex items-start gap-3 opacity-70">
         <Icon size={20} className="mt-0.5 shrink-0" aria-hidden />
         <div>

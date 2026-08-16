@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { useMyWalletSheet } from '@/features/account/components/my-wallet-sheet-provider';
 import type { MeResponse } from '@/lib/permissions/types';
+import { ThemeSwitcher } from '@/components/theme/theme-switcher';
 import {
   ACCOUNT_MENU_SIDE_OFFSET,
   ACCOUNT_MENU_WIDTH_CLASS,
@@ -114,6 +115,7 @@ function AccountMenuPanel({
           <span>My wallet</span>
         </DropdownMenuItem>
       </div>
+      <ThemeSwitcher />
       <div className="border-border bg-muted/25 rounded-b-2xl border-t p-2">
         <DropdownMenuItem
           variant="destructive"
@@ -147,7 +149,14 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         className="border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Avatar className="size-8 shadow-sm" size="default">
-          {photo ? <AvatarImage src={photo} alt={`${displayName} profile photo`} /> : null}
+          {photo ? (
+            <AvatarImage
+              src={photo}
+              alt={`${displayName} profile photo`}
+              loading="eager"
+              decoding="async"
+            />
+          ) : null}
           <AvatarFallback className="text-foreground text-xs font-semibold uppercase">
             {initials}
           </AvatarFallback>

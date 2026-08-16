@@ -84,11 +84,13 @@ Deal.status = Deal Won
 
 ## 5. Матрица по `Deal Type`: что создаётся после handoff
 
-| Deal Type       | Order                                                    | Project                         | Product / Extension в Hub                                                                  | Примечание                                                                  |
-| --------------- | -------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **PRODUCT**     | Создаётся                                                | Создаётся (новый)               | **Product** внутри проекта → Delivery Board с **Starting**                                 | Полный product flow                                                         |
-| **EXTENSION**   | Создаётся                                                | **Не создаётся** (существующий) | **Extension** в существующем Project/Product                                               | Отдельная финансовая единица, тот же проект                                 |
-| **MAINTENANCE** | По канону Deal: первый invoice **не обязателен** для Won | Не новый product delivery flow  | Subscription / billing в **Finance**; delivery-специфика — `04-Project-Lifecycle.md` § 1.3 | `deadline` = planned maintenance start; старт подписки — Subscription Board |
+| Deal Type                                                | Order                                                    | Project                         | Product / Extension в Hub                                                                                   | Примечание                                                                     |
+| -------------------------------------------------------- | -------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **PRODUCT**                                              | Создаётся                                                | Создаётся (новый)               | **Product** внутри проекта → Delivery Board с **Starting**                                                  | Полный product flow                                                            |
+| **EXTENSION**                                            | Создаётся                                                | **Не создаётся** (существующий) | **Extension** в существующем Project/Product                                                                | Отдельная финансовая единица, тот же проект                                    |
+| **MAINTENANCE**                                          | По канону Deal: первый invoice **не обязателен** для Won | Не новый product delivery flow  | Subscription / billing в **Finance** на `existingProductId`; без Product — sub не создать                   | `deadline` = planned maintenance start; старт подписки — Subscription Board    |
+| **OUTSOURCE** (`outsourceGoesToDelivery = ON`)           | Создаётся                                                | Создаётся (новый)               | **Product** → active Delivery Board (**Starting…Transfer**) + WhatsApp group + Finance                      | Полный delivery lifecycle; Deal Type остаётся OUTSOURCE (не PRODUCT)           |
+| **OUTSOURCE** (`outsourceGoesToDelivery = OFF`, default) | Создаётся                                                | Создаётся (новый)               | **Product** без active Delivery Board (post-delivery style: не Starting…Transfer); Hub + Finance + WhatsApp | Product всё равно создаётся (нужен `productId`); toggle меняется только до Won |
 
 ---
 
@@ -111,8 +113,9 @@ Deal.status = Deal Won
       → Order
       → + Project + Product        (PRODUCT)
       → + Extension в существующем Project (EXTENSION)
-      → + Subscription / Finance context     (MAINTENANCE)
-  → [Projects Hub: Starting → … → Done/Cancelled]
+      → + Subscription / Finance на existing Product (MAINTENANCE; product required)
+      → + Project + Product (+ Delivery ON/OFF) (OUTSOURCE; `outsourceGoesToDelivery`)
+  → [Projects Hub: Starting → … → Done/Cancelled] (когда active delivery)
   → [Finance: остатки оплат, подписки, бонусы — отдельные каноны]
 ```
 

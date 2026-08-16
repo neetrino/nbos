@@ -70,6 +70,9 @@ export function isRetryableGatewayError(code: string | null | undefined): boolea
   return (
     code === 'WAHA_UNAVAILABLE' ||
     code === 'RATE_LIMITED' ||
+    code === 'HTTP_502' ||
+    code === 'HTTP_503' ||
+    code === 'HTTP_504' ||
     code === WHATSAPP_ERROR.GATEWAY_UNAVAILABLE
   );
 }

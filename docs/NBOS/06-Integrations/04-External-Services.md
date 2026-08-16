@@ -239,6 +239,40 @@ NBOS MVP for Meta inbound DMs:
 
 Instagram OAuth connection uses dedicated Instagram app credentials. Instagram webhook subscription and platform-specific webhook HMAC verification for the dedicated Instagram Login flow require a separate implementation and verification phase (not part of the credential-routing fix).
 
+---
+
+## ATS.am (Active Call webhook)
+
+### MVP (implemented)
+
+See `09-ATS-AM-Integration.md`.
+
+| Capability      | MVP behavior                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                                             |
+| Auth            | Query `key` = env `ATS_API_KEY`                                                                     |
+| Lead creation   | Inbound (`calldirect=0`) → **Lead only** (`source=MARKETING`, `sourceDetail=ATS`)                   |
+| `redirect_call` | Inbound `state=start` + known Contact/Lead assignee with `Employee.sipId` → include in webhook JSON |
+| Contact / Deal  | **Not** created on call                                                                             |
+| Idempotency     | `AtsCallEvent.uid` unique; finish/end update event only (no redirect)                               |
+
+Env: `ATS_API_KEY` (optional at boot; webhook `503` if unset). SIP IDs live on `Employee.sipId` (HR profile).
+
+### Назначение (full product vision)
+
+Телефония ATS.am: входящие звонки в CRM, позже — history/records, click-to-call, pop-up продавцу, call tracking по DID.
+
+### Фаза реализации
+
+| Этап        | Описание                                                                   |
+| ----------- | -------------------------------------------------------------------------- |
+| **MVP**     | Active Call webhook → Lead (без Contact) + optional `redirect_call` by SIP |
+| **Фаза 2+** | History/records, callback API, MarketingAccount by DID                     |
+
+---
+
+## Instagram / Facebook (Meta Business) — product vision
+
 ### Назначение (full product vision)
 
 Приём входящих сообщений и лидов из Instagram и Facebook. Клиенты часто обращаются в Neetrino через эти каналы, и входящие сообщения должны попадать в CRM.

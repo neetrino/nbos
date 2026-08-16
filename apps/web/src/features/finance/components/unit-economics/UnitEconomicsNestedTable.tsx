@@ -323,7 +323,7 @@ export function UnitEconomicsNestedTable({
                     highlighted={projectOpen}
                     expandedProject={projectOpen}
                     title={project.projectName}
-                    subtitle={`${project.projectCode} · ${project.unitCount} orders`}
+                    subtitle={`${project.unitCount} orders`}
                     emphasized
                   />
                   <UnitEconomicsOverviewMoneyCells row={project} staticOnly />

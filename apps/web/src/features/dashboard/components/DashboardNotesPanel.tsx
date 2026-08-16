@@ -37,13 +37,13 @@ const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 /** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
 const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
 
-/** Corner controls on cream cards (composer + saved notes). */
+/** Corner controls on sticky-note cards (composer + saved notes). */
 const NOTE_CORNER_PILL_CLASS =
-  'h-7 rounded-full border border-amber-200 bg-amber-50/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-100/90';
+  'h-7 rounded-full border border-amber-300 bg-amber-200/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-300/90';
 
 const NOTE_CORNER_SAVE_PRIMARY_CLASS = cn(
   NOTE_CORNER_PILL_CLASS,
-  'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30',
+  'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-300 disabled:bg-amber-200/90 disabled:text-amber-900/30',
 );
 
 /** Shown next to the composer Save control when the draft is non-empty. */
@@ -98,7 +98,7 @@ export function DashboardNotesPanel({
         {saving ? (
           <Loader2 className="absolute top-3 right-3 z-10 h-4 w-4 animate-spin text-amber-900/45" />
         ) : null}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/90 shadow-inner">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200 shadow-inner transition-colors duration-200">
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -303,9 +303,9 @@ function NoteCard({
       >
         <div
           className={cn(
-            'relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+            'relative rounded-xl border border-amber-300 bg-amber-200 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md hover:bg-amber-300',
             !isEditing && 'cursor-text',
-            isEditing && 'group-hover:translate-y-0',
+            isEditing && 'bg-amber-300 group-hover:translate-y-0',
           )}
           onClick={() => {
             if (!isEditing) onStartEdit(note);
@@ -423,7 +423,7 @@ function NoteActions({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 rounded-full border border-amber-200 bg-amber-50/90 text-amber-900/45 shadow-sm backdrop-blur hover:text-red-700"
+        className="h-7 w-7 rounded-full border border-amber-300 bg-amber-200/90 text-amber-900/45 shadow-sm backdrop-blur hover:text-red-700"
         onClick={(event) => {
           event.stopPropagation();
           void onDeleteNote(note.id);
@@ -440,7 +440,7 @@ function NoteDragPreview({ note }: { note: DashboardNote }) {
   const tilt = stableTiltDegreesFromNoteId(note.id);
   return (
     <div
-      className="max-w-sm rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 opacity-95 shadow-2xl ring-2 ring-amber-300/45"
+      className="max-w-sm rounded-xl border border-amber-300 bg-amber-200 px-3 py-3 opacity-95 shadow-2xl ring-2 ring-amber-300/45"
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       <div className="mb-2 flex items-center gap-1.5">

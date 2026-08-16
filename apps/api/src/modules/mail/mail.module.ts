@@ -19,11 +19,11 @@ import { MailService } from './mail.service';
 import { MailSyncService } from './mail-sync.service';
 import { MailThreadAssignmentService } from './mail-thread-assignment.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
-import { MailWorker } from './mail.worker';
 import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
 import { MailProviderConfig } from './providers/mail-provider.config';
 import { MailProviderSecretStore } from './providers/mail-provider-secret.store';
 
+/** Queue producers + domain services. BullMQ Worker lives in QueueWorkersModule. */
 @Module({
   imports: [AuditModule, NotificationModule],
   controllers: [MailController, MailProviderController, MailCollabController],
@@ -42,12 +42,11 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailSyncService,
     MailSendService,
     MailQueueService,
-    MailWorker,
     MailImapIdleService,
     MailProviderConfig,
     MailProviderSecretStore,
     MailProviderAdapterFactory,
   ],
-  exports: [MailService],
+  exports: [MailService, MailSyncService, MailSendService, MailQueueService],
 })
 export class MailModule {}

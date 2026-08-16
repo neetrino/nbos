@@ -1,6 +1,3 @@
-import type { SubscriptionBillingFrequencyEnum } from '@nbos/database';
-
-const YEARLY_COVERAGE_MONTHS = 12;
 const MONTHLY_COVERAGE_MONTHS = 1;
 
 export interface SubscriptionChargeAmount {
@@ -8,17 +5,19 @@ export interface SubscriptionChargeAmount {
   coverageMonthCount: number;
 }
 
-/** Invoice amount and coverage from subscription billing fields (NBOS § Subscriptions). */
+/**
+ * Invoice amount and coverage from subscription billing fields (NBOS § Subscriptions).
+ * Invoice amount equals period `amount` with no multiplication; coverage comes from
+ * `coverageMonthCount`. Invalid coverage falls back to one month (cron-safe).
+ */
 export function subscriptionChargeAmount(
-  baseMonthlyAmount: number,
-  billingFrequency: SubscriptionBillingFrequencyEnum,
+  amount: number,
+  coverageMonthCount: number,
 ): SubscriptionChargeAmount {
-  const base = Number.isFinite(baseMonthlyAmount) ? baseMonthlyAmount : 0;
-  if (billingFrequency === 'YEARLY') {
-    return {
-      amount: base * YEARLY_COVERAGE_MONTHS,
-      coverageMonthCount: YEARLY_COVERAGE_MONTHS,
-    };
-  }
-  return { amount: base, coverageMonthCount: MONTHLY_COVERAGE_MONTHS };
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  const months =
+    Number.isInteger(coverageMonthCount) && coverageMonthCount >= 1
+      ? coverageMonthCount
+      : MONTHLY_COVERAGE_MONTHS;
+  return { amount: safeAmount, coverageMonthCount: months };
 }

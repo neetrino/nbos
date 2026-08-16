@@ -236,7 +236,7 @@ export default function IntegrationsPage() {
 
       <MetaIntegrationsSection />
 
-      <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <div className="border-border bg-card rounded-xl border p-4">
         <h2 className="text-base font-semibold">Provider registry</h2>
         <p className="text-muted-foreground mt-1 text-sm">
           Status and setup taxonomy is backed by system lists:
@@ -253,10 +253,7 @@ export default function IntegrationsPage() {
             const status = activeStatusByProvider.get(provider.code) ?? 'NOT_CONFIGURED';
             const setup = groupedSetup.get(provider.code) ?? [];
             return (
-              <section
-                key={provider.id}
-                className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
-              >
+              <section key={provider.id} className="border-border bg-card rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold">{provider.label}</h3>
@@ -289,10 +286,7 @@ export default function IntegrationsPage() {
                   ) : (
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {setup.map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-full bg-stone-100 px-2 py-1 text-xs dark:bg-stone-800"
-                        >
+                        <span key={item} className="bg-muted rounded-full px-2 py-1 text-xs">
                           {item}
                         </span>
                       ))}

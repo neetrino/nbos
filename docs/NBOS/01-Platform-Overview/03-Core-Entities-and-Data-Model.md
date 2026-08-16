@@ -148,7 +148,8 @@ Contact (человек)
 
 - Project → many Products
 - Project → many Extensions
-- Project → many Subscription Contracts
+- Project → many Subscription Contracts (via Products; Subscription also stores denormalized project_id)
+- Product → many Subscription Contracts
 - Project → many Credentials
 - Project → many Assets
 - Project → many Chats
@@ -248,27 +249,28 @@ Contact (человек)
 
 Коммерческая единица: что продали, за сколько, как оплачивается. Классификация по смыслу **Deal Type** сделки (см. § 1.1): `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE` — переносится из Deal; подписка учитывается в **payment_type** и сущности Subscription, а не как отдельный «тип заказа» вместо четырёх значений.
 
-| Поле                   | Тип                        | Описание                                                                               |
-| ---------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
-| id                     | UUID                       | Уникальный идентификатор                                                               |
-| project_id             | FK → Project               | Проект                                                                                 |
-| deal_id                | FK → Deal                  | Сделка, из которой создан                                                              |
-| deal_type              | FK → System List Deal Type | Как у Deal: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE                              |
-| payment_type           | Enum                       | Classic 50/50, Classic 30/30/40, Subscription Monthly                                  |
-| total_amount           | Decimal                    | Общая сумма заказа                                                                     |
-| currency               | Enum                       | AMD (default), USD, EUR                                                                |
-| tax_status             | Enum                       | Tax, Tax-Free                                                                          |
-| status                 | Enum                       | Active, Partially Paid, Fully Paid, Closed, Cancelled                                  |
-| partner_id             | FK → Partner               | Партнёр-реферал (если есть)                                                            |
-| partner_percent        | Decimal                    | % партнёра (обычно 30%)                                                                |
-| seller_id              | FK → Employee              | Продавец                                                                               |
-| seller_bonus_percent   | Decimal                    | % бонуса продавца (5–10%)                                                              |
-| seller_bonus_source    | Enum                       | Cold Call, Marketing Lead, Existing Client, Partner Referral                           |
-| delivery_bonus_percent | Decimal                    | % бонуса delivery (зависит от product/extension bonus policy, complexity и role rules) |
-| deadline               | Date                       | Дедлайн                                                                                |
-| notes                  | Text                       | Заметки                                                                                |
-| created_at             | DateTime                   | Дата создания                                                                          |
-| closed_at              | DateTime                   | Дата закрытия                                                                          |
+| Поле                     | Тип                        | Описание                                                                                                                                                                                                                                                                                                      |
+| ------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                       | UUID                       | Уникальный идентификатор                                                                                                                                                                                                                                                                                      |
+| project_id               | FK → Project               | Проект                                                                                                                                                                                                                                                                                                        |
+| deal_id                  | FK → Deal                  | Сделка, из которой создан                                                                                                                                                                                                                                                                                     |
+| deal_type                | FK → System List Deal Type | Как у Deal: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE                                                                                                                                                                                                                                                     |
+| payment_type             | Enum                       | Classic 50/50, Classic 30/30/40, Subscription Monthly                                                                                                                                                                                                                                                         |
+| total_amount             | Decimal                    | Общая сумма заказа. Для срочной `SUBSCRIPTION`: `Deal.amount × subscription_term_months` (не вводится вручную)                                                                                                                                                                                                |
+| subscription_term_months | Integer?                   | Срок в покрытых месяцах (копия с Deal); `null` = бессрочный заказ                                                                                                                                                                                                                                             |
+| currency                 | Enum                       | AMD (default), USD, EUR                                                                                                                                                                                                                                                                                       |
+| tax_status               | Enum                       | Tax, Tax-Free                                                                                                                                                                                                                                                                                                 |
+| status                   | Enum                       | Pending Payment, Active, Partially Paid, Fully Paid, Closed. Для срочной подписки `FULLY_PAID` только когда сумма платежей по **order-linked** invoice ≥ `total_amount`; иначе `PARTIALLY_PAID` / `PENDING_PAYMENT` / `ACTIVE`. Classic и бессрочная подписка: все существующие invoice `PAID` → `FULLY_PAID` |
+| partner_id               | FK → Partner               | Партнёр-реферал (если есть)                                                                                                                                                                                                                                                                                   |
+| partner_percent          | Decimal                    | % партнёра (обычно 30%)                                                                                                                                                                                                                                                                                       |
+| seller_id                | FK → Employee              | Продавец                                                                                                                                                                                                                                                                                                      |
+| seller_bonus_percent     | Decimal                    | % бонуса продавца (5–10%)                                                                                                                                                                                                                                                                                     |
+| seller_bonus_source      | Enum                       | Cold Call, Marketing Lead, Existing Client, Partner Referral                                                                                                                                                                                                                                                  |
+| delivery_bonus_percent   | Decimal                    | % бонуса delivery (зависит от product/extension bonus policy, complexity и role rules)                                                                                                                                                                                                                        |
+| deadline                 | Date                       | Дедлайн                                                                                                                                                                                                                                                                                                       |
+| notes                    | Text                       | Заметки                                                                                                                                                                                                                                                                                                       |
+| created_at               | DateTime                   | Дата создания                                                                                                                                                                                                                                                                                                 |
+| closed_at                | DateTime                   | Дата закрытия                                                                                                                                                                                                                                                                                                 |
 
 **Связи:**
 
@@ -285,26 +287,27 @@ Contact (человек)
 
 Карточка денег, которые клиент должен нам заплатить. В интерфейсе пока может называться `Invoice`, но по бизнес-смыслу это control card ожидаемой оплаты. Один Order может иметь несколько Invoice Card.
 
-| Поле                          | Тип               | Описание                                                       |
-| ----------------------------- | ----------------- | -------------------------------------------------------------- |
-| id                            | UUID              | Уникальный идентификатор                                       |
-| order_id                      | FK → Order        | Заказ                                                          |
-| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                           |
-| project_id                    | FK → Project      | Проект                                                         |
-| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                        |
-| amount                        | Decimal           | Сумма счёта                                                    |
-| currency                      | Enum              | AMD, USD, EUR                                                  |
-| tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)   |
-| type                          | Enum              | Development, Extension, Subscription, Domain, Service, Other   |
-| money_status                  | Enum              | New, Awaiting Payment, Overdue, On Hold, Paid, Cancelled       |
-| notifications_enabled         | Boolean           | Разрешены ли клиентские напоминания                            |
-| due_date                      | Date              | Дата, до которой нужно оплатить                                |
-| paid_date                     | Date              | Фактическая дата оплаты                                        |
-| official_request_sent         | Boolean           | Отправлен ли запрос на официальный счёт в бухгалтерскую группу |
-| official_request_sent_at      | DateTime?         | Когда отправили запрос                                         |
-| official_request_cancelled_at | DateTime?         | Когда отменили предыдущий запрос                               |
-| notes                         | Text              | Заметки                                                        |
-| created_at                    | DateTime          | Дата создания                                                  |
+| Поле                          | Тип               | Описание                                                                                 |
+| ----------------------------- | ----------------- | ---------------------------------------------------------------------------------------- |
+| id                            | UUID              | Уникальный идентификатор                                                                 |
+| code                          | String            | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
+| order_id                      | FK → Order        | Заказ                                                                                    |
+| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                                                     |
+| project_id                    | FK → Project      | Проект                                                                                   |
+| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                                                  |
+| amount                        | Decimal           | Сумма счёта                                                                              |
+| currency                      | Enum              | AMD, USD, EUR                                                                            |
+| tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)                             |
+| type                          | Enum              | Development, Extension, Subscription, Domain, Service, Other                             |
+| money_status                  | Enum              | New, Awaiting Payment, Overdue, On Hold, Paid, Cancelled                                 |
+| notifications_enabled         | Boolean           | Разрешены ли клиентские напоминания                                                      |
+| due_date                      | Date              | Дата, до которой нужно оплатить                                                          |
+| paid_date                     | Date              | Фактическая дата оплаты                                                                  |
+| official_request_sent         | Boolean           | Отправлен ли запрос на официальный счёт в бухгалтерскую группу                           |
+| official_request_sent_at      | DateTime?         | Когда отправили запрос                                                                   |
+| official_request_cancelled_at | DateTime?         | Когда отменили предыдущий запрос                                                         |
+| notes                         | Text              | Заметки                                                                                  |
+| created_at                    | DateTime          | Дата создания                                                                            |
 
 **Принципы Invoice Card:**
 
@@ -312,6 +315,7 @@ Contact (человек)
 2. `Tax = Tax` — может потребоваться запрос в бухгалтерскую WhatsApp-группу.
 3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
 4. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
+5. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
 
 **Связи:**
 
@@ -347,28 +351,35 @@ Contact (человек)
 
 Повторяющееся коммерческое соглашение: клиент платит фиксированную сумму регулярно.
 
-| Поле                  | Тип          | Описание                                                                       |
-| --------------------- | ------------ | ------------------------------------------------------------------------------ |
-| id                    | UUID         | Уникальный идентификатор                                                       |
-| project_id            | FK → Project | Проект                                                                         |
-| type                  | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
-| base_monthly_amount   | Decimal      | Базовая стоимость одного месяца                                                |
-| currency              | Enum         | AMD                                                                            |
-| tax_status            | Enum         | Tax, Free                                                                      |
-| notifications_enabled | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                     |
-| billing_frequency     | Enum         | Monthly, Yearly, Custom                                                        |
-| billing_day           | Integer      | День месяца для биллинга (1–28), если применяется месячная логика              |
-| billing_start_date    | Date         | Дата старта биллинга                                                           |
-| end_date              | Date         | Дата окончания (null = бессрочно)                                              |
-| status                | Enum         | Pending, Active, On Hold, Cancelled, Completed                                 |
-| partner_id            | FK → Partner | Партнёр (если partner service)                                                 |
-| partner_percent       | Decimal      | % партнёра                                                                     |
-| notes                 | Text         | Заметки                                                                        |
+| Поле                      | Тип          | Описание                                                                                                  |
+| ------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| id                        | UUID         | Уникальный идентификатор                                                                                  |
+| code                      | String       | Системный код `SUB-[SEQ]`; идентификатор, не display title в UI                                           |
+| name                      | String       | **Обязательное** коммерческое название договора/услуги (аналог `Deal.name`); редактируется                |
+| product_id                | FK → Product | **Обязательный** продукт-owner                                                                            |
+| project_id                | FK → Project | Denormalized = Product.projectId (валидируется при create/update)                                         |
+| type                      | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service                            |
+| amount                    | Decimal      | Сумма за один период биллинга (единственное вводимое денежное поле)                                       |
+| coverage_month_count      | Integer      | Длина периода в месяцах (1 / 12 / 2–60 для Custom)                                                        |
+| monthly_equivalent_amount | Decimal      | Generated: `amount / coverage_month_count`; только MRR и аналитика; не умножать обратно в сумму контракта |
+| currency                  | Enum         | AMD                                                                                                       |
+| tax_status                | Enum         | Tax, Free                                                                                                 |
+| notifications_enabled     | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                                                |
+| billing_frequency         | Enum         | Monthly, Yearly, Custom. **Required on Finance create** — no silent MONTHLY default                       |
+| billing_day               | Integer      | День месяца для биллинга (1–28), если применяется месячная логика                                         |
+| billing_start_date        | Date         | Дата старта биллинга                                                                                      |
+| end_date                  | Date         | Дата окончания (календарная; не счётчик срока)                                                            |
+| term_months               | Integer?     | Срок в покрытых месяцах (1–120); `null` = бессрочно. Пауза месяц не расходует                             |
+| status                    | Enum         | Pending, Active, On Hold, Cancelled, Completed. `Completed` достижим из Active и On Hold                  |
+| partner_id                | FK → Partner | Партнёр (если partner service)                                                                            |
+| partner_percent           | Decimal      | % партнёра                                                                                                |
+| notes                     | Text         | Заметки                                                                                                   |
 
 **Связи:**
 
 - Subscription → many Invoice Cards (каждая может покрывать один или несколько месяцев)
-- Subscription → one Project
+- Subscription → one Product (required)
+- Subscription → one Project (denormalized from Product)
 - Subscription → one Partner (опционально)
 
 ---
@@ -729,28 +740,29 @@ Contact (человек)
 
 Активная продажа. Создаётся из Lead (SQL), вручную в CRM или из контекста проекта. Вид сделки задаётся справочником **Deal Type** (четыре значения), детализация услуги — справочником **Product Type** при необходимости (см. § 1.1).
 
-| Поле                | Тип                           | Описание                                                                                                                                                          |
-| ------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id                  | UUID                          | Уникальный идентификатор                                                                                                                                          |
-| lead_id             | FK → Lead                     | Источник (для новых клиентов)                                                                                                                                     |
-| project_id          | FK → Project                  | Проект (для extension deals)                                                                                                                                      |
-| contact_id          | FK → Contact                  | Контакт                                                                                                                                                           |
-| deal_type           | FK → System List Deal Type    | `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE`                                                                                                                |
-| product_type        | FK → System List Product Type | Вид услуги (Website, Mobile App, …); в первую очередь при `deal_type = PRODUCT`                                                                                   |
-| status              | Enum                          | Start a Conversation … Deposit & Contract (последняя рабочая), затем **Failed** или **Deal Won** — без Delivery Board / Get Final Pay / Maintenance billing в CRM |
-| amount              | Decimal                       | Ожидаемая сумма                                                                                                                                                   |
-| payment_type        | Enum                          | Classic 50/50, Classic 30/30/40, Subscription                                                                                                                     |
-| seller_id           | FK → Employee                 | Ответственный продажник                                                                                                                                           |
-| seller_assistant_id | FK → Employee (nullable)      | Ассистент продаж (опционально; бонусы/отображение в CRM)                                                                                                          |
-| deadline            | Date                          | Для `PRODUCT/EXTENSION/OUTSOURCE` — delivery deadline; для `MAINTENANCE` — planned maintenance start date                                                         |
-| source              | Enum                          | Верхний источник: Marketing, Sales, Partner, Client                                                                                                               |
-| source_detail       | Enum / String                 | Канал внутри источника                                                                                                                                            |
-| source_partner_id   | FK → Partner                  | Партнёр-источник, если применимо                                                                                                                                  |
-| source_contact_id   | FK → Contact                  | Клиент/реферал-источник, если применимо                                                                                                                           |
-| offer_url           | String                        | Legacy single-link field; canonical business model uses offer materials (file / link / messenger proof)                                                           |
-| notes               | Text                          | Заметки                                                                                                                                                           |
-| created_at          | DateTime                      | Дата создания                                                                                                                                                     |
-| closed_at           | DateTime                      | Дата закрытия                                                                                                                                                     |
+| Поле                     | Тип                           | Описание                                                                                                                                                          |
+| ------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                       | UUID                          | Уникальный идентификатор                                                                                                                                          |
+| lead_id                  | FK → Lead                     | Источник (для новых клиентов)                                                                                                                                     |
+| project_id               | FK → Project                  | Проект (для extension deals)                                                                                                                                      |
+| contact_id               | FK → Contact                  | Контакт                                                                                                                                                           |
+| deal_type                | FK → System List Deal Type    | `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE`                                                                                                                |
+| product_type             | FK → System List Product Type | Вид услуги (Website, Mobile App, …); в первую очередь при `deal_type = PRODUCT`                                                                                   |
+| status                   | Enum                          | Start a Conversation … Deposit & Contract (последняя рабочая), затем **Failed** или **Deal Won** — без Delivery Board / Get Final Pay / Maintenance billing в CRM |
+| amount                   | Decimal                       | `CLASSIC` — полная стоимость работ. `SUBSCRIPTION` — цена одного периода (UI: «Amount / month»); итог контракта не хранится на Deal                               |
+| payment_type             | Enum                          | Classic 50/50, Classic 30/30/40, Subscription                                                                                                                     |
+| subscription_term_months | Integer?                      | Срок в покрытых месяцах (1–120); `null` = бессрочно. Обязателен на SEND_OFFER для PRODUCT/EXTENSION + SUBSCRIPTION                                                |
+| seller_id                | FK → Employee                 | Ответственный продажник                                                                                                                                           |
+| seller_assistant_id      | FK → Employee (nullable)      | Ассистент продаж (опционально; бонусы/отображение в CRM)                                                                                                          |
+| deadline                 | Date                          | Для `PRODUCT/EXTENSION/OUTSOURCE` — delivery deadline; для `MAINTENANCE` — planned maintenance start date                                                         |
+| source                   | Enum                          | Верхний источник: Marketing, Sales, Partner, Client                                                                                                               |
+| source_detail            | Enum / String                 | Канал внутри источника                                                                                                                                            |
+| source_partner_id        | FK → Partner                  | Партнёр-источник, если применимо                                                                                                                                  |
+| source_contact_id        | FK → Contact                  | Клиент/реферал-источник, если применимо                                                                                                                           |
+| offer_url                | String                        | Legacy single-link field; canonical business model uses offer materials (file / link / messenger proof)                                                           |
+| notes                    | Text                          | Заметки                                                                                                                                                           |
+| created_at               | DateTime                      | Дата создания                                                                                                                                                     |
+| closed_at                | DateTime                      | Дата закрытия                                                                                                                                                     |
 
 **Связи:**
 

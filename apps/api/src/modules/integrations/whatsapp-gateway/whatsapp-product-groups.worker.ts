@@ -8,7 +8,11 @@ import {
   buildProductWhatsAppParticipantDedupeKey,
   normalizePhoneToWhatsAppJid,
 } from '@nbos/shared';
-import { createRedisConnection, getRedisUrl } from '../../../common/redis/redis-connection';
+import { resolveBullmqConcurrency } from '../../../runtime/bullmq-concurrency';
+import { logBullmqJob } from '../../../runtime/bullmq-job-log';
+import { BullmqWorkerRegistry } from '../../../runtime/bullmq-worker-registry';
+import { shouldRegisterBullmqWorkers } from '../../../runtime/process-role';
+import { createQueueWorkerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
@@ -27,7 +31,11 @@ import {
   WHATSAPP_PRODUCT_GROUP_JOB_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
 } from './whatsapp-gateway.constants';
-import { isUnknownCreateOutcome, WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
+import {
+  isRetryableGatewayError,
+  isUnknownCreateOutcome,
+  WhatsAppGatewayHttpError,
+} from './whatsapp-gateway.errors';
 import { ProductWhatsAppParticipantResolver } from './product-whatsapp-participant.resolver';
 import {
   buildWhatsAppClientInviteMessage,
@@ -40,7 +48,7 @@ import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-que
 export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WhatsAppProductGroupsWorker.name);
   private worker: Worker<WhatsAppProductGroupJobPayload> | null = null;
-  private connection: ReturnType<typeof createRedisConnection> | null = null;
+  private connection: ReturnType<typeof createQueueWorkerConnection> | null = null;
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
@@ -49,28 +57,61 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     private readonly participants: ProductWhatsAppParticipantResolver,
     private readonly audit: AuditService,
     private readonly queue: WhatsAppProductGroupsQueueService,
+    private readonly registry: BullmqWorkerRegistry,
   ) {}
 
   onModuleInit() {
-    const redisUrl = getRedisUrl();
-    if (!redisUrl) {
-      this.logger.warn('REDIS_URL unset — WhatsApp product group worker disabled');
+    if (!shouldRegisterBullmqWorkers()) {
       return;
     }
-    this.connection = createRedisConnection(redisUrl);
+    const redisUrl = getRedisQueueUrl();
+    if (!redisUrl) {
+      this.logger.warn('REDIS_QUEUE_URL/REDIS_URL unset — WhatsApp product group worker disabled');
+      return;
+    }
+    const concurrency = resolveBullmqConcurrency('whatsapp');
+    this.connection = createQueueWorkerConnection(redisUrl);
     this.worker = new Worker<WhatsAppProductGroupJobPayload>(
       WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
-      async (job) => this.process(job),
-      { connection: this.connection },
+      async (job) => {
+        const started = Date.now();
+        try {
+          await this.process(job);
+          logBullmqJob(this.logger, {
+            queue: WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'completed',
+          });
+        } catch (error) {
+          logBullmqJob(this.logger, {
+            queue: WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+            jobName: job.name,
+            jobId: job.id,
+            attempt: job.attemptsMade + 1,
+            durationMs: Date.now() - started,
+            status: 'failed',
+            errorCode: error instanceof Error ? error.name : 'Error',
+          });
+          throw error;
+        }
+      },
+      { connection: this.connection, concurrency },
     );
+    this.registry.register(WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {
       this.logger.error(`WhatsApp job failed operationId=${job?.data.operationId}`, error);
+      void this.onJobExhausted(job, error);
     });
   }
 
   async onModuleDestroy() {
     await this.worker?.close();
+    this.worker = null;
     await this.connection?.quit();
+    this.connection = null;
   }
 
   async process(job: Job<WhatsAppProductGroupJobPayload>): Promise<void> {
@@ -122,16 +163,16 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         await this.markOutcomeUnknown(operation.id, error.code, error.message);
         return;
       }
-      if (
-        error instanceof WhatsAppGatewayHttpError &&
-        (error.code === 'WHATSAPP_NOT_CONNECTED' ||
-          error.code === 'UNAUTHORIZED' ||
-          error.code === 'INVALID_TOKEN' ||
-          error.status === 400)
-      ) {
+      if (error instanceof WhatsAppGatewayHttpError && isRetryableGatewayError(error.code)) {
+        await this.releaseProcessingForRetry(operation.id, error);
+        throw error;
+      }
+      if (error instanceof WhatsAppGatewayHttpError) {
         await this.markFailed(operation.id, error.code, error.message);
         return;
       }
+      // Unknown/transient (network after client wrap should already be WhatsAppGatewayHttpError).
+      await this.releaseProcessingForRetry(operation.id, error);
       throw error;
     }
   }
@@ -763,7 +804,10 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     });
     if (operation.type === 'CREATE_PRODUCT_GROUP') {
       await this.prisma.productWhatsAppGroupBinding.updateMany({
-        where: { productId: operation.productId, status: { in: ['PENDING', 'CREATING'] } },
+        where: {
+          productId: operation.productId,
+          status: { in: ['PENDING', 'CREATING'] },
+        },
         data: {
           status: 'FAILED',
           lastErrorCode: code,
@@ -790,5 +834,52 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         errorMessage: message,
       },
     });
+  }
+
+  /**
+   * After a transient Gateway/WAHA failure the row must leave PROCESSING,
+   * otherwise BullMQ retries cannot re-acquire the lock (stuck forever).
+   */
+  private async releaseProcessingForRetry(operationId: string, error: unknown): Promise<void> {
+    const code =
+      error instanceof WhatsAppGatewayHttpError ? error.code : WHATSAPP_ERROR.GATEWAY_UNAVAILABLE;
+    const message = error instanceof Error ? error.message : 'Transient WhatsApp failure';
+    await this.prisma.whatsAppGroupOperation.updateMany({
+      where: { id: operationId, status: 'PROCESSING' },
+      data: {
+        status: 'QUEUED',
+        errorCode: code,
+        errorMessage: message,
+      },
+    });
+  }
+
+  private async onJobExhausted(
+    job: Job<WhatsAppProductGroupJobPayload> | undefined,
+    error: Error,
+  ): Promise<void> {
+    if (!job?.data.operationId) return;
+    const maxAttempts = job.opts.attempts ?? 1;
+    if (job.attemptsMade < maxAttempts) return;
+
+    const code =
+      error instanceof WhatsAppGatewayHttpError
+        ? error.code
+        : WHATSAPP_ERROR.PRODUCT_GROUP_CREATE_FAILED;
+    try {
+      const operation = await this.prisma.whatsAppGroupOperation.findUnique({
+        where: { id: job.data.operationId },
+      });
+      if (!operation) return;
+      if (['SUCCEEDED', 'SKIPPED', 'OUTCOME_UNKNOWN', 'FAILED'].includes(operation.status)) {
+        return;
+      }
+      await this.markFailed(operation.id, code, error.message);
+    } catch (markError) {
+      this.logger.error(
+        `Failed to mark exhausted WhatsApp operation ${job.data.operationId}`,
+        markError,
+      );
+    }
   }
 }

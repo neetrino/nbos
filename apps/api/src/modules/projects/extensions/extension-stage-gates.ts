@@ -21,6 +21,7 @@ interface ExtensionForReadiness {
   order?: {
     id: string;
     status?: string | null;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
   } | null;
   tasks?: Array<{ status: string }>;

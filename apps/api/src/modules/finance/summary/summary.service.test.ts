@@ -52,7 +52,7 @@ describe('FinanceSummaryService', () => {
         expensePayments: [{ amount: 15000 }],
       },
     ]);
-    prisma.subscription.aggregate.mockResolvedValue({ _sum: { baseMonthlyAmount: 25000 } });
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { monthlyEquivalentAmount: 25000 } });
     prisma.subscription.count.mockResolvedValue(4);
     prisma.payment.findMany.mockResolvedValue([
       {
@@ -162,7 +162,7 @@ describe('FinanceSummaryService', () => {
     prisma.invoice.groupBy.mockResolvedValue([]);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
     prisma.expense.findMany.mockResolvedValue([]);
-    prisma.subscription.aggregate.mockResolvedValue({ _sum: { baseMonthlyAmount: 0 } });
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { monthlyEquivalentAmount: 0 } });
     prisma.subscription.count.mockResolvedValue(0);
     prisma.payment.findMany.mockResolvedValue([]);
     prisma.invoice.findMany.mockResolvedValue([]);

@@ -98,7 +98,7 @@ function UnitEconomicsUnitCard({
             {row.label}
           </button>
           <p className="text-muted-foreground mt-1 text-[11px]">
-            {row.orderCode} · {row.projectCode}
+            {row.orderCode} · {row.projectName}
           </p>
         </div>
         <DeliveryStatusBadge open={row.deliveryOpen} />

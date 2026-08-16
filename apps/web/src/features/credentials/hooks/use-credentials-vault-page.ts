@@ -33,7 +33,10 @@ import {
 } from '@/lib/api/credentials';
 import {
   canMoveCredentialsToFolder,
+  credentialFoldersForVaultTab,
   filterFoldersForCredentials,
+  folderListScopeParamForVaultTab,
+  vaultScopeToFolderScope,
   type CredentialFolderMatchInput,
 } from '@/features/credentials/utils/credential-folder-scope';
 
@@ -110,7 +113,7 @@ export function useCredentialsVaultPage() {
     projectId: isProjectFoldersMode ? activeProjectId : null,
   });
 
-  const { credentials, loading, loadingMore, total, totalPages, hasMore, loadMore, refetch } =
+  const { credentials, loading, total, totalPages, refetch, columnMeta, loadMoreColumn } =
     listQuery;
 
   const { pushOpenCredentialToUrl, stripOpenCredentialFromUrl } = useCredentialVaultSheetUrlSync({
@@ -157,10 +160,10 @@ export function useCredentialsVaultPage() {
     setFoldersLoading(true);
     try {
       const data = await credentialsApi.listFolders({
-        scope: activeTab.toUpperCase(),
+        scope: folderListScopeParamForVaultTab(activeTab),
         projectId: isProjectFoldersMode && activeProjectId ? activeProjectId : undefined,
       });
-      setFolders(data.folders);
+      setFolders(credentialFoldersForVaultTab(data.folders, activeTab));
     } catch {
       setFolders([]);
     } finally {
@@ -268,9 +271,13 @@ export function useCredentialsVaultPage() {
 
   const createFolder = useCallback(
     async (name: string) => {
+      const scope = vaultScopeToFolderScope(activeTab);
+      if (!scope) {
+        throw new Error('Folders are not available on this vault tab');
+      }
       const folder = await credentialsApi.createFolder({
         name,
-        scope: activeTab.toUpperCase(),
+        scope,
         parentId: activeFolderId,
         projectId: isProjectFoldersMode ? activeProjectId : undefined,
       });
@@ -540,9 +547,8 @@ export function useCredentialsVaultPage() {
   return {
     credentials,
     loading,
-    loadingMore,
-    hasMore,
-    loadMore,
+    columnMeta,
+    loadMoreColumn,
     page,
     setPage,
     pageSize,

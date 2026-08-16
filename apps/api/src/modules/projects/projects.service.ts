@@ -86,7 +86,7 @@ export class ProjectsService {
         include: {
           company: { select: { id: true, name: true } },
           contact: { select: { id: true, firstName: true, lastName: true } },
-          _count: { select: { orders: true } },
+          _count: { select: { orders: true, products: true } },
         },
         orderBy: {
           [resolveSortField(sortBy, PROJECT_SORT_FIELDS, 'createdAt')]:

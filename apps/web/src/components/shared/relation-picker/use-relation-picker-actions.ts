@@ -4,7 +4,7 @@ import { useEntityRelations } from './entity-relations-context';
 import type { RelationCreateContext, RelationEntityKind } from './relation-picker.types';
 import { buildRelationCreateIntent } from './parse-relation-create-intent';
 
-const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee']);
+const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee', 'order']);
 
 function canCreateEntity(kind: RelationEntityKind, context?: RelationCreateContext): boolean {
   if (CREATE_DISABLED_KINDS.has(kind)) return false;

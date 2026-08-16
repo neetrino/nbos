@@ -159,6 +159,8 @@ export interface MrrSubscriptionRevenueReport {
     newSubscriptionCount: number;
     churnedMrr: string;
     churnedSubscriptionCount: number;
+    completedMrr: string;
+    completedSubscriptionCount: number;
   };
   paidRevenue: {
     paidSubscriptionRevenue: string;

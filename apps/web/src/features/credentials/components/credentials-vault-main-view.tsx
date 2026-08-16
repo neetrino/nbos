@@ -2,10 +2,8 @@
 
 import { useMemo } from 'react';
 import type { CredentialVaultViewMode } from '@/features/credentials/constants/credential-vault';
-import {
-  categoryBoardColumnsForQuickFilter,
-  filterCredentialsByQuickCategory,
-} from '@/features/credentials/constants/credential-vault-categories';
+import { categoryBoardColumnsForQuickFilter } from '@/features/credentials/constants/credential-vault-categories';
+import type { CredentialCategoryColumnMeta } from '@/features/credentials/hooks/use-credentials-category-column-board';
 import { CredentialVaultCategoryBoard } from '@/features/credentials/components/credential-vault-category-board';
 import {
   CredentialVaultTable,
@@ -30,10 +28,8 @@ export interface CredentialsVaultMainViewProps {
   viewMode: CredentialVaultViewMode;
   credentials: CredentialListItem[];
   loading: boolean;
-  loadingMore?: boolean;
-  hasMore?: boolean;
-  boardScrollRoot?: HTMLElement | null;
-  onBoardLoadMore?: () => void;
+  columnMeta?: Record<string, CredentialCategoryColumnMeta>;
+  onColumnLoadMore?: (columnKey: string) => void;
   showCreate: boolean;
   activeTab: CredentialVaultScope;
   vaultListScope: VaultListScope;
@@ -78,10 +74,8 @@ export function CredentialsVaultMainView({
   viewMode,
   credentials,
   loading,
-  loadingMore,
-  hasMore,
-  boardScrollRoot,
-  onBoardLoadMore,
+  columnMeta,
+  onColumnLoadMore,
   showCreate,
   activeTab,
   vaultListScope,
@@ -117,10 +111,6 @@ export function CredentialsVaultMainView({
   const boardCategoryColumns = useMemo(
     () => categoryBoardColumnsForQuickFilter(quickCategoryChips, activeCategory),
     [quickCategoryChips, activeCategory],
-  );
-  const boardCredentials = useMemo(
-    () => filterCredentialsByQuickCategory(credentials, activeCategory, quickCategoryChips),
-    [credentials, activeCategory, quickCategoryChips],
   );
 
   const canMoveToTrashCredential = showCreate && vaultListScope === 'active';
@@ -180,12 +170,10 @@ export function CredentialsVaultMainView({
   if (viewMode === 'category-board') {
     return (
       <CredentialVaultCategoryBoard
-        credentials={boardCredentials}
+        credentials={credentials}
         loading={loading}
-        loadingMore={loadingMore}
-        hasMore={hasMore}
-        scrollRoot={boardScrollRoot}
-        onLoadMore={onBoardLoadMore}
+        columnMeta={columnMeta}
+        onColumnLoadMore={onColumnLoadMore}
         vaultScope={activeTab}
         showCreate={showCreate}
         categoryColumns={boardCategoryColumns}

@@ -27,6 +27,7 @@ function plan(
 describe('expense-plans-board-columns', () => {
   it('resolveExpensePlanBoardColumn maps known and unknown frequencies', () => {
     expect(resolveExpensePlanBoardColumn('MONTHLY')).toBe('MONTHLY');
+    expect(resolveExpensePlanBoardColumn('WEEKLY')).toBe('WEEKLY');
     expect(resolveExpensePlanBoardColumn('CUSTOM')).toBe('OTHER');
   });
 
@@ -35,10 +36,13 @@ describe('expense-plans-board-columns', () => {
       plan({ id: '1', name: 'Rent', frequency: 'MONTHLY' }),
       plan({ id: '2', name: 'Domain', frequency: 'YEARLY' }),
       plan({ id: '3', name: 'Ad hoc', frequency: 'CUSTOM' }),
+      plan({ id: '4', name: 'Weekly SaaS', frequency: 'WEEKLY' }),
     ]);
+    const weekly = columns.find((c) => c.key === 'WEEKLY');
     const monthly = columns.find((c) => c.key === 'MONTHLY');
     const yearly = columns.find((c) => c.key === 'YEARLY');
     const other = columns.find((c) => c.key === 'OTHER');
+    expect(weekly?.items).toHaveLength(1);
     expect(monthly?.items).toHaveLength(1);
     expect(yearly?.items).toHaveLength(1);
     expect(other?.items).toHaveLength(1);

@@ -1,4 +1,4 @@
-import { Building2, Calendar } from 'lucide-react';
+import { Calendar, FolderKanban, Layers } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
   DeliveryLifecycleProjection,
@@ -70,8 +70,8 @@ function ProductBoardMeta({
     <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {product.project ? (
         <BoardMetaLine
-          icon={Building2}
-          label={`${product.project.name} (${product.project.code})`}
+          icon={FolderKanban}
+          label={product.project.name}
           metaIconClass={metaIconClass}
         />
       ) : null}
@@ -103,17 +103,13 @@ function ExtensionBoardMeta({
     <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {extension.project ? (
         <BoardMetaLine
-          icon={Building2}
-          label={`${extension.project.name} (${extension.project.code})`}
+          icon={FolderKanban}
+          label={extension.project.name}
           metaIconClass={metaIconClass}
         />
       ) : null}
       {extension.product ? (
-        <BoardMetaLine
-          icon={Building2}
-          label={extension.product.name}
-          metaIconClass={metaIconClass}
-        />
+        <BoardMetaLine icon={Layers} label={extension.product.name} metaIconClass={metaIconClass} />
       ) : null}
       {holdCopy ? (
         <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>
@@ -133,12 +129,7 @@ function ProductCardMeta({
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
-      {product.project && (
-        <LegacyMetaLine
-          icon={Building2}
-          label={`${product.project.name} (${product.project.code})`}
-        />
-      )}
+      {product.project && <LegacyMetaLine icon={FolderKanban} label={product.project.name} />}
       {product.deadline && (
         <LegacyMetaLine
           icon={Calendar}
@@ -168,12 +159,7 @@ function ExtensionCardMeta({
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
-      {extension.project && (
-        <LegacyMetaLine
-          icon={Building2}
-          label={`${extension.project.name} (${extension.project.code})`}
-        />
-      )}
+      {extension.project && <LegacyMetaLine icon={FolderKanban} label={extension.project.name} />}
       {!minimal ? (
         <p className="text-muted-foreground text-xs">
           {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space

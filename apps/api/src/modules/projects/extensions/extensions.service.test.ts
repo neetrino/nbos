@@ -7,6 +7,12 @@ import type { NotificationService } from '../../notifications/notification.servi
 import type { AuditService } from '../../audit/audit.service';
 import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 
+vi.mock('../../bonus/product-bonus-pool-sync', () => ({
+  syncProductBonusPoolForOrder: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
   let prisma: MockPrisma;
@@ -17,6 +23,10 @@ describe('ExtensionsService', () => {
 
   const partnerAccrualClassic = {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
+  };
+  const partnerAccrualSubscription = {
+    releaseHeldAccrualsAfterDelivery: vi.fn().mockResolvedValue(undefined),
+    cancelHeldAccrualsAfterLostDelivery: vi.fn().mockResolvedValue(undefined),
   };
 
   const auditService: Pick<AuditService, 'log'> = {
@@ -38,6 +48,9 @@ describe('ExtensionsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    vi.mocked(syncProductBonusPoolForOrder).mockClear();
+    partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery.mockClear();
+    partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery.mockClear();
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite.mockClear();
@@ -47,6 +60,7 @@ describe('ExtensionsService', () => {
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
+      partnerAccrualSubscription as never,
       supportService as never,
       auditService as never,
       deliveryStageChecklistSync as never,
@@ -401,7 +415,12 @@ describe('ExtensionsService', () => {
         projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
-        order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
@@ -420,12 +439,75 @@ describe('ExtensionsService', () => {
       );
     });
 
-    it('blocks TRANSFER → DONE when linked order is not fully paid', async () => {
+    it('releases held accruals when extension reaches DONE through updateStatus, not complete', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+    });
+
+    it('creates classic inbound accrual when extension reaches DONE through updateStatus, not complete', async () => {
+      stubExtensionReadyForDone(prisma);
+
+      await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+    });
+
+    it('syncs bonus pool when extension reaches DONE through updateStatus, not complete', async () => {
+      stubExtensionReadyForDone(prisma);
+
+      await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
+    });
+
+    it('cancels held accruals when extension reaches LOST through updateStatus', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'LOST' });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.updateStatus('e1', 'LOST', 'emp-audit');
+
+      expect(partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
+    });
+
+    it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }],
-        order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
       });
 
       const error = await service
@@ -436,6 +518,52 @@ describe('ExtensionsService', () => {
       expect(readExceptionResponse(error)).toMatchObject({
         code: EXTENSION_STAGE_GATE_ERROR_CODE,
         errors: [{ field: 'finance', message: expect.stringContaining('Order PARTIALLY_PAID') }],
+      });
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
+    it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'SUBSCRIPTION',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
+
+      expect(result.status).toBe('DONE');
+      expect(prisma.extension.update).toHaveBeenCalled();
+    });
+
+    it('blocks TRANSFER → DONE when a subscription order has an unpaid invoice', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }],
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          paymentType: 'SUBSCRIPTION',
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
+        },
+      });
+
+      const error = await service
+        .updateStatus('e1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: EXTENSION_STAGE_GATE_ERROR_CODE,
+        errors: [{ field: 'finance', message: expect.any(String) }],
       });
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
@@ -526,6 +654,55 @@ describe('ExtensionsService', () => {
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('releases held subscription accruals when a linked order exists', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('e1', 'user-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+    });
+
+    it('still fires classic accrual and bonus-pool sync from complete', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.complete('e1', 'user-1');
+
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).toHaveBeenCalledWith('ord-1');
+      expect(syncProductBonusPoolForOrder).toHaveBeenCalledWith(prisma, 'ord-1', notifications);
     });
 
     it('blocks completion while extension is paused', async () => {
@@ -632,6 +809,30 @@ describe('ExtensionsService', () => {
       );
       expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');
     });
+
+    it('cancels held subscription accruals when extension ends LOST via cancel', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'LOST',
+        deliveryResolution: 'CANCELLED',
+        cancellationReason: 'No longer needed',
+      });
+      prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+
+      await service.cancel('e1', { reason: 'No longer needed' }, 'user-1');
+
+      expect(partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery).toHaveBeenCalledWith(
+        'ord-1',
+      );
+      expect(partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterDelivery).not.toHaveBeenCalled();
+      expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
+    });
   });
 
   describe('delete', () => {
@@ -650,6 +851,23 @@ describe('ExtensionsService', () => {
     });
   });
 });
+
+function stubExtensionReadyForDone(prisma: MockPrisma) {
+  prisma.extension.findUnique.mockResolvedValue({
+    id: 'e1',
+    projectId: 'proj-1',
+    status: 'TRANSFER',
+    tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+    order: {
+      id: 'ord-1',
+      status: 'FULLY_PAID',
+      paymentType: 'CLASSIC',
+      invoices: [{ moneyStatus: 'PAID' }],
+    },
+  });
+  prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+  prisma.order.findUnique.mockResolvedValue({ id: 'ord-1' });
+}
 
 function readExceptionResponse(error: unknown) {
   if (!(error instanceof BadRequestException)) return {};

@@ -1,18 +1,11 @@
 'use client';
 
 import type { KeyboardEvent, ReactNode } from 'react';
-import {
-  AlertTriangle,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  FolderKanban,
-  Handshake,
-} from 'lucide-react';
+import { AlertTriangle, Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount, INVOICE_TYPES } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
-import { getInvoiceDealTitle } from '@/features/finance/utils/order-display';
+import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
@@ -27,11 +20,12 @@ interface InvoiceKanbanCardProps {
 export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCardProps) {
   const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
   const typeLabel = (type?.label ?? invoice.type.replace(/_/g, ' ')).toUpperCase();
-  const dealTitle = getInvoiceDealTitle(invoice.order);
+  const title = getInvoiceDisplayTitle(invoice);
+  const showCodeSubline = title !== invoice.code;
   const overdueDays = resolveInvoiceOverdueDays(invoice);
   const paidPercent = getInvoicePaidPercent(invoice);
   const amount = parseMoneyAmount(invoice.amount);
-  const hasMeta = Boolean(dealTitle || invoice.company || invoice.project || invoice.dueDate);
+  const hasMeta = Boolean(invoice.company || invoice.project || invoice.dueDate);
 
   return (
     <KanbanCardShell as="article" radius="xl" padding="none" baseShadow="sm" hoverShadow="md">
@@ -45,19 +39,26 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
         onClick={() => onInvoiceClick(invoice)}
         onKeyDown={(event) => handleCardKeyDown(event, invoice, onInvoiceClick)}
       >
-        <div className="min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <span className="h-3.5 w-1 shrink-0 rounded-full bg-sky-400" aria-hidden />
-              <p className="text-foreground truncate text-sm leading-none font-bold">
-                {invoice.code}
-              </p>
+        <div className="flex items-stretch gap-2.5">
+          <span
+            className={cn(
+              'w-1 shrink-0 rounded-full bg-sky-400',
+              showCodeSubline ? 'min-h-8' : 'h-3.5 self-center',
+            )}
+            aria-hidden
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-foreground truncate text-sm leading-none font-bold">{title}</p>
+              <StatusBadge
+                label={typeLabel}
+                variant="blue"
+                className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+              />
             </div>
-            <StatusBadge
-              label={typeLabel}
-              variant="blue"
-              className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
-            />
+            {showCodeSubline ? (
+              <p className="text-muted-foreground mt-0.5 truncate text-xs">{invoice.code}</p>
+            ) : null}
           </div>
         </div>
 
@@ -95,13 +96,6 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
                 iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
                 labelClassName="font-bold text-orange-500 dark:text-orange-400"
                 label={new Date(invoice.dueDate).toLocaleDateString()}
-              />
-            ) : null}
-            {dealTitle ? (
-              <MetaRow
-                icon={<Handshake size={14} aria-hidden />}
-                iconClassName="bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
-                label={dealTitle}
               />
             ) : null}
             {invoice.company ? (

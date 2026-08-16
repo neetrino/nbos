@@ -39,7 +39,7 @@ const systemListOptions = [
 ];
 
 async function main() {
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
   const count = await prisma.systemListOption.count();
   if (count > 0) {
     console.log(`System list options already exist (${count} rows). Skipping.`);

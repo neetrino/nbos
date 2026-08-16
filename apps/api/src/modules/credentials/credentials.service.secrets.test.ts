@@ -140,7 +140,7 @@ describe('CredentialsService secrets', () => {
     const result = await service.exportCredentials({ stepUpPassword: 'step-up' }, accessUser1);
     expect(result.count).toBe(1);
     expect(result.items[0]?.secrets.password).toBe('db-pass');
-    expect(notifications.create).toHaveBeenCalled();
+    expect(notifications.createMany).toHaveBeenCalled();
     expect(vaultSession.unlock).not.toHaveBeenCalled();
   });
 

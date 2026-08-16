@@ -50,15 +50,21 @@ describe('create invoice dialog utils', () => {
   const subscription: Subscription = {
     id: 'sub-1',
     code: 'SUB-2026-0001',
+    name: 'Acme maintenance',
     projectId: 'project-1',
+    productId: 'product-1',
     type: 'MAINTENANCE_ONLY',
-    baseMonthlyAmount: '50000',
+    amount: '50000',
+    coverageMonthCount: 1,
+    monthlyEquivalentAmount: '50000',
     billingFrequency: 'MONTHLY',
     billingDay: 15,
     taxStatus: 'TAX',
     status: 'ACTIVE',
+    termMonths: null,
     billingStartDate: '2026-01-01T00:00:00.000Z',
     notificationsEnabled: true,
+    reminderLanguage: 'HY',
     endDate: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     project: { id: 'project-1', code: 'PRJ-1', name: 'Website' },
@@ -66,7 +72,7 @@ describe('create invoice dialog utils', () => {
     invoices: [],
   };
 
-  it('pre-fills subscription invoice form from monthly amount', () => {
+  it('pre-fills subscription invoice form from period amount', () => {
     expect(getInitialInvoiceFormFromSubscription(subscription).amount).toBe('50000');
   });
 

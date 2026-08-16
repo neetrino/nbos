@@ -663,6 +663,7 @@ describe('DealsService', () => {
         productType: null,
         pmId: null,
         deadline: null,
+        existingProductId: 'product-1',
         orders: [],
       };
       const wonMaintenance = { ...maintenanceDeal, status: 'WON' as const };
@@ -699,6 +700,7 @@ function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = '
     paymentType: 'CLASSIC',
     taxStatus: 'TAX',
     companyId: 'company-1',
+    projectId: 'project-1',
     productCategory: 'CODE',
     productType: 'COMPANY_WEBSITE',
     pmId: 'pm-1',

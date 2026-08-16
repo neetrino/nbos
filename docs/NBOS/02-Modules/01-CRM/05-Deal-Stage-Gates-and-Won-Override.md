@@ -251,6 +251,11 @@ This is the canonical business matrix for current implementation planning.
 - payment type
 - at least one offer file in Drive (`OFFER` purpose) or legacy offer URL
 
+Meaning of `amount` at this gate:
+
+- `paymentType = CLASSIC` — total cost of the work;
+- `paymentType = SUBSCRIPTION` — price of **one** billing period (deal form label: `Amount / month`). The contract total is derived, never typed and never divided: `Order.totalAmount = Deal.amount × Deal.subscriptionTermMonths` when the term is set.
+
 ### Offer requirement
 
 At least one must exist:
@@ -266,12 +271,14 @@ At least one must exist:
 - product category
 - product type
 - planned deadline
+- `subscriptionTermMonths` when `paymentType = SUBSCRIPTION` (integer 1–120; counted in covered months)
 
 `EXTENSION`
 
 - linked project
 - linked product if extension belongs to a specific product
 - extension scope
+- `subscriptionTermMonths` when `paymentType = SUBSCRIPTION` (same rule as PRODUCT)
 
 `MAINTENANCE`
 
@@ -280,6 +287,8 @@ At least one must exist:
 - planned start date or service start logic
 - linked project
 - linked product
+
+`MAINTENANCE` and `OUTSOURCE` subscription deals stay open-ended at this gate (`subscriptionTermMonths` is not required).
 
 ## Stage 6 - Get Answer
 
@@ -365,6 +374,8 @@ For `PRODUCT + payment_type = Subscription`:
 - month of first invoice is shown as paid in Subscription Board;
 - next monthly cycle is anchored to the payment day of that first paid invoice.
 
+For any `paymentType = SUBSCRIPTION` deal with `subscriptionTermMonths` set: if the term changed after the order was bootstrapped, Deal Won re-syncs `Order.totalAmount` and `Order.subscriptionTermMonths` from the deal (`totalAmount` = period amount × term).
+
 ---
 
 ## Deal type specifics
@@ -379,6 +390,7 @@ Typical required data set:
 - marketing attribution
 - amount
 - payment type
+- `subscriptionTermMonths` when payment type is Subscription
 - offer
 - PM
 - deadline
@@ -396,6 +408,7 @@ Typical required data set:
 - extension scope
 - amount
 - payment type
+- `subscriptionTermMonths` when payment type is Subscription
 - offer
 - deadline
 - invoice
@@ -434,7 +447,42 @@ After a main `PRODUCT` deal reaches `WON`, NBOS should auto-create a linked `MAI
 - leaving commercial variables such as maintenance amount and final offer empty;
 - ready for Seller to continue commercial discussion later.
 
-## OUTSOURCE and other future types
+## OUTSOURCE
+
+`Deal Type = OUTSOURCE` stays OUTSOURCE (it is not converted to PRODUCT). A Product entity is still created so Finance / Subscription / WhatsApp have a stable `productId`.
+
+### Field: `outsourceGoesToDelivery`
+
+| Property | Rule                                                     |
+| -------- | -------------------------------------------------------- |
+| Type     | Boolean on Deal                                          |
+| Default  | `false` (OFF)                                            |
+| Editable | Only while deal is **not** `WON`; after Won — **locked** |
+| UI       | Visible when `type = OUTSOURCE`                          |
+
+### Stages and gates
+
+Same deposit-based path as PRODUCT / EXTENSION for commercial stages:
+
+- offer / contract / first invoice created before deposit stage progression as in the shared matrix above;
+- `Deal Won` requires first invoice **paid** (or privileged override), unless explicitly excepted later.
+
+Required commercial fields for OUTSOURCE before Won follow PRODUCT-like taxonomy where applicable (`productCategory` / `productType`, deadline as delivery deadline when delivery is ON).
+
+### Downstream after `WON`
+
+| `outsourceGoesToDelivery` | Downstream                                                                                                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ON**                    | Order + Project + Product → **active Delivery Board** (`Starting → Development → QA → Transfer`) + WhatsApp Product group + Finance (Invoice / Subscription as payment type allows) |
+| **OFF** (default)         | Order + Project + Product **without** active Delivery Board (post-delivery style: product stays in Project Hub + Finance + WhatsApp; must not appear on active Development kanban)  |
+
+In both modes NBOS ensures a **Product WhatsApp Group** for the created Product.
+
+### Subscription / Finance
+
+If payment type is Subscription (or Finance later attaches a sub), Subscription is owned by the Outsource Product (`productId` required). Billing deadline auto-pause applies only when subscription type is DEV_ONLY / DEV_AND_MAINTENANCE and only against **that** Product (+ its Extensions).
+
+## Other future types
 
 Each future type must explicitly define:
 

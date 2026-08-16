@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { DeleteConfirmDialog } from '@/components/shared';
 import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
+import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
 import { toast } from 'sonner';
@@ -31,6 +32,9 @@ export function InvoiceLifecycleConfirmDialog({
   if (!action) return null;
 
   const isDelete = action === 'delete';
+  const displayTitle = getInvoiceDisplayTitle(invoice);
+  const itemName =
+    displayTitle === invoice.code ? invoice.code : `${displayTitle} (${invoice.code})`;
 
   const handleConfirm = async () => {
     setError(null);
@@ -67,7 +71,7 @@ export function InvoiceLifecycleConfirmDialog({
         onOpenChange(next);
         if (!next) setError(null);
       }}
-      itemName={invoice.code}
+      itemName={itemName}
       title={isDelete ? 'Delete draft invoice?' : 'Cancel invoice?'}
       description={
         isDelete

@@ -98,17 +98,21 @@ export class SubscriptionsController {
   async create(
     @Body()
     body: {
-      projectId: string;
+      productId: string;
+      projectId?: string;
+      name: string;
       type: string;
-      baseMonthlyAmount?: number;
       amount?: number;
       billingDay: number;
       billingFrequency?: string;
+      coverageMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string;
     },
   ) {
@@ -122,15 +126,18 @@ export class SubscriptionsController {
     @Body()
     body: {
       type?: string;
-      baseMonthlyAmount?: number;
+      name?: string;
       amount?: number;
       billingDay?: number;
       billingFrequency?: string;
+      coverageMonthCount?: number | null;
       taxStatus?: string;
       billingStartDate?: string;
       startDate?: string;
       notificationsEnabled?: boolean;
+      reminderLanguage?: string;
       endDate?: string;
+      termMonths?: number | null;
       partnerId?: string | null;
     },
   ) {

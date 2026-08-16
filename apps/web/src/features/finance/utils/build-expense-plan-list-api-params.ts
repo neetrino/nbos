@@ -2,7 +2,7 @@ import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanListParams } from '@/lib/api/expense-plans';
 
 const EXPENSE_PLAN_LIST_ALLOWED_CATEGORIES: ReadonlySet<string> = new Set(
-  EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE').map((c) => c.value),
+  EXPENSE_CATEGORIES.map((c) => c.value),
 );
 
 export function parseExpensePlansListCategoryParam(raw: string | null): string | undefined {

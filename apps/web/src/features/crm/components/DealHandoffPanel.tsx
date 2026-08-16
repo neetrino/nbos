@@ -15,6 +15,7 @@ import {
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Deal } from '@/lib/api/deals';
 import {
   COMMERCIAL_DEAL_TYPES,
@@ -143,7 +144,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const projectHref = project ? `/projects/${project.id}` : null;
   const productHref = project && product ? `/projects/${project.id}/products/${product.id}` : null;
   const subscriptionHref = subscription
-    ? `/finance/subscriptions?search=${encodeURIComponent(subscription.code)}`
+    ? `/finance/subscriptions?search=${encodeURIComponent(getSubscriptionDisplayTitle(subscription))}`
     : null;
 
   return (
@@ -166,7 +167,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Link a project in Deal &amp; project, or it will be created when delivery starts.
           </p>
         )}
@@ -183,7 +184,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Product link is missing or not applicable yet.
           </p>
         )}
@@ -195,12 +196,14 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           >
             <span className="flex min-w-0 items-center gap-2">
               <RefreshCw className="text-muted-foreground size-3.5 shrink-0" />
-              <span className="truncate">{subscription?.code}</span>
+              <span className="truncate">
+                {subscription ? getSubscriptionDisplayTitle(subscription) : ''}
+              </span>
             </span>
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
           </Link>
         ) : (
-          <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+          <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
             Subscription link is missing or not applicable for this deal.
           </p>
         )}
@@ -217,7 +220,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Button>
         ) : (
           deal.type === 'PRODUCT' && (
-            <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
+            <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
               Maintenance Deal is created after the Product handoff runs.
             </p>
           )

@@ -23,6 +23,8 @@ model Employee {
   email        String               @unique
   phone        String?
   telegram     String?
+  /** ATS.am SIP extension / ID for Active Call `redirect_call` routing. */
+  sipId        String?              @map("sip_id")
   avatar       String?
   birthday     DateTime?
   notes        String?
@@ -36,9 +38,12 @@ model Employee {
   hireDate     DateTime?            @map("hire_date")
   fireDate     DateTime?            @map("fire_date")
   status       EmployeeStatusEnum   @default(PROBATION)
+  /** Bumped on password reset / disable so refresh rejects stale access claims. */
+  authVersion  Int                  @default(1) @map("auth_version")
   createdAt    DateTime             @default(now()) @map("created_at")
   updatedAt    DateTime             @updatedAt @map("updated_at")
 
+  authSessions                  AuthSession[]
   productsManaging              Product[]               @relation("ProductPM")
   productsAsDeveloper           Product[]               @relation("ProductDeveloper")
   productsAsDesigner            Product[]               @relation("ProductDesigner")
@@ -90,6 +95,14 @@ model Employee {
   messengerDmThreadsAsB            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
   messengerChannelReadStates       MessengerChannelReadState[]
   messengerDmThreadReadStates      MessengerDirectThreadReadState[]
+  messengerConversationsCreated    MessengerConversation[]             @relation("MessengerConversationCreatedBy")
+  messengerConversationsDirectLow  MessengerConversation[]             @relation("MessengerConversationDirectLow")
+  messengerConversationsDirectHigh MessengerConversation[]             @relation("MessengerConversationDirectHigh")
+  messengerConversationParticipants MessengerConversationParticipant[] @relation("MessengerConversationParticipantEmployee")
+  messengerMessagesSent            MessengerMessage[]                  @relation("MessengerMessageSender")
+  messengerMessageAttachments      MessengerMessageAttachment[]        @relation("MessengerMessageAttachmentActor")
+  messengerConversationReadStates  MessengerConversationReadState[]    @relation("MessengerConversationReadStateEmployee")
+  messengerUserConversationSettings MessengerUserConversationSetting[] @relation("MessengerUserConversationSettingEmployee")
   mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
   mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
@@ -100,6 +113,7 @@ model Employee {
   mailThreadsTrashedBy             EmailThread[]                       @relation("EmailThreadTrashedBy")
   metaConnectedAccounts            MetaConnectedAccount[]              @relation("MetaConnectedBy")
   inAppNotificationsReceived       InAppNotification[]
+  notificationInboxState           NotificationInboxState?
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]
   driveZipExportJobsRequested      DriveZipExportJob[]

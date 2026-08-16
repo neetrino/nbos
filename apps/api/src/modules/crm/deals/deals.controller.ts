@@ -88,6 +88,7 @@ export class DealsController {
       type?: string;
       amount?: number;
       paymentType?: string;
+      subscriptionTermMonths?: number | null;
       taxStatus?: string;
       companyId?: string | null;
       sellerId?: string;
@@ -107,6 +108,7 @@ export class DealsController {
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
       maintenanceStartAt?: string | null;
+      outsourceGoesToDelivery?: boolean;
     },
   ) {
     return this.dealsService.create(body, { actorId: user?.id, actorRoleLevel: user?.roleLevel });
@@ -135,6 +137,7 @@ export class DealsController {
       type?: string;
       amount?: number;
       paymentType?: string;
+      subscriptionTermMonths?: number | null;
       taxStatus?: string;
       companyId?: string | null;
       contactId?: string;
@@ -155,6 +158,7 @@ export class DealsController {
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
       maintenanceStartAt?: string | null;
+      outsourceGoesToDelivery?: boolean;
       contactIds?: string[];
     },
   ) {

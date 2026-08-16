@@ -5,9 +5,10 @@ import { flushSync } from 'react-dom';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { searchEmployeesForPicker } from '@/lib/employees';
-import { tasksApi, type Task } from '@/lib/api/tasks';
+import { tasksApi, type Task, type TaskLink } from '@/lib/api/tasks';
 import { toggleTaskUrgentPriority } from '../constants/tasks';
 import {
+  applyResolvedEmployeeLabels,
   buildTaskGeneralPatch,
   createTaskGeneralDraft,
   enrichTaskGeneralDraft,
@@ -107,6 +108,11 @@ export function useTaskSheetState({
         setGeneralDraft(quickDraft);
         setGeneralSnap(quickDraft);
         setLoading(false);
+        void enrichTaskGeneralDraft(seed).then((enriched) => {
+          if (cancelled || generalDirtyRef.current) return;
+          setGeneralDraft((current) => applyResolvedEmployeeLabels(current, enriched));
+          setGeneralSnap((current) => applyResolvedEmployeeLabels(current, enriched));
+        });
       } else if (!cancelled) {
         setLoading(true);
       }
@@ -156,7 +162,9 @@ export function useTaskSheetState({
       setTask((current) => {
         if (!current) return current;
         const nextTask = recipe(current);
-        onUpdate?.(nextTask);
+        // Defer parent notify — calling onUpdate inside the updater updates TasksPage
+        // during TaskSheet's state/render phase (React "setState in render" warning).
+        queueMicrotask(() => onUpdate?.(nextTask));
         return nextTask;
       });
     },
@@ -483,6 +491,20 @@ export function useTaskSheetState({
     [setLocalTask],
   );
 
+  const handleLinksChange = useCallback(
+    (links: TaskLink[]) => {
+      setLocalTask((current) => ({ ...current, links }));
+    },
+    [setLocalTask],
+  );
+
+  const handleTaskChange = useCallback(
+    (nextTask: Task) => {
+      setLocalTask(() => nextTask);
+    },
+    [setLocalTask],
+  );
+
   const handleDeleteTask = useCallback(async () => {
     if (!task) return false;
     try {
@@ -558,6 +580,8 @@ export function useTaskSheetState({
     handleAddItem,
     handleToggleItem,
     handleDeleteItem,
+    handleLinksChange,
+    handleTaskChange,
     handleDeleteTask,
     handleRestoreTask,
     handleSendMessage,

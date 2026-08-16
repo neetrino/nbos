@@ -234,7 +234,7 @@ export function SearchField(props: SearchFieldProps) {
             )}
           </div>
 
-          <div className="absolute inset-x-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900">
+          <div className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border shadow-lg">
             {loading && (
               <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
                 <Loader2 size={13} className="animate-spin" />
@@ -252,8 +252,8 @@ export function SearchField(props: SearchFieldProps) {
                   key={opt.value}
                   onClick={() => handleSelect(opt.value, opt.label)}
                   className={cn(
-                    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-stone-50 dark:hover:bg-stone-800',
-                    i === highlightIdx && 'bg-stone-50 dark:bg-stone-800',
+                    'hover:bg-muted flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
+                    i === highlightIdx && 'bg-muted',
                     saving && 'pointer-events-none opacity-50',
                   )}
                 >
@@ -273,7 +273,7 @@ export function SearchField(props: SearchFieldProps) {
                   setOpen(false);
                   setQuery('');
                 }}
-                className="flex w-full items-center gap-2 border-t border-stone-100 px-3 py-2 text-left text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50 dark:border-stone-800 dark:text-amber-400 dark:hover:bg-amber-950/20"
+                className="border-border flex w-full items-center gap-2 border-t px-3 py-2 text-left text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/20"
               >
                 <Plus size={14} />
                 {newLabel}

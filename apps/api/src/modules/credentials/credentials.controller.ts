@@ -42,7 +42,7 @@ export class CredentialsController {
   @ApiQuery({
     name: 'tab',
     required: false,
-    enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret'],
+    enum: ['all', 'my', 'personal', 'team', 'department', 'project', 'secret', 'company'],
   })
   @ApiQuery({
     name: 'scope',
@@ -108,6 +108,7 @@ export class CredentialsController {
         employeeId: access.employeeId,
         departmentIds: access.departmentIds,
         viewScope: access.viewScope,
+        bypassRowVisibility: access.bypassRowVisibility,
         scope: listScope,
         includeArchived: listScope === 'trash',
         sort: normalizeCredentialListSort(sort, listScope === 'trash'),

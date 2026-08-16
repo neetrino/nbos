@@ -12,12 +12,16 @@ describe('parseExpensePlansListCategoryParam', () => {
   it('returns undefined for empty or unknown', () => {
     expect(parseExpensePlansListCategoryParam(null)).toBeUndefined();
     expect(parseExpensePlansListCategoryParam('')).toBeUndefined();
-    expect(parseExpensePlansListCategoryParam('OFFICE')).toBeUndefined();
     expect(parseExpensePlansListCategoryParam('NOT_REAL')).toBeUndefined();
   });
 
-  it('accepts allowed plan categories', () => {
+  it('accepts allowed plan categories including ops cuts', () => {
     expect(parseExpensePlansListCategoryParam('HOSTING')).toBe('HOSTING');
+    expect(parseExpensePlansListCategoryParam('OFFICE')).toBe('OFFICE');
+    expect(parseExpensePlansListCategoryParam('INTERNAL_INFRA')).toBe('INTERNAL_INFRA');
+    expect(parseExpensePlansListCategoryParam('TAXES')).toBe('TAXES');
+    expect(parseExpensePlansListCategoryParam('BANK_FEES')).toBe('BANK_FEES');
+    expect(parseExpensePlansListCategoryParam('TRAINING')).toBe('TRAINING');
   });
 });
 

@@ -86,7 +86,7 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
                   <FinanceListIconLabel
                     icon={FolderKanban}
                     iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                    label={plan.project.code}
+                    label={plan.project.name}
                   />
                 ) : (
                   <FinanceListMutedDash />

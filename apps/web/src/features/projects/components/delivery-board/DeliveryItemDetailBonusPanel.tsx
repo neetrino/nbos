@@ -27,7 +27,7 @@ function BonusEntrySummary({ row }: { row: BonusEntryListRow }) {
 
 function ReleaseLine({ row }: { row: BonusReleaseRow }) {
   return (
-    <li className="border-border/50 rounded-md border border-dashed bg-stone-50/60 px-2.5 py-1.5 text-xs dark:bg-stone-950/40">
+    <li className="border-border/50 bg-muted/60 rounded-md border border-dashed px-2.5 py-1.5 text-xs">
       <span className="font-medium">{row.releaseType}</span>
       <span className="text-muted-foreground"> · {row.status}</span>
       <span className="text-muted-foreground"> · {row.amount}</span>
@@ -132,7 +132,7 @@ function BonusEntryRow({ row }: { row: BonusEntryListRow }) {
   const expandId = `delivery-bonus-entry-${row.id}`;
 
   return (
-    <li className="border-border/60 rounded-xl border bg-white/60 dark:bg-stone-950/30">
+    <li className="border-border/60 bg-card/60 rounded-xl border">
       <div className="flex items-stretch gap-1">
         <button
           type="button"

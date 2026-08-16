@@ -9,7 +9,7 @@ import { seedCredentialsDemo } from './seed-credentials-demo';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
 async function main() {
-  const prisma = createPrismaClient();
+  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
   console.log('Cleaning existing data...');
   await prisma.auditLog.deleteMany();
@@ -1180,12 +1180,20 @@ async function main() {
   // ── Subscriptions ──────────────────────────────────────────
   const sub1 = await prisma.subscription.upsert({
     where: { code: 'SUB-2026-0001' },
-    update: {},
+    update: {
+      productId: prod1.id,
+      projectId: project1.id,
+      name: 'ACME Website Care',
+    },
     create: {
       code: 'SUB-2026-0001',
+      name: 'ACME Website Care',
       projectId: project1.id,
+      productId: prod1.id,
       type: 'DEV_AND_MAINTENANCE',
-      baseMonthlyAmount: 150000,
+      amount: 150000,
+      coverageMonthCount: 1,
+      billingFrequency: 'MONTHLY',
       billingDay: 1,
       billingStartDate: new Date('2026-02-01'),
       status: 'ACTIVE',
@@ -1194,12 +1202,20 @@ async function main() {
   });
   await prisma.subscription.upsert({
     where: { code: 'SUB-2026-0002' },
-    update: {},
+    update: {
+      productId: prod4.id,
+      projectId: project2.id,
+      name: 'TechStart App Maintenance',
+    },
     create: {
       code: 'SUB-2026-0002',
+      name: 'TechStart App Maintenance',
       projectId: project2.id,
+      productId: prod4.id,
       type: 'MAINTENANCE_ONLY',
-      baseMonthlyAmount: 80000,
+      amount: 80000,
+      coverageMonthCount: 1,
+      billingFrequency: 'MONTHLY',
       billingDay: 15,
       billingStartDate: new Date('2026-01-15'),
       status: 'ACTIVE',

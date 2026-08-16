@@ -1,4 +1,4 @@
-import { Building2, Calendar, CheckCircle2 } from 'lucide-react';
+import { Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
 import {
   DELIVERY_BOARD_CARD_DATE_ICON_SIZE,
@@ -19,18 +19,14 @@ export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
     <div className="mt-2 space-y-1 text-left">
       {item.kind === 'PRODUCT' && item.product.project && (
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Building2 size={12} />
-          <span className="truncate">
-            {item.product.project.name} ({item.product.project.code})
-          </span>
+          <FolderKanban size={12} />
+          <span className="truncate">{item.product.project.name}</span>
         </p>
       )}
       {item.kind === 'EXTENSION' && item.extension.project && (
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Building2 size={12} />
-          <span className="truncate">
-            {item.extension.project.name} ({item.extension.project.code})
-          </span>
+          <FolderKanban size={12} />
+          <span className="truncate">{item.extension.project.name}</span>
         </p>
       )}
       <p className={DELIVERY_BOARD_CARD_DATE_ROW_CLASS}>

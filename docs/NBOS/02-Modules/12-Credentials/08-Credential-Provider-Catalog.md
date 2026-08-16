@@ -97,16 +97,17 @@ One shared table `credential_providers` for hosting, domain, mail, cloud, and Sa
 
 ### SaaS & tools
 
-| Name      | Website                 |
-| --------- | ----------------------- |
-| Google    | https://google.com      |
-| WordPress | https://wordpress.com   |
-| Adobe     | https://www.adobe.com   |
-| Figma     | https://www.figma.com   |
-| HubSpot   | https://www.hubspot.com |
-| Telegram  | https://telegram.org    |
-| Slack     | https://slack.com       |
-| Notion    | https://www.notion.so   |
+| Name        | Website                     |
+| ----------- | --------------------------- |
+| Google      | https://google.com          |
+| WordPress   | https://wordpress.com       |
+| Squarespace | https://www.squarespace.com |
+| Adobe       | https://www.adobe.com       |
+| Figma       | https://www.figma.com       |
+| HubSpot     | https://www.hubspot.com     |
+| Telegram    | https://telegram.org        |
+| Slack       | https://slack.com           |
+| Notion      | https://www.notion.so       |
 
 ### Demo (seed only)
 

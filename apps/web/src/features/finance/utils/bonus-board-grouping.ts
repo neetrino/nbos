@@ -1,4 +1,5 @@
 import { employeeDisplayName } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 export type BonusBoardEntryGroup = {
@@ -25,9 +26,7 @@ export function groupBonusEntriesByProject(rows: BonusEntryListRow[]): BonusBoar
   const map = new Map<string, BonusBoardEntryGroup>();
   for (const row of rows) {
     const key = row.projectId;
-    const label = row.project?.code
-      ? `${row.project.code} · ${row.project.name ?? ''}`.trim()
-      : key;
+    const label = projectDisplayName(row.project) || key;
     const bucket = map.get(key) ?? { key, label, entries: [] };
     bucket.entries.push(row);
     map.set(key, bucket);

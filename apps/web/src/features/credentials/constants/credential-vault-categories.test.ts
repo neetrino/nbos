@@ -14,6 +14,12 @@ describe('credential-vault-categories', () => {
     expect(values).not.toContain('ADMIN');
   });
 
+  it('limits Company scope to the same low-risk set as Team', () => {
+    expect(categoriesForVaultScope('company').map((c) => c.value)).toEqual(
+      categoriesForVaultScope('team').map((c) => c.value),
+    );
+  });
+
   it('allows full enum on All scope', () => {
     expect(categoriesForVaultScope('all').length).toBe(9);
   });

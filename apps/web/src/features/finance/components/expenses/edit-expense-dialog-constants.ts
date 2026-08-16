@@ -5,6 +5,7 @@ export const EXPENSE_TYPES = [
 
 export const EXPENSE_FREQUENCIES = [
   { value: 'ONE_TIME', label: 'One-time' },
+  { value: 'WEEKLY', label: 'Weekly' },
   { value: 'MONTHLY', label: 'Monthly' },
   { value: 'QUARTERLY', label: 'Quarterly' },
   { value: 'YEARLY', label: 'Yearly' },

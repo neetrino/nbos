@@ -92,8 +92,7 @@ export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[36rem]`;
 
 /** Block surface aligned with Deal General sections. */
-export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
-  'rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent';
+export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-border bg-card p-5';
 
 /** Section heading style (uppercase micro label) — primary blue, matches Delivery. */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
@@ -104,12 +103,10 @@ export const DETAIL_SHEET_SUBSECTION_LABEL_CLASS =
   'text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase';
 
 /** Vertical divider between columns inside one section card. */
-export const DETAIL_SHEET_COLUMN_DIVIDER_CLASS =
-  'border-stone-100 sm:border-l sm:pl-5 dark:border-stone-800';
+export const DETAIL_SHEET_COLUMN_DIVIDER_CLASS = 'border-border sm:border-l sm:pl-5';
 
 /** Horizontal divider between stacked panels inside one section card. */
-export const DETAIL_SHEET_PANEL_DIVIDER_CLASS =
-  'border-t border-stone-100 pt-5 dark:border-stone-800';
+export const DETAIL_SHEET_PANEL_DIVIDER_CLASS = 'border-t border-border pt-5';
 
 /** Two columns of section cards; each row stretches to the taller sibling. */
 export const DETAIL_SHEET_PAIRED_COLUMNS_CLASS =

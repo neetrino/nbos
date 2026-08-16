@@ -31,8 +31,11 @@ export interface Company {
   billingContactId: string | null;
   trashedAt?: string | null;
   createdAt: string;
-  contact: { id: string; firstName: string; lastName: string };
+  contact: { id: string; firstName: string; lastName: string } | null;
   billingContact: { id: string; firstName: string; lastName: string } | null;
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string };
+  }>;
   _count: { projects: number; invoices: number };
   updatedAt: string;
 }

@@ -138,7 +138,7 @@ export function UnitEconomicsDrilldownSheet({
               </div>
               <p className="text-muted-foreground mt-1 text-sm">
                 {displayedDetail
-                  ? `${displayedDetail.orderCode} · ${displayedDetail.projectCode} · ${displayedDetail.orderType}`
+                  ? `${displayedDetail.orderCode} · ${displayedDetail.orderType}`
                   : 'Invoices, payments, expenses, and bonuses for the selected delivery unit.'}
               </p>
             </div>
@@ -173,7 +173,7 @@ export function UnitEconomicsDrilldownSheet({
                   Loading line items…
                 </div>
               ) : null}
-              <div className="flex flex-wrap gap-2 border-t border-stone-100 pt-4 dark:border-stone-800">
+              <div className="border-border flex flex-wrap gap-2 border-t pt-4">
                 {onOpenPoolDetail ? (
                   <Button
                     type="button"

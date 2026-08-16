@@ -55,6 +55,10 @@ export const EXPENSE_CATEGORIES = [
   { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
   { value: 'TOOLS', label: 'Tools' },
   { value: 'OFFICE', label: 'Office' },
+  { value: 'TAXES', label: 'Taxes' },
+  { value: 'BANK_FEES', label: 'Bank fees' },
+  { value: 'TRAINING', label: 'Training' },
+  { value: 'INTERNAL_INFRA', label: 'Internal infra' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
@@ -70,6 +74,19 @@ export const SUBSCRIPTION_BILLING_FREQUENCIES = [
   { value: 'YEARLY', label: 'Yearly' },
   { value: 'CUSTOM', label: 'Custom' },
 ] as const;
+
+/** Custom billing: prepaid coverage window (months). */
+export const CUSTOM_PREPAID_MONTH_MIN = 2;
+export const CUSTOM_PREPAID_MONTH_MAX = 60;
+
+/** Client WhatsApp payment reminder language (Subscription.reminderLanguage). */
+export const SUBSCRIPTION_REMINDER_LANGUAGES = [
+  { value: 'HY', label: 'Armenian' },
+  { value: 'RU', label: 'Russian' },
+  { value: 'EN', label: 'English' },
+] as const;
+
+export const DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE = 'HY' as const;
 
 export const SUBSCRIPTION_STATUSES = [
   { value: 'PENDING', label: 'Pending', variant: 'amber' as StatusVariant },

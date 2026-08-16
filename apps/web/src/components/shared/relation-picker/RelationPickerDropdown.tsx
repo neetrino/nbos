@@ -7,7 +7,7 @@ import type { RelationEntityKind, RelationPickerOption } from './relation-picker
 import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
 const DROPDOWN_PANEL_CLASS =
-  'absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900';
+  'absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-border bg-popover shadow-lg';
 
 const CREATE_BAR_CLASS =
   'flex w-full items-center gap-2 border-t border-sky-100 bg-sky-50/90 px-3 py-2.5 text-left text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100/90 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-950/60';
@@ -27,7 +27,7 @@ type RelationPickerDropdownProps = {
   createLabel: string;
   createEnabled: boolean;
   onCreateClick: () => void;
-  onSelect: (value: string, label: string) => void;
+  onSelect: (value: string, label: string, avatar?: string) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
   listMaxHeightClass: string;
@@ -66,7 +66,7 @@ export function RelationPickerDropdown({
           onChange={(event) => onQueryChange(event.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
-          className="rounded-xl border-stone-200 pr-9 pl-9 text-sm dark:border-stone-700"
+          className="border-border rounded-xl pr-9 pl-9 text-sm"
         />
         {query ? (
           <button
@@ -104,16 +104,14 @@ export function RelationPickerDropdown({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => onSelect(option.value, option.label)}
+                  onClick={() => onSelect(option.value, option.label, option.avatar)}
                   className={cn(
                     'flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors',
-                    selected
-                      ? 'bg-sky-50 dark:bg-sky-950/30'
-                      : 'hover:bg-stone-50 dark:hover:bg-stone-800',
-                    index === highlightIdx && !selected && 'bg-stone-50 dark:bg-stone-800',
+                    selected ? 'bg-sky-50 dark:bg-sky-950/30' : 'hover:bg-muted',
+                    index === highlightIdx && !selected && 'bg-muted',
                   )}
                 >
-                  {relationPickerOptionLeading(entityKind, option.label)}
+                  {relationPickerOptionLeading(entityKind, option.label, 'boxed', option.avatar)}
                   <div className="min-w-0 flex-1">
                     <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {kindLabel}

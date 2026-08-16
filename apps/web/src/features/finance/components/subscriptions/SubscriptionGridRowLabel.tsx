@@ -2,14 +2,16 @@
 
 import { StatusBadge } from '@/components/shared';
 import { FINANCE_LIST_BADGE_CLASS } from '@/components/shared/entity-list-table';
-import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
+import { getSubscriptionStatus } from '@/features/finance/constants/finance';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
+import { formatSubscriptionTermGridBadge } from '@/features/finance/utils/subscription-term-display';
 import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionGridRowLabelProps {
+  subscriptionName: string;
   projectName: string;
   subscription: Subscription | undefined;
   fallbackStatus: string;
-  fallbackType: string;
 }
 
 function projectInitials(name: string): string {
@@ -22,14 +24,20 @@ function projectInitials(name: string): string {
 }
 
 export function SubscriptionGridRowLabel({
+  subscriptionName,
   projectName,
   subscription,
   fallbackStatus,
-  fallbackType,
 }: SubscriptionGridRowLabelProps) {
   const statusMeta = getSubscriptionStatus(subscription?.status ?? fallbackStatus);
-  const typeMeta = getSubscriptionType(subscription?.type ?? fallbackType);
-  const subtitle = typeMeta?.label ?? null;
+  const title = getSubscriptionDisplayTitle({
+    name: subscriptionName,
+    code: subscription?.code ?? subscriptionName,
+  });
+  const termBadge =
+    subscription?.termMonths != null
+      ? formatSubscriptionTermGridBadge(subscription.termMonths)
+      : null;
 
   return (
     <div className="flex items-center gap-2.5">
@@ -41,9 +49,17 @@ export function SubscriptionGridRowLabel({
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1.5">
-          <div className="truncate font-medium" title={projectName}>
-            {projectName}
+          <div className="truncate font-medium" title={title}>
+            {title}
           </div>
+          {termBadge ? (
+            <span
+              className="text-muted-foreground shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase"
+              title={`${subscription?.termMonths}-month subscription term`}
+            >
+              {termBadge}
+            </span>
+          ) : null}
           {statusMeta ? (
             <StatusBadge
               label={statusMeta.label}
@@ -52,11 +68,9 @@ export function SubscriptionGridRowLabel({
             />
           ) : null}
         </div>
-        {subtitle ? (
-          <div className="text-muted-foreground truncate text-xs" title={subtitle}>
-            {subtitle}
-          </div>
-        ) : null}
+        <div className="text-muted-foreground truncate text-xs" title={projectName}>
+          {projectName}
+        </div>
       </div>
     </div>
   );

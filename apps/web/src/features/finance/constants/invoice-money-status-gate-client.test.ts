@@ -28,10 +28,9 @@ function baseInvoice(overrides: Partial<Invoice> = {}): Invoice {
 }
 
 describe('invoice-money-status-gate-client', () => {
-  it('blocks PAID when outstanding remains', () => {
+  it('allows PAID when outstanding remains (API settles via Payment)', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(baseInvoice(), 'PAID');
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.field).toBe('payments');
+    expect(errors).toEqual([]);
   });
 
   it('requires company and project for manual invoices entering awaiting payment', () => {
@@ -81,7 +80,7 @@ describe('invoice-money-status-gate-client', () => {
 
   it('maps API guard copy to field highlights', () => {
     expect(
-      mapInvoiceMoneyStatusApiMessage('Cannot mark invoice as paid before payments fully cover it'),
+      mapInvoiceMoneyStatusApiMessage('Fully paid invoices must stay in PAID money status'),
     ).toHaveLength(1);
   });
 });

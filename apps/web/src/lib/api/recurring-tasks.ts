@@ -10,8 +10,8 @@ export interface RecurringTaskTemplate {
   startDate: string;
   endDate: string | null;
   nextCreateAt: string | null;
-  creator: { id: string; firstName: string; lastName: string };
-  assignee: { id: string; firstName: string; lastName: string } | null;
+  creator: { id: string; firstName: string; lastName: string; avatar?: string | null };
+  assignee: { id: string; firstName: string; lastName: string; avatar?: string | null } | null;
 }
 
 export const recurringTasksApi = {

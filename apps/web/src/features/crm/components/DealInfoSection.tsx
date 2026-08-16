@@ -9,11 +9,22 @@ import {
   RelationPickerField,
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
-import type { DealGeneralDraft } from './deal-general-form-state';
+import {
+  buildDealProjectChangePatch,
+  buildDealTypeChangePatch,
+  type DealGeneralDraft,
+} from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import {
+  DealSubscriptionTermField,
+  dealAmountFieldLabel,
+  showDealSubscriptionTermFields,
+} from './DealSubscriptionTermField';
 
 interface DealInfoFieldsProps {
   draft: DealGeneralDraft;
@@ -23,29 +34,30 @@ interface DealInfoFieldsProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  /** When true, OUTSOURCE delivery toggle is locked (Deal Won). */
+  outsourceToggleLocked?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
-/** Left column: project, company, and commercial basics. */
+/** Left column: commercial basics and company (when Tax). */
 export function DealInfoProjectBillingFields({
   draft,
   patchDraft,
-  searchProjects,
   searchCompanies,
   disabled = false,
   gateRequiredFields = new Set(),
 }: Pick<
   DealInfoFieldsProps,
-  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
+  'draft' | 'patchDraft' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
 >) {
-  const projectPicker = useRelationPickerActions('project');
   const companyPicker = useRelationPickerActions('company');
+  const showSubscriptionTerm = showDealSubscriptionTermFields(draft);
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
         variant="controlled"
-        label="Cost"
+        label={dealAmountFieldLabel(draft.paymentType)}
         type="money"
         value={draft.amount ?? ''}
         placeholder="Enter amount..."
@@ -54,6 +66,15 @@ export function DealInfoProjectBillingFields({
         className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
+
+      {showSubscriptionTerm ? (
+        <DealSubscriptionTermField
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={disabled}
+          gateRequiredFields={gateRequiredFields}
+        />
+      ) : null}
 
       <DetailSheetFieldSegmented
         label="Tax Status"
@@ -73,20 +94,6 @@ export function DealInfoProjectBillingFields({
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
         onValueChange={(paymentType) => patchDraft({ paymentType })}
-      />
-
-      <RelationPickerField
-        label="Project"
-        entityKind="project"
-        value={draft.projectId}
-        selectionLabel={draft.linkedProjectLabel}
-        disabled={disabled}
-        placeholder="Search projects…"
-        icon={<FolderKanban size={12} />}
-        onSearch={searchProjects}
-        onSelect={(id, label) => patchDraft({ projectId: id, linkedProjectLabel: label })}
-        onClear={() => patchDraft({ projectId: null, linkedProjectLabel: null })}
-        {...projectPicker}
       />
 
       {(draft.taxStatus ?? 'TAX') === 'TAX' && (
@@ -109,22 +116,29 @@ export function DealInfoProjectBillingFields({
   );
 }
 
-/** Right column: deal type and product taxonomy. */
+/** Right column: deal type, project, and product fields (order by deal type). */
 export function DealInfoDealProductFields({
   draft,
   patchDraft,
   filteredProductTypeOptions,
+  searchProjects,
   searchProducts,
   disabled = false,
+  outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
-}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+}: Omit<DealInfoFieldsProps, 'searchCompanies'>) {
+  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
+  const isLinkedProductDeal = draft.type === 'EXTENSION' || draft.type === 'MAINTENANCE';
+  const showProject = isProductLike || isLinkedProductDeal;
+  const allowProjectCreate = isProductLike;
+  const outsourceToggleDisabled = disabled || outsourceToggleLocked;
+
+  const projectPicker = useRelationPickerActions('project');
   const productPicker = useRelationPickerActions(
     'product',
     'deal-existing-product',
     draft.projectId ? { projectId: draft.projectId } : undefined,
   );
-  const isExtension = draft.type === 'EXTENSION';
-  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
@@ -138,9 +152,47 @@ export function DealInfoDealProductFields({
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'type')}
         onValueChange={(v) => {
-          if (v) patchDraft({ type: v });
+          if (v) patchDraft(buildDealTypeChangePatch(draft, v));
         }}
       />
+
+      {showProject && (
+        <RelationPickerField
+          label="Project"
+          entityKind="project"
+          value={draft.projectId}
+          selectionLabel={draft.linkedProjectLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'projectId')}
+          disabled={disabled}
+          placeholder="Search projects…"
+          icon={<FolderKanban size={12} />}
+          onSearch={searchProjects}
+          onSelect={(id, label) => patchDraft(buildDealProjectChangePatch(id, label))}
+          onClear={() => patchDraft(buildDealProjectChangePatch(null, null))}
+          onOpenSelected={projectPicker.onOpenSelected}
+          {...(allowProjectCreate ? { onCreate: projectPicker.onCreate } : {})}
+        />
+      )}
+
+      {draft.type === 'OUTSOURCE' && (
+        <div className="flex items-start gap-2 pt-1">
+          <Checkbox
+            id="deal-outsource-goes-to-delivery"
+            checked={draft.outsourceGoesToDelivery}
+            disabled={outsourceToggleDisabled}
+            onCheckedChange={(checked) => patchDraft({ outsourceGoesToDelivery: checked === true })}
+          />
+          <div className="min-w-0">
+            <Label htmlFor="deal-outsource-goes-to-delivery" className="text-sm font-medium">
+              Goes to Delivery Board
+            </Label>
+            <p className="text-muted-foreground text-xs">
+              OFF (default): Product in Hub / Finance / WhatsApp without active Starting…Transfer.
+              ON: full delivery lifecycle after Won. Locked after Won.
+            </p>
+          </div>
+        </div>
+      )}
 
       {isProductLike && (
         <InlineField
@@ -183,6 +235,25 @@ export function DealInfoDealProductFields({
         />
       )}
 
+      {isLinkedProductDeal && (
+        <RelationPickerField
+          label="Existing Product"
+          entityKind="product"
+          value={draft.existingProductId}
+          selectionLabel={draft.existingProductPickLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
+          disabled={disabled}
+          placeholder={draft.projectId ? 'Search products…' : 'Select a project first…'}
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onSelect={(id, label) =>
+            patchDraft({ existingProductId: id, existingProductPickLabel: label })
+          }
+          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
+          onOpenSelected={productPicker.onOpenSelected}
+        />
+      )}
+
       {draft.type === 'MAINTENANCE' && (
         <InlineField
           variant="controlled"
@@ -193,25 +264,6 @@ export function DealInfoDealProductFields({
           icon={<Calendar size={12} />}
           disabled={disabled}
           onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
-        />
-      )}
-
-      {isExtension && (
-        <RelationPickerField
-          label="Existing Product"
-          entityKind="product"
-          value={draft.existingProductId}
-          selectionLabel={draft.existingProductPickLabel}
-          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
-          disabled={disabled}
-          placeholder="Search products…"
-          icon={<Layers size={12} />}
-          onSearch={searchProducts}
-          onSelect={(id, label) =>
-            patchDraft({ existingProductId: id, existingProductPickLabel: label })
-          }
-          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
-          {...productPicker}
         />
       )}
 

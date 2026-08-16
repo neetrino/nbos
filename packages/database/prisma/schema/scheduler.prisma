@@ -1,0 +1,35 @@
+// ─── SCHEDULER LEASE + RUN HISTORY (Phase 4) ───
+
+model SchedulerLease {
+  jobName      String   @id @map("job_name")
+  ownerId      String   @map("owner_id")
+  leaseUntil   DateTime @map("lease_until")
+  heartbeatAt  DateTime @map("heartbeat_at")
+  fencingToken BigInt   @default(0) @map("fencing_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([leaseUntil])
+  @@map("scheduler_leases")
+}
+
+model SchedulerRun {
+  id             String    @id @default(cuid())
+  jobName        String    @map("job_name")
+  ownerId        String    @map("owner_id")
+  fencingToken   BigInt    @map("fencing_token")
+  trigger        String
+  status         String
+  startedAt      DateTime  @map("started_at")
+  heartbeatAt    DateTime? @map("heartbeat_at")
+  finishedAt     DateTime? @map("finished_at")
+  durationMs     Int?      @map("duration_ms")
+  processedCount Int?      @map("processed_count")
+  errorCode      String?   @map("error_code")
+  errorMessage   String?   @map("error_message")
+  metadata       Json?
+
+  @@index([jobName, startedAt])
+  @@index([status, startedAt])
+  @@map("scheduler_runs")
+}

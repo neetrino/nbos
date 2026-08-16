@@ -17,7 +17,7 @@ export function ProjectsPageSettingsSheet({ items }: { items: Project[] }) {
   return (
     <PageSettingsSheet
       title="Project Hub — settings"
-      description="Options for this directory. The CSV reflects projects currently loaded on this page."
+      description="Options for this directory. The CSV reflects projects currently loaded in the list."
       triggerAriaLabel="Project Hub settings"
     >
       <Button

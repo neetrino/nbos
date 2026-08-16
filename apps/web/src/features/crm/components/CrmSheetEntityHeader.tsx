@@ -66,7 +66,7 @@ export function CrmSheetEntityHeader({
             ) : (
               <h2
                 onClick={onStartEditing}
-                className="text-foreground -mx-1 max-w-full min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                className="text-foreground hover:bg-muted -mx-1 max-w-full min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors"
                 title={titleEditHint}
               >
                 {title}

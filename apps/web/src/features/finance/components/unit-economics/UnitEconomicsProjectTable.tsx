@@ -56,7 +56,6 @@ export function UnitEconomicsProjectTable({ data }: { data: UnitEconomicsBoardDa
                 <tr key={row.projectId} className="hover:bg-muted/30">
                   <td className="border-border border-b px-3 py-2">
                     <p className="font-medium">{row.projectName}</p>
-                    <p className="text-muted-foreground text-[11px]">{row.projectCode}</p>
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
                     {row.unitCount}

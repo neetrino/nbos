@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Handshake } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,20 +10,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { RelationPickerField } from '@/components/shared';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  usePartnerRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Subscription } from '@/lib/api/finance';
 import { subscriptionsApi } from '@/lib/api/finance';
-import { partnersApi, type Partner } from '@/lib/api/partners';
-
-const PARTNER_LIST_PAGE_SIZE = 200;
 
 interface SubscriptionPartnerDialogProps {
   subscription: Subscription | null;
@@ -40,51 +36,16 @@ export function SubscriptionPartnerDialog({
   forceNestedBackdrop = false,
 }: SubscriptionPartnerDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [partnersLoading, setPartnersLoading] = useState(false);
-  const [partners, setPartners] = useState<Partner[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
-  const [partnerListError, setPartnerListError] = useState<string | null>(null);
-  const [partnerId, setPartnerId] = useState<string>('none');
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setPartnersLoading(true);
-    setPartnerListError(null);
-    partnersApi
-      .getAll({
-        page: 1,
-        pageSize: PARTNER_LIST_PAGE_SIZE,
-        status: 'ACTIVE',
-      })
-      .then((res) => {
-        if (!cancelled) {
-          setPartners(res.items);
-          setPartnerListError(null);
-        }
-      })
-      .catch((caught) => {
-        if (!cancelled) {
-          setPartners([]);
-          setPartnerListError(
-            getApiErrorMessage(
-              caught,
-              'Partners could not be loaded. Try again or save without changing partner.',
-            ),
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setPartnersLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [partnerLabel, setPartnerLabel] = useState<string | null>(null);
+  const searchPartners = usePartnerRelationSearch();
+  const partnerPicker = useRelationPickerActions('partner');
 
   useEffect(() => {
     if (!open || !subscription) return;
-    setPartnerId(subscription.partner?.id ?? 'none');
+    setPartnerId(subscription.partner?.id ?? null);
+    setPartnerLabel(subscription.partner?.name ?? null);
     setFormError(null);
   }, [open, subscription]);
 
@@ -96,7 +57,7 @@ export function SubscriptionPartnerDialog({
     setFormError(null);
     try {
       const updated = await subscriptionsApi.update(subscription.id, {
-        partnerId: partnerId === 'none' ? null : partnerId,
+        partnerId,
       });
       onSaved(updated);
       onOpenChange(false);
@@ -118,15 +79,10 @@ export function SubscriptionPartnerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>Partner for {subscription.code}</DialogTitle>
+          <DialogTitle>Partner for {getSubscriptionDisplayTitle(subscription)}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {partnerListError ? (
-            <p className="text-destructive text-sm" role="alert">
-              {partnerListError}
-            </p>
-          ) : null}
           {formError ? (
             <p className="text-destructive text-sm" role="alert">
               {formError}
@@ -134,28 +90,24 @@ export function SubscriptionPartnerDialog({
           ) : null}
 
           <div>
-            <Label>Partner</Label>
-            <Select
+            <RelationPickerField
+              label="Partner"
+              entityKind="partner"
               value={partnerId}
-              onValueChange={(v) => {
-                if (v) setPartnerId(v);
+              selectionLabel={partnerLabel}
+              placeholder="Search partners…"
+              icon={<Handshake size={12} />}
+              onSearch={searchPartners}
+              onSelect={(id, label) => {
+                setPartnerId(id);
+                setPartnerLabel(label);
               }}
-              disabled={partnersLoading}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={partnersLoading ? 'Loading partners…' : 'Select partner'}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {partners.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onClear={() => {
+                setPartnerId(null);
+                setPartnerLabel(null);
+              }}
+              {...partnerPicker}
+            />
             <p className="text-muted-foreground mt-2 text-xs">
               Only Active partners are listed. Clearing removes revenue-share linkage for billing
               workflows that depend on it.
@@ -166,7 +118,7 @@ export function SubscriptionPartnerDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || partnersLoading}>
+            <Button type="submit" disabled={loading}>
               {loading ? 'Saving…' : 'Save'}
             </Button>
           </DialogFooter>

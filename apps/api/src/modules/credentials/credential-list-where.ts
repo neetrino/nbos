@@ -29,7 +29,7 @@ export async function buildCredentialListWhere(
     favoritesOnly = false,
     folderId,
     withoutFolder = false,
-    viewScope,
+    bypassRowVisibility = false,
     includeArchived = false,
     scope,
   } = params;
@@ -64,16 +64,19 @@ export async function buildCredentialListWhere(
     dueSoonLimit.setUTCDate(dueSoonLimit.getUTCDate() + 14);
     where.nextRotationAt = { lte: dueSoonLimit };
   }
-  if (search) {
-    where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { provider: { is: { name: { contains: search, mode: 'insensitive' } } } },
-      { login: { contains: search, mode: 'insensitive' } },
-    ];
-  }
 
+  const searchOr: Prisma.CredentialWhereInput[] | undefined = search
+    ? [
+        { name: { contains: search, mode: 'insensitive' } },
+        { provider: { is: { name: { contains: search, mode: 'insensitive' } } } },
+        { login: { contains: search, mode: 'insensitive' } },
+      ]
+    : undefined;
+  if (searchOr) where.OR = searchOr;
+
+  const rbacBypass = credentialsRbacBypassesRowFilter(bypassRowVisibility);
   const visibilityCtx =
-    employeeId && !credentialsRbacBypassesRowFilter(viewScope)
+    employeeId && !rbacBypass
       ? await loadCredentialVisibilityContext(runtime.prisma, runtime.platformAccessResolver, {
           employeeId,
           departmentIds,
@@ -81,9 +84,15 @@ export async function buildCredentialListWhere(
       : undefined;
 
   if (tab && employeeId) {
-    applyCredentialTabFilter(where, tab, employeeId, visibilityCtx, viewScope);
+    applyCredentialTabFilter(where, tab, employeeId, visibilityCtx, bypassRowVisibility);
   } else if (visibilityCtx) {
-    where.OR = [...(where.OR ?? []), ...buildCredentialVisibilityOr(visibilityCtx)];
+    const visibilityOr = buildCredentialVisibilityOr(visibilityCtx);
+    if (searchOr) {
+      delete where.OR;
+      where.AND = [{ OR: searchOr }, { OR: visibilityOr }];
+    } else {
+      where.OR = visibilityOr;
+    }
   }
 
   return where;

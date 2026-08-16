@@ -2,76 +2,64 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
 import {
   PLATFORM_TRASH_PURGE_CRON_ENV,
   PLATFORM_TRASH_PURGE_DEFAULT_CRON,
   PLATFORM_TRASH_PURGE_ENABLED_ENV,
-  PLATFORM_TRASH_PURGE_JOB_NAME,
 } from '../platform-lifecycle/platform-trash-purge.constants';
-
-function isCronEnabled(config: ConfigService): boolean {
-  const raw = config.get<string>(PLATFORM_TRASH_PURGE_ENABLED_ENV)?.trim().toLowerCase();
-  return raw === 'true' || raw === '1' || raw === 'yes';
-}
-
-function resolveCronExpression(config: ConfigService): string {
-  const fromEnv = config.get<string>(PLATFORM_TRASH_PURGE_CRON_ENV)?.trim();
-  return fromEnv && fromEnv.length > 0 ? fromEnv : PLATFORM_TRASH_PURGE_DEFAULT_CRON;
-}
+import { SchedulerService } from './scheduler.service';
+import { ScheduledJobRegistry } from './scheduled-job-registry';
+import { shouldStartCronJob } from './scheduler-cron-gate';
+import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 
 @Injectable()
 export class PlatformTrashPurgeCron implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PlatformTrashPurgeCron.name);
+  private readonly jobName = SCHEDULER_JOB_NAMES.platformTrashPurge;
 
   constructor(
     private readonly config: ConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
-    private readonly platformTrashPurgeService: PlatformTrashPurgeService,
+    private readonly schedulerService: SchedulerService,
+    private readonly jobRegistry: ScheduledJobRegistry,
   ) {}
 
   onModuleInit(): void {
-    if (!isCronEnabled(this.config)) {
-      this.logger.log(
-        `Platform trash purge in-process cron is off (set ${PLATFORM_TRASH_PURGE_ENABLED_ENV}=true to enable).`,
-      );
+    if (!shouldStartCronJob(PLATFORM_TRASH_PURGE_ENABLED_ENV)) {
+      this.logger.log(`Cron ${this.jobName} not registered (role/flags).`);
       return;
     }
-
-    if (this.schedulerRegistry.doesExist('cron', PLATFORM_TRASH_PURGE_JOB_NAME)) {
-      return;
-    }
-
-    const expression = resolveCronExpression(this.config);
+    if (this.schedulerRegistry.doesExist('cron', this.jobName)) return;
+    const expression =
+      this.config.get<string>(PLATFORM_TRASH_PURGE_CRON_ENV)?.trim() ||
+      PLATFORM_TRASH_PURGE_DEFAULT_CRON;
     let job: CronJob;
     try {
       job = new CronJob(expression, () => {
         void this.runSafely();
       });
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : String(caught);
-      this.logger.error(`Invalid platform trash purge cron "${expression}": ${message}`);
+      this.logger.error(`Invalid cron for ${this.jobName}`, caught);
       return;
     }
-
-    this.schedulerRegistry.addCronJob(PLATFORM_TRASH_PURGE_JOB_NAME, job);
+    this.schedulerRegistry.addCronJob(this.jobName, job);
     job.start();
-    this.logger.log(`Registered platform trash purge cron (${expression}).`);
+    this.jobRegistry.register(this.jobName);
+    this.logger.log(`Registered cron ${this.jobName} (${expression})`);
   }
 
   onModuleDestroy(): void {
-    if (!this.schedulerRegistry.doesExist('cron', PLATFORM_TRASH_PURGE_JOB_NAME)) {
-      return;
+    if (this.schedulerRegistry.doesExist('cron', this.jobName)) {
+      this.schedulerRegistry.deleteCronJob(this.jobName);
     }
-    this.schedulerRegistry.deleteCronJob(PLATFORM_TRASH_PURGE_JOB_NAME);
   }
 
   private async runSafely(): Promise<void> {
+    if (this.jobRegistry.isShuttingDown()) return;
     try {
-      await this.platformTrashPurgeService.runRetentionPurge();
+      await this.schedulerService.runPlatformTrashPurge('cron');
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : String(caught);
-      this.logger.error(`Platform trash purge cron failed: ${message}`);
+      this.logger.error(`Platform trash purge cron failed`, caught);
     }
   }
 }

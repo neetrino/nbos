@@ -50,16 +50,28 @@ describe('InvoicesService', () => {
     reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
   };
 
+  const paymentsService = {
+    create: vi.fn().mockResolvedValue(undefined),
+  };
+
+  const moduleRef = {
+    get: vi.fn().mockReturnValue(paymentsService),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     operationalJournal.appendInvoiceCardAccrualLine.mockClear();
+    paymentsService.create.mockClear();
+    moduleRef.get.mockClear();
+    moduleRef.get.mockReturnValue(paymentsService);
     service = new InvoicesService(
       prisma as never,
       {
         handle: vi.fn().mockResolvedValue(undefined),
       } as never,
       operationalJournal as never,
+      moduleRef as never,
     );
   });
 
@@ -222,19 +234,55 @@ describe('InvoicesService', () => {
       );
     });
 
-    it('rejects PAID money before invoice is fully covered by payments', async () => {
-      prisma.invoice.findUnique.mockResolvedValue({
-        id: 'manual-inv',
-        orderId: null,
-        amount: 100000,
-        dueDate: new Date('2026-04-20'),
-        payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
-      });
+    it('creates payment for outstanding then returns when marking PAID', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'manual-inv',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('manual-inv', {
+            payments: [
+              { id: 'p1', amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+              { id: 'p2', amount: 60000, paymentDate: new Date('2026-04-17T00:00:00.000Z') },
+            ],
+          }),
+        );
 
-      await expect(service.updateMoneyStatus('manual-inv', 'PAID')).rejects.toThrow(
-        BadRequestException,
+      await service.updateMoneyStatus('manual-inv', 'PAID');
+
+      expect(paymentsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceId: 'manual-inv',
+          amount: 60000,
+          paymentMethod: 'TRANSACTION',
+          notes: 'Auto-created when invoice marked as paid',
+        }),
       );
       expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+
+    it('does not create payment when PAID and already fully covered', async () => {
+      const paidDate = new Date('2026-04-12T00:00:00.000Z');
+      const fullPayments = [
+        { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+        { id: 'p2', amount: 40000, paymentDate: paidDate },
+      ];
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: '1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          payments: fullPayments.map((p) => ({ amount: p.amount, paymentDate: p.paymentDate })),
+        })
+        .mockResolvedValueOnce(mockInvoiceFindByIdRow('1', { paidDate, payments: fullPayments }));
+      prisma.invoice.update.mockResolvedValue({});
+      await service.updateMoneyStatus('1', 'PAID');
+      expect(paymentsService.create).not.toHaveBeenCalled();
     });
 
     it('promotes the linked deal when all order invoices are paid and amount is covered', async () => {

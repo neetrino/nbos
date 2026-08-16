@@ -155,12 +155,12 @@
 
 ### PAR-02: Partner Accrual (Subscription)
 
-| Параметр       | Значение                                                                                                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Триггер**    | Subscription Invoice → Paid                                                                                                                                                    |
-| **Условия**    | Payment Type = Subscription AND Partner Referral Terms существуют                                                                                                              |
-| **Действия**   | Создаётся Partner Accrual от реально полученной суммы. Accrual попадает в Partner Balance конкретной subscription-связи. payout_rule решает, когда включить его в Payout Batch |
-| **Получатели** | Финансовый директор                                                                                                                                                            |
+| Параметр       | Значение                                                                                                                                                                                                                                                                                                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Триггер**    | Subscription Invoice → Paid                                                                                                                                                                                                                                                                                                                                             |
+| **Условия**    | Payment Type = Subscription AND Partner Referral Terms существуют                                                                                                                                                                                                                                                                                                       |
+| **Действия**   | Создаётся Partner Accrual от реально полученной суммы. Для DEV_ONLY / DEV_AND_MAINTENANCE accrual держится как ACCRUED до сдачи продукта/расширения, затем становится ELIGIBLE. MAINTENANCE_ONLY и PARTNER_SERVICE сразу ELIGIBLE. Accrual попадает в Partner Balance конкретной subscription-связи. payout_rule решает, когда включить ELIGIBLE accrual в Payout Batch |
+| **Получатели** | Финансовый директор                                                                                                                                                                                                                                                                                                                                                     |
 
 ### EXP-02: Expense from Partner Payout Batch
 
@@ -396,40 +396,40 @@
 
 ## Сводная таблица всех автоматизаций
 
-| ID     | Модуль   | Триггер                                        | Краткое описание                              |
-| ------ | -------- | ---------------------------------------------- | --------------------------------------------- |
-| CRM-01 | CRM      | Lead создан (внешний канал)                    | Автоопределение источника лида                |
-| CRM-02 | CRM      | Lead создан                                    | Обнаружение дублей                            |
-| CRM-03 | CRM      | Lead → SQL                                     | Автосоздание сделки                           |
-| CRM-04 | CRM      | Deal Won + Payment                             | Автосоздание Order + Project                  |
-| CRM-05 | CRM      | Extension Deal Won                             | Создание расширения в проекте                 |
-| INV-01 | Invoices | Billing Day — N дней                           | Автосоздание подписочного счёта               |
-| INV-02 | Invoices | Invoice создан (Tax)                           | Переход на стадию госсистемы                  |
-| INV-03 | Invoices | Invoice создан (Tax-Free)                      | Пропуск стадии госсистемы                     |
-| INV-04 | Invoices | Invoice → Send Message                         | WhatsApp group через Notification Engine      |
-| INV-05 | Invoices | Overdue Day 1                                  | 1-е напоминание о просрочке                   |
-| INV-06 | Invoices | Overdue Day 3                                  | 2-е напоминание о просрочке                   |
-| INV-07 | Invoices | Overdue Day 6                                  | 3-е напоминание + эскалация                   |
-| EXP-01 | Expenses | 1-е число месяца                               | Автосоздание затрат из плана                  |
-| PAR-01 | Partners | Project Delivered + Order Fully Paid (Classic) | Partner Accrual по classic order              |
-| PAR-02 | Partners | Subscription Invoice Paid                      | Partner Accrual по subscription payment       |
-| EXP-02 | Expenses | Payout Batch Approved                          | Expense Card для фактической выплаты партнёру |
-| EXP-04 | Expenses | Домен истекает через 2 месяца                  | Invoice клиенту + Task                        |
-| EXP-05 | Expenses | Pass-through Invoice Paid                      | Задача на покупку/продление                   |
-| BON-01 | Bonuses  | Invoice Paid (Deal)                            | Бонус продавцу                                |
-| BON-02 | Bonuses  | Work Done + Invoice Paid                       | Бонус исполнителю                             |
-| BON-03 | Bonuses  | Product Done / новая оплата / manual release   | Product bonus pool release                    |
-| BON-04 | Bonuses  | Конец месяца                                   | KPI-gate проверка                             |
-| BON-05 | Bonuses  | 1-е число месяца                               | Формирование payroll                          |
-| PRJ-01 | Projects | Product создан                                 | Автогенерация задач из шаблона                |
-| PRJ-02 | Projects | Product создан (credentials пусты)             | Задача на заполнение credentials              |
-| PRJ-03 | Projects | Все задачи Product Done                        | Уведомление PM о закрытии                     |
-| PRJ-04 | Projects | Product.stage изменилась                       | Обновление статуса Project                    |
-| PRJ-05 | Projects | Все Products закрыты                           | Предложение архивации                         |
-| TSK-01 | Tasks    | Task просрочена                                | Эскалация                                     |
-| TSK-02 | Tasks    | Sprint завершился                              | Сводка незавершённых задач                    |
-| TSK-03 | Tasks    | Task.status изменился                          | Уведомление наблюдателям                      |
-| SUP-01 | Support  | Ticket создан                                  | Назначение SLA-дедлайнов                      |
-| SUP-02 | Support  | SLA 75%                                        | Предупреждение                                |
-| SUP-03 | Support  | SLA нарушен                                    | Эскалация PM + CEO                            |
-| SUP-04 | Support  | ≥3 похожих тикета за 30 дней                   | Предложение Problem-тикета                    |
+| ID     | Модуль   | Триггер                                        | Краткое описание                                                    |
+| ------ | -------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| CRM-01 | CRM      | Lead создан (внешний канал)                    | Автоопределение источника лида                                      |
+| CRM-02 | CRM      | Lead создан                                    | Обнаружение дублей                                                  |
+| CRM-03 | CRM      | Lead → SQL                                     | Автосоздание сделки                                                 |
+| CRM-04 | CRM      | Deal Won + Payment                             | Автосоздание Order + Project                                        |
+| CRM-05 | CRM      | Extension Deal Won                             | Создание расширения в проекте                                       |
+| INV-01 | Invoices | Billing Day — N дней                           | Автосоздание подписочного счёта                                     |
+| INV-02 | Invoices | Invoice создан (Tax)                           | Переход на стадию госсистемы                                        |
+| INV-03 | Invoices | Invoice создан (Tax-Free)                      | Пропуск стадии госсистемы                                           |
+| INV-04 | Invoices | Invoice → Send Message                         | WhatsApp group через Notification Engine                            |
+| INV-05 | Invoices | Overdue Day 1                                  | 1-е напоминание о просрочке                                         |
+| INV-06 | Invoices | Overdue Day 3                                  | 2-е напоминание о просрочке                                         |
+| INV-07 | Invoices | Overdue Day 6                                  | 3-е напоминание + эскалация                                         |
+| EXP-01 | Expenses | 1-е число месяца                               | Автосоздание затрат из плана                                        |
+| PAR-01 | Partners | Project Delivered + Order Fully Paid (Classic) | Partner Accrual по classic order                                    |
+| PAR-02 | Partners | Subscription Invoice Paid                      | Partner Accrual по subscription payment; DEV — eligible после сдачи |
+| EXP-02 | Expenses | Payout Batch Approved                          | Expense Card для фактической выплаты партнёру                       |
+| EXP-04 | Expenses | Домен истекает через 2 месяца                  | Invoice клиенту + Task                                              |
+| EXP-05 | Expenses | Pass-through Invoice Paid                      | Задача на покупку/продление                                         |
+| BON-01 | Bonuses  | Invoice Paid (Deal)                            | Бонус продавцу                                                      |
+| BON-02 | Bonuses  | Work Done + Invoice Paid                       | Бонус исполнителю                                                   |
+| BON-03 | Bonuses  | Product Done / новая оплата / manual release   | Product bonus pool release                                          |
+| BON-04 | Bonuses  | Конец месяца                                   | KPI-gate проверка                                                   |
+| BON-05 | Bonuses  | 1-е число месяца                               | Формирование payroll                                                |
+| PRJ-01 | Projects | Product создан                                 | Автогенерация задач из шаблона                                      |
+| PRJ-02 | Projects | Product создан (credentials пусты)             | Задача на заполнение credentials                                    |
+| PRJ-03 | Projects | Все задачи Product Done                        | Уведомление PM о закрытии                                           |
+| PRJ-04 | Projects | Product.stage изменилась                       | Обновление статуса Project                                          |
+| PRJ-05 | Projects | Все Products закрыты                           | Предложение архивации                                               |
+| TSK-01 | Tasks    | Task просрочена                                | Эскалация                                                           |
+| TSK-02 | Tasks    | Sprint завершился                              | Сводка незавершённых задач                                          |
+| TSK-03 | Tasks    | Task.status изменился                          | Уведомление наблюдателям                                            |
+| SUP-01 | Support  | Ticket создан                                  | Назначение SLA-дедлайнов                                            |
+| SUP-02 | Support  | SLA 75%                                        | Предупреждение                                                      |
+| SUP-03 | Support  | SLA нарушен                                    | Эскалация PM + CEO                                                  |
+| SUP-04 | Support  | ≥3 похожих тикета за 30 дней                   | Предложение Problem-тикета                                          |

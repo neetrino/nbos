@@ -23,6 +23,7 @@ interface DealCombinedInfoSectionProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  outsourceToggleLocked?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
@@ -34,6 +35,7 @@ export function DealCombinedInfoSection({
   searchProducts,
   searchCompanies,
   disabled = false,
+  outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: DealCombinedInfoSectionProps) {
   const { open, onOpenChange } = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.DEAL_PROJECT);
@@ -48,11 +50,10 @@ export function DealCombinedInfoSection({
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
         <div className="min-w-0 sm:pr-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project & billing</p>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Billing</p>
           <DealInfoProjectBillingFields
             draft={draft}
             patchDraft={patchDraft}
-            searchProjects={searchProjects}
             searchCompanies={searchCompanies}
             disabled={disabled}
             gateRequiredFields={gateRequiredFields}
@@ -64,8 +65,10 @@ export function DealCombinedInfoSection({
             draft={draft}
             patchDraft={patchDraft}
             filteredProductTypeOptions={filteredProductTypeOptions}
+            searchProjects={searchProjects}
             searchProducts={searchProducts}
             disabled={disabled}
+            outsourceToggleLocked={outsourceToggleLocked}
             gateRequiredFields={gateRequiredFields}
           />
         </div>

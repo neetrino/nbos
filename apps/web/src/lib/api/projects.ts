@@ -6,6 +6,7 @@ export interface EmployeeRef {
   lastName: string;
   email?: string;
   role?: string;
+  avatar?: string | null;
 }
 
 export interface DeliveryLifecycleProjection {
@@ -58,6 +59,7 @@ export interface ProjectProductSummary {
   order?: {
     id: string;
     status?: string;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
     deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
@@ -99,6 +101,7 @@ export interface ProjectExtensionSummary {
   order?: {
     id: string;
     status?: string | null;
+    paymentType?: string | null;
     invoices?: Array<{ moneyStatus: string }>;
     deal?: { id: string; code?: string; name?: string | null } | null;
   } | null;
@@ -168,8 +171,14 @@ export interface ProjectCredential {
 export interface ProjectSubscription {
   id: string;
   code: string;
+  name: string;
   type: string;
-  baseMonthlyAmount: string;
+  productId?: string;
+  reminderLanguage?: string;
+  amount: string;
+  coverageMonthCount: number;
+  monthlyEquivalentAmount: string;
+  billingFrequency: string;
   billingDay: number;
   status: string;
   billingStartDate: string;

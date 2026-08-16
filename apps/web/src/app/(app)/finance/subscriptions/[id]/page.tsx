@@ -5,29 +5,26 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Repeat } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
-import { DetailSheetFormFooter, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { DetailSheetFormFooter, ErrorState, LoadingState } from '@/components/shared';
 import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
 import { SubscriptionGeneralTab } from '@/features/finance/components/subscriptions/SubscriptionGeneralTab';
+import { SubscriptionGridStatusControl } from '@/features/finance/components/subscriptions/SubscriptionGridStatusControl';
+import { useSubscriptionDetailMutations } from '@/features/finance/components/subscriptions/use-subscription-detail-mutations';
+import { useSubscriptionGeneralSave } from '@/features/finance/components/subscriptions/use-subscription-general-save';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
-  buildSubscriptionGeneralPatch,
   createSubscriptionGeneralDraft,
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
-import {
-  formatAmount,
-  getSubscriptionStatus,
-  getSubscriptionType,
-} from '@/features/finance/constants/finance';
+import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
+import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
+import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
-
-function subscriptionSaveErrorMessage(err: unknown): string {
-  if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
-}
 
 export default function SubscriptionDetailPage() {
   const params = useParams<{ id: string }>();
@@ -37,8 +34,6 @@ export default function SubscriptionDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const generalDirtyRef = useRef(false);
 
   const fetchSubscription = useCallback(async () => {
@@ -76,14 +71,19 @@ export default function SubscriptionDetailPage() {
   }, [
     subscription?.id,
     subscription?.status,
-    subscription?.baseMonthlyAmount,
+    subscription?.amount,
     subscription?.billingDay,
     subscription?.billingFrequency,
+    subscription?.coverageMonthCount,
     subscription?.partner?.id,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const replaceGeneralDraft = useCallback((next: SubscriptionGeneralDraft) => {
+    setGeneralDraft(next);
   }, []);
 
   const generalDirty =
@@ -100,41 +100,32 @@ export default function SubscriptionDetailPage() {
     setGeneralSnap(next);
   }, []);
 
-  const handleGeneralSave = useCallback(() => {
-    if (!subscription || !generalDraft || !generalSnap) return;
-    setGeneralError(null);
-    const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
-    if (Object.keys(patch).length === 0) return;
-
-    const draftAtSave = generalDraft;
-    const snapAtSave = generalSnap;
-    setGeneralSnap({ ...draftAtSave });
-    setSaving(true);
-
-    void (async () => {
-      try {
-        const updated = await subscriptionsApi.update(subscription.id, patch);
-        generalDirtyRef.current = false;
-        handleSubscriptionChange(updated);
-      } catch (err) {
-        setGeneralSnap(snapAtSave);
-        setGeneralDraft(draftAtSave);
-        setGeneralError(subscriptionSaveErrorMessage(err));
-      } finally {
-        setSaving(false);
-      }
-    })();
-  }, [subscription, generalDraft, generalSnap, handleSubscriptionChange]);
-
-  const handleGeneralCancel = useCallback(() => {
-    setGeneralError(null);
-    if (generalSnap) setGeneralDraft({ ...generalSnap });
-  }, [generalSnap]);
+  const {
+    saving,
+    generalError,
+    periodConfirmOpen,
+    setPeriodConfirmOpen,
+    periodConfirmDescription,
+    handleSave: handleGeneralSave,
+    handleCancel: handleGeneralCancel,
+    confirmPeriodChangeAndSave,
+  } = useSubscriptionGeneralSave({
+    subscription,
+    generalDraft,
+    generalSnap,
+    onSaved: handleSubscriptionChange,
+    setGeneralDraft,
+    setGeneralSnap,
+    onDirtyReset: () => {
+      generalDirtyRef.current = false;
+    },
+  });
 
   useFinanceDocumentTitle(
     subscriptionDetailPageTitle({
       loading,
       loadFailed: Boolean(error || !subscription),
+      subscriptionName: subscription?.name,
       subscriptionCode: subscription?.code,
     }),
   );
@@ -166,7 +157,9 @@ export default function SubscriptionDetailPage() {
   }
 
   const subType = getSubscriptionType(subscription.type);
-  const subStatus = getSubscriptionStatus(subscription.status);
+  const termSummary = formatSubscriptionTermSummary(subscription);
+  const displayTitle = getSubscriptionDisplayTitle(subscription);
+  const showCodeSubline = displayTitle !== subscription.code;
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -182,9 +175,16 @@ export default function SubscriptionDetailPage() {
           <div className="min-w-0 flex-1">
             <div className="inline-flex flex-wrap items-center gap-2">
               <Repeat className="text-muted-foreground size-5" aria-hidden />
-              <h1 className="text-foreground text-2xl font-bold tracking-tight">
-                {subscription.code}
-              </h1>
+              <div className="min-w-0">
+                <h1 className="text-foreground text-2xl font-bold tracking-tight">
+                  {displayTitle}
+                </h1>
+                {showCodeSubline ? (
+                  <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                    {subscription.code}
+                  </p>
+                ) : null}
+              </div>
               {subType ? (
                 <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
                   {subType.label}
@@ -192,11 +192,21 @@ export default function SubscriptionDetailPage() {
               ) : null}
             </div>
             <p className="text-muted-foreground mt-1 text-sm">
-              {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo ·{' '}
+              {formatSubscriptionPeriodStatement(subscription)}
+              {termSummary ? (
+                <>
+                  <span className="mx-1.5">·</span>
+                  {termSummary}
+                </>
+              ) : null}
+              <span className="mx-1.5">·</span>
               {subscription.project.name}
             </p>
           </div>
-          {subStatus ? <StatusBadge label={subStatus.label} variant={subStatus.variant} /> : null}
+          <SubscriptionPageStatusControl
+            subscription={subscription}
+            onSubscriptionChange={handleSubscriptionChange}
+          />
         </div>
       </div>
 
@@ -205,6 +215,7 @@ export default function SubscriptionDetailPage() {
           subscription={subscription}
           draft={generalDraft}
           patchDraft={patchGeneralDraft}
+          replaceDraft={replaceGeneralDraft}
           formDisabled={saving}
         />
       </div>
@@ -217,6 +228,47 @@ export default function SubscriptionDetailPage() {
         onSave={handleGeneralSave}
         onCancel={handleGeneralCancel}
       />
+
+      <SubscriptionBillingPeriodConfirmDialog
+        open={periodConfirmOpen}
+        subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
+        description={periodConfirmDescription}
+        isSubmitting={saving}
+        onOpenChange={setPeriodConfirmOpen}
+        onConfirm={confirmPeriodChangeAndSave}
+      />
+    </div>
+  );
+}
+
+function SubscriptionPageStatusControl({
+  subscription,
+  onSubscriptionChange,
+}: {
+  subscription: Subscription;
+  onSubscriptionChange: (updated: Subscription) => void;
+}) {
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { activatingId, cancellingId, holdingId, handleActivate, handleCancel, handleHold } =
+    useSubscriptionDetailMutations(subscription, onSubscriptionChange, setActionError);
+
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <SubscriptionGridStatusControl
+        subscription={subscription}
+        activatingId={activatingId}
+        cancellingId={cancellingId}
+        holdingId={holdingId}
+        onActivate={() => void handleActivate()}
+        onCancel={handleCancel}
+        onHold={handleHold}
+        size="sm"
+      />
+      {actionError ? (
+        <p className="text-destructive max-w-xs text-right text-sm" role="alert">
+          {actionError}
+        </p>
+      ) : null}
     </div>
   );
 }

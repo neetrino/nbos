@@ -46,7 +46,7 @@ export function SnapshotMetric({
   return (
     <div
       className={cn(
-        'border-border/70 flex items-center gap-3 rounded-xl border bg-white px-3 py-3 dark:bg-white',
+        'border-border/70 bg-card flex items-center gap-3 rounded-xl border px-3 py-3',
         fullWidth && 'col-span-2',
       )}
     >

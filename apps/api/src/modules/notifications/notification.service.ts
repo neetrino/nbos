@@ -1,7 +1,37 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+  BadRequestException,
+} from '@nestjs/common';
+import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
+import {
+  isNotificationInboxStateReadEnabled,
+  isNotificationInboxStateWriteEnabled,
+  isNotificationInboxStateShadowReadEnabled,
+  resolveInboxShadowReadSampleRate,
+} from './notification-inbox-state.flags';
+import {
+  isNotificationCommandV2Enabled,
+  isNotificationSseFromInboxStateEnabled,
+} from './notification-command.flags';
+import { NotificationCommandService } from './notification-command.service';
+import {
+  decrementInboxUnread,
+  incrementInboxUnread,
+  readInboxState,
+  resetInboxUnread,
+  syncInboxUnreadToActual,
+  type InboxStateSnapshot,
+} from './notification-inbox-state.ops';
+import { recordInboxMetric } from './notification-inbox-metrics';
+import { decodeNotificationCursor, encodeNotificationCursor } from './notification-list-cursor';
 import { resolveNotificationRuleConfig } from './notification-rules';
+import { createHash } from 'node:crypto';
 
 type InAppNotificationRow = {
   id: string;
@@ -61,6 +91,19 @@ interface PaginationParams {
   pageSize?: number;
   category?: string;
   includeArchived?: boolean;
+}
+
+interface CursorPaginationParams {
+  cursor?: string;
+  limit?: number;
+  category?: string;
+  includeArchived?: boolean;
+}
+
+export interface NotificationCursorListResult {
+  items: NotificationRow[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 export interface NotificationPreferenceRow {
@@ -146,9 +189,64 @@ function toNotificationRow(row: InAppNotificationRow): NotificationRow {
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    @Optional() private readonly realtimePublisher?: NotificationRealtimePublisher,
+    @Optional() private readonly commands?: NotificationCommandService,
+  ) {}
 
   async create(params: CreateNotificationParams): Promise<NotificationRow> {
+    if (isNotificationCommandV2Enabled() && this.commands) {
+      return this.commands.createOne(params);
+    }
+    return this.createLegacy(params);
+  }
+
+  /** Multi-recipient create — uses V2/bulk path when flags enabled. */
+  async createMany(
+    command: import('./notification-command.service').CreateManyNotificationCommand,
+  ): Promise<import('./notification-command.service').CreateManyResult> {
+    if (isNotificationCommandV2Enabled() && this.commands) {
+      return this.commands.createMany(command);
+    }
+    const uniqueRecipients = [...new Set(command.recipientIds.filter(Boolean))];
+    const rows: NotificationRow[] = [];
+    let inserted = 0;
+    let filtered = 0;
+    for (const recipientId of uniqueRecipients) {
+      const dedupeKey = command.dedupeKeySuffix
+        ? `${command.dedupeKeyPrefix}:${recipientId}:${command.dedupeKeySuffix}`
+        : `${command.dedupeKeyPrefix}:${recipientId}`;
+      const row = await this.createLegacy({
+        type: command.type,
+        recipientId,
+        title: command.title,
+        body: command.body,
+        link: command.link,
+        actionLabel: command.actionLabel,
+        category: command.category,
+        priority: command.priority,
+        entityType: command.entityType,
+        entityId: command.entityId,
+        sourceModule: command.sourceModule,
+        dedupeKey,
+        idempotencyKey: dedupeKey,
+        payload: command.payload,
+      });
+      if (row.id.startsWith('skipped:')) filtered += 1;
+      else inserted += 1;
+      rows.push(row);
+    }
+    return {
+      requested: uniqueRecipients.length,
+      filtered,
+      inserted,
+      duplicatesSkipped: 0,
+      rows,
+    };
+  }
+
+  private async createLegacy(params: CreateNotificationParams): Promise<NotificationRow> {
     const userPref = await this.resolveUserPreference(params.recipientId, params.type);
     if (!userPref.enabled || !userPref.channels.includes('IN_APP')) {
       const skippedAt = new Date();
@@ -175,7 +273,7 @@ export class NotificationService {
     const priority = params.priority ?? ruleConfig.priority;
     const category = params.category ?? ruleConfig.category;
 
-    const row = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const fingerprint = notificationFingerprint(params);
       const dedupeKey = params.dedupeKey ?? `in_app:${fingerprint}`;
       const idempotencyKey = params.idempotencyKey ?? `direct:${fingerprint}`;
@@ -185,7 +283,9 @@ export class NotificationService {
           where: notificationWhere(params),
           orderBy: { createdAt: 'desc' },
         });
-        if (existing) return existing;
+        if (existing) {
+          return { row: existing, created: false as const, inbox: undefined };
+        }
       }
 
       const rule = await tx.notificationRule.upsert({
@@ -232,7 +332,7 @@ export class NotificationService {
         },
       });
 
-      return tx.inAppNotification.create({
+      const created = await tx.inAppNotification.create({
         data: {
           recipientEmployeeId: params.recipientId,
           type: params.type,
@@ -246,10 +346,22 @@ export class NotificationService {
           entityId: params.entityId ?? null,
         },
       });
+
+      let inbox: InboxStateSnapshot | undefined;
+      if (isNotificationInboxStateWriteEnabled()) {
+        inbox = await incrementInboxUnread(tx, params.recipientId);
+      }
+      return { row: created, created: true as const, inbox };
     });
 
     this.logger.log(`Notification created for user ${params.recipientId}: ${params.title}`);
-    return toNotificationRow(row);
+    if (result.created) {
+      await this.emitRealtime(params.recipientId, {
+        invalidateList: true,
+        snapshot: result.inbox,
+      });
+    }
+    return toNotificationRow(result.row);
   }
 
   async findByUser(userId: string, pagination: PaginationParams = {}) {
@@ -264,7 +376,7 @@ export class NotificationService {
     const [rows, total] = await Promise.all([
       this.prisma.inAppNotification.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -282,66 +394,348 @@ export class NotificationService {
     };
   }
 
-  async archive(id: string, userId: string): Promise<NotificationRow> {
-    const owned = await this.prisma.inAppNotification.findFirst({
-      where: { id, recipientEmployeeId: userId },
-    });
-    if (!owned) {
-      throw new NotFoundException(`Notification ${id} not found`);
+  /**
+   * Cursor list for dropdown / infinite scroll — **no COUNT(*)**.
+   * Sort: createdAt DESC, id DESC. Uses take+1 for hasMore.
+   */
+  async findByUserCursor(
+    userId: string,
+    pagination: CursorPaginationParams = {},
+  ): Promise<NotificationCursorListResult> {
+    const limit = normalizePageSize(pagination.limit);
+    const where: Prisma.InAppNotificationWhereInput = {
+      recipientEmployeeId: userId,
+      ...(pagination.category ? { category: pagination.category } : {}),
+      ...(pagination.includeArchived ? {} : { archivedAt: null }),
+    };
+
+    if (pagination.cursor) {
+      const decoded = decodeNotificationCursor(pagination.cursor);
+      if (!decoded) {
+        throw new BadRequestException('Invalid notification cursor');
+      }
+      const cursorDate = new Date(decoded.createdAt);
+      where.AND = [
+        {
+          OR: [
+            { createdAt: { lt: cursorDate } },
+            { createdAt: cursorDate, id: { lt: decoded.id } },
+          ],
+        },
+      ];
     }
-    const now = new Date();
-    const row = await this.prisma.inAppNotification.update({
-      where: { id },
-      data: {
-        archivedAt: now,
-        isRead: true,
-        readAt: owned.readAt ?? now,
-      },
+
+    const rows = await this.prisma.inAppNotification.findMany({
+      where,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
     });
-    return toNotificationRow(row);
+
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const last = pageRows[pageRows.length - 1];
+    const nextCursor =
+      hasMore && last
+        ? encodeNotificationCursor({
+            createdAt: last.createdAt.toISOString(),
+            id: last.id,
+          })
+        : null;
+
+    return {
+      items: pageRows.map(toNotificationRow),
+      nextCursor,
+      hasMore,
+    };
+  }
+
+  async archive(id: string, userId: string): Promise<NotificationRow> {
+    const writeInbox = isNotificationInboxStateWriteEnabled();
+    const now = new Date();
+
+    if (!writeInbox) {
+      const owned = await this.prisma.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      if (owned.archivedAt) {
+        return toNotificationRow(owned);
+      }
+      const row = await this.prisma.inAppNotification.update({
+        where: { id },
+        data: {
+          archivedAt: now,
+          isRead: true,
+          readAt: owned.readAt ?? now,
+        },
+      });
+      if (!owned.isRead) {
+        await this.emitRealtime(userId, { invalidateList: true });
+      }
+      return toNotificationRow(row);
+    }
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.$queryRaw<Array<InAppNotificationRow & { was_unread: boolean }>>`
+        WITH picked AS (
+          SELECT id, is_read AS was_unread
+          FROM in_app_notifications
+          WHERE id = ${id}
+            AND recipient_employee_id = ${userId}
+            AND archived_at IS NULL
+          FOR UPDATE
+        ),
+        upd AS (
+          UPDATE in_app_notifications n
+          SET
+            archived_at = CURRENT_TIMESTAMP,
+            is_read = true,
+            read_at = COALESCE(n.read_at, CURRENT_TIMESTAMP)
+          FROM picked
+          WHERE n.id = picked.id
+          RETURNING
+            n.id,
+            n.recipient_employee_id AS "recipientEmployeeId",
+            n.type,
+            n.category,
+            n.priority,
+            n.title,
+            n.body,
+            n.link,
+            n.action_label AS "actionLabel",
+            n.entity_type AS "entityType",
+            n.entity_id AS "entityId",
+            n.is_read AS "isRead",
+            n.read_at AS "readAt",
+            n.archived_at AS "archivedAt",
+            n.created_at AS "createdAt",
+            picked.was_unread
+        )
+        SELECT * FROM upd
+      `;
+      if (updated[0]) {
+        let inbox: InboxStateSnapshot | undefined;
+        if (updated[0].was_unread) {
+          inbox = await decrementInboxUnread(tx, userId);
+        }
+        return {
+          row: updated[0],
+          changed: true as const,
+          wasUnread: updated[0].was_unread,
+          inbox,
+        };
+      }
+      const owned = await tx.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      return {
+        row: owned,
+        changed: false as const,
+        wasUnread: false,
+        inbox: undefined,
+      };
+    });
+
+    if (outcome.changed && outcome.wasUnread) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
+    }
+    return toNotificationRow(outcome.row);
   }
 
   async markAsRead(id: string, userId: string): Promise<NotificationRow> {
-    const owned = await this.prisma.inAppNotification.findFirst({
-      where: { id, recipientEmployeeId: userId },
-    });
-    if (!owned) {
-      throw new NotFoundException(`Notification ${id} not found`);
+    const writeInbox = isNotificationInboxStateWriteEnabled();
+
+    if (!writeInbox) {
+      const owned = await this.prisma.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      if (owned.isRead) {
+        return toNotificationRow(owned);
+      }
+      const row = await this.prisma.inAppNotification.update({
+        where: { id },
+        data: { isRead: true, readAt: new Date() },
+      });
+      await this.emitRealtime(userId, { invalidateList: true });
+      return toNotificationRow(row);
     }
-    const row = await this.prisma.inAppNotification.update({
-      where: { id },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.$queryRaw<InAppNotificationRow[]>`
+        UPDATE in_app_notifications
+        SET is_read = true, read_at = CURRENT_TIMESTAMP
+        WHERE id = ${id}
+          AND recipient_employee_id = ${userId}
+          AND is_read = false
+        RETURNING
+          id,
+          recipient_employee_id AS "recipientEmployeeId",
+          type,
+          category,
+          priority,
+          title,
+          body,
+          link,
+          action_label AS "actionLabel",
+          entity_type AS "entityType",
+          entity_id AS "entityId",
+          is_read AS "isRead",
+          read_at AS "readAt",
+          archived_at AS "archivedAt",
+          created_at AS "createdAt"
+      `;
+      if (updated[0]) {
+        const inbox = await decrementInboxUnread(tx, userId);
+        return { row: updated[0], changed: true as const, inbox };
+      }
+      const owned = await tx.inAppNotification.findFirst({
+        where: { id, recipientEmployeeId: userId },
+      });
+      if (!owned) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      return { row: owned, changed: false as const, inbox: undefined };
     });
-    return toNotificationRow(row);
+
+    if (outcome.changed) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
+    }
+    return toNotificationRow(outcome.row);
   }
 
   async markAllAsRead(userId: string): Promise<{ updated: number }> {
-    const result = await this.prisma.inAppNotification.updateMany({
-      where: {
-        recipientEmployeeId: userId,
-        isRead: false,
-        archivedAt: null,
-      },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
+    const writeInbox = isNotificationInboxStateWriteEnabled();
+
+    if (!writeInbox) {
+      const result = await this.prisma.inAppNotification.updateMany({
+        where: {
+          recipientEmployeeId: userId,
+          isRead: false,
+          archivedAt: null,
+        },
+        data: { isRead: true, readAt: new Date() },
+      });
+      if (result.count > 0) {
+        await this.emitRealtime(userId, { invalidateList: true });
+      }
+      return { updated: result.count };
+    }
+
+    const outcome = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.$queryRaw<Array<{ updated: bigint }>>`
+        WITH updated AS (
+          UPDATE in_app_notifications
+          SET is_read = true, read_at = CURRENT_TIMESTAMP
+          WHERE recipient_employee_id = ${userId}
+            AND is_read = false
+            AND archived_at IS NULL
+          RETURNING id
+        )
+        SELECT count(*)::bigint AS updated FROM updated
+      `;
+      const updated = Number(result[0]?.updated ?? 0);
+      let inbox: InboxStateSnapshot | undefined;
+      if (updated > 0) {
+        inbox = await resetInboxUnread(tx, userId);
+      }
+      return { updated, inbox };
     });
-    return { updated: result.count };
+
+    if (outcome.updated > 0) {
+      await this.emitRealtime(userId, { invalidateList: true, snapshot: outcome.inbox });
+    }
+    return { updated: outcome.updated };
   }
 
-  async getUnreadCount(userId: string): Promise<{ count: number }> {
-    const count = await this.prisma.inAppNotification.count({
+  async getUnreadCount(
+    userId: string,
+  ): Promise<{ count: number; version?: number; source?: 'inbox_state' | 'legacy_count' }> {
+    const readEnabled = isNotificationInboxStateReadEnabled();
+    const shadowEnabled = isNotificationInboxStateShadowReadEnabled();
+
+    if (readEnabled) {
+      const state = await readInboxState(this.prisma, userId);
+      if (state) {
+        return { count: state.unreadCount, version: state.version, source: 'inbox_state' };
+      }
+      recordInboxMetric('notification_inbox_missing_state_total');
+      recordInboxMetric('notification_inbox_read_fallback_total');
+      this.logger.warn(
+        JSON.stringify({
+          event: 'notification.inbox_state.missing_repaired',
+          employeeIdHash: hashEmployeeId(userId),
+        }),
+      );
+      const repaired = await this.prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${userId}))`;
+        const recount = await tx.inAppNotification.count({
+          where: {
+            recipientEmployeeId: userId,
+            isRead: false,
+            archivedAt: null,
+          },
+        });
+        return syncInboxUnreadToActual(tx, userId, recount);
+      });
+      recordInboxMetric('notification_inbox_repair_total');
+      return {
+        count: repaired.unreadCount,
+        version: repaired.version,
+        source: 'inbox_state',
+      };
+    }
+
+    const count = await this.countUnreadLegacy(userId);
+
+    if (shadowEnabled && shouldSampleShadow(resolveInboxShadowReadSampleRate())) {
+      try {
+        const state = await readInboxState(this.prisma, userId);
+        if (!state) {
+          recordInboxMetric('notification_inbox_missing_state_total');
+          this.logger.warn(
+            JSON.stringify({
+              event: 'notification.inbox_state.shadow_missing',
+              employeeIdHash: hashEmployeeId(userId),
+              legacyCount: count,
+            }),
+          );
+        } else if (state.unreadCount !== count) {
+          recordInboxMetric('notification_inbox_shadow_mismatch_total');
+          recordInboxMetric('notification_inbox_drift_detected_total');
+          this.logger.warn(
+            JSON.stringify({
+              event: 'notification.inbox_state.shadow_mismatch',
+              employeeIdHash: hashEmployeeId(userId),
+              legacyCount: count,
+              inboxCount: state.unreadCount,
+              version: state.version,
+            }),
+          );
+        }
+      } catch (err) {
+        this.logger.warn(`Inbox shadow read failed: ${String(err)}`);
+      }
+    }
+
+    return { count, source: 'legacy_count' };
+  }
+
+  private async countUnreadLegacy(userId: string): Promise<number> {
+    return this.prisma.inAppNotification.count({
       where: {
         recipientEmployeeId: userId,
         isRead: false,
         archivedAt: null,
       },
     });
-    return { count };
   }
 
   async getUserPreferences(userId: string): Promise<NotificationPreferenceRow[]> {
@@ -484,6 +878,20 @@ export class NotificationService {
     if (filtered.length === 0) return ['IN_APP'];
     return filtered;
   }
+
+  private async emitRealtime(
+    employeeId: string,
+    options?: { invalidateList?: boolean; snapshot?: InboxStateSnapshot },
+  ): Promise<void> {
+    if (!this.realtimePublisher) return;
+    if (options?.snapshot && isNotificationSseFromInboxStateEnabled()) {
+      await this.realtimePublisher.publishSnapshot(employeeId, options.snapshot, {
+        invalidateList: options.invalidateList,
+      });
+      return;
+    }
+    await this.realtimePublisher.publishUnreadState(employeeId, options);
+  }
 }
 
 function resolveKnownNotificationEventTypes(): string[] {
@@ -499,6 +907,8 @@ function resolveKnownNotificationEventTypes(): string[] {
     'finance.wallet.salary_payment',
     'finance.invoice.official_request_due',
     'finance.invoice.payment_reminder_due',
+    'finance.invoice.payment_reminder_d10',
+    'finance.invoice.payment_reminder_d2',
     'finance.expense.backlog_weekly_digest',
     'finance.expense.backlog_due_overdue',
     'task.overdue',
@@ -508,4 +918,14 @@ function resolveKnownNotificationEventTypes(): string[] {
     'document.access_changed',
     'credentials.high_risk_action',
   ];
+}
+
+function hashEmployeeId(employeeId: string): string {
+  return createHash('sha256').update(employeeId).digest('hex').slice(0, 12);
+}
+
+function shouldSampleShadow(rate: number, random = Math.random): boolean {
+  if (rate <= 0) return false;
+  if (rate >= 1) return true;
+  return random() < rate;
 }

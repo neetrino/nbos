@@ -211,10 +211,12 @@ Runtime сейчас использует:
 Также missing runtime:
 
 - `billing_frequency = Monthly / Yearly / Custom`;
-- `base_monthly_amount`;
+- `amount`, `coverage_month_count`, `monthly_equivalent_amount` (заменяют устаревшие `base_monthly_amount` + `prepaid_month_count`; см. решение ниже);
 - `billing_start_date` as activation date;
 - invoice coverage fields: `coverage_start_month`, `coverage_month_count`;
 - monthly coverage view in subscription grid.
+
+**Решено (product decision, 2026-08):** старая модель «месячная база × число месяцев» теряла копейки при округлении (например, годовой контракт 112 000 → 9 333,33 × 12 ≠ 112 000) и путала менеджеров. Канон: `amount` = сумма за период (источник истины для счёта); `coverage_month_count` = длина периода; `monthly_equivalent_amount` = generated, только аналитика. Runtime-миграция — в работе у других агентов; канон в [03-Subscriptions.md](./03-Subscriptions.md).
 
 ### C3. Expense runtime still uses old status model and single Expense entity
 
@@ -395,6 +397,8 @@ Examples:
 дашборда группирует **`moneyStatus`** (ключ `status` в JSON — значение money enum). `scheduler.service.ts`
 не переводит `ON_HOLD` invoice cards в `DELAYED`. Legacy **`InvoiceStatusEnum` / колонка `status` удалены**;
 `finance-status.utils.ts` и order rollup используют money layer для оплаты заказа.
+
+Срочная подписка: `FULLY_PAID` только когда платежи по **order-linked** invoice ≥ `Order.totalAmount`. Карточки биллинг-прогона пишут `subscriptionId` и не пишут `orderId` — заказ не видит последующие периоды. Это открытое решение (см. `00-Technical-Decisions-By-Module.md`), не план реализации.
 
 Remaining refactor:
 

@@ -14,18 +14,30 @@ export interface SubscriptionListParams extends FinanceDateRangeParams {
 export interface Subscription {
   id: string;
   code: string;
+  name: string;
   projectId: string;
+  productId: string;
   type: string;
-  baseMonthlyAmount: string;
+  /** Sum for one billing period (human-entered; equals invoice amount). */
+  amount: string;
+  /** Period length in months: MONTHLY = 1, YEARLY = 12, CUSTOM = 2–60. */
+  coverageMonthCount: number;
+  /** Read-only MRR equivalent: amount / coverageMonthCount. */
+  monthlyEquivalentAmount: string;
   billingFrequency: string;
   billingDay: number;
   taxStatus: string;
   status: string;
+  /** Agreed fixed term in months; null = open-ended. */
+  termMonths: number | null;
   billingStartDate: string;
   notificationsEnabled: boolean;
+  /** Client WhatsApp payment reminder language: HY | RU | EN */
+  reminderLanguage: string;
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  product?: { id: string; name: string } | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   partner?: { id: string; name: string } | null;
@@ -34,6 +46,8 @@ export interface Subscription {
     code: string;
     moneyStatus: string;
     amount: string;
+    type?: string;
+    createdAt?: string;
     coverageStartMonth?: string | null;
     coverageMonthCount?: number | null;
   }>;
@@ -41,26 +55,36 @@ export interface Subscription {
 }
 
 export interface CreateSubscriptionPayload {
-  projectId: string;
+  productId: string;
+  name: string;
+  projectId?: string;
   type: string;
-  baseMonthlyAmount: number;
+  amount: number;
   billingDay: number;
   billingFrequency?: string;
+  /** Required when billingFrequency is CUSTOM (2–60). */
+  coverageMonthCount?: number;
   taxStatus?: string;
   billingStartDate: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string;
 }
 
 export interface UpdateSubscriptionPayload {
+  name?: string;
   type?: string;
-  baseMonthlyAmount?: number;
+  productId?: string;
+  projectId?: string;
+  amount?: number;
   billingFrequency?: string;
+  coverageMonthCount?: number;
   billingDay?: number;
   taxStatus?: string;
   billingStartDate?: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   endDate?: string;
   partnerId?: string | null;
 }
@@ -92,6 +116,7 @@ export interface SubscriptionGridCell {
 
 export interface SubscriptionGridRow {
   subscriptionId: string;
+  subscriptionName: string;
   projectId: string;
   projectName: string;
   subscriptionType: string;
@@ -122,12 +147,12 @@ export interface SubscriptionStats {
   byStatus: Array<{
     status: string;
     _count: number;
-    _sum: { baseMonthlyAmount: number | null };
+    _sum: { monthlyEquivalentAmount: number | null };
   }>;
   byType: Array<{
     type: string;
     _count: number;
-    _sum: { baseMonthlyAmount: number | null };
+    _sum: { monthlyEquivalentAmount: number | null };
   }>;
   activeSubscriptions: number;
   monthlyRevenue: number | null;

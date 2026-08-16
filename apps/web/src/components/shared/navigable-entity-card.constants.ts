@@ -41,15 +41,12 @@ export const PRODUCT_DETAIL_CARD_STATS_SHELL_CLASS =
 export const PRODUCT_DETAIL_CARD_STAT_CELL_CLASS =
   'flex min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-3 text-center';
 
-/** Project Hub directory card — icon tile, code pill, orders pill (mock-aligned). */
+/** Project Hub directory card — icon tile, code pill, products/orders pills (mock-aligned). */
 export const PROJECT_HUB_CARD_SHELL_CLASS =
   'group/project-hub-card border-border bg-card flex h-full flex-col rounded-3xl border';
 
 export const PROJECT_HUB_CARD_ICON_TILE_CLASS =
   'flex size-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400';
-
-export const PROJECT_HUB_CARD_CODE_PILL_CLASS =
-  'inline-flex w-fit items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold tracking-tight text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400';
 
 export const PROJECT_HUB_CARD_ORDERS_PILL_CLASS =
   'inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-foreground dark:bg-indigo-950/50';

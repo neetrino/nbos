@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@nbos/database';
+import { resolvePartnerServiceSubscriptionName } from '../finance/subscriptions/subscription-commercial-name';
 
 const PARTNER_SERVICE_TYPES = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PARTNER_SERVICE_PAYMENT_MODELS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -17,6 +18,7 @@ export interface PartnerServiceTermWireDto {
   clientContactId: string | null;
   clientCompanyId: string | null;
   projectId: string | null;
+  productId: string | null;
   serviceType: (typeof PARTNER_SERVICE_TYPES)[number];
   paymentModel: (typeof PARTNER_SERVICE_PAYMENT_MODELS)[number];
   amount: string;
@@ -33,6 +35,7 @@ export interface CreatePartnerServiceTermInput {
   clientContactId?: string | null;
   clientCompanyId?: string | null;
   projectId?: string | null;
+  productId?: string | null;
   serviceType: string;
   paymentModel: string;
   amount: number;
@@ -47,6 +50,7 @@ export interface UpdatePartnerServiceTermInput {
   clientContactId?: string | null;
   clientCompanyId?: string | null;
   projectId?: string | null;
+  productId?: string | null;
   serviceType?: string;
   paymentModel?: string;
   amount?: number;
@@ -67,6 +71,7 @@ const partnerServiceTermSelect = {
   clientContactId: true,
   clientCompanyId: true,
   projectId: true,
+  productId: true,
   serviceType: true,
   paymentModel: true,
   amount: true,
@@ -114,6 +119,7 @@ export async function createPartnerServiceTerm(
       clientContactId: normalizeNullableId(input.clientContactId),
       clientCompanyId: normalizeNullableId(input.clientCompanyId),
       projectId: normalizeNullableId(input.projectId),
+      productId: normalizeNullableId(input.productId),
       serviceType,
       paymentModel,
       amount,
@@ -161,6 +167,7 @@ export async function updatePartnerServiceTerm(
         clientCompanyId: normalizeNullableId(input.clientCompanyId),
       }),
       ...(input.projectId !== undefined && { projectId: normalizeNullableId(input.projectId) }),
+      ...(input.productId !== undefined && { productId: normalizeNullableId(input.productId) }),
       ...(input.serviceType !== undefined && { serviceType: parseServiceType(input.serviceType) }),
       ...(input.paymentModel !== undefined && { paymentModel: nextPaymentModel }),
       ...(input.amount !== undefined && { amount: parseAmount(input.amount) }),
@@ -205,6 +212,19 @@ export async function createFinanceFromPartnerServiceTerm(
         'projectId is required to create a subscription from service term',
       );
     }
+    if (!term.productId) {
+      throw new BadRequestException(
+        'productId is required to create a PARTNER_SERVICE subscription from service term',
+      );
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: term.productId },
+      select: { id: true, projectId: true, name: true },
+    });
+    if (!product || product.projectId !== term.projectId) {
+      throw new BadRequestException('productId must belong to the service term projectId');
+    }
 
     const startDate = term.billingStartDate ?? new Date();
     const billingDay = startDate.getUTCDate();
@@ -213,9 +233,12 @@ export async function createFinanceFromPartnerServiceTerm(
     const subscription = await prisma.subscription.create({
       data: {
         code,
+        name: resolvePartnerServiceSubscriptionName(term.serviceType, product.name),
         projectId: term.projectId,
+        productId: product.id,
         type: 'PARTNER_SERVICE',
-        baseMonthlyAmount: term.amount,
+        amount: term.amount,
+        coverageMonthCount: 1,
         billingDay,
         billingStartDate: startDate,
         status: 'ACTIVE',
@@ -388,6 +411,7 @@ function serializePartnerServiceTerm(row: PartnerServiceTermRow): PartnerService
     clientContactId: row.clientContactId,
     clientCompanyId: row.clientCompanyId,
     projectId: row.projectId,
+    productId: row.productId,
     serviceType: row.serviceType,
     paymentModel: row.paymentModel,
     amount: row.amount.toFixed(2),

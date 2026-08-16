@@ -1,4 +1,10 @@
-import { expandCoverageMonthKeys, isValidCoverageMonthKey } from './subscription-coverage-month';
+import {
+  expandCoverageMonthKeys,
+  financeCalendarMonthKey,
+  isValidCoverageMonthKey,
+  shiftCoverageMonthKey,
+} from './subscription-coverage-month';
+import { countDistinctCoveredMonths, latestCoveredMonthKey } from './subscription-coverage-window';
 
 export type SubscriptionGridCellKind =
   | 'NA'
@@ -27,18 +33,25 @@ export interface SubscriptionGridInvoiceInput {
 
 export interface SubscriptionGridRowInput {
   id: string;
+  name: string;
   type: string;
   status: string;
-  baseMonthlyAmount: unknown;
+  /** Analytics/display monthly equivalent; never used for invoice amounts. */
+  monthlyEquivalentAmount: unknown;
   billingStartDate: Date;
   endDate: Date | null;
+  /** Null/undefined = open-ended; when set, forecast stops after remaining covered months. */
+  termMonths: number | null;
   project: { id: string; name: string };
   invoices: SubscriptionGridInvoiceInput[];
 }
 
 export interface SubscriptionGridRow {
   subscriptionId: string;
+  /** Commercial display name — primary row label. */
+  subscriptionName: string;
   projectId: string;
+  /** Secondary line under the subscription name. */
   projectName: string;
   subscriptionType: string;
   amountMonthly: number;
@@ -177,7 +190,58 @@ function resolveMonthCell(
     return { kind: 'MISSED', invoiceId: null };
   }
 
+  if (!isMonthWithinRemainingTermForecast(sub, year, monthIndex, now)) {
+    return { kind: 'NA', invoiceId: null };
+  }
+
   return { kind: 'FORECAST', invoiceId: null };
+}
+
+/**
+ * For fixed-term subscriptions, only the next `termMonths - coveredMonths` non-past
+ * months after the latest covered month may be FORECAST. Missed (past) months do not
+ * consume the term, so forecast can extend further right than a naive calendar end.
+ * Open-ended (`termMonths` null) is unbounded aside from `endDate`.
+ */
+function isMonthWithinRemainingTermForecast(
+  sub: SubscriptionGridRowInput,
+  year: number,
+  monthIndex: number,
+  now: Date,
+): boolean {
+  if (sub.termMonths == null) {
+    return true;
+  }
+  const remaining = sub.termMonths - countDistinctCoveredMonths(sub.invoices);
+  if (remaining <= 0) {
+    return false;
+  }
+  const targetKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+  const billingStartKey = financeCalendarMonthKey(sub.billingStartDate);
+  const anchor = latestCoveredMonthKey(sub.invoices) ?? shiftCoverageMonthKey(billingStartKey, -1);
+  if (!anchor) {
+    return false;
+  }
+  const forecastIndex = countNonPastMonthsAfterThrough(anchor, targetKey, now);
+  return forecastIndex >= 1 && forecastIndex <= remaining;
+}
+
+function countNonPastMonthsAfterThrough(
+  anchorMonthKey: string,
+  targetMonthKey: string,
+  now: Date,
+): number {
+  let count = 0;
+  let cursor = shiftCoverageMonthKey(anchorMonthKey, 1);
+  while (cursor && cursor <= targetMonthKey) {
+    const y = Number(cursor.slice(0, 4));
+    const m = Number(cursor.slice(5, 7)) - 1;
+    if (!isPastCalendarMonth(y, m, now)) {
+      count += 1;
+    }
+    cursor = shiftCoverageMonthKey(cursor, 1);
+  }
+  return count;
 }
 
 export function buildSubscriptionGridPayload(
@@ -186,7 +250,7 @@ export function buildSubscriptionGridPayload(
   now: Date,
 ): SubscriptionGridPayload {
   const rows: SubscriptionGridRow[] = subscriptions.map((sub) => {
-    const amountMonthly = numericAmount(sub.baseMonthlyAmount);
+    const amountMonthly = numericAmount(sub.monthlyEquivalentAmount);
     const months: SubscriptionGridCell[] = [];
     for (let m = 0; m < 12; m++) {
       months.push(resolveMonthCell(sub, year, m, now));
@@ -197,6 +261,7 @@ export function buildSubscriptionGridPayload(
     }, 0);
     return {
       subscriptionId: sub.id,
+      subscriptionName: sub.name,
       projectId: sub.project.id,
       projectName: sub.project.name,
       subscriptionType: sub.type,

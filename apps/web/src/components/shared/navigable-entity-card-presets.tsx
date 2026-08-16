@@ -7,6 +7,7 @@ import {
   Building2,
   Calendar,
   FolderKanban,
+  Layers,
   ListChecks,
   Package,
   ShoppingBag,
@@ -21,7 +22,6 @@ import {
 } from '@/components/shared';
 import {
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
-  PROJECT_HUB_CARD_CODE_PILL_CLASS,
   PROJECT_HUB_CARD_ICON_TILE_CLASS,
   PROJECT_HUB_CARD_META_ROW_CLASS,
   PROJECT_HUB_CARD_ORDERS_PILL_CLASS,
@@ -88,6 +88,8 @@ function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntit
 export function ProjectNavigableCard({ project }: { project: Project }) {
   const contactName =
     `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim();
+  const productCount = project._count.products ?? 0;
+  const productsLabel = `${productCount} product${productCount === 1 ? '' : 's'}`;
   const orderCount = project._count.orders;
   const ordersLabel = `${orderCount} order${orderCount === 1 ? '' : 's'}`;
 
@@ -102,16 +104,15 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
             <FolderKanban className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className={PROJECT_HUB_CARD_CODE_PILL_CLASS}>{project.code}</span>
-              {project.trashedAt != null ? (
+            {project.trashedAt != null ? (
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
                 <Archive
                   size={14}
                   className="text-muted-foreground shrink-0"
                   aria-label="In Trash"
                 />
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
               {project.name}
             </h3>
@@ -134,7 +135,11 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
           </div>
         </div>
 
-        <div className="mt-auto flex justify-end pt-4">
+        <div className="mt-auto flex justify-end gap-2 pt-4">
+          <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+            <Package className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            {productsLabel}
+          </span>
           <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
             <ShoppingBag className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
             {ordersLabel}
@@ -145,25 +150,21 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
   );
 }
 
-function workSpaceHubCodePill(workspace: WorkSpace): string | null {
-  return workspace.project?.code ?? null;
-}
-
 function workSpaceHubMetaRows(workspace: WorkSpace): Array<{ icon: LucideIcon; text: string }> {
   const rows: Array<{ icon: LucideIcon; text: string }> = [];
 
   if (workspace.type === 'PRODUCT_DELIVERY') {
     if (workspace.project?.name) {
-      rows.push({ icon: Building2, text: workspace.project.name });
+      rows.push({ icon: FolderKanban, text: workspace.project.name });
     }
     return rows;
   }
 
   if (workspace.product?.name) {
-    rows.push({ icon: Package, text: workspace.product.name });
+    rows.push({ icon: Layers, text: workspace.product.name });
   }
   if (workspace.project?.name) {
-    rows.push({ icon: Building2, text: workspace.project.name });
+    rows.push({ icon: FolderKanban, text: workspace.project.name });
   }
   if (rows.length === 0) {
     if (workspace.description?.trim()) {
@@ -186,9 +187,8 @@ export function WorkSpaceNavigableCard({
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
   const tasksLabel = `${taskCount} task${taskCount === 1 ? '' : 's'}`;
   const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
-  const CardIcon = isProductDelivery ? Package : FolderKanban;
+  const CardIcon = isProductDelivery ? Layers : FolderKanban;
   const metaRows = workSpaceHubMetaRows(workspace);
-  const codePill = workSpaceHubCodePill(workspace);
   const dealId = workspace.product ? getEntityOrderDealId(workspace.product.order) : null;
   const contextHref =
     workspace.productId && workspace.projectId
@@ -237,9 +237,6 @@ export function WorkSpaceNavigableCard({
                   className="shrink-0"
                 />
               </div>
-              {codePill ? (
-                <span className={cn(PROJECT_HUB_CARD_CODE_PILL_CLASS, 'w-fit')}>{codePill}</span>
-              ) : null}
               {metaRows.map((row) => {
                 const RowIcon = row.icon;
                 return (

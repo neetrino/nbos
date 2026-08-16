@@ -1,66 +1,111 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
 import { useSupportPageViewMode } from '@/features/support/constants/support-page-view-storage';
-import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import { SUPPORT_TICKET_BOARD_STAGES } from '@/features/support/constants/support-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  getBoardStageKeys,
+  resolveBoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
+
+const CHANGE_REQUEST_CATEGORY = 'CHANGE_REQUEST';
 
 export function useSupportTicketsQuery() {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [stats, setStats] = useState<SupportStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, handleViewModeChange] = useSupportPageViewMode();
   const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
+  const [errorOverride, setErrorOverride] = useState<string | null>(null);
 
-  const fetchTickets = useCallback(
-    async (options?: { soft?: boolean }) => {
-      if (!options?.soft) {
-        setLoading(true);
-      }
-      try {
-        const { items } = await supportApi.getAll({
-          pageSize: 100,
-          search: search || undefined,
-          category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-          priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          waitingState:
-            filters.waitingState && filters.waitingState !== 'all'
-              ? filters.waitingState
-              : undefined,
-        });
-        setTickets(items.filter((ticket) => ticket.category !== 'CHANGE_REQUEST'));
-        setError(null);
-        try {
-          setStats(await supportApi.getStats());
-        } catch {
-          setStats(null);
-        }
-      } catch {
-        setError('Support tickets could not be loaded. Check your connection and try again.');
-        setStats(null);
-      } finally {
-        if (!options?.soft) {
-          setLoading(false);
-        }
-      }
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
+  }, [boardScope, filters.status]);
+
+  const categoryFilter =
+    filters.category && filters.category !== 'all' ? filters.category : undefined;
+
+  const fetchPage = useCallback(
+    async (params: { page: number; pageSize: number; status: string }) => {
+      const data = await supportApi.getAll({
+        page: params.page,
+        pageSize: params.pageSize,
+        status: params.status,
+        search: debouncedSearch || undefined,
+        category: categoryFilter,
+        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
+        waitingState:
+          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
+      });
+      if (categoryFilter) return data;
+      return {
+        ...data,
+        items: data.items.filter((ticket) => ticket.category !== CHANGE_REQUEST_CATEGORY),
+      };
     },
-    [search, filters],
+    [categoryFilter, debouncedSearch, filters.priority, filters.waitingState],
   );
 
+  const board = useStageColumnBoard<SupportTicket>({
+    stageKeys,
+    getStageKey: (ticket) => ticket.status,
+    fetchPage,
+    loadErrorMessage: 'Support tickets could not be loaded. Check your connection and try again.',
+  });
+
+  const {
+    items: tickets,
+    columnMeta,
+    hasMoreAny,
+    loading,
+    error: boardError,
+    reload,
+    loadMoreColumn,
+    loadMoreAll,
+  } = board;
+
+  const fetchStats = useCallback(async () => {
+    try {
+      setStats(await supportApi.getStats());
+    } catch {
+      setStats(null);
+    }
+  }, []);
+
+  const fetchTickets = useCallback(async () => {
+    await reload();
+    await fetchStats();
+    setErrorOverride(null);
+  }, [reload, fetchStats]);
+
   const refreshSupportViews = useCallback(async () => {
-    await fetchTickets({ soft: true });
+    await fetchTickets();
     setDetailRefreshKey((key) => key + 1);
   }, [fetchTickets]);
 
   useEffect(() => {
-    void fetchTickets();
-  }, [fetchTickets]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const next = await supportApi.getStats();
+        if (!cancelled) setStats(next);
+      } catch {
+        if (!cancelled) setStats(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,11 +134,20 @@ export function useSupportTicketsQuery() {
     setFilters({});
   }, []);
 
+  const setError = useCallback((message: string | null) => {
+    setErrorOverride(message);
+  }, []);
+
   return {
     tickets,
+    columnMeta,
+    hasMoreAny,
+    loadMoreColumn,
+    loadMoreAll,
+    boardScope,
     stats,
     loading,
-    error,
+    error: errorOverride ?? boardError,
     setError,
     search,
     setSearch,

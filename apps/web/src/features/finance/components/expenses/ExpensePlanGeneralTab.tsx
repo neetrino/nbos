@@ -23,8 +23,9 @@ import {
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
+const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
 interface ExpensePlanGeneralTabProps {
   plan: ExpensePlan;
@@ -43,7 +44,7 @@ export function ExpensePlanGeneralTab({
 }: ExpensePlanGeneralTabProps) {
   const searchProjects = useProjectRelationSearch();
   const projectPicker = useRelationPickerActions('project');
-  const projectLabel = plan.project ? `${plan.project.code} — ${plan.project.name}` : null;
+  const projectLabel = projectDisplayName(plan.project);
   const projectValue = draft.projectId === 'none' ? null : draft.projectId;
 
   const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {

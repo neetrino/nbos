@@ -274,8 +274,25 @@ Category нужна для группировки и фильтрации, но 
 
 Например: Delivery, Finance, Marketing, Support.
 
+**Vault scope:** `Team` · **DB:** `Credential.accessLevel = DEPARTMENT`.
+
 ### Company Internal
 
-Видят все сотрудники компании.
+Видят все сотрудники компании с permission на модуль Credentials.
 
 Использовать редко и только для low-risk доступов.
+
+**Vault scope:** `Company` · **DB:** `Credential.accessLevel = ALL` (существующее enum-значение; не путать с UX-tab `All`, который только aggregate view).
+
+**Bitrix migration:** записи `Neetrino → Global` → scope `Company` / `accessLevel = ALL`.
+
+### Vault scope ↔ access level (summary)
+
+| UX vault tab | Типичный `accessLevel` | Смысл                                  |
+| ------------ | ---------------------- | -------------------------------------- |
+| `My`         | `PERSONAL` / private   | личные рабочие пароли                  |
+| `Team`       | `DEPARTMENT`           | shared low-risk в рамках отдела/seat   |
+| `Company`    | `ALL`                  | shared low-risk на всю компанию        |
+| `Project`    | project policy         | project/product team credentials       |
+| `Secret`     | `SECRET` / grants      | manual / high-sensitivity              |
+| `All`        | — (не уровень записи)  | просмотр всех видимых; create запрещён |

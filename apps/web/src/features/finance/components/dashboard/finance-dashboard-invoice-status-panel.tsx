@@ -8,7 +8,7 @@ import type { InvoiceStatusItem } from './finance-dashboard-data';
 const INVOICES_HREF = '/finance/invoices';
 
 const INVOICE_STATUS_ITEM_SHELL =
-  'border-border/70 flex items-center justify-between gap-4 rounded-xl border bg-white px-4 py-3.5 dark:bg-white';
+  'border-border/70 bg-card flex items-center justify-between gap-4 rounded-xl border px-4 py-3.5';
 const INVOICE_STATUS_TOTAL_SHELL =
   'bg-muted/45 flex items-center justify-between gap-4 rounded-xl px-4 py-3.5';
 

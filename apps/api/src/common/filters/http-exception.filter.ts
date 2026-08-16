@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { classifyDatabaseError, recordDbPoolTimeout } from '@nbos/database';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -20,8 +21,23 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let message = 'Internal server error';
     let error = 'Internal Server Error';
     let exceptionDetails: Record<string, unknown> = {};
+    let dbCode: string | undefined;
 
-    if (exception instanceof HttpException) {
+    const classified = classifyDatabaseError(exception);
+    if (classified) {
+      status = classified.httpStatus;
+      message = classified.clientMessage;
+      error = classified.code;
+      dbCode = classified.code;
+      if (classified.code === 'DB_POOL_TIMEOUT') {
+        recordDbPoolTimeout();
+        this.logger.error('DB_POOL_TIMEOUT');
+      } else {
+        this.logger.error(
+          `${classified.code}: ${exception instanceof Error ? exception.message : 'db error'}`,
+        );
+      }
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
@@ -37,7 +53,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status === HttpStatus.INTERNAL_SERVER_ERROR && !classified) {
       this.logger.error(
         exception instanceof Error ? (exception.stack ?? exception.message) : 'Unhandled exception',
       );
@@ -56,8 +72,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
+    if (dbCode) {
+      body.code = dbCode;
+    }
+
     for (const key of ['code', 'errors', 'blockers', 'details', 'conflicts']) {
-      if (exceptionDetails[key] !== undefined) {
+      if (exceptionDetails[key] !== undefined && body[key] === undefined) {
         body[key] = exceptionDetails[key];
       }
     }

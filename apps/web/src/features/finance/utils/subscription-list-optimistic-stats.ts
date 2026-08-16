@@ -13,7 +13,8 @@ export function applyOptimisticSubscriptionStats(
   statsPartnerScope: string | undefined,
   from: string,
   to: string,
-  amount: number,
+  /** MRR delta — always monthly equivalent, never the period sum. */
+  monthlyEquivalentAmount: number,
 ): SubscriptionStats | null {
   if (!stats) return stats;
   if (!subscriptionMatchesPartnerStatsScope(subscription, statsPartnerScope)) {
@@ -25,14 +26,14 @@ export function applyOptimisticSubscriptionStats(
     return {
       ...stats,
       activeSubscriptions: stats.activeSubscriptions + 1,
-      monthlyRevenue: mrr + amount,
+      monthlyRevenue: mrr + monthlyEquivalentAmount,
     };
   }
   if (from === 'ACTIVE' && (to === 'CANCELLED' || to === 'ON_HOLD')) {
     return {
       ...stats,
       activeSubscriptions: Math.max(0, stats.activeSubscriptions - 1),
-      monthlyRevenue: Math.max(0, mrr - amount),
+      monthlyRevenue: Math.max(0, mrr - monthlyEquivalentAmount),
     };
   }
   return stats;

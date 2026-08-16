@@ -7,7 +7,7 @@
 Сама подписка хранит:
 
 - правила биллинга;
-- базовую месячную сумму;
+- сумму за период оплаты (`amount`) и длину периода (`coverage_month_count`);
 - дату старта биллинга;
 - статус;
 - тип и частоту оплаты.
@@ -15,14 +15,19 @@
 А конкретные деньги за конкретные месяцы живут уже в `Invoice Card`.
 
 ```text
-Subscription
-    ->
-Invoice Card(s) for covered period
-    ->
-Payment
-    ->
-MRR / revenue control
+Project
+    -> Product
+        -> Subscription
+            -> Invoice Card(s) for covered period
+                -> Payment
+                    -> MRR / revenue control
 ```
+
+Ownership rule (required):
+
+- every `Subscription` has a required `productId` (FK → Product);
+- `projectId` is stored on Subscription as a denormalized copy of `Product.projectId` and must match on create/update;
+- one Product may have many Subscriptions; one Project may have many Products.
 
 ---
 
@@ -62,40 +67,66 @@ MRR / revenue control
 
 ## Поля подписки
 
-| Поле                    | Описание                                                                                             |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| `subscription_id`       | Уникальный идентификатор                                                                             |
-| `project`               | Проект, к которому привязана подписка                                                                |
-| `product`               | Продукт, если подписка относится к конкретному продукту                                              |
-| `company`               | Компания-плательщик                                                                                  |
-| `contact`               | Контактное лицо                                                                                      |
-| `type`                  | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                  |
-| `base_monthly_amount`   | Базовая сумма за 1 месяц                                                                             |
-| `currency`              | Валюта                                                                                               |
-| `billing_start_date`    | Дата старта биллинга                                                                                 |
-| `billing_frequency`     | Monthly / Yearly / Custom                                                                            |
-| `billing_day`           | День месяца для выставления карточек, если применяется месячная логика                               |
-| `end_date`              | Дата окончания (null = бессрочная)                                                                   |
-| `tax_status`            | Tax / Free                                                                                           |
-| `notifications_enabled` | Разрешены ли автоматические уведомления по карточкам оплат                                           |
-| `status`                | Pending / Active / On Hold / Cancelled / Completed                                                   |
-| `partner`               | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals |
-| `amount_history`        | История изменений месячной базы                                                                      |
+| Поле                        | Описание                                                                                                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `subscription_id`           | Уникальный идентификатор                                                                                                                                                                                                                                              |
+| `code`                      | Системный код `SUB-[SEQ]`; идентификатор записи, **не** display title в UI                                                                                                                                                                                            |
+| `name`                      | **Обязательное** коммерческое название договора/услуги (аналог `Deal.name`). Auto-create Routes A/B: `Deal.name`, fallback `Deal.code`; Route C (Finance manual): ввод пользователя; Route D (Partner Service): `{serviceType} — {Product.name}`. Редактируется позже |
+| `product`                   | **Обязательный** продукт (FK). Источник ownership для биллинга, паузы deadline и WhatsApp reminders                                                                                                                                                                   |
+| `project`                   | Проект (denormalized = `Product.projectId`; валидируется при create/update)                                                                                                                                                                                           |
+| `company`                   | Компания-плательщик                                                                                                                                                                                                                                                   |
+| `contact`                   | Контактное лицо                                                                                                                                                                                                                                                       |
+| `type`                      | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                                                                                                                                                                                   |
+| `amount`                    | Сумма за **один** период биллинга — ровно то, что клиент платит и что попадает на `Invoice Card` (единственное денежное поле, которое вводит человек)                                                                                                                 |
+| `coverage_month_count`      | Длина периода в месяцах: `Monthly` = 1, `Yearly` = 12, `Custom` = произвольное (2–60). Заменяет устаревшее `prepaid_month_count`                                                                                                                                      |
+| `monthly_equivalent_amount` | `amount / coverage_month_count` — generated stored column в БД; **не редактируется вручную**; только MRR и аналитика                                                                                                                                                  |
+| `currency`                  | Валюта                                                                                                                                                                                                                                                                |
+| `billing_start_date`        | Дата старта биллинга                                                                                                                                                                                                                                                  |
+| `billing_frequency`         | Monthly / Yearly / Custom. **Обязательно при создании** (нет тихого default `MONTHLY`): `amount` — сумма периода и без частоты бессмысленна                                                                                                                           |
+| `billing_day`               | День месяца для выставления карточек, если применяется месячная логика                                                                                                                                                                                                |
+| `end_date`                  | Дата окончания (календарная; null = не задана). Не является счётчиком срока                                                                                                                                                                                           |
+| `term_months`               | Срок в **покрытых месяцах** (`Int?`, 1–120). `null` = бессрочная. Пропущенный (пауза) месяц срок **не** расходует                                                                                                                                                     |
+| `tax_status`                | Tax / Free                                                                                                                                                                                                                                                            |
+| `notifications_enabled`     | Разрешены ли автоматические уведомления по карточкам оплат                                                                                                                                                                                                            |
+| `reminder_language`         | Язык клиентских WhatsApp payment reminders: `HY` / `RU` / `EN` (default `HY`)                                                                                                                                                                                         |
+| `status`                    | Pending / Active / On Hold / Cancelled / Completed                                                                                                                                                                                                                    |
+| `partner`                   | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals                                                                                                                                                                  |
+| `amount_history`            | История изменений `amount` за период                                                                                                                                                                                                                                  |
 
-### Что означает `base_monthly_amount`
+### Client WhatsApp payment reminders (D-10 / D-2)
 
-Это базовая стоимость **одного месяца** подписки.
+Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
+
+- Target: **Product WhatsApp Group** via `subscription.productId`.
+- Copy uses `Product.name` and localized month from `Invoice.coverageStartMonth` in `reminder_language`.
+- Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
+- `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
+- Paid / cancelled / on hold → no send.
+- Missing WhatsApp `groupChatId` → skip + log (no crash).
+
+### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
+
+**Инвариант:** `amount` — единственный источник истины для денег. Сумма на `Invoice Card` = `amount` напрямую, без умножения. `monthly_equivalent_amount` — только для MRR и сравнения подписок разной частоты; **никогда** не использовать для расчёта счёта, не вводить вручную и **не умножать обратно**, чтобы восстановить сумму контракта.
+
+| Поле                        | Кто задаёт                               | Назначение                                              |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------- |
+| `amount`                    | человек                                  | Сумма за выбранный период (месяц / год / custom)        |
+| `coverage_month_count`      | человек / система по `billing_frequency` | Сколько месяцев покрывает один платёж                   |
+| `monthly_equivalent_amount` | БД (`amount / coverage_month_count`)     | Эквивалент в MRR; в UI — только с пометкой «эквивалент» |
 
 Примеры:
 
-- если клиент платит ежемесячно `10 000`, то `base_monthly_amount = 10 000`;
-- если клиент платит ежегодно за те же `12` месяцев, то `base_monthly_amount` всё равно остаётся `10 000`;
-- тогда годовая карточка оплаты создаётся на `120 000` и покрывает `12` месяцев сразу.
+- ежемесячно `10 000` → `amount = 10 000`, `coverage_month_count = 1`, `monthly_equivalent_amount = 10 000`;
+- ежегодно `120 000` → `amount = 120 000`, `coverage_month_count = 12`, `monthly_equivalent_amount = 10 000`; одна карточка на `120 000`, MRR-вклад `10 000`;
+- custom 4 месяца за `40 000` → `amount = 40 000`, `coverage_month_count = 4`, `monthly_equivalent_amount = 10 000`.
 
-То есть:
+Подписка продолжает жить **по месяцам** в Grid; одна карточка оплаты может покрывать 1, 4, 12 или другое число месяцев. Поля покрытия на стороне `Invoice` (`coverage_start_month`, `coverage_month_count`) **не меняются**.
 
-- подписка продолжает жить по месяцам;
-- одна карточка оплаты может покрывать один, двенадцать или другое число месяцев.
+### UI: период и сумма
+
+В форме подписки сначала выбирается **период** (`billing_frequency` → `coverage_month_count`), затем сумма **за этот период** с явной подписью (например, «сумма за год»).
+
+Карточка подписки читается как: «112 000 ֏ раз в год, следующий платёж 24.04.2027». Где нужна месячная колонка — показывается `monthly_equivalent_amount` с подписью **эквивалент**, не «цена».
 
 ---
 
@@ -110,36 +141,54 @@ Flow:
 1. Seller creates first invoice in CRM.
 2. Finance confirms the first payment.
 3. Deal moves to `Deal Won`.
-4. Order / Project / Product are created.
-5. Subscription record is created immediately as `Active`.
+4. Order / Project / Product are created (`ensureProduct`).
+5. Subscription record is created immediately as `Active` with that `productId` (+ matching `projectId`); `name` = `Deal.name`, fallback `Deal.code`.
 
 Important rules:
 
-- the first paid invoice is not only the project start confirmation;
-- it is also the **first paid month of the subscription**;
-- the month of that first invoice must be visible as paid in Subscription Board;
-- the next payment is due after the already paid coverage period ends.
+- idempotency key for auto-create is **`productId` + subscription `type`** (not projectId + type);
+- `termMonths` копируется с `Deal.subscriptionTermMonths` (`null` = бессрочно); `coverageMonthCount = 1`;
+- the first paid invoice confirms the project start and **is** the first paid month of the subscription;
+- when Deal Won creates the subscription, that invoice is linked (`subscriptionId`) and given `coverage_start_month` = calendar month of `paidDate` (`YYYY-MM`, same key as billing and the grid) plus `coverage_month_count` for the whole periods the amount actually pays;
+- amount equal to one period `amount` → one period of coverage (`coverage_month_count` of the subscription); amount equal to N whole period prices → N periods; any other amount (partial deposit, rounded-down advance) is **not** linked — the invoice stays a deal/order card and a warning is logged (deal, invoice, both amounts);
+- linkage runs only at subscription **create**, only for this deal's first paid invoice, and only when `subscriptionId` is still null; an existing subscription (idempotency) or an invoice already attached to another subscription is not rewritten; amount, type, `moneyStatus`, and payments are never changed;
+- once linked, the grid paints that month, billing skips it (coverage dedup), and `term_months` counts it, so a 6-month term is six paid periods in total.
 
 Example:
 
-- first invoice paid on `15 March`
-- March is shown as paid in the subscription row
-- next billing cycle is `15 April`
+- first invoice paid on `15 March` for exactly one period
+- March is painted from that invoice
+- `billingStartDate = 15 March`; billing does not invoice March again; next cycle `15 April`
 
 ### Route B: `Deal Type = MAINTENANCE`
 
 Flow:
 
 1. Maintenance deal reaches `Deal Won`.
-2. Subscription record is created immediately in `Pending`.
-3. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
-4. Finance later confirms / edits `billing_start_date` and activates billing.
+2. `existingProductId` is **required** — without a Product, Subscription is **not** created.
+3. Subscription record is created immediately in `Pending` on that Product; `name` = `Deal.name`, fallback `Deal.code`.
+4. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
+5. Finance later confirms / edits `billing_start_date` and activates billing.
 
 Important rules:
 
 - invoice is not required before maintenance `Deal Won` by default;
 - CRM may pass the expected billing start date;
-- while status is `Pending`, this date is still editable and does not yet generate billing.
+- while status is `Pending`, this date is still editable and does not yet generate billing;
+- idempotency: `productId` + `MAINTENANCE_ONLY`.
+
+### Route C: Finance manual create
+
+- DTO requires `productId` and **`name`** (non-empty);
+- `projectId` is taken from Product, or must match `Product.projectId` if also sent.
+
+### Route D: Partner Service (outbound)
+
+- Project + Product are required;
+- `PARTNER_SERVICE` Subscription is created on that Product (`PartnerServiceTerm.productId`); `name` = `{serviceType} — {Product.name}`;
+- create-finance must **link** the existing Product — it must not spawn a second Product;
+- WhatsApp group is ensured for that Product;
+- delivery-deadline auto-pause does **not** apply to `PARTNER_SERVICE`.
 
 ---
 
@@ -149,11 +198,15 @@ Important rules:
 
 ### Частота оплаты
 
-| Значение  | Смысл                                        |
-| --------- | -------------------------------------------- |
-| `Monthly` | обычная ежемесячная оплата                   |
-| `Yearly`  | одна оплата сразу за 12 месяцев              |
-| `Custom`  | произвольная предоплата на несколько месяцев |
+При **создании** подписки `billing_frequency` обязателен: без периода `amount` нельзя интерпретировать. На update частота не подставляется сама — её меняют явно.
+
+| Значение  | Смысл                           | `coverage_month_count`  |
+| --------- | ------------------------------- | ----------------------- |
+| `Monthly` | обычная ежемесячная оплата      | 1                       |
+| `Yearly`  | одна оплата сразу за 12 месяцев | 12                      |
+| `Custom`  | предоплата на несколько месяцев | обязательно, от 2 до 60 |
+
+Сумма каждой карточки = `amount` подписки. Покрытие в месяцах = `coverage_month_count` (на `Invoice` — в `coverage_month_count` карточки).
 
 ### Главный принцип
 
@@ -163,23 +216,27 @@ Important rules:
 
 - одна карточка оплаты может покрывать `1`, `4`, `12` и другое число месяцев;
 - в `Subscription Grid` всё равно должны быть отмечены именно конкретные закрытые месяцы;
-- следующая карточка оплаты должна создаваться только после окончания уже оплаченного покрытия.
+- следующая карточка оплаты должна создаваться только после окончания уже существующего покрытия.
 
 ### Пример: yearly subscription
 
-- `base_monthly_amount = 10 000`
+- `amount = 120 000`
 - `billing_frequency = Yearly`
-- система создаёт одну `Invoice Card` на `120 000`
+- `coverage_month_count = 12`
+- `monthly_equivalent_amount = 10 000`
+- система создаёт одну `Invoice Card` на `120 000` (без умножения)
 - в карточке фиксируется, что покрыты `12` месяцев
-- в grid эти 12 месяцев отображаются как оплаченные
+- в grid эти 12 месяцев отображаются как оплаченные; MRR-вклад = `10 000`
 - следующая карточка появится только после окончания этих 12 месяцев
 
 ### Пример: custom prepayment
 
-- `base_monthly_amount = 10 000`
-- клиент платит `40 000`
-- одна карточка оплаты покрывает `4` месяца
-- в grid 4 месяца отмечаются как `Paid`
+- `amount = 40 000`
+- `billing_frequency = Custom`
+- `coverage_month_count = 4`
+- `monthly_equivalent_amount = 10 000`
+- одна карточка оплаты на `40 000` покрывает `4` месяца
+- в grid 4 месяца отмечаются по статусу оплаты карточки (`Paid` / pending / overdue)
 - следующая карточка появится на 5-й месяц
 
 ### Что должна хранить Invoice Card для подписки
@@ -195,6 +252,39 @@ Important rules:
 - не создавать новые карточки раньше времени;
 - поддержать yearly и custom prepayment без поломки месячной модели.
 
+У legacy/migrated карточек без `coverage_start_month` покрытие считается одним календарным месяцем даты создания карточки.
+
+### Ежемесячный прогон биллинга
+
+Ежедневный прогон выбирает активные подписки по `billing_day`:
+
+- в прогон попадают только подписки со статусом `Active` (On Hold / Cancelled / Completed не биллятся);
+- подписка попадает в прогон, если сегодня — её `billing_day`, либо последний день месяца, когда `billing_day` = 29–31, а в месяце меньше дней;
+- порядок на одну подписку: пауза late-delivery → проверка срока (`term_months`) → дедуп покрытия → создание карточки;
+- если число **различных покрытых месяцев** по invoice type `SUBSCRIPTION` уже ≥ `term_months`, биллинг **не** создаёт карточку и переводит подписку в `Completed` (при пустом `end_date` ставит конец последнего покрытого месяца);
+- месяц без карточки (On Hold, late-delivery pause) **не** входит в покрытие и срок не расходует — контракт сдвигается вправо;
+- для целевого месяца `YYYY-MM` подписка **пропускается**, если у неё уже есть карточка оплаты, покрывающая этот месяц: месяц попадает в полуинтервал `[coverage_start_month, coverage_start_month + coverage_month_count)`;
+- наличие покрытия блокирует повторное выставление **независимо от статуса оплаты** карточки; факт оплаты (`Paid`) используется отдельно — для Subscription Grid.
+
+---
+
+## Срок подписки (`term_months`)
+
+`term_months` — согласованная длина контракта в **покрытых календарных месяцах**, не в календарной дате окончания. `null` = бессрочная: биллинг сам в `Completed` не переводит.
+
+Счётчик срока = число **уникальных** месяцев в окнах покрытия invoice `type = SUBSCRIPTION` (пересечения не удваиваются). Пауза биллинга не создаёт invoice → месяц не покрыт → срок не тратится.
+
+Когда покрытые месяцы достигают `term_months`, биллинг перестаёт выставлять счета и статус становится `Completed` (терминальный).
+
+### Инварианты (create и update)
+
+Действуют, когда `term_months` задан (не `null`):
+
+- `coverage_month_count <= term_months`;
+- `term_months % coverage_month_count === 0` — срок делится на целые периоды биллинга, частичного периода не бывает.
+
+Примеры: срок 6 + Monthly — допустимо; срок 6 + Custom 4 — отказ; срок 12 + Yearly — допустимо. Диапазон `term_months`: целое 1–120.
+
 ---
 
 ## Subscription Grid View (Сетка подписок)
@@ -203,17 +293,19 @@ Important rules:
 
 ### Структура сетки
 
+Подпись строки: первая строка — `Subscription.name`; вторая — название проекта; суммы в ячейках — факт оплаты за месяц.
+
 ```
                   Янв    Фев    Мар    Апр    Май    ...    Дек
 ┌────────────────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┐
-│ Project Alpha  │  ██  │  ██  │  ██  │  ░░  │      │      │      │
-│ (80,000/мес)   │ 80k  │ 80k  │ 80k  │ 80k  │  —   │  —   │  —   │
+│ Maint. Alpha   │  ██  │  ██  │  ██  │  ░░  │      │      │      │
+│ Project Alpha  │ 80k  │ 80k  │ 80k  │ 80k  │  —   │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ Project Beta   │  ██  │  ██  │  ░░  │  ░░  │  ░░  │      │      │
-│ (120,000/мес)  │ 120k │ 120k │ 120k │ 120k │ 120k │  —   │  —   │
+│ Dev monthly    │  ██  │  ██  │  ░░  │  ░░  │  ░░  │      │      │
+│ Project Beta   │ 120k │ 120k │ 120k │ 120k │ 120k │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-│ Project Gamma  │      │      │  ██  │  ██  │  ░░  │      │      │
-│ (50,000/мес)   │  —   │  —   │ 50k  │ 50k  │ 50k  │  —   │  —   │
+│ Email widget   │      │      │  ██  │  ██  │  ░░  │      │      │
+│ Project Beta   │  —   │  —   │ 50k  │ 50k  │ 50k  │  —   │  —   │
 ├────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
 │ ИТОГО:         │ 200k │ 200k │ 250k │ 250k │ 170k │  —   │  —   │
 └────────────────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┘
@@ -236,20 +328,22 @@ Important rules:
 ### Взаимодействие с сеткой
 
 - **Клик на ячейку** → переход к конкретному счёту (Invoice)
-- **Клик на строку (проект)** → детали подписки
+- **Клик на строку** → детали подписки (Subscription Detail Sheet)
 - **Изменение суммы** → выбор месяца, с которого действует новая сумма
 - **Итоговая строка** → помесячные суммы (ожидаемый доход)
 
+Прогноз (`FORECAST`) для **срочной** подписки ограничен оставшимися покрытыми месяцами: `term_months` минус число различных уже покрытых месяцев. Пропущенные (past / MISSED) месяцы срок не расходуют, поэтому прогноз может уйти правее наивной календарной даты конца. Бессрочные (`term_months` null) ограничиваются только `end_date`. Ячейки `Cancelled` / `Completed` без invoice — `N/A`.
+
 ### Summary Row (итоговые показатели)
 
-| Метрика                  | Описание                                                          |
-| ------------------------ | ----------------------------------------------------------------- |
-| **Total MRR**            | Суммарный ежемесячный повторяющийся доход (все активные подписки) |
-| **Paid this month**      | Сумма оплаченных подписок текущего месяца                         |
-| **Unpaid this month**    | Сумма неоплаченных подписок текущего месяца                       |
-| **Active subscriptions** | Количество активных подписок                                      |
-| **New this month**       | Новые подписки, начавшиеся в этом месяце                          |
-| **Churned this month**   | Подписки, отменённые в этом месяце                                |
+| Метрика                  | Описание                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| **Total MRR**            | Сумма `monthly_equivalent_amount` по всем активным подпискам |
+| **Paid this month**      | Сумма оплаченных подписок текущего месяца                    |
+| **Unpaid this month**    | Сумма неоплаченных подписок текущего месяца                  |
+| **Active subscriptions** | Количество активных подписок                                 |
+| **New this month**       | Новые подписки, начавшиеся в этом месяце                     |
+| **Churned this month**   | Подписки, отменённые в этом месяце                           |
 
 ---
 
@@ -261,23 +355,25 @@ Important rules:
 Каждый день система проверяет:
   └─ Есть ли активные подписки, у которых пора создать новую карточку оплаты?
      └─ Да → Для каждой такой подписки:
-        ├─ определить, закончился ли уже оплаченный coverage period
-        ├─ создать Invoice Card
-        ├─ сумма = base_monthly_amount × количество покрываемых месяцев
+        ├─ late-delivery pause? → пропуск (месяц не покрыт, срок не тратится)
+        ├─ покрытые месяцы уже = term_months? → статус Completed, без новой карточки
+        ├─ проверить, нет ли уже карточки с покрытием целевого месяца
+        ├─ создать Invoice Card (subscriptionId, без orderId)
+        ├─ сумма = amount подписки (без умножения)
         ├─ tax_status = из подписки
         ├─ notifications_enabled = из подписки
         └─ карточка попадает на доску `Invoices` в статус `New`
 ```
 
-### Изменение месячной базы подписки
+### Изменение суммы подписки
 
-При изменении `base_monthly_amount`:
+При изменении `amount`:
 
-1. Указывается новая сумма
+1. Указывается новая сумма за период
 2. Указывается месяц начала действия новой суммы
 3. Предыдущая сумма сохраняется в `amount_history`
-4. Все будущие карточки оплат используют новую месячную базу
-5. В сетке отображается корректная сумма для соответствующих месяцев
+4. Все будущие карточки оплат используют новый `amount`
+5. В сетке отображается корректный `monthly_equivalent_amount` (эквивалент) для соответствующих месяцев
 
 ---
 
@@ -295,11 +391,12 @@ Important rules:
 
 Особенности:
 
-- Подписка создаётся на проект (бренд клиента)
+- Подписка создаётся на **Product** внутри Project (бренд клиента)
 - Плательщик = партнёр (не клиент)
 - Сумма = договорённый % или фиксированная сумма
 - Отображается в общей сетке подписок
 - Счета генерируются автоматически как обычная подписка
+- Client WhatsApp reminders идут в **Product WhatsApp Group** этого Product (язык = `reminder_language` подписки)
 
 Важно: `Partner Service` — это outbound-доход Neetrino, когда партнёр платит нам. Это не Partner Payout.
 
@@ -325,8 +422,10 @@ Client Subscription Invoice Paid
 | **Pending**   | Подписка создана, billing_start_date можно менять, активный биллинг ещё не запущен |
 | **Active**    | Подписка активна и участвует в регулярном биллинге                                 |
 | **On Hold**   | Биллинг и обслуживание временно остановлены                                        |
-| **Cancelled** | Подписка прекращена досрочно                                                       |
-| **Completed** | Подписка завершилась штатно и больше не должна генерировать новые invoice          |
+| **Cancelled** | Подписка прекращена досрочно (churn); обратима через Resume → Active               |
+| **Completed** | Срок покрытых месяцев исчерпан или штатное завершение; новые invoice не создаются  |
+
+Ручные переходы: `Pending` → `Active` / `Cancelled`; `Active` → `On Hold` / `Cancelled` / `Completed`; `On Hold` → `Active` / `Cancelled` / `Completed`; `Cancelled` → `Active` (Resume). `Completed` остаётся терминальным. Resume с `Cancelled` очищает `endDate`, чтобы биллинг и active MRR снова считали подписку живой. Биллинг ставит `Completed` только с `Active` (в прогон другие статусы не попадают).
 
 ### Процесс отмены
 
@@ -349,17 +448,23 @@ Client Subscription Invoice Paid
 | ---------------------- | ------------------------------------------------------ |
 | **Monthly Churn Rate** | Отменённые подписки / Активные на начало месяца × 100% |
 | **Revenue Churn**      | Потерянный MRR / MRR на начало месяца × 100%           |
-| **Net MRR Change**     | New MRR + Expansion MRR − Churned MRR                  |
+| **Net MRR Change**     | New MRR − Churned MRR − Completed MRR                  |
 | **Retention Rate**     | 100% − Churn Rate                                      |
+
+В отчёте MRR / Subscription Revenue **не смешивать** с churn: `CANCELLED` → `churnedMrr`; `COMPLETED` → отдельное `completedMrr` (естественное истечение срока). Оба считаются по `monthly_equivalent_amount` и `endDate` в периоде.
 
 ---
 
 ## Фильтры и отображение
 
+Inbox по умолчанию (список и grid) показывает только **Pending + Active**. On Hold, Cancelled и Completed скрыты, пока пользователь не выберет их в фильтре статуса. **All statuses** показывает все строки; фильтр одного статуса (например **Cancelled**) — только его.
+
+Сортировка всегда одна и та же: ранг статуса `PENDING → ACTIVE → ON_HOLD → CANCELLED → COMPLETED`, внутри статуса — `createdAt` desc (новые сверху). Первая строка — самый новый Pending; после всех Pending — самый новый Active.
+
 ### Фильтры Subscription Grid
 
 - **По типу**: Maintenance / Dev+Maint / Dev Only / Partner
-- **По статусу**: Pending / Active / On Hold / Cancelled / Completed
+- **По статусу**: Pending + Active (default) / Pending / Active / On Hold / Cancelled / Completed / All statuses
 - **По проекту**: выбор конкретного проекта
 - **По клиенту (компании)**: все подписки одного клиента
 - **По году**: переключение между годами
@@ -378,18 +483,20 @@ Client Subscription Invoice Paid
 ## Связи с другими сущностями
 
 ```
-Project ──→ Subscription(s) ──→ Invoice(s) ──→ Payment(s)
-                │
-                ├──→ Subscription Grid View
-                ├──→ MRR Reports
-                ├──→ Churn Reports
-                ├──→ Partner Service Revenue (если outbound Partner Service)
-                └──→ Partner Accrual (если inbound referral subscription)
+Project ──→ Product(s) ──→ Subscription(s) ──→ Invoice(s) ──→ Payment(s)
+                              │
+                              ├──→ Subscription Grid View
+                              ├──→ MRR Reports
+                              ├──→ Churn Reports
+                              ├──→ Product WhatsApp Group (client reminders)
+                              ├──→ Partner Service Revenue (если outbound Partner Service)
+                              └──→ Partner Accrual (если inbound referral subscription)
 ```
 
 | Сущность     | Связь                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
-| Project      | Одна подписка = один проект. У проекта может быть несколько подписок разного типа                       |
+| Product      | Обязательный owner подписки. У Product может быть несколько Subscription разных типов                   |
+| Project      | Denormalized на Subscription (= Product.projectId). У проекта — много Product и много Subscription      |
 | Invoice Card | Из подписки создаются карточки оплат с покрытием одного или нескольких месяцев                          |
 | Payment      | При оплате карточки обновляется покрытие месяцев в Grid                                                 |
 | Partner      | Для Partner Service — плательщик outbound-дохода; для referral subscription — источник partner accruals |

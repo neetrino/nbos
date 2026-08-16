@@ -1,4 +1,5 @@
 import { type Prisma } from '@nbos/database';
+import { employeePersonSelect } from '../../common/employee-person.select';
 
 const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
 
@@ -14,7 +15,7 @@ export const projectDetailInclude = {
   ...projectAdditionalContactsInclude,
   products: {
     include: {
-      pm: { select: { id: true, firstName: true, lastName: true } },
+      pm: { select: employeePersonSelect },
       order: {
         select: {
           id: true,
@@ -28,7 +29,7 @@ export const projectDetailInclude = {
   extensions: {
     include: {
       product: { select: { id: true, name: true, productType: true, status: true } },
-      assignee: { select: { id: true, firstName: true, lastName: true } },
+      assignee: { select: employeePersonSelect },
       order: {
         select: {
           id: true,
@@ -57,7 +58,7 @@ export const projectDetailInclude = {
   },
   tickets: {
     include: {
-      assignee: { select: { id: true, firstName: true, lastName: true } },
+      assignee: { select: employeePersonSelect },
       contact: { select: { id: true, firstName: true, lastName: true } },
     },
     orderBy: { createdAt: 'desc' },

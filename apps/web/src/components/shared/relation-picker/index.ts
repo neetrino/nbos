@@ -19,4 +19,7 @@ export {
   useCompanyRelationSearch,
   useProjectRelationSearch,
   useProductRelationSearch,
+  usePartnerRelationSearch,
+  useEmployeeRelationSearch,
+  useOrderRelationSearch,
 } from './relation-search-loaders';

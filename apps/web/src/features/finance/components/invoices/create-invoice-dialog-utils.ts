@@ -30,9 +30,9 @@ export function getInitialInvoiceForm(order?: Order | null): CreateInvoiceFormSt
 export function getInitialInvoiceFormFromSubscription(
   subscription: Subscription,
 ): CreateInvoiceFormState {
-  const monthly = parseFloat(subscription.baseMonthlyAmount);
+  const periodAmount = parseFloat(subscription.amount);
   return {
-    amount: Number.isFinite(monthly) ? String(monthly) : '',
+    amount: Number.isFinite(periodAmount) ? String(periodAmount) : '',
     dueDate: defaultCreateInvoiceDueDateIso(),
   };
 }

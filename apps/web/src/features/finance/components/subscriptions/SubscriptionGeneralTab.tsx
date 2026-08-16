@@ -10,18 +10,28 @@ import {
 } from '@/components/shared';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
+  CUSTOM_PREPAID_MONTH_MAX,
+  CUSTOM_PREPAID_MONTH_MIN,
   SUBSCRIPTION_BILLING_FREQUENCIES,
+  SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
+import { applyBillingPeriodChangeToDraft } from '@/features/finance/utils/subscription-billing-period-change';
 import type { SubscriptionGeneralDraft } from '@/features/finance/utils/subscription-general-form-state';
+import {
+  getSubscriptionBillingValidationError,
+  getSubscriptionPeriodAmountLabel,
+} from '@/features/finance/utils/subscription-form-state';
 import { partnersApi } from '@/lib/api/partners';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
+import { SubscriptionTermSummary } from './SubscriptionTermSummary';
 import type { Subscription } from '@/lib/api/finance';
 
 interface SubscriptionGeneralTabProps {
   subscription: Subscription;
   draft: SubscriptionGeneralDraft;
   patchDraft: (partial: Partial<SubscriptionGeneralDraft>) => void;
+  replaceDraft: (next: SubscriptionGeneralDraft) => void;
   formDisabled?: boolean;
 }
 
@@ -31,6 +41,7 @@ export function SubscriptionGeneralTab({
   subscription,
   draft,
   patchDraft,
+  replaceDraft,
   formDisabled = false,
 }: SubscriptionGeneralTabProps) {
   const [partnerOptions, setPartnerOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -53,8 +64,36 @@ export function SubscriptionGeneralTab({
   }, []);
 
   const partnerSelectOptions = [{ value: '', label: 'None' }, ...partnerOptions];
-
   const [billingOpen, setBillingOpen] = useState(true);
+  const billingValidationError = getSubscriptionBillingValidationError(draft);
+  const monthlyEquivalent = parseFloat(subscription.monthlyEquivalentAmount);
+
+  const onBillingFrequencyChange = useCallback(
+    (value: string) => {
+      replaceDraft({
+        ...applyBillingPeriodChangeToDraft(
+          draft,
+          {
+            billingFrequency: value,
+            coverageMonthCount: value === 'CUSTOM' ? draft.coverageMonthCount : '',
+          },
+          monthlyEquivalent,
+        ),
+        partnerPickLabel: draft.partnerPickLabel,
+      });
+    },
+    [draft, monthlyEquivalent, replaceDraft],
+  );
+
+  const onCoverageMonthCountChange = useCallback(
+    (value: string) => {
+      replaceDraft({
+        ...applyBillingPeriodChangeToDraft(draft, { coverageMonthCount: value }, monthlyEquivalent),
+        partnerPickLabel: draft.partnerPickLabel,
+      });
+    },
+    [draft, monthlyEquivalent, replaceDraft],
+  );
 
   const onPartnerChange = useCallback(
     (value: string) => {
@@ -76,28 +115,16 @@ export function SubscriptionGeneralTab({
         onOpenChange={setBillingOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className={BILLING_FIELD_PAIR_CLASS}>
-            <InlineField
-              variant="controlled"
-              label="Type"
-              type="select"
-              value={draft.type}
-              options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-              icon={<Layers size={12} />}
-              disabled={formDisabled}
-              onValueChange={(v) => v && patchDraft({ type: v })}
-            />
-            <InlineField
-              variant="controlled"
-              label="Amount / month"
-              type="money"
-              value={draft.baseMonthlyAmount}
-              placeholder="Enter amount…"
-              icon={<DollarSign size={12} />}
-              disabled={formDisabled}
-              onValueChange={(v) => patchDraft({ baseMonthlyAmount: v })}
-            />
-          </div>
+          <InlineField
+            variant="controlled"
+            label="Type"
+            type="select"
+            value={draft.type}
+            options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            icon={<Layers size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ type: v })}
+          />
           <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
@@ -110,7 +137,7 @@ export function SubscriptionGeneralTab({
               }))}
               icon={<Repeat size={12} />}
               disabled={formDisabled}
-              onValueChange={(v) => v && patchDraft({ billingFrequency: v })}
+              onValueChange={(v) => v && onBillingFrequencyChange(v)}
             />
             <InlineField
               variant="controlled"
@@ -123,6 +150,32 @@ export function SubscriptionGeneralTab({
               onValueChange={(v) => patchDraft({ billingDay: v })}
             />
           </div>
+          {draft.billingFrequency === 'CUSTOM' ? (
+            <InlineField
+              variant="controlled"
+              label={`Coverage months (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX})`}
+              type="number"
+              value={draft.coverageMonthCount}
+              placeholder={`${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX}`}
+              icon={<Repeat size={12} />}
+              disabled={formDisabled}
+              onValueChange={onCoverageMonthCountChange}
+            />
+          ) : null}
+          <InlineField
+            variant="controlled"
+            label={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
+            type="money"
+            value={draft.amount}
+            placeholder="Enter amount…"
+            icon={<DollarSign size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ amount: v })}
+          />
+          {billingValidationError ? (
+            <p className="text-destructive text-sm">{billingValidationError}</p>
+          ) : null}
+          <SubscriptionTermSummary subscription={subscription} />
           <div className={BILLING_FIELD_PAIR_CLASS}>
             <InlineField
               variant="controlled"
@@ -175,6 +228,18 @@ export function SubscriptionGeneralTab({
             />
             Billing notifications
           </label>
+          <InlineField
+            variant="controlled"
+            label="Payment reminder language"
+            type="select"
+            value={draft.reminderLanguage}
+            options={SUBSCRIPTION_REMINDER_LANGUAGES.map((l) => ({
+              value: l.value,
+              label: l.label,
+            }))}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ reminderLanguage: v })}
+          />
         </div>
       </DetailSheetCollapsibleSection>
 

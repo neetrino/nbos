@@ -50,6 +50,7 @@ describe('buildProductCurrentStageReadiness', () => {
       order: {
         id: 'ord-1',
         status: 'FULLY_PAID',
+        paymentType: 'CLASSIC',
         invoices: [{ moneyStatus: 'PAID' }],
       },
     };
@@ -61,6 +62,66 @@ describe('buildProductCurrentStageReadiness', () => {
         openExtensions: 0,
       }),
     ).toEqual({ completed: 6, total: 6 });
+  });
+
+  it('does not treat TRANSFER as finance-ready when a CLASSIC order is PARTIALLY_PAID', () => {
+    const p = {
+      ...baseProduct,
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER' as const,
+      clientAcceptedAt: new Date(),
+      order: {
+        id: 'ord-1',
+        status: 'PARTIALLY_PAID',
+        paymentType: 'CLASSIC',
+        invoices: [{ moneyStatus: 'PAID' }],
+      },
+    };
+    const lc = buildProductDeliveryLifecycle(p);
+    expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
+      completed: 5,
+      total: 6,
+    });
+  });
+
+  it('regression: subscription TRANSFER readiness is complete when the order stays PARTIALLY_PAID and no invoices are unpaid', () => {
+    const p = {
+      ...baseProduct,
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER' as const,
+      clientAcceptedAt: new Date(),
+      order: {
+        id: 'ord-1',
+        status: 'PARTIALLY_PAID',
+        paymentType: 'SUBSCRIPTION',
+        invoices: [{ moneyStatus: 'PAID' }],
+      },
+    };
+    const lc = buildProductDeliveryLifecycle(p);
+    expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
+      completed: 6,
+      total: 6,
+    });
+  });
+
+  it('still blocks TRANSFER readiness when a subscription order has an unpaid invoice', () => {
+    const p = {
+      ...baseProduct,
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER' as const,
+      clientAcceptedAt: new Date(),
+      order: {
+        id: 'ord-1',
+        status: 'PARTIALLY_PAID',
+        paymentType: 'SUBSCRIPTION',
+        invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
+      },
+    };
+    const lc = buildProductDeliveryLifecycle(p);
+    expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
+      completed: 5,
+      total: 6,
+    });
   });
 });
 

@@ -1,4 +1,5 @@
 import type { StageGateError } from '../stage-gates/types';
+import { isOrderPaymentGateSatisfied } from './order-payment-gate';
 
 /** Task statuses treated as closed for product stage gates (includes legacy DONE). */
 export const PRODUCT_GATE_CLOSED_TASK_STATUSES = ['ON_HOLD', 'COMPLETED', 'DONE'] as const;
@@ -19,7 +20,12 @@ export interface ProductStageGateInput {
   description?: string | null;
   deadline?: Date | string | null;
   clientAcceptedAt?: Date | string | null;
-  order?: { id: string; status?: string; invoices?: Array<{ moneyStatus: string }> } | null;
+  order?: {
+    id: string;
+    status?: string;
+    paymentType?: string | null;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
@@ -113,11 +119,11 @@ function buildClientAcceptanceErrors(product: ProductStageGateInput): StageGateE
 }
 
 function buildOpenOrderErrors(order: ProductStageGateInput['order']): StageGateError[] {
-  if (!order?.status || ['FULLY_PAID', 'CLOSED'].includes(order.status)) return [];
+  if (isOrderPaymentGateSatisfied(order)) return [];
   return [
     {
       field: 'finance',
-      message: `Order ${order.status} must be fully paid or closed before Product Done.`,
+      message: `Order ${order?.status} must be fully paid or closed before Product Done.`,
     },
   ];
 }

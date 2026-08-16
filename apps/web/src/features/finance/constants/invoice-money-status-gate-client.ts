@@ -8,14 +8,6 @@ export const INVOICE_GATE_FIELD_PROJECT = 'project' as const;
 
 const AWAITING_PAYMENT_CONTEXT_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE']);
 
-function invoiceOutstandingAmount(invoice: Invoice): number {
-  const coverage = invoice.paymentCoverage;
-  if (coverage?.outstandingAmount !== undefined) return coverage.outstandingAmount;
-  const amount = parseFloat(invoice.amount);
-  const paid = coverage?.paidAmount ?? 0;
-  return Number.isFinite(amount) ? Math.max(0, amount - paid) : 0;
-}
-
 function requiresManualContextGate(invoice: Invoice, targetMoneyStatus: string): boolean {
   return invoice.type === 'MANUAL' && AWAITING_PAYMENT_CONTEXT_STATUSES.has(targetMoneyStatus);
 }
@@ -26,7 +18,6 @@ export function getLocalInvoiceMoneyStatusGateErrors(
   targetMoneyStatus: string,
 ): ApiFieldError[] {
   const errors: ApiFieldError[] = [];
-  const outstanding = invoiceOutstandingAmount(invoice);
 
   if (requiresManualContextGate(invoice, targetMoneyStatus)) {
     if (!invoice.companyId) {
@@ -43,13 +34,6 @@ export function getLocalInvoiceMoneyStatusGateErrors(
     }
   }
 
-  if (targetMoneyStatus === 'PAID' && outstanding > 0) {
-    errors.push({
-      field: INVOICE_GATE_FIELD_PAYMENTS,
-      message: 'Record payments until the invoice is fully covered before marking it paid.',
-    });
-  }
-
   if (invoice.moneyStatus === 'PAID' && targetMoneyStatus !== 'PAID') {
     errors.push({
       field: INVOICE_GATE_FIELD_MONEY_STATUS,
@@ -62,14 +46,6 @@ export function getLocalInvoiceMoneyStatusGateErrors(
 
 /** Maps API guard messages to sheet field highlights when structured `errors[]` is absent. */
 export function mapInvoiceMoneyStatusApiMessage(message: string): ApiFieldError[] {
-  if (message.includes('Cannot mark invoice as paid before payments fully cover')) {
-    return [
-      {
-        field: INVOICE_GATE_FIELD_PAYMENTS,
-        message,
-      },
-    ];
-  }
   if (message.includes('Fully paid invoices must stay in PAID')) {
     return [
       {

@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,10 +34,6 @@ export function CredentialsVaultPage() {
 
 function CredentialsVaultPageContent() {
   const vault = useCredentialsVaultPage();
-  const [boardScrollRoot, setBoardScrollRoot] = useState<HTMLElement | null>(null);
-  const bindBoardScrollContainer = useCallback((node: HTMLDivElement | null) => {
-    setBoardScrollRoot(node);
-  }, []);
 
   const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
@@ -57,7 +52,7 @@ function CredentialsVaultPageContent() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5">
       <PageHero
         title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
         tabs={
@@ -142,10 +137,9 @@ function CredentialsVaultPageContent() {
       )}
 
       <div
-        ref={vault.viewMode === 'category-board' ? bindBoardScrollContainer : undefined}
         className={
           vault.viewMode === 'category-board'
-            ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
+            ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
             : undefined
         }
       >
@@ -153,10 +147,8 @@ function CredentialsVaultPageContent() {
           viewMode={vault.viewMode}
           credentials={vault.credentials}
           loading={vault.loading}
-          loadingMore={vault.loadingMore}
-          hasMore={vault.hasMore}
-          boardScrollRoot={boardScrollRoot}
-          onBoardLoadMore={vault.loadMore}
+          columnMeta={vault.columnMeta}
+          onColumnLoadMore={vault.loadMoreColumn}
           showCreate={vault.showCreate}
           activeTab={vault.activeTab}
           vaultListScope={vault.vaultListScope}

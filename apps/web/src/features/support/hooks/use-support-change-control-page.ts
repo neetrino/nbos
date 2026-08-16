@@ -8,13 +8,9 @@ import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-
 import { useSupportChangeControlQuery } from '@/features/support/hooks/use-support-change-control-query';
 import { useSupportCreateTicketForm } from '@/features/support/hooks/use-support-create-ticket-form';
 import { useSupportTicketActions } from '@/features/support/hooks/use-support-ticket-actions';
-import {
-  getBoardStageKeys,
-  matchesBoardLifecycleScope,
-  resolveBoardLifecycleScope,
-  type BoardLifecycleScope,
-} from '@/features/shared/board-lifecycle';
+import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { usePermission } from '@/lib/permissions';
+import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
 
 export function useSupportChangeControlPage() {
   const router = useRouter();
@@ -67,34 +63,33 @@ export function useSupportChangeControlPage() {
     [stripSupportTicketOpenFromUrl],
   );
 
-  const boardScope = resolveBoardLifecycleScope(query.filters.boardScope);
-  const hasStatusFilter = Boolean(query.filters.status) && query.filters.status !== 'all';
-
-  const displayTickets = useMemo(() => {
-    if (hasStatusFilter) return query.tickets;
-    return query.tickets.filter((ticket) =>
-      matchesBoardLifecycleScope(ticket.status, SUPPORT_TICKET_BOARD_STAGES, boardScope),
-    );
-  }, [query.tickets, boardScope, hasStatusFilter]);
-
-  const kanbanColumns = useMemo(() => {
-    const visibleKeys = getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
-    return TICKET_STATUSES.filter((status) => visibleKeys.includes(status.value)).map((status) => ({
-      key: status.value,
-      label: status.label,
-      color: status.color,
-      items: displayTickets.filter((ticket) => ticket.status === status.value),
-    }));
-  }, [displayTickets, boardScope]);
+  const kanbanColumns = useMemo((): SupportKanbanColumn[] => {
+    const visibleKeys = getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, query.boardScope);
+    return TICKET_STATUSES.filter((status) => visibleKeys.includes(status.value)).map((status) => {
+      const meta = query.columnMeta[status.value];
+      return {
+        key: status.value,
+        label: status.label,
+        color: status.color,
+        items: query.tickets.filter((ticket) => ticket.status === status.value),
+        totalCount: meta?.totalCount,
+        hasMore: meta?.hasMore,
+        loadingMore: meta?.loadingMore,
+      };
+    });
+  }, [query.boardScope, query.columnMeta, query.tickets]);
 
   return {
-    boardScope: boardScope as BoardLifecycleScope,
-    displayTickets,
+    boardScope: query.boardScope as BoardLifecycleScope,
+    displayTickets: query.tickets,
     openTicketIdFromUrl,
     meId: me?.id ?? null,
     openSupportDetail,
     handleSupportDetailOpenChange,
     kanbanColumns,
+    hasMoreAny: query.hasMoreAny,
+    loadMoreColumn: query.loadMoreColumn,
+    loadMoreAll: query.loadMoreAll,
     query,
     createForm,
     actions,

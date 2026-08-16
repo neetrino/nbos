@@ -49,7 +49,9 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
           {companies.map((company) => {
             const compType = getCompanyType(company.type);
             const taxSt = getTaxStatus(company.taxStatus);
-            const contactName = `${company.contact.firstName} ${company.contact.lastName}`.trim();
+            const contactName = company.contact
+              ? `${company.contact.firstName} ${company.contact.lastName}`.trim()
+              : '';
             return (
               <TableRow
                 key={company.id}

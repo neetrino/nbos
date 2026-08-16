@@ -15,12 +15,10 @@ import { FinanceListPageSettingsSheet } from '@/features/finance/components/Fina
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
-import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  matchesBoardLifecycleScope,
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
@@ -98,15 +96,7 @@ function InvoicesPageInner() {
   };
 
   const boardScope = resolveBoardLifecycleScope(state.filters.boardScope);
-  const hasMoneyStatusFilter =
-    Boolean(state.filters.moneyStatus) && state.filters.moneyStatus !== 'all';
-
-  const displayInvoices = useMemo(() => {
-    if (hasMoneyStatusFilter) return state.invoices;
-    return state.invoices.filter((invoice) =>
-      matchesBoardLifecycleScope(invoice.moneyStatus, INVOICE_MONEY_BOARD_STAGES, boardScope),
-    );
-  }, [state.invoices, boardScope, hasMoneyStatusFilter]);
+  const displayInvoices = state.invoices;
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
@@ -224,6 +214,10 @@ function InvoicesPageInner() {
           onInvoiceClick={state.handleInvoiceClick}
           onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
           onOpenQuickCreate={() => state.setCreateOpen(true)}
+          columnMeta={state.columnMeta}
+          hasMoreAny={state.hasMoreAny}
+          onColumnLoadMore={state.loadMoreColumn}
+          onLoadMoreAll={state.loadMoreAll}
         />
       </div>
       <InvoiceSheet

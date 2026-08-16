@@ -7,6 +7,10 @@ import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.servi
 import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
+import { resolveDealSubscriptionName } from '../../finance/subscriptions/subscription-commercial-name';
+import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
+import { linkDealDepositInvoiceToSubscription } from './link-deal-deposit-invoice';
 
 interface WonDealData {
   id: string;
@@ -15,6 +19,8 @@ interface WonDealData {
   type: string | null;
   amount: unknown;
   paymentType: string | null;
+  /** Fixed billing periods for SUBSCRIPTION product/extension deals; null = open-ended. */
+  subscriptionTermMonths?: number | null;
   taxStatus: string | null;
   contactId: string | null;
   companyId: string | null;
@@ -26,6 +32,8 @@ interface WonDealData {
   deadline: Date | null;
   existingProductId: string | null;
   maintenanceStartAt: Date | null;
+  /** OUTSOURCE only; default false. Locked after Won in DealsService.update. */
+  outsourceGoesToDelivery?: boolean;
   source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -34,11 +42,21 @@ interface WonDealData {
   marketingActivityId: string | null;
   orders?: Array<{
     invoices?: Array<{
+      id?: string;
       moneyStatus: string;
       amount: unknown;
       paidDate?: Date | null;
+      subscriptionId?: string | null;
     }>;
   }>;
+}
+
+interface FirstPaidDealInvoice {
+  id?: string;
+  moneyStatus: string;
+  amount: unknown;
+  paidDate?: Date | null;
+  subscriptionId?: string | null;
 }
 
 interface ProductWonResult {
@@ -58,6 +76,7 @@ export class DealWonHandler {
   ) {}
 
   async handle(deal: WonDealData) {
+    await this.syncSubscriptionOrderContractTotalAtWon(deal);
     const targets = await this.resolveWonTargets(deal, 'DEAL_WON');
     if (targets) {
       await this.driveDealWonLinks.linkApprovedDealMaterials(targets);
@@ -67,6 +86,41 @@ export class DealWonHandler {
   /** Creates project/product/extension shell without marking the deal Won (early delivery). */
   async ensureDeliveryShell(deal: WonDealData) {
     await this.resolveWonTargets(deal, 'EARLY_DELIVERY');
+  }
+
+  private async syncSubscriptionOrderContractTotalAtWon(deal: WonDealData): Promise<void> {
+    if (deal.paymentType !== 'SUBSCRIPTION' || deal.subscriptionTermMonths == null) {
+      return;
+    }
+
+    const order = await this.prisma.order.findFirst({
+      where: { dealId: deal.id },
+      select: { id: true, totalAmount: true, subscriptionTermMonths: true },
+    });
+    if (!order) return;
+
+    const expectedTotalAmount = resolveDealOrderTotalAmount({
+      amount: deal.amount,
+      paymentType: 'SUBSCRIPTION',
+      subscriptionTermMonths: deal.subscriptionTermMonths,
+    });
+    const currentTotalAmount = Number(order.totalAmount);
+    const expectedTermMonths = deal.subscriptionTermMonths;
+
+    if (
+      currentTotalAmount === expectedTotalAmount &&
+      order.subscriptionTermMonths === expectedTermMonths
+    ) {
+      return;
+    }
+
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        totalAmount: expectedTotalAmount,
+        subscriptionTermMonths: expectedTermMonths,
+      },
+    });
   }
 
   private async resolveWonTargets(
@@ -82,15 +136,32 @@ export class DealWonHandler {
     if (deal.type === 'MAINTENANCE') {
       return this.targetsAfterMaintenanceWon(deal);
     }
+    if (deal.type === 'OUTSOURCE') {
+      return this.targetsAfterOutsourceWon(deal, whatsappSource);
+    }
     return this.targetsFromExistingProject(deal);
+  }
+
+  private async targetsAfterOutsourceWon(
+    deal: WonDealData,
+    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+  ): Promise<DealWonDriveLinkTargets> {
+    const goesToDelivery = deal.outsourceGoesToDelivery === true;
+    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+      activeDeliveryBoard: goesToDelivery,
+    });
+    await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
+    return this.toLinkTargets(deal, result.projectId, result.productId);
   }
 
   private async targetsAfterProductWon(
     deal: WonDealData,
     whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
   ): Promise<DealWonDriveLinkTargets> {
-    const result = await this.ensureProductDeliveryShell(deal, whatsappSource);
-    await this.createProductSubscriptionIfReady(deal, result.projectId);
+    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+      activeDeliveryBoard: true,
+    });
+    await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
     if (result.productId) {
       await this.createMaintenanceDealIfMissing(deal, result.projectId, result.productId);
     }
@@ -142,9 +213,10 @@ export class DealWonHandler {
   private async ensureProductDeliveryShell(
     deal: WonDealData,
     whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    options: { activeDeliveryBoard: boolean },
   ): Promise<ProductWonResult> {
     const projectId = await this.ensureProject(deal);
-    const productId = await this.ensureProduct(deal, projectId);
+    const productId = await this.ensureProduct(deal, projectId, options);
     await this.syncProjectTeamFromDealShell(deal, projectId, productId);
     if (productId) {
       await this.enqueueProductWhatsApp(productId, deal.id, whatsappSource);
@@ -244,7 +316,11 @@ export class DealWonHandler {
     return project.id;
   }
 
-  private async ensureProduct(deal: WonDealData, projectId: string): Promise<string | null> {
+  private async ensureProduct(
+    deal: WonDealData,
+    projectId: string,
+    options: { activeDeliveryBoard: boolean },
+  ): Promise<string | null> {
     if (!deal.productCategory || !deal.productType) return null;
 
     const linkedOrder = await this.prisma.order.findFirst({
@@ -261,6 +337,13 @@ export class DealWonHandler {
         productType: deal.productType as Prisma.ProductCreateInput['productType'],
         pmId: deal.pmId ?? undefined,
         deadline: deal.deadline ?? undefined,
+        ...(options.activeDeliveryBoard
+          ? {}
+          : {
+              status: 'DONE' as const,
+              deliveryStage: null,
+              deliveryResolution: 'DONE' as const,
+            }),
       },
     });
 
@@ -275,30 +358,71 @@ export class DealWonHandler {
     return product.id;
   }
 
-  private async createProductSubscriptionIfReady(deal: WonDealData, projectId: string) {
+  private async createProductSubscriptionIfReady(
+    deal: WonDealData,
+    projectId: string,
+    productId: string | null,
+  ) {
     if (deal.paymentType !== 'SUBSCRIPTION') return;
+    if (!productId) {
+      this.logger.warn(
+        `Deal ${deal.code}: subscription skipped — productId missing after product shell`,
+      );
+      return;
+    }
 
     const firstPaidInvoice = this.getFirstPaidInvoice(deal);
     if (!firstPaidInvoice) return;
 
+    const termMonths = deal.subscriptionTermMonths ?? null;
+    const subscriptionType = termMonths != null ? 'DEV_ONLY' : 'DEV_AND_MAINTENANCE';
+
     const existing = await this.prisma.subscription.findFirst({
-      where: { projectId, type: 'DEV_AND_MAINTENANCE' },
+      where: { productId, type: subscriptionType },
       select: { id: true },
     });
     if (existing) return;
 
+    await this.createActiveProductSubscription(deal, projectId, productId, firstPaidInvoice);
+  }
+
+  private async createActiveProductSubscription(
+    deal: WonDealData,
+    projectId: string,
+    productId: string,
+    firstPaidInvoice: FirstPaidDealInvoice,
+  ): Promise<void> {
+    const termMonths = deal.subscriptionTermMonths ?? null;
+    const subscriptionType = termMonths != null ? 'DEV_ONLY' : 'DEV_AND_MAINTENANCE';
     const billingStartDate = firstPaidInvoice.paidDate ?? new Date();
-    await this.prisma.subscription.create({
+    const amount = Number(deal.amount ?? firstPaidInvoice.amount);
+    const created = await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
+        name: resolveDealSubscriptionName(deal),
         projectId,
-        type: 'DEV_AND_MAINTENANCE',
-        baseMonthlyAmount: Number(deal.amount ?? firstPaidInvoice.amount),
+        productId,
+        type: subscriptionType,
+        amount,
+        billingFrequency: 'MONTHLY',
+        coverageMonthCount: ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT,
+        ...(termMonths != null ? { termMonths } : {}),
         billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
         billingStartDate,
         status: 'ACTIVE',
       },
+    });
+
+    await linkDealDepositInvoiceToSubscription({
+      prisma: this.prisma,
+      logger: this.logger,
+      dealId: deal.id,
+      dealCode: deal.code,
+      invoiceId: firstPaidInvoice.id,
+      subscriptionId: created.id,
+      periodAmount: amount,
+      periodCoverageMonthCount: ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT,
     });
   }
 
@@ -340,29 +464,50 @@ export class DealWonHandler {
       this.logger.warn(`Maintenance deal ${deal.code} won without project or amount — skipping`);
       return null;
     }
+    if (!deal.existingProductId) {
+      this.logger.warn(
+        `Maintenance deal ${deal.code} won without existingProductId — subscription not created`,
+      );
+      return this.toLinkTargets(deal, deal.projectId, null);
+    }
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: deal.existingProductId },
+      select: { id: true, projectId: true },
+    });
+    if (!product || product.projectId !== deal.projectId) {
+      this.logger.warn(
+        `Maintenance deal ${deal.code}: existingProductId invalid for project — subscription not created`,
+      );
+      return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+    }
 
     const existing = await this.prisma.subscription.findFirst({
-      where: { projectId: deal.projectId, type: 'MAINTENANCE_ONLY' },
+      where: { productId: product.id, type: 'MAINTENANCE_ONLY' },
       select: { id: true },
     });
     if (existing) {
-      return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+      return this.toLinkTargets(deal, deal.projectId, product.id);
     }
 
     const billingStartDate = deal.maintenanceStartAt ?? new Date();
     await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
+        name: resolveDealSubscriptionName(deal),
         projectId: deal.projectId,
+        productId: product.id,
         type: 'MAINTENANCE_ONLY',
-        baseMonthlyAmount: Number(deal.amount),
+        amount: Number(deal.amount),
+        billingFrequency: 'MONTHLY',
+        coverageMonthCount: 1,
         billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
         billingStartDate,
         status: 'PENDING',
       },
     });
-    return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+    return this.toLinkTargets(deal, deal.projectId, product.id);
   }
 
   private async handleExtensionWon(deal: WonDealData): Promise<string | null> {

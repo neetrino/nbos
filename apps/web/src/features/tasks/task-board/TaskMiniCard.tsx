@@ -3,6 +3,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
@@ -10,10 +11,11 @@ import { getDeadlineColumn } from './task-board-constants';
 import {
   formatAssigneeShortName,
   formatTaskCardDate,
-  linkChipIcon,
-  pickTaskCardLinkChips,
+  pickTaskCardContextChips,
   TASK_CARD_ACTION_BTN_CLASS,
   TASK_CARD_CHIP_CLASS,
+  taskCardContextChipClass,
+  taskCardContextIcon,
 } from './task-mini-card-meta';
 
 export type TaskBoardAction = 'start' | 'complete' | 'reopen';
@@ -22,12 +24,17 @@ export function TaskMiniCard({
   task,
   onAction,
   onClick,
+  /** When true, omit Work Space chip (page already is that work space). */
+  hideWorkspaceContext = false,
 }: {
   task: Task;
   onAction: (taskId: string, action: TaskBoardAction) => void;
   onClick: (task: Task) => void;
+  hideWorkspaceContext?: boolean;
 }) {
-  const linkChips = pickTaskCardLinkChips(task.links);
+  const contextChips = pickTaskCardContextChips(task, {
+    hideWorkspace: hideWorkspaceContext,
+  });
   const canStart = task.status === 'OPEN' || task.status === 'NEW';
   const canComplete = task.status === 'IN_PROGRESS';
   const canReopen =
@@ -37,9 +44,6 @@ export function TaskMiniCard({
   const assigneeLabel = task.assignee
     ? formatAssigneeShortName(task.assignee.firstName, task.assignee.lastName)
     : 'Unassigned';
-  const assigneeInitials = task.assignee
-    ? `${task.assignee.firstName.charAt(0)}${task.assignee.lastName.charAt(0)}`.toUpperCase()
-    : '?';
 
   return (
     <KanbanCardShell
@@ -62,15 +66,21 @@ export function TaskMiniCard({
         <TaskUrgentFlameIndicator priority={task.priority} className="mt-0.5 shrink-0" />
       </div>
 
-      {linkChips.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {linkChips.map((link) => {
-            const ChipIcon = linkChipIcon(link.entityType);
-            const label = link.entityLabel ?? link.entityType;
+      {contextChips.length > 0 ? (
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {contextChips.map((chip) => {
+            const ChipIcon = taskCardContextIcon(chip);
             return (
-              <span key={link.id} className={TASK_CARD_CHIP_CLASS} title={label}>
-                <ChipIcon size={12} className="shrink-0 opacity-70" aria-hidden />
-                <span className="truncate">{label}</span>
+              <span
+                key={chip.key}
+                className={cn(
+                  TASK_CARD_CHIP_CLASS,
+                  taskCardContextChipClass(chip.kind, chip.entityType),
+                )}
+                title={chip.label}
+              >
+                <ChipIcon size={11} className="shrink-0 opacity-80" aria-hidden />
+                <span className="truncate">{chip.label}</span>
               </span>
             );
           })}
@@ -78,14 +88,12 @@ export function TaskMiniCard({
       ) : null}
 
       <div className="border-border/60 mt-3 flex items-center justify-between gap-2 border-t pt-3">
-        <div className="flex min-w-0 items-center">
-          <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
-            title={assigneeLabel}
-            aria-label={assigneeLabel}
-          >
-            {assigneeInitials}
-          </span>
+        <div className="flex min-w-0 items-center" title={assigneeLabel}>
+          <EmployeePersonAvatar
+            label={assigneeLabel}
+            imageUrl={task.assignee?.avatar}
+            className="size-8"
+          />
         </div>
 
         <div className="flex shrink-0 items-center gap-2">

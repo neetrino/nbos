@@ -25,7 +25,12 @@ interface ProductForStageGate {
   description?: string | null;
   deadline?: Date | string | null;
   clientAcceptedAt?: Date | string | null;
-  order?: { id: string; status?: string; invoices?: Array<{ moneyStatus: string }> } | null;
+  order?: {
+    id: string;
+    status?: string;
+    paymentType?: string | null;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;

@@ -1,4 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Decimal } from '@nbos/database';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
@@ -80,17 +82,162 @@ describe('DealWonHandler', () => {
 
     await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION' }));
 
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productId: 'product-1', type: 'DEV_AND_MAINTENANCE' },
+      }),
+    );
     expect(prisma.subscription.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'proj-1',
+          productId: 'product-1',
+          name: 'Website build',
           type: 'DEV_AND_MAINTENANCE',
           status: 'ACTIVE',
-          baseMonthlyAmount: 5000,
+          amount: 5000,
+          billingFrequency: 'MONTHLY',
+          coverageMonthCount: 1,
           taxStatus: 'TAX',
         }),
       }),
     );
+    expect(prisma.subscription.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('termMonths');
+  });
+
+  it('falls back to deal.code for Route A when deal.name is null', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+
+    await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION', name: null }));
+
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'D-2026-0001' }),
+      }),
+    );
+  });
+
+  it('falls back to deal.code for Route A when deal.name is blank', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+
+    await handler.handle(productDeal({ paymentType: 'SUBSCRIPTION', name: '   ' }));
+
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'D-2026-0001' }),
+      }),
+    );
+  });
+
+  it('creates DEV_ONLY term subscription with deal amount copied as-is', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+      }),
+    );
+
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { productId: 'product-1', type: 'DEV_ONLY' },
+      }),
+    );
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          projectId: 'proj-1',
+          productId: 'product-1',
+          name: 'Website build',
+          type: 'DEV_ONLY',
+          status: 'ACTIVE',
+          amount: 1_000_000,
+          billingFrequency: 'MONTHLY',
+          coverageMonthCount: 1,
+          termMonths: 6,
+          taxStatus: 'TAX',
+        }),
+      }),
+    );
+  });
+
+  it('re-syncs order contract total when subscription term changed before won', async () => {
+    prisma.order.findFirst.mockResolvedValue({
+      id: 'order-1',
+      totalAmount: 6_000_000,
+      subscriptionTermMonths: 6,
+    });
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 12,
+      }),
+    );
+
+    expect(prisma.order.update).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      data: {
+        totalAmount: 12_000_000,
+        subscriptionTermMonths: 12,
+      },
+    });
+  });
+
+  it('does not update order when contract total already matches deal at won', async () => {
+    prisma.order.findFirst.mockResolvedValue({
+      id: 'order-1',
+      totalAmount: 6_000_000,
+      subscriptionTermMonths: 6,
+    });
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-term' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+      }),
+    );
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
+  });
+
+  it('does not re-sync order for CLASSIC deals at won', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal({ paymentType: 'CLASSIC' }));
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
+  });
+
+  it('does not re-sync order for open-ended SUBSCRIPTION deals at won', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-open' });
+
+    await handler.handle(
+      productDeal({
+        paymentType: 'SUBSCRIPTION',
+        subscriptionTermMonths: null,
+      }),
+    );
+
+    expect(prisma.order.update).not.toHaveBeenCalled();
   });
 
   it('auto-creates linked MAINTENANCE deal after PRODUCT won', async () => {
@@ -201,6 +348,7 @@ describe('DealWonHandler', () => {
   });
 
   it('creates pending maintenance subscription for MAINTENANCE deal', async () => {
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-maint', projectId: 'proj-1' });
     prisma.subscription.findFirst.mockResolvedValue(null);
     prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
 
@@ -211,6 +359,7 @@ describe('DealWonHandler', () => {
         projectId: 'proj-1',
         productCategory: null,
         productType: null,
+        existingProductId: 'prod-maint',
         maintenanceStartAt: new Date('2026-05-15'),
       }),
     });
@@ -219,14 +368,202 @@ describe('DealWonHandler', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'proj-1',
+          productId: 'prod-maint',
+          name: 'Website build',
           type: 'MAINTENANCE_ONLY',
           status: 'PENDING',
-          baseMonthlyAmount: 80000,
+          amount: 80000,
+          billingFrequency: 'MONTHLY',
+          coverageMonthCount: 1,
           billingDay: 15,
           taxStatus: 'TAX',
         }),
       }),
     );
+  });
+
+  it('does not create maintenance subscription without existingProductId', async () => {
+    await handler.handle({
+      ...productDeal({
+        type: 'MAINTENANCE',
+        amount: 80000,
+        projectId: 'proj-1',
+        productCategory: null,
+        productType: null,
+        existingProductId: null,
+      }),
+    });
+
+    expect(prisma.subscription.create).not.toHaveBeenCalled();
+  });
+
+  it('creates outsource product without active delivery board when toggle is OFF', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-out' });
+
+    await handler.handle(
+      productDeal({
+        type: 'OUTSOURCE',
+        outsourceGoesToDelivery: false,
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'DONE',
+          deliveryStage: null,
+          deliveryResolution: 'DONE',
+        }),
+      }),
+    );
+    expect(productWhatsApp.ensureGroupForProduct).toHaveBeenCalledWith(
+      'product-out',
+      expect.objectContaining({ source: 'DEAL_WON' }),
+    );
+  });
+
+  it('creates outsource product on active delivery board when toggle is ON', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-out-on' });
+
+    await handler.handle(
+      productDeal({
+        type: 'OUTSOURCE',
+        outsourceGoesToDelivery: true,
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({
+          deliveryResolution: 'DONE',
+        }),
+      }),
+    );
+  });
+
+  describe('Route A deposit coverage linkage', () => {
+    const paidAt = new Date(2026, 2, 15);
+
+    function paidDepositInvoice(overrides: Record<string, unknown> = {}) {
+      return {
+        id: 'inv-deposit',
+        moneyStatus: 'PAID',
+        amount: 1_000_000,
+        paidDate: paidAt,
+        subscriptionId: null,
+        ...overrides,
+      };
+    }
+
+    function subscriptionDeal(overrides: Record<string, unknown> = {}) {
+      return productDeal({
+        paymentType: 'SUBSCRIPTION',
+        amount: 1_000_000,
+        subscriptionTermMonths: 6,
+        orders: [{ invoices: [paidDepositInvoice()] }],
+        ...overrides,
+      });
+    }
+
+    function mockCreatedSubscription() {
+      prisma.product.create.mockResolvedValue({ id: 'product-1' });
+      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.subscription.create.mockResolvedValue({ id: 'sub-1' });
+    }
+
+    function mockDbInvoice(overrides: Record<string, unknown> = {}) {
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'inv-deposit',
+        code: 'INV-2026-0001',
+        amount: new Decimal('1000000.00'),
+        paidDate: paidAt,
+        subscriptionId: null,
+        type: 'SUBSCRIPTION',
+        order: { dealId: 'deal-1' },
+        ...overrides,
+      });
+    }
+
+    it('links a deposit equal to the period price as the paid month with one period of coverage', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice();
+
+      await handler.handle(subscriptionDeal());
+
+      expect(prisma.invoice.update).toHaveBeenCalledWith({
+        where: { id: 'inv-deposit' },
+        data: {
+          subscriptionId: 'sub-1',
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 1,
+        },
+      });
+    });
+
+    it('links a deposit equal to exactly two period prices as two coverage months', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ amount: new Decimal('2000000.00') });
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ amount: 2_000_000 })] }],
+        }),
+      );
+
+      expect(prisma.invoice.update).toHaveBeenCalledWith({
+        where: { id: 'inv-deposit' },
+        data: {
+          subscriptionId: 'sub-1',
+          coverageStartMonth: '2026-03',
+          coverageMonthCount: 2,
+        },
+      });
+    });
+
+    it('leaves a partial deposit unlinked, writes nothing else, and logs a warning', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ amount: new Decimal('400000.00') });
+      const warnSpy = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ amount: 400_000 })] }],
+        }),
+      );
+
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+      expect(prisma.subscription.create).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('D-2026-0001'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('INV-2026-0001'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('400000.00'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('1000000.00'));
+      warnSpy.mockRestore();
+    });
+
+    it('never re-links an invoice that already carries a subscriptionId', async () => {
+      mockCreatedSubscription();
+      mockDbInvoice({ subscriptionId: 'sub-other' });
+
+      await handler.handle(
+        subscriptionDeal({
+          orders: [{ invoices: [paidDepositInvoice({ subscriptionId: 'sub-other' })] }],
+        }),
+      );
+
+      expect(prisma.subscription.create).toHaveBeenCalledTimes(1);
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+
+    it('links nothing when the subscription already exists (idempotency early return)', async () => {
+      prisma.product.create.mockResolvedValue({ id: 'product-1' });
+      prisma.subscription.findFirst.mockResolvedValue({ id: 'sub-existing' });
+
+      await handler.handle(subscriptionDeal());
+
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
+      expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
   });
 });
 

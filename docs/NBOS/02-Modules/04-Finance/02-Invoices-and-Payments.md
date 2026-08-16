@@ -62,23 +62,35 @@ Payment confirmed
 
 ### Основные поля карточки
 
-| Поле                    | Описание                                                          |
-| ----------------------- | ----------------------------------------------------------------- |
-| `code`                  | Уникальный номер карточки                                         |
-| `type`                  | Development / Extension / Subscription / Domain / Service / Other |
-| `source_entity`         | Из чего создана карточка                                          |
-| `project`               | Проект                                                            |
-| `product`               | Продукт, если применимо                                           |
-| `company`               | Компания-плательщик                                               |
-| `contact`               | Контактное лицо                                                   |
-| `amount`                | Сумма                                                             |
-| `currency`              | Валюта                                                            |
-| `tax_status`            | `Tax` или `Free`                                                  |
-| `notifications_enabled` | Разрешены ли клиентские напоминания                               |
-| `created_at`            | Дата создания                                                     |
-| `due_date`              | Крайняя дата оплаты                                               |
-| `money_status`          | Статус денег                                                      |
-| `notes`                 | Заметки                                                           |
+| Поле                    | Описание                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `code`                  | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
+| `type`                  | Development / Extension / Subscription / Domain / Service / Other                        |
+| `source_entity`         | Из чего создана карточка                                                                 |
+| `project`               | Проект                                                                                   |
+| `product`               | Продукт, если применимо                                                                  |
+| `company`               | Компания-плательщик                                                                      |
+| `contact`               | Контактное лицо                                                                          |
+| `amount`                | Сумма                                                                                    |
+| `currency`              | Валюта                                                                                   |
+| `tax_status`            | `Tax` или `Free`                                                                         |
+| `notifications_enabled` | Разрешены ли клиентские напоминания                                                      |
+| `created_at`            | Дата создания                                                                            |
+| `due_date`              | Крайняя дата оплаты                                                                      |
+| `money_status`          | Статус денег                                                                             |
+| `notes`                 | Заметки                                                                                  |
+
+### Display title (UI)
+
+Коммерческое название счёта **не копируется** на `Invoice Card` — UI читает его live из источника.
+
+Каскад заголовка (kanban, list, detail sheet):
+
+1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
+2. иначе есть `subscription` → `Subscription.name`;
+3. иначе → `Invoice.code`.
+
+`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком. На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
 
 ### Что наследуется из источника
 
@@ -124,14 +136,14 @@ Payment confirmed
 
 ### Правила переходов
 
-| Из                                                 | В                  | Как происходит                                                  |
-| -------------------------------------------------- | ------------------ | --------------------------------------------------------------- |
-| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты |
-| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                       |
-| `Overdue`                                          | `On Hold`          | вручную                                                         |
-| `On Hold`                                          | `Awaiting Payment` | вручную                                                         |
-| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | только после подтверждения денег                                |
-| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                         |
+| Из                                                 | В                  | Как происходит                                                                                     |
+| -------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты                                    |
+| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                                                          |
+| `Overdue`                                          | `On Hold`          | вручную                                                                                            |
+| `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
+| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
+| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
 
 ### Важное правило для `Tax`
 
@@ -276,6 +288,16 @@ Payment confirmed
    - bonus logic, если применимо;
    - partner logic, если применимо: `Payment -> Partner Accrual -> Partner Balance`, но не Expense напрямую.
 
+### Mark Paid без отдельной формы Payment
+
+Если пользователь переводит карточку в `Paid`, а `outstanding > 0`, система:
+
+1. автоматически создаёт `Payment` на сумму outstanding (метод по умолчанию `TRANSACTION`, note: auto-created when marked paid);
+2. прогоняет тот же post-payment pipeline, что и ручной Record Payment;
+3. карточка становится `Paid` с coverage = 0.
+
+Так статус денег и факт оплаты не расходятся: `Payment` остаётся источником правды для cash / P&L / bonus.
+
 ---
 
 ## Invoice Board (Доска инвойсов)
@@ -330,6 +352,10 @@ Payment confirmed
 
 - manual development / extension invoices;
 - логика перехода заказа и сделки после оплаты.
+
+Статус заказа. Бессрочная `SUBSCRIPTION` (без `subscriptionTermMonths`): все существующие **order-linked** invoice в `PAID` → `FULLY_PAID`. Classic (`paymentType = CLASSIC` и `Order.totalAmount` > 0) и срочная подписка (`paymentType = SUBSCRIPTION` и `subscriptionTermMonths != null`): `FULLY_PAID` только когда сумма платежей по этим invoice ≥ `Order.totalAmount`; ниже — `PARTIALLY_PAID` / `PENDING_PAYMENT` / `ACTIVE`. Classic с нулевым, отрицательным или непригодным `totalAmount` остаётся на invoice-driven правиле — иначе нулевой контракт молча закрыл бы заказ. Оплата только депозита, пока остаток контракта ещё не выставлен, полной не считается. Первый период срочной подписки (deposit invoice) ставит `orderId`; карточки биллинг-прогона ставят только `subscriptionId` и **не** `orderId`, поэтому заказ не видит последующие периоды. Для срочной подписки правило — консервативный стоп против преждевременного `FULLY_PAID`, не полный трекинг контракта.
+
+Delivery close (Product / Extension Done) не ждёт `Order.status = FULLY_PAID` для `SUBSCRIPTION`. Classic-заказ должен быть полностью оплачен или закрыт; subscription-заказ требует только, чтобы не было outstanding invoice. Статус заказа при этом по-прежнему считается по order-linked invoice, как выше.
 
 ### Subscriptions
 

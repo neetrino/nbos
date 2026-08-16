@@ -110,12 +110,9 @@ export function ClientServiceListView({
                 <EntityListIconLabel
                   icon={FolderKanban}
                   iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                  label={service.project.code}
+                  label={service.project.name}
                   labelClassName="font-bold"
                 />
-                <p className="text-muted-foreground mt-1 truncate pl-8 text-xs">
-                  {service.project.name}
-                </p>
               </TableCell>
 
               <TableCell className={ENTITY_LIST_CELL_CLASS}>

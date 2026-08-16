@@ -111,6 +111,17 @@ describe('ProjectsService', () => {
   });
 
   describe('findAll (branch coverage)', () => {
+    it('includes order and product counts', async () => {
+      await service.findAll({});
+      expect(prisma.project.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            _count: { select: { orders: true, products: true } },
+          }),
+        }),
+      );
+    });
+
     it('applies active scope by default', async () => {
       await service.findAll({});
       expect(prisma.project.findMany).toHaveBeenCalledWith(

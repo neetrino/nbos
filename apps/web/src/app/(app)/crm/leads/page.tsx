@@ -28,11 +28,13 @@ import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { createLeadKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
+import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  matchesBoardLifecycleScope,
+  getBoardStageKeys,
   resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import {
   buildScopedKanbanColumns,
@@ -40,6 +42,8 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
+import { useCrmStageColumnBoard } from '@/features/crm/hooks/use-crm-stage-column-board';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
 import { useListScope } from '@/hooks/use-list-scope';
@@ -56,7 +60,6 @@ import { Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
-import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
@@ -90,9 +93,9 @@ function LeadsPipelinePageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [trashLeads, setTrashLeads] = useState<Lead[]>([]);
+  const [trashLoading, setTrashLoading] = useState(false);
+  const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
@@ -140,32 +143,111 @@ function LeadsPipelinePageContent() {
     [pathname, router, searchParams],
   );
 
-  const fetchLeads = useCallback(async () => {
-    setLoading(true);
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const stageKeys = useMemo(() => {
+    if (isTrashView) return [] as string[];
+    if (filters.status && filters.status !== 'all') return [filters.status];
+    return getBoardStageKeys(LEAD_STAGES, boardScope);
+  }, [boardScope, filters.status, isTrashView]);
+
+  const fetchLeadPage = useCallback(
+    (params: {
+      page: number;
+      pageSize: number;
+      status: string;
+      search?: string;
+      source?: string;
+      scope: typeof scope;
+    }) =>
+      leadsApi.getAll({
+        page: params.page,
+        pageSize: params.pageSize,
+        status: params.status,
+        search: params.search,
+        source: params.source,
+        scope: params.scope,
+      }),
+    [],
+  );
+
+  const board = useCrmStageColumnBoard<Lead>({
+    stageKeys,
+    listScope: scope,
+    search,
+    source: filters.source && filters.source !== 'all' ? filters.source : undefined,
+    enabled: !isTrashView,
+    fetchPage: fetchLeadPage,
+  });
+  const {
+    items: boardItems,
+    columnMeta,
+    hasMoreAny,
+    loading: boardLoading,
+    error: boardError,
+    reload: reloadBoard,
+    loadMoreColumn,
+    loadMoreAll,
+    setItems: setBoardItems,
+    upsertItem: upsertBoardItem,
+    removeItem: removeBoardItem,
+  } = board;
+
+  const fetchTrashLeads = useCallback(async () => {
+    setTrashLoading(true);
     try {
       const data = await leadsApi.getAll({
-        pageSize: 200,
+        pageSize: CRM_TRASH_LIST_PAGE_SIZE,
         scope,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         source: filters.source && filters.source !== 'all' ? filters.source : undefined,
       });
-      setLeads(data.items);
-      setError(null);
+      setTrashLeads(data.items);
+      setTrashError(null);
     } catch {
-      setError('Leads could not be loaded. Check your connection and try again.');
+      setTrashError('Leads could not be loaded. Check your connection and try again.');
     } finally {
-      setLoading(false);
+      setTrashLoading(false);
     }
-  }, [search, filters, scope]);
+  }, [filters.source, filters.status, scope, search]);
 
   useEffect(() => {
-    fetchLeads();
-  }, [fetchLeads]);
+    if (isTrashView) void fetchTrashLeads();
+  }, [fetchTrashLeads, isTrashView]);
+
+  const leads = isTrashView ? trashLeads : boardItems;
+  const loading = isTrashView ? trashLoading : boardLoading;
+  const error = isTrashView ? trashError : boardError;
+
+  const setLeads = useCallback(
+    (updater: (prev: Lead[]) => Lead[]) => {
+      if (isTrashView) {
+        setTrashLeads(updater);
+        return;
+      }
+      setBoardItems(updater);
+    },
+    [setBoardItems, isTrashView],
+  );
+
+  const fetchLeads = useCallback(async () => {
+    if (isTrashView) {
+      await fetchTrashLeads();
+      return;
+    }
+    await reloadBoard();
+  }, [reloadBoard, fetchTrashLeads, isTrashView]);
 
   useEffect(() => {
     if (isTrashView && view === 'kanban') setView('list');
   }, [isTrashView, view]);
+
+  useEffect(() => {
+    setSelectedLead((prev) => {
+      if (!prev) return prev;
+      return leads.find((lead) => lead.id === prev.id) ?? prev;
+    });
+  }, [leads]);
 
   const openLeadId = searchParams.get(CRM_OPEN_LEAD_QUERY)?.trim() || null;
   const deepLinkLeadAttemptedRef = useRef<string | null>(null);
@@ -204,11 +286,11 @@ function LeadsPipelinePageContent() {
     return () => {
       cancelled = true;
     };
-  }, [openLeadId, loading, leads, stripOpenLeadFromUrl]);
+  }, [openLeadId, loading, leads, setLeads, stripOpenLeadFromUrl]);
 
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
-    setLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);
-    setError(null);
+    if (!isTrashView) upsertBoardItem(lead);
+    else setTrashLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);
 
     if (options?.openFull) {
       pushOpenLeadToUrl(lead.id);
@@ -259,7 +341,7 @@ function LeadsPipelinePageContent() {
       }
       setStageGateHighlight(null);
     } catch (err) {
-      setLeads(previousLeads);
+      setLeads(() => previousLeads);
       if (selectedLead?.id === id) {
         setSelectedLead(previousSelected);
       }
@@ -274,7 +356,7 @@ function LeadsPipelinePageContent() {
         toast.error(getApiErrorMessage(err, 'Lead stage change is not available.'));
         return;
       }
-      setError(err instanceof Error ? err.message : 'Lead stage change was blocked.');
+      toast.error(err instanceof Error ? err.message : 'Lead stage change was blocked.');
     }
   };
 
@@ -334,7 +416,7 @@ function LeadsPipelinePageContent() {
       setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
       setSelectedLead((prev) => (prev?.id === id ? updated : prev));
     } catch (err) {
-      setLeads(previousLeads);
+      setLeads(() => previousLeads);
       setSelectedLead(previousSelected);
       throw err;
     }
@@ -346,13 +428,14 @@ function LeadsPipelinePageContent() {
     setSheetOpen(false);
     setSelectedLead(null);
     stripOpenLeadFromUrl();
-    setLeads((prev) => prev.filter((l) => l.id !== id));
+    if (isTrashView) setTrashLeads((prev) => prev.filter((l) => l.id !== id));
+    else removeBoardItem(id);
 
     try {
       await leadsApi.moveToTrash(id);
       toast.success('Lead moved to Trash');
     } catch {
-      setLeads(previousLeads);
+      setLeads(() => previousLeads);
       toast.error('Could not move lead to Trash');
     }
   };
@@ -398,29 +481,29 @@ function LeadsPipelinePageContent() {
     requestStatusChange(itemId, toColumn);
   };
 
-  const handleReorder = useCallback((itemId: string, columnKey: string, toIndex: number) => {
-    setLeads((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
-  }, []);
+  const handleReorder = useCallback(
+    (itemId: string, columnKey: string, toIndex: number) => {
+      setLeads((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
+    },
+    [setLeads],
+  );
 
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
-
-  const displayLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      if (filters.status && filters.status !== 'all') {
-        return lead.status === filters.status;
-      }
-      return matchesBoardLifecycleScope(lead.status, LEAD_STAGES, boardScope);
-    });
-  }, [leads, filters.status, boardScope]);
+  const kanbanStages = useMemo(() => {
+    if (filters.status && filters.status !== 'all') {
+      return LEAD_STAGES.filter((stage) => stage.key === filters.status);
+    }
+    return LEAD_STAGES;
+  }, [filters.status]);
 
   const kanbanColumns = useMemo(
     () =>
       buildScopedKanbanColumns({
-        items: displayLeads,
-        stages: LEAD_STAGES,
-        scopeValue: boardScope,
+        items: leads,
+        stages: kanbanStages,
+        scopeValue: filters.status && filters.status !== 'all' ? 'ALL' : boardScope,
+        columnMeta: isTrashView ? undefined : columnMeta,
       }),
-    [displayLeads, boardScope],
+    [columnMeta, boardScope, leads, filters.status, isTrashView, kanbanStages],
   );
 
   const leadTerminalZones = useMemo(() => buildTerminalDropZones(LEAD_STAGES), []);
@@ -519,7 +602,7 @@ function LeadsPipelinePageContent() {
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchLeads} />
-      ) : displayLeads.length === 0 ? (
+      ) : leads.length === 0 ? (
         <EmptyState
           icon={Users}
           title={isTrashView ? 'Trash is empty' : 'No leads yet'}
@@ -546,6 +629,7 @@ function LeadsPipelinePageContent() {
             getItemId={(lead) => lead.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
+            onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
             emptyMessage="No leads"
             columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead))}
@@ -558,10 +642,17 @@ function LeadsPipelinePageContent() {
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <LeadsListTable
-            leads={displayLeads}
+            leads={leads}
             boardScope={boardScope as BoardLifecycleScope}
             onLeadClick={handleCardClick}
           />
+          {!isTrashView && hasMoreAny ? (
+            <InfiniteScrollSentinel
+              disabled={boardLoading}
+              onReach={loadMoreAll}
+              rootMargin="240px"
+            />
+          ) : null}
         </div>
       )}
 

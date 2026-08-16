@@ -13,7 +13,7 @@ import {
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { Project } from '@/lib/api/projects';
 
-const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
+const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
 const TOOLBAR_CONTROL_CLASS =
   'border-input bg-card text-foreground focus:ring-ring h-9 rounded-md border px-2 text-sm focus:ring-2 focus:outline-none';
@@ -54,7 +54,7 @@ export function ExpensePlansListToolbar(props: {
   const projectSelectItems = useMemo(
     () => [
       { value: 'ALL', label: 'All projects' },
-      ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
+      ...projects.map((p) => ({ value: p.id, label: p.name })),
     ],
     [projects],
   );
@@ -108,7 +108,7 @@ export function ExpensePlansListToolbar(props: {
             <SelectItem value="ALL">All projects</SelectItem>
             {projects.map((p) => (
               <SelectItem key={p.id} value={p.id}>
-                {p.code} — {p.name}
+                {p.name}
               </SelectItem>
             ))}
           </SelectContent>

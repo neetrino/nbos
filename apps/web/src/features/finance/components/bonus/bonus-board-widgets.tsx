@@ -5,6 +5,7 @@ import {
   BONUS_ENTRY_STATUS_VARIANT,
 } from '@/features/finance/constants/bonus-board-status-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { projectDisplayName } from '@/lib/format/project-product-display';
 import type { BonusEntryListRow, BonusStatus } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -37,9 +38,7 @@ export function countBonusEntriesWithStatus(
 }
 
 export function projectLabel(project: BonusEntryListRow['project']): string | null {
-  if (!project?.name && !project?.code) return null;
-  if (project.code && project.name) return `${project.code} · ${project.name}`;
-  return project.name ?? project.code ?? null;
+  return projectDisplayName(project);
 }
 
 export function uniqueEmployeesFromRows(
@@ -53,17 +52,15 @@ export function uniqueEmployeesFromRows(
 }
 
 /** Distinct projects from loaded bonus rows (for board filter dropdown). */
-export function uniqueProjectsFromRows(
-  rows: BonusEntryListRow[],
-): { id: string; code: string; label: string }[] {
-  const map = new Map<string, { id: string; code: string; label: string }>();
+export function uniqueProjectsFromRows(rows: BonusEntryListRow[]): { id: string; label: string }[] {
+  const map = new Map<string, { id: string; label: string }>();
   for (const row of rows) {
     const p = row.project;
     if (!p?.id) continue;
-    const label = projectLabel(p) ?? p.code ?? p.id;
-    map.set(p.id, { id: p.id, code: p.code ?? '—', label });
+    const label = projectLabel(p) ?? p.id;
+    map.set(p.id, { id: p.id, label });
   }
-  return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
 export function BonusCard({

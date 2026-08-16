@@ -36,6 +36,7 @@ describe('querySalaryBoard', () => {
         firstName: 'A',
         lastName: 'Zed',
         position: null,
+        avatar: null,
         departments: [{ departmentId: 'd-sales', isPrimary: true }],
       },
     ]);

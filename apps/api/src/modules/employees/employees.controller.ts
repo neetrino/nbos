@@ -128,16 +128,21 @@ export class EmployeesController {
       email?: string;
       phone?: string;
       telegram?: string;
+      sipId?: string | null;
       position?: string;
       level?: 'JUNIOR' | 'MIDDLE' | 'SENIOR' | 'LEAD' | 'HEAD';
       notes?: string;
       hireDate?: string | null;
     },
   ) {
-    const { hireDate, ...rest } = body;
+    const { hireDate, sipId, ...rest } = body;
     const data: Record<string, unknown> = { ...rest };
     if (hireDate !== undefined) {
       data.hireDate = hireDate ? new Date(hireDate) : null;
+    }
+    if (sipId !== undefined) {
+      const trimmed = typeof sipId === 'string' ? sipId.trim() : '';
+      data.sipId = trimmed.length > 0 ? trimmed : null;
     }
     return this.prisma.employee.update({
       where: { id },

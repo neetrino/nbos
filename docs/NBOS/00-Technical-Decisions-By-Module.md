@@ -69,25 +69,32 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### CRM And Marketing
 
-| Area          | Decision                                                                                                       |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.             |
-| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).     |
-| Attribution   | Marketing attribution is manual in MVP.                                                                        |
-| Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing. |
-| External APIs | Meta/Google Ads APIs are not MVP.                                                                              |
-| Reports       | Do not calculate CPL/ROI when spend is missing; show missing data.                                             |
+| Area          | Decision                                                                                                                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.                                                                                             |
+| Deal amount   | `CLASSIC`: total cost of work. `SUBSCRIPTION`: one billing period (UI: Amount / month). Fixed-term contract total is derived: `Order.totalAmount = Deal.amount × Deal.subscriptionTermMonths`. |
+| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).                                                                                     |
+| Attribution   | Marketing attribution is manual in MVP.                                                                                                                                                        |
+| Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing.                                                                                 |
+| External APIs | Meta/Google Ads APIs are not MVP.                                                                                                                                                              |
+| Reports       | Do not calculate CPL/ROI when spend is missing; show missing data.                                                                                                                             |
 
 ### Finance And Partners
 
-| Area             | Decision                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| Money model      | Use operational finance journal and idempotent events, not simple mutable status updates.      |
-| Payments         | Use payment links with IDBank/ARCA and Idram; verify signed webhooks.                          |
-| Idempotency      | Every external payment event must be idempotent.                                               |
-| FX               | Store rate context on the operation date; do not silently recalculate historical money states. |
-| Bank integration | MVP is manual reconciliation; bank automation stays pluggable for later.                       |
-| Partners         | Partner payouts depend on Finance rules and must not bypass journal/idempotency logic.         |
+| Area                              | Decision                                                                                                                                                                                                                                                                |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Money model                       | Use operational finance journal and idempotent events, not simple mutable status updates.                                                                                                                                                                               |
+| Payments                          | Use payment links with IDBank/ARCA and Idram; verify signed webhooks.                                                                                                                                                                                                   |
+| Idempotency                       | Every external payment event must be idempotent.                                                                                                                                                                                                                        |
+| FX                                | Store rate context on the operation date; do not silently recalculate historical money states.                                                                                                                                                                          |
+| Bank integration                  | MVP is manual reconciliation; bank automation stays pluggable for later.                                                                                                                                                                                                |
+| Partners                          | Partner payouts depend on Finance rules and must not bypass journal/idempotency logic.                                                                                                                                                                                  |
+| Subscription term                 | `termMonths` counts **covered months** from subscription invoices, not a calendar end date. A paused/skipped month does not consume the term. When covered months reach the term, billing stops and status becomes `COMPLETED` (reachable from `ACTIVE` and `ON_HOLD`). |
+| Subscription status reversibility | `CANCELLED` is resumable to `ACTIVE` only (clears `endDate` so billing and active MRR treat the row as live). `COMPLETED` is terminal (term exhausted).                                                                                                                 |
+| Subscription inbox                | Default list/grid is Pending+Active (`status=PENDING,ACTIVE`). `All statuses` omits `status`. A single-status filter is exact. Sort is always Prisma enum order (`status asc`) then `createdAt desc`. Pending with null `billingStartDate` stays on the year grid.      |
+| Term divisibility                 | When `termMonths` is set: `coverageMonthCount <= termMonths` and `termMonths % coverageMonthCount === 0` (no partial billing period).                                                                                                                                   |
+| Expense frequency                 | `ExpenseFrequency` includes `WEEKLY` (+7 days) for recurring Expense Plans / Expenses. Existing values (`ONE_TIME`, `MONTHLY`, `QUARTERLY`, `YEARLY`, `MULTI_YEAR`) unchanged. Do not map weekly Bitrix masters to `ONE_TIME`.                                          |
+| Expense categories                | Additive ops/P&L cuts: `OFFICE`, `TAXES`, `BANK_FEES`, `TRAINING`, `INTERNAL_INFRA`. `INTERNAL_INFRA` = company-owned domain/hosting/infra, not client `DOMAIN`/`HOSTING`. Keep `SALARY`/`BONUS` for payroll-generated expenses.                                        |
 
 ### Projects Hub, Tasks And Support
 
@@ -120,13 +127,14 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Credentials
 
-| Area       | Decision                                                                                                             |
-| ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| Encryption | Use AES-256-GCM field-level encryption for secret fields.                                                            |
-| List APIs  | Never return decrypted secrets in list APIs.                                                                         |
-| Reveal     | Reveal/copy/export must use explicit endpoints and audit every access.                                               |
-| Step-up    | Require step-up authentication for high-risk reveal/export flows; MVP may start with password re-auth, then add 2FA. |
-| Boundaries | Secrets must not be stored in Messenger, Drive comments, task comments or plain text logs.                           |
+| Area       | Decision                                                                                                                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Encryption | Use AES-256-GCM field-level encryption for secret fields.                                                                                                                                                     |
+| List APIs  | Never return decrypted secrets in list APIs.                                                                                                                                                                  |
+| Reveal     | Reveal/copy/export must use explicit endpoints and audit every access.                                                                                                                                        |
+| Step-up    | Require step-up authentication for high-risk reveal/export flows; MVP may start with password re-auth, then add 2FA.                                                                                          |
+| Row ACL    | `Credential.accessLevel` + grants always apply for normal `CREDENTIALS_*` scopes. Vault-wide bypass is only `CREDENTIALS_BYPASS_ROW_VISIBILITY` (Owner/CEO). Do not treat `CREDENTIALS_VIEW=ALL` as god-mode. |
+| Boundaries | Secrets must not be stored in Messenger, Drive comments, task comments or plain text logs.                                                                                                                    |
 
 ### Messenger
 
@@ -213,6 +221,7 @@ These items are not blockers for every module, but must be closed before the aff
 - Mail initial import limits: date range, message count, attachment size and retry policy.
 - Credentials step-up depth: password re-auth only, 2FA, or both.
 - Finance FX source and exact functional amount storage policy.
+- Billing-run subscription invoices set `subscriptionId` and never `orderId`, so a fixed-term order cannot track true period-by-period contract progress toward `Order.totalAmount`. Current `FULLY_PAID` rule is a conservative guard on order-linked invoices only.
 - Notification deduplication windows and escalation rules.
 - Drive retention and export cleanup periods.
 - Dashboard cache refresh intervals for production.

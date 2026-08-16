@@ -1,5 +1,11 @@
 import type { Task } from '@/lib/api/tasks';
-import { pickEmployeeLabels, resolveEmployeeLabelMap } from './task-employee-labels';
+import {
+  formatEmployeeDisplayName,
+  peekEmployeeLabels,
+  pickEmployeeLabels,
+  rememberEmployeeLabel,
+  resolveEmployeeLabelMap,
+} from './task-employee-labels';
 import { normalizeTaskStatusForDraft } from './utils/task-status-draft';
 
 export interface TaskGeneralDraft {
@@ -10,8 +16,10 @@ export interface TaskGeneralDraft {
   dueDate: string;
   creatorId: string;
   creatorLabel: string;
+  creatorAvatar: string | null;
   assigneeId: string | null;
   assigneeLabel: string | null;
+  assigneeAvatar: string | null;
   coAssigneeIds: string[];
   coAssigneeLabels: Record<string, string>;
   observerIds: string[];
@@ -19,6 +27,7 @@ export interface TaskGeneralDraft {
 }
 
 export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
+  rememberTaskEmployeeNames(task);
   return {
     title: task.title,
     description: task.description,
@@ -26,13 +35,17 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     priority: task.priority,
     dueDate: formatDueDateInput(task.dueDate),
     creatorId: task.creator.id,
-    creatorLabel: `${task.creator.firstName} ${task.creator.lastName}`.trim(),
+    creatorLabel: formatEmployeeDisplayName(task.creator.firstName, task.creator.lastName),
+    creatorAvatar: task.creator.avatar?.trim() || null,
     assigneeId: task.assignee?.id ?? null,
-    assigneeLabel: task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}` : null,
+    assigneeLabel: task.assignee
+      ? formatEmployeeDisplayName(task.assignee.firstName, task.assignee.lastName)
+      : null,
+    assigneeAvatar: task.assignee?.avatar?.trim() || null,
     coAssigneeIds: [...task.coAssignees],
-    coAssigneeLabels: {},
+    coAssigneeLabels: peekEmployeeLabels(task.coAssignees),
     observerIds: [...task.observers],
-    observerLabels: {},
+    observerLabels: peekEmployeeLabels(task.observers),
   };
 }
 
@@ -73,6 +86,37 @@ export function buildTaskGeneralPatch(
   }
 
   return patch;
+}
+
+/** Merge resolved names into an already-open draft without flashing raw ids. */
+export function applyResolvedEmployeeLabels(
+  current: TaskGeneralDraft | null,
+  resolved: TaskGeneralDraft,
+): TaskGeneralDraft | null {
+  if (!current) return resolved;
+  return {
+    ...current,
+    coAssigneeLabels: pickEmployeeLabels(current.coAssigneeIds, {
+      ...current.coAssigneeLabels,
+      ...resolved.coAssigneeLabels,
+    }),
+    observerLabels: pickEmployeeLabels(current.observerIds, {
+      ...current.observerLabels,
+      ...resolved.observerLabels,
+    }),
+  };
+}
+
+function rememberTaskEmployeeNames(task: Task): void {
+  rememberEmployeeLabel(
+    task.creator.id,
+    formatEmployeeDisplayName(task.creator.firstName, task.creator.lastName),
+  );
+  if (!task.assignee) return;
+  rememberEmployeeLabel(
+    task.assignee.id,
+    formatEmployeeDisplayName(task.assignee.firstName, task.assignee.lastName),
+  );
 }
 
 function sameIdList(a: string[], b: string[]): boolean {

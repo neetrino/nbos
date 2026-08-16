@@ -186,6 +186,7 @@ export function EntityRelationHost({
       context?: RelationCreateContext,
     ) => {
       if (kind === 'employee') return;
+      if (kind === 'order') return;
       if (kind === 'product') {
         const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
         if (!prefill.projectId) return;

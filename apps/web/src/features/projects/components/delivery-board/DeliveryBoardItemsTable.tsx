@@ -51,7 +51,7 @@ function getOwnerLabel(item: DeliveryBoardItem): string | null {
 
 function getProjectLabel(item: DeliveryBoardItem): string | null {
   const project = item.kind === 'PRODUCT' ? item.product.project : item.extension.project;
-  return project ? `${project.name} (${project.code})` : null;
+  return project?.name?.trim() || null;
 }
 
 function getClosedAt(item: DeliveryBoardItem): string | null {

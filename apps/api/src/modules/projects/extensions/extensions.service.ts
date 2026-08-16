@@ -16,6 +16,10 @@ import {
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  employeePersonSelect,
+  employeePersonWithEmailSelect,
+} from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
@@ -34,6 +38,7 @@ import {
 } from '../delivery-lifecycle';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../../finance/partner-accrual/partner-accrual-subscription.service';
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
 import {
@@ -101,6 +106,7 @@ export class ExtensionsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly supportService: SupportService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
@@ -160,12 +166,13 @@ export class ExtensionsService {
             },
           },
           product: { select: { id: true, name: true, productType: true } },
-          assignee: { select: { id: true, firstName: true, lastName: true } },
+          assignee: { select: employeePersonSelect },
           order: {
             select: {
               id: true,
               code: true,
               status: true,
+              paymentType: true,
               invoices: { select: { moneyStatus: true } },
             },
           },
@@ -258,8 +265,8 @@ export class ExtensionsService {
             },
           },
         },
-        assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonWithEmailSelect },
+        closedBy: { select: employeePersonSelect },
         order: {
           include: {
             deal: {
@@ -322,7 +329,7 @@ export class ExtensionsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true, productType: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonSelect },
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extension.id);
@@ -353,7 +360,7 @@ export class ExtensionsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true, productType: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        assignee: { select: employeePersonSelect },
       },
     });
     if (data.assignedTo !== undefined) {
@@ -384,6 +391,7 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
       await this.audit.log({
         entityType: 'EXTENSION',
@@ -422,6 +430,7 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     return attachExtensionReadiness(updated);
   }
 
@@ -483,6 +492,7 @@ export class ExtensionsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.applyDeliveryOutcomeSideEffects(id, 'LOST');
     await this.audit.log({
       entityType: 'EXTENSION',
       entityId: id,
@@ -519,14 +529,7 @@ export class ExtensionsService {
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { extensionId: id },
-      select: { id: true },
-    });
-    if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-    }
+    await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     await this.audit.log({
       entityType: 'EXTENSION',
@@ -557,6 +560,25 @@ export class ExtensionsService {
     ]);
 
     return { total, byStatus, bySize };
+  }
+
+  private async applyDeliveryOutcomeSideEffects(
+    extensionId: string,
+    targetStatus: string,
+  ): Promise<void> {
+    if (targetStatus !== 'DONE' && targetStatus !== 'LOST') return;
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { extensionId },
+      select: { id: true },
+    });
+    if (!linkedOrder) return;
+    if (targetStatus === 'DONE') {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
+      return;
+    }
+    await this.partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery(linkedOrder.id);
   }
 
   private ensureNotTerminal(resolution: string | null) {

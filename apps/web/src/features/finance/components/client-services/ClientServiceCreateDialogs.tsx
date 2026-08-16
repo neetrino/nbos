@@ -38,9 +38,9 @@ export function ClientServiceCreateDialogs({
   const clientServiceContext = useMemo(
     () => ({
       name: service.name,
-      projectLabel: `${service.project.code} — ${service.project.name}`,
+      projectLabel: service.project.name,
     }),
-    [service.name, service.project.code, service.project.name],
+    [service.name, service.project.name],
   );
 
   const submitInvoice = useCallback(

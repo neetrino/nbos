@@ -17,13 +17,13 @@ export const TASK_SHEET_DETAIL_COLUMN_CLASS =
 export const TASK_SHEET_CHAT_COLUMN_CLASS =
   'relative flex min-h-[min(70vh,28rem)] flex-1 flex-col overflow-hidden border-border/60 border-t xl:min-h-0 xl:min-w-0 xl:border-t-0 xl:border-l';
 
-/** White stacked cards on the muted sheet canvas (Bitrix task detail). */
+/** Stacked cards on the muted sheet canvas (Bitrix task detail). */
 export const TASK_SHEET_CARD_CLASS =
-  'min-w-0 rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-black/[0.05] dark:bg-card dark:ring-white/[0.07]';
+  'min-w-0 rounded-xl bg-card p-3.5 shadow-sm ring-1 ring-border/50';
 
 /** Secondary blocks (checklist, rules) — slightly softer than primary cards. */
 export const TASK_SHEET_SECTION_SURFACE_CLASS =
-  'min-w-0 rounded-xl bg-white/90 p-3.5 shadow-sm ring-1 ring-black/[0.04] dark:bg-card/80 dark:ring-white/[0.06]';
+  'min-w-0 rounded-xl bg-card/90 p-3.5 shadow-sm ring-1 ring-border/40';
 
 /** Meta block spans the card; value columns share one width (Bitrix task detail). */
 export const TASK_SHEET_META_BLOCK_CLASS =

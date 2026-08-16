@@ -1,3 +1,5 @@
+import { contactIdListsEqual } from '@nbos/shared';
+import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 import type { Company } from '@/lib/api/clients';
 
 /** Editable company sheet fields (tax status is read-only after create; not part of draft). */
@@ -10,13 +12,17 @@ export interface CompanyGeneralDraft {
   phone: string;
   email: string;
   country: string;
-  primaryContactId: string;
-  primaryContactLabel: string;
+  contactIds: string[];
+  contactLabels: Record<string, string>;
   billingContactId: string;
   billingContactLabel: string;
 }
 
 export function createCompanyGeneralDraft(company: Company): CompanyGeneralDraft {
+  const { contactIds, contactLabels } = contactIdsAndLabelsFromRows(
+    company.contact,
+    company.additionalContacts,
+  );
   return {
     name: company.name,
     type: company.type,
@@ -26,8 +32,8 @@ export function createCompanyGeneralDraft(company: Company): CompanyGeneralDraft
     phone: company.phone ?? '',
     email: company.email ?? '',
     country: company.country ?? '',
-    primaryContactId: company.contact.id,
-    primaryContactLabel: `${company.contact.firstName} ${company.contact.lastName}`.trim(),
+    contactIds,
+    contactLabels,
     billingContactId: company.billingContact?.id ?? '',
     billingContactLabel: company.billingContact
       ? `${company.billingContact.firstName} ${company.billingContact.lastName}`.trim()
@@ -55,15 +61,17 @@ export function buildCompanyGeneralPatch(
   if (strOrNull(draft.phone) !== strOrNull(snap.phone)) out.phone = strOrNull(draft.phone);
   if (strOrNull(draft.email) !== strOrNull(snap.email)) out.email = strOrNull(draft.email);
   if (strOrNull(draft.country) !== strOrNull(snap.country)) out.country = strOrNull(draft.country);
-  if (draft.primaryContactId !== snap.primaryContactId) {
-    out.contactId = draft.primaryContactId;
+  if (!contactIdListsEqual(draft.contactIds, snap.contactIds)) {
+    out.contactIds = draft.contactIds;
   }
+  const primaryId = draft.contactIds[0] ?? '';
   const billingId =
-    draft.billingContactId.trim() && draft.billingContactId !== draft.primaryContactId
+    draft.billingContactId.trim() && draft.billingContactId !== primaryId
       ? draft.billingContactId
       : null;
+  const snapPrimaryId = snap.contactIds[0] ?? '';
   const snapBillingId =
-    snap.billingContactId.trim() && snap.billingContactId !== snap.primaryContactId
+    snap.billingContactId.trim() && snap.billingContactId !== snapPrimaryId
       ? snap.billingContactId
       : null;
   if (billingId !== snapBillingId) out.billingContactId = billingId;

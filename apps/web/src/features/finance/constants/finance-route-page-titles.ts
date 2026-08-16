@@ -87,7 +87,8 @@ export interface SubscriptionDetailPageTitleParams {
   loading: boolean;
   /** True when fetch finished and subscription is missing or an error was set. */
   loadFailed: boolean;
-  subscriptionCode: string | null | undefined;
+  subscriptionName: string | null | undefined;
+  subscriptionCode?: string | null | undefined;
 }
 
 /**
@@ -97,6 +98,8 @@ export function subscriptionDetailPageTitle(
   params: SubscriptionDetailPageTitleParams,
 ): string | undefined {
   if (params.loading) return undefined;
-  if (params.loadFailed || !params.subscriptionCode?.trim()) return 'Subscription';
-  return params.subscriptionCode.trim();
+  if (params.loadFailed) return 'Subscription';
+  const title = params.subscriptionName?.trim() || params.subscriptionCode?.trim();
+  if (!title) return 'Subscription';
+  return title;
 }
