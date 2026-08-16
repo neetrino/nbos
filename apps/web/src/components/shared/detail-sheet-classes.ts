@@ -325,22 +325,22 @@ export const PAGE_TAB_BAR_WRAPPER_CLASS =
   'border-border flex shrink-0 items-center gap-1 border-b pb-0';
 
 /** Employee (and similar) fields — room for a border-notch label. */
-export const DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 bg-inherit pt-2';
+export const DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';
 
 /** Top-right border notch anchor for outlined field captions. */
 export const DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS =
   'absolute top-2 right-3 z-10 -translate-y-1/2';
 
-/** Field name on the top-right border; inherited fill breaks the line, capsule on any canvas. */
+/** Field name on the top-right border; capsule fill breaks the line on any canvas. */
 export const DETAIL_SHEET_OUTLINED_LABEL_CLASS = [
   DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS,
-  'bg-inherit text-muted-foreground pointer-events-none rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none',
+  'bg-card text-muted-foreground pointer-events-none rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none',
 ].join(' ');
 
 /** Multi-select Add — entire `+ Label` caption sits in the top-right border notch. */
 export const DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS = [
   DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS,
-  'bg-inherit text-muted-foreground pointer-events-auto group/outlined-add flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none transition-colors',
+  'bg-card text-muted-foreground pointer-events-auto group/outlined-add flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none transition-colors',
   'hover:text-foreground disabled:pointer-events-none disabled:opacity-60',
 ].join(' ');
 
