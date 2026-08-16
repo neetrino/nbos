@@ -71,7 +71,7 @@ export function DealSubscriptionTermField({
         </div>
         <InlineField
           variant="controlled"
-          label="Term"
+          label="Month"
           type="text"
           value={draft.subscriptionTermMonths ?? ''}
           placeholder="e.g. 12"
