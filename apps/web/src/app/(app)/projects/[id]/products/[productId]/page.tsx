@@ -72,7 +72,12 @@ function ProductDetailPageContent() {
     () => searchParams.get('settings') === 'whatsapp',
   );
 
-  useProductDetailHeader(product, siblingProducts, params.id);
+  useProductDetailHeader({
+    product,
+    siblingProducts,
+    projectId: params.id,
+    onProductUpdated: setProduct,
+  });
 
   const workSpaceTab = useProductWorkSpaceTab(
     params.productId,

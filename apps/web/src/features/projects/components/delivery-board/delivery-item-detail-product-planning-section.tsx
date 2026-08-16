@@ -61,11 +61,10 @@ export function ProductPlanningSection({
         <div className="min-w-0 space-y-3">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
           <InlineField
-            variant="controlled"
             label="Payment"
             value={paymentLabel}
             icon={<Wallet size={12} />}
-            disabled
+            editable={false}
           />
           <InlineField
             variant="controlled"

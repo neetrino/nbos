@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 const DETAIL_SHEET_ENTITY_LINK_GRID_CLASS = 'grid grid-cols-1 gap-2 sm:grid-cols-3';
 
 interface DetailSheetEntityLinkGridProps {
-  children: ReactNode;
+  children?: ReactNode;
   empty?: ReactNode;
   className?: string;
 }

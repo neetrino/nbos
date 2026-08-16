@@ -12,12 +12,12 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  ListPagination,
   DetailSheetTabPanel,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   ProjectNavigableCard,
   type ViewModeOption,
 } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import type { ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
@@ -54,10 +54,11 @@ export default function ProjectsPage() {
     setViewMode: setView,
     searchInput,
     setSearchInput,
-    setPage,
     items: projects,
-    meta,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     error,
     refetch,
   } = directory;
@@ -157,7 +158,15 @@ export default function ProjectsPage() {
       </DetailSheetTabPanel>
 
       {!loading && !error && projects.length > 0 ? (
-        <ListPagination meta={meta} onPageChange={setPage} />
+        <>
+          {loadingMore ? (
+            <p className="text-muted-foreground py-3 text-center text-xs">Loading more…</p>
+          ) : null}
+          <InfiniteScrollSentinel
+            onReach={loadMore}
+            disabled={loading || loadingMore || !hasMore}
+          />
+        </>
       ) : null}
 
       <CreateProjectHubDialog
