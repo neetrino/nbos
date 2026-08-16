@@ -24,6 +24,7 @@ import {
   replaceCredentialFolderMemberships,
 } from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
+import { attachCredentialProducts } from './credential-product-context';
 
 const CREDENTIAL_DETAIL_INCLUDE = {
   project: { select: { id: true, name: true } },
@@ -71,6 +72,14 @@ async function loadCredentialAfterFolderChange(runtime: CredentialsRuntime, cred
   });
 }
 
+async function mapCredentialWithProduct(
+  runtime: CredentialsRuntime,
+  credential: Record<string, unknown>,
+) {
+  const [item] = await attachCredentialProducts(runtime.prisma, [mapCredentialForApi(credential)]);
+  return item;
+}
+
 export async function findCredentialById(
   runtime: CredentialsRuntime,
   id: string,
@@ -103,7 +112,10 @@ export async function findCredentialById(
       projectId: credential.projectId ?? undefined,
     }),
   ]);
-  return { ...mapCredentialForApi({ ...credential, favorites }), comment, manualGrants };
+  const [mapped] = await attachCredentialProducts(runtime.prisma, [
+    mapCredentialForApi({ ...credential, favorites }),
+  ]);
+  return { ...mapped, comment, manualGrants };
 }
 
 function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | null {
@@ -186,10 +198,10 @@ export async function createCredential(
       bypassRowVisibility: true,
     });
     const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
-    if (updated) return mapCredentialForApi({ ...updated, favorites: [] });
+    if (updated) return mapCredentialWithProduct(runtime, { ...updated, favorites: [] });
   }
 
-  return mapCredentialForApi({ ...credential, favorites: [] });
+  return mapCredentialWithProduct(runtime, { ...credential, favorites: [] });
 }
 
 export async function updateCredential(
@@ -263,12 +275,12 @@ export async function updateCredential(
     const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
     if (updated) {
       const favorites = await loadFavoriteRows(runtime, updated.id, access.employeeId);
-      return mapCredentialForApi({ ...updated, favorites });
+      return mapCredentialWithProduct(runtime, { ...updated, favorites });
     }
   }
 
   const favorites = await loadFavoriteRows(runtime, credential.id, access.employeeId);
-  return mapCredentialForApi({ ...credential, favorites });
+  return mapCredentialWithProduct(runtime, { ...credential, favorites });
 }
 
 export async function archiveCredential(

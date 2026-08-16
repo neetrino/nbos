@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FolderKanban, KeyRound, Star } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
@@ -23,6 +24,7 @@ import { CredentialVaultPreviewStrip } from '@/features/credentials/components/c
 import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
+import { credentialProductHref } from '@/features/credentials/utils/credential-vault-card-meta';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
@@ -59,6 +61,8 @@ export function CredentialVaultTableRowCells({
   const healthBadge = credentialHealthBadge(cred.health);
   const preview = buildCredentialVaultPreview(cred);
   const primaryFolder = resolvePrimaryCredentialFolder(cred);
+  const productHref = credentialProductHref(cred.project?.id, cred.product);
+  const projectHref = cred.project?.id ? `/projects/${cred.project.id}` : null;
 
   const renderPreviewCell = (itemIndex: number) => {
     const item = preview.items[itemIndex];
@@ -154,12 +158,33 @@ export function CredentialVaultTableRowCells({
           <CredentialVaultMetaBadge item={accessBadge} className={ENTITY_LIST_BADGE_CLASS} />
         ) : null}
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {cred.project ? (
-          <div className="text-muted-foreground flex items-center gap-1 text-xs">
+      <TableCell className={ENTITY_LIST_CELL_CLASS} onClick={(e) => e.stopPropagation()}>
+        {cred.product && productHref ? (
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <Link
+              href={productHref}
+              className="text-foreground hover:text-primary truncate text-xs font-medium"
+            >
+              {cred.product.name}
+            </Link>
+            {cred.project && projectHref ? (
+              <Link
+                href={projectHref}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1 truncate text-[11px]"
+              >
+                <FolderKanban size={10} aria-hidden />
+                {cred.project.name}
+              </Link>
+            ) : null}
+          </div>
+        ) : cred.project && projectHref ? (
+          <Link
+            href={projectHref}
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
+          >
             <FolderKanban size={10} aria-hidden />
             {cred.project.name}
-          </div>
+          </Link>
         ) : (
           <EntityListMutedDash />
         )}

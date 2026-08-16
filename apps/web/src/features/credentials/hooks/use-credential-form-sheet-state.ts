@@ -117,6 +117,25 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const folderEditable = scopedFolderOptions.length > 0 || initialFolderId !== undefined;
 
+  const contextLinks = useMemo(
+    () => ({
+      projectId: detail?.projectId ?? props.projectId ?? initialItem?.project?.id ?? null,
+      project: detail?.project ?? initialItem?.project ?? null,
+      productId: detail?.productId ?? props.productId ?? initialItem?.product?.id ?? null,
+      product: detail?.product ?? initialItem?.product ?? null,
+    }),
+    [
+      detail?.projectId,
+      detail?.project,
+      detail?.productId,
+      detail?.product,
+      props.projectId,
+      props.productId,
+      initialItem?.project,
+      initialItem?.product,
+    ],
+  );
+
   useEffect(() => {
     if (isCreate || !open) return;
     if (
@@ -630,5 +649,6 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     accessDenied,
     setAccessDenied,
     detailHydrated,
+    contextLinks,
   };
 }

@@ -1,11 +1,16 @@
 'use client';
 
+import Link from 'next/link';
 import { Fragment } from 'react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { cn } from '@/lib/utils';
 import {
   CREDENTIAL_VAULT_CARD_BADGE_CLASS,
   type CredentialVaultMetaBadge,
 } from '@/features/credentials/utils/credential-vault-card-meta';
+
+const LINK_BADGE_CLASS =
+  'transition-colors hover:opacity-90 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none rounded-md';
 
 export function CredentialVaultMetaBadge({
   item,
@@ -15,13 +20,28 @@ export function CredentialVaultMetaBadge({
   className?: string;
 }) {
   const Icon = item.icon;
-  return (
+  const badge = (
     <StatusBadge
       label={item.label}
       variant={item.variant}
       className={className}
       icon={<Icon className="size-2.5 shrink-0 opacity-90" aria-hidden />}
     />
+  );
+
+  if (!item.href) {
+    return badge;
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className={cn(LINK_BADGE_CLASS, 'inline-flex max-w-full min-w-0')}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      {badge}
+    </Link>
   );
 }
 

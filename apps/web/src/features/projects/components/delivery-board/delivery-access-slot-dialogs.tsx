@@ -164,6 +164,8 @@ interface CreateAccessSlotCredentialDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   productId: string;
+  /** Parent product title — used as the vault card name. */
+  productName: string;
   slot: ProductAccessSlotRow;
   onBound: () => void;
 }
@@ -173,9 +175,12 @@ export function CreateAccessSlotCredentialDialog({
   onOpenChange,
   projectId,
   productId,
+  productName,
   slot,
   onBound,
 }: CreateAccessSlotCredentialDialogProps) {
+  const credentialName = productName.trim() || slot.label;
+
   return (
     <CredentialFormSheet
       open={open}
@@ -184,8 +189,13 @@ export function CreateAccessSlotCredentialDialog({
       projectId={projectId}
       productId={productId}
       title={`New credential — ${slot.label}`}
-      initialName={slot.label}
+      initialName={credentialName}
       allowedCategories={slot.allowedCategories}
+      initialCategory={
+        slot.slotKey === UNIVERSAL_ACCESS_SLOT_KEY
+          ? 'OTHER'
+          : (slot.allowedCategories[0] ?? undefined)
+      }
       initialCredentialType={slot.defaultCredentialType ?? 'LOGIN_PASSWORD'}
       submitLabel="Save & link"
       successToast={false}

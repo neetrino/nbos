@@ -41,6 +41,7 @@ export function mapCredentialForApi(credential: Record<string, unknown>) {
 
   return {
     ...base,
+    productId: typeof credential.productId === 'string' ? credential.productId : null,
     providerId,
     provider: providerRel?.name ?? null,
     phones: normalizedPhones,

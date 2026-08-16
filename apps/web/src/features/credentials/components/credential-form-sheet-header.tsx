@@ -15,8 +15,6 @@ import {
   CredentialCriticalityIcon,
 } from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
-import { CredentialFormCategoryMenu } from './credential-form-category-menu';
-import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 
 const SHEET_TITLE_CLASS = 'text-xl font-semibold leading-tight tracking-tight';
 const SHEET_TITLE_FIELD_CLASS = cn(SHEET_TITLE_CLASS, 'min-h-7 max-w-full truncate');
@@ -35,11 +33,6 @@ export interface CredentialFormSheetHeaderProps {
   name: string;
   onNameChange: (value: string) => void;
   accessLevel: string;
-  category: string;
-  categoryLabel: string;
-  categoryOptions: readonly CredentialCategoryOption[];
-  categoryLocked: boolean;
-  onCategoryChange: (value: string) => void;
   criticality: string;
   showSettings: boolean;
   onToggleSettings: () => void;
@@ -57,11 +50,6 @@ export function CredentialFormSheetHeader({
   name,
   onNameChange,
   accessLevel,
-  category,
-  categoryLabel,
-  categoryOptions,
-  categoryLocked,
-  onCategoryChange,
   criticality,
   showSettings,
   onToggleSettings,
@@ -180,31 +168,22 @@ export function CredentialFormSheetHeader({
             ) : null}
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1">
-            {!isCreate && onToggleFavorite ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'text-muted-foreground size-8 shrink-0',
-                  isFavorite && 'text-amber-500 hover:text-amber-600',
-                )}
-                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                onClick={onToggleFavorite}
-              >
-                <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
-              </Button>
-            ) : null}
-            <CredentialFormCategoryMenu
-              category={category}
-              categoryLabel={categoryLabel}
-              categoryOptions={categoryOptions}
-              categoryLocked={categoryLocked}
-              onCategoryChange={onCategoryChange}
-            />
-          </div>
+          {!isCreate && onToggleFavorite ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'text-muted-foreground ml-auto size-8 shrink-0',
+                isFavorite && 'text-amber-500 hover:text-amber-600',
+              )}
+              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              onClick={onToggleFavorite}
+            >
+              <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
+            </Button>
+          ) : null}
         </div>
       </div>
 

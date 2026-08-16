@@ -29,6 +29,7 @@ export function mapCredentialDetailToListItem(detail: CredentialDetail): Credent
     allowedEmployees: detail.allowedEmployees,
     ownerId: detail.ownerId ?? null,
     project: detail.project ?? null,
+    product: detail.product ?? null,
     department: detail.department ?? null,
     owner: detail.owner ?? null,
     createdAt: detail.createdAt,
