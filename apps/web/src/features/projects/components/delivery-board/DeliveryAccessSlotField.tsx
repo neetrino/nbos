@@ -13,7 +13,7 @@ import {
   RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
   RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
 } from '@/components/shared/detail-sheet-classes';
-import { PermissionGate } from '@/lib/permissions';
+import { usePermission } from '@/lib/permissions';
 import type { ProductAccessSlotBindingItem, ProductAccessSlotRow } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
@@ -71,6 +71,7 @@ function AccessSlotNotchCaption({
   required: boolean;
   onCreate: () => void;
 }) {
+  const { can, isLoading } = usePermission();
   const caption = (
     <span className="inline-flex max-w-[12rem] items-center gap-0.5 truncate">
       {label}
@@ -78,23 +79,21 @@ function AccessSlotNotchCaption({
     </span>
   );
 
+  if (isLoading || !can('ADD', 'CREDENTIALS')) {
+    return <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{caption}</span>;
+  }
+
   return (
-    <PermissionGate
-      module="CREDENTIALS"
-      action="ADD"
-      fallback={<span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{caption}</span>}
+    <button
+      type="button"
+      onClick={onCreate}
+      className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
+      title="New credential"
+      aria-label={`New credential for ${label}`}
     >
-      <button
-        type="button"
-        onClick={onCreate}
-        className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
-        title="New credential"
-        aria-label={`New credential for ${label}`}
-      >
-        <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
-        {caption}
-      </button>
-    </PermissionGate>
+      <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
+      {caption}
+    </button>
   );
 }
 
