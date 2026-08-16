@@ -77,8 +77,11 @@ function TasksPageContent() {
   const isMobileViewport = useIsMobileViewport();
   const newTaskDisabled = creatorReady && !creatorId;
   const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
-  const displayBoardView: TasksListBoardView =
-    isMobileViewport && !isTrashView ? 'kanban' : boardView;
+  const displayBoardView: TasksListBoardView = isTrashView
+    ? 'list'
+    : isMobileViewport
+      ? 'kanban'
+      : boardView;
 
   return (
     <div className="flex h-full flex-col gap-5">
