@@ -11,10 +11,10 @@ import {
 import { cn } from '@/lib/utils';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 
-/** Editable header trigger — ~2× prior compact width for easier targeting. */
-const CATEGORY_MENU_TRIGGER_MIN_WIDTH_CLASS = 'min-w-44';
-/** Dropdown list — wider than anchor so long labels (e.g. Admin) are not cramped. */
-const CATEGORY_MENU_DROPDOWN_MIN_WIDTH_CLASS = 'min-w-72';
+/** Editable header trigger — 8rem min width (~70% of prior 11rem). */
+const CATEGORY_MENU_TRIGGER_MIN_WIDTH_CLASS = 'min-w-32';
+/** Dropdown list — 13rem min width; wider than anchor so long labels (e.g. Admin) are not cramped. */
+const CATEGORY_MENU_DROPDOWN_MIN_WIDTH_CLASS = 'min-w-52';
 
 export interface CredentialFormCategoryMenuProps {
   category: string;
