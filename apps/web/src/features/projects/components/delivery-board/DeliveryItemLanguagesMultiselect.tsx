@@ -1,10 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Languages, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import {
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import {
   PRODUCT_LANGUAGE_OPTIONS,
   languageLabel,
@@ -17,6 +23,12 @@ interface DeliveryItemLanguagesMultiselectProps {
   disabled?: boolean;
   readOnly?: boolean;
 }
+
+const LANGUAGES_OUTLINED_SHELL_CLASS = cn(
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+  'flex min-h-10 w-full min-w-0 items-center rounded-xl px-3 py-2 text-sm',
+);
 
 export function DeliveryItemLanguagesMultiselect({
   value,
@@ -54,32 +66,28 @@ export function DeliveryItemLanguagesMultiselect({
 
   if (readOnly) {
     return (
-      <div>
-        <p className="text-muted-foreground mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
-          Languages
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {ordered.length > 0
-            ? ordered.map((c) => languageLabel(c)).join(', ')
-            : 'Inherited from parent product — not set.'}
-        </p>
+      <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Languages</span>
+        <div className={LANGUAGES_OUTLINED_SHELL_CLASS}>
+          <p className="text-muted-foreground text-xs">
+            {ordered.length > 0
+              ? ordered.map((c) => languageLabel(c)).join(', ')
+              : 'Inherited from parent product — not set.'}
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase">
-        <Languages size={12} className="opacity-70" aria-hidden />
-        Languages
-      </p>
+    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Languages</span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           disabled={disabled}
           className={cn(
-            'border-input bg-background flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left text-sm outline-none',
-            'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-            open && 'border-ring ring-ring/30 ring-2',
+            LANGUAGES_OUTLINED_SHELL_CLASS,
+            'justify-between gap-2 px-2.5 py-1.5 text-left outline-none',
             disabled && 'pointer-events-none opacity-50',
           )}
         >
