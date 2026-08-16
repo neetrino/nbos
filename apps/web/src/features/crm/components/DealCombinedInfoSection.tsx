@@ -3,7 +3,6 @@
 import { Briefcase } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
-  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DetailSheetCollapsibleSection,
 } from '@/components/shared';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
@@ -50,7 +49,6 @@ export function DealCombinedInfoSection({
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
         <div className="min-w-0 sm:pr-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Billing</p>
           <DealInfoProjectBillingFields
             draft={draft}
             patchDraft={patchDraft}
@@ -60,7 +58,6 @@ export function DealCombinedInfoSection({
           />
         </div>
         <div className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Deal & product</p>
           <DealInfoDealProductFields
             draft={draft}
             patchDraft={patchDraft}
