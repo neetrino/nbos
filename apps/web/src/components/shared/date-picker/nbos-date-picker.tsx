@@ -69,7 +69,7 @@ export function NbosDatePicker({
   const anchor = useMemo(() => parsed ?? new Date(), [parsed]);
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => parsed ?? new Date());
-  const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '09:00'));
+  const [timeValue, setTimeValue] = useState(() => (parsed ? format(parsed, 'HH:mm') : '19:00'));
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -90,11 +90,11 @@ export function NbosDatePicker({
     (date: Date) => {
       if (mode === 'datetime') {
         const [hourPart, minutePart] = timeValue.split(':');
-        const hours = Number(hourPart ?? 9);
+        const hours = Number(hourPart ?? 19);
         const minutes = Number(minutePart ?? 0);
         const next = new Date(date);
         next.setHours(
-          Number.isFinite(hours) ? hours : 9,
+          Number.isFinite(hours) ? hours : 19,
           Number.isFinite(minutes) ? minutes : 0,
           0,
           0,
@@ -117,11 +117,11 @@ export function NbosDatePicker({
       setTimeValue(nextTime);
       if (!parsed) return;
       const [hourPart, minutePart] = nextTime.split(':');
-      const hours = Number(hourPart ?? 9);
+      const hours = Number(hourPart ?? 19);
       const minutes = Number(minutePart ?? 0);
       const next = new Date(parsed);
       next.setHours(
-        Number.isFinite(hours) ? hours : 9,
+        Number.isFinite(hours) ? hours : 19,
         Number.isFinite(minutes) ? minutes : 0,
         0,
         0,
