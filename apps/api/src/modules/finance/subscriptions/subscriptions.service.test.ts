@@ -192,20 +192,23 @@ describe('SubscriptionsService', () => {
       );
     });
 
-    it('includes Pending rows with null billingStartDate in the year window', async () => {
+    it('applies billingStartDate lte yearEnd in the year window', async () => {
       await service.getGrid({ year: 2026 });
-      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            AND: expect.arrayContaining([
-              expect.objectContaining({
-                OR: expect.arrayContaining([{ status: 'PENDING', billingStartDate: null }]),
-              }),
-            ]),
+      const call = prisma.subscription.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: unknown[] };
+        orderBy?: unknown;
+      };
+      const andClause = call?.where?.AND ?? [];
+      expect(JSON.stringify(andClause)).not.toContain('"billingStartDate":null');
+      expect(andClause).toEqual(
+        expect.arrayContaining([
+          { billingStartDate: { lte: new Date(2026, 11, 31, 23, 59, 59, 999) } },
+          expect.objectContaining({
+            OR: [{ endDate: null }, { endDate: { gte: new Date(2026, 0, 1) } }],
           }),
-          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
-        }),
+        ]),
       );
+      expect(call?.orderBy).toEqual([{ status: 'asc' }, { createdAt: 'desc' }]);
     });
   });
 

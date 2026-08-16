@@ -463,9 +463,7 @@ function subscriptionGridYearWindow(
   yearEnd: Date,
 ): Prisma.SubscriptionWhereInput[] {
   return [
-    {
-      OR: [{ billingStartDate: { lte: yearEnd } }, { status: 'PENDING', billingStartDate: null }],
-    },
+    { billingStartDate: { lte: yearEnd } },
     { OR: [{ endDate: null }, { endDate: { gte: yearStart } }] },
   ];
 }
