@@ -72,6 +72,10 @@ export function DeliveryItemDetailGeneralTab({
       ? (item.product.projectId ?? item.product.project?.id ?? '')
       : (item.extension.projectId ?? item.extension.project?.id ?? '');
   const productId = item.kind === 'PRODUCT' ? item.product.id : item.extension.productId;
+  const productName =
+    item.kind === 'PRODUCT'
+      ? (product?.name ?? item.product.name)
+      : (extension?.product.name ?? item.extension.product.name);
 
   const kind = item.kind;
   const checklistProgress =
@@ -185,6 +189,7 @@ export function DeliveryItemDetailGeneralTab({
           <DeliveryAccessInfrastructureSection
             projectId={projectId}
             productId={productId}
+            productName={productName}
             productCredentialsHref={credentialsTabHref}
             onRefreshDetail={onRefreshDetail}
           />

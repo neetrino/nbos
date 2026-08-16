@@ -17,6 +17,8 @@ import {
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
   productId: string;
+  /** Parent product title — preset as the new credential name (also from an extension card). */
+  productName: string;
   productCredentialsHref: string;
   onRefreshDetail: () => void;
   /** Optional right column (languages, payment summary, etc.) inside the same card. */
@@ -36,6 +38,7 @@ function linkedCredentialIdsFromSlots(slots: ProductAccessSlotRow[]): string[] {
 export function DeliveryAccessInfrastructureSection({
   projectId,
   productId,
+  productName,
   productCredentialsHref,
   onRefreshDetail,
   setupPanel,
@@ -300,6 +303,7 @@ export function DeliveryAccessInfrastructureSection({
           }}
           projectId={projectId}
           productId={productId}
+          productName={productName}
           slot={createSlot}
           onBound={() => {
             setCreateSlot(null);

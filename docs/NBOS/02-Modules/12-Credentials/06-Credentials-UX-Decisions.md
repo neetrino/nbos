@@ -197,7 +197,7 @@ DB сохраняет оба поля:
 
 1. `Create` возможен только из конкретного scope, не из `All`.
 2. `Category Board` column `+` открывает Sheet с preset category.
-3. Delivery slot открывает Sheet с slot category и optional `defaultCredentialType`.
+3. Delivery slot открывает Sheet с slot category, optional `defaultCredentialType`, и title = имя родительского Product (в т.ч. с карточки Extension; не имя доработки и не label слота).
 4. Product/Project context передается в Sheet и может preset-ить category.
 5. `credentialType` управляет dynamic fields:
    - `LOGIN_PASSWORD` → login/password/url;
