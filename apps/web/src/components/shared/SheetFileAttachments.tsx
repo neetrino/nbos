@@ -1,10 +1,16 @@
 'use client';
 
-import { useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Loader2, Paperclip, Plus } from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
 import { DriveFileCard, type DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
 import { cn } from '@/lib/utils';
+import {
+  DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+} from './detail-sheet-classes';
 import {
   SHEET_FILE_ATTACHMENTS_ADD_BUTTON_CLASS,
   SHEET_FILE_ATTACHMENTS_ADD_ICON_CLASS,
@@ -21,6 +27,11 @@ import {
 import { SheetPendingFileTile } from './SheetPendingFileTile';
 import type { SheetPendingUpload } from './sheet-pending-upload.types';
 
+const OUTLINED_SHELL_CLASS = cn(
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+  'min-h-10 min-w-0 rounded-xl p-3',
+);
+
 export interface SheetFileAttachmentsProps {
   files: FileAsset[];
   pendingUploads?: SheetPendingUpload[];
@@ -35,6 +46,8 @@ export interface SheetFileAttachmentsProps {
   sectionTitle?: string;
   /** Shown under the header when there are no files yet (optional). */
   emptyHint?: string;
+  /** Outlined quiet field — caption + add in border notch; hides paperclip header. */
+  outlinedLabel?: string;
   onUpload: (files: File[]) => void | Promise<void>;
   onOpenFile: (file: FileAsset) => void;
   fileMenu: (file: FileAsset) => DriveFileCardMenuHandlers;
@@ -50,98 +63,162 @@ export function SheetFileAttachments({
   embedded = false,
   sectionTitle = SHEET_FILE_SECTION_TITLE,
   emptyHint,
+  outlinedLabel,
   onUpload,
   onOpenFile,
   fileMenu,
   footer,
 }: SheetFileAttachmentsProps) {
-  const cardLayout = denseTiles ? 'sheet-dense' : 'sheet';
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-
   const visibleFiles = files.slice(0, SHEET_FILE_TILE_LIMIT);
   const fileCount = files.length + pendingUploads.length;
   const hasFiles = loading || visibleFiles.length > 0 || pendingUploads.length > 0;
-  const hint = emptyHint;
+  const outlined = Boolean(outlinedLabel?.trim());
+  const label = outlinedLabel?.trim() ?? '';
   const barDisabled = loading;
-  const headerLabel = hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle;
-
   const pickFiles = (picked: File[]) => {
-    if (picked.length === 0) return;
-    void onUpload(picked);
+    if (picked.length > 0) void onUpload(picked);
   };
-
   const openPicker = () => {
-    if (barDisabled) return;
-    inputRef.current?.click();
+    if (!barDisabled) inputRef.current?.click();
   };
 
-  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!barDisabled) setDragOver(true);
-  };
-
-  const onDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (event.currentTarget.contains(event.relatedTarget as Node)) return;
-    setDragOver(false);
-  };
-
-  const onDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setDragOver(false);
-    pickFiles(Array.from(event.dataTransfer.files));
-  };
-
-  return (
+  const shell = (
     <div
       className={cn(
-        embedded ? SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS : SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,
+        outlined
+          ? OUTLINED_SHELL_CLASS
+          : embedded
+            ? SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS
+            : SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,
         'min-w-0 transition-colors',
         dragOver && !barDisabled && 'ring-primary/25 ring-2',
         barDisabled && 'opacity-80',
       )}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!barDisabled) setDragOver(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setDragOver(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOver(false);
+        pickFiles(Array.from(e.dataTransfer.files));
+      }}
     >
-      <div className={SHEET_FILE_ATTACHMENTS_HEADER_CLASS}>
-        <span className={SHEET_FILE_ATTACHMENTS_TITLE_CLASS}>
-          <Paperclip className={SHEET_FILE_ATTACHMENTS_CLIP_ICON_CLASS} aria-hidden />
-          <span className="truncate">{headerLabel}</span>
-          {loading ? (
-            <Loader2 className="text-muted-foreground size-3.5 shrink-0 animate-spin" aria-hidden />
-          ) : null}
-        </span>
-        <button
-          type="button"
-          className={SHEET_FILE_ATTACHMENTS_ADD_BUTTON_CLASS}
-          disabled={barDisabled}
-          aria-label={hint ?? 'Add file'}
-          onClick={openPicker}
-        >
-          <Plus className={SHEET_FILE_ATTACHMENTS_ADD_ICON_CLASS} aria-hidden />
-        </button>
-      </div>
+      {!outlined ? (
+        <div className={SHEET_FILE_ATTACHMENTS_HEADER_CLASS}>
+          <span className={SHEET_FILE_ATTACHMENTS_TITLE_CLASS}>
+            <Paperclip className={SHEET_FILE_ATTACHMENTS_CLIP_ICON_CLASS} aria-hidden />
+            <span className="truncate">
+              {hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle}
+            </span>
+            {loading ? (
+              <Loader2
+                className="text-muted-foreground size-3.5 shrink-0 animate-spin"
+                aria-hidden
+              />
+            ) : null}
+          </span>
+          <button
+            type="button"
+            className={SHEET_FILE_ATTACHMENTS_ADD_BUTTON_CLASS}
+            disabled={barDisabled}
+            aria-label={emptyHint ?? 'Add file'}
+            onClick={openPicker}
+          >
+            <Plus className={SHEET_FILE_ATTACHMENTS_ADD_ICON_CLASS} aria-hidden />
+          </button>
+        </div>
+      ) : null}
+      <SheetFileAttachmentsContent
+        inputRef={inputRef}
+        multiple={multiple}
+        pickFiles={pickFiles}
+        hasFiles={hasFiles}
+        loading={loading}
+        visibleFiles={visibleFiles}
+        pendingUploads={pendingUploads}
+        cardLayout={denseTiles ? 'sheet-dense' : 'sheet'}
+        onOpenFile={onOpenFile}
+        fileMenu={fileMenu}
+        emptyHint={outlined ? emptyHint : undefined}
+        footer={footer}
+      />
+    </div>
+  );
 
+  if (!outlined) return shell;
+  return (
+    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+      <button
+        type="button"
+        className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
+        disabled={barDisabled}
+        aria-label={emptyHint ?? `Add ${label} file`}
+        onClick={openPicker}
+      >
+        <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
+        {label}
+      </button>
+      {shell}
+    </div>
+  );
+}
+
+function SheetFileAttachmentsContent({
+  inputRef,
+  multiple,
+  pickFiles,
+  hasFiles,
+  loading,
+  visibleFiles,
+  pendingUploads,
+  cardLayout,
+  onOpenFile,
+  fileMenu,
+  emptyHint,
+  footer,
+}: {
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  multiple: boolean;
+  pickFiles: (picked: File[]) => void;
+  hasFiles: boolean;
+  loading: boolean;
+  visibleFiles: FileAsset[];
+  pendingUploads: SheetPendingUpload[];
+  cardLayout: 'sheet' | 'sheet-dense';
+  onOpenFile: (file: FileAsset) => void;
+  fileMenu: (file: FileAsset) => DriveFileCardMenuHandlers;
+  emptyHint?: string;
+  footer?: ReactNode;
+}) {
+  const inset = emptyHint ? undefined : 'mt-2.5';
+  return (
+    <>
       <input
         ref={inputRef}
         type="file"
         className="hidden"
         multiple={multiple}
-        onChange={(event) => {
-          pickFiles(Array.from(event.target.files ?? []));
-          event.target.value = '';
+        onChange={(e) => {
+          pickFiles(Array.from(e.target.files ?? []));
+          e.target.value = '';
         }}
       />
-
       {hasFiles ? (
         loading && visibleFiles.length === 0 && pendingUploads.length === 0 ? (
           <p
             className={cn(
-              'text-muted-foreground mt-3 flex items-center gap-2 text-xs',
+              'text-muted-foreground flex items-center gap-2 text-xs',
+              inset ?? 'mt-3',
               SHEET_FILE_TILE_HEIGHT_CLASS,
             )}
           >
@@ -149,7 +226,7 @@ export function SheetFileAttachments({
             Loading files…
           </p>
         ) : (
-          <div className="mt-2.5 flex min-w-0 flex-wrap gap-2.5">
+          <div className={cn('flex min-w-0 flex-wrap gap-2.5', inset)}>
             {pendingUploads.map((item) => (
               <div
                 key={item.localId}
@@ -184,9 +261,12 @@ export function SheetFileAttachments({
             ))}
           </div>
         )
+      ) : emptyHint ? (
+        <p className="text-muted-foreground text-xs">{emptyHint}</p>
       ) : null}
-
-      {footer ? <div className="mt-2">{footer}</div> : null}
-    </div>
+      {footer ? (
+        <div className={cn(emptyHint || hasFiles ? 'mt-2' : undefined)}>{footer}</div>
+      ) : null}
+    </>
   );
 }

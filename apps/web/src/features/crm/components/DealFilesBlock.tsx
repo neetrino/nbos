@@ -27,10 +27,17 @@ export type DealFilePurpose = 'OFFER' | 'CONTRACT';
 interface DealFilesBlockProps {
   dealId: string;
   purpose: DealFilePurpose;
+  /** Outlined quiet field caption in the border notch (Offer / Contract). */
+  outlinedLabel?: string;
   onFilesChanged?: () => void;
 }
 
-export function DealFilesBlock({ dealId, purpose, onFilesChanged }: DealFilesBlockProps) {
+export function DealFilesBlock({
+  dealId,
+  purpose,
+  outlinedLabel,
+  onFilesChanged,
+}: DealFilesBlockProps) {
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
 
   const listFiles = useCallback(async () => {
@@ -106,6 +113,7 @@ export function DealFilesBlock({ dealId, purpose, onFilesChanged }: DealFilesBlo
       files={files}
       pendingUploads={pending}
       loading={loading}
+      outlinedLabel={outlinedLabel}
       emptyHint="You can drag a file here or click + to browse"
       onUpload={uploadFiles}
       onOpenFile={(file) => {

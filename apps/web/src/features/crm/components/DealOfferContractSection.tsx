@@ -2,10 +2,7 @@
 
 import { useEffect } from 'react';
 import { FileText } from 'lucide-react';
-import {
-  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
-  DetailSheetCollapsibleSection,
-} from '@/components/shared';
+import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import { cn } from '@/lib/utils';
@@ -44,21 +41,29 @@ export function DealOfferContractSection({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-5">
         <div
           className={cn('min-w-0', dealStageGateFieldClass(gateRequiredFields, 'offerProof', ''))}
         >
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Offer</p>
-          <DealFilesBlock dealId={dealId} purpose="OFFER" onFilesChanged={onFilesChanged} />
+          <DealFilesBlock
+            dealId={dealId}
+            purpose="OFFER"
+            outlinedLabel="Offer"
+            onFilesChanged={onFilesChanged}
+          />
         </div>
         <div
           className={cn(
-            'min-w-0 pt-5',
+            'min-w-0',
             dealStageGateFieldClass(gateRequiredFields, 'contractProof', ''),
           )}
         >
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Contract</p>
-          <DealFilesBlock dealId={dealId} purpose="CONTRACT" onFilesChanged={onFilesChanged} />
+          <DealFilesBlock
+            dealId={dealId}
+            purpose="CONTRACT"
+            outlinedLabel="Contract"
+            onFilesChanged={onFilesChanged}
+          />
         </div>
       </div>
     </DetailSheetCollapsibleSection>
