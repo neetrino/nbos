@@ -14,10 +14,8 @@ import {
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
 } from '@/components/shared';
-import {
-  useEmployeeRelationSearch,
-  useProductRelationSearch,
-} from '@/components/shared/relation-picker';
+import { useEmployeeRelationSearch } from '@/components/shared/relation-picker';
+import { searchDealExistingProducts } from './deal-existing-product-search';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
@@ -112,15 +110,6 @@ export function DealGeneralTab({
     return data.items.map((partner) => ({ value: partner.id, label: partner.name }));
   }, []);
 
-  const searchProductsInProject = useProductRelationSearch(draft.projectId);
-  const searchProducts = useCallback(
-    async (query: string) => {
-      if (!draft.projectId) return [];
-      return searchProductsInProject(query);
-    },
-    [draft.projectId, searchProductsInProject],
-  );
-
   const searchCompanies = useCallback(async (query: string) => {
     const data = await companiesApi.getAll({
       pageSize: 10,
@@ -144,7 +133,7 @@ export function DealGeneralTab({
             patchDraft={patchDraft}
             filteredProductTypeOptions={filteredProductTypeOptions}
             searchProjects={searchProjects}
-            searchProducts={searchProducts}
+            searchProducts={searchDealExistingProducts}
             searchCompanies={searchCompanies}
             disabled={formDisabled}
             outsourceToggleLocked={deal.status === 'WON'}

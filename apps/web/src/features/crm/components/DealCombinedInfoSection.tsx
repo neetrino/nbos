@@ -52,6 +52,7 @@ export function DealCombinedInfoSection({
           <DealInfoProjectBillingFields
             draft={draft}
             patchDraft={patchDraft}
+            searchProjects={searchProjects}
             searchCompanies={searchCompanies}
             disabled={disabled}
             gateRequiredFields={gateRequiredFields}
@@ -62,7 +63,6 @@ export function DealCombinedInfoSection({
             draft={draft}
             patchDraft={patchDraft}
             filteredProductTypeOptions={filteredProductTypeOptions}
-            searchProjects={searchProjects}
             searchProducts={searchProducts}
             disabled={disabled}
             outsourceToggleLocked={outsourceToggleLocked}

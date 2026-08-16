@@ -180,6 +180,14 @@ export function isDealGeneralDirty(a: DealGeneralDraft, b: DealGeneralDraft): bo
 const PRODUCT_LIKE_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
 const LINKED_PRODUCT_TYPES = new Set(['EXTENSION', 'MAINTENANCE']);
 
+export function isProductLikeDealType(type: string | null): boolean {
+  return PRODUCT_LIKE_TYPES.has(type ?? '');
+}
+
+export function isLinkedProductDealType(type: string | null): boolean {
+  return LINKED_PRODUCT_TYPES.has(type ?? '');
+}
+
 /** Clears taxonomy / linked-product fields that do not apply to the next deal type. */
 export function buildDealTypeChangePatch(
   draft: DealGeneralDraft,
@@ -213,5 +221,20 @@ export function buildDealProjectChangePatch(
     linkedProjectLabel,
     existingProductId: null,
     existingProductPickLabel: null,
+  };
+}
+
+/** Product pick fills Project from the product; does not clear the product (unlike project change). */
+export function buildDealExistingProductChangePatch(
+  existingProductId: string | null,
+  existingProductPickLabel: string | null,
+  projectId: string | null,
+  linkedProjectLabel: string | null,
+): Partial<DealGeneralDraft> {
+  return {
+    existingProductId,
+    existingProductPickLabel,
+    projectId,
+    linkedProjectLabel,
   };
 }
