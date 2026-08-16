@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Task, TaskLink } from '@/lib/api/tasks';
-import { pickTaskCardContextChips } from './task-mini-card-meta';
+import { formatTaskCardPeoplePairLabel, pickTaskCardContextChips } from './task-mini-card-meta';
 
 function link(
   partial: Partial<TaskLink> & Pick<TaskLink, 'id' | 'entityType' | 'entityId'>,
@@ -21,6 +21,23 @@ function task(partial: Partial<Task>): Pick<Task, 'links' | 'workspaceId' | 'wor
     ...partial,
   };
 }
+
+describe('formatTaskCardPeoplePairLabel', () => {
+  it('formats creator and assignee with arrow', () => {
+    expect(
+      formatTaskCardPeoplePairLabel(
+        { firstName: 'Anna', lastName: 'Smith' },
+        { firstName: 'Bob', lastName: 'Jones' },
+      ),
+    ).toBe('Set by A. Smith → B. Jones');
+  });
+
+  it('shows Unassigned when assignee is missing', () => {
+    expect(formatTaskCardPeoplePairLabel({ firstName: 'Anna', lastName: 'Smith' }, null)).toBe(
+      'Set by A. Smith → Unassigned',
+    );
+  });
+});
 
 describe('pickTaskCardContextChips', () => {
   it('puts work space first, then product and project', () => {

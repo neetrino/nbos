@@ -8,6 +8,11 @@ export const TASK_CARD_CHIP_CLASS =
 export const TASK_CARD_ACTION_BTN_CLASS =
   'flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors';
 
+/** Compact creator/assignee avatars on task board cards (20px). */
+export const TASK_CARD_PERSON_AVATAR_CLASS = 'size-5 text-[8px]';
+
+export const TASK_CARD_PEOPLE_CHEVRON_SIZE = 12;
+
 export type TaskCardContextKind = 'PROJECT' | 'PRODUCT' | 'WORK_SPACE' | 'OTHER';
 
 export type TaskCardContextChip = {
@@ -35,6 +40,17 @@ export function formatAssigneeShortName(firstName: string, lastName: string): st
   if (!initial && !last) return 'Unassigned';
   if (!last) return initial;
   return `${initial}. ${last}`;
+}
+
+export function formatTaskCardPeoplePairLabel(
+  creator: { firstName: string; lastName: string },
+  assignee: { firstName: string; lastName: string } | null,
+): string {
+  const creatorName = formatAssigneeShortName(creator.firstName, creator.lastName);
+  const assigneeName = assignee
+    ? formatAssigneeShortName(assignee.firstName, assignee.lastName)
+    : 'Unassigned';
+  return `Set by ${creatorName} → ${assigneeName}`;
 }
 
 export function taskCardContextIcon(chip: Pick<TaskCardContextChip, 'entityType'>): LucideIcon {

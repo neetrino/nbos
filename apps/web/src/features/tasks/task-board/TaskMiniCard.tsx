@@ -3,13 +3,12 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
+import { TaskCardPeoplePair } from './TaskCardPeoplePair';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
 import { getDeadlineColumn } from './task-board-constants';
 import {
-  formatAssigneeShortName,
   formatTaskCardDate,
   pickTaskCardContextChips,
   TASK_CARD_ACTION_BTN_CLASS,
@@ -40,10 +39,6 @@ export function TaskMiniCard({
   const canReopen =
     task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'ON_HOLD';
   const isOverdue = task.dueDate ? getDeadlineColumn(task) === 'overdue' : false;
-
-  const assigneeLabel = task.assignee
-    ? formatAssigneeShortName(task.assignee.firstName, task.assignee.lastName)
-    : 'Unassigned';
 
   return (
     <KanbanCardShell
@@ -88,13 +83,7 @@ export function TaskMiniCard({
       ) : null}
 
       <div className="border-border/60 mt-3 flex items-center justify-between gap-2 border-t pt-3">
-        <div className="flex min-w-0 items-center" title={assigneeLabel}>
-          <EmployeePersonAvatar
-            label={assigneeLabel}
-            imageUrl={task.assignee?.avatar}
-            className="size-8"
-          />
-        </div>
+        <TaskCardPeoplePair creator={task.creator} assignee={task.assignee} />
 
         <div className="flex shrink-0 items-center gap-2">
           {canStart ? (
