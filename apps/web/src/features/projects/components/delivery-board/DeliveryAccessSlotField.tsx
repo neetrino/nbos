@@ -13,6 +13,9 @@ import {
   RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
   RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { CredentialVaultMetaBadge } from '@/features/credentials/components/credential-vault-card-meta-row';
+import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
+import { credentialCategoryIcon } from '@/features/credentials/utils/credential-vault-card-meta';
 import { usePermission } from '@/lib/permissions';
 import type { ProductAccessSlotBindingItem, ProductAccessSlotRow } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
@@ -140,17 +143,37 @@ function AccessSlotBindingRow({
         )}
         aria-label={`Open ${name}`}
       >
-        <span className={cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'text-sm font-medium')}>
+        <span
+          className={cn(
+            RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
+            'min-w-0 flex-1 truncate text-sm font-medium',
+          )}
+        >
           {name}
         </span>
+        <AccessSlotCategoryBadge category={binding.boundCredential.category} />
         <ChevronRight
           size={14}
-          className="text-muted-foreground/70 ml-auto shrink-0 opacity-60"
+          className="text-muted-foreground/70 shrink-0 opacity-60"
           aria-hidden
         />
       </button>
       <AccessSlotUnlinkButton onUnbind={onUnbind} />
     </li>
+  );
+}
+
+function AccessSlotCategoryBadge({ category }: { category: string }) {
+  const meta = getCredentialCategoryMeta(category);
+  return (
+    <CredentialVaultMetaBadge
+      item={{
+        key: 'category',
+        label: meta.label,
+        variant: meta.badgeVariant,
+        icon: credentialCategoryIcon(category),
+      }}
+    />
   );
 }
 
