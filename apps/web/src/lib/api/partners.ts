@@ -17,6 +17,7 @@ export interface PartnerAgreementOwnerSummary {
   id: string;
   firstName: string;
   lastName: string;
+  avatar?: string | null;
 }
 
 export interface Partner {

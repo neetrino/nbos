@@ -32,7 +32,12 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   metaConversation?: LeadMetaConversation | null;
-  assignee: { id: string; firstName: string; lastName: string } | null;
+  assignee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string | null;
+  } | null;
   sourcePartner: { id: string; name: string } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;

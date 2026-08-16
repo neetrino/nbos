@@ -30,6 +30,7 @@ export function ProjectTeamMemberChipRow({
     <PersonContactRow
       name={name}
       email={row.employee.email}
+      imageUrl={row.employee.avatar}
       disabled={disabled}
       onOpen={() => {
         relations.openEntity('employee', row.employeeId, {

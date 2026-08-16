@@ -1,16 +1,5 @@
 import type { Employee } from '@/lib/api/employees';
 
-const AVATAR_COLORS = [
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-violet-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-indigo-500',
-  'bg-teal-500',
-] as const;
-
 /** Soft pastel tones for team member cards (About project sidebar). */
 const AVATAR_SOFT_COLORS = [
   'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
@@ -35,14 +24,12 @@ export function employeeFullName(emp: Pick<Employee, 'firstName' | 'lastName'>):
   return `${emp.firstName} ${emp.lastName}`.trim();
 }
 
-export function employeeInitials(emp: Pick<Employee, 'firstName' | 'lastName'>): string {
-  const first = emp.firstName?.charAt(0)?.toUpperCase() ?? '';
-  const last = emp.lastName?.charAt(0)?.toUpperCase() ?? '';
-  return first + last || '?';
-}
-
-export function employeeAvatarColor(name: string): string {
-  return AVATAR_COLORS[hashNameIndex(name, AVATAR_COLORS.length)]!;
+/** Trimmed employee photo URL, or null when missing. */
+export function employeeAvatarUrl(
+  emp: { avatar?: string | null } | null | undefined,
+): string | null {
+  const url = emp?.avatar?.trim();
+  return url || null;
 }
 
 export function employeeAvatarSoftColor(name: string): string {

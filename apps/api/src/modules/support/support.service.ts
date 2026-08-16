@@ -18,6 +18,7 @@ import {
   type TicketWaitingStateEnum,
   type InputJsonValue,
 } from '@nbos/database';
+import { employeePersonSelect } from '../../common/employee-person.select';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildSupportSlaProjection } from './support-sla';
 import {
@@ -78,7 +79,7 @@ const SUPPORT_TICKET_INCLUDE = {
   product: { select: { id: true, name: true, status: true } },
   extensionDeal: { select: { id: true, code: true, name: true, status: true, amount: true } },
   contact: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
-  assignee: { select: { id: true, firstName: true, lastName: true } },
+  assignee: { select: employeePersonSelect },
   technicalAsset: {
     select: { id: true, name: true, type: true, status: true, environment: true },
   },

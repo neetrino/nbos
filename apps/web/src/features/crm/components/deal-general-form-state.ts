@@ -1,6 +1,7 @@
 import { contactIdListsEqual } from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
+import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
 import { toDateInputValue } from './deal-general-tab.helpers';
 
 /** Editable General tab state (includes UI labels for search fields). */
@@ -34,10 +35,13 @@ export interface DealGeneralDraft {
   contactLabels: Record<string, string>;
   sellerId: string | null;
   sellerDisplayLabel: string | null;
+  sellerAvatar: string | null;
   sellerAssistantId: string | null;
   sellerAssistantDisplayLabel: string | null;
+  sellerAssistantAvatar: string | null;
   pmId: string | null;
   pmDisplayLabel: string | null;
+  pmAvatar: string | null;
   deadline: string | null;
   outsourceGoesToDelivery: boolean;
 }
@@ -86,12 +90,15 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     contactLabels,
     sellerId: deal.seller?.id ?? null,
     sellerDisplayLabel: deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null,
+    sellerAvatar: employeeAvatarUrl(deal.seller),
     sellerAssistantId: deal.sellerAssistant?.id ?? null,
     sellerAssistantDisplayLabel: deal.sellerAssistant
       ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
       : null,
+    sellerAssistantAvatar: employeeAvatarUrl(deal.sellerAssistant),
     pmId: deal.pmId,
     pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
+    pmAvatar: employeeAvatarUrl(deal.pm),
     deadline: toDateInputValue(deal.deadline),
     outsourceGoesToDelivery: deal.outsourceGoesToDelivery === true,
   };

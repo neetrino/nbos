@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from 'react';
 import { Phone, Mail, User, Calendar } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { employeeFullName } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
 import { getLeadSource } from '../constants/leadPipeline';
 import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
@@ -13,6 +15,8 @@ import {
   getLeadDisplayTitle,
   getLeadLatestMessagePreview,
 } from '../utils/crm-entity-display';
+
+const LEAD_CARD_PERSON_AVATAR_CLASS = 'size-6 text-[9px]';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const CLOCK_REFRESH_MS = 60 * 1000;
@@ -63,6 +67,7 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
 
   const daysSinceCreation = Math.floor((currentTime - new Date(lead.createdAt).getTime()) / DAY_MS);
   const isOverdue = lead.status === 'NEW' && daysSinceCreation >= 1;
+  const assigneeName = lead.assignee ? employeeFullName(lead.assignee) : null;
 
   return (
     <KanbanCardShell
@@ -123,13 +128,13 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          {lead.assignee ? (
-            <span
-              className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold"
-              title={`${lead.assignee.firstName} ${lead.assignee.lastName}`}
-            >
-              {lead.assignee.firstName[0]}
-              {lead.assignee.lastName[0]}
+          {lead.assignee && assigneeName ? (
+            <span title={assigneeName}>
+              <EmployeePersonAvatar
+                label={assigneeName}
+                imageUrl={lead.assignee.avatar}
+                className={LEAD_CARD_PERSON_AVATAR_CLASS}
+              />
             </span>
           ) : (
             <span className="text-muted-foreground flex h-6 w-6 items-center justify-center rounded-full border border-dashed">

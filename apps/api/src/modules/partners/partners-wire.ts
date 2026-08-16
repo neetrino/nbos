@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { employeePersonSelect } from '../../common/employee-person.select';
 import {
   Decimal,
   type PartnerAgreementStatusEnum,
@@ -17,7 +18,7 @@ export const PARTNER_WIRE_INCLUDE = {
   _count: { select: { subscriptions: true, orders: true } },
   contact: { select: { id: true, firstName: true, lastName: true } },
   agreementFileAsset: { select: { id: true, displayName: true } },
-  agreementOwner: { select: { id: true, firstName: true, lastName: true } },
+  agreementOwner: { select: employeePersonSelect },
 } satisfies Prisma.PartnerInclude;
 
 export type PartnerWireRow = Prisma.PartnerGetPayload<{
@@ -42,7 +43,12 @@ export interface PartnerWireDto {
   agreementFileAssetId: string | null;
   agreementFileAsset: { id: string; displayName: string } | null;
   agreementOwnerId: string | null;
-  agreementOwner: { id: string; firstName: string; lastName: string } | null;
+  agreementOwner: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
   trashedAt: string | null;

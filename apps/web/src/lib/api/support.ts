@@ -30,7 +30,7 @@ export interface SupportTicket {
     amount: number | string | null;
   } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
-  assignee: { id: string; firstName: string; lastName: string } | null;
+  assignee: { id: string; firstName: string; lastName: string; avatar?: string | null } | null;
   technicalAsset: {
     id: string;
     name: string;

@@ -1,5 +1,6 @@
 import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
+import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
 import { PRODUCT_TYPES_BY_CATEGORY } from '@/features/projects/constants/projects';
 
 function employeeLabel(e: { firstName: string; lastName: string } | null | undefined): string {
@@ -12,14 +13,19 @@ export type ProductPlanSnapshot = {
   deadline: string;
   pmId: string | null;
   pmLabel: string;
+  pmAvatar: string | null;
   developerId: string | null;
   developerLabel: string;
+  developerAvatar: string | null;
   designerId: string | null;
   designerLabel: string;
+  designerAvatar: string | null;
   technicalSpecialistId: string | null;
   technicalSpecialistLabel: string;
+  technicalSpecialistAvatar: string | null;
   qaLeadId: string | null;
   qaLeadLabel: string;
+  qaLeadAvatar: string | null;
   productCategory: string;
   productType: string;
   description: string;
@@ -31,6 +37,7 @@ export type ExtensionPlanSnapshot = {
   size: string;
   assignedTo: string | null;
   assigneeLabel: string;
+  assigneeAvatar: string | null;
   description: string;
 };
 
@@ -40,14 +47,19 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     deadline: p.deadline ? p.deadline.slice(0, 10) : '',
     pmId: p.pmId,
     pmLabel: employeeLabel(p.pm),
+    pmAvatar: employeeAvatarUrl(p.pm),
     developerId: p.developer?.id ?? null,
     developerLabel: employeeLabel(p.developer),
+    developerAvatar: employeeAvatarUrl(p.developer),
     designerId: p.designer?.id ?? null,
     designerLabel: employeeLabel(p.designer),
+    designerAvatar: employeeAvatarUrl(p.designer),
     technicalSpecialistId: p.technicalSpecialist?.id ?? null,
     technicalSpecialistLabel: employeeLabel(p.technicalSpecialist),
+    technicalSpecialistAvatar: employeeAvatarUrl(p.technicalSpecialist),
     qaLeadId: p.qaLead?.id ?? null,
     qaLeadLabel: employeeLabel(p.qaLead),
+    qaLeadAvatar: employeeAvatarUrl(p.qaLead),
     productCategory: p.productCategory,
     productType: p.productType,
     description: p.description ?? '',
@@ -61,6 +73,7 @@ export function snapshotExtensionPlan(e: FullExtension): ExtensionPlanSnapshot {
     size: e.size,
     assignedTo: e.assignedTo,
     assigneeLabel: e.assignee ? `${e.assignee.firstName} ${e.assignee.lastName}` : '',
+    assigneeAvatar: employeeAvatarUrl(e.assignee),
     description: e.description ?? '',
   };
 }

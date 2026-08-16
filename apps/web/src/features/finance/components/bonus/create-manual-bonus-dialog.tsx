@@ -58,6 +58,7 @@ export function CreateManualBonusDialog({
 
   const [employeeId, setEmployeeId] = useState('');
   const [employeeLabel, setEmployeeLabel] = useState<string | null>(null);
+  const [employeeAvatar, setEmployeeAvatar] = useState<string | null>(null);
   const [orderId, setOrderId] = useState('');
   const [orderLabel, setOrderLabel] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -75,6 +76,7 @@ export function CreateManualBonusDialog({
     if (!open) return;
     setEmployeeId('');
     setEmployeeLabel(null);
+    setEmployeeAvatar(null);
     setOrderId('');
     setOrderLabel(null);
     setSelectedOrder(null);
@@ -175,13 +177,15 @@ export function CreateManualBonusDialog({
             entityKind="employee"
             value={employeeId || null}
             selectionLabel={employeeLabel}
+            selectionAvatar={employeeAvatar}
             placeholder="Search employees…"
             icon={<UserCog size={12} />}
             disabled={loading}
             onSearch={searchEmployees}
-            onSelect={(id, label) => {
+            onSelect={(id, label, avatar) => {
               setEmployeeId(id);
               setEmployeeLabel(label);
+              setEmployeeAvatar(avatar?.trim() || null);
             }}
           />
           <RelationPickerField

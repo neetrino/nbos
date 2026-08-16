@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { Building2, FolderKanban, Handshake, Layers, Receipt, User, UserCog } from 'lucide-react';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
-import { PersonSoftAvatar } from '@/components/shared/PersonAvatarName';
+import { PersonSoftAvatar } from '@/components/shared/PersonSoftAvatar';
 import { cn } from '@/lib/utils';
 import { RELATION_PICKER_ENTITY_ICON_INLINE_CLASS } from '../detail-sheet-classes';
 import type { RelationEntityKind } from './relation-picker.types';

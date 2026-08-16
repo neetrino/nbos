@@ -2,7 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Crown, Handshake, Percent, RefreshCw, ShieldCheck, ShoppingCart } from 'lucide-react';
-import { PersonAvatarName, StatusBadge, type StatusVariant } from '@/components/shared';
+import { PersonContactRow, StatusBadge, type StatusVariant } from '@/components/shared';
 import { PartnerDirectionIcon } from '@/features/partners/components/PartnerDirectionIcon';
 import {
   getPartnerDirection,
@@ -104,7 +104,7 @@ export function PartnerCard({ partner, onOpen }: PartnerCardProps) {
       </div>
 
       {partner.contact ? (
-        <PersonAvatarName
+        <PersonContactRow
           name={`${partner.contact.firstName} ${partner.contact.lastName}`.trim()}
           className="mt-3"
         />

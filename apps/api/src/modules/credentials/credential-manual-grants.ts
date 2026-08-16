@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@nbos/database';
+import { employeePersonWithEmailSelect } from '../../common/employee-person.select';
 import { activeResourceAccessGrantWhere } from './credential-active-grant.where';
 import type {
   CredentialManualGrantInput,
@@ -51,7 +52,7 @@ export async function loadCredentialManualGrants(
       ...activeResourceAccessGrantWhere(),
     },
     include: {
-      employee: { select: { id: true, firstName: true, lastName: true, email: true } },
+      employee: { select: employeePersonWithEmailSelect },
       grantedBy: { select: { id: true, firstName: true, lastName: true } },
     },
     orderBy: { createdAt: 'asc' },

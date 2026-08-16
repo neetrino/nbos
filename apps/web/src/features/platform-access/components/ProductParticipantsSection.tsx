@@ -160,6 +160,7 @@ function TeamBody({
             key={row.id}
             name={memberDisplayName(row)}
             email={row.employee.email}
+            imageUrl={row.employee.avatar}
             onOpen={() => relations.openEntity('employee', row.employee.id)}
             trailing={<MemberSlotMeta row={row} />}
           />
@@ -189,7 +190,11 @@ function TeamBody({
                   className="flex min-w-0 items-center gap-3 text-left"
                   onClick={() => relations.openEntity('employee', row.employee.id)}
                 >
-                  <PersonSoftAvatar name={name} className="size-8 text-[10px]" />
+                  <PersonSoftAvatar
+                    name={name}
+                    imageUrl={row.employee.avatar}
+                    className="size-8 text-[10px]"
+                  />
                   <span className="min-w-0">
                     <span className="block font-medium">{name}</span>
                     <span className="text-muted-foreground block text-xs">

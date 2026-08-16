@@ -1,22 +1,17 @@
 'use client';
 
 import { User } from 'lucide-react';
-import { RelationPickerField } from '@/components/shared';
-import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
-import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import {
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
-  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-} from '@/components/shared/detail-sheet-classes';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import type { FullExtension } from '@/lib/api/extensions';
-import type { FullProduct, ProductEmployee } from '@/lib/api/products';
+import type { FullProduct } from '@/lib/api/products';
+import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
 import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 import type {
   ExtensionPlanSnapshot,
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
+import { ProductRolePicker, SellerReadOnlyRow } from './delivery-item-team-role-picker';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 interface DeliveryItemTeamSectionProps {
@@ -29,88 +24,6 @@ interface DeliveryItemTeamSectionProps {
   onExtensionPlanChange: (next: ExtensionPlanSnapshot) => void;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
-}
-
-function personName(p: ProductEmployee | null | undefined): string {
-  if (!p) return '';
-  return `${p.firstName} ${p.lastName}`.trim();
-}
-
-function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefined }) {
-  const relations = useEntityRelations();
-  const name = personName(seller);
-
-  return (
-    <div className="relative w-full min-w-0">
-      <div className="text-foreground/85 mb-1.5 flex h-5 items-center gap-2 text-sm font-medium">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="text-muted-foreground/70 shrink-0">
-            <User size={12} aria-hidden />
-          </span>
-          <span className="truncate">Seller</span>
-        </div>
-      </div>
-      {name && seller ? (
-        <RelationPickerChip
-          label={name}
-          subtitle={seller.email ?? null}
-          entityKind="employee"
-          onOpen={() => void relations.openEntity('employee', seller.id)}
-        />
-      ) : (
-        <div
-          className={cn(
-            RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-            'pointer-events-none border-dashed italic',
-          )}
-        >
-          Not assigned
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProductRolePicker({
-  label,
-  employeeId,
-  employeeLabel,
-  onSelect,
-  onClear,
-  onSearchEmployees,
-  disabled,
-  className,
-}: {
-  label: string;
-  employeeId: string | null;
-  employeeLabel: string;
-  onSelect: (id: string, name: string) => void;
-  onClear?: () => void;
-  onSearchEmployees: (
-    query: string,
-  ) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
-  disabled?: boolean;
-  className?: string;
-}) {
-  const employeePicker = useRelationPickerActions('employee');
-
-  return (
-    <div className={className}>
-      <RelationPickerField
-        label={label}
-        entityKind="employee"
-        value={employeeId}
-        selectionLabel={employeeLabel || null}
-        placeholder="Choose…"
-        icon={<User size={12} />}
-        onSearch={onSearchEmployees}
-        onSelect={(id, name) => onSelect(id, name)}
-        onClear={onClear}
-        disabled={disabled}
-        {...employeePicker}
-      />
-    </div>
-  );
 }
 
 export function DeliveryItemTeamSection({
@@ -153,8 +66,11 @@ export function DeliveryItemTeamSection({
               label="Project manager"
               employeeId={productPlan.pmId}
               employeeLabel={productPlan.pmLabel}
-              onSelect={(id, name) => patchProduct({ pmId: id, pmLabel: name })}
-              onClear={() => patchProduct({ pmId: null, pmLabel: '' })}
+              employeeAvatar={productPlan.pmAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({ pmId: id, pmLabel: name, pmAvatar: employeeAvatarUrl({ avatar }) })
+              }
+              onClear={() => patchProduct({ pmId: null, pmLabel: '', pmAvatar: null })}
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />
@@ -163,8 +79,17 @@ export function DeliveryItemTeamSection({
               label="Developer"
               employeeId={productPlan.developerId}
               employeeLabel={productPlan.developerLabel}
-              onSelect={(id, name) => patchProduct({ developerId: id, developerLabel: name })}
-              onClear={() => patchProduct({ developerId: null, developerLabel: '' })}
+              employeeAvatar={productPlan.developerAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  developerId: id,
+                  developerLabel: name,
+                  developerAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
+              onClear={() =>
+                patchProduct({ developerId: null, developerLabel: '', developerAvatar: null })
+              }
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />
@@ -172,8 +97,17 @@ export function DeliveryItemTeamSection({
               label="Designer"
               employeeId={productPlan.designerId}
               employeeLabel={productPlan.designerLabel}
-              onSelect={(id, name) => patchProduct({ designerId: id, designerLabel: name })}
-              onClear={() => patchProduct({ designerId: null, designerLabel: '' })}
+              employeeAvatar={productPlan.designerAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  designerId: id,
+                  designerLabel: name,
+                  designerAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
+              onClear={() =>
+                patchProduct({ designerId: null, designerLabel: '', designerAvatar: null })
+              }
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />
@@ -181,11 +115,20 @@ export function DeliveryItemTeamSection({
               label="Technical specialist"
               employeeId={productPlan.technicalSpecialistId}
               employeeLabel={productPlan.technicalSpecialistLabel}
-              onSelect={(id, name) =>
-                patchProduct({ technicalSpecialistId: id, technicalSpecialistLabel: name })
+              employeeAvatar={productPlan.technicalSpecialistAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  technicalSpecialistId: id,
+                  technicalSpecialistLabel: name,
+                  technicalSpecialistAvatar: employeeAvatarUrl({ avatar }),
+                })
               }
               onClear={() =>
-                patchProduct({ technicalSpecialistId: null, technicalSpecialistLabel: '' })
+                patchProduct({
+                  technicalSpecialistId: null,
+                  technicalSpecialistLabel: '',
+                  technicalSpecialistAvatar: null,
+                })
               }
               onSearchEmployees={searchEmployees}
               disabled={disabled}
@@ -194,8 +137,15 @@ export function DeliveryItemTeamSection({
               label="QA"
               employeeId={productPlan.qaLeadId}
               employeeLabel={productPlan.qaLeadLabel}
-              onSelect={(id, name) => patchProduct({ qaLeadId: id, qaLeadLabel: name })}
-              onClear={() => patchProduct({ qaLeadId: null, qaLeadLabel: '' })}
+              employeeAvatar={productPlan.qaLeadAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  qaLeadId: id,
+                  qaLeadLabel: name,
+                  qaLeadAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
+              onClear={() => patchProduct({ qaLeadId: null, qaLeadLabel: '', qaLeadAvatar: null })}
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />
@@ -208,11 +158,19 @@ export function DeliveryItemTeamSection({
               label="Owner"
               employeeId={extensionPlan.assignedTo}
               employeeLabel={extensionPlan.assigneeLabel}
-              onSelect={(id, name) => patchExtension({ assignedTo: id, assigneeLabel: name })}
+              employeeAvatar={extensionPlan.assigneeAvatar}
+              onSelect={(id, name, avatar) =>
+                patchExtension({
+                  assignedTo: id,
+                  assigneeLabel: name,
+                  assigneeAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
               onClear={
                 gateRequiredFields.has('assignedTo')
                   ? undefined
-                  : () => patchExtension({ assignedTo: null, assigneeLabel: '' })
+                  : () =>
+                      patchExtension({ assignedTo: null, assigneeLabel: '', assigneeAvatar: null })
               }
               onSearchEmployees={searchEmployees}
               disabled={disabled}

@@ -56,11 +56,18 @@ export function DealContactTeamSection({
               draft.sellerDisplayLabel ??
               (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
             }
+            selectionAvatar={draft.sellerAvatar}
             placeholder="Select seller…"
             icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
-            onSelect={(value, label) => patchDraft({ sellerId: value, sellerDisplayLabel: label })}
+            onSelect={(value, label, avatar) =>
+              patchDraft({
+                sellerId: value,
+                sellerDisplayLabel: label,
+                sellerAvatar: avatar?.trim() || null,
+              })
+            }
             {...employeePicker}
           />
 
@@ -74,15 +81,24 @@ export function DealContactTeamSection({
                 ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
                 : null)
             }
+            selectionAvatar={draft.sellerAssistantAvatar}
             placeholder="Optional — search employee…"
             icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
-            onSelect={(value, label) =>
-              patchDraft({ sellerAssistantId: value, sellerAssistantDisplayLabel: label })
+            onSelect={(value, label, avatar) =>
+              patchDraft({
+                sellerAssistantId: value,
+                sellerAssistantDisplayLabel: label,
+                sellerAssistantAvatar: avatar?.trim() || null,
+              })
             }
             onClear={() =>
-              patchDraft({ sellerAssistantId: null, sellerAssistantDisplayLabel: null })
+              patchDraft({
+                sellerAssistantId: null,
+                sellerAssistantDisplayLabel: null,
+                sellerAssistantAvatar: null,
+              })
             }
             {...employeePicker}
           />
@@ -94,13 +110,20 @@ export function DealContactTeamSection({
             selectionLabel={
               draft.pmDisplayLabel ?? (deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null)
             }
+            selectionAvatar={draft.pmAvatar}
             className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
             placeholder="Select project manager…"
             icon={<UserCog size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
-            onSelect={(value, label) => patchDraft({ pmId: value, pmDisplayLabel: label })}
-            onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
+            onSelect={(value, label, avatar) =>
+              patchDraft({
+                pmId: value,
+                pmDisplayLabel: label,
+                pmAvatar: avatar?.trim() || null,
+              })
+            }
+            onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null, pmAvatar: null })}
             {...employeePicker}
           />
         </div>

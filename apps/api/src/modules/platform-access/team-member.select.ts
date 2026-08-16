@@ -1,7 +1,7 @@
+import { employeePersonSelect } from '../../common/employee-person.select';
+
 export const teamMemberEmployeeSelect = {
-  id: true,
-  firstName: true,
-  lastName: true,
+  ...employeePersonSelect,
   email: true,
   position: true,
   status: true,

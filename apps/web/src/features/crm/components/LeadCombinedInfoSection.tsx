@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { User, Phone, Mail, Link2, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
@@ -13,10 +13,10 @@ import {
 } from '@/components/shared';
 import {
   useContactRelationSearch,
+  useEmployeeRelationSearch,
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
 import type { Lead } from '@/lib/api/leads';
-import { employeesApi } from '@/lib/api/employees';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
 import type { LeadGeneralDraft } from './lead-general-form-state';
@@ -48,14 +48,7 @@ export function LeadCombinedInfoSection({
   const contactsPicker = useRelationPickerActions('contact', 'lead-contacts');
   const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
-
-  const searchEmployees = useCallback(async (query: string) => {
-    const data = await employeesApi.getAll({ pageSize: 8, search: query || undefined });
-    return data.items.map((employee) => ({
-      value: employee.id,
-      label: `${employee.firstName} ${employee.lastName}`,
-    }));
-  }, []);
+  const searchEmployees = useEmployeeRelationSearch();
 
   return (
     <DetailSheetCollapsibleSection
@@ -127,17 +120,27 @@ export function LeadCombinedInfoSection({
                   draft.sellerDisplayLabel ??
                   (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
                 }
+                selectionAvatar={draft.sellerAvatar}
                 placeholder="Search seller…"
                 icon={<User size={12} />}
                 disabled={formDisabled}
                 onSearch={searchEmployees}
-                onSelect={(value, label) =>
-                  patchDraft({ assignedTo: value, sellerDisplayLabel: label })
+                onSelect={(value, label, avatar) =>
+                  patchDraft({
+                    assignedTo: value,
+                    sellerDisplayLabel: label,
+                    sellerAvatar: avatar?.trim() || null,
+                  })
                 }
                 onClear={
                   formDisabled || gateRequiredFields.has('assignedTo')
                     ? undefined
-                    : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
+                    : () =>
+                        patchDraft({
+                          assignedTo: null,
+                          sellerDisplayLabel: null,
+                          sellerAvatar: null,
+                        })
                 }
                 {...employeePicker}
               />

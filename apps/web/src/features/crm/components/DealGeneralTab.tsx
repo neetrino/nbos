@@ -8,14 +8,16 @@ import { marketingApi } from '@/lib/api/marketing';
 import { partnersApi } from '@/lib/api/partners';
 import { projectsApi } from '@/lib/api/projects';
 import { systemListsApi } from '@/lib/api/systemLists';
-import { employeesApi } from '@/lib/api/employees';
 import {
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
 } from '@/components/shared';
-import { useProductRelationSearch } from '@/components/shared/relation-picker';
+import {
+  useEmployeeRelationSearch,
+  useProductRelationSearch,
+} from '@/components/shared/relation-picker';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
@@ -127,14 +129,7 @@ export function DealGeneralTab({
     return data.items.map((company) => ({ value: company.id, label: company.name }));
   }, []);
 
-  const searchEmployees = useCallback(async (query: string) => {
-    const data = await employeesApi.getAll({ pageSize: 20, search: query || undefined });
-    return data.items.map((employee) => ({
-      value: employee.id,
-      label: `${employee.firstName} ${employee.lastName}`,
-      subtitle: employee.position ?? employee.email,
-    }));
-  }, []);
+  const searchEmployees = useEmployeeRelationSearch();
 
   const firstOrder = deal.orders?.[0];
 

@@ -1,3 +1,4 @@
+import { employeePersonSelect } from '../../../common/employee-person.select';
 import { metaConversationLeadInclude } from '../../integrations/meta/meta-conversation.dto';
 
 const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
@@ -9,7 +10,7 @@ export const leadAdditionalContactsInclude = {
 } as const;
 
 export const leadDetailInclude = {
-  assignee: { select: { id: true, firstName: true, lastName: true } },
+  assignee: { select: employeePersonSelect },
   sourcePartner: { select: { id: true, name: true } },
   sourceContact: { select: { id: true, firstName: true, lastName: true } },
   marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
