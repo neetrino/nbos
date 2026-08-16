@@ -23,6 +23,7 @@ export interface DetailSheetFieldSegmentedProps<T extends string> {
   options: readonly DetailSheetFieldSegmentedOption<T>[];
   onValueChange: (value: T) => void;
   disabled?: boolean;
+  hideLabel?: boolean;
   className?: string;
   ariaLabel?: string;
 }
@@ -33,6 +34,7 @@ export function DetailSheetFieldSegmented<T extends string>({
   options,
   onValueChange,
   disabled = false,
+  hideLabel = false,
   className,
   ariaLabel,
 }: DetailSheetFieldSegmentedProps<T>) {
@@ -50,16 +52,17 @@ export function DetailSheetFieldSegmented<T extends string>({
     value ?? '',
     false,
   );
+  const showOutlinedLabel = !hideLabel && Boolean(label.trim());
 
   return (
     <div
       className={cn(
-        DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+        showOutlinedLabel ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'group relative',
         disabled && 'pointer-events-none opacity-60',
         className,
       )}
     >
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      {showOutlinedLabel ? <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span> : null}
 
       <div className={DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS}>
         <div
