@@ -191,6 +191,11 @@ export function CreateAccessSlotCredentialDialog({
       title={`New credential — ${slot.label}`}
       initialName={credentialName}
       allowedCategories={slot.allowedCategories}
+      initialCategory={
+        slot.slotKey === UNIVERSAL_ACCESS_SLOT_KEY
+          ? 'OTHER'
+          : (slot.allowedCategories[0] ?? undefined)
+      }
       initialCredentialType={slot.defaultCredentialType ?? 'LOGIN_PASSWORD'}
       submitLabel="Save & link"
       successToast={false}

@@ -11,6 +11,11 @@ import {
 import { cn } from '@/lib/utils';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
 
+/** Editable header trigger — ~2× prior compact width for easier targeting. */
+const CATEGORY_MENU_TRIGGER_MIN_WIDTH_CLASS = 'min-w-44';
+/** Dropdown list — wider than anchor so long labels (e.g. Admin) are not cramped. */
+const CATEGORY_MENU_DROPDOWN_MIN_WIDTH_CLASS = 'min-w-72';
+
 export interface CredentialFormCategoryMenuProps {
   category: string;
   categoryLabel: string;
@@ -44,8 +49,9 @@ export function CredentialFormCategoryMenu({
       <DropdownMenuTrigger
         type="button"
         className={cn(
-          'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1',
-          'rounded-md px-1.5 py-1 text-sm font-medium outline-none',
+          'text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center justify-start gap-1.5',
+          CATEGORY_MENU_TRIGGER_MIN_WIDTH_CLASS,
+          'rounded-md px-2 py-1 text-sm font-medium outline-none',
         )}
       >
         <CredentialCategoryIcon
@@ -56,7 +62,7 @@ export function CredentialFormCategoryMenu({
         {categoryLabel}
         <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-(--anchor-width)">
+      <DropdownMenuContent align="end" className={CATEGORY_MENU_DROPDOWN_MIN_WIDTH_CLASS}>
         {categoryOptions.map((opt) => (
           <DropdownMenuItem
             key={opt.value}
