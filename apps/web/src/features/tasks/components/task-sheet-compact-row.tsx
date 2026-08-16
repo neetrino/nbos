@@ -10,15 +10,11 @@ interface TaskSheetCompactRowProps {
   label: string;
   children: ReactNode;
   className?: string;
-  /** When true, only the value is shown (placeholder carries the role hint). */
+  /** When true, only the value is shown (child draws its own outlined caption). */
   hideLabel?: boolean;
-  /** @deprecated Outlined fields no longer right-align. */
-  alignEnd?: boolean;
-  /** @deprecated Outlined fields no longer use a label/value grid. */
-  gridCells?: boolean;
 }
 
-/** Outlined field: name sits on the top border (Creator, Assignee, …). */
+/** Outlined field row — caption on the border, or width wrapper when `hideLabel`. */
 export function TaskSheetCompactRow({
   label,
   children,
@@ -45,12 +41,6 @@ const TASK_SHEET_COMPACT_FIELD_BASE_CLASS = [
   '[&_.person-soft-avatar]:size-8 [&_.person-soft-avatar]:text-[10px]',
   '[&_button_span.block.truncate]:overflow-visible',
   '[&_button_span.block.truncate]:whitespace-nowrap',
-].join(' ');
-
-/** Fills the meta value column; hides the picker’s old header row. */
-export const TASK_SHEET_COMPACT_FIELD_CLASS = [
-  TASK_SHEET_COMPACT_FIELD_BASE_CLASS,
-  '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
 ].join(' ');
 
 /** Employee pickers draw their own outlined label — do not hide the first child. */

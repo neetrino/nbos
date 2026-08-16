@@ -54,11 +54,6 @@ type RelationPickerBaseProps = {
    * Search still tracks current selection ids.
    */
   selectionDisplay?: 'chips' | 'none';
-  /**
-   * `outlined` — name sits on the top-right field border.
-   * Default: outlined for employees, header for other kinds.
-   */
-  labelPlacement?: 'header' | 'outlined';
 };
 
 export type RelationPickerSingleProps = RelationPickerBaseProps & {

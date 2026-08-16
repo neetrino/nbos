@@ -201,11 +201,7 @@ export function TaskLinkedEntitiesSection({
           {contextLinks.map((link) => {
             const LinkIcon = taskLinkEntityIcon(link.entityType);
             return (
-              <TaskSheetCompactRow
-                key={link.id}
-                gridCells
-                label={taskLinkEntityLabel(link.entityType)}
-              >
+              <TaskSheetCompactRow key={link.id} label={taskLinkEntityLabel(link.entityType)}>
                 <button
                   type="button"
                   className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"

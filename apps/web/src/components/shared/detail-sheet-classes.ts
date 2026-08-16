@@ -166,10 +166,25 @@ export const DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS = [
   'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:px-0 data-[size=sm]:py-0',
 ].join(' ');
 
-/** Controlled {@link InlineField} / date-in-shell wrapper. */
+/** Always-visible thin border for outlined quiet field shells (notch caption fields). */
+export const DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS = [
+  'border border-border/50 bg-transparent shadow-none',
+  'transition-[border-color,background-color,box-shadow]',
+  'hover:border-border/60 hover:bg-muted/20 hover:shadow-sm hover:shadow-black/[0.04]',
+  'focus-within:border-border/60 focus-within:bg-muted/20 focus-within:shadow-sm focus-within:shadow-black/[0.04]',
+].join(' ');
+
+/** Controlled {@link InlineField} / date-in-shell wrapper (hideLabel fields — hover border only). */
 export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'flex h-10 w-full items-center gap-1 rounded-xl px-3',
+].join(' ');
+
+/** Outlined quiet field shell — persistent border + h-10 row (visible label / relation chips). */
+export const DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
   'flex h-10 w-full items-center gap-1 rounded-xl px-3',
 ].join(' ');
 
@@ -252,9 +267,8 @@ export const RELATION_PICKER_REPLACE_ZONE_GROW_CLASS = 'min-w-8 flex-1';
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
   'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3 pr-1 text-sm',
-  'focus-within:border-border/50',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
@@ -284,7 +298,7 @@ export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y
 /** Empty / add trigger aligned with relation chip width. */
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
   'text-muted-foreground hover:text-foreground flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm',
 ].join(' ');
 

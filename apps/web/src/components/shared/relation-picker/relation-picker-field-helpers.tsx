@@ -1,47 +1,6 @@
 'use client';
 
-import { useEffect, type MutableRefObject, type ReactNode, type RefObject } from 'react';
-import { Plus } from 'lucide-react';
-
-export function RelationPickerHeader({
-  label,
-  icon,
-  showAdd,
-  addAriaLabel,
-  disabled,
-  onAdd,
-}: {
-  label: string;
-  icon?: ReactNode;
-  showAdd: boolean;
-  addAriaLabel: string;
-  disabled: boolean;
-  onAdd: () => void;
-}) {
-  return (
-    <div className="text-foreground/85 mb-1.5 flex h-5 items-center justify-between gap-2 text-sm font-medium">
-      {label.trim() || icon ? (
-        <div className="flex min-w-0 items-center gap-1.5">
-          {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
-          {label.trim() ? <span className="truncate">{label}</span> : null}
-        </div>
-      ) : (
-        <span aria-hidden />
-      )}
-      {showAdd ? (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onAdd}
-          className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
-          aria-label={addAriaLabel}
-        >
-          <Plus size={14} />
-        </button>
-      ) : null}
-    </div>
-  );
-}
+import { useEffect, type MutableRefObject, type RefObject } from 'react';
 
 export function useRelationPickerOpenEffects({
   open,

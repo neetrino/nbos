@@ -17,10 +17,7 @@ import {
   pickAvatarRecord,
   useMergedPickerAvatars,
 } from './relation-picker-avatars';
-import {
-  RelationPickerHeader,
-  useRelationPickerOpenEffects,
-} from './relation-picker-field-helpers';
+import { useRelationPickerOpenEffects } from './relation-picker-field-helpers';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
@@ -36,7 +33,6 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const {
     label,
     placeholder,
-    icon,
     entityKind,
     kindLabel = RELATION_KIND_LABELS[entityKind],
     createLabel = RELATION_CREATE_LABELS[entityKind],
@@ -51,9 +47,6 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   } = props;
 
   const selectionDisplay = props.selectionDisplay ?? 'chips';
-  const labelPlacement =
-    props.labelPlacement ?? (entityKind === 'employee' ? 'outlined' : 'header');
-  const isOutlined = labelPlacement === 'outlined';
   const multiple = isMultiProps(props);
   const selectionAvatars = multiple ? props.selectionAvatars : undefined;
 
@@ -162,24 +155,14 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       : `Search ${kindLabel.toLowerCase()}s…`);
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
   const showSelectionChips = selectionDisplay === 'chips';
-  const showOutlinedAdd =
-    isOutlined && multiple && multiChipCount > 0 && !open && showSelectionChips;
-  const showFieldHeader =
-    !isOutlined &&
-    (Boolean(label.trim()) ||
-      Boolean(icon) ||
-      (multiple && multiChipCount > 0 && !open && showSelectionChips));
+  const showOutlinedAdd = multiple && multiChipCount > 0 && !open && showSelectionChips;
 
   return (
     <div
       ref={containerRef}
-      className={cn(
-        isOutlined ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'relative w-full min-w-0',
-        disabled && 'opacity-60',
-        className,
-      )}
+      className={cn(DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS, disabled && 'opacity-60', className)}
     >
-      {isOutlined && label.trim() ? (
+      {label.trim() ? (
         showOutlinedAdd && !interactionLocked ? (
           <button
             type="button"
@@ -193,16 +176,6 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
         ) : (
           <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
         )
-      ) : null}
-      {showFieldHeader ? (
-        <RelationPickerHeader
-          label={label}
-          icon={icon}
-          showAdd={multiple && multiChipCount > 0 && !open && showSelectionChips}
-          addAriaLabel={`Add ${kindLabel.toLowerCase()}`}
-          disabled={interactionLocked}
-          onAdd={() => setOpen(true)}
-        />
       ) : null}
 
       {open ? (
