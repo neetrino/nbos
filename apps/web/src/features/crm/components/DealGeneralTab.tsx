@@ -150,6 +150,13 @@ export function DealGeneralTab({
             outsourceToggleLocked={deal.status === 'WON'}
             gateRequiredFields={gateRequiredFields}
           />
+          <DealNotesSection
+            entityId={deal.id}
+            draft={draft}
+            patchDraft={patchDraft}
+            disabled={formDisabled}
+            gateRequiredFields={gateRequiredFields}
+          />
           <DealOfferContractSection
             dealId={deal.id}
             gateRequiredFields={gateRequiredFields}
@@ -180,13 +187,6 @@ export function DealGeneralTab({
             <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
           </div>
           <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
-          <DealNotesSection
-            entityId={deal.id}
-            draft={draft}
-            patchDraft={patchDraft}
-            disabled={formDisabled}
-            gateRequiredFields={gateRequiredFields}
-          />
         </div>
 
         <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-72">

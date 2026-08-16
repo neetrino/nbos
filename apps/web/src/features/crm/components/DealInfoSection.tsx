@@ -237,7 +237,7 @@ export function DealInfoDealProductFields({
 
       {isLinkedProductDeal && (
         <RelationPickerField
-          label="Existing Product"
+          label="Existing"
           entityKind="product"
           value={draft.existingProductId}
           selectionLabel={draft.existingProductPickLabel}
