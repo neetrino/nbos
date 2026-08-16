@@ -1,20 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState, createElement, type ReactNode } from 'react';
-import { Asterisk, ChevronRight, KeyRound, Loader2, Plus, Unlink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
-  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-} from '@/components/shared/detail-sheet-classes';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { KeyRound, Loader2 } from 'lucide-react';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
-import { PermissionGate } from '@/lib/permissions';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
-import { getDeliveryAccessSlotIcon } from './delivery-access-slot-icon';
-import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
+import { DeliveryAccessSlotField } from './DeliveryAccessSlotField';
 
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
@@ -90,7 +84,7 @@ export function DeliveryAccessInfrastructureSection({
     return (
       <div className="grid grid-cols-2 items-start gap-3">
         {slots.map((slot) => (
-          <AccessSlotField
+          <DeliveryAccessSlotField
             key={slot.slotKey}
             slot={slot}
             onOpenCredential={(id) => {
@@ -161,107 +155,5 @@ export function DeliveryAccessInfrastructureSection({
         />
       ) : null}
     </section>
-  );
-}
-
-function AccessSlotField({
-  slot,
-  onOpenCredential,
-  onCreate,
-  onUnbind,
-}: {
-  slot: ProductAccessSlotRow;
-  onOpenCredential: (credentialId: string) => void;
-  onCreate: () => void;
-  onUnbind: (bindingId: string) => void;
-}) {
-  const label = formatDeliveryAccessSlotLabel(slot.label);
-
-  return (
-    <div className="relative w-full min-w-0">
-      <div className="text-foreground/85 mb-1.5 flex h-5 items-center justify-between gap-2 text-sm font-medium">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="text-muted-foreground/70 shrink-0">
-            {createElement(getDeliveryAccessSlotIcon(slot.slotKey), {
-              size: 12,
-              'aria-hidden': true,
-            })}
-          </span>
-          <span className="truncate">{label}</span>
-          {slot.required ? (
-            <span
-              title="At least one credential required for this slot"
-              className="shrink-0 text-amber-600"
-            >
-              <Asterisk size={12} strokeWidth={2.5} aria-hidden />
-            </span>
-          ) : null}
-        </div>
-        <PermissionGate module="CREDENTIALS" action="ADD">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="size-6 shrink-0"
-            title="New credential"
-            aria-label="New credential"
-            onClick={onCreate}
-          >
-            <Plus size={12} />
-          </Button>
-        </PermissionGate>
-      </div>
-
-      {slot.bindings.length > 0 ? (
-        <ul className="flex flex-col gap-1.5">
-          {slot.bindings.map((b) => (
-            <li key={b.bindingId} className="flex min-w-0 items-center gap-1">
-              {b.boundCredential ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-10 min-w-0 flex-1 justify-start gap-1.5 rounded-xl px-3"
-                  onClick={() => onOpenCredential(b.boundCredential!.id)}
-                >
-                  <span className="truncate text-left text-sm font-medium">
-                    {b.boundCredential.name}
-                  </span>
-                  <ChevronRight size={14} className="ml-auto shrink-0 opacity-60" />
-                </Button>
-              ) : (
-                <div
-                  className={cn(
-                    RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-                    'pointer-events-none flex-1 border-dashed italic',
-                  )}
-                >
-                  Archived credential
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground size-8 shrink-0"
-                title="Unlink"
-                onClick={() => onUnbind(b.bindingId)}
-              >
-                <Unlink size={14} />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div
-          className={cn(
-            RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-            'pointer-events-none border-dashed italic',
-          )}
-        >
-          Not linked
-        </div>
-      )}
-    </div>
   );
 }
