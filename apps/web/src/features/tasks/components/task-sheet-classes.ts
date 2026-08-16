@@ -29,27 +29,38 @@ export const TASK_SHEET_SECTION_SURFACE_CLASS =
 export const TASK_SHEET_META_BLOCK_CLASS =
   '@container/task-sheet-meta w-full min-w-0 max-w-full space-y-1';
 
-/** Stacks on narrow sheet; hugs content in row mode (no 1fr dead space). */
+/** One stacked list on a narrow pane; two columns only when the card is wide. */
 export const TASK_SHEET_TEAM_COLUMNS_CLASS =
-  'flex w-full min-w-0 flex-col gap-y-3 @min-[42rem]/task-sheet-meta:flex-row @min-[42rem]/task-sheet-meta:items-start @min-[42rem]/task-sheet-meta:gap-x-4';
+  'flex w-full min-w-0 flex-col gap-y-1 @min-[48rem]/task-sheet-meta:flex-row @min-[48rem]/task-sheet-meta:items-start @min-[48rem]/task-sheet-meta:gap-x-4';
 
-/** Assistant / observer — only pushed to card edge when extra width remains. */
+/** Assistant / observer — flush right only in the wide two-column layout. */
 export const TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS =
-  'min-w-0 space-y-1 @min-[42rem]/task-sheet-meta:ml-auto';
+  'min-w-0 space-y-1 @min-[48rem]/task-sheet-meta:ml-auto';
 
 export const TASK_SHEET_TEAM_DIVIDER_CLASS =
-  'bg-border hidden w-px shrink-0 self-stretch @min-[42rem]/task-sheet-meta:mx-auto @min-[42rem]/task-sheet-meta:block';
+  'bg-border hidden w-px shrink-0 self-stretch @min-[48rem]/task-sheet-meta:mx-auto @min-[48rem]/task-sheet-meta:block';
 
 /** Team column wrapper — allows grid tracks to shrink with the split pane. */
 export const TASK_SHEET_TEAM_COLUMN_CLASS = 'min-w-0';
 
-/** Shared label/value columns for Creator · Assignee · Deadline rows. */
-export const TASK_SHEET_TEAM_META_GRID_CLASS =
-  'space-y-1 @min-[42rem]/task-sheet-meta:grid @min-[42rem]/task-sheet-meta:grid-cols-[auto_minmax(0,15.5rem)] @min-[42rem]/task-sheet-meta:items-center @min-[42rem]/task-sheet-meta:gap-x-3 @min-[42rem]/task-sheet-meta:gap-y-1 @min-[42rem]/task-sheet-meta:space-y-0';
+/** Stack of outlined fields (label sits on the field border). */
+export const TASK_SHEET_TEAM_META_GRID_CLASS = 'flex flex-col gap-y-3';
 
-/** Label hugs text; shared min width keeps rows aligned without a fixed 8.25rem gap. */
+/** Label hugs text; used for “Linked to” and similar side captions. */
 export const TASK_SHEET_META_LABEL_CLASS =
-  'text-muted-foreground w-auto min-w-[5.5rem] shrink-0 text-xs leading-snug';
+  'text-muted-foreground w-auto min-w-0 shrink-0 text-xs leading-snug @min-[48rem]/task-sheet-meta:min-w-[5.5rem]';
 
-/** Fixed value width (Bitrix task detail); shrinks only when pane is narrower than 15.5rem. */
-export const TASK_SHEET_META_VALUE_COLUMN_CLASS = 'w-[15.5rem] min-w-0 max-w-full shrink-0';
+/** Full-width value when stacked; fixed Bitrix width only in the split layout. */
+export const TASK_SHEET_META_VALUE_COLUMN_CLASS =
+  'w-full min-w-0 max-w-full @min-[48rem]/task-sheet-meta:w-[15.5rem] @min-[48rem]/task-sheet-meta:shrink-0';
+
+/** Wrapper so the field name can sit on the top border. */
+export const TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';
+
+/** Field name on the top edge — card fill breaks the border under the text. */
+export const TASK_SHEET_OUTLINED_LABEL_CLASS =
+  'bg-card text-muted-foreground pointer-events-none absolute top-2 right-3 z-10 -translate-y-1/2 px-1 text-[10px] font-medium leading-none';
+
+/** Static value (Created) — same outline as picker shells. */
+export const TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS =
+  'border-border/50 flex h-10 w-full min-w-0 items-center gap-1.5 rounded-xl border px-3 text-sm';

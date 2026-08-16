@@ -13,6 +13,7 @@ import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,
+  TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS,
   TASK_SHEET_TEAM_COLUMN_CLASS,
   TASK_SHEET_TEAM_COLUMNS_CLASS,
   TASK_SHEET_TEAM_DIVIDER_CLASS,
@@ -149,12 +150,14 @@ export function TaskSheetGeneralSection({
 
             <div className={TASK_SHEET_TEAM_DIVIDER_CLASS} role="presentation" />
 
-            <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS)}>
-              <TaskSheetCompactRow
-                label="Assistant"
-                alignEnd
-                hideLabel={draft.coAssigneeIds.length === 0}
-              >
+            <div
+              className={cn(
+                TASK_SHEET_TEAM_COLUMN_CLASS,
+                TASK_SHEET_TEAM_META_GRID_CLASS,
+                TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
+              )}
+            >
+              <TaskSheetCompactRow gridCells label="Assistant">
                 <RelationPickerField
                   label="Assistant"
                   entityKind="employee"
@@ -174,11 +177,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow
-                label="Observer"
-                alignEnd
-                hideLabel={draft.observerIds.length === 0}
-              >
+              <TaskSheetCompactRow gridCells label="Observer">
                 <RelationPickerField
                   label="Observer"
                   entityKind="employee"
@@ -198,8 +197,8 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow label="Created" alignEnd>
-                <div className="flex min-w-0 items-center gap-1.5 text-sm">
+              <TaskSheetCompactRow gridCells label="Created">
+                <div className={TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS}>
                   <span className="truncate">{formatTaskSheetDateTime(task.createdAt)}</span>
                   <span className="text-muted-foreground shrink-0">·</span>
                   <span className="text-muted-foreground shrink-0 font-mono text-xs">
