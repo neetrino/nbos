@@ -74,9 +74,7 @@ export function DeliveryItemDetailSecondaryPanels({
 function SecondaryCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-border bg-card/50 rounded-xl border p-5">
-      <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        {title}
-      </h4>
+      <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>{title}</h4>
       {children}
     </section>
   );

@@ -22,11 +22,7 @@ export function FinanceProofAttachments({
 }: FinanceProofAttachmentsProps) {
   return (
     <section className="space-y-3">
-      {title ? (
-        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-          {title}
-        </h4>
-      ) : null}
+      {title ? <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>{title}</h4> : null}
       <EntityAttachmentBlock
         entityType={entityType}
         entityId={entityId}

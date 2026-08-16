@@ -63,9 +63,7 @@ export function DeliveryItemKeyWorkLinksSection({
 
   return (
     <section className={cn('border-border bg-card/40 rounded-xl border p-4', workLinksGateClass)}>
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2.5')}>
-        Key work links
-      </h3>
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2.5')}>Key work links</h3>
       <div className="flex flex-col gap-1.5">
         {workSpaceHref && workSpaceHref !== '#' ? (
           <Link

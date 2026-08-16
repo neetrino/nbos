@@ -192,9 +192,7 @@ export function DeliveryStageChecklistPanel({
     <>
       <section className="border-border bg-card/40 rounded-xl border p-4">
         <div className="mb-3">
-          <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-            Stage checklists
-          </h3>
+          <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage checklists</h3>
           <p className="text-muted-foreground mt-1 text-xs">
             Open the drawer to review all items — up to many steps stay scrollable there.
           </p>

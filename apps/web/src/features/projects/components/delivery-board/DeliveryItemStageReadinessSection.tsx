@@ -49,9 +49,7 @@ export function DeliveryItemStageReadinessSection({
   if (!lifecycle || rows.length === 0) {
     return (
       <section className="border-border bg-card/40 rounded-xl border p-4">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
-          Stage readiness
-        </h3>
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>Stage readiness</h3>
         <p className="text-muted-foreground text-sm">No stage requirement rows for this state.</p>
       </section>
     );
@@ -68,9 +66,7 @@ export function DeliveryItemStageReadinessSection({
       )}
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
-          Stage readiness
-        </h3>
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage readiness</h3>
         <p className="text-muted-foreground text-xs">
           {formatDeliveryLifecycleLabel(lifecycle)}
           {readiness

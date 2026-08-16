@@ -44,9 +44,7 @@ export function DeliveryItemFilesSection({
   if (!offer && !contract) {
     return (
       <section className="border-border bg-card/40 rounded-xl border p-4">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>
-          Files
-        </h3>
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>Files</h3>
         <p className="text-muted-foreground text-xs">
           No offer or contract file URLs on the deal yet.
         </p>
@@ -56,9 +54,7 @@ export function DeliveryItemFilesSection({
 
   return (
     <section className="border-border bg-card/40 rounded-xl border p-4">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2.5')}>
-        Files
-      </h3>
+      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2.5')}>Files</h3>
       <div className="flex flex-col gap-1.5">
         {offer ? <FileRow label="Approved offer" href={offer} /> : null}
         {contract ? <FileRow label="Contract" href={contract} /> : null}
