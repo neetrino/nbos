@@ -51,6 +51,9 @@ function parseStageKeys(signature: string): string[] {
 /**
  * Per-stage kanban loader: Active/Closed enforced via server `status` (or equivalent),
  * initial page = {@link KANBAN_COLUMN_PAGE_SIZE}, more via {@link loadMoreColumn}.
+ *
+ * `fetchPage` must be referentially stable (`useCallback`). A new function each render
+ * retriggers a full-board reload and can trip API 429s.
  */
 export function useStageColumnBoard<T extends { id: string }>(options: {
   stageKeys: readonly string[];
