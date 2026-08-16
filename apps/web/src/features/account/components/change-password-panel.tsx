@@ -8,8 +8,16 @@ import { Eye, EyeOff, KeyRound } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ForgotPasswordForm } from '@/features/account/components/forgot-password-form';
 import { authApi } from '@/lib/api/auth';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -41,10 +49,11 @@ const changePasswordSchema = z
 
 type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
-export function ChangePasswordPanel() {
+export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string }) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   const {
     register,
@@ -126,13 +135,54 @@ export function ChangePasswordPanel() {
 
         {formError ? <p className="text-destructive text-xs">{formError}</p> : null}
 
-        <div className="flex justify-end pt-1">
+        <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground text-left text-sm font-medium underline-offset-4 hover:underline"
+            onClick={() => setForgotOpen(true)}
+          >
+            Forgot password?
+          </button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Updating…' : 'Update password'}
           </Button>
         </div>
       </form>
+
+      <ForgotPasswordResetDialog
+        open={forgotOpen}
+        accountEmail={accountEmail}
+        onOpenChange={setForgotOpen}
+      />
     </div>
+  );
+}
+
+function ForgotPasswordResetDialog({
+  open,
+  accountEmail,
+  onOpenChange,
+}: {
+  open: boolean;
+  accountEmail?: string;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent forceNestedBackdrop className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Forgot password</DialogTitle>
+          <DialogDescription>
+            We will email a reset link. You can set a new password without the current one.
+          </DialogDescription>
+        </DialogHeader>
+        <ForgotPasswordForm
+          defaultEmail={accountEmail}
+          backLabel="Close"
+          onBack={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -14,6 +14,7 @@ import {
   Mail,
   MessageSquare,
   OctagonAlert,
+  Package,
   Server,
   Settings,
   Shield,
@@ -23,6 +24,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
+import { buildProductDetailPageHref } from '@/features/projects/constants/product-detail-tab';
 import type { CredentialFormField } from '@/features/credentials/credential-field-config';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
@@ -38,6 +40,16 @@ export interface CredentialVaultMetaBadge {
   label: string;
   variant: StatusVariant;
   icon: LucideIcon;
+  href?: string;
+}
+
+/** Product detail page when credential is linked to a parent product (not extension). */
+export function credentialProductHref(
+  projectId: string | null | undefined,
+  product: { id: string; name: string } | null | undefined,
+): string | undefined {
+  if (!projectId || !product?.id) return undefined;
+  return buildProductDetailPageHref(projectId, product.id);
 }
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -168,6 +180,16 @@ export function buildCredentialVaultCardMetaBadges(
     variant: access?.variant ?? 'gray',
     icon: credentialAccessIcon(credential.accessLevel),
   });
+
+  if (credential.product) {
+    items.push({
+      key: 'product',
+      label: credential.product.name,
+      variant: 'indigo',
+      icon: Package,
+      href: credentialProductHref(credential.project?.id, credential.product),
+    });
+  }
 
   if (primaryFolder) {
     items.push({

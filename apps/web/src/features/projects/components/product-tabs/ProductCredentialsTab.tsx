@@ -2,9 +2,8 @@
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ExternalLink, KeyRound } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { ExternalLink, KeyRound, Plus } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   EmptyState,
   ErrorState,
@@ -22,21 +21,30 @@ import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { PRODUCT_CREDENTIALS_VIEW_OPTIONS } from '@/features/projects/constants/product-credentials-view-options';
 import { useProductCredentialsViewMode } from '@/features/projects/constants/product-credentials-view-storage';
+import { useProductCredentialsCreate } from '@/features/projects/hooks/use-product-credentials-create';
 import { useProductCredentialsFilter } from '@/features/projects/hooks/use-product-credentials-filter';
 import type { UseProductCredentialsTabResult } from '@/features/projects/hooks/use-product-credentials-tab';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
+import { PermissionGate } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type ProductCredentialsTabProps = UseProductCredentialsTabResult;
+type ProductCredentialsTabProps = UseProductCredentialsTabResult & {
+  productId: string;
+  projectId: string;
+  productName: string;
+};
 
 export function ProductCredentialsTab({
   credentials,
   loading,
   error,
   refetch,
+  productId,
+  projectId,
+  productName,
 }: ProductCredentialsTabProps) {
   return (
     <CredentialVaultSessionProvider>
@@ -45,6 +53,9 @@ export function ProductCredentialsTab({
         loading={loading}
         error={error}
         refetch={refetch}
+        productId={productId}
+        projectId={projectId}
+        productName={productName}
       />
     </CredentialVaultSessionProvider>
   );
@@ -55,12 +66,15 @@ function ProductCredentialsTabContent({
   loading,
   error,
   refetch,
+  productId,
+  projectId,
+  productName,
 }: ProductCredentialsTabProps) {
-  const router = useRouter();
   const [viewMode, setViewMode] = useProductCredentialsViewMode();
   const [secretFlashCredentialId, setSecretFlashCredentialId] = useState<string | null>(null);
   const [sheetInitialItem, setSheetInitialItem] = useState<CredentialListItem | null>(null);
   const credentialSheet = useProductEntityDetailSheet();
+  const create = useProductCredentialsCreate({ productId, productName, refetch });
   const filter = useProductCredentialsFilter(credentials);
 
   const handleSecretCopied = useCallback((flashId: string) => {
@@ -84,8 +98,24 @@ function ProductCredentialsTabContent({
     [copyVaultSecret],
   );
 
+  const handleOpenCreate = useCallback(() => {
+    setSheetInitialItem(null);
+    credentialSheet.handleOpenChange(false);
+    create.openCreate();
+  }, [create, credentialSheet]);
+
+  const handleOpenCreateInCategory = useCallback(
+    (category: string) => {
+      setSheetInitialItem(null);
+      credentialSheet.handleOpenChange(false);
+      create.openCreateInCategory(category);
+    },
+    [create, credentialSheet],
+  );
+
   const handleOpenCredential = useCallback(
     (id: string) => {
+      create.closeCreate();
       const item =
         credentials.find((row) => row.id === id) ??
         filter.displayCredentials.find((row) => row.id === id) ??
@@ -93,7 +123,27 @@ function ProductCredentialsTabContent({
       setSheetInitialItem(item);
       credentialSheet.openEntity(id);
     },
-    [credentialSheet, credentials, filter.displayCredentials],
+    [create, credentialSheet, credentials, filter.displayCredentials],
+  );
+
+  const handleSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        create.closeCreate();
+        credentialSheet.handleOpenChange(false);
+        setSheetInitialItem(null);
+      }
+    },
+    [create, credentialSheet],
+  );
+
+  const newCredentialButton = (
+    <PermissionGate module="CREDENTIALS" action="ADD">
+      <Button type="button" size="sm" onClick={handleOpenCreate}>
+        <Plus size={14} aria-hidden />
+        New Credential
+      </Button>
+    </PermissionGate>
   );
 
   if (loading && credentials.length === 0) {
@@ -106,6 +156,8 @@ function ProductCredentialsTabContent({
 
   const hasCredentials = credentials.length > 0;
   const hasVisibleCredentials = filter.displayCredentials.length > 0;
+  const isCreating = create.createOpen;
+  const sheetOpen = isCreating || credentialSheet.isOpen;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5">
@@ -137,14 +189,17 @@ function ProductCredentialsTabContent({
           ) : undefined
         }
         trailing={
-          <Link
-            href="/credentials"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-          >
-            <KeyRound size={14} aria-hidden />
-            Open Vault
-            <ExternalLink size={12} className="opacity-70" aria-hidden />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {newCredentialButton}
+            <Link
+              href="/credentials"
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+            >
+              <KeyRound size={14} aria-hidden />
+              Open Vault
+              <ExternalLink size={12} className="opacity-70" aria-hidden />
+            </Link>
+          </div>
         }
       />
 
@@ -164,6 +219,7 @@ function ProductCredentialsTabContent({
           icon={KeyRound}
           title="No credentials linked"
           description="Bind credentials to this product's access slots in Delivery or Credentials Vault."
+          action={newCredentialButton}
         />
       ) : !hasVisibleCredentials ? (
         <EmptyState
@@ -179,16 +235,16 @@ function ProductCredentialsTabContent({
           secretFlashCredentialId={secretFlashCredentialId}
           onCopyText={handleCopyText}
           onCopySecret={handleCopySecret}
-          onCreateOpen={() => router.push('/credentials')}
+          onCreateOpen={handleOpenCreate}
           onOpenCredential={handleOpenCredential}
-          showCreate={false}
+          showCreate
         />
       ) : viewMode === 'tiles' ? (
         <CredentialVaultTiles
           credentials={filter.displayCredentials}
           loading={loading}
-          showCreate={false}
-          onCreateOpen={() => router.push('/credentials')}
+          showCreate
+          onCreateOpen={handleOpenCreate}
           onOpenCredential={handleOpenCredential}
           onCopyText={handleCopyText}
           onCopySecret={handleCopySecret}
@@ -200,9 +256,9 @@ function ProductCredentialsTabContent({
             credentials={filter.displayCredentials}
             loading={loading}
             vaultScope="project"
-            showCreate={false}
+            showCreate
             categoryColumns={filter.boardCategoryColumns}
-            onCreateInCategory={() => router.push('/credentials')}
+            onCreateInCategory={handleOpenCreateInCategory}
             onOpenCredential={handleOpenCredential}
             onCopyText={handleCopyText}
             onCopySecret={handleCopySecret}
@@ -212,13 +268,24 @@ function ProductCredentialsTabContent({
       )}
 
       <CredentialFormSheet
-        open={credentialSheet.isOpen}
-        onOpenChange={credentialSheet.handleOpenChange}
-        credentialId={credentialSheet.entityId}
-        initialItem={sheetInitialItem}
+        open={sheetOpen}
+        onOpenChange={handleSheetOpenChange}
+        credentialId={isCreating ? null : credentialSheet.entityId}
+        initialItem={isCreating ? null : sheetInitialItem}
         vaultScope="project"
-        presetKey={credentialSheet.entityId ?? 'product-credentials'}
-        continueAfterCreate
+        projectId={projectId}
+        productId={productId}
+        title={isCreating ? 'New credential' : undefined}
+        initialName={isCreating ? create.credentialName : undefined}
+        initialCategory={isCreating ? create.initialCategory : undefined}
+        successToast={isCreating ? false : undefined}
+        presetKey={
+          isCreating
+            ? 'product-credentials-create'
+            : (credentialSheet.entityId ?? 'product-credentials')
+        }
+        continueAfterCreate={!isCreating}
+        onCreated={isCreating ? create.handleCreated : undefined}
         onSaved={() => void refetch()}
       />
     </div>

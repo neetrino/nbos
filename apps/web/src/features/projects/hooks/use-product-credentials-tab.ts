@@ -32,14 +32,12 @@ export function useProductCredentialsTab(
     try {
       const slots = await productsApi.getAccessSlots(productId);
       const boundIds = collectBoundCredentialIds(slots);
-      if (boundIds.length === 0) {
-        setCredentials([]);
-        return;
-      }
       const list = await credentialsApi.getAll({ projectId, pageSize: 200 });
       const boundSet = new Set(boundIds);
       setCredentials(
-        list.items.filter((item) => boundSet.has(item.id)).map(mapCredentialDetailToListItem),
+        list.items
+          .filter((item) => boundSet.has(item.id) || item.productId === productId)
+          .map(mapCredentialDetailToListItem),
       );
     } catch {
       setError('Could not load product credentials.');

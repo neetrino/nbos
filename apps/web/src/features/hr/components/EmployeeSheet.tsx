@@ -378,7 +378,9 @@ export function EmployeeSheet({
                   }}
                 />
               ) : null}
-              {activeTab === 'security' && selfProfile ? <ChangePasswordPanel /> : null}
+              {activeTab === 'security' && selfProfile ? (
+                <ChangePasswordPanel accountEmail={displayEmployee.email} />
+              ) : null}
               {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
                 <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />
               ) : null}

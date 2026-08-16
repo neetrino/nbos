@@ -212,7 +212,12 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="credentials" className="mt-5 flex min-h-0 flex-1 flex-col">
-          <ProductCredentialsTab {...credentialsTab} />
+          <ProductCredentialsTab
+            {...credentialsTab}
+            productId={product.id}
+            projectId={params.id}
+            productName={product.name}
+          />
         </TabsContent>
 
         <TabsContent value="finance" className="mt-5 flex min-h-0 flex-1 flex-col">

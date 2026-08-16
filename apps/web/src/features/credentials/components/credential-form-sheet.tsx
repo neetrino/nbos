@@ -63,11 +63,6 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     name,
     setName,
     accessLevel,
-    category,
-    setCategory,
-    categoryOptions,
-    categoryLocked,
-    categoryLabel,
     criticality,
     credentialType,
     pendingTypeChange,
@@ -124,11 +119,6 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               name={name}
               onNameChange={setName}
               accessLevel={accessLevel}
-              category={category}
-              categoryLabel={categoryLabel}
-              categoryOptions={categoryOptions}
-              categoryLocked={categoryLocked}
-              onCategoryChange={setCategory}
               criticality={criticality}
               showSettings={showSettings}
               onToggleSettings={() => setShowSettings((v) => !v)}

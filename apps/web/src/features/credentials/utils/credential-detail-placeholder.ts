@@ -12,6 +12,7 @@ export function credentialDetailPlaceholderFromListItem(
   return {
     id: item.id,
     projectId: item.project?.id ?? null,
+    productId: item.product?.id ?? null,
     category: item.category,
     credentialType: item.credentialType,
     criticality: item.criticality,
@@ -38,6 +39,7 @@ export function credentialDetailPlaceholderFromListItem(
     },
     health: item.health,
     project: item.project,
+    product: item.product ?? null,
     department: item.department,
     owner: item.owner,
     isFavorite: item.isFavorite,
