@@ -2,7 +2,10 @@
 
 import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
-import { DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS } from '@/components/shared/detail-sheet-classes';
+import {
+  DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+  DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { formatAmount } from '../constants/dealPipeline';
 import { deriveDealSubscriptionContractTotal } from '@/features/crm/utils/deal-subscription-contract-total';
 import { DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS } from '@/features/crm/constants/deal-subscription-term';
@@ -44,30 +47,34 @@ export function DealSubscriptionTermField({
   return (
     <>
       <div className={cn('flex flex-wrap items-end gap-2', gateClass)}>
-        <button
-          type="button"
-          aria-pressed={isAnnual}
-          disabled={disabled}
-          onClick={() =>
-            patchDraft({ subscriptionTermMonths: DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS })
-          }
-          className={cn(
-            DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
-            'shrink-0 px-4',
-            isAnnual
-              ? 'bg-primary text-primary-foreground rounded-full shadow-sm'
-              : 'bg-muted/70 text-foreground/85 hover:bg-muted/80 hover:text-foreground rounded-full',
-            disabled && 'pointer-events-none opacity-60',
-          )}
-        >
-          Annual
-        </button>
+        <div className="shrink-0 pt-2">
+          <div className={cn(DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS, 'w-auto shrink-0')}>
+            <button
+              type="button"
+              aria-pressed={isAnnual}
+              disabled={disabled}
+              onClick={() =>
+                patchDraft({ subscriptionTermMonths: DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS })
+              }
+              className={cn(
+                DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+                'flex-none px-4',
+                isAnnual
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
+                disabled && 'pointer-events-none opacity-60',
+              )}
+            >
+              Annual
+            </button>
+          </div>
+        </div>
         <InlineField
           variant="controlled"
           label={`Term (${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
           type="number"
           value={draft.subscriptionTermMonths ?? ''}
-          placeholder={`${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX}`}
+          placeholder="e.g. 12"
           disabled={disabled}
           className="min-w-[8rem] flex-1 basis-[10rem]"
           onValueChange={(value) =>
