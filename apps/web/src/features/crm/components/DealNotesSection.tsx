@@ -22,6 +22,7 @@ export function DealNotesSection({
 }: DealNotesSectionProps) {
   return (
     <EntityNotesSection
+      label={null}
       entityType="deal"
       entityId={entityId}
       value={draft.notes}
