@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   RELATION_PICKER_DROPDOWN_LIST_CLASS,
@@ -174,18 +175,19 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
       )}
     >
       {isOutlined && label.trim() ? (
-        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
-      ) : null}
-      {showOutlinedAdd ? (
-        <button
-          type="button"
-          disabled={interactionLocked}
-          onClick={() => setOpen(true)}
-          className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
-          aria-label={`Add ${kindLabel.toLowerCase()}`}
-        >
-          <Plus size={14} />
-        </button>
+        showOutlinedAdd && !interactionLocked ? (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
+            aria-label={`Add ${kindLabel.toLowerCase()}`}
+          >
+            <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
+            {label}
+          </button>
+        ) : (
+          <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+        )
       ) : null}
       {showFieldHeader ? (
         <RelationPickerHeader

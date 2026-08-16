@@ -306,10 +306,23 @@ export const PAGE_TAB_BAR_WRAPPER_CLASS =
 /** Employee (and similar) fields — room for a border-notch label. */
 export const DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';
 
-/** Field name on the top-right border; card fill breaks the line under the text. */
-export const DETAIL_SHEET_OUTLINED_LABEL_CLASS =
-  'bg-card text-muted-foreground pointer-events-none absolute top-2 right-3 z-10 -translate-y-1/2 px-1 text-[10px] font-medium leading-none';
+/** Top-right border notch anchor for outlined field captions. */
+export const DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS =
+  'absolute top-2 right-3 z-10 -translate-y-1/2';
 
-/** Multi-select Add (`+`) on the top-left border, opposite the outlined label. */
-export const DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS =
-  'text-muted-foreground hover:text-foreground hover:bg-muted/40 absolute top-2 left-3 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors';
+/** Field name on the top-right border; card fill breaks the line under the text. */
+export const DETAIL_SHEET_OUTLINED_LABEL_CLASS = [
+  DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS,
+  'bg-card text-muted-foreground pointer-events-none px-1 text-[10px] font-medium leading-none',
+].join(' ');
+
+/** Multi-select Add — entire `+ Label` caption sits in the top-right border notch. */
+export const DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS = [
+  DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS,
+  'bg-card text-muted-foreground pointer-events-auto group/outlined-add flex items-center gap-0.5 rounded-sm px-1 text-[10px] font-medium leading-none transition-colors',
+  'hover:text-foreground disabled:pointer-events-none disabled:opacity-60',
+].join(' ');
+
+/** Plus glyph inside {@link DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}. */
+export const DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS =
+  'text-foreground/70 shrink-0 transition-colors group-hover/outlined-add:text-foreground';
