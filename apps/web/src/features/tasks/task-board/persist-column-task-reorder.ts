@@ -2,6 +2,10 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { Task } from '@/lib/api/tasks';
 import { tasksApi } from '@/lib/api/tasks';
 import { reorderTasksInColumn } from './reorder-tasks-in-column';
+import {
+  applySequentialBoardSortOrder,
+  sortFieldForReorderScope,
+} from './sort-tasks-by-board-order';
 
 export type TaskBoardReorderScope = 'workspace' | 'my-plan';
 
@@ -24,7 +28,12 @@ export function persistColumnTaskReorder({
   scope,
 }: PersistColumnTaskReorderArgs): void {
   const previousTasks = tasks;
-  const nextTasks = reorderTasksInColumn(previousTasks, taskId, toIndex, isInColumn);
+  const reordered = reorderTasksInColumn(previousTasks, taskId, toIndex, isInColumn);
+  const nextTasks = applySequentialBoardSortOrder(
+    reordered,
+    isInColumn,
+    sortFieldForReorderScope(scope),
+  );
   setTasks(nextTasks);
 
   const columnTaskIds = nextTasks.filter(isInColumn).map((task) => task.id);

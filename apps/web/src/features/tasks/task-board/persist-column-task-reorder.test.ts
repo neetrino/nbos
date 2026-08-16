@@ -41,6 +41,33 @@ describe('persistColumnTaskReorder', () => {
 
     expect(setTasks).toHaveBeenCalledOnce();
     expect(reorderMock).toHaveBeenCalledWith(['b', 'a'], 'workspace');
+    const next = setTasks.mock.calls[0]?.[0] as Task[];
+    expect(next.find((item) => item.id === 'b')?.workspaceSortOrder).toBe(0);
+    expect(next.find((item) => item.id === 'a')?.workspaceSortOrder).toBe(1);
+  });
+
+  it('updates myPlanSortOrder so My Plan columns keep the dragged order', () => {
+    const tasks = [
+      { ...task('a', 'OPEN'), myPlanStageId: 'team', myPlanSortOrder: 0 },
+      { ...task('b', 'OPEN'), myPlanStageId: 'team', myPlanSortOrder: 1 },
+      { ...task('c', 'OPEN'), myPlanStageId: 'team', myPlanSortOrder: 2 },
+      { ...task('d', 'OPEN'), myPlanStageId: 'team', myPlanSortOrder: 3 },
+    ];
+    const setTasks = vi.fn();
+
+    persistColumnTaskReorder({
+      tasks,
+      setTasks,
+      taskId: 'd',
+      toIndex: 0,
+      isInColumn: (item) => item.myPlanStageId === 'team',
+      scope: 'my-plan',
+    });
+
+    const next = setTasks.mock.calls[0]?.[0] as Task[];
+    expect(next.map((item) => item.id)).toEqual(['d', 'a', 'b', 'c']);
+    expect(next.map((item) => item.myPlanSortOrder)).toEqual([0, 1, 2, 3]);
+    expect(reorderMock).toHaveBeenCalledWith(['d', 'a', 'b', 'c'], 'my-plan');
   });
 
   it('rolls back on reorder failure', async () => {
