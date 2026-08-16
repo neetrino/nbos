@@ -98,16 +98,6 @@ export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-bor
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
   'text-primary mb-4 flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase';
 
-/** Top-left border notch anchor for collapsible section block titles. */
-export const DETAIL_SHEET_SECTION_TITLE_NOTCH_CLUSTER_CLASS =
-  'absolute top-0 left-5 z-10 -translate-y-1/2';
-
-/** Block title on the top-left border; card fill breaks the line under the text. */
-export const DETAIL_SHEET_SECTION_TITLE_NOTCH_CLASS = [
-  DETAIL_SHEET_SECTION_TITLE_NOTCH_CLUSTER_CLASS,
-  'bg-card text-primary flex items-center gap-2 px-1.5 text-[10px] font-bold tracking-wider uppercase',
-].join(' ');
-
 /** Sub-label inside a merged multi-column section (not primary — stays muted). */
 export const DETAIL_SHEET_SUBSECTION_LABEL_CLASS =
   'text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase';
