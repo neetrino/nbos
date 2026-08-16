@@ -1,31 +1,24 @@
-import { DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS } from '../detail-sheet-classes';
+import {
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+} from '../detail-sheet-classes';
 
-export const ENTITY_NOTES_LABEL_CLASS =
-  'text-muted-foreground/75 mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] uppercase';
+const ENTITY_NOTES_SHELL_LAYOUT_CLASS = ['flex w-full flex-col rounded-xl', 'cursor-text'].join(
+  ' ',
+);
 
-export const ENTITY_NOTES_LABEL_ICON_CLASS = 'text-muted-foreground/70 shrink-0';
-
-/** Shell corner radius — softer than `rounded-xl` (Bitrix-style description bar). */
-const ENTITY_NOTES_SHELL_RADIUS_CLASS = 'rounded-lg';
-
-const ENTITY_NOTES_SHELL_LAYOUT_CLASS = [
-  'flex w-full flex-col transition-[border-color,box-shadow]',
-  ENTITY_NOTES_SHELL_RADIUS_CLASS,
-].join(' ');
-
-/** Passive: one white surface on sheet canvas (Bitrix-style — no nested border fill). */
+/** Passive: outlined quiet field shell (persistent thin border; min-height from ProseMirror). */
 export const ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   ENTITY_NOTES_SHELL_LAYOUT_CLASS,
-  'cursor-text border-0 bg-card shadow-sm ring-1 ring-border/60',
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
 ].join(' ');
 
-/** Active edit: same surface + focus ring (toolbar above editor). */
+/** Active edit: same outlined shell (toolbar above editor). */
 export const ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   ENTITY_NOTES_SHELL_LAYOUT_CLASS,
-  'border-0 bg-card shadow-sm ring-1 ring-border/60',
-  'focus-within:ring-2 focus-within:ring-blue-400/25',
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
 ].join(' ');
 
 /** @deprecated Use passive/editing surface classes — kept for imports during migration. */

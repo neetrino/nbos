@@ -14,8 +14,8 @@ import type { EntityNoteEntityType } from './entity-notes-contract';
  * />
  * ```
  *
- * Omit `label` for the default compact “Description” caption, pass a string to override,
- * or `label={null}` to hide the caption entirely.
+ * Omit `label` for the default “Description” notch caption, pass a string to override,
+ * or `label={null}` to hide the caption entirely (no border notch).
  */
 export interface EntityNotesFieldProps {
   entityType: EntityNoteEntityType;

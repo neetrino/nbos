@@ -2,12 +2,14 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from '../detail-sheet-classes';
+import {
   ENTITY_NOTES_EDITOR_ROOT_CLASS,
-  ENTITY_NOTES_LABEL_CLASS,
-  ENTITY_NOTES_LABEL_ICON_CLASS,
   ENTITY_NOTES_SHELL_DISABLED_CLASS,
   ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
   ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
@@ -82,40 +84,45 @@ export function EntityNotesField({
 
   const fieldLabel = label === null ? null : (label ?? DEFAULT_FIELD_LABEL);
 
+  const shell = (
+    <div
+      ref={shellRef}
+      className={cn(
+        isEditing
+          ? ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS
+          : ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
+        isLocked && ENTITY_NOTES_SHELL_DISABLED_CLASS,
+        shellClassName,
+      )}
+      data-entity-notes-id={_entityId}
+      data-entity-notes-type={_entityType}
+      data-entity-notes-active={isEditing ? 'true' : 'false'}
+      data-entity-notes-empty={isEmpty ? 'true' : 'false'}
+      onPointerDown={onShellPointerDown}
+    >
+      {isEditing ? <EntityNotesToolbar editor={editor} disabled={isLocked} /> : null}
+      <div className={cn(ENTITY_NOTES_EDITOR_ROOT_CLASS, 'relative')}>
+        {showEmptyHint ? <EntityNotesEmptyHint text={placeholder} /> : null}
+        <EditorContent editor={editor} />
+        {loading ? (
+          <div className="bg-background/60 absolute inset-0 flex items-center justify-center">
+            <Loader2 className="text-muted-foreground size-5 animate-spin" aria-hidden />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <div className={cn('w-full', className)}>
       {fieldLabel ? (
-        <span className={ENTITY_NOTES_LABEL_CLASS}>
-          <MessageSquare size={10} className={ENTITY_NOTES_LABEL_ICON_CLASS} aria-hidden />
-          {fieldLabel}
-        </span>
-      ) : null}
-      <div
-        ref={shellRef}
-        className={cn(
-          isEditing
-            ? ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS
-            : ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
-          isLocked && ENTITY_NOTES_SHELL_DISABLED_CLASS,
-          shellClassName,
-        )}
-        data-entity-notes-id={_entityId}
-        data-entity-notes-type={_entityType}
-        data-entity-notes-active={isEditing ? 'true' : 'false'}
-        data-entity-notes-empty={isEmpty ? 'true' : 'false'}
-        onPointerDown={onShellPointerDown}
-      >
-        {isEditing ? <EntityNotesToolbar editor={editor} disabled={isLocked} /> : null}
-        <div className={cn(ENTITY_NOTES_EDITOR_ROOT_CLASS, 'relative')}>
-          {showEmptyHint ? <EntityNotesEmptyHint text={placeholder} /> : null}
-          <EditorContent editor={editor} />
-          {loading ? (
-            <div className="bg-background/60 absolute inset-0 flex items-center justify-center">
-              <Loader2 className="text-muted-foreground size-5 animate-spin" aria-hidden />
-            </div>
-          ) : null}
+        <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+          <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{fieldLabel}</span>
+          {shell}
         </div>
-      </div>
+      ) : (
+        shell
+      )}
     </div>
   );
 }
