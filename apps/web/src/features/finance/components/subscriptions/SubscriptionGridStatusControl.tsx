@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, PauseCircle, PlayCircle, RotateCcw, XCircle } from 'lucide-react';
+import {
+  ChevronDown,
+  PauseCircle,
+  PlayCircle,
+  RotateCcw,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,8 +25,7 @@ import {
   subscriptionCanCancel,
   subscriptionCanHold,
 } from './subscription-action-eligibility';
-import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
-import { SubscriptionHoldDialog } from './SubscriptionHoldDialog';
+import { SubscriptionStatusActionDialogs } from './subscription-status-action-dialogs';
 
 const STATUS_BUTTON_CLASS: Record<string, string> = {
   PENDING:
@@ -32,6 +39,8 @@ const STATUS_BUTTON_CLASS: Record<string, string> = {
     'border-blue-300/80 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200',
 };
 
+const RESUME_FROM_STATUSES = new Set(['ON_HOLD', 'CANCELLED']);
+
 interface SubscriptionGridStatusControlProps {
   subscription: Subscription;
   activatingId: string | null;
@@ -43,6 +52,61 @@ interface SubscriptionGridStatusControlProps {
   /** Use when the control sits inside a detail sheet (nested dialogs). */
   forceNestedBackdrop?: boolean;
   size?: 'xs' | 'sm';
+}
+
+interface StatusMenuProps {
+  subscription: Subscription;
+  size: 'xs' | 'sm';
+  isBusy: boolean;
+  isLockedOut: boolean;
+  isActivating: boolean;
+  isCancelling: boolean;
+  isHolding: boolean;
+  onActivate: (subscription: Subscription) => void;
+  onOpenCancel: () => void;
+  onOpenHold: () => void;
+}
+
+function statusControlClass(status: string, size: 'xs' | 'sm'): string {
+  const palette = STATUS_BUTTON_CLASS[status] ?? 'border-border bg-background text-foreground';
+  return size === 'sm'
+    ? `h-8 shrink-0 gap-1 border px-2.5 text-xs font-semibold ${palette}`
+    : `h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${palette}`;
+}
+
+function activateOrResumeAction(
+  status: string,
+  isActivating: boolean,
+): { Icon: LucideIcon; label: string } {
+  if (RESUME_FROM_STATUSES.has(status)) {
+    return { Icon: RotateCcw, label: isActivating ? 'Resuming…' : 'Resume' };
+  }
+  return { Icon: PlayCircle, label: isActivating ? 'Activating…' : 'Activate' };
+}
+
+function hasManualStatusActions(subscription: Subscription): boolean {
+  return (
+    subscriptionCanActivateOrResume(subscription) ||
+    subscriptionCanHold(subscription) ||
+    subscriptionCanCancel(subscription)
+  );
+}
+
+function SubscriptionStatusStaticChip({
+  subscription,
+  size,
+}: {
+  subscription: Subscription;
+  size: 'xs' | 'sm';
+}) {
+  const statusMeta = getSubscriptionStatus(subscription.status);
+  return (
+    <StatusBadge
+      label={statusMeta?.label ?? subscription.status}
+      variant={statusMeta?.variant ?? 'default'}
+      className={statusControlClass(subscription.status, size)}
+    />
+  );
 }
 
 export function SubscriptionGridStatusControl({
@@ -58,127 +122,127 @@ export function SubscriptionGridStatusControl({
 }: SubscriptionGridStatusControlProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [holdOpen, setHoldOpen] = useState(false);
-
-  const statusMeta = getSubscriptionStatus(subscription.status);
-  const label = statusMeta?.label ?? subscription.status;
+  if (!hasManualStatusActions(subscription)) {
+    return <SubscriptionStatusStaticChip subscription={subscription} size={size} />;
+  }
   const opLock = activatingId ?? cancellingId ?? holdingId;
-  const isLockedOut = Boolean(opLock && opLock !== subscription.id);
   const isActivating = activatingId === subscription.id;
   const isCancelling = cancellingId === subscription.id;
   const isHolding = holdingId === subscription.id;
-  const isBusy = isActivating || isCancelling || isHolding;
+  const menu: StatusMenuProps = {
+    subscription,
+    size,
+    isBusy: isActivating || isCancelling || isHolding,
+    isLockedOut: Boolean(opLock && opLock !== subscription.id),
+    isActivating,
+    isCancelling,
+    isHolding,
+    onActivate,
+    onOpenCancel: () => setCancelOpen(true),
+    onOpenHold: () => setHoldOpen(true),
+  };
+  return (
+    <>
+      <SubscriptionStatusDropdown {...menu} />
+      <SubscriptionStatusActionDialogs
+        subscription={subscription}
+        cancelOpen={cancelOpen}
+        holdOpen={holdOpen}
+        isCancelling={isCancelling}
+        isHolding={isHolding}
+        forceNestedBackdrop={forceNestedBackdrop}
+        setCancelOpen={setCancelOpen}
+        setHoldOpen={setHoldOpen}
+        onCancel={onCancel}
+        onHold={onHold}
+      />
+    </>
+  );
+}
 
+function SubscriptionStatusDropdown(props: StatusMenuProps) {
+  const statusMeta = getSubscriptionStatus(props.subscription.status);
+  const label = statusMeta?.label ?? props.subscription.status;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(triggerProps) => (
+          <Button
+            {...triggerProps}
+            type="button"
+            variant="outline"
+            size={props.size}
+            disabled={props.isBusy}
+            className={statusControlClass(props.subscription.status, props.size)}
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerProps.onClick?.(e);
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              triggerProps.onPointerDown?.(e);
+            }}
+          >
+            {label}
+            <ChevronDown size={props.size === 'sm' ? 14 : 12} aria-hidden />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent
+        align="end"
+        className="min-w-[10rem]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <SubscriptionStatusMenuItems {...props} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function SubscriptionStatusMenuItems({
+  subscription,
+  isBusy,
+  isLockedOut,
+  isActivating,
+  isCancelling,
+  isHolding,
+  onActivate,
+  onOpenCancel,
+  onOpenHold,
+}: StatusMenuProps) {
   const showActivate = subscriptionCanActivateOrResume(subscription);
   const showHold = subscriptionCanHold(subscription);
   const showCancel = subscriptionCanCancel(subscription);
-  const statusClass =
-    STATUS_BUTTON_CLASS[subscription.status] ?? 'border-border bg-background text-foreground';
+  const { Icon, label } = activateOrResumeAction(subscription.status, isActivating);
+  const disabled = isLockedOut || isBusy;
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={(triggerProps) => (
-            <Button
-              {...triggerProps}
-              type="button"
-              variant="outline"
-              size={size}
-              disabled={isBusy}
-              className={
-                size === 'sm'
-                  ? `h-8 shrink-0 gap-1 border px-2.5 text-xs font-semibold ${statusClass}`
-                  : `h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${statusClass}`
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerProps.onClick?.(e);
-              }}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                triggerProps.onPointerDown?.(e);
-              }}
-            >
-              {label}
-              <ChevronDown size={size === 'sm' ? 14 : 12} aria-hidden />
-            </Button>
-          )}
-        />
-        <DropdownMenuContent
-          align="end"
-          className="min-w-[10rem]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {showActivate ? (
-            <DropdownMenuItem
-              disabled={isLockedOut || isBusy}
-              onSelect={() => onActivate(subscription)}
-            >
-              {subscription.status === 'ON_HOLD' ? (
-                <RotateCcw size={14} className="mr-2" />
-              ) : (
-                <PlayCircle size={14} className="mr-2" />
-              )}
-              {subscription.status === 'ON_HOLD'
-                ? isActivating
-                  ? 'Resuming…'
-                  : 'Resume'
-                : isActivating
-                  ? 'Activating…'
-                  : 'Activate'}
-            </DropdownMenuItem>
-          ) : null}
-          {showHold ? (
-            <DropdownMenuItem disabled={isLockedOut || isBusy} onSelect={() => setHoldOpen(true)}>
-              <PauseCircle size={14} className="mr-2" />
-              {isHolding ? 'Pausing…' : 'Pause'}
-            </DropdownMenuItem>
-          ) : null}
-          {showCancel ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={isLockedOut || isBusy}
-                className="text-destructive focus:text-destructive"
-                onSelect={() => setCancelOpen(true)}
-              >
-                <XCircle size={14} className="mr-2" />
-                {isCancelling ? 'Cancelling…' : 'Cancel'}
-              </DropdownMenuItem>
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <SubscriptionCancelDialog
-        subscription={cancelOpen ? subscription : null}
-        open={cancelOpen}
-        isSubmitting={isCancelling}
-        onOpenChange={setCancelOpen}
-        forceNestedBackdrop={forceNestedBackdrop}
-        onConfirm={async () => {
-          try {
-            await onCancel(subscription);
-            setCancelOpen(false);
-          } catch {
-            /* Parent banner handles errors */
-          }
-        }}
-      />
-      <SubscriptionHoldDialog
-        subscription={holdOpen ? subscription : null}
-        open={holdOpen}
-        isSubmitting={isHolding}
-        onOpenChange={setHoldOpen}
-        forceNestedBackdrop={forceNestedBackdrop}
-        onConfirm={async () => {
-          try {
-            await onHold(subscription);
-            setHoldOpen(false);
-          } catch {
-            /* Parent banner handles errors */
-          }
-        }}
-      />
+      {showActivate ? (
+        <DropdownMenuItem disabled={disabled} onClick={() => onActivate(subscription)}>
+          <Icon size={14} className="mr-2" />
+          {label}
+        </DropdownMenuItem>
+      ) : null}
+      {showHold ? (
+        <DropdownMenuItem disabled={disabled} onClick={onOpenHold}>
+          <PauseCircle size={14} className="mr-2" />
+          {isHolding ? 'Pausing…' : 'Pause'}
+        </DropdownMenuItem>
+      ) : null}
+      {showCancel ? (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            disabled={disabled}
+            className="text-destructive focus:text-destructive"
+            onClick={onOpenCancel}
+          >
+            <XCircle size={14} className="mr-2" />
+            {isCancelling ? 'Cancelling…' : 'Cancel'}
+          </DropdownMenuItem>
+        </>
+      ) : null}
     </>
   );
 }

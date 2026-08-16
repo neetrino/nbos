@@ -91,6 +91,36 @@ describe('SubscriptionsService', () => {
       expect(prisma.subscription.findMany).toHaveBeenCalled();
     });
 
+    it('filters a single status with equals and inbox order', async () => {
+      await service.findAll({ status: 'CANCELLED' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: 'CANCELLED' }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('filters a comma-separated status list with in and inbox order', async () => {
+      await service.findAll({ status: 'PENDING,ACTIVE' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ status: { in: ['PENDING', 'ACTIVE'] } }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('omits status and still uses inbox order when status is absent', async () => {
+      await service.findAll({});
+      const call = prisma.subscription.findMany.mock.calls[0]?.[0] as {
+        where?: { status?: unknown };
+        orderBy?: unknown;
+      };
+      expect(call?.where).not.toHaveProperty('status');
+      expect(call?.orderBy).toEqual([{ status: 'asc' }, { createdAt: 'desc' }]);
+    });
+
     it('filters by partner id', async () => {
       await service.findAll({ partnerId: 'part-1' });
       expect(prisma.subscription.findMany).toHaveBeenCalledWith(
@@ -134,6 +164,51 @@ describe('SubscriptionsService', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('getGrid', () => {
+    it('filters a single status with equals and inbox order', async () => {
+      await service.getGrid({ year: 2026, status: 'CANCELLED' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([{ status: 'CANCELLED' }]),
+          }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('filters a comma-separated status list with in and inbox order', async () => {
+      await service.getGrid({ year: 2026, status: 'PENDING,ACTIVE' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([{ status: { in: ['PENDING', 'ACTIVE'] } }]),
+          }),
+          orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+        }),
+      );
+    });
+
+    it('applies billingStartDate lte yearEnd in the year window', async () => {
+      await service.getGrid({ year: 2026 });
+      const call = prisma.subscription.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: unknown[] };
+        orderBy?: unknown;
+      };
+      const andClause = call?.where?.AND ?? [];
+      expect(JSON.stringify(andClause)).not.toContain('"billingStartDate":null');
+      expect(andClause).toEqual(
+        expect.arrayContaining([
+          { billingStartDate: { lte: new Date(2026, 11, 31, 23, 59, 59, 999) } },
+          expect.objectContaining({
+            OR: [{ endDate: null }, { endDate: { gte: new Date(2026, 0, 1) } }],
+          }),
+        ]),
+      );
+      expect(call?.orderBy).toEqual([{ status: 'asc' }, { createdAt: 'desc' }]);
     });
   });
 
@@ -434,9 +509,30 @@ describe('SubscriptionsService', () => {
       expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
 
-    it('rejects disallowed transition from CANCELLED', async () => {
+    it('resumes cancelled subscription and clears endDate', async () => {
+      const billingStartDate = new Date('2026-01-15T00:00:00.000Z');
+      const endDate = new Date('2026-06-01T00:00:00.000Z');
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(
+          mockSubscriptionForFindById({ status: 'CANCELLED', billingStartDate, endDate }),
+        )
+        .mockResolvedValueOnce(
+          mockSubscriptionForFindById({ status: 'ACTIVE', billingStartDate, endDate: null }),
+        );
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.updateStatus('1', 'ACTIVE');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'ACTIVE', endDate: null },
+        }),
+      );
+    });
+
+    it('rejects COMPLETED → ACTIVE', async () => {
       prisma.subscription.findUnique.mockResolvedValue(
-        mockSubscriptionForFindById({ status: 'CANCELLED', endDate: new Date() }),
+        mockSubscriptionForFindById({ status: 'COMPLETED' }),
       );
 
       await expect(service.updateStatus('1', 'ACTIVE')).rejects.toThrow(BadRequestException);
