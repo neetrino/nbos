@@ -62,7 +62,9 @@ export function DetailSheetFieldSegmented<T extends string>({
         className,
       )}
     >
-      {showOutlinedLabel ? <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span> : null}
+      {showOutlinedLabel ? (
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      ) : null}
 
       <div className={DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS}>
         <div
