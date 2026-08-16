@@ -29,16 +29,15 @@ export const TASK_SHEET_SECTION_SURFACE_CLASS =
 export const TASK_SHEET_META_BLOCK_CLASS =
   '@container/task-sheet-meta w-full min-w-0 max-w-full space-y-1';
 
-/** One stacked list on a narrow pane; two columns only when the card is wide. */
+/** Two equal columns as soon as two outlined fields fit; stack only on a very narrow pane. */
 export const TASK_SHEET_TEAM_COLUMNS_CLASS =
-  'flex w-full min-w-0 flex-col gap-y-1 @min-[48rem]/task-sheet-meta:flex-row @min-[48rem]/task-sheet-meta:items-start @min-[48rem]/task-sheet-meta:gap-x-4';
+  'grid w-full min-w-0 grid-cols-1 gap-x-4 gap-y-3 @min-[22rem]/task-sheet-meta:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @min-[22rem]/task-sheet-meta:items-start';
 
-/** Assistant / observer — flush right only in the wide two-column layout. */
-export const TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS =
-  'min-w-0 space-y-1 @min-[48rem]/task-sheet-meta:ml-auto';
+/** Assistant / observer column — shares width with creator/assignee, no right flush. */
+export const TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS = 'min-w-0';
 
 export const TASK_SHEET_TEAM_DIVIDER_CLASS =
-  'bg-border hidden w-px shrink-0 self-stretch @min-[48rem]/task-sheet-meta:mx-auto @min-[48rem]/task-sheet-meta:block';
+  'bg-border hidden w-px shrink-0 self-stretch @min-[22rem]/task-sheet-meta:block';
 
 /** Team column wrapper — allows grid tracks to shrink with the split pane. */
 export const TASK_SHEET_TEAM_COLUMN_CLASS = 'min-w-0';
@@ -48,11 +47,10 @@ export const TASK_SHEET_TEAM_META_GRID_CLASS = 'flex flex-col gap-y-3';
 
 /** Label hugs text; used for “Linked to” and similar side captions. */
 export const TASK_SHEET_META_LABEL_CLASS =
-  'text-muted-foreground w-auto min-w-0 shrink-0 text-xs leading-snug @min-[48rem]/task-sheet-meta:min-w-[5.5rem]';
+  'text-muted-foreground w-auto min-w-0 shrink-0 text-xs leading-snug';
 
-/** Full-width value when stacked; fixed Bitrix width only in the split layout. */
-export const TASK_SHEET_META_VALUE_COLUMN_CLASS =
-  'w-full min-w-0 max-w-full @min-[48rem]/task-sheet-meta:w-[15.5rem] @min-[48rem]/task-sheet-meta:shrink-0';
+/** Field fills its column so empty space is used instead of wrapping early. */
+export const TASK_SHEET_META_VALUE_COLUMN_CLASS = 'w-full min-w-0 max-w-full';
 
 /** Wrapper so the field name can sit on the top border. */
 export const TASK_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 pt-2';

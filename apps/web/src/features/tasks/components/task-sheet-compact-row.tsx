@@ -35,9 +35,9 @@ export function TaskSheetCompactRow({
 
 /** Fills the meta value column; defers height to detail-sheet shells. */
 export const TASK_SHEET_COMPACT_FIELD_CLASS = [
-  'w-full min-w-0 max-w-full @min-[48rem]/task-sheet-meta:max-w-[15.5rem]',
+  'w-full min-w-0 max-w-full',
   '[&>div:first-child]:sr-only [&>div:first-child]:mb-0 [&>div:first-child]:h-0 [&>div:first-child]:overflow-hidden',
-  '[&>div:last-child]:w-full [&>div:last-child]:max-w-full @min-[48rem]/task-sheet-meta:[&>div:last-child]:max-w-[15.5rem]',
+  '[&>div:last-child]:w-full [&>div:last-child]:max-w-full',
   '[&_.w-full]:w-full',
   '[&_.border]:border-border/50',
   '[&_.person-soft-avatar]:size-8 [&_.person-soft-avatar]:text-[10px]',
