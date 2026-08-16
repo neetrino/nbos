@@ -112,7 +112,7 @@ export function SubscriptionGridStatusControl({
           {showActivate ? (
             <DropdownMenuItem
               disabled={isLockedOut || isBusy}
-              onSelect={() => onActivate(subscription)}
+              onClick={() => onActivate(subscription)}
             >
               {subscription.status === 'ON_HOLD' ? (
                 <RotateCcw size={14} className="mr-2" />
@@ -129,7 +129,7 @@ export function SubscriptionGridStatusControl({
             </DropdownMenuItem>
           ) : null}
           {showHold ? (
-            <DropdownMenuItem disabled={isLockedOut || isBusy} onSelect={() => setHoldOpen(true)}>
+            <DropdownMenuItem disabled={isLockedOut || isBusy} onClick={() => setHoldOpen(true)}>
               <PauseCircle size={14} className="mr-2" />
               {isHolding ? 'Pausing…' : 'Pause'}
             </DropdownMenuItem>
@@ -140,7 +140,7 @@ export function SubscriptionGridStatusControl({
               <DropdownMenuItem
                 disabled={isLockedOut || isBusy}
                 className="text-destructive focus:text-destructive"
-                onSelect={() => setCancelOpen(true)}
+                onClick={() => setCancelOpen(true)}
               >
                 <XCircle size={14} className="mr-2" />
                 {isCancelling ? 'Cancelling…' : 'Cancel'}

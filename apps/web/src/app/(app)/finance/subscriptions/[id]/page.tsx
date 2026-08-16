@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Repeat } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
-import { DetailSheetFormFooter, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { DetailSheetFormFooter, ErrorState, LoadingState } from '@/components/shared';
 import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
 import { SubscriptionGeneralTab } from '@/features/finance/components/subscriptions/SubscriptionGeneralTab';
+import { SubscriptionGridStatusControl } from '@/features/finance/components/subscriptions/SubscriptionGridStatusControl';
+import { useSubscriptionDetailMutations } from '@/features/finance/components/subscriptions/use-subscription-detail-mutations';
 import { useSubscriptionGeneralSave } from '@/features/finance/components/subscriptions/use-subscription-general-save';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
@@ -19,7 +21,7 @@ import {
 import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
 import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
-import { getSubscriptionStatus, getSubscriptionType } from '@/features/finance/constants/finance';
+import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
@@ -155,7 +157,6 @@ export default function SubscriptionDetailPage() {
   }
 
   const subType = getSubscriptionType(subscription.type);
-  const subStatus = getSubscriptionStatus(subscription.status);
   const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
@@ -202,7 +203,10 @@ export default function SubscriptionDetailPage() {
               {subscription.project.name}
             </p>
           </div>
-          {subStatus ? <StatusBadge label={subStatus.label} variant={subStatus.variant} /> : null}
+          <SubscriptionPageStatusControl
+            subscription={subscription}
+            onSubscriptionChange={handleSubscriptionChange}
+          />
         </div>
       </div>
 
@@ -233,6 +237,38 @@ export default function SubscriptionDetailPage() {
         onOpenChange={setPeriodConfirmOpen}
         onConfirm={confirmPeriodChangeAndSave}
       />
+    </div>
+  );
+}
+
+function SubscriptionPageStatusControl({
+  subscription,
+  onSubscriptionChange,
+}: {
+  subscription: Subscription;
+  onSubscriptionChange: (updated: Subscription) => void;
+}) {
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { activatingId, cancellingId, holdingId, handleActivate, handleCancel, handleHold } =
+    useSubscriptionDetailMutations(subscription, onSubscriptionChange, setActionError);
+
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <SubscriptionGridStatusControl
+        subscription={subscription}
+        activatingId={activatingId}
+        cancellingId={cancellingId}
+        holdingId={holdingId}
+        onActivate={() => void handleActivate()}
+        onCancel={handleCancel}
+        onHold={handleHold}
+        size="sm"
+      />
+      {actionError ? (
+        <p className="text-destructive max-w-xs text-right text-sm" role="alert">
+          {actionError}
+        </p>
+      ) : null}
     </div>
   );
 }
