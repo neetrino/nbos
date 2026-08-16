@@ -13,11 +13,6 @@ import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highligh
 import { cn } from '@/lib/utils';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
-/** Compact width for Annual pill and months field (2–3 digit values). */
-const DEAL_SUBSCRIPTION_TERM_CONTROL_WIDTH_REM = '7.5rem';
-const DEAL_SUBSCRIPTION_TERM_FIELD_WIDTH_CLASS = 'w-[7.5rem]';
-const DEAL_SUBSCRIPTION_TERM_ANNUAL_MIN_WIDTH_CLASS = 'min-w-[7.5rem]';
-
 interface DealSubscriptionTermFieldProps {
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
@@ -51,15 +46,9 @@ export function DealSubscriptionTermField({
 
   return (
     <>
-      <div className={cn('flex flex-nowrap items-end gap-2', gateClass)}>
+      <div className={cn('flex w-full min-w-0 flex-nowrap items-end gap-2', gateClass)}>
         <div className="shrink-0 pt-2">
-          <div
-            className={cn(
-              DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
-              'w-auto shrink-0',
-              DEAL_SUBSCRIPTION_TERM_ANNUAL_MIN_WIDTH_CLASS,
-            )}
-          >
+          <div className={cn(DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS, 'w-auto shrink-0')}>
             <button
               type="button"
               aria-pressed={isAnnual}
@@ -69,7 +58,7 @@ export function DealSubscriptionTermField({
               }
               className={cn(
                 DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
-                'w-full flex-none px-5',
+                'flex-none px-5',
                 isAnnual
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
@@ -82,12 +71,12 @@ export function DealSubscriptionTermField({
         </div>
         <InlineField
           variant="controlled"
-          label={`Term (${SUBSCRIPTION_TERM_MONTHS_MIN}–${SUBSCRIPTION_TERM_MONTHS_MAX} mo)`}
+          label="Term"
           type="text"
           value={draft.subscriptionTermMonths ?? ''}
           placeholder="e.g. 12"
           disabled={disabled}
-          className={cn('shrink-0', DEAL_SUBSCRIPTION_TERM_FIELD_WIDTH_CLASS)}
+          className="min-w-0 flex-1"
           onValueChange={(value) =>
             patchDraft({ subscriptionTermMonths: parseTermMonthsInput(value) })
           }
