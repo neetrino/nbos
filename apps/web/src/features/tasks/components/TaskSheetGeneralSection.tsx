@@ -62,6 +62,17 @@ export function TaskSheetGeneralSection({
 
   return (
     <>
+      <DetailSheetOptionalDescriptionField
+        entityType="task"
+        entityId={taskId}
+        value={draft.description}
+        onChange={(description) => onPatchDraft({ description })}
+        disabled={disabled}
+        label={null}
+        placeholder="Description"
+        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
+      />
+
       <section className={TASK_SHEET_CARD_CLASS}>
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
@@ -219,15 +230,6 @@ export function TaskSheetGeneralSection({
       />
 
       <TaskFilesBlock taskId={taskId} />
-
-      <DetailSheetOptionalDescriptionField
-        entityType="task"
-        entityId={taskId}
-        value={draft.description}
-        onChange={(description) => onPatchDraft({ description })}
-        disabled={disabled}
-        shellClassName="[&_.entity-notes-prosemirror]:text-sm"
-      />
     </>
   );
 }
