@@ -92,7 +92,8 @@ Credentials module имеет 3 режима отображения одних �
 - В `Category Board` каждая колонка = category текущего scope.
 - Кнопка `+` в колонке открывает create Sheet с уже выбранной `category` этой колонки.
 - Карточки/строки не должны показывать лишние details; детали живут в Sheet.
-- **Vault card:** один `CredentialVaultCard` (`grid` | `kanban`): accent bar + title + secret pills + footer badges (category, criticality, access). List — table.
+- **Vault card:** один `CredentialVaultCard` (`grid` | `kanban`): accent bar + title + secret pills + footer badges (category, criticality, access, **linked product** when `productId` set). Access badge «Project» = scope (`PROJECT_TEAM`), not the product name. List — table; Project column shows product link (primary) + project link (secondary).
+- **Sheet Context links:** General tab block with Product + Project deep links when credential is linked (parent product only, not extension).
 
 ### Sheet everywhere
 

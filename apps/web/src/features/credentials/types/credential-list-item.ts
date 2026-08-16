@@ -13,6 +13,7 @@ export interface CredentialListItem {
   allowedEmployees: string[];
   ownerId?: string | null;
   project: { id: string; name: string } | null;
+  product?: { id: string; name: string } | null;
   department: { id: string; name: string } | null;
   owner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;

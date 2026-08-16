@@ -122,7 +122,7 @@ View modes меняют только способ отображения тек�
 - provider;
 - category badge;
 - credential type badge;
-- project/product;
+- project/product (product name as link when linked; project hub link secondary in list; access badge «Project» is scope, not product);
 - access badge;
 - health/rotation badge;
 - owner;
@@ -152,6 +152,7 @@ Sheet должен иметь блоки:
 - Overview;
 - Secret Fields;
 - Context Links;
+  - **Product** (parent product, not extension) and **Project** as navigable links when credential is linked; same product chip on vault cards/tiles (click opens product page without opening Sheet);
 - Manual Access;
 - Rotation & Health;
 - Audit Log;

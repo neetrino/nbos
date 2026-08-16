@@ -22,6 +22,7 @@ import {
 } from '@/features/credentials/credential-field-config';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
+import { CredentialFormContextLinks } from './credential-form-context-links';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
 import { CredentialAppStoreFields } from './credential-app-store-fields';
@@ -108,6 +109,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     folderId,
     setFolderId,
     folderOptions,
+    contextLinks,
   } = form;
 
   const providerBlock = showsProviderPicker(credentialType) ? (
@@ -156,6 +158,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
       </div>
       {providerBlock}
       {appStoreBlock}
+
+      <CredentialFormContextLinks {...contextLinks} />
 
       <CredentialFormDynamicFields
         credentialType={credentialType}
