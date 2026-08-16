@@ -159,7 +159,7 @@ export function DeliveryAccessInfrastructureSection({
   );
 }
 
-const DELIVERY_ACCESS_SLOT_KEYS = ['DOMAIN', 'HOSTING', 'ADMIN', UNIVERSAL_ACCESS_SLOT_KEY] as const;
+const DELIVERY_ACCESS_SLOT_KEYS = ['DOMAIN', 'ADMIN', 'HOSTING', UNIVERSAL_ACCESS_SLOT_KEY] as const;
 const DELIVERY_ACCESS_SLOT_KEY_SET = new Set<string>(DELIVERY_ACCESS_SLOT_KEYS);
 const DELIVERY_REQUIRED_SLOT_KEYS = new Set(['DOMAIN', 'HOSTING']);
 
