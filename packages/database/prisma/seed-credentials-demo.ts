@@ -253,7 +253,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       projectId: ctx.products.acmeSite.projectId,
       ownerId: dev.id,
       provider: 'NBOS',
-      envData: 'NEXT_PUBLIC_API_URL=https://api.acme.am\nAUTH_SECRET=***',
+      envData: 'NEXT_PUBLIC_BACKEND_URL=https://api.acme.am\nAUTH_SECRET=***',
       allowedEmployees: team,
     },
     {

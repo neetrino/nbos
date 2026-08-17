@@ -256,7 +256,7 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 2. Миграции Neon **один раз** (не с каждой реплики API):
 
    ```bash
-   pnpm db:migrate:deploy
+   pnpm --filter @nbos/database migrate:deploy
    ```
 
 3. Деплой **API** → `https://api.example.com/api/health` → 200.
