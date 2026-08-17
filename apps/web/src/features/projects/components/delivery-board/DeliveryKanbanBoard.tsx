@@ -5,7 +5,8 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCorners,
   useDraggable,
   useDroppable,
@@ -28,6 +29,8 @@ import {
   findKanbanCardRowByItemId,
   measureKanbanCardRowHeight,
 } from '@/components/shared/kanban/kanban-drag-metrics';
+import { KanbanScrollEdgeControls } from '@/components/shared/kanban/KanbanScrollEdgeControls';
+import { useKanbanHorizontalScroll } from '@/components/shared/kanban/use-kanban-horizontal-scroll';
 import { useKanbanPointerInsert } from '@/components/shared/kanban/use-kanban-pointer-insert';
 import { cn } from '@/lib/utils';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
@@ -48,7 +51,9 @@ import {
 import {
   DELIVERY_KANBAN_BOARD_ROW_CLASS,
   DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
+  DELIVERY_KANBAN_COLUMN_GAP_PX,
   DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+  DELIVERY_KANBAN_COLUMN_WIDTH_PX,
   deliveryKanbanBoardMinWidthPx,
 } from './delivery-kanban-layout';
 import { DELIVERY_TERMINAL_DROP_ZONES } from './delivery-terminal-drop-zones';
@@ -64,8 +69,11 @@ import {
 } from './project-delivery-board-model';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
 
-/** Matches Deal-style “click vs drag”: small movement starts a stage move; pure click still works. */
-const POINTER_ACTIVATION_PX = 6;
+/** Click vs drag: small mouse movement starts a stage move; pure click still works. */
+const MOUSE_ACTIVATION_DISTANCE_PX = 8;
+/** Touch: delay lets the board scroll before a card drag starts (CRM trackpad / mobile). */
+const TOUCH_ACTIVATION_DELAY_MS = 220;
+const TOUCH_ACTIVATION_TOLERANCE_PX = 8;
 
 interface DeliveryKanbanBoardProps {
   items: DeliveryBoardItem[];
@@ -95,7 +103,13 @@ export function DeliveryKanbanBoard({
   const { creatorId, creatorReady } = useTaskCreatorId();
   const quickTaskDisabled = creatorReady && !creatorId;
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: POINTER_ACTIVATION_PX } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: MOUSE_ACTIVATION_DISTANCE_PX } }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: TOUCH_ACTIVATION_DELAY_MS,
+        tolerance: TOUCH_ACTIVATION_TOLERANCE_PX,
+      },
+    }),
     useSensor(KeyboardSensor),
   );
 
@@ -106,6 +120,21 @@ export function DeliveryKanbanBoard({
       items: items.filter((item) => getItemLifecycle(item)?.stage === stage),
     }));
   }, [items]);
+
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isMobileViewport,
+    startAutoScroll,
+    stopAutoScroll,
+    scrollByOneColumn,
+  } = useKanbanHorizontalScroll({
+    columnWidth: DELIVERY_KANBAN_COLUMN_WIDTH_PX,
+    columnMarginTotalPx: DELIVERY_KANBAN_COLUMN_GAP_PX,
+    layoutKey: columns.length,
+    mobileFullWidthColumns: false,
+  });
 
   const dragSourceStage = activeItem ? (getItemLifecycle(activeItem)?.stage ?? null) : null;
   const dropInsert = useKanbanPointerInsert({
@@ -192,13 +221,34 @@ export function DeliveryKanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div className="relative flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
-        <div className={cn(DELIVERY_KANBAN_BOARD_SCROLL_CLASS, activeItem && 'pb-28')}>
+        <KanbanScrollEdgeControls
+          canScrollLeft={canScrollLeft}
+          canScrollRight={canScrollRight}
+          isMobile={isMobileViewport}
+          onStep={scrollByOneColumn}
+          onHoverStart={startAutoScroll}
+          onHoverEnd={stopAutoScroll}
+        />
+        <div
+          ref={scrollRef}
+          className={cn(
+            DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
+            isMobileViewport && 'snap-x snap-mandatory',
+            activeItem && 'pb-28',
+          )}
+        >
           <div
             className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
             style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length)}px` }}
           >
             {columns.map((col, colIdx) => (
-              <div key={col.stage} className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
+              <div
+                key={col.stage}
+                className={cn(
+                  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+                  isMobileViewport && 'snap-start',
+                )}
+              >
                 <KanbanStageColumn
                   stage={col.stage}
                   title={col.label}
@@ -345,7 +395,7 @@ function KanbanStageColumn({
       </div>
 
       <div
-        className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: stage }}
       >
         <div
@@ -399,7 +449,7 @@ function KanbanDraggableCard({
       {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
       data-item-id={itemKey}
       className={cn(
-        'touch-manipulation rounded-xl transition-transform duration-200 outline-none',
+        'rounded-xl transition-transform duration-200 outline-none',
         disabled ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing',
         isDragging && 'scale-[0.98] opacity-45',
       )}
