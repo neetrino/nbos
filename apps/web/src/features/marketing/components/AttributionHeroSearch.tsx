@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/select';
 import {
   ATTRIBUTION_STATUS_FILTER_ALL,
+  resolveAttributionStatusLabel,
   type AttributionStatusOption,
 } from '@/features/marketing/constants/marketing-attribution-filters';
 
 /** Match default `SelectTrigger` height (`h-10`). */
 const STATUS_SELECT_CLASS = 'h-10 w-[11.5rem] shrink-0';
+const ALL_STATUSES_LABEL = 'All Statuses';
 
 type AttributionHeroSearchProps = {
   search: string;
@@ -32,6 +34,11 @@ export function AttributionHeroSearch({
   statusOptions,
 }: AttributionHeroSearchProps) {
   const selectValue = status || ATTRIBUTION_STATUS_FILTER_ALL;
+  const selectedLabel =
+    selectValue === ATTRIBUTION_STATUS_FILTER_ALL
+      ? ALL_STATUSES_LABEL
+      : (statusOptions.find((option) => option.value === selectValue)?.label ??
+        resolveAttributionStatusLabel(selectValue));
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -49,10 +56,10 @@ export function AttributionHeroSearch({
         }
       >
         <SelectTrigger className={STATUS_SELECT_CLASS} aria-label="Filter by status">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder="Status">{selectedLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ATTRIBUTION_STATUS_FILTER_ALL}>All statuses</SelectItem>
+          <SelectItem value={ATTRIBUTION_STATUS_FILTER_ALL}>{ALL_STATUSES_LABEL}</SelectItem>
           {statusOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}

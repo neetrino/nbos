@@ -9,28 +9,33 @@ import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-p
 
 interface EntityDealSheetDeepLinkProps {
   dealId: string | null;
+  /** Seed sheet content immediately (avoids empty/loading flash). */
+  initialDeal?: Deal | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   forceNestedBackdrop?: boolean;
+  /** Fired after a successful save or stage change. */
+  onEntityChanged?: () => void;
 }
 
 export function EntityDealSheetDeepLink({
   dealId,
+  initialDeal = null,
   open,
   onOpenChange,
   forceNestedBackdrop = false,
+  onEntityChanged,
 }: EntityDealSheetDeepLinkProps) {
   const { persistedValue: renderDealId, onOpenChangeComplete: clearRenderDealId } =
     useSheetPersistedValue(dealId);
   const hostMounted = useSheetHostMounted(open, renderDealId);
 
-  const [deal, setDeal] = useState<Deal | null>(null);
-  const activeDealId = open && renderDealId ? renderDealId : null;
-  const [trackedDealId, setTrackedDealId] = useState(activeDealId);
+  const [deal, setDeal] = useState<Deal | null>(() =>
+    initialDeal && dealId && initialDeal.id === dealId ? initialDeal : null,
+  );
 
-  if (activeDealId !== trackedDealId) {
-    setTrackedDealId(activeDealId);
-    if (deal && deal.id !== activeDealId) setDeal(null);
+  if (open && dealId && initialDeal?.id === dealId && deal?.id !== dealId) {
+    setDeal(initialDeal);
   }
 
   useEffect(() => {
@@ -66,11 +71,12 @@ export function EntityDealSheetDeepLink({
     try {
       const updated = await dealsApi.update(id, data);
       setDeal(updated);
+      onEntityChanged?.();
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Could not save deal.'));
       throw err;
     }
-  }, []);
+  }, [onEntityChanged]);
 
   const handleStatusChange = useCallback(
     async (id: string, status: string) => {
@@ -78,6 +84,7 @@ export function EntityDealSheetDeepLink({
       try {
         const updated = await dealsApi.updateStatus(id, status);
         setDeal(updated);
+        onEntityChanged?.();
       } catch (err) {
         if (isStageGateApiError(err)) {
           toast.error('Complete required fields in the deal sheet before changing stage.');
@@ -86,7 +93,7 @@ export function EntityDealSheetDeepLink({
         toast.error(getApiErrorMessage(err, 'Deal stage change was blocked.'));
       }
     },
-    [deal],
+    [deal, onEntityChanged],
   );
 
   const handleRefresh = useCallback(async () => {
