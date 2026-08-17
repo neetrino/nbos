@@ -20,6 +20,7 @@ import {
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import {
   ChecklistInstanceWorkbenchSheet,
+  ChecklistWorkbenchStatusIcon,
   computeChecklistWorkbenchTriggerVariant,
 } from '@/features/checklist/checklist-instance-workbench-sheet';
 
@@ -216,8 +217,10 @@ export function DeliveryStageChecklistPanel({
         >
           <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
             {loading ? (
-              <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" aria-hidden />
-            ) : null}
+              <Loader2 className="text-muted-foreground size-5 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <ChecklistWorkbenchStatusIcon variant={statusVariant} className="size-5 shrink-0" />
+            )}
             <span className="truncate">{stageChecklistButtonLabel(loading, reviewed, total)}</span>
           </span>
           <ChevronRight className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
