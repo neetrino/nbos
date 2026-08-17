@@ -11,7 +11,7 @@ ENV HUSKY=0
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates curl \
   && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
