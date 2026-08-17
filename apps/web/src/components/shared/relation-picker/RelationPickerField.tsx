@@ -17,7 +17,11 @@ import {
   pickAvatarRecord,
   useMergedPickerAvatars,
 } from './relation-picker-avatars';
-import { useRelationPickerOpenEffects } from './relation-picker-field-helpers';
+import {
+  resolveRelationPickerMaxResults,
+  resolveRelationPickerSearchDebounceMs,
+  useRelationPickerOpenEffects,
+} from './relation-picker-field-helpers';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
@@ -25,9 +29,6 @@ import {
   type RelationPickerFieldProps,
   type RelationPickerOption,
 } from './relation-picker.types';
-
-const DEFAULT_MAX_RESULTS = 8;
-const SEARCH_DEBOUNCE_MS = 150;
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
   const {
@@ -40,11 +41,13 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     readOnly = false,
     className,
     onSearch,
-    maxResults = DEFAULT_MAX_RESULTS,
+    maxResults: maxResultsProp,
     listMaxHeightClass = RELATION_PICKER_DROPDOWN_LIST_CLASS,
     onOpenSelected,
     onCreate,
   } = props;
+  const maxResults = resolveRelationPickerMaxResults(entityKind, maxResultsProp);
+  const searchDebounceMs = resolveRelationPickerSearchDebounceMs(entityKind);
 
   const selectionDisplay = props.selectionDisplay ?? 'chips';
   const multiple = isMultiProps(props);
@@ -58,6 +61,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const employeeDirectoryReadyRef = useRef(false);
   const { knownAvatars, rememberAvatar } = useMergedPickerAvatars(selectionAvatars, results);
 
   const interactionLocked = disabled || readOnly;
@@ -65,19 +69,28 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
 
   const doSearch = useCallback(
     (q: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(async () => {
-        setLoading(true);
+      const run = async () => {
+        const showSpinner = entityKind !== 'employee' || !employeeDirectoryReadyRef.current;
+        if (showSpinner) setLoading(true);
         try {
           const items = await onSearch(q);
+          if (entityKind === 'employee') employeeDirectoryReadyRef.current = true;
           setResults(items.slice(0, maxResults));
           setHighlightIdx(-1);
         } finally {
           setLoading(false);
         }
-      }, SEARCH_DEBOUNCE_MS);
+      };
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (searchDebounceMs <= 0) {
+        void run();
+        return;
+      }
+      debounceRef.current = setTimeout(() => {
+        void run();
+      }, searchDebounceMs);
     },
-    [onSearch, maxResults],
+    [entityKind, maxResults, onSearch, searchDebounceMs],
   );
 
   useRelationPickerOpenEffects({

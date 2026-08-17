@@ -1,6 +1,23 @@
 'use client';
 
 import { useEffect, type MutableRefObject, type RefObject } from 'react';
+import { EMPLOYEE_PICKER_PAGE_SIZE } from '@/lib/employees/employee-directory-constants';
+import type { RelationEntityKind } from './relation-picker.types';
+
+const DEFAULT_MAX_RESULTS = 8;
+const SEARCH_DEBOUNCE_MS = 150;
+
+export function resolveRelationPickerMaxResults(
+  entityKind: RelationEntityKind,
+  maxResults?: number,
+): number {
+  if (maxResults != null) return maxResults;
+  return entityKind === 'employee' ? EMPLOYEE_PICKER_PAGE_SIZE : DEFAULT_MAX_RESULTS;
+}
+
+export function resolveRelationPickerSearchDebounceMs(entityKind: RelationEntityKind): number {
+  return entityKind === 'employee' ? 0 : SEARCH_DEBOUNCE_MS;
+}
 
 export function useRelationPickerOpenEffects({
   open,

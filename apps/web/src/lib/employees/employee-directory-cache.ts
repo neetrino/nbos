@@ -4,22 +4,33 @@ import {
   EMPLOYEE_PICKER_EMPTY_CACHE_TTL_MS,
   EMPLOYEE_PICKER_PAGE_SIZE,
 } from './employee-directory-constants';
+import {
+  employeeUsageScore,
+  filterAndRankEmployeePickerPeople,
+  type EmployeePickerPerson,
+} from './employee-picker-rank';
 import { invalidateTeamDirectoryCache } from './team-directory-cache';
 
-type EmptyPageCache = {
-  options: RelationPickerOption[];
+type DirectoryCache = {
+  people: EmployeePickerPerson[];
   fetchedAt: number;
 };
 
-let emptyPageCache: EmptyPageCache | null = null;
-let emptyPagePromise: Promise<RelationPickerOption[]> | null = null;
+let directoryCache: DirectoryCache | null = null;
+let directoryPromise: Promise<EmployeePickerPerson[]> | null = null;
 
-function employeeToOption(row: Employee): RelationPickerOption {
+function employeeToPerson(row: Employee): EmployeePickerPerson {
   return {
-    value: row.id,
-    label: `${row.firstName} ${row.lastName}`.trim(),
-    subtitle: row.position ?? row.email,
-    avatar: row.avatar?.trim() || undefined,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    email: row.email,
+    usageScore: employeeUsageScore(row._count),
+    option: {
+      value: row.id,
+      label: `${row.firstName} ${row.lastName}`.trim(),
+      subtitle: row.position ?? row.email,
+      avatar: row.avatar?.trim() || undefined,
+    },
   };
 }
 
@@ -31,44 +42,43 @@ function applyExclude(
   return options.filter((row) => !excludeIds.has(row.value));
 }
 
-function emptyCacheFresh(): boolean {
+function directoryCacheFresh(): boolean {
   return (
-    emptyPageCache !== null &&
-    Date.now() - emptyPageCache.fetchedAt < EMPLOYEE_PICKER_EMPTY_CACHE_TTL_MS
+    directoryCache !== null &&
+    Date.now() - directoryCache.fetchedAt < EMPLOYEE_PICKER_EMPTY_CACHE_TTL_MS
   );
 }
 
-async function fetchPickerPage(search: string | undefined): Promise<RelationPickerOption[]> {
+async function fetchActiveDirectory(): Promise<EmployeePickerPerson[]> {
   const res = await employeesApi.getAll({
     page: 1,
     pageSize: EMPLOYEE_PICKER_PAGE_SIZE,
     status: 'ACTIVE',
-    search: search?.trim() || undefined,
   });
-  return res.items.map(employeeToOption);
+  return res.items.map(employeeToPerson);
 }
 
-async function loadEmptyPickerPage(): Promise<RelationPickerOption[]> {
-  if (emptyCacheFresh() && emptyPageCache) {
-    return emptyPageCache.options;
+async function loadActiveDirectory(): Promise<EmployeePickerPerson[]> {
+  if (directoryCacheFresh() && directoryCache) {
+    return directoryCache.people;
   }
-  if (emptyPagePromise) {
-    return emptyPagePromise;
+  if (directoryPromise) {
+    return directoryPromise;
   }
-  emptyPagePromise = fetchPickerPage(undefined)
-    .then((options) => {
-      emptyPageCache = { options, fetchedAt: Date.now() };
-      return options;
+  directoryPromise = fetchActiveDirectory()
+    .then((people) => {
+      directoryCache = { people, fetchedAt: Date.now() };
+      return people;
     })
     .finally(() => {
-      emptyPagePromise = null;
+      directoryPromise = null;
     });
-  return emptyPagePromise;
+  return directoryPromise;
 }
 
-/** Clears cached empty list so the next open refetches page 1. */
+/** Clears cached active list so the next open refetches. */
 export function invalidateEmployeePickerEmptyCache(): void {
-  emptyPageCache = null;
+  directoryCache = null;
 }
 
 /** Clears picker + team directory caches after employee mutations. */
@@ -77,23 +87,18 @@ export function invalidateEmployeeDirectoryCaches(): void {
   invalidateTeamDirectoryCache();
 }
 
-/** Warm first picker page (20 active employees) after sign-in. Best-effort — never throws. */
+/** Warm active employee directory after sign-in. Best-effort — never throws. */
 export function prefetchEmployeePickerEmptyPage(): void {
-  void loadEmptyPickerPage().catch(() => undefined);
+  void loadActiveDirectory().catch(() => undefined);
 }
 
 /**
- * Picker search: empty query → cached first page (20); typed query → API search (20).
+ * Picker search: one cached ACTIVE directory, then local filter + rank.
  */
 export async function searchEmployeesForPicker(
   query: string,
   excludeIds?: ReadonlySet<string>,
 ): Promise<RelationPickerOption[]> {
-  const trimmed = query.trim();
-  if (!trimmed) {
-    const options = await loadEmptyPickerPage();
-    return applyExclude(options, excludeIds);
-  }
-  const options = await fetchPickerPage(trimmed);
-  return applyExclude(options, excludeIds);
+  const people = await loadActiveDirectory();
+  return applyExclude(filterAndRankEmployeePickerPeople(people, query), excludeIds);
 }

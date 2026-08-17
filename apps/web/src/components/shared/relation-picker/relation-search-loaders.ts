@@ -64,7 +64,7 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
   );
 }
 
-/** Empty query: cached page 1 (20). Typed query: API search (20). */
+/** Cached ACTIVE directory, then local filter + rank. */
 export function useEmployeeRelationSearch(
   excludeIds?: ReadonlySet<string>,
 ): RelationPickerSearchFn {
