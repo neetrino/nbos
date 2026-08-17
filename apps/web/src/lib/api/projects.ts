@@ -65,6 +65,7 @@ export interface ProjectProductSummary {
   } | null;
   pm: EmployeeRef | null;
   developer?: EmployeeRef | null;
+  frontendDeveloper?: EmployeeRef | null;
   designer?: EmployeeRef | null;
   technicalSpecialist?: EmployeeRef | null;
   qaLead?: EmployeeRef | null;
