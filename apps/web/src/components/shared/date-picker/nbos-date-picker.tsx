@@ -134,6 +134,7 @@ export function NbosDatePicker({
           onClear={clearable ? handleClear : undefined}
           embedded={embedded}
           iconButtonShell={iconButtonShell}
+          className="w-full min-w-0"
         />
       </PopoverTrigger>
       <PopoverContent

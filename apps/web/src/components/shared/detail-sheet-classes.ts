@@ -178,14 +178,14 @@ export const DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS = [
 export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex h-10 w-full items-center gap-1 rounded-xl px-3',
+  'flex h-10 w-full min-w-0 items-center gap-1 overflow-hidden rounded-xl px-3',
 ].join(' ');
 
 /** Outlined quiet field shell — persistent border + h-10 row (visible label / relation chips). */
 export const DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
-  'flex h-10 w-full items-center gap-1 rounded-xl px-3',
+  'flex h-10 w-full min-w-0 items-center gap-1 overflow-hidden rounded-xl px-3',
 ].join(' ');
 
 /** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
@@ -243,7 +243,7 @@ export const RELATION_PICKER_PERSON_AVATAR_CLASS = [
 ].join(' ');
 
 export const RELATION_PICKER_SHEET_TARGET_LABEL_CLASS = [
-  'text-foreground block truncate font-medium transition-colors',
+  'text-foreground block min-w-0 truncate font-medium transition-colors',
   'group-hover/open:text-sky-600 group-focus-within/open:text-sky-600',
   'dark:group-hover/open:text-sky-400 dark:group-focus-within/open:text-sky-400',
 ].join(' ');

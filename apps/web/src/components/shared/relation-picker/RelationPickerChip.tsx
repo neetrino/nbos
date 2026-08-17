@@ -5,7 +5,6 @@ import { ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   RELATION_PICKER_CHIP_SHELL_CLASS,
   RELATION_PICKER_REPLACE_ZONE_CLASS,
   RELATION_PICKER_REPLACE_ZONE_GROW_CLASS,
@@ -14,7 +13,6 @@ import {
   RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
   RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS,
 } from '../detail-sheet-classes';
-import { PERSON_CONTACT_ROW_CLASS } from '../person-contact-row.constants';
 import type { RelationEntityKind } from './relation-picker.types';
 import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 
@@ -71,9 +69,9 @@ export function RelationPickerChip({
 
   const labelClass = cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'font-semibold');
 
-  /** Person chips: no ellipsis — button flex quirks + truncate cut names short with empty space left. */
+  /** Person chips: truncate with title — keep min-w-0 on ancestors so ellipsis uses full row width. */
   const personLabelClass = cn(
-    'text-foreground block font-semibold whitespace-nowrap transition-colors',
+    'text-foreground block min-w-0 truncate font-semibold transition-colors',
     'group-hover/open:text-sky-600 group-focus-within/open:text-sky-600',
     'dark:group-hover/open:text-sky-400 dark:group-focus-within/open:text-sky-400',
   );
@@ -100,15 +98,12 @@ export function RelationPickerChip({
     );
 
   const personIdentity = (
-    <span className="min-w-0 flex-1 text-left">
-      <span className={personLabelClass}>{label}</span>
+    <span className="min-w-0 flex-1 overflow-hidden text-left">
+      <span className={personLabelClass} title={label}>
+        {label}
+      </span>
       {subtitle ? (
-        <span
-          className={cn(
-            RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS,
-            'overflow-visible whitespace-nowrap',
-          )}
-        >
+        <span className={RELATION_PICKER_SHEET_TARGET_SUBTITLE_CLASS} title={subtitle}>
           {subtitle}
         </span>
       ) : null}
@@ -184,13 +179,12 @@ export function RelationPickerChip({
     return (
       <div
         className={cn(
-          PERSON_CONTACT_ROW_CLASS,
-          DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-          'group/open gap-2 pr-1',
+          RELATION_PICKER_CHIP_SHELL_CLASS,
+          'group/open gap-2',
           disabled && 'opacity-60',
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center">
+        <div className="flex min-w-0 flex-1 items-center overflow-hidden">
           {canOpen ? (
             <button
               type="button"
@@ -198,14 +192,16 @@ export function RelationPickerChip({
               onClick={onOpen}
               className={cn(
                 RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
-                'flex w-full min-w-0 items-center gap-2.5 text-left',
+                'flex w-full min-w-0 items-center gap-2.5 overflow-hidden text-left',
               )}
               aria-label={`Open ${label}`}
             >
               {personOpenBody}
             </button>
           ) : (
-            <div className="flex w-full min-w-0 items-center gap-2.5">{personOpenBody}</div>
+            <div className="flex w-full min-w-0 items-center gap-2.5 overflow-hidden">
+              {personOpenBody}
+            </div>
           )}
         </div>
         {replaceButton}

@@ -69,6 +69,8 @@ export function TaskSheetGeneralSection({
     }
   }
 
+  const createdAtLabel = formatTaskSheetDateTime(task.createdAt);
+
   return (
     <>
       <DetailSheetOptionalDescriptionField
@@ -213,9 +215,14 @@ export function TaskSheetGeneralSection({
 
               <TaskSheetCompactRow label="Created">
                 <div className={TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS}>
-                  <span className="truncate">{formatTaskSheetDateTime(task.createdAt)}</span>
+                  <span className="min-w-0 flex-1 truncate" title={createdAtLabel}>
+                    {createdAtLabel}
+                  </span>
                   <span className="text-muted-foreground shrink-0">·</span>
-                  <span className="text-muted-foreground shrink-0 font-mono text-xs">
+                  <span
+                    className="text-muted-foreground min-w-0 flex-1 truncate font-mono text-xs"
+                    title={task.code}
+                  >
                     {task.code}
                   </span>
                   <Button

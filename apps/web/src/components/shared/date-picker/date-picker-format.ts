@@ -43,11 +43,12 @@ export function formatDateDisplay(
   withTime = false,
 ): string {
   if (!date || !isValid(date)) return '';
+  const includeYear = date.getFullYear() !== new Date().getFullYear();
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',
-    year: 'numeric',
-    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+    ...(includeYear ? { year: 'numeric' as const } : {}),
+    ...(withTime ? { hour: '2-digit' as const, minute: '2-digit' as const } : {}),
   }).format(date);
 }
 
