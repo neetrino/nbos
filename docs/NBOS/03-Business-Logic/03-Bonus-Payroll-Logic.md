@@ -144,10 +144,13 @@
 ```text
 Seller:     100,000
 PM:          30,000
-Developer: 120,000
+Developer Backend:  84,000
+Developer Frontend: 36,000
 Designer:   50,000
 Total:     300,000
 ```
+
+Если Frontend не назначен, Backend получает всю delivery developer pool (здесь 120,000).
 
 ### До сдачи продукта
 
@@ -180,7 +183,8 @@ Product Done
 ```text
 Remaining:
 PM:         30,000
-Developer:120,000
+Developer Backend:  84,000
+Developer Frontend: 36,000
 Designer:  50,000
 Total:    200,000
 
@@ -188,7 +192,8 @@ Available funding: 100,000
 
 Auto-release:
 PM:         15,000
-Developer: 60,000
+Developer Backend:  42,000
+Developer Frontend: 18,000
 Designer:  25,000
 ```
 

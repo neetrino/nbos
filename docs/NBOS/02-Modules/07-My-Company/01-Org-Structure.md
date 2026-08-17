@@ -120,13 +120,13 @@ Assignments:
 
 На данном этапе многие роли совмещены:
 
-| Сотрудник | Совмещаемые функции                                |
-| --------- | -------------------------------------------------- |
-| CEO       | Executive + Finance Director + Operations          |
-| PM #1     | Project Manager + частично Developer (code review) |
-| PM #2     | Project Manager + QA                               |
-| Seller #1 | Sales + частично Marketing                         |
-| Developer | Development + DevOps                               |
+| Сотрудник         | Совмещаемые функции                                |
+| ----------------- | -------------------------------------------------- |
+| CEO               | Executive + Finance Director + Operations          |
+| PM #1             | Project Manager + частично Developer (code review) |
+| PM #2             | Project Manager + QA                               |
+| Seller #1         | Sales + частично Marketing                         |
+| Developer Backend | Development + DevOps                               |
 
 Это нормально для компании из 15–20 человек. Но **структура проектируется на целевое состояние** (30–50 человек), а текущие совмещения фиксируются как временные.
 
