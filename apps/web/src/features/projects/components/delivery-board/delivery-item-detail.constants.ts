@@ -22,10 +22,13 @@ export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
   'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[60vw]';
 
 /**
- * General tab: wider left (planning, access, team) + narrow Client & order column.
+ * General tab: wider left (planning, access, team) + narrow Stage readiness / Client & order column.
  */
 export const DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS =
-  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_13rem] xl:items-start xl:gap-4';
+  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_15rem] xl:items-start xl:gap-4';
 
-/** Column stack — cards fill track width so column edges stay aligned. */
-export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS = 'flex min-w-0 w-full flex-col gap-4';
+/**
+ * Right column (Stage readiness + Client & order) — sticks while the left column scrolls.
+ */
+export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS =
+  'flex min-w-0 w-full flex-col gap-4 xl:sticky xl:top-4 xl:z-10';

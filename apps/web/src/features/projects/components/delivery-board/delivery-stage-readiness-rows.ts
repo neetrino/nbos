@@ -6,8 +6,30 @@ import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/
 export interface StageReadinessRow {
   key: string;
   label: string;
+  /** Progress fragment kept on one line (e.g. checklist counts). */
+  detail?: string;
   done: boolean;
 }
+
+function checklistReadinessDetail(
+  checklist: ChecklistStageProgress,
+): { label: string; detail: string; done: boolean } {
+  const completedChecklists = checklist.completedChecklists ?? 0;
+  const totalChecklists = checklist.totalChecklists ?? 0;
+  if (totalChecklists > 0) {
+    return {
+      label: 'Stage checklist',
+      detail: `${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed`,
+      done: completedChecklists >= totalChecklists,
+    };
+  }
+  return {
+    label: 'Stage checklist',
+    detail: `${checklist.completed}/${checklist.total} reviewed`,
+    done: checklist.completed >= checklist.total,
+  };
+}
+
 
 const CLOSED_TASK = new Set(['DONE', 'ON_HOLD', 'COMPLETED']);
 const CLOSED_TICKET = new Set(['RESOLVED', 'CLOSED']);
@@ -61,19 +83,8 @@ export function buildProductStageReadinessRows(
   }
 
   if (checklist && checklist.total > 0) {
-    const completedChecklists = checklist.completedChecklists ?? 0;
-    const totalChecklists = checklist.totalChecklists ?? 0;
-    rows.push({
-      key: 'checklist',
-      label:
-        totalChecklists > 0
-          ? `Stage checklist (${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed)`
-          : `Stage checklist (${checklist.completed}/${checklist.total})`,
-      done:
-        totalChecklists > 0
-          ? completedChecklists >= totalChecklists
-          : checklist.completed >= checklist.total,
-    });
+    const { label, detail, done } = checklistReadinessDetail(checklist);
+    rows.push({ key: 'checklist', label, detail, done });
   }
 
   return rows;
@@ -112,19 +123,8 @@ export function buildExtensionStageReadinessRows(
   }
 
   if (checklist && checklist.total > 0) {
-    const completedChecklists = checklist.completedChecklists ?? 0;
-    const totalChecklists = checklist.totalChecklists ?? 0;
-    rows.push({
-      key: 'checklist',
-      label:
-        totalChecklists > 0
-          ? `Stage checklist (${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed)`
-          : `Stage checklist (${checklist.completed}/${checklist.total})`,
-      done:
-        totalChecklists > 0
-          ? completedChecklists >= totalChecklists
-          : checklist.completed >= checklist.total,
-    });
+    const { label, detail, done } = checklistReadinessDetail(checklist);
+    rows.push({ key: 'checklist', label, detail, done });
   }
 
   return rows;

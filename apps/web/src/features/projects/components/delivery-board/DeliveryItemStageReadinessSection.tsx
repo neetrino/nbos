@@ -44,7 +44,7 @@ export function DeliveryItemStageReadinessSection({
 
   if (!lifecycle || rows.length === 0) {
     return (
-      <section className="border-border bg-card/40 rounded-xl border p-4">
+      <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
         <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>Stage readiness</h3>
         <p className="text-muted-foreground text-sm">No stage requirement rows for this state.</p>
       </section>
@@ -58,9 +58,10 @@ export function DeliveryItemStageReadinessSection({
       className={deliveryStageGateSectionClass(
         gateRequiredFields,
         'clientAcceptance',
-        'border-border bg-card/40 rounded-xl border p-4',
+        'border-border bg-card rounded-xl border p-4 shadow-sm',
       )}
     >
+
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage readiness</h3>
         <p className="text-muted-foreground text-xs">
@@ -78,9 +79,14 @@ export function DeliveryItemStageReadinessSection({
             ) : (
               <Circle className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
             )}
-            <span className={row.done ? 'text-muted-foreground' : 'text-foreground font-medium'}>
-              {row.label}
-            </span>
+            <div className="min-w-0 flex-1">
+              <p className={row.done ? 'text-muted-foreground' : 'text-foreground font-medium'}>
+                {row.label}
+              </p>
+              {row.detail ? (
+                <p className="text-muted-foreground mt-0.5 whitespace-nowrap text-xs">{row.detail}</p>
+              ) : null}
+            </div>
           </li>
         ))}
       </ul>

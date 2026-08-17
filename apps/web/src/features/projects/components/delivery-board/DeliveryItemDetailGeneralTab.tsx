@@ -97,15 +97,6 @@ export function DeliveryItemDetailGeneralTab({
     <div className="space-y-4 px-5 py-4 sm:px-7">
       <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
         <div className="flex w-full min-w-0 flex-col gap-4">
-          <DeliveryItemStageReadinessSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            lifecycle={lifecycle}
-            checklistProgress={checklistProgress}
-            gateRequiredFields={gateRequiredFields}
-            stageGateActionBlockers={stageGateActionBlockers}
-          />
           {product && productPlan ? (
             <ProductPlanningSection
               entityId={product.id}
@@ -164,6 +155,15 @@ export function DeliveryItemDetailGeneralTab({
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
+          <DeliveryItemStageReadinessSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            lifecycle={lifecycle}
+            checklistProgress={checklistProgress}
+            gateRequiredFields={gateRequiredFields}
+            stageGateActionBlockers={stageGateActionBlockers}
+          />
           <DeliveryItemCommercialSection
             kind={kind}
             product={product}
