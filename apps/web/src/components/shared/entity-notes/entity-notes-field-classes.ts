@@ -31,6 +31,10 @@ export const ENTITY_NOTES_EDITOR_ROOT_CLASS = 'nbos-entity-notes-editor';
 export const ENTITY_NOTES_EMPTY_HINT_CLASS =
   'text-muted-foreground pointer-events-none absolute inset-y-0 left-3 flex max-w-[calc(100%-1.5rem)] items-center gap-1 text-xs';
 
+/** Fade over the last lines when description is collapsed. */
+export const ENTITY_NOTES_COLLAPSE_FADE_CLASS =
+  'pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-card to-transparent';
+
 export const ENTITY_NOTES_TOOLBAR_CLASS =
   'border-border/80 bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1';
 

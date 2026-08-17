@@ -31,4 +31,9 @@ export interface EntityNotesFieldProps {
   className?: string;
   /** e.g. stage-gate ring from CRM sheets */
   shellClassName?: string;
+  /**
+   * Read mode: show ~half of long content with fade + Edit / See more
+   * (Bitrix-style task description).
+   */
+  collapsiblePreview?: boolean;
 }
