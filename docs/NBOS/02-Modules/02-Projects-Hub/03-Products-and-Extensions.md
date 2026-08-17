@@ -53,6 +53,8 @@
 - scope / description;
 - seller;
 - PM;
+- `developerId` — Developer Backend (primary, accountable);
+- `frontendDeveloperId` — Developer Frontend (assisting, seat `DEVELOPER_FRONTEND`; optional);
 - linked order;
 - company / contact context через project.
 
@@ -211,7 +213,7 @@ UI-композиция wide drawer, header, табы и breakpoints: [`../../05
 - current blockers;
 - deadline;
 - PM / owner;
-- active assignees: developer, designer, tech specialist, QA where relevant;
+- active assignees: Developer Backend, Developer Frontend (optional), designer, tech specialist, QA where relevant;
 - requirements / stage timeline visible on the first screen;
 - active checklist;
 - key work links: staging, production, repository, design, technical task where relevant;
@@ -398,7 +400,7 @@ Closed имеет два режима:
 - обязательные связанные сущности;
 - обязательные внешние действия, если они нужны по сценарию.
 
-У каждого stage свой набор required items. Эти пункты могут заполнять разные роли: PM, Seller, Developer, Tech specialist, QA, Finance или Head of Delivery.
+У каждого stage свой набор required items. Эти пункты могут заполнять разные роли: PM, Seller, Developer Backend, Developer Frontend, Tech specialist, QA, Finance или Head of Delivery.
 
 На внешней Delivery Board card показывается только compact segmented readiness ring текущего stage, например `7/10`. Полный список текущих и будущих requirements показывается внутри opened Delivery Card в `Stage Gate Timeline`.
 

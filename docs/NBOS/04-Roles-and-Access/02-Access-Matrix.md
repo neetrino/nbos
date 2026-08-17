@@ -4,6 +4,8 @@
 
 > **Status (2026-06-02):** high-level reference matrix. Детальные правила Project/Product team access, Role Access Levels, Personal Access Levels и Manual Override находятся в `../02-Modules/07-My-Company/09-Platform-Access-Foundation.md`. Technical permission roles/actions/scopes находятся в `../02-Modules/16-Settings-Admin/02-Permissions-RBAC.md`.
 
+> **Developer Frontend (2026-08):** роль `developer-frontend` использует **ту же** permission matrix, что и Developer Backend (`developer` / Delivery User). В таблицах ниже колонка **Dev** = Backend; Frontend наследует те же уровни. **Junior Developer** — отдельная более узкая роль; не объединять с Frontend.
+
 ## Обзор
 
 Доступ в NBOS построен на модели RBAC (Role-Based Access Control). Каждый модуль платформы имеет настройку уровня доступа для каждой роли. Доступ определяется комбинацией роли сотрудника и его привязки к конкретным проектам/отделам.
@@ -64,7 +66,7 @@
 
 **Пояснения:**
 
-- **Dev/Designer/QA** — видят только проекты и задачи, к которым они назначены
+- **Dev/Designer/QA** — видят только проекты и задачи, к которым они назначены (**Dev** = Developer Backend и Developer Frontend — одинаковые права)
 - **Jr Dev** — видит только конкретные назначенные задачи, не всю Scrum-доску
 - **Finance** — видит Projects Hub в режиме чтения (финансовая сводка проекта)
 - **Seller** — может создавать задачи для других (напоминания, запросы), но не видит проектный Scrum
@@ -174,7 +176,7 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 
 ### Привязка к проекту
 
-Для ролей Dev, Jr Dev, Designer, QA доступ к данным ограничен ProjectTeamMember/ProductTeamMember policy. Product Team не получает автоматически project-level access ко всем продуктам проекта. Назначение и повышение до project-level команды выполняется по правилам Platform Access Foundation.
+Для ролей Developer Backend, Developer Frontend, Jr Dev, Designer, QA доступ к данным ограничен ProjectTeamMember/ProductTeamMember policy. Product Team не получает автоматически project-level access ко всем продуктам проекта. Назначение и повышение до project-level команды выполняется по правилам Platform Access Foundation.
 
 ### Привязка к отделу
 

@@ -65,9 +65,10 @@ NBOS состоит из двух слоёв:
 | CEO / Founder         | Всё                                               | Полный доступ ко всем модулям и данным                                      |
 | Seller                | CRM, Project (частично), Finance (частично)       | Лиды, сделки, заказы, инвойсы, суммы оплат. Не видит пароли, scrum, расходы |
 | PM                    | Projects Hub, Tasks, Messenger, Calendar          | Проекты, продукты, задачи, спринты, чаты, дедлайны. Видит пароли проекта    |
-| Developer             | Projects Hub (частично), Tasks, Credentials       | Задачи, пароли проекта, чаты задач. Не видит финансы                        |
+| Developer Backend     | Projects Hub (частично), Tasks, Credentials       | Задачи, пароли проекта, чаты задач. Не видит финансы                        |
+| Developer Frontend    | Projects Hub (частично), Tasks, Credentials       | Те же права, что у Developer Backend; assisting на Product                  |
 | Junior Developer      | Tasks, Credentials (ограниченно)                  | Только свои задачи, только назначенные пароли                               |
-| Designer              | Tasks, Drive                                      | Задачи, файлы проекта. Аналогично Developer                                 |
+| Designer              | Tasks, Drive                                      | Задачи, файлы проекта. Аналогично Developer Backend                         |
 | QA                    | Tasks, Support                                    | Задачи, тикеты, чеклисты                                                    |
 | Finance Director      | Finance, Invoices, Expenses, Subscriptions, Bonus | Все финансовые операции. Не видит scrum/задачи                              |
 | Tech Specialist / Ops | Credentials, Drive, Domains                       | Пароли, домены, сервисы, хостинги                                           |

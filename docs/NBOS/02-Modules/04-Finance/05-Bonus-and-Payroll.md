@@ -72,14 +72,15 @@
 
 `Bonus Policy` относится не только к Seller. Она должна поддерживать разные правила по отделам:
 
-| Отдел / роль | От чего может зависеть бонус                                       |
-| ------------ | ------------------------------------------------------------------ |
-| Seller       | Lead source, deal type, payment type, personal rate, KPI gate      |
-| Developer    | Product Category, Product Type, роль в проекте, сложность, уровень |
-| PM           | Сдача в срок, отсутствие эскалаций, project margin, acceptance     |
-| Designer     | Product Type, объём дизайна, количество правок, срок сдачи         |
-| Marketing    | MQL, SQL, CPL, revenue from marketing leads                        |
-| Support      | SLA, закрытые tickets, reopen rate, maintenance quality            |
+| Отдел / роль       | От чего может зависеть бонус                                       |
+| ------------------ | ------------------------------------------------------------------ |
+| Seller             | Lead source, deal type, payment type, personal rate, KPI gate      |
+| Developer Backend  | Product Category, Product Type, роль в проекте, сложность, уровень |
+| Developer Frontend | Product Category, Product Type, роль в проекте, сложность, уровень |
+| PM                 | Сдача в срок, отсутствие эскалаций, project margin, acceptance     |
+| Designer           | Product Type, объём дизайна, количество правок, срок сдачи         |
+| Marketing          | MQL, SQL, CPL, revenue from marketing leads                        |
+| Support            | SLA, закрытые tickets, reopen rate, maintenance quality            |
 
 На старте можно реализовать только понятные правила, но модель должна позволять добавлять новые параметры без переписывания всей финансовой логики.
 
@@ -120,11 +121,17 @@ Marketing:
 - KPI по MQL / SQL;
 - бонусы по маркетинговым результатам, если применимо.
 
-Developer:
+Developer Backend:
 
 - фиксированная зарплата;
 - бонусы по закрытым работам;
 - KPI можно добавить позже, но структура должна быть готова сразу.
+
+Developer Frontend:
+
+- фиксированная зарплата;
+- бонусы по закрытым работам (delivery developer pool: **30%** при совместном назначении с Backend, иначе Backend **100%**);
+- та же Bonus Policy engine, отдельная роль в расчёте.
 
 Compensation Profile не должен хранить только одну текущую зарплату. Он должен иметь историю версий, потому что условия сотрудника могут меняться: фикс, проценты, KPI, уровень, договорённости.
 
@@ -229,6 +236,8 @@ Product Done
 ```
 
 По умолчанию частичный auto-release распределяется пропорционально между оставшимися плановыми бонусами сотрудников.
+
+**Delivery developer pool (Backend + Frontend):** доля бонуса роли Developer по Product / Extension делится **70%** Backend (`developerId`) / **30%** Frontend (`frontendDeveloperId`). Если Frontend не назначен — Backend **100%**. Правило не распространяется на PM, Designer, Seller и прочие роли product pool.
 
 Пример:
 

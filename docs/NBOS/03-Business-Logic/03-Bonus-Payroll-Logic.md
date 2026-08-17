@@ -113,14 +113,15 @@
 
 `Bonus Policy` применяется не только к продавцам. Это универсальный слой правил мотивации для всех отделов.
 
-| Роль      | От чего может зависеть бонус                                                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Seller    | категория **`From`** (Sales/Marketing/Partner/Client), тип оплаты (Classic / Subscription first month), две ставки `seller_rate` / `assistant_rate` из `Bonus Policy`, KPI gate |
-| Developer | product category, product type, сложность, роль в проекте, уровень                                                                                                              |
-| PM        | project delivery, deadline, scope variance, acceptance                                                                                                                          |
-| Designer  | product type, дизайн-объём, правки, acceptance                                                                                                                                  |
-| Marketing | MQL, SQL, CPL, revenue from marketing leads                                                                                                                                     |
-| Support   | SLA, tickets closed, reopen rate, maintenance quality                                                                                                                           |
+| Роль               | От чего может зависеть бонус                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Seller             | категория **`From`** (Sales/Marketing/Partner/Client), тип оплаты (Classic / Subscription first month), две ставки `seller_rate` / `assistant_rate` из `Bonus Policy`, KPI gate |
+| Developer Backend  | product category, product type, сложность, роль в проекте, уровень                                                                                                              |
+| Developer Frontend | product category, product type, сложность, роль в проекте, уровень                                                                                                              |
+| PM                 | project delivery, deadline, scope variance, acceptance                                                                                                                          |
+| Designer           | product type, дизайн-объём, правки, acceptance                                                                                                                                  |
+| Marketing          | MQL, SQL, CPL, revenue from marketing leads                                                                                                                                     |
+| Support            | SLA, tickets closed, reopen rate, maintenance quality                                                                                                                           |
 
 Код должен содержать безопасный `Bonus Policy Engine`, а интерфейс должен позволять настраивать параметры правил: проценты, thresholds, effective dates, employee overrides и статус active/inactive.
 
@@ -217,9 +218,21 @@ New client payment
 
 ### Кто получает
 
-- **Developer** (разработчик)
+- **Developer Backend** (разработчик, primary accountable)
+- **Developer Frontend** (frontend-помощь, assisting)
 - **PM** (проектный менеджер)
 - **Designer** (дизайнер)
+
+### Распределение delivery developer pool
+
+Правило относится **только** к доле бонуса роли Developer по Product / Extension (не к PM, Designer и не ко всему product bonus pool):
+
+| Назначение на Product                                 | Backend                 | Frontend               |
+| ----------------------------------------------------- | ----------------------- | ---------------------- |
+| Оба назначены (`developerId` + `frontendDeveloperId`) | **70%** developer pool  | **30%** developer pool |
+| Только Backend (`developerId`)                        | **100%** developer pool | —                      |
+
+Если Frontend не назначен, Backend получает **100%** delivery developer pool; отдельная строка Frontend не создаётся.
 
 ### Триггер начисления
 

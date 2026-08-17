@@ -386,7 +386,7 @@ Daily core:
 - blockers;
 - deadline;
 - PM / delivery owner;
-- active specialists: developer, designer, tech specialist, QA where relevant;
+- active specialists: Developer Backend, Developer Frontend (optional), designer, tech specialist, QA where relevant;
 - requirements / stage timeline visible on the first screen;
 - active checklist requirement;
 - key work links;
@@ -546,7 +546,8 @@ Transfer      0/6 Future
 
 - PM;
 - Seller;
-- Developer;
+- Developer Backend;
+- Developer Frontend;
 - Tech specialist;
 - QA;
 - Finance;
@@ -590,7 +591,8 @@ Checklist is only one possible Stage Requirement type.
 
 ```text
 Starting requirements
-  - Developer selected
+  - Developer Backend selected
+  - Developer Frontend selected (optional)
   - Designer selected
   - Tech specialist selected
   - PM reviewed technical task
@@ -913,7 +915,7 @@ GET /api/delivery-board/items/:kind/:id
 
 - CEO / Owner / Head of Delivery - все cards;
 - PM - свои cards и cards своей команды;
-- Developer / QA / Designer - cards, где они участвуют;
+- Developer Backend / Developer Frontend / QA / Designer - cards, где они участвуют;
 - Seller - read-only delivery visibility по своим deals/projects;
 - Finance - read-only delivery status + finance-dependent actions where allowed.
 

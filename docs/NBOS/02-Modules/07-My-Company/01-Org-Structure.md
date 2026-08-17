@@ -16,15 +16,15 @@
 
 Внутри модуля:
 
-| Раздел            | Смысл                                                               |
-| ----------------- | ------------------------------------------------------------------- |
-| `Org Structure`   | Визуальная структура компании: отделы, seats, владельцы, подчинение |
-| `Team`            | Сотрудники и их карточки                                            |
-| `Departments`     | Отделы компании и их владельцы                                      |
-| `Roles & Seats`   | Бизнес-функции: Seller, PM, Developer, Head of Sales и т.д.         |
-| `Compensation`    | Compensation profiles, bonus policies, KPI policies                 |
-| `KPI / Scorecard` | KPI company / department / employee                                 |
-| `SOP & Templates` | Процедуры, onboarding, offboarding, регулярные процессы             |
+| Раздел            | Смысл                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `Org Structure`   | Визуальная структура компании: отделы, seats, владельцы, подчинение                     |
+| `Team`            | Сотрудники и их карточки                                                                |
+| `Departments`     | Отделы компании и их владельцы                                                          |
+| `Roles & Seats`   | Бизнес-функции: Seller, PM, Developer Backend, Developer Frontend, Head of Sales и т.д. |
+| `Compensation`    | Compensation profiles, bonus policies, KPI policies                                     |
+| `KPI / Scorecard` | KPI company / department / employee                                                     |
+| `SOP & Templates` | Процедуры, onboarding, offboarding, регулярные процессы                                 |
 
 `My Company` не должен смешиваться с `Settings`. Settings - это системная админка платформы, а My Company - бизнес-структура компании.
 
@@ -63,7 +63,8 @@ Department -> Seat -> Seat Assignment -> Employee
 - `Head of Sales`;
 - `Seller`;
 - `Project Manager`;
-- `Developer`;
+- `Developer Backend`;
+- `Developer Frontend`;
 - `Finance Director`;
 - `Support Engineer`.
 
@@ -230,13 +231,14 @@ Assignments:
 
 **Seats внутри:**
 
-| Seat                                  | Описание                                                           |
-| ------------------------------------- | ------------------------------------------------------------------ |
-| Head of Delivery                      | Ресурсное планирование, качество доставки                          |
-| Project Manager                       | Управление конкретными проектами, спринты, коммуникация с клиентом |
-| Developer (Junior/Middle/Senior/Lead) | Разработка продуктов                                               |
-| Designer (UI/UX)                      | Дизайн интерфейсов                                                 |
-| QA Engineer                           | Тестирование, контроль качества                                    |
+| Seat                                          | Описание                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| Head of Delivery                              | Ресурсное планирование, качество доставки                          |
+| Project Manager                               | Управление конкретными проектами, спринты, коммуникация с клиентом |
+| Developer Backend (Junior/Middle/Senior/Lead) | Основная разработка продуктов (accountable)                        |
+| Developer Frontend                            | Frontend-помощь в delivery (assisting, не primary)                 |
+| Designer (UI/UX)                              | Дизайн интерфейсов                                                 |
+| QA Engineer                                   | Тестирование, контроль качества                                    |
 
 ### 5. Support (Техническая поддержка / Maintenance)
 
