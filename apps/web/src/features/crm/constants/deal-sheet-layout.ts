@@ -1,5 +1,5 @@
 /**
- * Deal detail sheet width — sized for main form + handoff rail (w-72) without excess side space.
+ * Deal detail sheet width — main form + handoff rail (w-64); sheet keeps room for a wider left column.
  * Keep rail anchor in sync with content width.
  */
 export const DEAL_DETAIL_SHEET_WIDTH_CLASS =
