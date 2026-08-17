@@ -68,6 +68,17 @@ export class SchedulerController {
     return this.schedulerService.runExpensePlanAutoDue();
   }
 
+  @Post('recurring-tasks-due')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create due recurring task instances (external cron)',
+    description:
+      'Finds active RecurringTaskTemplate rows whose nextCreateAt is due and creates Task instances. Optional in-process cron when SCHEDULER_RECURRING_TASKS_DUE_ENABLED=true.',
+  })
+  async runRecurringTasksDue() {
+    return this.schedulerService.runRecurringTasksDue();
+  }
+
   @Post('report-schedules-due')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

@@ -12,6 +12,7 @@ export const DEFAULT_SCHEDULER_SHUTDOWN_TIMEOUT_MS = 45_000;
 export const SCHEDULER_JOB_NAMES = {
   expensePlanAutoDue: 'expense-plan-auto-due',
   reportSchedulesDue: 'report-schedules-due',
+  recurringTasksDue: 'recurring-tasks-due',
   credentialTrashPurge: 'credential-trash-purge',
   platformTrashPurge: 'platform-trash-purge',
   notificationInboxReconcile: 'notification-inbox-reconcile',

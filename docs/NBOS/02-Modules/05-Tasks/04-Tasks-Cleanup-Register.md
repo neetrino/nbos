@@ -306,23 +306,24 @@ Remaining depth:
 - добавить review/approval runtime;
 - connect attachment and linked-entity rules to Drive/runtime sources.
 
-### C7. Recurring существует, но ещё в упрощённой форме
+### C7. Recurring spawn и admin UI есть; scheduling engine ещё упрощённый
 
 Подтверждение в коде:
 
-- [apps/api/src/modules/tasks/recurring-tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/recurring-tasks.service.ts:129)
+- [apps/api/src/modules/tasks/recurring-tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/recurring-tasks.service.ts:1)
+- [apps/web/src/features/tasks/recurring/RecurringTasksPageView.tsx](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/tasks/recurring/RecurringTasksPageView.tsx:1)
 
-Проблема:
+Что уже есть:
 
-- логика `computeNextCreateAt` пока упрощённая;
-- нет богатой scheduling semantics уровня “каждый второй понедельник в 15:00” в полной форме;
-- нет runtime differentiation по workspace types.
+- CRUD + edit sheet (frequency, interval, weekdays, day-of-month, time, start/end, due offset, checklist);
+- `processDueTemplates` / `runNow` создают обычные `Task` (`isRecurring`, `templateTaskId`);
+- optional cron `recurring-tasks-due` (`SCHEDULER_RECURRING_TASKS_DUE_ENABLED`).
 
-Что потом нужно сделать:
+Что ещё упрощено:
 
-- расширить scheduling engine;
-- связать recurring templates с workspace/context model;
-- проверить таймзоны и due-date offsets.
+- `computeNextCreateAt` без cron-like “каждый 2-й понедельник в 15:00” в полной форме;
+- нет workspace-type differentiation;
+- время считается в timezone процесса, не в отдельном поле timezone.
 
 ### C8. Automation и blueprints пока смешаны в runtime
 

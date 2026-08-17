@@ -15,12 +15,13 @@
 
 Registered only when feature env is truthy. Historically lived inside `SchedulerModule` imported by API (`PROCESS_ROLE=all` / legacy).
 
-| Job                      | Current trigger                                      | Frequency           | Current process | Max duration | Idempotency                           | External effects                 | Risk   | Class                     |
-| ------------------------ | ---------------------------------------------------- | ------------------- | --------------- | -----------: | ------------------------------------- | -------------------------------- | ------ | ------------------------- |
-| `expense-plan-auto-due`  | `SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED` + CronJob  | default `0 2 * * *` | API (legacy)    |      minutes | plan `nextDueDate` advance            | creates expense cards            | medium | SET-BASED + domain writes |
-| `report-schedules-due`   | `REPORT_SCHEDULES_DUE_CRON_ENABLED` + CronJob        | env cron            | API (legacy)    |      minutes | schedule `nextRunAt` + export `jobId` | **QUEUE PRODUCER** report export | medium | QUEUE PRODUCER            |
-| `credential-trash-purge` | `SCHEDULER_CREDENTIAL_TRASH_PURGE_ENABLED` + CronJob | env cron            | API (legacy)    |      minutes | retention TTL filter                  | hard-delete secrets              | high   | SET-BASED UPDATE          |
-| `platform-trash-purge`   | `SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED` + CronJob   | env cron            | API (legacy)    |      minutes | retention TTL + audit                 | Credentials + Drive purge        | high   | SET-BASED UPDATE          |
+| Job                      | Current trigger                                      | Frequency             | Current process | Max duration | Idempotency                           | External effects                 | Risk   | Class                     |
+| ------------------------ | ---------------------------------------------------- | --------------------- | --------------- | -----------: | ------------------------------------- | -------------------------------- | ------ | ------------------------- |
+| `expense-plan-auto-due`  | `SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED` + CronJob  | default `0 2 * * *`   | API (legacy)    |      minutes | plan `nextDueDate` advance            | creates expense cards            | medium | SET-BASED + domain writes |
+| `report-schedules-due`   | `REPORT_SCHEDULES_DUE_CRON_ENABLED` + CronJob        | env cron              | API (legacy)    |      minutes | schedule `nextRunAt` + export `jobId` | **QUEUE PRODUCER** report export | medium | QUEUE PRODUCER            |
+| `recurring-tasks-due`    | `SCHEDULER_RECURRING_TASKS_DUE_ENABLED` + CronJob    | default `*/5 * * * *` | API / scheduler |      minutes | `nextCreateAt` advance after spawn    | creates Task instances           | medium | SET-BASED + domain writes |
+| `credential-trash-purge` | `SCHEDULER_CREDENTIAL_TRASH_PURGE_ENABLED` + CronJob | env cron              | API (legacy)    |      minutes | retention TTL filter                  | hard-delete secrets              | high   | SET-BASED UPDATE          |
+| `platform-trash-purge`   | `SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED` + CronJob   | env cron              | API (legacy)    |      minutes | retention TTL + audit                 | Credentials + Drive purge        | high   | SET-BASED UPDATE          |
 
 ## HTTP external cron (`POST /api/scheduler/*` + `SCHEDULER_API_KEY`)
 
@@ -35,6 +36,7 @@ Preferred production path before Phase 4. Runs inside **API** process when Cooli
 | `expense-backlog-reminders`         | POST `/scheduler/expense-backlog-reminders`         | daily/weekly       | API             |         minutes | NotificationJob keys       | in-app notification jobs    | medium   | QUEUE/notif producer |
 | `expense-plan-auto-due`             | POST `/scheduler/expense-plan-auto-due`             | daily              | API             |         minutes | same as cron               | cards                       | medium   | SET-BASED            |
 | `report-schedules-due`              | POST `/scheduler/report-schedules-due`              | schedule           | API             |         minutes | jobId                      | **QUEUE PRODUCER**          | medium   | QUEUE PRODUCER       |
+| `recurring-tasks-due`               | POST `/scheduler/recurring-tasks-due`               | every 5 min        | API             |         minutes | `nextCreateAt` advance     | creates Task instances      | medium   | SET-BASED + domain   |
 | `sales-kpi-month-close`             | POST `/scheduler/sales-kpi-month-close`             | monthly            | API             |         minutes | period snapshots           | KPI rows                    | medium   | SET-BASED            |
 | `sales-kpi-backfill-all`            | POST `/scheduler/sales-kpi-backfill-all`            | manual             | API             |            long | per period                 | KPI + payables              | high     | LONG-RUNNING         |
 | `credential-trash-purge`            | POST `/scheduler/credential-trash-purge`            | daily              | API             |         minutes | TTL                        | hard delete                 | high     | SET-BASED            |

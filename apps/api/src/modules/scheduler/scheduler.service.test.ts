@@ -99,6 +99,9 @@ describe('SchedulerService', () => {
       { reconcileAll: vi.fn() } as never,
       { reconcilePending: vi.fn() } as never,
       { cleanupExpiredSessions: vi.fn() } as never,
+      {
+        processDueTemplates: vi.fn().mockResolvedValue({ created: 0, failed: 0, taskIds: [] }),
+      } as never,
       lease as never,
     );
   });
