@@ -12,12 +12,24 @@ import { Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isTaskUrgentPriority } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
+import { TaskSheetMoreActionsMenu } from './TaskSheetMoreActionsMenu';
+import type { TaskWorkflowFooterAction } from './task-workflow-optimistic';
 
 interface TaskSheetHeaderProps {
   draft: TaskGeneralDraft;
   disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
   onToggleUrgent: () => void;
+  /** When set, shows settings-style ⋯ menu in the top-right. */
+  moreActions?: {
+    taskStatus: string;
+    workflowSaving: boolean;
+    onTaskAction: (action: TaskWorkflowFooterAction) => void;
+    canDeleteDraft: boolean;
+    canMoveToTrash: boolean;
+    onDelete: () => void;
+    onMoveToTrash: () => void;
+  } | null;
 }
 
 export function TaskSheetHeader({
@@ -25,6 +37,7 @@ export function TaskSheetHeader({
   disabled = false,
   onPatchDraft,
   onToggleUrgent,
+  moreActions = null,
 }: TaskSheetHeaderProps) {
   const urgent = isTaskUrgentPriority(draft.priority);
   const [editing, setEditing] = useState(false);
@@ -66,7 +79,12 @@ export function TaskSheetHeader({
 
   return (
     <header>
-      <div className={QUICK_CREATE_TASK_TITLE_ROW_CLASS}>
+      <div
+        className={cn(
+          QUICK_CREATE_TASK_TITLE_ROW_CLASS,
+          moreActions && '-mr-7 pr-[6.5rem] sm:-mr-7 sm:pr-[7rem]',
+        )}
+      >
         {editing && !disabled ? (
           <input
             ref={inputRef}
@@ -92,7 +110,9 @@ export function TaskSheetHeader({
             {displayTitle}
           </h2>
         )}
-        <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
+        <div
+          className={cn(QUICK_CREATE_TASK_HEADER_ICONS_CLASS, moreActions && 'right-0 sm:right-0')}
+        >
           <button
             type="button"
             className={cn(
@@ -108,6 +128,18 @@ export function TaskSheetHeader({
           >
             <Flame size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
           </button>
+          {moreActions ? (
+            <TaskSheetMoreActionsMenu
+              taskStatus={moreActions.taskStatus}
+              workflowSaving={moreActions.workflowSaving}
+              onTaskAction={moreActions.onTaskAction}
+              canDeleteDraft={moreActions.canDeleteDraft}
+              canMoveToTrash={moreActions.canMoveToTrash}
+              onDelete={moreActions.onDelete}
+              onMoveToTrash={moreActions.onMoveToTrash}
+              disabled={disabled}
+            />
+          ) : null}
         </div>
       </div>
     </header>

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Task, TaskLink } from '@/lib/api/tasks';
-import { formatTaskCardPeoplePairLabel, pickTaskCardContextChips } from './task-mini-card-meta';
+import {
+  formatTaskCardDate,
+  formatTaskCardPeoplePairLabel,
+  pickTaskCardContextChips,
+} from './task-mini-card-meta';
 
 function link(
   partial: Partial<TaskLink> & Pick<TaskLink, 'id' | 'entityType' | 'entityId'>,
@@ -21,6 +25,31 @@ function task(partial: Partial<Task>): Pick<Task, 'links' | 'workspaceId' | 'wor
     ...partial,
   };
 }
+
+describe('formatTaskCardDate', () => {
+  const now = new Date(2026, 7, 17, 15, 30, 0);
+
+  it('shows Today for the current calendar day', () => {
+    expect(formatTaskCardDate(new Date(2026, 7, 17).toISOString(), now)).toBe('Today');
+  });
+
+  it('shows Tomorrow for the next calendar day', () => {
+    expect(formatTaskCardDate(new Date(2026, 7, 18).toISOString(), now)).toBe('Tomorrow');
+  });
+
+  it('keeps time when due has a non-midnight time', () => {
+    expect(formatTaskCardDate(new Date(2026, 7, 17, 19, 0).toISOString(), now)).toBe(
+      'Today, 19:00',
+    );
+    expect(formatTaskCardDate(new Date(2026, 7, 18, 9, 30).toISOString(), now)).toBe(
+      'Tomorrow, 09:30',
+    );
+  });
+
+  it('falls back to day + English month for other dates', () => {
+    expect(formatTaskCardDate(new Date(2026, 7, 19).toISOString(), now)).toBe('19 August');
+  });
+});
 
 describe('formatTaskCardPeoplePairLabel', () => {
   it('formats creator and assignee with arrow', () => {

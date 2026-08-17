@@ -239,7 +239,7 @@ export function ControlledInlineField({
                 clearable={clearable}
                 placeholder={placeholder ?? 'Select date…'}
                 embedded
-                className="min-w-0 flex-1"
+                className="flex w-full min-w-0 flex-1"
                 aria-label={label}
                 popoverAnchorRef={dateFieldShellRef}
                 popoverAlign="end"
@@ -247,7 +247,7 @@ export function ControlledInlineField({
             </div>
           </div>
         ) : (
-          <div ref={dateFieldShellRef} className={fieldShellClass}>
+          <div ref={dateFieldShellRef} className={cn(fieldShellClass, 'min-w-0')}>
             <NbosDatePicker
               value={str}
               onChange={onValueChange}
@@ -257,7 +257,7 @@ export function ControlledInlineField({
               clearable={clearable}
               placeholder={placeholder ?? 'Select date…'}
               embedded
-              className="min-w-0 flex-1"
+              className="flex w-full min-w-0 flex-1"
               aria-label={label}
               popoverAnchorRef={dateFieldShellRef}
               popoverAlign="end"

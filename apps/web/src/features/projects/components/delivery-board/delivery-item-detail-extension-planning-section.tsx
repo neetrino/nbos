@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import {
   EntityNotesField,
@@ -32,12 +33,15 @@ export function ExtensionPlanningSection({
   onDraftChange,
   disabled = false,
   gateRequiredFields = new Set<string>(),
+  stageChecklist,
 }: {
   extension: FullExtension;
   draft: ExtensionPlanSnapshot;
   onDraftChange: (next: ExtensionPlanSnapshot) => void;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
+  /** Stage checklists trigger — sits beside Languages. */
+  stageChecklist?: ReactNode;
 }) {
   const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -84,11 +88,19 @@ export function ExtensionPlanningSection({
             disabled={disabled}
           />
         </div>
-        <DeliveryItemLanguagesMultiselect
-          value={extension.product.languages ?? []}
-          readOnly
-          disabled={disabled}
-        />
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-3',
+            stageChecklist ? 'sm:grid-cols-2 sm:items-start' : undefined,
+          )}
+        >
+          <DeliveryItemLanguagesMultiselect
+            value={extension.product.languages ?? []}
+            readOnly
+            disabled={disabled}
+          />
+          {stageChecklist}
+        </div>
       </div>
     </section>
   );

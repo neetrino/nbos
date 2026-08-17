@@ -1,17 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AreaChart, AlertTriangle, CheckCircle2, RefreshCcw } from 'lucide-react';
+import { AreaChart, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
-import { Button } from '@/components/ui/button';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
-import { MarketingDashboardPeriodBar } from '@/features/marketing/components/MarketingDashboardPeriodBar';
+import { MarketingDashboardHeroSearch } from '@/features/marketing/components/MarketingDashboardHeroSearch';
 import {
   getMarketingDashboardQueryRange,
   type MarketingDashboardPeriodPreset,
 } from '@/features/marketing/constants/marketing-dashboard-period';
-
-const MARKETING_CURRENCY = 'AMD';
+import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
+import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, formatMoneyDram } from '@/lib/format/money';
 
 export default function MarketingDashboardPage() {
   const [summary, setSummary] = useState<MarketingDashboardSummary | null>(null);
@@ -20,6 +19,7 @@ export default function MarketingDashboardPage() {
   const [periodPreset, setPeriodPreset] = useState<MarketingDashboardPeriodPreset>('all');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
+  const [search, setSearch] = useState('');
 
   const queryRange = useMemo(
     () => getMarketingDashboardQueryRange(periodPreset, { from: customFrom, to: customTo }),
@@ -50,42 +50,34 @@ export default function MarketingDashboardPage() {
 
   const moduleHeroSlots = useMemo(
     () => ({
-      trailing: (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          onClick={() => void fetchDashboard()}
-          aria-label="Refresh dashboard"
-        >
-          <RefreshCcw size={16} aria-hidden />
-        </Button>
+      search: (
+        <MarketingDashboardHeroSearch
+          search={search}
+          onSearchChange={setSearch}
+          preset={periodPreset}
+          onPresetChange={setPeriodPreset}
+          customFrom={customFrom}
+          customTo={customTo}
+          onCustomFromChange={setCustomFrom}
+          onCustomToChange={setCustomTo}
+          summary={summary}
+          disabled={loading}
+        />
       ),
     }),
-    [fetchDashboard],
+    [customFrom, customTo, loading, periodPreset, search, summary],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="space-y-6">
-      <MarketingDashboardPeriodBar
-        preset={periodPreset}
-        onPresetChange={setPeriodPreset}
-        customFrom={customFrom}
-        customTo={customTo}
-        onCustomFromChange={setCustomFrom}
-        onCustomToChange={setCustomTo}
-        summary={summary}
-        disabled={loading}
-      />
-
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={() => void fetchDashboard()} />
       ) : summary ? (
-        <MarketingDashboardContent summary={summary} />
+        <MarketingDashboardContent summary={summary} search={search} />
       ) : (
         <ErrorState
           description="Marketing dashboard returned no summary."
@@ -96,42 +88,88 @@ export default function MarketingDashboardPage() {
   );
 }
 
-function MarketingDashboardContent({ summary }: { summary: MarketingDashboardSummary }) {
+function MarketingDashboardContent({
+  summary,
+  search,
+}: {
+  summary: MarketingDashboardSummary;
+  search: string;
+}) {
+  const metrics: Array<{ label: string; value: number | string; money?: boolean }> = [
+    { label: 'Activities', value: summary.totals.activities },
+    { label: 'Launched now', value: summary.totals.launchedActivities },
+    {
+      label: 'Finance-linked activities',
+      value: summary.totals.activitiesWithFinanceExpense,
+    },
+    { label: 'Attributed leads', value: summary.totals.attributedLeads },
+    { label: 'Attributed deals', value: summary.totals.attributedDeals },
+    { label: 'Won attributed deals', value: summary.totals.wonAttributedDeals },
+    {
+      label: 'Paid attributed revenue',
+      value: summary.money.paidRevenue,
+      money: true,
+    },
+  ].filter((metric) => matchesMarketingSearch(search, metric.label));
+
+  const showSpend = matchesMarketingSearch(search, 'Spend and revenue signals', 'spend', 'revenue');
+  const showEfficiency = matchesMarketingSearch(search, 'CPL', 'ROI', 'ROAS', 'CAC', 'efficiency');
+  const showQuality = matchesMarketingSearch(search, 'Data quality', 'warnings', 'finance');
+
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Activities" value={summary.totals.activities} />
-        <MetricCard label="Launched now" value={summary.totals.launchedActivities} />
-        <MetricCard
-          label="Finance-linked activities"
-          value={summary.totals.activitiesWithFinanceExpense}
-        />
-        <MetricCard label="Attributed leads" value={summary.totals.attributedLeads} />
-        <MetricCard label="Attributed deals" value={summary.totals.attributedDeals} />
-        <MetricCard label="Won attributed deals" value={summary.totals.wonAttributedDeals} />
-        <MetricCard
-          label="Paid attributed revenue"
-          value={formatMoney(summary.money.paidRevenue)}
-        />
-      </div>
+      {metrics.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              value={metric.value}
+              money={metric.money}
+            />
+          ))}
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SpendReadinessCard summary={summary} />
-        <EfficiencyCard summary={summary} />
-        <DataQualityCard summary={summary} />
+        {showSpend ? <SpendReadinessCard summary={summary} /> : null}
+        {showEfficiency ? <EfficiencyCard summary={summary} /> : null}
+        {showQuality ? <DataQualityCard summary={summary} /> : null}
       </div>
     </>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: number | string }) {
+function MetricCard({
+  label,
+  value,
+  money = false,
+}: {
+  label: string;
+  value: number | string;
+  money?: boolean;
+}) {
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
-        <AreaChart size={18} />
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          <AreaChart size={18} aria-hidden />
+        </div>
+        <p className="text-muted-foreground text-sm leading-snug">{label}</p>
       </div>
-      <p className="text-3xl font-bold">{value}</p>
-      <p className="text-muted-foreground text-sm">{label}</p>
+      <p className="text-3xl font-bold tabular-nums">
+        {money && typeof value === 'number' ? (
+          <>
+            {formatGroupedNumber(value)}
+            <span className="text-muted-foreground ml-1.5 text-2xl font-semibold" aria-hidden>
+              {AMD_CURRENCY_SYMBOL}
+            </span>
+            <span className="sr-only"> AMD</span>
+          </>
+        ) : (
+          value
+        )}
+      </p>
     </div>
   );
 }
@@ -279,15 +317,11 @@ function SummaryRow({ label, value }: { label: string; value: number | string })
 }
 
 function formatMoney(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: MARKETING_CURRENCY,
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoneyDram(value);
 }
 
 function formatOptionalMoney(value: number | null) {
-  return value === null ? 'Not enough data' : formatMoney(value);
+  return value === null ? 'Not enough data' : formatMoneyDram(value);
 }
 
 function formatRatio(value: number | null) {

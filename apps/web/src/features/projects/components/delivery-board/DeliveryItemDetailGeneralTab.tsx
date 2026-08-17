@@ -34,7 +34,6 @@ interface DeliveryItemDetailGeneralTabProps {
   sourcePageHref: string;
   credentialsTabHref: string;
   projectHubHref: string;
-  financeTabHref: string;
   onRefreshDetail: () => void;
   productPlan: ProductPlanSnapshot | null;
   onProductPlanChange: (next: ProductPlanSnapshot) => void;
@@ -54,7 +53,6 @@ export function DeliveryItemDetailGeneralTab({
   sourcePageHref,
   credentialsTabHref,
   projectHubHref,
-  financeTabHref,
   onRefreshDetail,
   productPlan,
   onProductPlanChange,
@@ -76,6 +74,21 @@ export function DeliveryItemDetailGeneralTab({
       ? (product?.checklistStageProgress ?? item.product.checklistStageProgress)
       : (extension?.checklistStageProgress ?? item.extension.checklistStageProgress);
 
+  const stageChecklist = (
+    <div className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}>
+      <DeliveryStageChecklistPanel
+        ownerEntityType={kind}
+        ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
+        lifecycle={lifecycle}
+        onChanged={onRefreshDetail}
+        floatingNav={{
+          sourcePageHref,
+          workspaceHref: workSpaceHref,
+        }}
+      />
+    </div>
+  );
+
   if (!product && !extension) {
     return <p className="text-muted-foreground px-5 py-8 text-sm sm:px-7">Nothing to edit yet.</p>;
   }
@@ -92,6 +105,7 @@ export function DeliveryItemDetailGeneralTab({
               paymentType={product.order?.paymentType}
               disabled={planningDisabled}
               gateRequiredFields={gateRequiredFields}
+              stageChecklist={stageChecklist}
             />
           ) : null}
           {extension && extensionPlan ? (
@@ -101,6 +115,7 @@ export function DeliveryItemDetailGeneralTab({
               onDraftChange={onExtensionPlanChange}
               disabled={planningDisabled}
               gateRequiredFields={gateRequiredFields}
+              stageChecklist={stageChecklist}
             />
           ) : null}
 
@@ -121,19 +136,25 @@ export function DeliveryItemDetailGeneralTab({
             disabled={planningDisabled}
             gateRequiredFields={gateRequiredFields}
           />
+
+          <DeliveryItemFilesSection
+            kind={kind}
+            entityId={kind === 'PRODUCT' ? productId : item.extension.id}
+            offerFileUrl={
+              kind === 'PRODUCT'
+                ? (product?.order?.deal?.offerFileUrl ?? null)
+                : (extension?.order?.deal?.offerFileUrl ?? null)
+            }
+            contractFileUrl={
+              kind === 'PRODUCT'
+                ? (product?.order?.deal?.contractFileUrl ?? null)
+                : (extension?.order?.deal?.contractFileUrl ?? null)
+            }
+            disabled={planningDisabled}
+          />
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
-          <DeliveryItemCommercialSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            financeTabHref={financeTabHref}
-            projectHubHref={projectHubHref}
-            sourcePageHref={sourcePageHref}
-            credentialsTabHref={credentialsTabHref}
-            gateRequiredFields={gateRequiredFields}
-          />
           <DeliveryItemStageReadinessSection
             kind={kind}
             product={product}
@@ -143,21 +164,15 @@ export function DeliveryItemDetailGeneralTab({
             gateRequiredFields={gateRequiredFields}
             stageGateActionBlockers={stageGateActionBlockers}
           />
-          <div
-            className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}
-          >
-            <DeliveryStageChecklistPanel
-              ownerEntityType={kind}
-              ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
-              lifecycle={lifecycle}
-              onChanged={onRefreshDetail}
-              floatingNav={{
-                sourcePageHref,
-                workspaceHref: workSpaceHref,
-              }}
-            />
-          </div>
-          <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
+          <DeliveryItemCommercialSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            projectHubHref={projectHubHref}
+            sourcePageHref={sourcePageHref}
+            credentialsTabHref={credentialsTabHref}
+            gateRequiredFields={gateRequiredFields}
+          />
         </div>
       </div>
     </div>

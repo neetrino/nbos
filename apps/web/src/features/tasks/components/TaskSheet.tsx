@@ -127,6 +127,19 @@ export function TaskSheet({
                 disabled={state.loading || readOnly}
                 onPatchDraft={state.patchGeneralDraft}
                 onToggleUrgent={() => void state.handleToggleTaskUrgent()}
+                moreActions={
+                  !isTrashed
+                    ? {
+                        taskStatus: pipelineStatus,
+                        workflowSaving: state.workflowSaving,
+                        onTaskAction: state.handleAction,
+                        canDeleteDraft,
+                        canMoveToTrash,
+                        onDelete: () => setDeleteOpen(true),
+                        onMoveToTrash: () => setDeleteOpen(true),
+                      }
+                    : null
+                }
               />
             </div>
 
@@ -233,11 +246,7 @@ export function TaskSheet({
                     onSave={() => void state.handleGeneralSave()}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}
-                    canDeleteDraft={canDeleteDraft}
-                    canMoveToTrash={canMoveToTrash}
                     isTrashed={isTrashed}
-                    onDelete={() => setDeleteOpen(true)}
-                    onMoveToTrash={() => setDeleteOpen(true)}
                     onRestore={onRestore ? () => void handleRestore() : undefined}
                   />
                 </>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
-import { ArrowRight, Ban, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
+import type { KeyboardEvent, RefObject } from 'react';
+import { ArrowRight, Ban, RotateCcw, Trash2, LayoutGrid, History, Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
-  EntityDetailSheetLoadingShell,
 } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
@@ -206,18 +206,92 @@ export function LeadSheet({
 
   if (!hostMounted) return null;
 
-  if (!renderLead) {
-    return (
-      <EntityDetailSheetLoadingShell
-        open={open}
-        onOpenChange={onOpenChange}
-        onOpenChangeComplete={onOpenChangeComplete}
-        label="Loading lead…"
-        width="medium"
-      />
-    );
-  }
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
+      {!renderLead ? (
+        <EntityDetailSheetContent open={open} layout="full" width="medium">
+          <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            Loading lead…
+          </div>
+        </EntityDetailSheetContent>
+      ) : (
+        <LeadSheetLoadedContent
+          renderLead={renderLead}
+          open={open}
+          isTrashView={isTrashView}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          editingName={editingName}
+          nameValue={nameValue}
+          setNameValue={setNameValue}
+          setEditingName={setEditingName}
+          nameInputRef={nameInputRef}
+          generalDraft={generalDraft}
+          generalDirty={generalDirty}
+          generalError={generalError}
+          gateRequiredFields={gateRequiredFields}
+          onConvertToDeal={onConvertToDeal}
+          onRestore={onRestore}
+          onPermanentDelete={onPermanentDelete}
+          onMoveToTrash={onMoveToTrash}
+          onStatusChange={onStatusChange}
+          patchGeneralDraft={patchGeneralDraft}
+          handleGeneralSave={handleGeneralSave}
+          handleGeneralCancel={handleGeneralCancel}
+        />
+      )}
+    </Sheet>
+  );
+}
 
+function LeadSheetLoadedContent({
+  renderLead,
+  open,
+  isTrashView,
+  activeTab,
+  setActiveTab,
+  editingName,
+  nameValue,
+  setNameValue,
+  setEditingName,
+  nameInputRef,
+  generalDraft,
+  generalDirty,
+  generalError,
+  gateRequiredFields,
+  onConvertToDeal,
+  onRestore,
+  onPermanentDelete,
+  onMoveToTrash,
+  onStatusChange,
+  patchGeneralDraft,
+  handleGeneralSave,
+  handleGeneralCancel,
+}: {
+  renderLead: Lead;
+  open: boolean;
+  isTrashView: boolean;
+  activeTab: string;
+  setActiveTab: (value: string) => void;
+  editingName: boolean;
+  nameValue: string;
+  setNameValue: (value: string) => void;
+  setEditingName: (value: boolean) => void;
+  nameInputRef: RefObject<HTMLInputElement | null>;
+  generalDraft: LeadGeneralDraft | null;
+  generalDirty: boolean;
+  generalError: string | null;
+  gateRequiredFields: Set<string>;
+  onConvertToDeal?: (lead: Lead) => void;
+  onRestore?: (id: string) => void;
+  onPermanentDelete?: (id: string) => void;
+  onMoveToTrash?: (id: string) => void;
+  onStatusChange: (id: string, status: string) => Promise<void>;
+  patchGeneralDraft: (partial: Partial<LeadGeneralDraft>) => void;
+  handleGeneralSave: () => void;
+  handleGeneralCancel: () => void;
+}) {
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
   const leadVisual = LEAD_ENTITY_VISUAL;
@@ -237,7 +311,7 @@ export function LeadSheet({
     patchGeneralDraft({ name: trimmed || null });
   };
 
-  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+  const handleNameKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       commitNameToDraft();
@@ -249,128 +323,124 @@ export function LeadSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        width="medium"
-        sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
-      >
-        <CrmSheetEntityHeader
-          title={headerTitle}
-          entityLabel={leadVisual.label}
-          EntityIcon={LeadIcon}
-          headerIconClassName={leadVisual.headerIconClassName}
-          headerBadgeClassName={leadVisual.headerBadgeClassName}
-          editing={editingName}
-          nameValue={nameValue}
-          onNameValueChange={setNameValue}
-          onCommitName={commitNameToDraft}
-          onNameKeyDown={handleNameKeyDown}
-          nameInputRef={nameInputRef}
-          namePlaceholder="Inquiry title (product / service)…"
-          titleEditHint="Click to edit inquiry title (product / service)"
-          onStartEditing={startEditingName}
-          titleClassName={cn(
-            nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
-            'rounded-lg',
-          )}
-          actions={
-            <>
-              {!isTrashView && !isTerminal && renderLead.status === 'MQL' && onConvertToDeal ? (
-                <Button type="button" size="sm" onClick={() => onConvertToDeal(renderLead)}>
-                  <ArrowRight size={14} className="mr-1" />
-                  Convert to Deal
-                </Button>
-              ) : null}
-              {isTrashView && onRestore ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem onClick={() => onRestore(renderLead.id)}>
-                    <RotateCcw />
-                    Restore
-                  </DropdownMenuItem>
-                  {onPermanentDelete ? (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => onPermanentDelete(renderLead.id)}
-                    >
-                      <Trash2 />
-                      Delete permanently
-                    </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : onMoveToTrash ? (
-                <DetailSheetSettingsMenu>
+    <EntityDetailSheetContent
+      open={open}
+      layout="full"
+      width="medium"
+      sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
+    >
+      <CrmSheetEntityHeader
+        title={headerTitle}
+        entityLabel={leadVisual.label}
+        EntityIcon={LeadIcon}
+        headerIconClassName={leadVisual.headerIconClassName}
+        headerBadgeClassName={leadVisual.headerBadgeClassName}
+        editing={editingName}
+        nameValue={nameValue}
+        onNameValueChange={setNameValue}
+        onCommitName={commitNameToDraft}
+        onNameKeyDown={handleNameKeyDown}
+        nameInputRef={nameInputRef}
+        namePlaceholder="Inquiry title (product / service)…"
+        titleEditHint="Click to edit inquiry title (product / service)"
+        onStartEditing={startEditingName}
+        titleClassName={cn(
+          nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+          'rounded-lg',
+        )}
+        actions={
+          <>
+            {!isTrashView && !isTerminal && renderLead.status === 'MQL' && onConvertToDeal ? (
+              <Button type="button" size="sm" onClick={() => onConvertToDeal(renderLead)}>
+                <ArrowRight size={14} className="mr-1" />
+                Convert to Deal
+              </Button>
+            ) : null}
+            {isTrashView && onRestore ? (
+              <DetailSheetSettingsMenu>
+                <DropdownMenuItem onClick={() => onRestore(renderLead.id)}>
+                  <RotateCcw />
+                  Restore
+                </DropdownMenuItem>
+                {onPermanentDelete ? (
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={() => onMoveToTrash(renderLead.id)}
+                    onClick={() => onPermanentDelete(renderLead.id)}
                   >
                     <Trash2 />
-                    Move to Trash
+                    Delete permanently
                   </DropdownMenuItem>
-                  {renderLead.status !== 'SPAM' ? (
-                    <DropdownMenuItem onClick={() => void onStatusChange(renderLead.id, 'SPAM')}>
-                      <Ban />
-                      Mark as Spam
-                    </DropdownMenuItem>
-                  ) : null}
-                </DetailSheetSettingsMenu>
-              ) : null}
-            </>
-          }
-        />
+                ) : null}
+              </DetailSheetSettingsMenu>
+            ) : onMoveToTrash ? (
+              <DetailSheetSettingsMenu>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onMoveToTrash(renderLead.id)}
+                >
+                  <Trash2 />
+                  Move to Trash
+                </DropdownMenuItem>
+                {renderLead.status !== 'SPAM' ? (
+                  <DropdownMenuItem onClick={() => void onStatusChange(renderLead.id, 'SPAM')}>
+                    <Ban />
+                    Mark as Spam
+                  </DropdownMenuItem>
+                ) : null}
+              </DetailSheetSettingsMenu>
+            ) : null}
+          </>
+        }
+      />
 
-        {/* ── Pipeline Stages ── */}
-        <div className="shrink-0 pb-3">
-          <LeadPipelineStages
-            currentStatus={renderLead.status}
-            onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderLead.id, key)}
-          />
+      <div className="shrink-0 pb-3">
+        <LeadPipelineStages
+          currentStatus={renderLead.status}
+          onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderLead.id, key)}
+        />
+      </div>
+
+      <DetailSheetTabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
+      />
+
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="px-5 py-4">
+          <DetailSheetTabPanel tabKey={activeTab}>
+            {activeTab === 'general' && generalDraft ? (
+              <LeadGeneralTab
+                lead={renderLead}
+                draft={generalDraft}
+                patchDraft={patchGeneralDraft}
+                formDisabled={isTrashView}
+                gateRequiredFields={gateRequiredFields}
+                sectionIds={{
+                  contact: LEAD_SHEET_SECTION.CONTACT,
+                  marketing: LEAD_SHEET_SECTION.MARKETING,
+                  assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                  notes: LEAD_SHEET_SECTION.NOTES,
+                }}
+              />
+            ) : null}
+            {activeTab === 'history' && (
+              <div className="text-muted-foreground py-12 text-center text-sm">
+                History coming soon...
+              </div>
+            )}
+          </DetailSheetTabPanel>
         </div>
+      </ScrollArea>
 
-        <DetailSheetTabBar
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
-        />
-
-        {/* ── Content ── */}
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-4">
-            <DetailSheetTabPanel tabKey={activeTab}>
-              {activeTab === 'general' && generalDraft ? (
-                <LeadGeneralTab
-                  lead={renderLead}
-                  draft={generalDraft}
-                  patchDraft={patchGeneralDraft}
-                  formDisabled={isTrashView}
-                  gateRequiredFields={gateRequiredFields}
-                  sectionIds={{
-                    contact: LEAD_SHEET_SECTION.CONTACT,
-                    marketing: LEAD_SHEET_SECTION.MARKETING,
-                    assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
-                    notes: LEAD_SHEET_SECTION.NOTES,
-                  }}
-                />
-              ) : null}
-              {activeTab === 'history' && (
-                <div className="text-muted-foreground py-12 text-center text-sm">
-                  History coming soon...
-                </div>
-              )}
-            </DetailSheetTabPanel>
-          </div>
-        </ScrollArea>
-
-        <DetailSheetFormFooter
-          visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
-          dirty={generalDirty}
-          saving={false}
-          errorMessage={generalError}
-          onSave={handleGeneralSave}
-          onCancel={handleGeneralCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+      <DetailSheetFormFooter
+        visible={!isTrashView && activeTab === 'general' && Boolean(generalDraft)}
+        dirty={generalDirty}
+        saving={false}
+        errorMessage={generalError}
+        onSave={handleGeneralSave}
+        onCancel={handleGeneralCancel}
+      />
+    </EntityDetailSheetContent>
   );
 }

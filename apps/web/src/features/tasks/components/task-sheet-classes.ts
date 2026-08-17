@@ -1,15 +1,15 @@
 /** Layout / surface class strings for {@link TaskSheet}. */
 
 /** Right task sheet width on sm+ (fraction of viewport). */
-export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.58;
+export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.68;
 
-/** Right task sheet — 85vw on mobile, ~58vw on sm+ (tasks list / workspace). */
+/** Right task sheet — 85vw on mobile, ~68vw on sm+ (room for detail + chat). */
 export const TASK_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[58vw]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[68vw]';
 
 /** Anchor floating rail to the left edge of {@link TASK_SHEET_WIDTH_CLASS}. */
 export const TASK_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[58vw]';
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[68vw]';
 
 export const TASK_SHEET_DETAIL_COLUMN_CLASS =
   'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 xl:border-r dark:bg-muted/15';
@@ -29,15 +29,18 @@ export const TASK_SHEET_SECTION_SURFACE_CLASS =
 export const TASK_SHEET_META_BLOCK_CLASS =
   '@container/task-sheet-meta w-full min-w-0 max-w-full space-y-1';
 
-/** Two equal columns as soon as two outlined fields fit; stack only on a very narrow pane. */
+/**
+ * Two equal columns only when each half can hold a name + avatar without clipping.
+ * Below this, fields stack full-width (typical with chat split on the detail pane).
+ */
 export const TASK_SHEET_TEAM_COLUMNS_CLASS =
-  'grid w-full min-w-0 grid-cols-1 gap-x-4 gap-y-3 @min-[22rem]/task-sheet-meta:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @min-[22rem]/task-sheet-meta:items-start';
+  'grid w-full min-w-0 grid-cols-1 gap-x-4 gap-y-3 @min-[34rem]/task-sheet-meta:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @min-[34rem]/task-sheet-meta:items-start';
 
 /** Assistant / observer column — shares width with creator/assignee, no right flush. */
 export const TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS = 'min-w-0';
 
 export const TASK_SHEET_TEAM_DIVIDER_CLASS =
-  'bg-border hidden w-px shrink-0 self-stretch @min-[22rem]/task-sheet-meta:block';
+  'bg-border hidden w-px shrink-0 self-stretch @min-[34rem]/task-sheet-meta:block';
 
 /** Team column wrapper — allows grid tracks to shrink with the split pane. */
 export const TASK_SHEET_TEAM_COLUMN_CLASS = 'min-w-0';
@@ -56,4 +59,4 @@ export {
 
 /** Static value (Created) — same outline as picker shells. */
 export const TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS =
-  'border-border/50 flex h-10 w-full min-w-0 items-center gap-1.5 rounded-xl border px-3 text-sm';
+  'border-border/50 flex h-10 w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-xl border px-3 text-sm';

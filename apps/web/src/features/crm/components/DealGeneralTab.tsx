@@ -39,7 +39,7 @@ interface DealGeneralTabProps {
 
 const SECTION_STRETCH = DETAIL_SHEET_SECTION_STRETCH_CLASS;
 
-/** Two-col kicks in inside the shorter deal sheet (56rem − horizontal padding). */
+/** Two-col kicks in inside the deal sheet (56rem − horizontal padding). */
 const DEAL_GENERAL_WIDE_GRID_CLASS =
   'grid grid-cols-1 gap-5 @[48rem]/deal-general:grid-cols-[minmax(0,1fr)_auto] @[48rem]/deal-general:items-start @[48rem]/deal-general:gap-6';
 
@@ -178,7 +178,7 @@ export function DealGeneralTab({
           <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
         </div>
 
-        <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-72">
+        <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-64">
           <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
           <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         </aside>

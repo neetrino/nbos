@@ -36,18 +36,43 @@ export type TaskCardContextChip = {
 /** Work Space first (planning home), then Product / Project / other. */
 const MAX_TASK_CARD_CONTEXT_CHIPS = 3;
 
-/** Task board card due date — `19 August, 19:00` (time omitted at midnight). */
-export function formatTaskCardDate(value: string): string {
+/** Task board card due date — Today / Tomorrow, else `19 August` (time omitted at midnight). */
+export function formatTaskCardDate(value: string, now: Date = new Date()): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  const day = date.getDate();
-  const month = date.toLocaleDateString(undefined, { month: 'long' });
+
+  const dayLabel = getTaskCardRelativeDayLabel(date, now);
+  const timeLabel = formatTaskCardTimeLabel(date);
+  if (!dayLabel) {
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'long' });
+    return timeLabel ? `${day} ${month}, ${timeLabel}` : `${day} ${month}`;
+  }
+  return timeLabel ? `${dayLabel}, ${timeLabel}` : dayLabel;
+}
+
+function getTaskCardRelativeDayLabel(date: Date, now: Date): 'Today' | 'Tomorrow' | null {
+  const today = startOfLocalDay(now);
+  const dueDay = startOfLocalDay(date);
+  const diffDays = Math.round((dueDay.getTime() - today.getTime()) / MS_PER_DAY);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  return null;
+}
+
+function formatTaskCardTimeLabel(date: Date): string | null {
   const hours = date.getHours();
   const minutes = date.getMinutes();
-  if (hours === 0 && minutes === 0) return `${day} ${month}`;
+  if (hours === 0 && minutes === 0) return null;
   const hh = String(hours).padStart(2, '0');
   const mm = String(minutes).padStart(2, '0');
-  return `${day} ${month}, ${hh}:${mm}`;
+  return `${hh}:${mm}`;
+}
+
+const MS_PER_DAY = 86_400_000;
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 export function formatAssigneeShortName(firstName: string, lastName: string): string {

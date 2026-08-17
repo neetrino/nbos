@@ -5,17 +5,14 @@ import Link from 'next/link';
 import {
   Building2,
   ChevronRight,
-  ExternalLink,
   FileText,
   FolderKanban,
   KeyRound,
   Package,
   UserCircle,
-  Wallet,
 } from 'lucide-react';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS, StatusBadge } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getDealDisplayTitle } from '@/features/crm/utils/crm-entity-display';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
@@ -34,16 +31,15 @@ const COMMERCIAL_ICON_WELL_CLASS =
 
 const COMMERCIAL_ROW_CLASS = 'border-border flex items-center gap-3 border-b py-3 last:border-b-0';
 
-const COMMERCIAL_ACTION_BTN_CLASS = cn(
-  buttonVariants({ variant: 'default', size: 'sm' }),
-  'relative inline-flex h-8 w-full shrink-0 items-center justify-center rounded-xl px-3 pr-8 text-xs',
-);
+const COMMERCIAL_ACTION_BTN_CLASS =
+  'bg-primary text-primary-foreground inline-flex h-auto min-h-12 w-full flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium shadow-sm transition-opacity hover:opacity-90';
+
+const COMMERCIAL_ACTIONS_GRID_CLASS = 'border-border grid grid-cols-2 gap-2 border-t pt-3';
 
 interface DeliveryItemCommercialSectionProps {
   kind: 'PRODUCT' | 'EXTENSION';
   product: FullProduct | null;
   extension: FullExtension | null;
-  financeTabHref: string;
   projectHubHref: string;
   sourcePageHref: string;
   credentialsTabHref: string;
@@ -103,11 +99,8 @@ function CommercialNavLink({
 }) {
   return (
     <Link href={href} className={COMMERCIAL_ACTION_BTN_CLASS} title={label}>
-      <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
-        <span className="inline-flex shrink-0">{icon}</span>
-        <span className="min-w-0 truncate leading-none">{label}</span>
-      </span>
-      <ExternalLink className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
+      <span className="inline-flex shrink-0">{icon}</span>
+      <span className="text-center leading-tight">{label}</span>
     </Link>
   );
 }
@@ -117,25 +110,24 @@ function CommercialNavButton({
   icon,
   onClick,
   disabled,
+  title,
 }: {
   label: string;
   icon: ReactNode;
   onClick: () => void;
   disabled?: boolean;
+  title?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      title={label}
+      title={title ?? label}
       className={cn(COMMERCIAL_ACTION_BTN_CLASS, disabled && 'pointer-events-none opacity-50')}
     >
-      <span className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 pr-1">
-        <span className="inline-flex shrink-0">{icon}</span>
-        <span className="min-w-0 truncate leading-none">{label}</span>
-      </span>
-      <ChevronRight className="absolute right-2.5 size-3.5 shrink-0 opacity-50" aria-hidden />
+      <span className="inline-flex shrink-0">{icon}</span>
+      <span className="text-center leading-tight">{label}</span>
     </button>
   );
 }
@@ -164,9 +156,9 @@ export function DeliveryItemCommercialSection({
   const contact = project?.contact;
   const company = project?.company;
   const orderStatusMeta = order ? ORDER_STATUSES[order.status] : undefined;
-  const productPageLabel = kind === 'PRODUCT' ? 'Product page' : 'Product & extensions';
   const dealId = deal?.id ?? null;
   const orderId = order?.id ?? null;
+  const dealButtonTitle = deal ? `Open deal ${getDealDisplayTitle(deal)}` : 'Deal';
 
   return (
     <>
@@ -232,34 +224,28 @@ export function DeliveryItemCommercialSection({
             ) : null}
           </div>
 
-          <nav className="border-border flex min-w-0 flex-col gap-1 border-t pt-3">
-            {dealId ? (
-              <CommercialNavButton
-                label={`Open deal ${getDealDisplayTitle(deal!)}`}
-                icon={<FileText size={14} aria-hidden />}
-                onClick={() => setDealSheetOpen(true)}
-              />
-            ) : null}
+          <nav className={COMMERCIAL_ACTIONS_GRID_CLASS} aria-label="Commercial links">
             <CommercialNavButton
-              label="Finance tab"
-              icon={<Wallet size={14} aria-hidden />}
-              onClick={() => setOrderSheetOpen(true)}
-              disabled={!orderId}
+              label="Deal"
+              icon={<FileText size={13} aria-hidden />}
+              onClick={() => setDealSheetOpen(true)}
+              disabled={!dealId}
+              title={dealButtonTitle}
             />
             <CommercialNavLink
               href={projectHubHref}
-              label="Project hub"
-              icon={<FolderKanban size={14} aria-hidden />}
+              label="Project"
+              icon={<FolderKanban size={13} aria-hidden />}
             />
             <CommercialNavLink
               href={sourcePageHref}
-              label={productPageLabel}
-              icon={<Package size={14} aria-hidden />}
+              label="Product"
+              icon={<Package size={13} aria-hidden />}
             />
             <CommercialNavLink
               href={credentialsTabHref}
-              label="Product credentials"
-              icon={<KeyRound size={14} aria-hidden />}
+              label="Credentials"
+              icon={<KeyRound size={13} aria-hidden />}
             />
           </nav>
         </div>

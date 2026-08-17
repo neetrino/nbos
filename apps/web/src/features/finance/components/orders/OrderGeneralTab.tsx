@@ -6,7 +6,6 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   DetailSheetEntityLinkCard,
-  DetailSheetEntityLinkGrid,
   DetailSheetMetaDate,
   DetailSheetSection,
   InlineField,
@@ -74,7 +73,7 @@ function OrderLinkedPanel({ order }: { order: Order }) {
   return (
     <>
       <DetailSheetSection title="Linked">
-        <DetailSheetEntityLinkGrid>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <DetailSheetEntityLinkCard
             href={`/projects/${order.projectId}`}
             label="Project"
@@ -105,7 +104,7 @@ function OrderLinkedPanel({ order }: { order: Order }) {
               onOpen={() => setDealSheetOpen(true)}
             />
           ) : null}
-        </DetailSheetEntityLinkGrid>
+        </div>
       </DetailSheetSection>
 
       <EntityDealSheetDeepLink

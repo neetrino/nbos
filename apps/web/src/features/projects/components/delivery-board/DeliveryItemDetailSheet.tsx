@@ -436,7 +436,6 @@ export function DeliveryItemDetailSheet({
                     sourcePageHref={headerProps.sourcePageHref}
                     credentialsTabHref={credentialsTabHref}
                     projectHubHref={projectHubHref}
-                    financeTabHref={financeTabHref}
                     onRefreshDetail={refreshDetailAndBoard}
                     productPlan={productPlan}
                     onProductPlanChange={setProductPlan}

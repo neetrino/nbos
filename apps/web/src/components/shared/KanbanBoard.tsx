@@ -3,7 +3,6 @@
 import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { KanbanColorPicker } from './kanban/KanbanColorPicker';
 import { KanbanColumnHeader } from './kanban/KanbanColumnHeader';
 import {
@@ -25,7 +24,10 @@ import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
 import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
 import {
-  SCROLL_SPEED,
+  KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
+  useKanbanHorizontalScroll,
+} from './kanban/use-kanban-horizontal-scroll';
+import {
   KANBAN_CARD_MOVED_HIGHLIGHT_MS,
   KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
   COLOR_PALETTE,
@@ -53,7 +55,6 @@ export function KanbanBoard<T>({
   terminalDropZones,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
-  const isMobileViewport = useIsMobileViewport();
 
   const resolvedQuickCreate =
     columnQuickCreate ??
@@ -73,91 +74,24 @@ export function KanbanBoard<T>({
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const prevItemsRef = useRef<Map<string, string>>(new Map());
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const [mobileColumnWidth, setMobileColumnWidth] = useState(columnWidth);
-  const autoScrollDir = useRef<'left' | 'right' | null>(null);
-  const rafId = useRef<number>(0);
-  const resolvedColumnWidth = isMobileViewport ? mobileColumnWidth : columnWidth;
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isMobileViewport,
+    resolvedColumnWidth,
+    startAutoScroll,
+    stopAutoScroll,
+    scrollByOneColumn,
+  } = useKanbanHorizontalScroll({
+    columnWidth,
+    layoutKey: columns.length,
+  });
 
   const [addingAfter, setAddingAfter] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newColor, setNewColor] = useState('#3B82F6');
   const [showAddPicker, setShowAddPicker] = useState(false);
-
-  /* ── Scroll state ── */
-  const updateScrollState = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const nextLeft = el.scrollLeft > 2;
-    const nextRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 2;
-    setCanScrollLeft((prev) => (prev === nextLeft ? prev : nextLeft));
-    setCanScrollRight((prev) => (prev === nextRight ? prev : nextRight));
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    updateScrollState();
-    el.addEventListener('scroll', updateScrollState, { passive: true });
-    const ro = new ResizeObserver(updateScrollState);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener('scroll', updateScrollState);
-      ro.disconnect();
-    };
-  }, [updateScrollState, columns.length]);
-
-  /**
-   * Mobile full-width columns: measure the scrollport once (and on window resize).
-   * Do NOT use ResizeObserver here — writing width from clientWidth into column
-   * styles can expand an unconstrained flex parent and loop forever.
-   */
-  useEffect(() => {
-    if (!isMobileViewport) return;
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      const next = Math.round(el.clientWidth - KANBAN_COLUMN_X_MARGIN_TOTAL_PX);
-      if (next <= 0) return;
-      setMobileColumnWidth((prev) => (prev === next ? prev : next));
-    };
-
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [isMobileViewport]);
-
-  const startAutoScroll = useCallback((dir: 'left' | 'right') => {
-    autoScrollDir.current = dir;
-    const tick = () => {
-      const el = scrollRef.current;
-      if (!el || !autoScrollDir.current) return;
-      el.scrollLeft += autoScrollDir.current === 'left' ? -SCROLL_SPEED : SCROLL_SPEED;
-      rafId.current = requestAnimationFrame(tick);
-    };
-    cancelAnimationFrame(rafId.current);
-    rafId.current = requestAnimationFrame(tick);
-  }, []);
-
-  const stopAutoScroll = useCallback(() => {
-    autoScrollDir.current = null;
-    cancelAnimationFrame(rafId.current);
-  }, []);
-
-  const scrollByOneColumn = useCallback(
-    (side: 'left' | 'right') => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const step = resolvedColumnWidth + KANBAN_COLUMN_X_MARGIN_TOTAL_PX;
-      el.scrollBy({ left: side === 'left' ? -step : step, behavior: 'auto' });
-    },
-    [resolvedColumnWidth],
-  );
-
-  useEffect(() => () => cancelAnimationFrame(rafId.current), []);
 
   /* ── Move animation tracking ── */
   useEffect(() => {
@@ -368,7 +302,7 @@ export function KanbanBoard<T>({
         ref={scrollRef}
         className={cn(
           'min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
-          '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
           isMobileViewport && 'snap-x snap-mandatory',
           dragItem && terminalDropZones?.length && 'pb-28',
         )}

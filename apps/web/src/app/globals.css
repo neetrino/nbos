@@ -375,6 +375,13 @@ body {
   .ProseMirror {
   min-height: 3.75rem;
 }
+[data-entity-notes-preview='true'] .nbos-entity-notes-editor .ProseMirror {
+  min-height: 0;
+}
+[data-entity-notes-collapsed='true'] .nbos-entity-notes-editor .ProseMirror {
+  min-height: 0;
+  padding-bottom: 0;
+}
 [data-entity-notes-active='false'][data-entity-notes-empty='true']
   .nbos-entity-notes-editor
   .ProseMirror

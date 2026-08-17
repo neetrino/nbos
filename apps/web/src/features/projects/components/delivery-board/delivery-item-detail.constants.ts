@@ -12,20 +12,23 @@ export type DeliveryDetailTabId = (typeof DELIVERY_DETAIL_TABS)[number]['id'];
 export type DeliveryDetailSecondaryId = Exclude<DeliveryDetailTabId, 'general'>;
 
 /**
- * Narrower than Deal 75vw — left stack + commercial/readiness column.
+ * Delivery product/extension sheet — wide enough for Team name fields in two columns.
  */
 export const DELIVERY_DETAIL_SHEET_CONTENT_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[51vw]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[60vw]';
 
 /** Floating rail seam for {@link DELIVERY_DETAIL_SHEET_CONTENT_CLASS}. */
 export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[51vw]';
+  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[60vw]';
 
 /**
- * General tab: wider left (planning, access, team) + narrow Client & order column.
+ * General tab: wider left (planning, access, team) + narrow Stage readiness / Client & order column.
  */
 export const DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS =
-  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(12rem,13.5rem)] xl:items-start xl:gap-4';
+  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_14rem] xl:items-start xl:gap-4';
 
-/** Column stack — cards fill track width so column edges stay aligned. */
-export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS = 'flex min-w-0 w-full flex-col gap-4';
+/**
+ * Right column (Stage readiness + Client & order) — sticks while the left column scrolls.
+ */
+export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS =
+  'flex min-w-0 w-full flex-col gap-4 xl:sticky xl:top-4 xl:z-10';

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ApiError, getApiErrorMessage } from '@/lib/api-errors';
@@ -35,6 +34,7 @@ interface DeliveryStageChecklistPanelProps {
     sourcePageHref: string;
     workspaceHref?: string | null;
   };
+  className?: string;
 }
 
 function aggregateReviewed(instances: ChecklistInstance[]): { reviewed: number; total: number } {
@@ -50,12 +50,18 @@ function aggregateReviewed(instances: ChecklistInstance[]): { reviewed: number; 
   return { reviewed, total };
 }
 
+function stageChecklistButtonLabel(loading: boolean, reviewed: number, total: number): string {
+  if (loading) return 'Stage checklists …';
+  return `Stage checklists ${reviewed}/${total}`;
+}
+
 export function DeliveryStageChecklistPanel({
   ownerEntityType,
   ownerEntityId,
   lifecycle,
   onChanged,
   floatingNav,
+  className,
 }: DeliveryStageChecklistPanelProps) {
   const [instances, setInstances] = useState<ChecklistInstance[]>([]);
   const [loading, setLoading] = useState(false);
@@ -188,65 +194,38 @@ export function DeliveryStageChecklistPanel({
 
   if (!lifecycle?.stage || lifecycle.isTerminal) return null;
 
+  const empty = !loading && stageInstances.length === 0;
+  const canOpen = !loading && stageInstances.length > 0;
+
   return (
     <>
-      <section className="border-border bg-card/40 rounded-xl border p-4">
-        <div className="mb-3">
-          <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage checklists</h3>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Open the drawer to review all items — up to many steps stay scrollable there.
-          </p>
-        </div>
-
-        {!loading && stageInstances.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No checklist template is bound to this stage.
-          </p>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            className={cn(
-              'h-auto w-full justify-between gap-3 rounded-lg border px-3 py-3 text-left',
-              statusVariant === 'complete' &&
-                'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/50 dark:bg-emerald-950/20',
-              statusVariant === 'attention' &&
-                'border-amber-200/80 bg-amber-50/35 dark:border-amber-900/50 dark:bg-amber-950/20',
+      <div className={cn('pt-2', className)}>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            'border-border/50 h-10 w-full justify-between gap-2 rounded-xl px-3 text-left text-sm font-medium shadow-none',
+            'hover:bg-muted/20',
+            statusVariant === 'complete' &&
+              'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/50 dark:bg-emerald-950/20',
+            statusVariant === 'attention' &&
+              'border-amber-200/80 bg-amber-50/35 dark:border-amber-900/50 dark:bg-amber-950/20',
+            empty && 'opacity-80',
+          )}
+          onClick={() => setSheetOpen(true)}
+          disabled={!canOpen}
+        >
+          <span className="flex min-w-0 flex-1 items-center gap-2 truncate">
+            {loading ? (
+              <Loader2 className="text-muted-foreground size-5 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <ChecklistWorkbenchStatusIcon variant={statusVariant} className="size-5 shrink-0" />
             )}
-            onClick={() => setSheetOpen(true)}
-            disabled={loading || stageInstances.length === 0}
-          >
-            <span className="flex min-w-0 flex-1 items-center gap-3">
-              {loading ? (
-                <Loader2
-                  className="text-muted-foreground size-5 shrink-0 animate-spin"
-                  aria-hidden
-                />
-              ) : (
-                <ChecklistWorkbenchStatusIcon variant={statusVariant} className="shrink-0" />
-              )}
-              <span className="min-w-0 flex-1">
-                <span className="text-foreground block text-sm font-semibold">
-                  {stageInstances.length === 1
-                    ? (stageInstances[0]?.template.name ?? 'Checklist')
-                    : `${stageInstances.length} checklists`}
-                </span>
-                <span className="text-muted-foreground mt-0.5 block text-xs">
-                  {loading
-                    ? 'Loading…'
-                    : total > 0
-                      ? `${reviewed}/${total} reviewed`
-                      : 'View checklist'}
-                </span>
-              </span>
-            </span>
-            <ChevronRight
-              className="text-muted-foreground size-4 shrink-0 opacity-70"
-              aria-hidden
-            />
-          </Button>
-        )}
-      </section>
+            <span className="truncate">{stageChecklistButtonLabel(loading, reviewed, total)}</span>
+          </span>
+          <ChevronRight className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
+        </Button>
+      </div>
 
       <ChecklistInstanceWorkbenchSheet
         open={sheetOpen}

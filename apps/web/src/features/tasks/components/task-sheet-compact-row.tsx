@@ -39,8 +39,6 @@ const TASK_SHEET_COMPACT_FIELD_BASE_CLASS = [
   '[&_.w-full]:w-full',
   '[&_.border]:border-border/50',
   '[&_.person-soft-avatar]:size-8 [&_.person-soft-avatar]:text-[10px]',
-  '[&_button_span.block.truncate]:overflow-visible',
-  '[&_button_span.block.truncate]:whitespace-nowrap',
 ].join(' ');
 
 /** Employee pickers draw their own outlined label — do not hide the first child. */

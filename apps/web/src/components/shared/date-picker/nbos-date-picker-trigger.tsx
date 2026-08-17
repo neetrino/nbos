@@ -45,9 +45,10 @@ export function NbosDatePickerTrigger({
     <span
       id={id}
       aria-label={ariaLabel}
+      title={hasValue ? displayValue : undefined}
       className={cn(
-        'min-w-0 flex-1 truncate text-left text-xs leading-normal',
-        iconButtonShell && hasValue && 'max-w-[4.5rem]',
+        'min-w-0 flex-1 truncate text-left text-sm leading-normal tabular-nums',
+        iconButtonShell && hasValue && 'max-w-[4.5rem] text-xs',
         !hasValue && 'text-muted-foreground',
       )}
     >
