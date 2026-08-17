@@ -11,9 +11,11 @@ export interface StageReadinessRow {
   done: boolean;
 }
 
-function checklistReadinessDetail(
-  checklist: ChecklistStageProgress,
-): { label: string; detail: string; done: boolean } {
+function checklistReadinessDetail(checklist: ChecklistStageProgress): {
+  label: string;
+  detail: string;
+  done: boolean;
+} {
   const completedChecklists = checklist.completedChecklists ?? 0;
   const totalChecklists = checklist.totalChecklists ?? 0;
   if (totalChecklists > 0) {
@@ -29,7 +31,6 @@ function checklistReadinessDetail(
     done: checklist.completed >= checklist.total,
   };
 }
-
 
 const CLOSED_TASK = new Set(['DONE', 'ON_HOLD', 'COMPLETED']);
 const CLOSED_TICKET = new Set(['RESOLVED', 'CLOSED']);

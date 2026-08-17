@@ -10,9 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  formatMarketingDashboardPeriodCaption,
-} from '@/features/marketing/utils/format-marketing-dashboard-period-caption';
+import { formatMarketingDashboardPeriodCaption } from '@/features/marketing/utils/format-marketing-dashboard-period-caption';
 import {
   MARKETING_DASHBOARD_PERIOD_LABELS,
   type MarketingDashboardPeriodPreset,

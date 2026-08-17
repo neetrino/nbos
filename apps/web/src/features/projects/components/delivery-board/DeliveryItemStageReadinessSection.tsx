@@ -61,7 +61,6 @@ export function DeliveryItemStageReadinessSection({
         'border-border bg-card rounded-xl border p-4 shadow-sm',
       )}
     >
-
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage readiness</h3>
         <p className="text-muted-foreground text-xs">
@@ -84,7 +83,9 @@ export function DeliveryItemStageReadinessSection({
                 {row.label}
               </p>
               {row.detail ? (
-                <p className="text-muted-foreground mt-0.5 whitespace-nowrap text-xs">{row.detail}</p>
+                <p className="text-muted-foreground mt-0.5 text-xs whitespace-nowrap">
+                  {row.detail}
+                </p>
               ) : null}
             </div>
           </li>

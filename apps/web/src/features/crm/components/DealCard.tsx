@@ -26,6 +26,7 @@ import {
 } from '@/components/shared/kanban/type-tinted-board-card-ui.constants';
 import { employeeFullName } from '@/features/hr/utils/employee-display';
 import { cn } from '@/lib/utils';
+import { useCurrentTimeSnapshot } from '@/hooks/use-current-time-snapshot';
 import { formatBoardCardDate } from '@/lib/format/board-card-date';
 import { getDealTypeCardChrome } from '@/lib/deal-type-card-chrome';
 import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
@@ -52,11 +53,11 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
   const chrome = getDealTypeCardChrome(typeVisual);
   const title = getDealDisplayTitle(deal);
   const metaLabel = getDealCardMetaLabel(deal);
-  const showCompany =
-    Boolean(deal.company?.name) && metaLabel !== deal.company?.name;
+  const showCompany = Boolean(deal.company?.name) && metaLabel !== deal.company?.name;
+  const nowMs = useCurrentTimeSnapshot();
   const deadlineOverdue =
     deal.deadline && deal.status !== 'WON' && deal.status !== 'FAILED'
-      ? new Date(deal.deadline).getTime() < Date.now()
+      ? new Date(deal.deadline).getTime() < nowMs
       : false;
 
   return (
@@ -142,9 +143,7 @@ function DealCardMeta({
         <DealMetaLine
           icon={Calendar}
           label={formatBoardCardDate(deal.deadline)}
-          metaIconClass={
-            deadlineOverdue ? 'bg-destructive/10 text-destructive' : metaIconClass
-          }
+          metaIconClass={deadlineOverdue ? 'bg-destructive/10 text-destructive' : metaIconClass}
           labelClassName={
             deadlineOverdue
               ? TYPE_TINTED_BOARD_CARD_DATE_OVERDUE_LABEL_CLASS
@@ -157,9 +156,7 @@ function DealCardMeta({
         <DealMetaLine icon={LinkIcon} label={linkLabel} metaIconClass={metaIconClass} />
       ) : null}
       {deal.paymentType ? (
-        <p className="text-muted-foreground text-xs">
-          {deal.paymentType.replace(/_/g, ' ')}
-        </p>
+        <p className="text-muted-foreground text-xs">{deal.paymentType.replace(/_/g, ' ')}</p>
       ) : null}
     </div>
   );

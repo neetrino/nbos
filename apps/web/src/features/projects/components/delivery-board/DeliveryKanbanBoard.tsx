@@ -244,10 +244,7 @@ export function DeliveryKanbanBoard({
             {columns.map((col, colIdx) => (
               <div
                 key={col.stage}
-                className={cn(
-                  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
-                  isMobileViewport && 'snap-start',
-                )}
+                className={cn(DELIVERY_KANBAN_COLUMN_SHELL_CLASS, isMobileViewport && 'snap-start')}
               >
                 <KanbanStageColumn
                   stage={col.stage}

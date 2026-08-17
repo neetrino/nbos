@@ -124,10 +124,7 @@ function CommercialNavButton({
       onClick={onClick}
       disabled={disabled}
       title={title ?? label}
-      className={cn(
-        COMMERCIAL_ACTION_BTN_CLASS,
-        disabled && 'pointer-events-none opacity-50',
-      )}
+      className={cn(COMMERCIAL_ACTION_BTN_CLASS, disabled && 'pointer-events-none opacity-50')}
     >
       <span className="inline-flex shrink-0">{icon}</span>
       <span className="text-center leading-tight">{label}</span>

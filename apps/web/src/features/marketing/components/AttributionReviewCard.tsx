@@ -5,10 +5,7 @@ import { StatusBadge } from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
 import { getLeadStage } from '@/features/crm/constants/leadPipeline';
-import {
-  getDealDisplayTitle,
-  getLeadDisplayTitle,
-} from '@/features/crm/utils/crm-entity-display';
+import { getDealDisplayTitle, getLeadDisplayTitle } from '@/features/crm/utils/crm-entity-display';
 import { resolveAttributionStatusLabel } from '@/features/marketing/constants/marketing-attribution-filters';
 import type { Deal } from '@/lib/api/deals';
 import type { Lead } from '@/lib/api/leads';
@@ -44,19 +41,13 @@ export function AttributionReviewCard({
   issueDescription,
   onOpen,
 }: AttributionReviewCardProps) {
-  const title = isLead(item, kind)
-    ? getLeadDisplayTitle(item)
-    : getDealDisplayTitle(item);
+  const title = isLead(item, kind) ? getLeadDisplayTitle(item) : getDealDisplayTitle(item);
   const MetaIcon = kind === 'Lead' ? User : Handshake;
   const statusLabel = resolveAttributionStatusLabel(item.status);
   const statusVariant = resolveStatusVariant(kind, item.status);
 
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(item)}
-      className={CARD_SURFACE_CLASS}
-    >
+    <button type="button" onClick={() => onOpen(item)} className={CARD_SURFACE_CLASS}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <span
@@ -65,12 +56,7 @@ export function AttributionReviewCard({
           />
           <p className="text-foreground truncate text-sm font-semibold">{title}</p>
         </div>
-        <StatusBadge
-          label={statusLabel}
-          variant={statusVariant}
-          dot
-          className="rounded-full"
-        />
+        <StatusBadge label={statusLabel} variant={statusVariant} dot className="rounded-full" />
       </div>
 
       <div className="text-muted-foreground mt-3 flex min-w-0 items-center gap-1.5 text-xs">

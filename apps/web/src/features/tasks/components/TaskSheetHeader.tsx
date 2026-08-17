@@ -111,10 +111,7 @@ export function TaskSheetHeader({
           </h2>
         )}
         <div
-          className={cn(
-            QUICK_CREATE_TASK_HEADER_ICONS_CLASS,
-            moreActions && 'right-0 sm:right-0',
-          )}
+          className={cn(QUICK_CREATE_TASK_HEADER_ICONS_CLASS, moreActions && 'right-0 sm:right-0')}
         >
           <button
             type="button"

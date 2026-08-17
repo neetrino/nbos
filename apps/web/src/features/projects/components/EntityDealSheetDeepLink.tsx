@@ -67,16 +67,19 @@ export function EntityDealSheetDeepLink({
     [clearRenderDealId],
   );
 
-  const handleUpdate = useCallback(async (id: string, data: Partial<Deal>) => {
-    try {
-      const updated = await dealsApi.update(id, data);
-      setDeal(updated);
-      onEntityChanged?.();
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not save deal.'));
-      throw err;
-    }
-  }, [onEntityChanged]);
+  const handleUpdate = useCallback(
+    async (id: string, data: Partial<Deal>) => {
+      try {
+        const updated = await dealsApi.update(id, data);
+        setDeal(updated);
+        onEntityChanged?.();
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Could not save deal.'));
+        throw err;
+      }
+    },
+    [onEntityChanged],
+  );
 
   const handleStatusChange = useCallback(
     async (id: string, status: string) => {

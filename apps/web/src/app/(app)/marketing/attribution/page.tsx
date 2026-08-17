@@ -153,10 +153,7 @@ export default function AttributionReviewPage() {
         <div className="flex items-center gap-1">
           <Link
             href="/crm/deals"
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'lg' }),
-              'h-10 gap-1.5 px-3',
-            )}
+            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
             aria-label="Deals pipeline"
           >
             <Handshake size={16} aria-hidden />
@@ -164,10 +161,7 @@ export default function AttributionReviewPage() {
           </Link>
           <Link
             href="/crm/leads"
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'lg' }),
-              'h-10 gap-1.5 px-3',
-            )}
+            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
             aria-label="Leads pipeline"
           >
             <Megaphone size={16} aria-hidden />
@@ -198,7 +192,9 @@ export default function AttributionReviewPage() {
       ) : activeTotal === 0 ? (
         <EmptyState
           icon={activeTab === 'leads' ? Megaphone : Handshake}
-          title={activeTab === 'leads' ? 'No lead attribution issues' : 'No deal attribution issues'}
+          title={
+            activeTab === 'leads' ? 'No lead attribution issues' : 'No deal attribution issues'
+          }
           description={
             activeTab === 'leads'
               ? 'Leads look clean. Check the Deals tab for remaining issues.'

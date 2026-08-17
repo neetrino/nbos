@@ -127,9 +127,7 @@ export function EntityNotesField({
             'relative',
             showCollapseFade && 'overflow-hidden',
           )}
-          style={
-            showCollapseFade ? { maxHeight: collapsedMaxHeightPx } : undefined
-          }
+          style={showCollapseFade ? { maxHeight: collapsedMaxHeightPx } : undefined}
         >
           {showEmptyHint ? <EntityNotesEmptyHint text={placeholder} /> : null}
           <EditorContent editor={editor} />
