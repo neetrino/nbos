@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Megaphone, Plus } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
@@ -22,7 +28,9 @@ import {
   MARKETING_CHANNELS,
   getMarketingLabel,
 } from '@/features/marketing/constants';
+import { buildMarketingHeroSearch } from '@/features/marketing/components/build-marketing-hero-search';
 import { MarketingLaunchDialog } from '@/features/marketing/components/MarketingLaunchDialog';
+import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
 import type { MarketingAccount } from '@/lib/api/marketing';
 
 export default function MarketingPage() {
@@ -31,6 +39,7 @@ export default function MarketingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState({
     title: '',
     channel: 'META_ADS',
@@ -60,12 +69,27 @@ export default function MarketingPage() {
     fetchActivities();
   }, []);
 
+  const filteredActivities = useMemo(
+    () =>
+      activities.filter((activity) =>
+        matchesMarketingSearch(
+          search,
+          activity.title,
+          activity.description,
+          activity.account?.name,
+          getMarketingLabel(MARKETING_CHANNELS, activity.channel),
+          getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type),
+        ),
+      ),
+    [activities, search],
+  );
+
   const columns = useMemo(() => {
     const byStatus = new Map<string, MarketingActivity[]>();
     for (const row of MARKETING_ACTIVITY_STATUSES) {
       byStatus.set(row.value, []);
     }
-    for (const activity of activities) {
+    for (const activity of filteredActivities) {
       const bucket = byStatus.get(activity.status) ?? [];
       bucket.push(activity);
       byStatus.set(activity.status, bucket);
@@ -75,7 +99,20 @@ export default function MarketingPage() {
       label: row.label,
       items: byStatus.get(row.value) ?? [],
     }));
-  }, [activities]);
+  }, [filteredActivities]);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: buildMarketingHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        searchPlaceholder: 'Search activities by title, channel, type…',
+      }),
+    }),
+    [search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -187,6 +224,12 @@ export default function MarketingPage() {
           icon={Megaphone}
           title="No marketing activities yet"
           description="Create the first activity to start building the Marketing Board."
+        />
+      ) : filteredActivities.length === 0 ? (
+        <EmptyState
+          icon={Megaphone}
+          title="No matching activities"
+          description="Try a different search term."
         />
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-2">

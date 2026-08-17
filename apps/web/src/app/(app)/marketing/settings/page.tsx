@@ -29,8 +29,10 @@ import {
   MARKETING_CHANNELS,
   getMarketingLabel,
 } from '@/features/marketing/constants';
+import { buildMarketingHeroSearch } from '@/features/marketing/components/build-marketing-hero-search';
 import { MarketingAccountExpensePlanLink } from '@/features/marketing/components/MarketingAccountExpensePlanLink';
 import { MarketingCrmWhereSettingsSection } from '@/features/marketing/components/MarketingCrmWhereSettingsSection';
+import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { loadExpensePlansForMarketingAccounts } from '@/features/marketing/utils/load-expense-plans-for-marketing-accounts';
 
@@ -40,6 +42,7 @@ export default function MarketingSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savingLinkId, setSavingLinkId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [financeLinks, setFinanceLinks] = useState<Record<string, string>>({});
   const [expensePlans, setExpensePlans] = useState<ExpensePlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
@@ -152,8 +155,28 @@ export default function MarketingSettingsPage() {
     }
   };
 
+  const filteredAccounts = useMemo(
+    () =>
+      accounts.filter((account) =>
+        matchesMarketingSearch(
+          search,
+          account.name,
+          account.identifier,
+          account.phone,
+          getMarketingLabel(MARKETING_CHANNELS, account.channel),
+          getMarketingLabel(MARKETING_ACCOUNT_STATUSES, account.status),
+        ),
+      ),
+    [accounts, search],
+  );
+
   const moduleHeroSlots = useMemo(
     () => ({
+      search: buildMarketingHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        searchPlaceholder: 'Search accounts by name, channel, identifier…',
+      }),
       trailing: (
         <Button
           type="button"
@@ -166,7 +189,7 @@ export default function MarketingSettingsPage() {
         </Button>
       ),
     }),
-    [],
+    [search],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -253,9 +276,15 @@ export default function MarketingSettingsPage() {
           title="No marketing accounts yet"
           description="Add List.am accounts, social pages, or website sources to unlock Which one attribution."
         />
+      ) : filteredAccounts.length === 0 ? (
+        <EmptyState
+          icon={SlidersHorizontal}
+          title="No matching accounts"
+          description="Try a different search term."
+        />
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {accounts.map((account) => (
+          {filteredAccounts.map((account) => (
             <div key={account.id} className="border-border bg-card rounded-2xl border p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
