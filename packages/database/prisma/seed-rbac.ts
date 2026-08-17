@@ -331,7 +331,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     FINANCE_BONUSES: D,
     FINANCE_SALARY: N,
     PROJECTS: N,
-    TASKS: N,
+    TASKS: L,
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: D,

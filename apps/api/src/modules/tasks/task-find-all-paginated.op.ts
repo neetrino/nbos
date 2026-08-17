@@ -54,7 +54,7 @@ export interface TaskFindAllPaginatedParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-  /** When set, only tasks where this employee is assignee, creator, co-assignee, or observer. */
+  /** When set, only tasks where this employee is personally marked (any status). */
   involvesEmployeeId?: string;
   /** Active (default) or Trash list scope. */
   scope?: EntityLifecycleScope;

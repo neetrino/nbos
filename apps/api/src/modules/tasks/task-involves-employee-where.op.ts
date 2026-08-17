@@ -1,17 +1,21 @@
 import type { Prisma } from '@nbos/database';
 import { buildTaskProjectParticipationWhere } from './task-project-list-filter.ops';
 
-/** Direct assignee/creator/co-assignee/observer match (exported for workspace standalone gate). */
+/**
+ * Personal mark on a task: assignee, co-assignee, observer, reviewer, or creator.
+ * Task workflow status does not matter. Project-team membership is not a personal mark.
+ */
 export function taskDirectInvolvementClauses(scopedEmployeeIds: string[]): Prisma.TaskWhereInput[] {
   return [
     { assigneeId: { in: scopedEmployeeIds } },
     { creatorId: { in: scopedEmployeeIds } },
+    { reviewerId: { in: scopedEmployeeIds } },
     { coAssignees: { hasSome: scopedEmployeeIds } },
     { observers: { hasSome: scopedEmployeeIds } },
   ];
 }
 
-/** Tasks where any scoped employee participates directly or via project/product/workspace graph. */
+/** Tasks the viewer may open via RBAC OWN: personal marks or project/product/workspace graph. */
 export function buildTasksParticipationWhere(scopedEmployeeIds: string[]): Prisma.TaskWhereInput {
   const projectParticipation = buildTaskProjectParticipationWhere(scopedEmployeeIds);
   const projectClauses = (projectParticipation.OR ?? []) as Prisma.TaskWhereInput[];
@@ -20,7 +24,7 @@ export function buildTasksParticipationWhere(scopedEmployeeIds: string[]): Prism
   };
 }
 
-/** Tasks where the employee participates directly or via project/product team. */
+/** Top-level «свои» / My Plan: only tasks where the employee is marked, any status. */
 export function taskWhereInvolvesEmployee(employeeId: string): Prisma.TaskWhereInput {
-  return buildTasksParticipationWhere([employeeId]);
+  return { OR: taskDirectInvolvementClauses([employeeId]) };
 }
