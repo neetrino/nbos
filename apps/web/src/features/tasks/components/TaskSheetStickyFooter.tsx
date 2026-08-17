@@ -1,15 +1,8 @@
 'use client';
 
-import { CheckCircle2, MoreHorizontal, Pause, Play, RotateCcw, Trash2, Undo2 } from 'lucide-react';
+import { CheckCircle2, Play, RotateCcw, Undo2 } from 'lucide-react';
 import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { resolveTaskWorkflowFooterMode } from './task-sheet-workflow-footer';
 import type { TaskWorkflowFooterAction } from './task-workflow-optimistic';
 
@@ -24,11 +17,7 @@ interface TaskSheetStickyFooterProps {
   onSave: () => void;
   onCancel: () => void;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
-  canDeleteDraft: boolean;
-  canMoveToTrash: boolean;
   isTrashed: boolean;
-  onDelete: () => void;
-  onMoveToTrash: () => void;
   onRestore?: () => void;
 }
 
@@ -44,11 +33,7 @@ export function TaskSheetStickyFooter({
   onSave,
   onCancel,
   onTaskAction,
-  canDeleteDraft,
-  canMoveToTrash,
   isTrashed,
-  onDelete,
-  onMoveToTrash,
   onRestore,
 }: TaskSheetStickyFooterProps) {
   const effectiveStatus = workflowFooterStatus ?? taskStatus;
@@ -106,10 +91,6 @@ export function TaskSheetStickyFooter({
         taskStatus={effectiveStatus}
         workflowSaving={workflowSaving}
         onTaskAction={onTaskAction}
-        canDeleteDraft={canDeleteDraft}
-        canMoveToTrash={canMoveToTrash}
-        onDelete={onDelete}
-        onMoveToTrash={onMoveToTrash}
       />
     </div>
   );
@@ -119,36 +100,25 @@ interface TaskSheetWorkflowActionsProps {
   taskStatus: string;
   workflowSaving: boolean;
   onTaskAction: (action: TaskWorkflowFooterAction) => void;
-  canDeleteDraft: boolean;
-  canMoveToTrash: boolean;
-  onDelete: () => void;
-  onMoveToTrash: () => void;
 }
 
 function TaskSheetWorkflowActions({
   taskStatus,
   workflowSaving,
   onTaskAction,
-  canDeleteDraft,
-  canMoveToTrash,
-  onDelete,
-  onMoveToTrash,
 }: TaskSheetWorkflowActionsProps) {
   const mode = resolveTaskWorkflowFooterMode(taskStatus);
-  const canHold = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
-  const canReopen = ['COMPLETED', 'DONE', 'ON_HOLD'].includes(taskStatus);
-  const canApproveReview = taskStatus === 'REVIEW';
-  const canRequestReviewChanges = taskStatus === 'REVIEW';
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center justify-center gap-4">
       {mode === 'start-and-complete' ? (
         <Button
           type="button"
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
           onClick={() => onTaskAction('start')}
         >
-          <Play size={14} /> Start
+          <Play size={14} aria-hidden /> Start
         </Button>
       ) : null}
       {mode === 'start-and-complete' || mode === 'complete-only' ? (
@@ -156,9 +126,10 @@ function TaskSheetWorkflowActions({
           type="button"
           variant={mode === 'complete-only' ? 'success' : 'outline'}
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
           onClick={() => onTaskAction('complete')}
         >
-          <CheckCircle2 size={14} /> Complete
+          <CheckCircle2 size={14} aria-hidden /> Complete
         </Button>
       ) : null}
       {mode === 'resume-only' ? (
@@ -166,74 +137,12 @@ function TaskSheetWorkflowActions({
           type="button"
           variant="secondary"
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
           onClick={() => onTaskAction('reopen')}
         >
-          <RotateCcw size={14} /> Resume
+          <RotateCcw size={14} aria-hidden /> Resume
         </Button>
       ) : null}
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={(props) => (
-            <Button
-              {...props}
-              type="button"
-              variant="outline"
-              size="icon-lg"
-              className="size-10 min-h-10 min-w-10"
-              disabled={workflowSaving}
-              aria-label="More task actions"
-            >
-              <MoreHorizontal size={16} />
-            </Button>
-          )}
-        />
-        <DropdownMenuContent align="start" className="min-w-[12rem]">
-          <DropdownMenuItem
-            disabled={!canApproveReview || workflowSaving}
-            onClick={() => onTaskAction('approveReview')}
-          >
-            Approve review
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={!canRequestReviewChanges || workflowSaving}
-            onClick={() => onTaskAction('requestReviewChanges')}
-          >
-            Request changes
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={!canHold || workflowSaving}
-            onClick={() => onTaskAction('hold')}
-          >
-            <Pause size={14} /> Put On Hold
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={!canReopen || workflowSaving}
-            onClick={() => onTaskAction('reopen')}
-          >
-            <RotateCcw size={14} /> Reopen
-          </DropdownMenuItem>
-          {canDeleteDraft ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
-                <Trash2 size={14} /> Delete draft
-              </DropdownMenuItem>
-            </>
-          ) : null}
-          {canMoveToTrash ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={workflowSaving}
-                onClick={onMoveToTrash}
-              >
-                <Trash2 size={14} /> Move to Trash
-              </DropdownMenuItem>
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
     </div>
   );
 }
