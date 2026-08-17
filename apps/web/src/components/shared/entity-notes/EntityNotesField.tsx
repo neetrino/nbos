@@ -10,6 +10,7 @@ import {
 } from '../detail-sheet-classes';
 import {
   ENTITY_NOTES_COLLAPSE_FADE_CLASS,
+  ENTITY_NOTES_COLLAPSED_PREVIEW_CLASS,
   ENTITY_NOTES_EDITOR_ROOT_CLASS,
   ENTITY_NOTES_SHELL_DISABLED_CLASS,
   ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
@@ -75,13 +76,12 @@ export function EntityNotesField({
     isActive: isEditing,
   });
 
-  const { expanded, canCollapse, collapsedMaxHeightPx, toggleExpanded, resetExpanded } =
-    useEntityNotesCollapse({
-      enabled: usePreviewChrome,
-      contentRef,
-      value,
-      isEditing,
-    });
+  const { expanded, canCollapse, toggleExpanded, resetExpanded } = useEntityNotesCollapse({
+    enabled: usePreviewChrome,
+    contentRef,
+    value,
+    isEditing,
+  });
 
   const activate = useCallback(() => {
     if (isLocked) return;
@@ -125,9 +125,8 @@ export function EntityNotesField({
           className={cn(
             ENTITY_NOTES_EDITOR_ROOT_CLASS,
             'relative',
-            showCollapseFade && 'overflow-hidden',
+            showCollapseFade && ['overflow-hidden', ENTITY_NOTES_COLLAPSED_PREVIEW_CLASS],
           )}
-          style={showCollapseFade ? { maxHeight: collapsedMaxHeightPx } : undefined}
         >
           {showEmptyHint ? <EntityNotesEmptyHint text={placeholder} /> : null}
           <EditorContent editor={editor} />

@@ -1,10 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useState, type RefObject } from 'react';
-import {
-  ENTITY_NOTES_COLLAPSED_PREVIEW_HEIGHT_PX,
-  notesContentCanCollapse,
-} from './entity-notes-collapse';
+import { notesContentCanCollapse } from './entity-notes-collapse';
 
 interface UseEntityNotesCollapseParams {
   enabled: boolean;
@@ -21,7 +18,6 @@ export function useEntityNotesCollapse({
 }: UseEntityNotesCollapseParams): {
   expanded: boolean;
   canCollapse: boolean;
-  collapsedMaxHeightPx: number;
   toggleExpanded: () => void;
   resetExpanded: () => void;
 } {
@@ -33,12 +29,11 @@ export function useEntityNotesCollapse({
     if (!root) return;
     const prose = root.querySelector('.ProseMirror');
     const nextHeight = prose instanceof HTMLElement ? prose.scrollHeight : root.scrollHeight;
-    setFullHeightPx(nextHeight);
+    setFullHeightPx((prev) => (prev === nextHeight ? prev : nextHeight));
   }, [contentRef]);
 
   useLayoutEffect(() => {
     if (!enabled || isEditing) return;
-    measure();
     const root = contentRef.current;
     if (!root || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => measure());
@@ -61,7 +56,6 @@ export function useEntityNotesCollapse({
   return {
     expanded: canCollapse ? expanded : true,
     canCollapse,
-    collapsedMaxHeightPx: ENTITY_NOTES_COLLAPSED_PREVIEW_HEIGHT_PX,
     toggleExpanded,
     resetExpanded,
   };

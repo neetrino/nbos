@@ -40,6 +40,9 @@ export const ENTITY_NOTES_EMPTY_HINT_CLASS =
 export const ENTITY_NOTES_COLLAPSE_FADE_CLASS =
   'pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-card to-transparent';
 
+/** Matches {@link ENTITY_NOTES_COLLAPSED_PREVIEW_HEIGHT_PX}. */
+export const ENTITY_NOTES_COLLAPSED_PREVIEW_CLASS = 'max-h-[200px]';
+
 export const ENTITY_NOTES_TOOLBAR_CLASS =
   'border-border/80 bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1';
 
