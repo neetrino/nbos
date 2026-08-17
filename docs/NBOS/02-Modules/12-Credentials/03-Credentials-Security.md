@@ -184,19 +184,19 @@ Selective export может быть нужен для:
 
 ### Базовые Права
 
-| Capability               | Кто может                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------- |
-| View credential metadata | пользователи с доступом к context или grant                                         |
-| Reveal/copy secret       | только пользователи с explicit разрешением                                          |
-| Create credential        | сотрудники с permission `CREDENTIALS ADD`                                           |
-| Edit metadata            | owner/custodian/admin                                                               |
-| Edit secret              | owner/custodian/admin или approved editor                                           |
-| Grant access             | owner/custodian/PM/CEO по policy                                                    |
-| Export selected          | admin policy                                                                        |
-| Full export              | CEO/Admin + step-up                                                                 |
-| Emergency access         | CEO/Owner policy                                                                    |
-| Bypass row visibility    | Owner/CEO only via `CREDENTIALS_BYPASS_ROW_VISIBILITY` (not `CREDENTIALS_VIEW=ALL`) |
-| Permanent delete         | CEO/Admin + step-up                                                                 |
+| Capability               | Кто может                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| View credential metadata | пользователи с доступом к context или grant                                                       |
+| Reveal/copy secret       | только пользователи с explicit разрешением                                                        |
+| Create credential        | сотрудники с permission `CREDENTIALS ADD`; Developer и Junior Developer — `ADD OWN` в role matrix |
+| Edit metadata            | owner/custodian/admin                                                                             |
+| Edit secret              | owner/custodian/admin или approved editor                                                         |
+| Grant access             | owner/custodian/PM/CEO по policy                                                                  |
+| Export selected          | admin policy                                                                                      |
+| Full export              | CEO/Admin + step-up                                                                               |
+| Emergency access         | CEO/Owner policy                                                                                  |
+| Bypass row visibility    | Owner/CEO only via `CREDENTIALS_BYPASS_ROW_VISIBILITY` (not `CREDENTIALS_VIEW=ALL`)               |
+| Permanent delete         | CEO/Admin + step-up                                                                               |
 
 ---
 
