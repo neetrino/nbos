@@ -8,7 +8,6 @@ import {
   ErrorState,
   LoadingState,
   PageHeroTabs,
-  StatusBadge,
   useModuleHeroSlots,
 } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import type { Deal } from '@/lib/api/deals';
 import type { Lead } from '@/lib/api/leads';
 import { EntityLeadSheetDeepLink } from '@/features/crm/components/EntityLeadSheetDeepLink';
 import { AttributionHeroSearch } from '@/features/marketing/components/AttributionHeroSearch';
+import { AttributionReviewCard } from '@/features/marketing/components/AttributionReviewCard';
 import {
   buildAttributionStatusOptions,
   resolveAttributionStatusLabel,
@@ -255,7 +255,7 @@ function ReviewList({
   cardsPerRow = 1,
 }: {
   items: Array<Lead | Deal>;
-  kind: string;
+  kind: 'Lead' | 'Deal';
   onOpenItem: (item: Lead | Deal) => void;
   cardsPerRow?: 1 | 2;
 }) {
@@ -267,25 +267,13 @@ function ReviewList({
       )}
     >
       {items.map((item) => (
-        <button
+        <AttributionReviewCard
           key={item.id}
-          type="button"
-          onClick={() => onOpenItem(item)}
-          className="border-border bg-card hover:border-primary/40 hover:bg-muted/30 focus-visible:ring-ring rounded-xl border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-medium">
-                {'contactName' in item ? item.contactName : item.name}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {kind} · {item.code} · {item.source ?? 'Missing source'}
-              </p>
-            </div>
-            <StatusBadge label={resolveAttributionStatusLabel(item.status)} variant="blue" />
-          </div>
-          <p className="text-muted-foreground mt-2 text-sm">{describeIssue(item)}</p>
-        </button>
+          item={item}
+          kind={kind}
+          issueDescription={describeIssue(item)}
+          onOpen={onOpenItem}
+        />
       ))}
     </div>
   );
