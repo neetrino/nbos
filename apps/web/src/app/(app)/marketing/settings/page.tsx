@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCcw, SlidersHorizontal } from 'lucide-react';
+import { Plus, SlidersHorizontal } from 'lucide-react';
 import {
   EmptyState,
   ErrorState,
@@ -177,17 +177,6 @@ export default function MarketingSettingsPage() {
         onSearchChange: setSearch,
         searchPlaceholder: 'Search accounts by name, channel, identifier…',
       }),
-      trailing: (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          onClick={() => void fetchAccounts()}
-          aria-label="Refresh marketing settings"
-        >
-          <RefreshCcw size={16} aria-hidden />
-        </Button>
-      ),
     }),
     [search],
   );

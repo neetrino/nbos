@@ -1,12 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AreaChart, AlertTriangle, CheckCircle2, RefreshCcw } from 'lucide-react';
+import { AreaChart, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
-import { Button } from '@/components/ui/button';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
-import { buildMarketingHeroSearch } from '@/features/marketing/components/build-marketing-hero-search';
-import { MarketingDashboardPeriodBar } from '@/features/marketing/components/MarketingDashboardPeriodBar';
+import { MarketingDashboardHeroSearch } from '@/features/marketing/components/MarketingDashboardHeroSearch';
 import {
   getMarketingDashboardQueryRange,
   type MarketingDashboardPeriodPreset,
@@ -53,41 +51,28 @@ export default function MarketingDashboardPage() {
 
   const moduleHeroSlots = useMemo(
     () => ({
-      search: buildMarketingHeroSearch({
-        search,
-        onSearchChange: setSearch,
-        searchPlaceholder: 'Search dashboard metrics…',
-      }),
-      trailing: (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          onClick={() => void fetchDashboard()}
-          aria-label="Refresh dashboard"
-        >
-          <RefreshCcw size={16} aria-hidden />
-        </Button>
+      search: (
+        <MarketingDashboardHeroSearch
+          search={search}
+          onSearchChange={setSearch}
+          preset={periodPreset}
+          onPresetChange={setPeriodPreset}
+          customFrom={customFrom}
+          customTo={customTo}
+          onCustomFromChange={setCustomFrom}
+          onCustomToChange={setCustomTo}
+          summary={summary}
+          disabled={loading}
+        />
       ),
     }),
-    [fetchDashboard, search],
+    [customFrom, customTo, loading, periodPreset, search, summary],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="space-y-6">
-      <MarketingDashboardPeriodBar
-        preset={periodPreset}
-        onPresetChange={setPeriodPreset}
-        customFrom={customFrom}
-        customTo={customTo}
-        onCustomFromChange={setCustomFrom}
-        onCustomToChange={setCustomTo}
-        summary={summary}
-        disabled={loading}
-      />
-
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
