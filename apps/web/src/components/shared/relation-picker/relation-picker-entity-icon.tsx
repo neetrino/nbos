@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Building2, FolderKanban, Handshake, Layers, Receipt, User, UserCog } from 'lucide-react';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { PersonSoftAvatar } from '@/components/shared/PersonSoftAvatar';
+import { PERSON_PICKER_AVATAR_CLASS } from '@/components/shared/person-contact-row.constants';
 import { cn } from '@/lib/utils';
 import { RELATION_PICKER_ENTITY_ICON_INLINE_CLASS } from '../detail-sheet-classes';
 import type { RelationEntityKind } from './relation-picker.types';
@@ -55,7 +56,7 @@ export function relationPickerOptionLeading(
 ): ReactNode {
   if (usesPersonAvatar(kind)) {
     return variant === 'inline' ? (
-      <PersonSoftAvatar name={label} imageUrl={imageUrl} />
+      <PersonSoftAvatar name={label} imageUrl={imageUrl} className={PERSON_PICKER_AVATAR_CLASS} />
     ) : (
       <EmployeePersonAvatar label={label} imageUrl={imageUrl} />
     );

@@ -275,7 +275,7 @@ export const RELATION_PICKER_REPLACE_ZONE_GROW_CLASS = 'min-w-8 flex-1';
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
-  'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3 pr-1 text-sm',
+  'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3.5 pr-1.5 text-sm',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
