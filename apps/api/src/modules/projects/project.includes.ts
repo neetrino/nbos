@@ -16,6 +16,9 @@ export const projectDetailInclude = {
   products: {
     include: {
       pm: { select: employeePersonSelect },
+      developer: { select: employeePersonSelect },
+      frontendDeveloper: { select: employeePersonSelect },
+      technicalSpecialist: { select: employeePersonSelect },
       order: {
         select: {
           id: true,

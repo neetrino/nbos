@@ -194,7 +194,15 @@ async function loadOrdersForProjects(
       id: true,
       code: true,
       projectId: true,
-      product: { select: { name: true, pmId: true, developerId: true, designerId: true } },
+      product: {
+        select: {
+          name: true,
+          pmId: true,
+          developerId: true,
+          frontendDeveloperId: true,
+          designerId: true,
+        },
+      },
       extension: { select: { name: true } },
       bonusEntries: {
         select: {
@@ -280,6 +288,7 @@ async function enrichProjectLabels(
       const hasPmRole =
         order?.product?.pmId === selectedEmployeeId ||
         order?.product?.developerId === selectedEmployeeId ||
+        order?.product?.frontendDeveloperId === selectedEmployeeId ||
         order?.product?.designerId === selectedEmployeeId;
 
       if (!linkedOnOrder && !hasPmRole && !focusCell && !unit) {

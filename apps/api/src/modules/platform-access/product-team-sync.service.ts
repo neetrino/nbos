@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { PrismaClient, type ProductTeamSlotEnum, type TeamMemberSourceEnum } from '@nbos/database';
-import { productSlotBindingsFromRow } from '@nbos/shared';
+import { isPrimaryProductSlot, productSlotBindingsFromRow } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 
 interface SyncProductSlotsParams {
@@ -9,6 +9,7 @@ interface SyncProductSlotsParams {
   row: {
     pmId?: string | null;
     developerId?: string | null;
+    frontendDeveloperId?: string | null;
     designerId?: string | null;
     technicalSpecialistId?: string | null;
     qaLeadId?: string | null;
@@ -71,13 +72,13 @@ export class ProductTeamSyncService {
             employeeId: binding.employeeId,
             slot: binding.slot as ProductTeamSlotEnum,
             source: SLOT_SOURCE,
-            isPrimary: true,
+            isPrimary: isPrimaryProductSlot(binding.slot),
             addedById: params.actorId,
           },
           update: {
             slot: binding.slot as ProductTeamSlotEnum,
             source: SLOT_SOURCE,
-            isPrimary: true,
+            isPrimary: isPrimaryProductSlot(binding.slot),
             addedById: params.actorId ?? undefined,
           },
         });
@@ -175,6 +176,7 @@ export class ProductTeamSyncService {
       select: {
         pmId: true,
         developerId: true,
+        frontendDeveloperId: true,
         designerId: true,
         technicalSpecialistId: true,
         qaLeadId: true,

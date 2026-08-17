@@ -195,12 +195,18 @@ export async function resolveDeliveryPayableUnits(
 
 /** Employee ids linked to a delivery unit via product roles or bonus entries. */
 export function linkedEmployeeIdsForUnit(order: {
-  product: { pmId: string | null; developerId: string | null; designerId: string | null } | null;
+  product: {
+    pmId: string | null;
+    developerId: string | null;
+    frontendDeveloperId: string | null;
+    designerId: string | null;
+  } | null;
   bonusEmployeeIds: string[];
 }): Set<string> {
   const ids = new Set(order.bonusEmployeeIds);
   if (order.product?.pmId) ids.add(order.product.pmId);
   if (order.product?.developerId) ids.add(order.product.developerId);
+  if (order.product?.frontendDeveloperId) ids.add(order.product.frontendDeveloperId);
   if (order.product?.designerId) ids.add(order.product.designerId);
   return ids;
 }

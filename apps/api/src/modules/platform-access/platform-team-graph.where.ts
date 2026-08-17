@@ -12,6 +12,7 @@ export function buildProductParticipationWhere(
       { teamMembers: { some: { employeeId: { in: scopedEmployeeIds } } } },
       { pmId: { in: scopedEmployeeIds } },
       { developerId: { in: scopedEmployeeIds } },
+      { frontendDeveloperId: { in: scopedEmployeeIds } },
       { designerId: { in: scopedEmployeeIds } },
       { technicalSpecialistId: { in: scopedEmployeeIds } },
       { qaLeadId: { in: scopedEmployeeIds } },

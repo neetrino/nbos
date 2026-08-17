@@ -47,6 +47,7 @@ model Employee {
   passwordResetTokens           PasswordResetToken[]
   productsManaging              Product[]               @relation("ProductPM")
   productsAsDeveloper           Product[]               @relation("ProductDeveloper")
+  productsAsFrontendDeveloper   Product[]               @relation("ProductFrontendDeveloper")
   productsAsDesigner            Product[]               @relation("ProductDesigner")
   productsAsTechnicalSpecialist Product[]               @relation("ProductTechnicalSpecialist")
   productsAsQaLead              Product[]               @relation("ProductQaLead")

@@ -62,6 +62,7 @@ function legacyProjectTeamDeliveryOr(employeeId: string): Prisma.CredentialWhere
             OR: [
               { pmId: employeeId },
               { developerId: employeeId },
+              { frontendDeveloperId: employeeId },
               { designerId: employeeId },
               { technicalSpecialistId: employeeId },
               { qaLeadId: employeeId },

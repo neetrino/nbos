@@ -27,6 +27,7 @@ enum ProjectTeamRoleEnum {
 enum ProductTeamSlotEnum {
   PM
   DEVELOPER
+  DEVELOPER_FRONTEND
   DESIGNER
   TECHNICAL_SPECIALIST
   QA_LEAD

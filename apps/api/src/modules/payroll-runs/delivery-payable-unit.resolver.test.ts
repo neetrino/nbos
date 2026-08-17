@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
+import {
+  linkedEmployeeIdsForUnit,
+  resolveDeliveryPayableUnits,
+} from './delivery-payable-unit.resolver';
 
 describe('resolveDeliveryPayableUnits', () => {
   it('includes open delivery units and excludes closed units with no unpaid bonus', async () => {
@@ -98,5 +101,33 @@ describe('resolveDeliveryPayableUnits', () => {
 
     expect(units).toHaveLength(1);
     expect(units[0]?.inclusionReason).toBe('PINNED');
+  });
+});
+
+describe('linkedEmployeeIdsForUnit', () => {
+  it('links backend and frontend developers when both are assigned', () => {
+    const ids = linkedEmployeeIdsForUnit({
+      product: {
+        pmId: 'pm-1',
+        developerId: 'dev-be',
+        frontendDeveloperId: 'dev-fe',
+        designerId: null,
+      },
+      bonusEmployeeIds: [],
+    });
+    expect([...ids]).toEqual(expect.arrayContaining(['pm-1', 'dev-be', 'dev-fe']));
+  });
+
+  it('links only backend when frontend is unset', () => {
+    const ids = linkedEmployeeIdsForUnit({
+      product: {
+        pmId: null,
+        developerId: 'dev-be',
+        frontendDeveloperId: null,
+        designerId: null,
+      },
+      bonusEmployeeIds: [],
+    });
+    expect([...ids]).toEqual(['dev-be']);
   });
 });

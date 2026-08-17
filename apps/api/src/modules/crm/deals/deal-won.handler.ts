@@ -254,6 +254,7 @@ export class DealWonHandler {
         select: {
           pmId: true,
           developerId: true,
+          frontendDeveloperId: true,
           designerId: true,
           technicalSpecialistId: true,
           qaLeadId: true,

@@ -19,6 +19,7 @@ export type ProjectTeamRole = (typeof PROJECT_TEAM_ROLES)[number];
 export const PRODUCT_TEAM_SLOTS = [
   'PM',
   'DEVELOPER',
+  'DEVELOPER_FRONTEND',
   'DESIGNER',
   'TECHNICAL_SPECIALIST',
   'QA_LEAD',
@@ -64,9 +65,15 @@ export function isResourceGrantResourceType(value: string): value is ResourceGra
 export const PRODUCT_SLOT_FIELD_MAP = {
   pmId: 'PM',
   developerId: 'DEVELOPER',
+  frontendDeveloperId: 'DEVELOPER_FRONTEND',
   designerId: 'DESIGNER',
   technicalSpecialistId: 'TECHNICAL_SPECIALIST',
   qaLeadId: 'QA_LEAD',
 } as const satisfies Record<string, ProductTeamSlot>;
 
 export type ProductSlotFieldName = keyof typeof PRODUCT_SLOT_FIELD_MAP;
+
+/** Backend developer stays the primary delivery slot; Frontend is a helper seat. */
+export function isPrimaryProductSlot(slot: ProductTeamSlot): boolean {
+  return slot !== 'DEVELOPER_FRONTEND';
+}

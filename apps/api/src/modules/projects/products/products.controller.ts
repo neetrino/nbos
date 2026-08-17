@@ -151,6 +151,7 @@ export class ProductsController {
       productType?: string;
       pmId?: string | null;
       developerId?: string | null;
+      frontendDeveloperId?: string | null;
       designerId?: string | null;
       technicalSpecialistId?: string | null;
       qaLeadId?: string | null;
