@@ -5,7 +5,8 @@ import type { DeliveryBoardItem } from './project-delivery-board-model';
 const sharedPerson = { id: 'emp-1', firstName: 'Anna', lastName: 'Smith' };
 
 describe('getDeliveryBoardItemTeamMembers', () => {
-  it('collects Developer, PM, and Technical specialist without duplicates', () => {
+  it('collects Backend, Frontend, PM, and Technical specialist without duplicates', () => {
+    const frontend = { id: 'emp-fe', firstName: 'Eve', lastName: 'Chen' };
     const item: DeliveryBoardItem = {
       kind: 'PRODUCT',
       product: {
@@ -17,6 +18,7 @@ describe('getDeliveryBoardItemTeamMembers', () => {
         deadline: null,
         pm: sharedPerson,
         developer: sharedPerson,
+        frontendDeveloper: frontend,
         designer: { id: 'emp-2', firstName: 'Bob', lastName: 'Lee' },
         technicalSpecialist: { id: 'emp-3', firstName: 'Cara', lastName: 'Ng' },
         qaLead: { id: 'emp-4', firstName: 'Dan', lastName: 'Wu' },
@@ -25,8 +27,12 @@ describe('getDeliveryBoardItemTeamMembers', () => {
     };
 
     const members = getDeliveryBoardItemTeamMembers(item);
-    expect(members).toHaveLength(2);
-    expect(members.map((m) => m.roleLabel)).toEqual(['Developer', 'Technical specialist']);
+    expect(members).toHaveLength(3);
+    expect(members.map((m) => m.roleLabel)).toEqual([
+      'Developer Backend',
+      'Developer Frontend',
+      'Technical specialist',
+    ]);
   });
 
   it('returns extension assignee as Developer', () => {

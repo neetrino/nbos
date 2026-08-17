@@ -25,6 +25,7 @@ export interface Product {
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
   developerId?: string | null;
+  frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
   qaLeadId?: string | null;
@@ -51,6 +52,7 @@ export interface Product {
   };
   pm: ProductEmployee | null;
   developer?: ProductEmployee | null;
+  frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
@@ -83,6 +85,7 @@ export interface FullProduct extends Product {
   doneReadiness?: ProductDoneReadiness;
   technicalProfiles?: ProductTechnicalProfileRef[];
   developer?: ProductEmployee | null;
+  frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
@@ -198,6 +201,7 @@ export interface UpdateProductData {
   productType?: string;
   pmId?: string | null;
   developerId?: string | null;
+  frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
   qaLeadId?: string | null;

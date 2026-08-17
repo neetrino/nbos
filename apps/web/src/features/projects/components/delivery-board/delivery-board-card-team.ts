@@ -41,14 +41,15 @@ function pushTeamMember(
   });
 }
 
-/** Board card avatars: Developer, PM, Technical specialist only. */
+/** Board card avatars: Backend, Frontend, PM, Technical specialist. */
 export function getDeliveryBoardItemTeamMembers(item: DeliveryBoardItem): DeliveryCardTeamMember[] {
   const members: DeliveryCardTeamMember[] = [];
   const seenIds = new Set<string>();
 
   if (item.kind === 'PRODUCT') {
     const product = item.product;
-    pushTeamMember(members, seenIds, product.developer, 'Developer', 'blue');
+    pushTeamMember(members, seenIds, product.developer, 'Developer Backend', 'blue');
+    pushTeamMember(members, seenIds, product.frontendDeveloper, 'Developer Frontend', 'blue');
     pushTeamMember(members, seenIds, product.pm, 'PM', 'amber');
     pushTeamMember(members, seenIds, product.technicalSpecialist, 'Technical specialist', 'cyan');
     return members;

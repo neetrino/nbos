@@ -57,6 +57,14 @@ describe('taskInvolvesEmployee', () => {
     expect(taskInvolvesEmployee(task, 'e3')).toBe(true);
   });
 
+  it('returns true for reviewer', () => {
+    const task: Task = {
+      ...baseTask,
+      reviewer: { id: 'e4', firstName: 'R', lastName: 'V' },
+    };
+    expect(taskInvolvesEmployee(task, 'e4')).toBe(true);
+  });
+
   it('returns false when not involved', () => {
     expect(taskInvolvesEmployee(baseTask, 'z9')).toBe(false);
   });

@@ -50,10 +50,11 @@ describe('Constants', () => {
     expect(ORDER_STATUSES).toHaveLength(4);
   });
 
-  it('EMPLOYEE_ROLES has 12 roles', () => {
-    expect(EMPLOYEE_ROLES).toHaveLength(12);
+  it('EMPLOYEE_ROLES has 13 roles including frontend developer', () => {
+    expect(EMPLOYEE_ROLES).toHaveLength(13);
     expect(EMPLOYEE_ROLES).toContain('CEO');
     expect(EMPLOYEE_ROLES).toContain('DEVELOPER');
+    expect(EMPLOYEE_ROLES).toContain('DEVELOPER_FRONTEND');
   });
 
   it('EMPLOYEE_LEVELS has 5 levels', () => {

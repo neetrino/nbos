@@ -65,7 +65,8 @@ Checklist is one requirement type, not the whole stage readiness model.
 
 ```text
 Starting requirements
-  - Developer selected
+  - Developer Backend selected
+  - Developer Frontend selected (optional)
   - Designer selected
   - Tech specialist selected
   - Client data received

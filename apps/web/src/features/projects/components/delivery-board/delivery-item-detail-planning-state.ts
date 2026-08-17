@@ -17,6 +17,9 @@ export type ProductPlanSnapshot = {
   developerId: string | null;
   developerLabel: string;
   developerAvatar: string | null;
+  frontendDeveloperId: string | null;
+  frontendDeveloperLabel: string;
+  frontendDeveloperAvatar: string | null;
   designerId: string | null;
   designerLabel: string;
   designerAvatar: string | null;
@@ -51,6 +54,9 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     developerId: p.developer?.id ?? null,
     developerLabel: employeeLabel(p.developer),
     developerAvatar: employeeAvatarUrl(p.developer),
+    frontendDeveloperId: p.frontendDeveloper?.id ?? null,
+    frontendDeveloperLabel: employeeLabel(p.frontendDeveloper),
+    frontendDeveloperAvatar: employeeAvatarUrl(p.frontendDeveloper),
     designerId: p.designer?.id ?? null,
     designerLabel: employeeLabel(p.designer),
     designerAvatar: employeeAvatarUrl(p.designer),
@@ -101,6 +107,9 @@ export function buildProductPlanPatch(
 
   if (draft.developerId !== snap.developerId) {
     patch.developerId = draft.developerId;
+  }
+  if (draft.frontendDeveloperId !== snap.frontendDeveloperId) {
+    patch.frontendDeveloperId = draft.frontendDeveloperId;
   }
   if (draft.designerId !== snap.designerId) {
     patch.designerId = draft.designerId;

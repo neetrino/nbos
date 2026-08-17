@@ -70,10 +70,15 @@ describe('TasksService', () => {
         expect.arrayContaining([
           { assigneeId: { in: ['emp-1'] } },
           { creatorId: { in: ['emp-1'] } },
+          { reviewerId: { in: ['emp-1'] } },
           { coAssignees: { hasSome: ['emp-1'] } },
           { observers: { hasSome: ['emp-1'] } },
         ]),
       );
+      const hasProjectGraph = participation?.OR?.some(
+        (clause) => typeof clause === 'object' && clause !== null && 'product' in clause,
+      );
+      expect(hasProjectGraph).toBe(false);
     });
 
     it('rejects orderId without projectId', async () => {
@@ -401,6 +406,7 @@ describe('TasksService', () => {
             OR: expect.arrayContaining([
               { assigneeId: { in: ['emp-1'] } },
               { creatorId: { in: ['emp-1'] } },
+              { reviewerId: { in: ['emp-1'] } },
               { coAssignees: { hasSome: ['emp-1'] } },
               { observers: { hasSome: ['emp-1'] } },
             ]),

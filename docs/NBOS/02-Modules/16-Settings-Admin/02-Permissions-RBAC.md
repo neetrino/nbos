@@ -49,7 +49,8 @@ Permission Role
 - Finance Admin;
 - Sales Manager;
 - Project Manager;
-- Developer;
+- Developer Backend;
+- Developer Frontend (тот же technical permission set, что у бывшего Developer / Delivery User);
 - Support Agent;
 - Viewer.
 

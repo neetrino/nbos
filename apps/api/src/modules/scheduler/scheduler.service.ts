@@ -15,6 +15,7 @@ import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/pr
 import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
 import { NotificationEnqueueReconcileService } from '../notifications/notification-enqueue-reconcile.service';
 import { AuthSessionService } from '../auth/auth-session.service';
+import { RecurringTasksService } from '../tasks/recurring-tasks.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -47,6 +48,7 @@ export class SchedulerService {
     private readonly notificationInboxReconcile: NotificationInboxReconcileService,
     private readonly notificationEnqueueReconcile: NotificationEnqueueReconcileService,
     private readonly authSessions: AuthSessionService,
+    private readonly recurringTasks: RecurringTasksService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -304,6 +306,20 @@ export class SchedulerService {
         return {
           processedCount: result.scannedJobs + result.scannedDeliveries,
           metadata: result,
+        };
+      },
+    );
+  }
+
+  async runRecurringTasksDue(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.recurringTasksDue, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.recurringTasks.processDueTemplates();
+        return {
+          processedCount: result.created,
+          metadata: { failed: result.failed, taskIds: result.taskIds },
         };
       },
     );

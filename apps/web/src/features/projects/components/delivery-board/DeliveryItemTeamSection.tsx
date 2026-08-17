@@ -76,7 +76,7 @@ export function DeliveryItemTeamSection({
             />
             <SellerReadOnlyRow seller={seller} />
             <ProductRolePicker
-              label="Developer"
+              label="Developer Backend"
               employeeId={productPlan.developerId}
               employeeLabel={productPlan.developerLabel}
               employeeAvatar={productPlan.developerAvatar}
@@ -89,6 +89,28 @@ export function DeliveryItemTeamSection({
               }
               onClear={() =>
                 patchProduct({ developerId: null, developerLabel: '', developerAvatar: null })
+              }
+              onSearchEmployees={searchEmployees}
+              disabled={disabled}
+            />
+            <ProductRolePicker
+              label="Developer Frontend"
+              employeeId={productPlan.frontendDeveloperId}
+              employeeLabel={productPlan.frontendDeveloperLabel}
+              employeeAvatar={productPlan.frontendDeveloperAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  frontendDeveloperId: id,
+                  frontendDeveloperLabel: name,
+                  frontendDeveloperAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
+              onClear={() =>
+                patchProduct({
+                  frontendDeveloperId: null,
+                  frontendDeveloperLabel: '',
+                  frontendDeveloperAvatar: null,
+                })
               }
               onSearchEmployees={searchEmployees}
               disabled={disabled}

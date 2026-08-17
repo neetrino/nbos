@@ -256,7 +256,7 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 2. Миграции Neon **один раз** (не с каждой реплики API):
 
    ```bash
-   pnpm db:migrate:deploy
+   pnpm --filter @nbos/database migrate:deploy
    ```
 
 3. Деплой **API** → `https://api.example.com/api/health` → 200.
@@ -266,6 +266,21 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 ---
 
 ## 6. Scheduler / внешний cron
+
+Не копируйте в Coolify весь каталог `# KEY=` из `.env.example`. Включайте только джоб, который запускаете сегодня.
+
+**Recurring tasks** (создаёт `Task` из due-шаблонов) — выберите **один** триггер, не оба:
+
+1. Внешний cron каждые 5 минут (флаги `SCHEDULER_RECURRING_TASKS_*` не нужны):
+
+```bash
+curl -fsS -X POST "https://api.example.com/api/scheduler/recurring-tasks-due" \
+  -H "x-scheduler-key: $SCHEDULER_API_KEY"
+```
+
+2. Или dedicated `nbos-scheduler` (`PROCESS_ROLE=scheduler`): `SCHEDULER_ENABLED=true` + `SCHEDULER_RECURRING_TASKS_DUE_ENABLED=true`. На `PROCESS_ROLE=api` этот флаг ничего не делает.
+
+Expense plan auto-due:
 
 ```bash
 curl -fsS -X POST "https://api.example.com/api/scheduler/expense-plan-auto-due" \

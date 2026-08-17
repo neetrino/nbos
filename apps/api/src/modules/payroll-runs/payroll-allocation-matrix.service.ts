@@ -138,7 +138,9 @@ export class PayrollAllocationMatrixService {
       where: { id: { in: orderIds } },
       select: {
         id: true,
-        product: { select: { pmId: true, developerId: true, designerId: true } },
+        product: {
+          select: { pmId: true, developerId: true, frontendDeveloperId: true, designerId: true },
+        },
         bonusEntries: {
           select: {
             id: true,
@@ -245,6 +247,7 @@ export class PayrollAllocationMatrixService {
             .forEach((b) => linkedIds.add(b.employeeId));
           if (order.product?.pmId) linkedIds.add(order.product.pmId);
           if (order.product?.developerId) linkedIds.add(order.product.developerId);
+          if (order.product?.frontendDeveloperId) linkedIds.add(order.product.frontendDeveloperId);
           if (order.product?.designerId) linkedIds.add(order.product.designerId);
         }
         const key = cellKey(emp.employeeId, unit.orderId);

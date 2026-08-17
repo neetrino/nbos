@@ -206,6 +206,8 @@ Portfolio/client views already mask sections via `portfolio-access-mask.ts`.
 
 **Runtime (partial):** `GET /tasks?workspaceId=` gates via `assertWorkSpaceTasksAccessible`; workspace-only lists without `projectId` apply `buildTasksParticipationWhere` when `TASKS_VIEW` ≠ `ALL`.
 
+**Runtime:** `GET /tasks?involvesEmployeeId=` and task stats with that param are **свои** (personal marks only: assignee / co-assignee / observer / reviewer / creator, any status). They do **not** expand to the project team graph. RBAC `TASKS_VIEW=OWN` without this param still uses `buildTasksParticipationWhere` (marks **or** project/product team).
+
 **Runtime (partial):** `GET /tasks/:id` and task mutations call `assertTaskAccessible` with the same participation graph.
 
 ---

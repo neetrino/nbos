@@ -75,6 +75,7 @@ interface UpdateProductDto {
   productType?: string;
   pmId?: string | null;
   developerId?: string | null;
+  frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
   qaLeadId?: string | null;
@@ -139,10 +140,55 @@ type ProductSlotSyncRow = {
   projectId: string;
   pmId: string | null;
   developerId: string | null;
+  frontendDeveloperId: string | null;
   designerId: string | null;
   technicalSpecialistId: string | null;
   qaLeadId: string | null;
 };
+
+const SAME_DEVELOPER_BOTH_SLOTS_MESSAGE =
+  'Backend and Frontend developers must be different employees';
+
+function assertDistinctProductDevelopers(
+  developerId: string | null | undefined,
+  frontendDeveloperId: string | null | undefined,
+): void {
+  if (developerId && frontendDeveloperId && developerId === frontendDeveloperId) {
+    throw new BadRequestException(SAME_DEVELOPER_BOTH_SLOTS_MESSAGE);
+  }
+}
+
+function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInput {
+  return {
+    ...(data.name !== undefined && { name: data.name }),
+    ...(data.productCategory !== undefined && {
+      productCategory: data.productCategory as ProductCategoryEnum,
+    }),
+    ...(data.productType !== undefined && {
+      productType: data.productType as ProductTypeEnum,
+    }),
+    ...(data.pmId !== undefined && { pmId: data.pmId }),
+    ...(data.developerId !== undefined && { developerId: data.developerId }),
+    ...(data.frontendDeveloperId !== undefined && {
+      frontendDeveloperId: data.frontendDeveloperId,
+    }),
+    ...(data.designerId !== undefined && { designerId: data.designerId }),
+    ...(data.technicalSpecialistId !== undefined && {
+      technicalSpecialistId: data.technicalSpecialistId,
+    }),
+    ...(data.qaLeadId !== undefined && { qaLeadId: data.qaLeadId }),
+    ...(data.deadline !== undefined && {
+      deadline: data.deadline ? new Date(data.deadline) : null,
+    }),
+    ...(data.description !== undefined && { description: data.description }),
+    ...(data.checklistTemplateId !== undefined && {
+      checklistTemplateId: data.checklistTemplateId,
+    }),
+    ...(data.languages !== undefined && {
+      languages: normalizeProductLanguages(data.languages),
+    }),
+  };
+}
 
 @Injectable()
 export class ProductsService {
@@ -220,6 +266,7 @@ export class ProductsService {
           },
           pm: { select: employeePersonSelect },
           developer: { select: employeePersonSelect },
+          frontendDeveloper: { select: employeePersonSelect },
           designer: { select: employeePersonSelect },
           technicalSpecialist: { select: employeePersonSelect },
           qaLead: { select: employeePersonSelect },
@@ -323,6 +370,7 @@ export class ProductsService {
         },
         pm: { select: employeePersonWithEmailSelect },
         developer: { select: employeePersonWithEmailSelect },
+        frontendDeveloper: { select: employeePersonWithEmailSelect },
         designer: { select: employeePersonWithEmailSelect },
         technicalSpecialist: { select: employeePersonWithEmailSelect },
         qaLead: { select: employeePersonWithEmailSelect },
@@ -431,38 +479,20 @@ export class ProductsService {
 
   async update(id: string, data: UpdateProductDto) {
     const previous = await this.findById(id);
+    assertDistinctProductDevelopers(
+      data.developerId !== undefined ? data.developerId : previous.developerId,
+      data.frontendDeveloperId !== undefined
+        ? data.frontendDeveloperId
+        : previous.frontendDeveloperId,
+    );
     const product = await this.prisma.product.update({
       where: { id },
-      data: {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.productCategory !== undefined && {
-          productCategory: data.productCategory as ProductCategoryEnum,
-        }),
-        ...(data.productType !== undefined && {
-          productType: data.productType as ProductTypeEnum,
-        }),
-        ...(data.pmId !== undefined && { pmId: data.pmId }),
-        ...(data.developerId !== undefined && { developerId: data.developerId }),
-        ...(data.designerId !== undefined && { designerId: data.designerId }),
-        ...(data.technicalSpecialistId !== undefined && {
-          technicalSpecialistId: data.technicalSpecialistId,
-        }),
-        ...(data.qaLeadId !== undefined && { qaLeadId: data.qaLeadId }),
-        ...(data.deadline !== undefined && {
-          deadline: data.deadline ? new Date(data.deadline) : null,
-        }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.checklistTemplateId !== undefined && {
-          checklistTemplateId: data.checklistTemplateId,
-        }),
-        ...(data.languages !== undefined && {
-          languages: normalizeProductLanguages(data.languages),
-        }),
-      },
+      data: buildProductUpdateData(data),
       include: {
         project: { select: { id: true, code: true, name: true } },
         pm: { select: employeePersonSelect },
         developer: { select: employeePersonSelect },
+        frontendDeveloper: { select: employeePersonSelect },
         designer: { select: employeePersonSelect },
         technicalSpecialist: { select: employeePersonSelect },
         qaLead: { select: employeePersonSelect },
@@ -688,6 +718,7 @@ export class ProductsService {
       row: {
         pmId: product.pmId,
         developerId: product.developerId,
+        frontendDeveloperId: product.frontendDeveloperId,
         designerId: product.designerId,
         technicalSpecialistId: product.technicalSpecialistId,
         qaLeadId: product.qaLeadId,

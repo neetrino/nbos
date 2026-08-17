@@ -242,7 +242,17 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 ### 8.5. My Plan
 
-Персональный view пользователя по всем его задачам. Это часть top-level task module, а не конкретного workspace.
+Персональный view пользователя по **своим** задачам. Это часть top-level task module, а не конкретного workspace.
+
+**Свои задачи** — все задачи, где сотрудник лично отмечен, в любом workflow-статусе (`OPEN`, `IN_PROGRESS`, `REVIEW`, `DONE`, …). Роль на карточке не важна:
+
+- исполнитель (`assignee`)
+- соисполнитель (`coAssignees`)
+- наблюдатель (`observers`)
+- reviewer
+- постановщик (`creator`)
+
+Членство в Project / Product team **само по себе** не делает задачу «своей». Такие задачи остаются в Work Space / Project Hub. Top-level `/tasks` и My Plan показывают только личные отметки.
 
 ## 9. Контексты отображения
 

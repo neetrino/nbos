@@ -50,6 +50,8 @@ interface CreateTaskDto {
   dueDate?: string;
   parentId?: string;
   links?: Array<{ entityType: string; entityId: string }>;
+  isRecurring?: boolean;
+  templateTaskId?: string;
 }
 
 interface UpdateTaskDto {
@@ -178,6 +180,8 @@ export class TasksService {
         }),
         dueDate,
         parentId,
+        isRecurring: data.isRecurring ?? false,
+        templateTaskId: data.templateTaskId?.trim() || undefined,
         ...(linkRows?.length && {
           links: {
             createMany: {

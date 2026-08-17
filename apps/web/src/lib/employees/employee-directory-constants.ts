@@ -1,7 +1,7 @@
-/** Matches {@link RelationPickerField} default max results. */
-export const EMPLOYEE_PICKER_PAGE_SIZE = 20;
+/** Active-employee page fetched once and filtered locally in the picker. */
+export const EMPLOYEE_PICKER_PAGE_SIZE = 100;
 
-/** Cache only the empty-query first page (picker default list). */
+/** Cache the full active directory (picker default + typed filter). */
 export const EMPLOYEE_PICKER_EMPTY_CACHE_TTL_MS = 30 * 60 * 1000;
 
 /** Team directory list cache (default unfiltered page). */
