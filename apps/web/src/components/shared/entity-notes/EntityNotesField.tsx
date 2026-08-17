@@ -107,7 +107,6 @@ export function EntityNotesField({
         isEditing
           ? ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS
           : ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
-        usePreviewChrome && 'bg-card',
         isLocked && ENTITY_NOTES_SHELL_DISABLED_CLASS,
         shellClassName,
       )}
