@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
@@ -28,6 +29,7 @@ export function ProductPlanningSection({
   paymentType,
   disabled = false,
   gateRequiredFields = new Set<string>(),
+  stageChecklist,
 }: {
   entityId: string;
   draft: ProductPlanSnapshot;
@@ -35,6 +37,8 @@ export function ProductPlanningSection({
   paymentType?: string | null;
   disabled?: boolean;
   gateRequiredFields?: ReadonlySet<string>;
+  /** Stage checklists trigger — sits beside Languages. */
+  stageChecklist?: ReactNode;
 }) {
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
@@ -125,12 +129,18 @@ export function ProductPlanningSection({
           disabled={disabled}
         />
       </div>
-      <div className="mt-3">
+      <div
+        className={cn(
+          'mt-3 grid grid-cols-1 gap-3',
+          stageChecklist ? 'sm:grid-cols-2 sm:items-start' : undefined,
+        )}
+      >
         <DeliveryItemLanguagesMultiselect
           value={draft.languages}
           onChange={(languages) => patchDraft({ languages })}
           disabled={disabled}
         />
+        {stageChecklist}
       </div>
     </section>
   );

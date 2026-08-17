@@ -76,6 +76,21 @@ export function DeliveryItemDetailGeneralTab({
       ? (product?.checklistStageProgress ?? item.product.checklistStageProgress)
       : (extension?.checklistStageProgress ?? item.extension.checklistStageProgress);
 
+  const stageChecklist = (
+    <div className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}>
+      <DeliveryStageChecklistPanel
+        ownerEntityType={kind}
+        ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
+        lifecycle={lifecycle}
+        onChanged={onRefreshDetail}
+        floatingNav={{
+          sourcePageHref,
+          workspaceHref: workSpaceHref,
+        }}
+      />
+    </div>
+  );
+
   if (!product && !extension) {
     return <p className="text-muted-foreground px-5 py-8 text-sm sm:px-7">Nothing to edit yet.</p>;
   }
@@ -92,6 +107,7 @@ export function DeliveryItemDetailGeneralTab({
               paymentType={product.order?.paymentType}
               disabled={planningDisabled}
               gateRequiredFields={gateRequiredFields}
+              stageChecklist={stageChecklist}
             />
           ) : null}
           {extension && extensionPlan ? (
@@ -101,6 +117,7 @@ export function DeliveryItemDetailGeneralTab({
               onDraftChange={onExtensionPlanChange}
               disabled={planningDisabled}
               gateRequiredFields={gateRequiredFields}
+              stageChecklist={stageChecklist}
             />
           ) : null}
 
@@ -143,20 +160,6 @@ export function DeliveryItemDetailGeneralTab({
             gateRequiredFields={gateRequiredFields}
             stageGateActionBlockers={stageGateActionBlockers}
           />
-          <div
-            className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}
-          >
-            <DeliveryStageChecklistPanel
-              ownerEntityType={kind}
-              ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
-              lifecycle={lifecycle}
-              onChanged={onRefreshDetail}
-              floatingNav={{
-                sourcePageHref,
-                workspaceHref: workSpaceHref,
-              }}
-            />
-          </div>
           <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
         </div>
       </div>
