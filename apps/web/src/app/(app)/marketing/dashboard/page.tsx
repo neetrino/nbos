@@ -10,8 +10,7 @@ import {
   type MarketingDashboardPeriodPreset,
 } from '@/features/marketing/constants/marketing-dashboard-period';
 import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
-
-const MARKETING_CURRENCY = 'AMD';
+import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, formatMoneyDram } from '@/lib/format/money';
 
 export default function MarketingDashboardPage() {
   const [summary, setSummary] = useState<MarketingDashboardSummary | null>(null);
@@ -96,7 +95,7 @@ function MarketingDashboardContent({
   summary: MarketingDashboardSummary;
   search: string;
 }) {
-  const metrics = [
+  const metrics: Array<{ label: string; value: number | string; money?: boolean }> = [
     { label: 'Activities', value: summary.totals.activities },
     { label: 'Launched now', value: summary.totals.launchedActivities },
     {
@@ -108,7 +107,8 @@ function MarketingDashboardContent({
     { label: 'Won attributed deals', value: summary.totals.wonAttributedDeals },
     {
       label: 'Paid attributed revenue',
-      value: formatMoney(summary.money.paidRevenue),
+      value: summary.money.paidRevenue,
+      money: true,
     },
   ].filter((metric) => matchesMarketingSearch(search, metric.label));
 
@@ -121,7 +121,12 @@ function MarketingDashboardContent({
       {metrics.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => (
-            <MetricCard key={metric.label} label={metric.label} value={metric.value} />
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              value={metric.value}
+              money={metric.money}
+            />
           ))}
         </div>
       ) : null}
@@ -135,14 +140,36 @@ function MarketingDashboardContent({
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: number | string }) {
+function MetricCard({
+  label,
+  value,
+  money = false,
+}: {
+  label: string;
+  value: number | string;
+  money?: boolean;
+}) {
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
-        <AreaChart size={18} />
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          <AreaChart size={18} aria-hidden />
+        </div>
+        <p className="text-muted-foreground text-sm leading-snug">{label}</p>
       </div>
-      <p className="text-3xl font-bold">{value}</p>
-      <p className="text-muted-foreground text-sm">{label}</p>
+      <p className="text-3xl font-bold tabular-nums">
+        {money && typeof value === 'number' ? (
+          <>
+            {formatGroupedNumber(value)}
+            <span className="text-muted-foreground ml-1.5 text-2xl font-semibold" aria-hidden>
+              {AMD_CURRENCY_SYMBOL}
+            </span>
+            <span className="sr-only"> AMD</span>
+          </>
+        ) : (
+          value
+        )}
+      </p>
     </div>
   );
 }
@@ -290,15 +317,11 @@ function SummaryRow({ label, value }: { label: string; value: number | string })
 }
 
 function formatMoney(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: MARKETING_CURRENCY,
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoneyDram(value);
 }
 
 function formatOptionalMoney(value: number | null) {
-  return value === null ? 'Not enough data' : formatMoney(value);
+  return value === null ? 'Not enough data' : formatMoneyDram(value);
 }
 
 function formatRatio(value: number | null) {
