@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle } from 'lucide-react';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
@@ -41,10 +41,6 @@ export function DeliveryItemStageReadinessSection({
         : [];
 
   const readiness = lifecycle?.currentStageReadiness;
-  const blockers =
-    kind === 'PRODUCT' && product?.doneReadiness?.blockers?.length
-      ? product.doneReadiness.blockers.slice(0, 4)
-      : [];
 
   if (!lifecycle || rows.length === 0) {
     return (
@@ -96,21 +92,6 @@ export function DeliveryItemStageReadinessSection({
             </li>
           ))}
         </ul>
-      ) : null}
-      {blockers.length > 0 ? (
-        <div className="border-border mt-4 rounded-lg border border-amber-200/80 bg-amber-50/50 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
-          <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase">
-            <AlertTriangle className="size-3.5 text-amber-600" aria-hidden />
-            Completion blockers
-          </p>
-          <ul className="space-y-1 text-xs">
-            {blockers.map((b) => (
-              <li key={b.code} className="text-foreground/90">
-                {b.label}: {b.message}
-              </li>
-            ))}
-          </ul>
-        </div>
       ) : null}
     </section>
   );

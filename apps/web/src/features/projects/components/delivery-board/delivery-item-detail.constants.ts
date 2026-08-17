@@ -25,7 +25,7 @@ export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
  * General tab: wider left (planning, access, team) + narrow Client & order column.
  */
 export const DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS =
-  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(12rem,13.5rem)] xl:items-start xl:gap-4';
+  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_13rem] xl:items-start xl:gap-4';
 
 /** Column stack — cards fill track width so column edges stay aligned. */
 export const DELIVERY_DETAIL_GENERAL_COLUMN_CLASS = 'flex min-w-0 w-full flex-col gap-4';

@@ -34,7 +34,6 @@ interface DeliveryItemDetailGeneralTabProps {
   sourcePageHref: string;
   credentialsTabHref: string;
   projectHubHref: string;
-  financeTabHref: string;
   onRefreshDetail: () => void;
   productPlan: ProductPlanSnapshot | null;
   onProductPlanChange: (next: ProductPlanSnapshot) => void;
@@ -54,7 +53,6 @@ export function DeliveryItemDetailGeneralTab({
   sourcePageHref,
   credentialsTabHref,
   projectHubHref,
-  financeTabHref,
   onRefreshDetail,
   productPlan,
   onProductPlanChange,
@@ -99,6 +97,15 @@ export function DeliveryItemDetailGeneralTab({
     <div className="space-y-4 px-5 py-4 sm:px-7">
       <div className={DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS}>
         <div className="flex w-full min-w-0 flex-col gap-4">
+          <DeliveryItemStageReadinessSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            lifecycle={lifecycle}
+            checklistProgress={checklistProgress}
+            gateRequiredFields={gateRequiredFields}
+            stageGateActionBlockers={stageGateActionBlockers}
+          />
           {product && productPlan ? (
             <ProductPlanningSection
               entityId={product.id}
@@ -138,6 +145,22 @@ export function DeliveryItemDetailGeneralTab({
             disabled={planningDisabled}
             gateRequiredFields={gateRequiredFields}
           />
+
+          <DeliveryItemFilesSection
+            kind={kind}
+            entityId={kind === 'PRODUCT' ? productId : item.extension.id}
+            offerFileUrl={
+              kind === 'PRODUCT'
+                ? (product?.order?.deal?.offerFileUrl ?? null)
+                : (extension?.order?.deal?.offerFileUrl ?? null)
+            }
+            contractFileUrl={
+              kind === 'PRODUCT'
+                ? (product?.order?.deal?.contractFileUrl ?? null)
+                : (extension?.order?.deal?.contractFileUrl ?? null)
+            }
+            disabled={planningDisabled}
+          />
         </div>
 
         <div className={DELIVERY_DETAIL_GENERAL_COLUMN_CLASS}>
@@ -145,22 +168,11 @@ export function DeliveryItemDetailGeneralTab({
             kind={kind}
             product={product}
             extension={extension}
-            financeTabHref={financeTabHref}
             projectHubHref={projectHubHref}
             sourcePageHref={sourcePageHref}
             credentialsTabHref={credentialsTabHref}
             gateRequiredFields={gateRequiredFields}
           />
-          <DeliveryItemStageReadinessSection
-            kind={kind}
-            product={product}
-            extension={extension}
-            lifecycle={lifecycle}
-            checklistProgress={checklistProgress}
-            gateRequiredFields={gateRequiredFields}
-            stageGateActionBlockers={stageGateActionBlockers}
-          />
-          <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
         </div>
       </div>
     </div>
