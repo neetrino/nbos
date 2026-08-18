@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared';
 import { formatFileSize } from '@/features/drive/drive-format';
 import type { MailMessageRow } from '@/lib/api/mail';
-import { MAIL_OUTCOME_UNKNOWN_COPY } from './mail-outbound-copy';
+import { MailFailedOutboundActions } from './MailFailedOutboundActions';
 import { MailMessageBody } from './MailMessageBody';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
 
@@ -114,29 +114,15 @@ export function MailThreadMessages({
               </div>
             ) : null}
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'FAILED' ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-muted-foreground text-xs">{MAIL_OUTCOME_UNKNOWN_COPY}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    disabled={outboundBusy}
-                    onClick={() => void onRetryFailedSend(m.id)}
-                  >
-                    {retryingSendMessageId === m.id ? 'Retrying…' : 'Retry send'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={outboundBusy}
-                    onClick={() => void onResetFailedToDraft(m.id)}
-                  >
-                    {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft'}
-                  </Button>
-                </div>
-              </div>
+              <MailFailedOutboundActions
+                threadId={threadId}
+                messageId={m.id}
+                outboundBusy={outboundBusy}
+                retryingSendMessageId={retryingSendMessageId}
+                retryingFailedMessageId={retryingFailedMessageId}
+                onRetryFailedSend={onRetryFailedSend}
+                onResetFailedToDraft={onResetFailedToDraft}
+              />
             ) : null}
             {m.direction === 'OUTBOUND' ? (
               <MailOutboundDeliveryLogSection
