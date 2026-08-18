@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   assertSchedulerLeaseTiming,
+  isEnvFlagEnabled,
+  isSchedulerEnabled,
   resolveSchedulerHeartbeatIntervalMs,
   resolveSchedulerLeaseTtlMs,
+  SCHEDULER_ENABLED_ENV,
 } from './scheduler-lease.constants';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
@@ -30,6 +33,35 @@ describe('scheduler-lease.constants', () => {
     });
     expect(resolveSchedulerLeaseTtlMs()).toBe(120000);
     expect(resolveSchedulerHeartbeatIntervalMs()).toBe(30000);
+  });
+
+  it.each([
+    ['true', true],
+    ['  true  ', true],
+    ["'true'", true],
+    ['"true"', true],
+    ['"TRUE"', true],
+    ["'1'", true],
+    ['1', true],
+    ['yes', true],
+    ['false', false],
+    ["'false'", false],
+    ['', false],
+    [undefined, false],
+  ] as const)('isSchedulerEnabled(%j) -> %s', (value, expected) => {
+    if (value === undefined) {
+      delete process.env[SCHEDULER_ENABLED_ENV];
+    } else {
+      process.env[SCHEDULER_ENABLED_ENV] = value;
+    }
+    expect(isSchedulerEnabled()).toBe(expected);
+  });
+
+  it('isEnvFlagEnabled strips Coolify-style quoted booleans', () => {
+    process.env.SCHEDULER_BILLING_ENABLED = "'true'";
+    expect(isEnvFlagEnabled('SCHEDULER_BILLING_ENABLED')).toBe(true);
+    process.env.SCHEDULER_BILLING_ENABLED = ' false ';
+    expect(isEnvFlagEnabled('SCHEDULER_BILLING_ENABLED')).toBe(false);
   });
 });
 

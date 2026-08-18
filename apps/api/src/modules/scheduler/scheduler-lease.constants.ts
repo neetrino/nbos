@@ -89,12 +89,26 @@ export function assertSchedulerLeaseTiming(env: NodeJS.ProcessEnv = process.env)
   return { leaseTtlMs, heartbeatIntervalMs };
 }
 
+function normalizeEnvFlagValue(raw: string | undefined): string {
+  if (raw === undefined) return '';
+  let normalized = raw.trim().toLowerCase();
+  const hasSingleQuoteWrap = normalized.startsWith("'") && normalized.endsWith("'");
+  const hasDoubleQuoteWrap = normalized.startsWith('"') && normalized.endsWith('"');
+  if ((hasSingleQuoteWrap || hasDoubleQuoteWrap) && normalized.length >= 2) {
+    normalized = normalized.slice(1, -1).trim();
+  }
+  return normalized;
+}
+
+function isTruthyEnvFlagValue(raw: string | undefined): boolean {
+  const normalized = normalizeEnvFlagValue(raw);
+  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+}
+
 export function isSchedulerEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  const raw = env[SCHEDULER_ENABLED_ENV]?.trim().toLowerCase();
-  return raw === 'true' || raw === '1' || raw === 'yes';
+  return isTruthyEnvFlagValue(env[SCHEDULER_ENABLED_ENV]);
 }
 
 export function isEnvFlagEnabled(envKey: string, env: NodeJS.ProcessEnv = process.env): boolean {
-  const raw = env[envKey]?.trim().toLowerCase();
-  return raw === 'true' || raw === '1' || raw === 'yes';
+  return isTruthyEnvFlagValue(env[envKey]);
 }
