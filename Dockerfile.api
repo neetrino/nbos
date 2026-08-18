@@ -11,7 +11,7 @@ ENV HUSKY=0
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates curl \
+  && apt-get install -y --no-install-recommends openssl ca-certificates curl wget \
   && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
@@ -54,6 +54,6 @@ COPY --from=builder /prod/api /app
 
 EXPOSE 4000
 
-# Coolify: nbos-api → dist/main.js (PROCESS_ROLE=api)
-# Coolify: nbos-worker → dist/worker.js (PROCESS_ROLE=worker, WORKER_HEALTH_PORT)
-CMD ["node", "--import", "tsx", "dist/main.js"]
+# One image serves all production roles. Dockerfile-based Coolify applications
+# do not reliably override CMD with the application start command.
+CMD ["sh", "-c", "case \"$PROCESS_ROLE\" in api) exec node --import tsx dist/main.js ;; worker) exec node --import tsx dist/worker.js ;; scheduler) exec node --import tsx dist/scheduler.js ;; *) echo \"Invalid PROCESS_ROLE=$PROCESS_ROLE (expected api|worker|scheduler)\" >&2; exit 1 ;; esac"]
