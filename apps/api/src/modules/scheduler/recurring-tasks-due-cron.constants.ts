@@ -7,5 +7,5 @@ export const RECURRING_TASKS_DUE_ENABLED_ENV = 'SCHEDULER_RECURRING_TASKS_DUE_EN
  */
 export const RECURRING_TASKS_DUE_CRON_ENV = 'SCHEDULER_RECURRING_TASKS_DUE_CRON';
 
-/** Every 5 minutes — recurring templates can fire at a specific time of day. */
-export const RECURRING_TASKS_DUE_DEFAULT_CRON = '*/5 * * * *';
+/** Every 10 minutes — recurring templates can fire at a specific time of day. */
+export const RECURRING_TASKS_DUE_DEFAULT_CRON = '*/10 * * * *';

@@ -89,56 +89,6 @@ export class BillingService {
     return result;
   }
 
-  /**
-   * Generates planned expenses (rent, salaries, etc.) for the 1st of each month.
-   */
-  async runMonthlyExpenses(targetDate?: Date): Promise<{ generated: number }> {
-    const now = targetDate ?? new Date();
-
-    if (now.getDate() !== 1) {
-      return { generated: 0 };
-    }
-
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-    const existingCount = await this.prisma.expense.count({
-      where: {
-        type: 'PLANNED',
-        createdAt: { gte: monthStart, lte: monthEnd },
-      },
-    });
-
-    if (existingCount > 0) {
-      this.logger.log('Planned expenses already generated for this month');
-      return { generated: 0 };
-    }
-
-    const templates = await this.prisma.expense.findMany({
-      where: { type: 'PLANNED' },
-      orderBy: { createdAt: 'desc' },
-      distinct: ['category'],
-    });
-
-    let generated = 0;
-    for (const tpl of templates) {
-      await this.prisma.expense.create({
-        data: {
-          projectId: tpl.projectId,
-          category: tpl.category,
-          name: tpl.name,
-          type: 'PLANNED',
-          amount: tpl.amount,
-          notes: tpl.notes,
-        },
-      });
-      generated++;
-    }
-
-    this.logger.log(`Generated ${generated} planned expenses for the month`);
-    return { generated };
-  }
-
   private async findSubscriptionsDueOn(now: Date): Promise<BillableSubscription[]> {
     return this.prisma.subscription.findMany({
       where: {

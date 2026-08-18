@@ -9,7 +9,6 @@ import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner
 import { SalesKpiMonthCloseService } from '../payroll-runs/sales-kpi-month-close.service';
 import { backfillSalesKpiAndPayablesForAllEarnedPeriods } from '../payroll-runs/run-sales-kpi-month-close';
 import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
-import { CredentialsTrashPurgeService } from '../credentials/credentials-trash-purge.service';
 import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
 import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
@@ -42,7 +41,6 @@ export class SchedulerService {
     private readonly reportsScheduleRunnerService: ReportsScheduleRunnerService,
     private readonly supportSlaOrchestrationService: SupportSlaOrchestrationService,
     private readonly salesKpiMonthClose: SalesKpiMonthCloseService,
-    private readonly credentialsTrashPurgeService: CredentialsTrashPurgeService,
     private readonly platformTrashPurgeService: PlatformTrashPurgeService,
     private readonly productWhatsApp: ProductWhatsAppGroupService,
     private readonly notificationInboxReconcile: NotificationInboxReconcileService,
@@ -63,17 +61,6 @@ export class SchedulerService {
           processedCount: result.generatedInvoices,
           metadata: { totalAmount: result.totalAmount },
         };
-      },
-    );
-  }
-
-  async runExpenses(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
-    return this.lease.runWithLease(
-      { jobName: SCHEDULER_JOB_NAMES.expenses, trigger },
-      async ({ signal }) => {
-        if (signal.aborted) return;
-        const result = await this.billingService.runMonthlyExpenses();
-        return { processedCount: result.generated };
       },
     );
   }
@@ -213,17 +200,6 @@ export class SchedulerService {
             skippedCount: result.skippedCount,
           },
         };
-      },
-    );
-  }
-
-  async runCredentialTrashPurge(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
-    return this.lease.runWithLease(
-      { jobName: SCHEDULER_JOB_NAMES.credentialTrashPurge, trigger },
-      async ({ signal }) => {
-        if (signal.aborted) return;
-        const result = await this.credentialsTrashPurgeService.runRetentionPurge();
-        return { processedCount: result.purged };
       },
     );
   }

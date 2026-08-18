@@ -624,49 +624,4 @@ describe('BillingService', () => {
       );
     });
   });
-
-  describe('runMonthlyExpenses', () => {
-    it('should generate planned expenses on the 1st', async () => {
-      const firstOfMonth = new Date(2026, 3, 1);
-      prisma.expense.count.mockResolvedValue(0);
-      prisma.expense.findMany.mockResolvedValue([
-        {
-          projectId: 'p1',
-          category: 'OFFICE',
-          type: 'PLANNED',
-          name: 'Office rent',
-          amount: 1000,
-          notes: null,
-        },
-        {
-          projectId: 'p1',
-          category: 'SALARY',
-          type: 'PLANNED',
-          name: 'Salaries',
-          amount: 5000,
-          notes: null,
-        },
-      ]);
-
-      const result = await service.runMonthlyExpenses(firstOfMonth);
-
-      expect(result.generated).toBe(2);
-      expect(prisma.expense.create).toHaveBeenCalledTimes(2);
-    });
-
-    it('should not generate on non-1st day', async () => {
-      const result = await service.runMonthlyExpenses(new Date(2026, 3, 15));
-      expect(result.generated).toBe(0);
-    });
-
-    it('should skip if already generated this month', async () => {
-      const firstOfMonth = new Date(2026, 3, 1);
-      prisma.expense.count.mockResolvedValue(3);
-
-      const result = await service.runMonthlyExpenses(firstOfMonth);
-
-      expect(result.generated).toBe(0);
-      expect(prisma.expense.create).not.toHaveBeenCalled();
-    });
-  });
 });

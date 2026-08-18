@@ -5,6 +5,7 @@ export const PLATFORM_TRASH_PURGE_AUDIT_ACTION = 'platform.trash_retention_purge
 export const PLATFORM_SCHEDULER_AUDIT_ACTOR_ID = '00000000-0000-4000-8000-000000000000';
 
 export const PLATFORM_TRASH_PURGE_CRON_ENV = 'SCHEDULER_PLATFORM_TRASH_PURGE_CRON';
-export const PLATFORM_TRASH_PURGE_DEFAULT_CRON = '30 3 * * *';
+/** 03:30 Sunday in process TZ — weekly unified trash retention. */
+export const PLATFORM_TRASH_PURGE_DEFAULT_CRON = '30 3 * * 0';
 export const PLATFORM_TRASH_PURGE_ENABLED_ENV = 'SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED';
 export const PLATFORM_TRASH_PURGE_JOB_NAME = 'platform-trash-purge';

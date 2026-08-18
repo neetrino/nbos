@@ -13,7 +13,6 @@ import { NotificationModule } from '../notifications/notification.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
-import { CredentialTrashPurgeCron } from './credential-trash-purge.cron';
 import { RecurringTasksDueCron } from './recurring-tasks-due.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
@@ -21,6 +20,7 @@ import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
+import { INTERNAL_SCHEDULER_CRON_PROVIDERS } from './scheduler-internal.crons';
 import { SchedulerController } from './scheduler.controller';
 import { SchedulerDiagnosticsController } from './scheduler-diagnostics.controller';
 import { SchedulerReadyController } from './scheduler-ready.controller';
@@ -51,11 +51,11 @@ const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
-  CredentialTrashPurgeCron,
   PlatformTrashPurgeCron,
   NotificationInboxReconcileCron,
   NotificationEnqueueReconcileCron,
   AuthSessionCleanupCron,
+  ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
 /**
