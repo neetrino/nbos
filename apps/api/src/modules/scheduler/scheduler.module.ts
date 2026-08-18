@@ -64,8 +64,15 @@ const CRON_PROVIDERS = [
  */
 @Module({})
 export class SchedulerModule {
-  static forRoot(): DynamicModule {
-    const includeCrons = shouldRegisterScheduledJobs();
+  static forRoot(options?: { includeCrons?: boolean }): DynamicModule {
+    const includeCrons = options?.includeCrons ?? shouldRegisterScheduledJobs();
+    process.stderr.write(
+      '[SchedulerModule] includeCrons=' +
+        includeCrons +
+        ' PROCESS_ROLE=' +
+        (process.env.PROCESS_ROLE ?? '') +
+        '\n',
+    );
     return {
       module: SchedulerModule,
       imports: [...(includeCrons ? [ScheduleModule.forRoot()] : []), ...SCHEDULER_IMPORTS],
