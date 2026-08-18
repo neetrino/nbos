@@ -6,9 +6,10 @@ import { AuthPasswordResetService } from './auth-password-reset.service';
 import { AuthSessionService } from './auth-session.service';
 import { CredentialVaultSessionModule } from '../credentials/credential-vault-session.module';
 import { RequireActiveSessionGuard } from '../../common/guards/require-active-session.guard';
+import { TokenDenylistModule } from '../../common/security/token-denylist.module';
 
 @Module({
-  imports: [CredentialVaultSessionModule],
+  imports: [CredentialVaultSessionModule, TokenDenylistModule],
   controllers: [AuthController, AuthPasswordResetController],
   providers: [AuthService, AuthPasswordResetService, AuthSessionService, RequireActiveSessionGuard],
   exports: [AuthService, AuthSessionService, RequireActiveSessionGuard],
