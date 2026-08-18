@@ -206,6 +206,7 @@ enum EmailMessageReadState {
 enum EmailDeliveryStatus {
   DRAFT
   QUEUED
+  SENDING
   SENT
   FAILED
   CANCELLED
@@ -219,6 +220,7 @@ enum MailDeliveryLogKind {
   OUTBOUND_FAILED_RESET_TO_DRAFT
   OUTBOUND_SENT
   OUTBOUND_SEND_FAILED
+  OUTCOME_UNKNOWN
 }
 
 enum EmailAttachmentDownloadStatus {
