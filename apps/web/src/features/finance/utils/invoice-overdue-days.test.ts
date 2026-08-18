@@ -27,7 +27,8 @@ describe('resolveInvoiceOverdueDays', () => {
   it('returns whole days when due date is in the past', () => {
     const past = new Date();
     past.setDate(past.getDate() - 3);
-    const dueDate = past.toISOString().slice(0, 10);
+    past.setHours(0, 0, 0, 0);
+    const dueDate = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
 
     expect(resolveInvoiceOverdueDays(invoiceStub({ dueDate, moneyStatus: 'OVERDUE' }))).toBe(3);
   });
