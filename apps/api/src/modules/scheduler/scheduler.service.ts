@@ -10,7 +10,6 @@ import { SalesKpiMonthCloseService } from '../payroll-runs/sales-kpi-month-close
 import { backfillSalesKpiAndPayablesForAllEarnedPeriods } from '../payroll-runs/run-sales-kpi-month-close';
 import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
 import { PlatformTrashPurgeService } from '../platform-lifecycle/platform-trash-purge.service';
-import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { NotificationInboxReconcileService } from '../notifications/notification-inbox-reconcile.service';
 import { NotificationEnqueueReconcileService } from '../notifications/notification-enqueue-reconcile.service';
 import { AuthSessionService } from '../auth/auth-session.service';
@@ -43,7 +42,6 @@ export class SchedulerService {
     private readonly supportSlaOrchestrationService: SupportSlaOrchestrationService,
     private readonly salesKpiMonthClose: SalesKpiMonthCloseService,
     private readonly platformTrashPurgeService: PlatformTrashPurgeService,
-    private readonly productWhatsApp: ProductWhatsAppGroupService,
     private readonly notificationInboxReconcile: NotificationInboxReconcileService,
     private readonly notificationEnqueueReconcile: NotificationEnqueueReconcileService,
     private readonly authSessions: AuthSessionService,
@@ -230,22 +228,6 @@ export class SchedulerService {
             responseBreaches: result.responseBreaches,
             resolveBreaches: result.resolveBreaches,
           },
-        };
-      },
-    );
-  }
-
-  async runWhatsAppProductGroupsReconcile(
-    trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp,
-  ) {
-    return this.lease.runWithLease(
-      { jobName: SCHEDULER_JOB_NAMES.whatsappProductGroupsReconcile, trigger },
-      async ({ signal }) => {
-        if (signal.aborted) return;
-        const result = await this.productWhatsApp.reconcileBatch(50);
-        return {
-          processedCount: result.operationsRequeued,
-          metadata: { productsEnsured: result.productsEnsured },
         };
       },
     );

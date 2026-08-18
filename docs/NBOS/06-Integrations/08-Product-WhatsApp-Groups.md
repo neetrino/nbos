@@ -78,8 +78,9 @@ Do **not** blind-retry create. Reconcile manually via Product Settings.
 
 ## Scheduler
 
-`POST /api/scheduler/whatsapp-product-groups-reconcile` (SCHEDULER_API_KEY)  
-Ensures missing bindings and requeues durable ops; skips unknown-outcome recreate.
+Batch reconcile (cron and `POST /api/scheduler/whatsapp-product-groups-reconcile`) is **removed**.  
+Do not scan products without a group — migrated records must stay untouched.  
+Create only for a **new** Product persist, Deal Won, or an explicit Deal / Product Settings action.
 
 ## Product Settings
 

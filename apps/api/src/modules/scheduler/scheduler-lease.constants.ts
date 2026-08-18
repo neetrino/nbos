@@ -22,7 +22,6 @@ export const SCHEDULER_JOB_NAMES = {
   expenseBacklogReminders: 'expense-backlog-reminders',
   salesKpiMonthClose: 'sales-kpi-month-close',
   supportSlaEscalation: 'support-sla-escalation',
-  whatsappProductGroupsReconcile: 'whatsapp-product-groups-reconcile',
   authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
 } as const;

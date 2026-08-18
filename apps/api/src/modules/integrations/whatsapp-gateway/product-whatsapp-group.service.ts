@@ -575,56 +575,6 @@ export class ProductWhatsAppGroupService {
     };
   }
 
-  async reconcileBatch(limit = 50) {
-    const productsMissing = await this.prisma.product.findMany({
-      where: { whatsappGroupBinding: null },
-      select: { id: true },
-      take: limit,
-      orderBy: { createdAt: 'asc' },
-    });
-    let ensured = 0;
-    for (const product of productsMissing) {
-      await this.ensureGroupForProduct(product.id, { source: 'RECONCILIATION' });
-      ensured += 1;
-    }
-
-    const pendingOps = await this.prisma.whatsAppGroupOperation.findMany({
-      where: {
-        status: { in: ['PENDING', 'QUEUED'] },
-        type: { not: undefined },
-        OR: [
-          { type: { not: 'CREATE_PRODUCT_GROUP' } },
-          {
-            type: 'CREATE_PRODUCT_GROUP',
-            status: { in: ['PENDING', 'QUEUED'] },
-            binding: { status: { notIn: ['OUTCOME_UNKNOWN', 'NEEDS_RECONCILIATION'] } },
-          },
-        ],
-      },
-      take: limit,
-      orderBy: { createdAt: 'asc' },
-    });
-
-    let requeued = 0;
-    for (const op of pendingOps) {
-      if (op.type === 'CREATE_PRODUCT_GROUP') {
-        const binding = await this.prisma.productWhatsAppGroupBinding.findUnique({
-          where: { productId: op.productId },
-        });
-        if (binding?.status === 'OUTCOME_UNKNOWN' || binding?.status === 'NEEDS_RECONCILIATION') {
-          continue;
-        }
-      }
-      const ok = await this.queue.enqueueOperationById(op.id);
-      if (ok) requeued += 1;
-    }
-
-    return {
-      productsEnsured: ensured,
-      operationsRequeued: requeued,
-    };
-  }
-
   previewGroupName(projectName: string, productName: string): string {
     return buildProductWhatsAppGroupName(projectName, productName);
   }

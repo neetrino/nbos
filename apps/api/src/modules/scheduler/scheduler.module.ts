@@ -8,7 +8,6 @@ import { PayrollRunsModule } from '../payroll-runs/payroll-runs.module';
 import { SupportModule } from '../support/support.module';
 import { CredentialsModule } from '../credentials/credentials.module';
 import { PlatformLifecycleModule } from '../platform-lifecycle/platform-lifecycle.module';
-import { WhatsAppGatewayModule } from '../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { AuthModule } from '../auth/auth.module';
@@ -42,7 +41,6 @@ const SCHEDULER_IMPORTS = [
   PayrollRunsModule,
   CredentialsModule,
   PlatformLifecycleModule,
-  WhatsAppGatewayModule,
   NotificationModule,
   RealtimeModule,
   AuthModule,

@@ -24,9 +24,6 @@ import {
   SUPPORT_SLA_ESCALATION_CRON_ENABLED_ENV,
   SUPPORT_SLA_ESCALATION_CRON_ENV,
   SUPPORT_SLA_ESCALATION_DEFAULT_CRON,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_CRON_ENABLED_ENV,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_CRON_ENV,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_DEFAULT_CRON,
 } from './scheduler-internal-cron.constants';
 
 type CronRun = (service: SchedulerService) => Promise<unknown>;
@@ -131,15 +128,6 @@ export const SupportSlaEscalationCron = createInternalCron(
   (service) => service.runSupportSlaEscalation('cron'),
 );
 
-export const WhatsAppProductGroupsReconcileCron = createInternalCron(
-  'WhatsAppProductGroupsReconcileCron',
-  SCHEDULER_JOB_NAMES.whatsappProductGroupsReconcile,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_CRON_ENABLED_ENV,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_CRON_ENV,
-  WHATSAPP_PRODUCT_GROUPS_RECONCILE_DEFAULT_CRON,
-  (service) => service.runWhatsAppProductGroupsReconcile('cron'),
-);
-
 export const INTERNAL_SCHEDULER_CRON_PROVIDERS = [
   BillingCron,
   OverdueInvoicesCron,
@@ -147,5 +135,4 @@ export const INTERNAL_SCHEDULER_CRON_PROVIDERS = [
   ExpenseBacklogRemindersCron,
   SalesKpiMonthCloseCron,
   SupportSlaEscalationCron,
-  WhatsAppProductGroupsReconcileCron,
 ] as const;

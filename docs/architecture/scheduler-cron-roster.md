@@ -67,8 +67,7 @@
 15. 🖐️ **Отложенные отчёты** — кнопка, cron не нужен.  
     `REPORT_SCHEDULES_DUE_CRON_ENABLED`
 
-16. 🖐️ **WhatsApp-группа продукта** — не cron. Очередь и воркер оставляем. Позже — честная кнопка со статусом.  
-    `SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED`
+16. 🗑️ **WhatsApp-группа продукта — крон-ремонт удалён.** Нельзя обходить старые продукты без группы (миграция). Очередь, воркер и кнопка остаются. Автосоздание только у **нового** Product / Deal Won.
 
 17. 🟢 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. На проде флаг **вкл**.  
     `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
@@ -153,7 +152,6 @@ SCHEDULER_PLATFORM_TRASH_PURGE_CRON=30 3 * * 0
 SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED=false
 SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED=false
 REPORT_SCHEDULES_DUE_CRON_ENABLED=false
-SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED=false
 SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED=false
 SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON=0 6 * * *
 ```

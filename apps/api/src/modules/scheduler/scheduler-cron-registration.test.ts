@@ -46,7 +46,6 @@ const ABSENT_YELLOW_JOBS = [
   'platform-trash-purge',
   'report-schedules-due',
   'support-sla-escalation',
-  'whatsapp-product-groups-reconcile',
 ];
 
 function createSchedulerServiceMock(): SchedulerService {
@@ -61,7 +60,6 @@ function createSchedulerServiceMock(): SchedulerService {
     runSalesKpiMonthClose: vi.fn().mockResolvedValue({}),
     runPlatformTrashPurge: vi.fn().mockResolvedValue({}),
     runSupportSlaEscalation: vi.fn().mockResolvedValue({}),
-    runWhatsAppProductGroupsReconcile: vi.fn().mockResolvedValue({}),
     runNotificationInboxReconcile: vi.fn().mockResolvedValue({}),
     runNotificationEnqueueReconcile: vi.fn().mockResolvedValue({}),
     runRecurringTasksDue: vi.fn().mockResolvedValue({}),
