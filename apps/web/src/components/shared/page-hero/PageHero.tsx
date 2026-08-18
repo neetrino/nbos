@@ -137,6 +137,7 @@ function PageHeroInner({
                   className={cn(
                     PAGE_HERO_SEARCH_SLOT,
                     searchExpanded && PAGE_HERO_SEARCH_SLOT_EXPANDED,
+                    filterOverflowClass,
                   )}
                 >
                   {search}

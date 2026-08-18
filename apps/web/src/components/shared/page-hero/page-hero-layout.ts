@@ -32,10 +32,11 @@ export const PAGE_HERO_TOOLS_ROW = [
   'max-md:min-w-0 max-md:w-full max-md:flex-[1_1_100%]',
 ].join(' ');
 
+/** overflow-visible — IntegratedSearchFilters panel is absolutely positioned below the input. */
 export const PAGE_HERO_SEARCH_SLOT =
-  'min-w-0 w-full max-w-full flex-1 basis-0 overflow-hidden transition-[flex-grow] duration-200';
+  'min-w-0 w-full max-w-full flex-1 basis-0 overflow-visible transition-[flex-grow] duration-200';
 
-export const PAGE_HERO_SEARCH_SLOT_EXPANDED = 'min-w-0 flex-1';
+export const PAGE_HERO_SEARCH_SLOT_EXPANDED = 'min-w-0 flex-1 overflow-visible';
 
 export const PAGE_HERO_TRAILING_SLOT = [
   'flex min-w-0 shrink flex-nowrap items-center justify-end gap-1.5',
