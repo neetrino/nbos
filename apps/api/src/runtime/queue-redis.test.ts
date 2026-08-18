@@ -36,6 +36,8 @@ describe('queue-redis', () => {
     const worker = createQueueWorkerConnection(url);
     expect(producer.options.maxRetriesPerRequest).toBe(1);
     expect(worker.options.maxRetriesPerRequest).toBeNull();
+    expect(producer.options.enableReadyCheck).toBe(false);
+    expect(worker.options.enableReadyCheck).toBe(false);
     void producer.disconnect();
     void worker.disconnect();
   });

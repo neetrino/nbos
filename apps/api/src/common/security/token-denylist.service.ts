@@ -9,6 +9,12 @@ const SWEEP_INTERVAL_MS = 60_000;
 /** Fallback TTL when a token carries no `exp` claim (should not happen for our tokens). */
 const FALLBACK_TTL_MS = 7 * 24 * 60 * 60 * 1_000;
 
+/** Cache Redis misses so polling API traffic does not GET every request. */
+const REDIS_MISS_CACHE_TTL_MS = 5_000;
+
+/** Cache Redis hits so revoked jtis are not re-fetched on every request. */
+const REDIS_HIT_CACHE_TTL_MS = 60_000;
+
 const REDIS_REVOKED_VALUE = '1';
 
 /**
@@ -22,6 +28,7 @@ const REDIS_REVOKED_VALUE = '1';
 export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TokenDenylistService.name);
   private readonly revoked = new Map<string, number>();
+  private readonly redisLookupUntil = new Map<string, { revoked: boolean; until: number }>();
   private lastSweep = 0;
   private redis: Redis | null = null;
 
@@ -53,6 +60,7 @@ export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.revoked.set(jti, expiry);
+    this.redisLookupUntil.delete(jti);
     this.sweepIfDue(now);
 
     const ttlSeconds = ttlSecondsUntil(expiry, now);
@@ -73,22 +81,41 @@ export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
 
+    const now = Date.now();
     const memoryExpiry = this.revoked.get(jti);
     if (memoryExpiry !== undefined) {
-      if (memoryExpiry <= Date.now()) {
+      if (memoryExpiry <= now) {
         this.revoked.delete(jti);
         return false;
       }
       return true;
     }
 
+    const cached = this.redisLookupUntil.get(jti);
+    if (cached && cached.until > now) {
+      return cached.revoked;
+    }
+    if (cached) {
+      this.redisLookupUntil.delete(jti);
+    }
+
     if (!this.redis) {
       return false;
     }
 
+    return this.lookupRedis(jti, now);
+  }
+
+  private async lookupRedis(jti: string, now: number): Promise<boolean> {
     try {
-      const value = await this.redis.get(jwtDenylistRedisKey(jti));
-      return value === REDIS_REVOKED_VALUE;
+      const value = await this.redis?.get(jwtDenylistRedisKey(jti));
+      const revoked = value === REDIS_REVOKED_VALUE;
+      this.redisLookupUntil.set(jti, {
+        revoked,
+        until: now + (revoked ? REDIS_HIT_CACHE_TTL_MS : REDIS_MISS_CACHE_TTL_MS),
+      });
+      this.sweepIfDue(now);
+      return revoked;
     } catch (err) {
       this.logger.error(`Failed to read JWT revocation from Redis: ${String(err)}`);
       return false;
@@ -103,6 +130,11 @@ export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
     for (const [key, expiresAt] of this.revoked) {
       if (expiresAt <= now) {
         this.revoked.delete(key);
+      }
+    }
+    for (const [key, entry] of this.redisLookupUntil) {
+      if (entry.until <= now) {
+        this.redisLookupUntil.delete(key);
       }
     }
   }

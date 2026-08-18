@@ -1,7 +1,10 @@
 import Redis from 'ioredis';
 
 /** BullMQ requires `maxRetriesPerRequest: null` on its connections. */
-const REDIS_CONNECTION_OPTIONS = { maxRetriesPerRequest: null } as const;
+const REDIS_CONNECTION_OPTIONS = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+} as const;
 
 /** Returns a trimmed `REDIS_URL` or `undefined` when unset/blank. */
 export function getRedisUrl(): string | undefined {

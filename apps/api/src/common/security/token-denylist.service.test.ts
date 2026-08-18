@@ -37,4 +37,26 @@ describe('TokenDenylistService', () => {
     vi.advanceTimersByTime(6_000);
     await expect(service.isRevoked('jti-3')).resolves.toBe(false);
   });
+
+  it('caches Redis misses so repeat checks do not GET again', async () => {
+    const service = new TokenDenylistService();
+    const get = vi.fn().mockResolvedValue(null);
+    Object.assign(service, { redis: { get } });
+
+    await expect(service.isRevoked('live-jti')).resolves.toBe(false);
+    await expect(service.isRevoked('live-jti')).resolves.toBe(false);
+    expect(get).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-reads Redis after the miss cache expires', async () => {
+    vi.useFakeTimers();
+    const service = new TokenDenylistService();
+    const get = vi.fn().mockResolvedValue(null);
+    Object.assign(service, { redis: { get } });
+
+    await expect(service.isRevoked('live-jti')).resolves.toBe(false);
+    vi.advanceTimersByTime(5_001);
+    await expect(service.isRevoked('live-jti')).resolves.toBe(false);
+    expect(get).toHaveBeenCalledTimes(2);
+  });
 });

@@ -9,6 +9,7 @@ import {
   normalizePhoneToWhatsAppJid,
 } from '@nbos/shared';
 import { resolveBullmqConcurrency } from '../../../runtime/bullmq-concurrency';
+import { resolveBullmqWorkerRuntimeOptions } from '../../../runtime/bullmq-worker-runtime';
 import { logBullmqJob } from '../../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../../runtime/process-role';
@@ -98,7 +99,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
           throw error;
         }
       },
-      { connection: this.connection, concurrency },
+      { connection: this.connection, concurrency, ...resolveBullmqWorkerRuntimeOptions() },
     );
     this.registry.register(WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {

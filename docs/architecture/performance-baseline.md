@@ -68,11 +68,13 @@
 **QueueEvents / QueueScheduler:** not used.  
 **No import-time `new Worker`:** workers only in Nest `OnModuleInit` inside worker role.
 
+**Idle Redis cost (2026-08-18):** four empty-queue workers with BullMQ `drainDelay=5s` produced a steady ~7 cmds/s on Upstash (`BZPOPMIN` + `EVALSHA` + Lua internals). Workers now share `drainDelay=20s` and `stalledInterval=120s` (`BULLMQ_DRAIN_DELAY_SEC` / `BULLMQ_STALLED_INTERVAL_MS`). ioredis `enableReadyCheck` is off to avoid billed `INFO` on connect.
+
 ## Auth hot path
 
 | Guard           | Cost                                                                                    |
 | --------------- | --------------------------------------------------------------------------------------- |
-| `AuthGuard`     | JWT verify + denylist `isRevoked` → Redis **GET** when jti not in positive memory cache |
+| `AuthGuard`     | JWT verify + denylist `isRevoked` → Redis **GET** on L1 miss; Redis result cached 5s (miss) / 60s (hit) |
 | `EmployeeGuard` | In-process cache 60s; miss → heavy `employee` + role + permissions include              |
 
 ## Scheduler
