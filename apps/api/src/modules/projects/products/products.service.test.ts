@@ -393,6 +393,7 @@ describe('ProductsService', () => {
         productType: 'COMPANY_WEBSITE',
       });
       expect(result.productType).toBe('COMPANY_WEBSITE');
+      expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
     });
 
     it('creates product with optional fields', async () => {

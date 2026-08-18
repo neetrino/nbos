@@ -19,6 +19,8 @@ import {
   type ProductWhatsAppState,
   type WhatsAppAvailableGroup,
 } from '@/lib/api/whatsapp';
+import { WhatsAppGroupMissingBadge } from '@/features/crm/components/WhatsAppGroupMissingBadge';
+import { isMissingActiveWhatsAppGroup } from '@/features/crm/deal-won-whatsapp-gate';
 
 interface ProductSettingsSheetProps {
   productId: string;
@@ -106,7 +108,19 @@ export function ProductSettingsSheet({
               <dl className="text-muted-foreground space-y-1.5 text-sm">
                 <div className="flex justify-between gap-3">
                   <dt>Status</dt>
-                  <dd className="text-foreground font-medium">{status}</dd>
+                  <dd className="text-foreground flex flex-wrap items-center justify-end gap-1.5 font-medium">
+                    {isMissingActiveWhatsAppGroup({
+                      bindingStatus: status === 'NOT_STARTED' ? null : status,
+                      groupChatId: binding?.groupChatId,
+                    }) ? (
+                      <WhatsAppGroupMissingBadge
+                        bindingStatus={status === 'NOT_STARTED' ? null : status}
+                        groupChatId={binding?.groupChatId}
+                      />
+                    ) : (
+                      status
+                    )}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt>Group name</dt>

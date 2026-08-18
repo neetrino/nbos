@@ -62,6 +62,7 @@ export class ProductWhatsAppController {
   ) {
     return this.productWhatsApp.bindExistingGroup(productId, body.groupChatId, user.id, {
       replace: body.replace,
+      persistIfUnreachable: body.persistIfUnreachable,
     });
   }
 

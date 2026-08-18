@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -75,6 +76,33 @@ export function isRetryableGatewayError(code: string | null | undefined): boolea
     code === 'HTTP_504' ||
     code === WHATSAPP_ERROR.GATEWAY_UNAVAILABLE
   );
+}
+
+const UNREACHABLE_GATEWAY_CODES = new Set<string>([
+  WHATSAPP_ERROR.GATEWAY_NOT_CONFIGURED,
+  WHATSAPP_ERROR.GATEWAY_UNAVAILABLE,
+  WHATSAPP_ERROR.NOT_CONNECTED,
+  'WAHA_UNAVAILABLE',
+]);
+
+function readExceptionCode(error: unknown): string | null {
+  if (error instanceof WhatsAppGatewayHttpError) return error.code;
+  if (error instanceof HttpException) {
+    const response = error.getResponse();
+    if (typeof response === 'object' && response && 'code' in response) {
+      const code = (response as { code?: unknown }).code;
+      return typeof code === 'string' ? code : null;
+    }
+  }
+  return null;
+}
+
+/** True when Gateway/WAHA cannot be reached (bind may still persist an ID). */
+export function isUnreachableWhatsAppGatewayError(error: unknown): boolean {
+  const code = readExceptionCode(error);
+  if (code && UNREACHABLE_GATEWAY_CODES.has(code)) return true;
+  if (error instanceof ServiceUnavailableException) return true;
+  return false;
 }
 
 export function isUnknownCreateOutcome(code: string | null | undefined): boolean {

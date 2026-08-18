@@ -23,7 +23,11 @@ import {
   WHATSAPP_AUDIT_MANUAL_RETRY,
   WHATSAPP_ERROR,
 } from './whatsapp-gateway.constants';
-import { throwWhatsAppDomainError } from './whatsapp-gateway.errors';
+import {
+  isUnreachableWhatsAppGatewayError,
+  throwWhatsAppDomainError,
+} from './whatsapp-gateway.errors';
+import { normalizeWhatsAppGroupChatId } from '@nbos/shared';
 import { ProductWhatsAppParticipantResolver } from './product-whatsapp-participant.resolver';
 import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-queue.service';
 import type {
@@ -352,9 +356,10 @@ export class ProductWhatsAppGroupService {
     productId: string,
     groupChatId: string,
     actorId: string,
-    options?: { replace?: boolean },
+    options?: { replace?: boolean; persistIfUnreachable?: boolean },
   ) {
-    if (!groupChatId.endsWith('@g.us')) {
+    const normalizedId = normalizeWhatsAppGroupChatId(groupChatId);
+    if (!normalizedId.endsWith('@g.us')) {
       throwWhatsAppDomainError(400, WHATSAPP_ERROR.INVALID_GROUP_ID, 'Invalid WhatsApp group id');
     }
     const product = await this.prisma.product.findUnique({
@@ -365,11 +370,13 @@ export class ProductWhatsAppGroupService {
       throwWhatsAppDomainError(400, WHATSAPP_ERROR.PRODUCT_GROUP_NOT_FOUND, 'Product not found');
     }
 
-    const config = await this.connection.requireClientConfig();
-    const group = await this.client.getGroup(config, groupChatId);
+    const resolvedGroup = await this.resolveBindGroupFromGateway(
+      normalizedId,
+      options?.persistIfUnreachable === true,
+    );
 
     const conflict = await this.prisma.productWhatsAppGroupBinding.findFirst({
-      where: { groupChatId, productId: { not: productId } },
+      where: { groupChatId: normalizedId, productId: { not: productId } },
     });
     if (conflict) {
       throwWhatsAppDomainError(
@@ -382,7 +389,7 @@ export class ProductWhatsAppGroupService {
     const existing = await this.prisma.productWhatsAppGroupBinding.findUnique({
       where: { productId },
     });
-    const replaced = Boolean(existing?.groupChatId && existing.groupChatId !== groupChatId);
+    const replaced = Boolean(existing?.groupChatId && existing.groupChatId !== normalizedId);
     if (replaced && !options?.replace) {
       throwWhatsAppDomainError(
         409,
@@ -395,25 +402,25 @@ export class ProductWhatsAppGroupService {
       ? await this.prisma.productWhatsAppGroupBinding.update({
           where: { productId },
           data: {
-            groupChatId,
-            groupName: group.name,
+            groupChatId: normalizedId,
+            groupName: resolvedGroup.name,
             status: 'ACTIVE' satisfies ProductWhatsAppGroupBindingStatusEnum,
             lastErrorCode: null,
             lastErrorMessage: null,
-            lastSuccessfulSyncAt: new Date(),
+            lastSuccessfulSyncAt: resolvedGroup.verified ? new Date() : null,
           },
         })
       : await this.prisma.productWhatsAppGroupBinding.create({
           data: {
             productId,
-            groupChatId,
-            groupName: group.name,
+            groupChatId: normalizedId,
+            groupName: resolvedGroup.name,
             status: 'ACTIVE',
-            lastSuccessfulSyncAt: new Date(),
+            lastSuccessfulSyncAt: resolvedGroup.verified ? new Date() : undefined,
           },
         });
 
-    const dedupeKey = `whatsapp-product-group:bind:${productId}:${groupChatId}`;
+    const dedupeKey = `whatsapp-product-group:bind:${productId}:${normalizedId}`;
     const operation = await this.prisma.whatsAppGroupOperation.create({
       data: {
         productId,
@@ -424,7 +431,7 @@ export class ProductWhatsAppGroupService {
         source: 'MANUAL_BIND',
         requestedById: actorId,
         completedAt: new Date(),
-        resultMetadata: { groupChatId },
+        resultMetadata: { groupChatId: normalizedId, verified: resolvedGroup.verified },
       },
     });
 
@@ -434,11 +441,29 @@ export class ProductWhatsAppGroupService {
       action: replaced ? WHATSAPP_AUDIT_GROUP_REPLACED : WHATSAPP_AUDIT_GROUP_BOUND,
       userId: actorId,
       projectId: product.projectId,
-      changes: { groupChatId, operationId: operation.id, replaced },
+      changes: { groupChatId: normalizedId, operationId: operation.id, replaced },
     });
 
-    await this.queueParticipantSync(productId, binding.id, actorId);
+    if (resolvedGroup.verified) {
+      await this.queueParticipantSync(productId, binding.id, actorId);
+    }
     return this.getProductWhatsAppState(productId);
+  }
+
+  private async resolveBindGroupFromGateway(
+    groupChatId: string,
+    persistIfUnreachable: boolean,
+  ): Promise<{ name: string | null; verified: boolean }> {
+    try {
+      const config = await this.connection.requireClientConfig();
+      const group = await this.client.getGroup(config, groupChatId);
+      return { name: group.name, verified: true };
+    } catch (error) {
+      if (persistIfUnreachable && isUnreachableWhatsAppGatewayError(error)) {
+        return { name: null, verified: false };
+      }
+      throw error;
+    }
   }
 
   async queueParticipantSync(productId: string, bindingId: string, actorId?: string | null) {

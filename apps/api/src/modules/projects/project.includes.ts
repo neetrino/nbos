@@ -26,6 +26,7 @@ export const projectDetailInclude = {
         },
       },
       _count: { select: { extensions: true, tasks: true, tickets: true } },
+      whatsappGroupBinding: { select: { status: true, groupChatId: true } },
     },
     orderBy: { createdAt: 'desc' },
   },

@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +19,8 @@ interface StageTransitionConfirmDialogProps {
   description: string;
   confirmLabel: string;
   variant: 'success' | 'danger';
+  confirmDisabled?: boolean;
+  children?: ReactNode;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }
@@ -28,6 +31,8 @@ export function StageTransitionConfirmDialog({
   description,
   confirmLabel,
   variant,
+  confirmDisabled = false,
+  children,
   onOpenChange,
   onConfirm,
 }: StageTransitionConfirmDialogProps) {
@@ -35,7 +40,7 @@ export function StageTransitionConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" forceNestedBackdrop>
+      <DialogContent className={children ? 'sm:max-w-lg' : 'sm:max-w-md'} forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon
@@ -46,6 +51,7 @@ export function StageTransitionConfirmDialog({
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
@@ -53,6 +59,7 @@ export function StageTransitionConfirmDialog({
           <Button
             type="button"
             variant={variant === 'danger' ? 'destructive' : 'default'}
+            disabled={confirmDisabled}
             onClick={onConfirm}
           >
             {confirmLabel}
