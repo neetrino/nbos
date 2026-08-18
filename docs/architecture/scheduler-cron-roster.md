@@ -1,7 +1,7 @@
 # NBOS — реестр cron
 
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
-Прод: мастер **вкл**, семь 🟢 крутятся. Жёлтые (в т.ч. пункт 17) не включать пакетом.
+Прод: мастер **вкл**, восемь 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services). Остальные жёлтые не включать пакетом.
 
 - 🟢 включаем
 - 🟡 позже (время уже выставлено)
@@ -70,7 +70,7 @@
 16. 🖐️ **WhatsApp-группа продукта** — не cron. Очередь и воркер оставляем. Позже — честная кнопка со статусом.  
     `SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED`
 
-17. 🟡 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. Код готов, флаг выкл.  
+17. 🟢 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. На проде флаг **вкл**.  
     `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
 
 Ручной ремонт без cron: `POST /api/scheduler/sales-kpi-backfill-all`.
