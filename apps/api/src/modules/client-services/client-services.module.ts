@@ -10,7 +10,17 @@ import { TasksModule } from '../tasks/tasks.module';
 @Module({
   imports: [InvoicesModule, ExpensesModule, TasksModule],
   controllers: [ClientServicesController],
-  providers: [ClientServicesService, ClientServiceFlowsService, ClientPaidInvoiceAutomationService],
-  exports: [ClientServicesService, ClientServiceFlowsService, ClientPaidInvoiceAutomationService],
+  providers: [
+    ClientServicesService,
+    ClientServiceFlowsService,
+    ClientPaidInvoiceAutomationService,
+    ClientServicesRenewalInvoiceService,
+  ],
+  exports: [
+    ClientServicesService,
+    ClientServiceFlowsService,
+    ClientPaidInvoiceAutomationService,
+    ClientServicesRenewalInvoiceService,
+  ],
 })
 export class ClientServicesModule {}

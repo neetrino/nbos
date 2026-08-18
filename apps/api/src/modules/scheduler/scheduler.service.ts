@@ -15,6 +15,7 @@ import { NotificationInboxReconcileService } from '../notifications/notification
 import { NotificationEnqueueReconcileService } from '../notifications/notification-enqueue-reconcile.service';
 import { AuthSessionService } from '../auth/auth-session.service';
 import { RecurringTasksService } from '../tasks/recurring-tasks.service';
+import { ClientServicesRenewalInvoiceService } from '../client-services/client-services-renewal-invoice.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -47,6 +48,7 @@ export class SchedulerService {
     private readonly notificationEnqueueReconcile: NotificationEnqueueReconcileService,
     private readonly authSessions: AuthSessionService,
     private readonly recurringTasks: RecurringTasksService,
+    private readonly clientServicesRenewalInvoice: ClientServicesRenewalInvoiceService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -310,6 +312,24 @@ export class SchedulerService {
         return {
           processedCount: result.marked,
           metadata: result,
+        };
+      },
+    );
+  }
+
+  async runClientServicesRenewalInvoice(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.clientServicesRenewalInvoice.runDueRenewalInvoices();
+        return {
+          processedCount: result.created.length,
+          metadata: {
+            eligibleCount: result.eligibleCount,
+            skippedExisting: result.skippedExisting,
+            failures: result.failures.length,
+          },
         };
       },
     );
