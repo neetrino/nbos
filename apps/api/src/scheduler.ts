@@ -56,12 +56,13 @@ async function bootstrap() {
   );
 
   const registry = app.get(ScheduledJobRegistry);
-  logSchedulerBootSnapshot(app, logger, knownJobFlagEnvKeys);
-  registry.assertHasScheduledJobsWhenEnabled(isSchedulerEnabled());
-
   const healthPort = Number(process.env[SCHEDULER_HEALTH_PORT_ENV] ?? process.env.PORT ?? 4002);
 
   await app.listen(healthPort);
+  // Cron OnModuleInit is visible only after listen on the dedicated process.
+  // Asserting before listen killed SCHEDULER_ENABLED=true before any CronJob attached.
+  logSchedulerBootSnapshot(app, logger, knownJobFlagEnvKeys);
+  registry.assertHasScheduledJobsWhenEnabled(isSchedulerEnabled());
   registry.markStartupComplete();
   logProcessStartup({ role, workers: [], scheduledJobs: registry.list() });
   logger.log(
