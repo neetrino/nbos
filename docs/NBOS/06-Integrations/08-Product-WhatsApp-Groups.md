@@ -104,4 +104,4 @@ Create only from an explicit Deal / Product Settings action or the Deal Won moda
 ## Product Settings
 
 Product page → Settings gear → WhatsApp Group section: status, create/retry, bind/replace, sync, invite, history.  
-Missing and `FAILED` states are shown as a clear badge; retry/create never blocks other work.
+While create is in-flight the button shows **Creating group…**; `FAILED` unlocks retry. Status updates on open and after the click, not via live poll. Missing and `FAILED` states are shown as a clear badge; retry/create never blocks other work.

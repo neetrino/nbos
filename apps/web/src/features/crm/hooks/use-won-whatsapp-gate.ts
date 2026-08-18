@@ -10,6 +10,7 @@ import {
   type DealWonWhatsAppPayload,
   type DealWonWhatsAppSessionAction,
 } from '../deal-won-whatsapp-gate';
+import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
 
 export function resolveDealProductIdForWhatsApp(deal: Deal): string | null {
   if (deal.existingProductId) return deal.existingProductId;
@@ -42,8 +43,7 @@ export function useWonWhatsAppGate(
         createOperationStatus: nextCreateStatus,
         sessionAction: nextAction,
       });
-      const payload = toWonWhatsAppPayload(nextAction, nextGroupId, groupIdInput);
-      onSatisfiedChange(satisfied, payload);
+      onSatisfiedChange(satisfied, toWonWhatsAppPayload(nextAction, nextGroupId, groupIdInput));
     },
     [deal.type, groupIdInput, onSatisfiedChange],
   );
@@ -55,6 +55,7 @@ export function useWonWhatsAppGate(
       if (cancelled) return;
       setGroupChatId(nextGroupId);
       setCreateOperationStatus(nextCreateStatus);
+      setCreateFailed(nextCreateStatus === 'FAILED');
       publish(null, nextGroupId, nextCreateStatus);
     });
     return () => {
@@ -91,6 +92,7 @@ export function useWonWhatsAppGate(
     setGroupIdInput,
     busy,
     createFailed,
+    createInFlight: isWhatsAppCreateInFlight(createOperationStatus),
     handleCreate,
     handleSaveId,
     sessionAction,

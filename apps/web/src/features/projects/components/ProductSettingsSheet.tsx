@@ -3,14 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -21,6 +13,12 @@ import {
 } from '@/lib/api/whatsapp';
 import { WhatsAppGroupMissingBadge } from '@/features/crm/components/WhatsAppGroupMissingBadge';
 import { isMissingActiveWhatsAppGroup } from '@/features/crm/deal-won-whatsapp-gate';
+import {
+  isWhatsAppCreateInFlight,
+  whatsappCreateButtonLabel,
+} from '@/features/crm/whatsapp-create-status';
+import { ProductWhatsAppBindControls } from './ProductWhatsAppBindControls';
+import { ProductWhatsAppOperationHistory } from './ProductWhatsAppOperationHistory';
 
 interface ProductSettingsSheetProps {
   productId: string;
@@ -158,12 +156,23 @@ export function ProductSettingsSheet({
               type="button"
               variant="outline"
               className="justify-start"
-              disabled={busy || status === 'ACTIVE' || status === 'CREATING'}
+              disabled={
+                busy ||
+                status === 'ACTIVE' ||
+                isWhatsAppCreateInFlight(status) ||
+                isWhatsAppCreateInFlight(state?.latestOperation?.status)
+              }
               onClick={() =>
                 void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
               }
             >
-              {status === 'FAILED' ? 'Retry create group' : 'Create group'}
+              {whatsappCreateButtonLabel({
+                inFlight:
+                  isWhatsAppCreateInFlight(status) ||
+                  isWhatsAppCreateInFlight(state?.latestOperation?.status),
+                failed: status === 'FAILED',
+                idleLabel: 'Create group',
+              })}
             </Button>
             <Button
               type="button"
@@ -213,118 +222,29 @@ export function ProductSettingsSheet({
             </Button>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="wa-group-search">
-              Select existing group
-            </label>
-            <Input
-              id="wa-group-search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search groups"
-            />
-            {groups.length > 0 ? (
-              <Select
-                value={selectedGroupId || undefined}
-                onValueChange={(value) => {
-                  if (value) setSelectedGroupId(value);
-                }}
-              >
-                <SelectTrigger className="w-full" aria-label="Select WhatsApp group">
-                  <SelectValue placeholder="Select a group…">
-                    {(value: string | null) => {
-                      if (!value) return null;
-                      const group = groups.find((item) => item.id === value);
-                      if (!group) return value;
-                      return formatWhatsAppGroupOptionLabel(group);
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent align="start">
-                  {groups.map((group) => (
-                    <SelectItem key={group.id} value={group.id}>
-                      {formatWhatsAppGroupOptionLabel(group)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : !loading ? (
-              <p className="text-muted-foreground text-xs">No groups match this search.</p>
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-start"
-              disabled={busy || !selectedGroupId}
-              onClick={() => {
-                const replace = Boolean(
-                  binding?.groupChatId && binding.groupChatId !== selectedGroupId,
-                );
-                if (
-                  replace &&
-                  !window.confirm(
-                    'Replace the current Product WhatsApp binding? The old WhatsApp group will not be deleted.',
-                  )
-                ) {
-                  return;
-                }
-                void run(
-                  () =>
-                    productWhatsAppApi.bind(productId, {
-                      groupChatId: selectedGroupId,
-                      replace,
-                    }),
-                  replace ? 'Binding replaced' : 'Group bound',
-                );
-              }}
-            >
-              Bind selected group
-            </Button>
-          </div>
+          <ProductWhatsAppBindControls
+            productId={productId}
+            search={search}
+            onSearchChange={setSearch}
+            groups={groups}
+            loading={loading}
+            selectedGroupId={selectedGroupId}
+            onSelectedGroupIdChange={setSelectedGroupId}
+            currentGroupChatId={binding?.groupChatId}
+            busy={busy}
+            run={run}
+          />
 
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Recent operations</h4>
-            <OperationHistory productId={productId} open={sheetOpen} />
+            <ProductWhatsAppOperationHistory
+              productId={productId}
+              open={sheetOpen}
+              revision={state?.latestOperation?.id ?? state?.latestOperation?.status ?? ''}
+            />
           </div>
         </section>
       </PageSettingsSheet>
     </PermissionGate>
-  );
-}
-
-function formatWhatsAppGroupOptionLabel(group: WhatsAppAvailableGroup): string {
-  const missing = group.missingFromGateway ? ' (missing from Gateway)' : '';
-  const count = typeof group.participantCount === 'number' ? ` · ${group.participantCount}` : '';
-  return `${group.name}${missing}${count}`;
-}
-
-function OperationHistory({ productId, open }: { productId: string; open: boolean }) {
-  const [items, setItems] = useState<
-    Array<{ id: string; type: string; status: string; createdAt: string; errorCode: string | null }>
-  >([]);
-
-  useEffect(() => {
-    if (!open) return;
-    void productWhatsAppApi
-      .operations(productId)
-      .then((result) => setItems(result.items.slice(0, 10)))
-      .catch(() => setItems([]));
-  }, [open, productId]);
-
-  if (items.length === 0) {
-    return <p className="text-muted-foreground text-sm">No operations yet.</p>;
-  }
-
-  return (
-    <ul className="space-y-1.5 text-xs">
-      {items.map((item) => (
-        <li key={item.id} className="border-border bg-muted/30 rounded-lg border px-2.5 py-2">
-          <span className="text-foreground font-medium">{item.type}</span>
-          <span className="text-muted-foreground"> · {item.status}</span>
-          {item.errorCode ? <span className="text-destructive"> · {item.errorCode}</span> : null}
-          <div className="text-muted-foreground mt-0.5">{item.createdAt}</div>
-        </li>
-      ))}
-    </ul>
   );
 }
