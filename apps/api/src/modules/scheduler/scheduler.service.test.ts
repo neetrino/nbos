@@ -103,7 +103,6 @@ describe('SchedulerService', () => {
       supportSlaOrchestrationService as never,
       salesKpiMonthClose as never,
       { runRetentionPurge: vi.fn() } as never,
-      { reconcileBatch: vi.fn() } as never,
       { reconcileAll: vi.fn() } as never,
       { reconcilePending: vi.fn() } as never,
       { cleanupExpiredSessions: vi.fn() } as never,
