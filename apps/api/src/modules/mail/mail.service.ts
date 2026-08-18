@@ -3,6 +3,7 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { listMailDeliveryLogsForMessage } from './mail-delivery-log-query.ops';
 import { listMailAccountHealthSummariesForViewer } from './mail-health-summary.ops';
+import { MailProviderConfig } from './providers/mail-provider.config';
 import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
 import { listMailSyncLogs } from './mail-sync-log-query.ops';
 import {
@@ -24,7 +25,10 @@ export type { ListMailThreadsOptions } from './mail-inbox-query.ops';
 
 @Injectable()
 export class MailService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly providerConfig: MailProviderConfig,
+  ) {}
 
   async listAccounts(employeeId: string, viewScope: string): Promise<MailAccountRow[]> {
     return listMailAccountsForViewer(this.prisma, employeeId, viewScope);
@@ -34,7 +38,12 @@ export class MailService {
     employeeId: string,
     viewScope: string,
   ): Promise<MailAccountHealthSummaryRow[]> {
-    return listMailAccountHealthSummariesForViewer(this.prisma, employeeId, viewScope);
+    return listMailAccountHealthSummariesForViewer(
+      this.prisma,
+      employeeId,
+      viewScope,
+      Boolean(this.providerConfig.gmailPubsubTopic),
+    );
   }
 
   async listThreads(

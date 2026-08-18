@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@nbos/database';
+import { resolveMailIdleStatus, resolveMailWatchStatus } from './mail-health-watch';
 import { listMailAccountsForViewer } from './mail-inbox-query.ops';
 import type { MailAccountHealthSummaryRow } from './mail.types';
 
@@ -25,6 +26,7 @@ export async function listMailAccountHealthSummariesForViewer(
   prisma: InstanceType<typeof PrismaClient>,
   employeeId: string,
   viewScope: string,
+  gmailWatchConfigured: boolean,
 ): Promise<MailAccountHealthSummaryRow[]> {
   const accounts = await listMailAccountsForViewer(prisma, employeeId, viewScope);
   const ids = accounts.map((a) => a.id);
@@ -32,7 +34,7 @@ export async function listMailAccountHealthSummariesForViewer(
     return [];
   }
 
-  const [totalGroups, unreadGroups, needsLinkGroups] = await prisma.$transaction([
+  const [totalGroups, unreadGroups, needsLinkGroups, connections] = await prisma.$transaction([
     prisma.emailThread.groupBy({
       by: ['mailAccountId'],
       orderBy: { mailAccountId: 'asc' },
@@ -56,16 +58,42 @@ export async function listMailAccountHealthSummariesForViewer(
       },
       _count: { _all: true },
     }),
+    prisma.mailProviderConnection.findMany({
+      where: { mailAccountId: { in: ids } },
+      select: {
+        mailAccountId: true,
+        providerType: true,
+        gmailWatchExpiresAt: true,
+        imapIdleHeartbeatAt: true,
+      },
+    }),
   ]);
 
   const totalMap = countsByAccountId(totalGroups);
   const unreadMap = countsByAccountId(unreadGroups);
   const needsLinkMap = countsByAccountId(needsLinkGroups);
 
-  return accounts.map((account) => ({
-    ...account,
-    threadCount: totalMap.get(account.id) ?? 0,
-    unreadThreadCount: unreadMap.get(account.id) ?? 0,
-    needsLinkThreadCount: needsLinkMap.get(account.id) ?? 0,
-  }));
+  const connectionByAccount = new Map(connections.map((row) => [row.mailAccountId, row]));
+  const now = new Date();
+
+  return accounts.map((account) => {
+    const connection = connectionByAccount.get(account.id);
+    const watchExpiresAt = connection?.gmailWatchExpiresAt ?? null;
+    const idleHeartbeatAt = connection?.imapIdleHeartbeatAt ?? null;
+    return {
+      ...account,
+      threadCount: totalMap.get(account.id) ?? 0,
+      unreadThreadCount: unreadMap.get(account.id) ?? 0,
+      needsLinkThreadCount: needsLinkMap.get(account.id) ?? 0,
+      watch: resolveMailWatchStatus({
+        providerType: connection?.providerType ?? account.providerType,
+        gmailWatchConfigured,
+        watchExpiresAt,
+        now,
+      }),
+      watchExpiresAt: watchExpiresAt?.toISOString() ?? null,
+      idle: resolveMailIdleStatus(idleHeartbeatAt, now),
+      idleHeartbeatAt: idleHeartbeatAt?.toISOString() ?? null,
+    };
+  });
 }
