@@ -34,6 +34,8 @@ import { dealsApi } from '@/lib/api/deals';
 import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { WhatsAppGroupMissingBadge } from './WhatsAppGroupMissingBadge';
+import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -267,8 +269,21 @@ export function DealSheetQuickActions({
     whatsappBusy,
   ]);
 
+  const showWhatsAppMissing =
+    Boolean(productId) &&
+    isMissingActiveWhatsAppGroup({
+      bindingStatus,
+      groupChatId: whatsappState?.binding?.groupChatId,
+    });
+
   return (
     <>
+      {showWhatsAppMissing ? (
+        <WhatsAppGroupMissingBadge
+          bindingStatus={bindingStatus}
+          groupChatId={whatsappState?.binding?.groupChatId}
+        />
+      ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger
           render={(props) => (

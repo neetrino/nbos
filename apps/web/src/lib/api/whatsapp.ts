@@ -114,7 +114,7 @@ export const productWhatsAppApi = {
   },
   async bind(
     productId: string,
-    body: { groupChatId: string; replace?: boolean },
+    body: { groupChatId: string; replace?: boolean; persistIfUnreachable?: boolean },
   ): Promise<ProductWhatsAppState> {
     const resp = await api.put<ProductWhatsAppState>(
       `/api/projects/products/${productId}/whatsapp/binding`,

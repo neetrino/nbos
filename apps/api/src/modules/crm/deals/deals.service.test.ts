@@ -648,7 +648,65 @@ describe('DealsService', () => {
         status: 'WON',
         type: 'PRODUCT',
       });
+      const result = await service.updateStatus('1', 'WON', { whatsappAction: 'create' });
+      expect(result.status).toBe('WON');
+      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+      expect(wonHandler.handle).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ action: 'create' }),
+      );
+    });
+
+    it('blocks PRODUCT WON without WhatsApp create-or-id', async () => {
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal());
+
+      await expect(service.updateStatus('1', 'WON')).rejects.toMatchObject({
+        response: {
+          code: 'STAGE_GATE_VALIDATION',
+          errors: [{ field: 'whatsapp', message: expect.any(String) }],
+        },
+      });
+      expect(wonHandler.handle).not.toHaveBeenCalled();
+    });
+
+    it('allows PRODUCT WON after a FAILED create operation', async () => {
+      const base = {
+        ...completeProductDeal(),
+        existingProductId: 'product-1',
+      };
+      const won = { ...base, status: 'WON' as const };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
+      prisma.whatsAppGroupOperation.findFirst.mockResolvedValue({ id: 'op-failed' });
+
       const result = await service.updateStatus('1', 'WON');
+
+      expect(result.status).toBe('WON');
+      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows PRODUCT WON after a persisted groupChatId', async () => {
+      const base = {
+        ...completeProductDeal(),
+        existingProductId: 'product-1',
+      };
+      const won = { ...base, status: 'WON' as const };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
+      prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
+        groupChatId: '120363012345678901@g.us',
+      });
+
+      const result = await service.updateStatus('1', 'WON');
+
       expect(result.status).toBe('WON');
       expect(wonHandler.handle).toHaveBeenCalledTimes(1);
     });

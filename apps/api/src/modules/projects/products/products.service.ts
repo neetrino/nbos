@@ -473,7 +473,6 @@ export class ProductsService {
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
     await this.syncProductTeamAccess(product);
-    await this.enqueueWhatsAppGroup(product.id, 'PRODUCT_CREATED');
     return attachProductDeliveryLifecycle(product);
   }
 
@@ -729,21 +728,6 @@ export class ProductsService {
       projectId: product.projectId,
       sellerId,
     });
-  }
-
-  private async enqueueWhatsAppGroup(
-    productId: string,
-    source: 'PRODUCT_CREATED' | 'MANUAL_RETRY',
-  ): Promise<void> {
-    try {
-      await this.productWhatsApp.ensureGroupForProduct(productId, { source });
-    } catch (error) {
-      this.logger.warn(
-        `WhatsApp ensureGroupForProduct failed for ${productId}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-    }
   }
 
   private async maybeEnqueueTechnicalSpecialist(

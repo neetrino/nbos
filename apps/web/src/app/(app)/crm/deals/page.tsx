@@ -28,6 +28,11 @@ import {
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import { createDealKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import { WonWhatsAppGatePanel } from '@/features/crm/components/WonWhatsAppGatePanel';
+import {
+  isWhatsAppWonGateDealType,
+  type DealWonWhatsAppPayload,
+} from '@/features/crm/deal-won-whatsapp-gate';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
 import { DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
@@ -116,6 +121,10 @@ function DealsPipelinePageContent() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [wonWhatsApp, setWonWhatsApp] = useState<{
+    satisfied: boolean;
+    payload: DealWonWhatsAppPayload | null;
+  }>({ satisfied: true, payload: null });
   const [stageGateHighlight, setStageGateHighlight] = useState<DealSheetStageGateHighlight | null>(
     null,
   );
@@ -355,7 +364,11 @@ function DealsPipelinePageContent() {
     [pushDealBlockerNav, pushOpenDealToUrl],
   );
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (
+    id: string,
+    status: string,
+    whatsapp?: DealWonWhatsAppPayload | null,
+  ) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
     const currentDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected ?? null;
@@ -374,7 +387,10 @@ function DealsPipelinePageContent() {
     }
 
     try {
-      const updated = await dealsApi.updateStatus(id, status);
+      const updated = await dealsApi.updateStatus(id, status, {
+        whatsappAction: whatsapp?.action,
+        whatsappGroupChatId: whatsapp?.groupChatId,
+      });
       setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
       setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
       setStageGateHighlight(null);
@@ -408,6 +424,10 @@ function DealsPipelinePageContent() {
     }
 
     if (status === 'WON') {
+      setWonWhatsApp({
+        satisfied: !isWhatsAppWonGateDealType(deal.type),
+        payload: null,
+      });
       setPendingTransition({
         id,
         status,
@@ -645,6 +665,11 @@ function DealsPipelinePageContent() {
 
   useModuleHeroSlots(moduleHeroSlots);
 
+  const pendingWonDeal = pendingTransition
+    ? (deals.find((item) => item.id === pendingTransition.id) ??
+      (selectedDeal?.id === pendingTransition.id ? selectedDeal : null))
+    : null;
+
   return (
     <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
@@ -775,16 +800,35 @@ function DealsPipelinePageContent() {
         description={pendingTransition?.description ?? ''}
         confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
         variant={pendingTransition?.variant ?? 'success'}
+        confirmDisabled={
+          pendingTransition?.status === 'WON' &&
+          Boolean(pendingWonDeal && isWhatsAppWonGateDealType(pendingWonDeal.type)) &&
+          !wonWhatsApp.satisfied
+        }
         onOpenChange={(open) => {
-          if (!open) setPendingTransition(null);
+          if (!open) {
+            setPendingTransition(null);
+            setWonWhatsApp({ satisfied: true, payload: null });
+          }
         }}
         onConfirm={() => {
           const transition = pendingTransition;
           if (!transition) return;
           setPendingTransition(null);
-          handleStatusChange(transition.id, transition.status);
+          handleStatusChange(transition.id, transition.status, wonWhatsApp.payload);
         }}
-      />
+      >
+        {pendingTransition?.status === 'WON' &&
+        pendingWonDeal &&
+        isWhatsAppWonGateDealType(pendingWonDeal.type) ? (
+          <WonWhatsAppGatePanel
+            key={pendingWonDeal.id}
+            deal={pendingWonDeal}
+            open
+            onSatisfiedChange={(satisfied, payload) => setWonWhatsApp({ satisfied, payload })}
+          />
+        ) : null}
+      </StageTransitionConfirmDialog>
 
       <DeleteConfirmDialog
         level="strong"

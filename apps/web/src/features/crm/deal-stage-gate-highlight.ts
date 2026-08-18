@@ -9,7 +9,7 @@ export function dealStageGateFieldClass(
   return cn(className, requiredFields.has(field) && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS);
 }
 
-const ACTION_BLOCKER_KEYWORDS = ['invoice', 'payment', 'contract', 'override'] as const;
+const ACTION_BLOCKER_KEYWORDS = ['invoice', 'payment', 'contract', 'override', 'whatsapp'] as const;
 
 export function isDealStageActionBlocker(field: string): boolean {
   const normalized = field.toLowerCase();

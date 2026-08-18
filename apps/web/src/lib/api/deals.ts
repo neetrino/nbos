@@ -174,6 +174,8 @@ interface DealQueryParams {
 
 interface DealStatusOptions {
   overrideReason?: string | null;
+  whatsappAction?: 'create' | 'bind';
+  whatsappGroupChatId?: string;
 }
 
 export interface CreateDepositOrderPayload {
@@ -248,6 +250,8 @@ export const dealsApi = {
     const resp = await api.patch<Deal>(`/api/crm/deals/${id}/status`, {
       status,
       ...(options.overrideReason && { overrideReason: options.overrideReason }),
+      ...(options.whatsappAction && { whatsappAction: options.whatsappAction }),
+      ...(options.whatsappGroupChatId && { whatsappGroupChatId: options.whatsappGroupChatId }),
     });
     return resp.data;
   },

@@ -22,6 +22,7 @@ import {
 } from '@/features/projects/constants/projects';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import { WhatsAppGroupMissingBadge } from '@/features/crm/components/WhatsAppGroupMissingBadge';
 import {
   PROJECT_ENTITY_LIST_CLASS,
   PROJECT_ENTITY_LIST_ROW_CLASS,
@@ -198,6 +199,10 @@ function ProductListRow({
               className="shrink-0 self-center"
             />
           ) : null}
+          <WhatsAppGroupMissingBadge
+            bindingStatus={product.whatsappGroupBinding?.status}
+            groupChatId={product.whatsappGroupBinding?.groupChatId}
+          />
           {productType ? (
             <span className="text-muted-foreground text-xs">{productType.label}</span>
           ) : null}

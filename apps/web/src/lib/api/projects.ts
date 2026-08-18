@@ -88,6 +88,7 @@ export interface ProjectProductSummary {
     tickets: number;
   };
   checklistStageProgress?: ChecklistStageProgress | null;
+  whatsappGroupBinding?: { status: string; groupChatId: string | null } | null;
 }
 
 export interface ProjectExtensionSummary {

@@ -7,6 +7,8 @@ import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.servi
 import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import { applyDealWonWhatsAppAction } from './deal-won-whatsapp-action';
+import type { DealWonWhatsAppIntent } from './deal-won-whatsapp';
 import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
 import { resolveDealSubscriptionName } from '../../finance/subscriptions/subscription-commercial-name';
 import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
@@ -75,9 +77,9 @@ export class DealWonHandler {
     private readonly productWhatsApp: ProductWhatsAppGroupService,
   ) {}
 
-  async handle(deal: WonDealData) {
+  async handle(deal: WonDealData, whatsappIntent?: DealWonWhatsAppIntent | null) {
     await this.syncSubscriptionOrderContractTotalAtWon(deal);
-    const targets = await this.resolveWonTargets(deal, 'DEAL_WON');
+    const targets = await this.resolveWonTargets(deal, whatsappIntent ?? null);
     if (targets) {
       await this.driveDealWonLinks.linkApprovedDealMaterials(targets);
     }
@@ -85,7 +87,7 @@ export class DealWonHandler {
 
   /** Creates project/product/extension shell without marking the deal Won (early delivery). */
   async ensureDeliveryShell(deal: WonDealData) {
-    await this.resolveWonTargets(deal, 'EARLY_DELIVERY');
+    await this.resolveWonTargets(deal, null);
   }
 
   private async syncSubscriptionOrderContractTotalAtWon(deal: WonDealData): Promise<void> {
@@ -125,10 +127,10 @@ export class DealWonHandler {
 
   private async resolveWonTargets(
     deal: WonDealData,
-    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    whatsappIntent: DealWonWhatsAppIntent | null,
   ): Promise<DealWonDriveLinkTargets | null> {
     if (deal.type === 'PRODUCT') {
-      return this.targetsAfterProductWon(deal, whatsappSource);
+      return this.targetsAfterProductWon(deal, whatsappIntent);
     }
     if (deal.type === 'EXTENSION') {
       return this.targetsAfterExtensionWon(deal);
@@ -137,17 +139,17 @@ export class DealWonHandler {
       return this.targetsAfterMaintenanceWon(deal);
     }
     if (deal.type === 'OUTSOURCE') {
-      return this.targetsAfterOutsourceWon(deal, whatsappSource);
+      return this.targetsAfterOutsourceWon(deal, whatsappIntent);
     }
     return this.targetsFromExistingProject(deal);
   }
 
   private async targetsAfterOutsourceWon(
     deal: WonDealData,
-    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    whatsappIntent: DealWonWhatsAppIntent | null,
   ): Promise<DealWonDriveLinkTargets> {
     const goesToDelivery = deal.outsourceGoesToDelivery === true;
-    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+    const result = await this.ensureProductDeliveryShell(deal, whatsappIntent, {
       activeDeliveryBoard: goesToDelivery,
     });
     await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
@@ -156,9 +158,9 @@ export class DealWonHandler {
 
   private async targetsAfterProductWon(
     deal: WonDealData,
-    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    whatsappIntent: DealWonWhatsAppIntent | null,
   ): Promise<DealWonDriveLinkTargets> {
-    const result = await this.ensureProductDeliveryShell(deal, whatsappSource, {
+    const result = await this.ensureProductDeliveryShell(deal, whatsappIntent, {
       activeDeliveryBoard: true,
     });
     await this.createProductSubscriptionIfReady(deal, result.projectId, result.productId);
@@ -212,35 +214,21 @@ export class DealWonHandler {
 
   private async ensureProductDeliveryShell(
     deal: WonDealData,
-    whatsappSource: 'DEAL_WON' | 'EARLY_DELIVERY',
+    whatsappIntent: DealWonWhatsAppIntent | null,
     options: { activeDeliveryBoard: boolean },
   ): Promise<ProductWonResult> {
     const projectId = await this.ensureProject(deal);
     const productId = await this.ensureProduct(deal, projectId, options);
     await this.syncProjectTeamFromDealShell(deal, projectId, productId);
-    if (productId) {
-      await this.enqueueProductWhatsApp(productId, deal.id, whatsappSource);
+    if (productId && whatsappIntent) {
+      await applyDealWonWhatsAppAction(this.productWhatsApp, {
+        productId,
+        dealId: deal.id,
+        intent: whatsappIntent,
+        logger: this.logger,
+      });
     }
     return { projectId, productId };
-  }
-
-  private async enqueueProductWhatsApp(
-    productId: string,
-    dealId: string,
-    source: 'DEAL_WON' | 'EARLY_DELIVERY',
-  ): Promise<void> {
-    try {
-      await this.productWhatsApp.ensureGroupForProduct(productId, {
-        source,
-        contextDealId: dealId,
-      });
-    } catch (error) {
-      this.logger.warn(
-        `WhatsApp ensure after deal ${dealId} product ${productId} failed: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-    }
   }
 
   private async syncProjectTeamFromDealShell(

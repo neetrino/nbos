@@ -26,6 +26,11 @@ import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { validateDealWonGate } from './deal-won-gate';
+import {
+  loadDealWonWhatsAppContext,
+  validateDealWonWhatsAppGate,
+  type DealWonWhatsAppAction,
+} from './deal-won-whatsapp';
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
 import { resolveDealCreateDefaults } from './deal-create-defaults.op';
 import { parseOptionalSubscriptionTermMonths } from './deal-subscription-term';
@@ -429,7 +434,15 @@ export class DealsService {
     return this.findById(dealId);
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatus(
+    id: string,
+    status: string,
+    options: {
+      actorId?: string;
+      whatsappAction?: DealWonWhatsAppAction;
+      whatsappGroupChatId?: string;
+    } = {},
+  ) {
     let current = await this.findById(id);
     if (current.status === status) {
       return current;
@@ -451,6 +464,13 @@ export class DealsService {
     validateDealStageGate({ ...current, linkedOfferAssetCount, linkedContractAssetCount }, status);
     if (status === 'WON') {
       validateDealWonGate(current);
+      const whatsapp = await loadDealWonWhatsAppContext(this.prisma, current);
+      validateDealWonWhatsAppGate({
+        dealType: current.type,
+        ...whatsapp,
+        whatsappAction: options.whatsappAction,
+        whatsappGroupChatId: options.whatsappGroupChatId,
+      });
     }
 
     const deal = await this.update(id, { status });
@@ -460,7 +480,16 @@ export class DealsService {
         where: { id },
         data: { wonMode: current.wonMode ?? 'STANDARD' },
       });
-      await this.dealWonHandler.handle(deal);
+      await this.dealWonHandler.handle(
+        deal,
+        options.whatsappAction
+          ? {
+              action: options.whatsappAction,
+              groupChatId: options.whatsappGroupChatId,
+              actorId: options.actorId,
+            }
+          : null,
+      );
       return this.findById(id);
     }
 

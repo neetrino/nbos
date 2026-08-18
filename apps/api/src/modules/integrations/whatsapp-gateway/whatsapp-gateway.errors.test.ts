@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { isRetryableGatewayError, isUnknownCreateOutcome } from './whatsapp-gateway.errors';
+import { ServiceUnavailableException } from '@nestjs/common';
+import {
+  isRetryableGatewayError,
+  isUnknownCreateOutcome,
+  isUnreachableWhatsAppGatewayError,
+  throwWhatsAppDomainError,
+  WhatsAppGatewayHttpError,
+} from './whatsapp-gateway.errors';
 import { WHATSAPP_ERROR } from './whatsapp-gateway.constants';
 
 describe('isRetryableGatewayError', () => {
@@ -14,6 +21,30 @@ describe('isRetryableGatewayError', () => {
     expect(isRetryableGatewayError('UNAUTHORIZED')).toBe(false);
     expect(isRetryableGatewayError('WHATSAPP_NOT_CONNECTED')).toBe(false);
     expect(isRetryableGatewayError('VALIDATION_ERROR')).toBe(false);
+  });
+});
+
+describe('isUnreachableWhatsAppGatewayError', () => {
+  it('treats missing Gateway config and WAHA down as unreachable', () => {
+    try {
+      throwWhatsAppDomainError(400, WHATSAPP_ERROR.GATEWAY_NOT_CONFIGURED, 'not configured');
+    } catch (error) {
+      expect(isUnreachableWhatsAppGatewayError(error)).toBe(true);
+    }
+    expect(isUnreachableWhatsAppGatewayError(new ServiceUnavailableException('down'))).toBe(true);
+    expect(
+      isUnreachableWhatsAppGatewayError(
+        new WhatsAppGatewayHttpError(503, 'WAHA_UNAVAILABLE', 'down'),
+      ),
+    ).toBe(true);
+  });
+
+  it('does not treat an invalid group id as unreachable', () => {
+    try {
+      throwWhatsAppDomainError(400, WHATSAPP_ERROR.INVALID_GROUP_ID, 'bad id');
+    } catch (error) {
+      expect(isUnreachableWhatsAppGatewayError(error)).toBe(false);
+    }
   });
 });
 

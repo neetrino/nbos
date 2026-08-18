@@ -23,6 +23,11 @@ export class BindProductWhatsAppGroupDto {
   @IsOptional()
   @IsBoolean()
   replace?: boolean;
+
+  /** Won/ID path: persist the id when Gateway/WAHA is unreachable. */
+  @IsOptional()
+  @IsBoolean()
+  persistIfUnreachable?: boolean;
 }
 
 export class ResendWhatsAppClientInviteDto {

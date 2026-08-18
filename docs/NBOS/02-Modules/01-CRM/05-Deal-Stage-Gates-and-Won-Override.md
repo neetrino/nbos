@@ -352,6 +352,8 @@ For all non-maintenance deals:
 - contract must be signed;
 - company/payer and tax status must be filled.
 
+For `PRODUCT` and `OUTSOURCE` only, Deal Won also requires a conscious WhatsApp choice: **Create group** (queue; proceed even if create FAILED) or **save an existing group ID**. There is no skip. `MAINTENANCE` / `EXTENSION` do not create a second group and do not show this gate. If the Product shell is created during Won, `PATCH /crm/deals/:id/status` carries `whatsappAction: create | bind` so create/bind runs after `ensureProduct`. See `docs/NBOS/06-Integrations/08-Product-WhatsApp-Groups.md`.
+
 For `MAINTENANCE`:
 
 - `WON` does not require the same deposit-paid rule by default;
@@ -476,7 +478,7 @@ Required commercial fields for OUTSOURCE before Won follow PRODUCT-like taxonomy
 | **ON**                    | Order + Project + Product → **active Delivery Board** (`Starting → Development → QA → Transfer`) + WhatsApp Product group + Finance (Invoice / Subscription as payment type allows) |
 | **OFF** (default)         | Order + Project + Product **without** active Delivery Board (post-delivery style: product stays in Project Hub + Finance + WhatsApp; must not appear on active Development kanban)  |
 
-In both modes NBOS ensures a **Product WhatsApp Group** for the created Product.
+In both modes the Product still owns the WhatsApp group. Group create is **not** silent at Won — Sales uses the Won modal (create or paste ID). Missing/failed groups stay visible for later retry.
 
 ### Subscription / Finance
 

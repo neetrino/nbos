@@ -18,6 +18,7 @@ function makeProductTeamSyncMock() {
 function makeProductWhatsAppMock() {
   return {
     ensureGroupForProduct: vi.fn().mockResolvedValue({}),
+    bindExistingGroup: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -416,9 +417,25 @@ describe('DealWonHandler', () => {
         }),
       }),
     );
+    expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
+  });
+
+  it('does not auto-ensure WhatsApp on PRODUCT won without an explicit action', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal());
+
+    expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
+  });
+
+  it('ensures WhatsApp after the product shell when the client sent create', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal(), { action: 'create', actorId: 'emp-1' });
+
     expect(productWhatsApp.ensureGroupForProduct).toHaveBeenCalledWith(
-      'product-out',
-      expect.objectContaining({ source: 'DEAL_WON' }),
+      'product-1',
+      expect.objectContaining({ source: 'DEAL_WON', contextDealId: 'deal-1' }),
     );
   });
 

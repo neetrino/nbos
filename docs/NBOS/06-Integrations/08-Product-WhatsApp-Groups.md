@@ -6,12 +6,31 @@
 A Project may have many Products; each Product has its own group.  
 NBOS never owns groups at Project level for this automation.
 
-## Mandatory auto-create
+## No silent auto-create
 
-When any Product is persisted (manual create, Deal Won shell, early delivery), NBOS enqueues `CREATE_PRODUCT_GROUP`.  
-There is **no** enable/disable automation switch.
+NBOS does **not** enqueue `CREATE_PRODUCT_GROUP` when a Product is persisted or when a Deal is marked Won / early-delivery shell is created.
 
-WhatsApp failures never roll back Product creation.
+`ensureGroupForProduct` stays. Create happens only from:
+
+- Deal / Product Settings **Create WhatsApp group** (or retry)
+- the **Deal Won** modal for `PRODUCT` / `OUTSOURCE` (create button, or `whatsappAction: create` on `PATCH /crm/deals/:id/status` when the product shell does not exist yet)
+
+Partner `createFinanceFromPartnerServiceTerm` ensure is unchanged.
+
+WhatsApp failures never roll back Product creation or Deal Won.
+
+## Deal Won modal (PRODUCT / OUTSOURCE)
+
+Before `WON`, Sales must consciously **Create WhatsApp group** or **paste an existing group ID**. There is no Skip.
+
+- Create uses the existing ensure queue + worker. If WAHA is down and create **FAILED**, Mark as Won is still allowed; retry later from Deal / Product Settings.
+- Saving a group ID persists `binding.groupChatId` even when Gateway/WAHA is unreachable. If Gateway is up, NBOS still validates `@g.us` and uniqueness. A raw numeric id gets `@g.us` appended.
+- Mark as Won stays disabled until create or ID in this session, **or** the product already has `groupChatId` or a `CREATE_PRODUCT_GROUP` operation (including `FAILED`).
+- `MAINTENANCE` / `EXTENSION` do not show this modal and do not create a second group.
+
+API blocks `PATCH …/status` → `WON` the same way. When no Product exists yet (shell is created during Won), the client sends `whatsappAction: create | bind` (and `whatsappGroupChatId` for bind). The Won handler runs create/bind **after** `ensureProduct` in the same flow. This matches the existing status PATCH instead of requiring `existingProductId` before Won.
+
+Missing / failed / pending groups stay visible (Deal sheet, Product Settings, product list row) and never block other work.
 
 ## Deal action
 
@@ -80,8 +99,9 @@ Do **not** blind-retry create. Reconcile manually via Product Settings.
 
 Batch reconcile (cron and `POST /api/scheduler/whatsapp-product-groups-reconcile`) is **removed**.  
 Do not scan products without a group — migrated records must stay untouched.  
-Create only for a **new** Product persist, Deal Won, or an explicit Deal / Product Settings action.
+Create only from an explicit Deal / Product Settings action or the Deal Won modal (`PRODUCT` / `OUTSOURCE`).
 
 ## Product Settings
 
-Product page → Settings gear → WhatsApp Group section: status, create/retry, bind/replace, sync, invite, history.
+Product page → Settings gear → WhatsApp Group section: status, create/retry, bind/replace, sync, invite, history.  
+Missing and `FAILED` states are shown as a clear badge; retry/create never blocks other work.

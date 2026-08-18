@@ -21,6 +21,7 @@ import type {
   CreateExceptionOrderBody,
   StartEarlyDeliveryBody,
 } from './deal-commercial-handoff.types';
+import { UpdateDealStatusDto } from './dto/update-deal-status.dto';
 
 @ApiTags('CRM / Deals')
 @ApiBearerAuth()
@@ -173,8 +174,16 @@ export class DealsController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update deal status (pipeline move)' })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.dealsService.updateStatus(id, body.status);
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: UpdateDealStatusDto,
+    @CurrentUser() user?: CurrentUserPayload,
+  ) {
+    return this.dealsService.updateStatus(id, body.status, {
+      actorId: user?.id,
+      whatsappAction: body.whatsappAction,
+      whatsappGroupChatId: body.whatsappGroupChatId,
+    });
   }
 
   @Post(':id/actions/create-deposit-order')
