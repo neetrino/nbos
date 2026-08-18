@@ -182,6 +182,13 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
         html: input.bodyHtml,
         inReplyTo: input.inReplyToMessageIdHeader ?? undefined,
         references: input.references ?? undefined,
+        attachments: input.attachments?.map((item) => ({
+          filename: item.filename,
+          content: item.content,
+          contentType: item.contentType,
+          cid: item.contentId,
+          contentDisposition: item.isInline ? 'inline' : 'attachment',
+        })),
       });
       return {
         providerMessageId: info.messageId ?? null,

@@ -15,6 +15,7 @@ import { NotificationEnqueueReconcileService } from '../notifications/notificati
 import { AuthSessionService } from '../auth/auth-session.service';
 import { RecurringTasksService } from '../tasks/recurring-tasks.service';
 import { ClientServicesRenewalInvoiceService } from '../client-services/client-services-renewal-invoice.service';
+import { MailOutboundReconcileService } from '../mail/mail-outbound-reconcile.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -47,6 +48,7 @@ export class SchedulerService {
     private readonly authSessions: AuthSessionService,
     private readonly recurringTasks: RecurringTasksService,
     private readonly clientServicesRenewalInvoice: ClientServicesRenewalInvoiceService,
+    private readonly mailOutboundReconcile: MailOutboundReconcileService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -312,6 +314,20 @@ export class SchedulerService {
             skippedExisting: result.skippedExisting,
             failures: result.failures.length,
           },
+        };
+      },
+    );
+  }
+
+  async runMailOutboundReconcile(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.mailOutboundReconcile, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.mailOutboundReconcile.reconcileOrphans();
+        return {
+          processedCount: result.queuedEnqueued + result.sendingRequeued + result.sendingFinalized,
+          metadata: result,
         };
       },
     );

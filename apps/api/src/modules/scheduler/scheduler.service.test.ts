@@ -110,6 +110,7 @@ describe('SchedulerService', () => {
         processDueTemplates: vi.fn().mockResolvedValue({ created: 0, failed: 0, taskIds: [] }),
       } as never,
       clientServicesRenewalInvoice as never,
+      { reconcileOrphans: vi.fn() } as never,
       lease as never,
     );
   });

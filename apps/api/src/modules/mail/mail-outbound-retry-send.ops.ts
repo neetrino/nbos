@@ -1,9 +1,10 @@
 import type { PrismaClient } from '@nbos/database';
 
 /**
- * MVP stub: marks an outbound QUEUED message as FAILED (no mail provider / worker).
+ * Moves a FAILED outbound message back to QUEUED for another send attempt.
+ * @returns whether a row was updated
  */
-export async function failQueuedOutboundStubNoProvider(
+export async function queueFailedOutboundForRetry(
   prisma: InstanceType<typeof PrismaClient>,
   params: { threadId: string; messageId: string },
 ): Promise<boolean> {
@@ -12,9 +13,9 @@ export async function failQueuedOutboundStubNoProvider(
       id: params.messageId,
       threadId: params.threadId,
       direction: 'OUTBOUND',
-      deliveryStatus: 'QUEUED',
+      deliveryStatus: 'FAILED',
     },
-    data: { deliveryStatus: 'FAILED' },
+    data: { deliveryStatus: 'QUEUED', sentAt: null, providerMessageId: null },
   });
   return result.count > 0;
 }

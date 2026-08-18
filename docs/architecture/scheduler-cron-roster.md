@@ -72,6 +72,9 @@
 17. 🟢 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. На проде флаг **вкл**.  
     `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
 
+18. 🟡 **Почта — сверка исходящих** — каждые **2 минуты**: `QUEUED` старше 60 с и зависший `SENDING`. Default **off**.  
+    `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` · cron `SCHEDULER_MAIL_OUTBOUND_RECONCILE_CRON` (default `*/2 * * * *`)
+
 Ручной ремонт без cron: `POST /api/scheduler/sales-kpi-backfill-all`.
 
 ---

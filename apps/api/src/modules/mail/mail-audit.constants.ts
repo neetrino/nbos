@@ -29,6 +29,9 @@ export const MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED = 'mail.outbound_messa
 export const MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT =
   'mail.outbound_failed_reset_to_draft';
 
+/** Outbound FAILED moved back to QUEUED for another worker send. */
+export const MAIL_AUDIT_ACTION_OUTBOUND_RETRY_SEND = 'mail.outbound_retry_send';
+
 /** Manual sync stub: timestamps only (no provider fetch). */
 export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_SYNC_STUB = 'mail.mail_account_sync_stub';
 

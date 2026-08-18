@@ -33,6 +33,14 @@ export interface ValidateConnectionResult {
   providerAccountId?: string;
 }
 
+export interface SendMessageAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+  contentId?: string;
+  isInline?: boolean;
+}
+
 export interface SendMessageInput {
   fromEmail: string;
   fromName: string | null;
@@ -45,6 +53,7 @@ export interface SendMessageInput {
   inReplyToMessageIdHeader?: string | null;
   references?: string | null;
   providerThreadId?: string | null;
+  attachments?: SendMessageAttachment[];
 }
 
 export interface SendMessageResult {

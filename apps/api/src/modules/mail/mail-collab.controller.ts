@@ -201,7 +201,7 @@ export class MailCollabController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Compose and send a new email from a mailbox (sender/admin/owner)' })
+  @ApiOperation({ summary: 'Compose and queue a new email (200 + QUEUED when the job is accepted)' })
   compose(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
@@ -214,7 +214,7 @@ export class MailCollabController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Reply within a thread and send (sender/admin/owner)' })
+  @ApiOperation({ summary: 'Reply and queue send (200 + QUEUED when the job is accepted)' })
   reply(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
