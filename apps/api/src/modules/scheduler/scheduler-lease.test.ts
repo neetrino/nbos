@@ -9,7 +9,7 @@ import {
 } from './scheduler-lease.constants';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
-import { shouldStartCronJob } from './scheduler-cron-gate';
+import { describeCronSkipReason, shouldStartCronJob } from './scheduler-cron-gate';
 
 describe('scheduler-lease.constants', () => {
   const original = { ...process.env };
@@ -95,6 +95,24 @@ describe('shouldStartCronJob', () => {
 
     process.env.SCHEDULER_ENABLED = 'true';
     expect(shouldStartCronJob('SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED')).toBe(true);
+    expect(describeCronSkipReason('SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED')).toBeNull();
+  });
+
+  it('describeCronSkipReason names role vs master vs job flag', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.PROCESS_ROLE = 'api';
+    process.env.SCHEDULER_BILLING_ENABLED = 'true';
+    expect(describeCronSkipReason('SCHEDULER_BILLING_ENABLED')).toBe('role=api');
+
+    process.env.PROCESS_ROLE = 'scheduler';
+    process.env.SCHEDULER_ENABLED = 'false';
+    expect(describeCronSkipReason('SCHEDULER_BILLING_ENABLED')).toBe('SCHEDULER_ENABLED off');
+
+    process.env.SCHEDULER_ENABLED = 'true';
+    process.env.SCHEDULER_BILLING_ENABLED = 'false';
+    expect(describeCronSkipReason('SCHEDULER_BILLING_ENABLED')).toBe(
+      'job flag SCHEDULER_BILLING_ENABLED off',
+    );
   });
 });
 

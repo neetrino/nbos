@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SchedulerAppModule } from './scheduler-app.module';
 import { ScheduledJobRegistry } from './modules/scheduler/scheduled-job-registry';
+import { logSchedulerBootSnapshot } from './modules/scheduler/scheduler-boot-log';
 import {
   assertSchedulerLeaseTiming,
   isEnvFlagEnabled,
@@ -55,6 +56,7 @@ async function bootstrap() {
   );
 
   const registry = app.get(ScheduledJobRegistry);
+  logSchedulerBootSnapshot(app, logger, knownJobFlagEnvKeys);
   registry.assertHasScheduledJobsWhenEnabled(isSchedulerEnabled());
 
   const healthPort = Number(process.env[SCHEDULER_HEALTH_PORT_ENV] ?? process.env.PORT ?? 4002);
