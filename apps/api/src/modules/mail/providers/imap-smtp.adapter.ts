@@ -2,6 +2,7 @@ import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { createTransport } from 'nodemailer';
 import { normalizeParsedMail } from './imap-message.normalize';
+import { buildImapFetchPlan, resolveImapLastUid, type ImapFetchPlan } from './imap-fetch-plan';
 import type {
   FetchDeltaResult,
   MailProviderAdapter,
@@ -12,6 +13,7 @@ import type {
   SendMessageResult,
   ValidateConnectionResult,
   ProviderHealth,
+  WatchOrIdleResult,
 } from './mail-provider-adapter';
 
 export interface ImapSmtpProviderConfig {
@@ -26,9 +28,6 @@ export interface ImapSmtpProviderConfig {
   smtpPort: number;
   smtpSecure: boolean;
 }
-
-/** Max messages fetched on the very first sync (no stored UID cursor). */
-const INITIAL_SYNC_WINDOW = 30;
 
 /** Corporate mailbox adapter: IMAP for receive/sync, SMTP for send. No app-password concept. */
 export class ImapSmtpProviderAdapter implements MailProviderAdapter {
@@ -84,8 +83,8 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
     }
   }
 
-  async startWatchOrIdle(): Promise<void> {
-    // IMAP IDLE is owned by the long-running worker (ImapIdleWorker), not the adapter.
+  async startWatchOrIdle(): Promise<WatchOrIdleResult> {
+    return {};
   }
 
   async fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult> {
@@ -109,9 +108,7 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       return { messages: [], cursor };
     }
     const uidValidity = String(mailbox.uidValidity);
-    const validityChanged =
-      cursor.imapUidValidity !== undefined && cursor.imapUidValidity !== uidValidity;
-    const lastUid = validityChanged ? 0 : Number(cursor.imapLastUid ?? 0);
+    const lastUid = resolveImapLastUid(cursor, uidValidity);
     const plan = buildImapFetchPlan(lastUid, Number(mailbox.exists));
     if (!plan) {
       return {
@@ -226,23 +223,6 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   async reconnect(): Promise<ValidateConnectionResult> {
     return this.validateConnection();
   }
-}
-
-interface ImapFetchPlan {
-  range: string;
-  /** True → range is UID-based (incremental); false → sequence-based (first sync window). */
-  useUid: boolean;
-}
-
-function buildImapFetchPlan(lastUid: number, exists: number): ImapFetchPlan | null {
-  if (exists <= 0) {
-    return null;
-  }
-  if (lastUid > 0) {
-    return { range: `${lastUid + 1}:*`, useUid: true };
-  }
-  const firstSeq = Math.max(1, exists - INITIAL_SYNC_WINDOW + 1);
-  return { range: `${firstSeq}:*`, useUid: false };
 }
 
 function describeError(error: unknown): string {

@@ -85,10 +85,15 @@ export interface MarkThreadReadInput {
   providerMessageIds: string[];
 }
 
+export interface WatchOrIdleResult {
+  /** Gmail `users.watch` expiry; null/absent when watch is skipped or IMAP. */
+  watchExpiresAt?: Date | null;
+}
+
 export interface MailProviderAdapter {
   validateConnection(): Promise<ValidateConnectionResult>;
-  /** Start Gmail Pub/Sub watch or IMAP IDLE (no-op when not applicable). */
-  startWatchOrIdle(): Promise<void>;
+  /** Start Gmail Pub/Sub watch or IMAP IDLE (IMAP adapter is a no-op). */
+  startWatchOrIdle(): Promise<WatchOrIdleResult>;
   fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult>;
   fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null>;
   sendMessage(input: SendMessageInput): Promise<SendMessageResult>;

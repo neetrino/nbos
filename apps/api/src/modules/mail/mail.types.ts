@@ -31,6 +31,10 @@ export interface MailAccountHealthSummaryRow extends MailAccountRow {
   threadCount: number;
   unreadThreadCount: number;
   needsLinkThreadCount: number;
+  watch: 'not_configured' | 'active' | 'expired';
+  watchExpiresAt: string | null;
+  idle: 'held' | 'none';
+  idleHeartbeatAt: string | null;
 }
 
 export interface MailThreadListRow {

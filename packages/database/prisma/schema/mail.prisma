@@ -29,6 +29,8 @@ enum MailSyncLogKind {
   CONNECTION_VALIDATED
   CONNECTION_FAILED
   RECONNECT_REQUIRED
+  IDLE_STARTED
+  IDLE_RECONNECT
 }
 
 enum MailAccountStatus {
@@ -139,6 +141,7 @@ model MailProviderConnection {
   gmailWatchExpiresAt DateTime?                  @map("gmail_watch_expires_at")
   imapUidValidity   String?                      @map("imap_uid_validity")
   imapLastUid       String?                      @map("imap_last_uid")
+  imapIdleHeartbeatAt DateTime?                  @map("imap_idle_heartbeat_at")
   lastValidatedAt   DateTime?                    @map("last_validated_at")
   lastErrorAt       DateTime?                    @map("last_error_at")
   lastErrorMessage  String?                      @map("last_error_message") @db.Text
@@ -252,6 +255,7 @@ model EmailMessage {
   deliveryLogs MailDeliveryLog[]
   attachments  EmailAttachment[]
 
+  @@unique([mailAccountId, providerMessageId])
   @@index([threadId, receivedAt])
   @@map("email_messages")
 }

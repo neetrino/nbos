@@ -14,7 +14,9 @@ import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { ClientServicesModule } from '../client-services/client-services.module';
 import { MailModule } from '../mail/mail.module';
+import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
+import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
 import { RecurringTasksDueCron } from './recurring-tasks-due.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
@@ -61,6 +63,8 @@ const CRON_PROVIDERS = [
   NotificationEnqueueReconcileCron,
   AuthSessionCleanupCron,
   MailOutboundReconcileCron,
+  MailGmailWatchRenewCron,
+  MailSyncReconcileCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 

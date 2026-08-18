@@ -1,4 +1,5 @@
 import { google, type gmail_v1, type Auth } from 'googleapis';
+import { resolveGmailDeltaMessageIds } from './gmail-history';
 import { buildRawGmailMessage } from './gmail-mime';
 import { normalizeGmailMessage } from './gmail-message.normalize';
 import type {
@@ -11,6 +12,7 @@ import type {
   SendMessageInput,
   SendMessageResult,
   ValidateConnectionResult,
+  WatchOrIdleResult,
 } from './mail-provider-adapter';
 
 export interface GmailProviderConfig {
@@ -53,20 +55,26 @@ export class GmailProviderAdapter implements MailProviderAdapter {
     }
   }
 
-  async startWatchOrIdle(): Promise<void> {
+  async startWatchOrIdle(): Promise<WatchOrIdleResult> {
     if (!this.config.pubsubTopic) {
-      return;
+      return { watchExpiresAt: null };
     }
-    await this.gmail.users.watch({
+    const response = await this.gmail.users.watch({
       userId: 'me',
       requestBody: { topicName: this.config.pubsubTopic, labelIds: ['INBOX'] },
     });
+    const expirationMs = Number(response.data.expiration);
+    return {
+      watchExpiresAt: Number.isFinite(expirationMs) ? new Date(expirationMs) : null,
+    };
   }
 
   async fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult> {
-    const ids = cursor.gmailHistoryId
-      ? await this.listHistoryMessageIds(cursor.gmailHistoryId)
-      : await this.listRecentInboxIds();
+    const ids = await resolveGmailDeltaMessageIds({
+      historyId: cursor.gmailHistoryId,
+      listHistory: (startHistoryId) => this.listHistoryMessageIds(startHistoryId),
+      listRecent: () => this.listRecentInboxIds(),
+    });
     const messages = await this.fetchMessages(ids);
     const profile = await this.gmail.users.getProfile({ userId: 'me' });
     return {

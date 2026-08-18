@@ -111,6 +111,8 @@ describe('SchedulerService', () => {
       } as never,
       clientServicesRenewalInvoice as never,
       { reconcileOrphans: vi.fn() } as never,
+      { renewExpiringWatches: vi.fn() } as never,
+      { enqueueActiveMailboxSyncs: vi.fn() } as never,
       lease as never,
     );
   });
