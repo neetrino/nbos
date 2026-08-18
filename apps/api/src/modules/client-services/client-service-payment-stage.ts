@@ -16,7 +16,8 @@ export const CLIENT_SERVICE_PAYMENT_STAGES: readonly ClientServicePaymentStage[]
 ];
 
 /** `renewal_date` within this window triggers the Invoice stage (matches EXP-04 auto-invoice). */
-const INVOICE_WINDOW_DAYS = 60;
+export const CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS = 60;
+const INVOICE_WINDOW_DAYS = CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS;
 /** `renewal_date` within this wider window (but past the invoice window) is Upcoming. */
 const UPCOMING_WINDOW_DAYS = 90;
 

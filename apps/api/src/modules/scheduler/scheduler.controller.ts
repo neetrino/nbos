@@ -159,4 +159,15 @@ export class SchedulerController {
   async runNotificationEnqueueReconcile() {
     return this.schedulerService.runNotificationEnqueueReconcile();
   }
+
+  @Post('client-services-renewal-invoice')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create renewal Invoice Cards for due WE_PAY client services (external cron)',
+    description:
+      'Scans Client Service Records with renewal_date within 60 days; creates pass-through Invoice Cards idempotently. REMINDER_ONLY services are skipped. Optional in-process cron when SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED=true.',
+  })
+  async runClientServicesRenewalInvoice() {
+    return this.schedulerService.runClientServicesRenewalInvoice();
+  }
 }

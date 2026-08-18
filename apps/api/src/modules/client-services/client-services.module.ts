@@ -3,6 +3,7 @@ import { ClientServicesController } from './client-services.controller';
 import { ClientServicesService } from './client-services.service';
 import { ClientPaidInvoiceAutomationService } from './client-paid-invoice-automation.service';
 import { ClientServiceFlowsService } from './client-service-flows.service';
+import { ClientServicesRenewalInvoiceService } from './client-services-renewal-invoice.service';
 import { InvoicesModule } from '../finance/invoices/invoices.module';
 import { ExpensesModule } from '../expenses/expenses.module';
 import { TasksModule } from '../tasks/tasks.module';
@@ -10,7 +11,17 @@ import { TasksModule } from '../tasks/tasks.module';
 @Module({
   imports: [InvoicesModule, ExpensesModule, TasksModule],
   controllers: [ClientServicesController],
-  providers: [ClientServicesService, ClientServiceFlowsService, ClientPaidInvoiceAutomationService],
-  exports: [ClientServicesService, ClientServiceFlowsService, ClientPaidInvoiceAutomationService],
+  providers: [
+    ClientServicesService,
+    ClientServiceFlowsService,
+    ClientPaidInvoiceAutomationService,
+    ClientServicesRenewalInvoiceService,
+  ],
+  exports: [
+    ClientServicesService,
+    ClientServiceFlowsService,
+    ClientPaidInvoiceAutomationService,
+    ClientServicesRenewalInvoiceService,
+  ],
 })
 export class ClientServicesModule {}

@@ -13,9 +13,11 @@ import { NotificationModule } from '../notifications/notification.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { ClientServicesModule } from '../client-services/client-services.module';
 import { RecurringTasksDueCron } from './recurring-tasks-due.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
+import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
@@ -45,10 +47,12 @@ const SCHEDULER_IMPORTS = [
   RealtimeModule,
   AuthModule,
   TasksModule,
+  ClientServicesModule,
 ] as const;
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
+  ClientServicesRenewalInvoiceCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
   PlatformTrashPurgeCron,

@@ -1,6 +1,6 @@
 # NBOS — self-hosted prod Redis cutover
 
-Living runbook. Inspected Coolify **read-only** on **2026-08-18**. No Redis start, no env flips, no deploys in that pass.
+Living runbook. **Cutover executed 2026-08-18.** Prod api / worker / scheduler now use Coolify Redis over `rediss://:6380`.
 
 Do not paste passwords, `REDIS_URL`, tokens, or Coolify internal URLs into chat, git, or screenshots.
 
@@ -10,103 +10,70 @@ Related: [`docs/deploy.md`](../deploy.md) §4.1, [`scheduler-cron-roster.md`](./
 
 ## Current Coolify facts (no secrets)
 
-Resource exists in **NBOS → production** (environment id 8).
+Resource in **NBOS → production** (environment id 8).
 
-| Field                 | Value                                                                                         |
-| --------------------- | --------------------------------------------------------------------------------------------- |
-| Display name          | `redis-database-h9duuzmfd24lqw8g6zf6z599` (target: `nbos-redis`)                              |
-| UUID                  | `h9duuzmfd24lqw8g6zf6z599`                                                                    |
-| Type / image          | `standalone-redis` / `redis:7.2`                                                              |
-| Status                | `exited:unhealthy` — `started_at` is null (created, never started)                            |
-| Destination           | Docker network **`coolify`** on server **NBOS**                                               |
-| Public                | `is_public=false`, `public_port=null`, `ports_mappings=null`, `external_db_url` unset         |
-| Volume                | named volume `redis-data-h9duuzmfd24lqw8g6zf6z599` → `/data`                                  |
-| Password              | present (`REDIS_PASSWORD` set; internal URL has user + password)                              |
-| TLS                   | `enable_ssl=false`. Internal URL scheme is **`redis`** (not `rediss`), port **6379**, db `/0` |
-| Custom `redis_conf`   | empty                                                                                         |
-| AOF                   | not set in UI conf. Coolify default start (empty conf) is `--appendonly yes`                  |
-| `maxmemory`           | not set. Container memory limit is `0` (unlimited)                                            |
-| Coolify API `version` | reports `4.0.0` (likely placeholder)                                                          |
+| Field                 | Value                                                                          |
+| --------------------- | ------------------------------------------------------------------------------ |
+| Display name          | `nbos-redis`                                                                   |
+| UUID                  | `h9duuzmfd24lqw8g6zf6z599`                                                     |
+| Type / image          | `standalone-redis` / `redis:7.2`                                               |
+| Status                | `running:healthy`                                                              |
+| Destination           | Docker network **`coolify`** on server **NBOS**                                |
+| Public                | `is_public=false`, `public_port=null`, host publish empty                      |
+| Volume                | named volume `redis-data-h9duuzmfd24lqw8g6zf6z599` → `/data`                   |
+| Password              | present (`REDIS_PASSWORD` set; internal URL has user + password)               |
+| TLS                   | `enable_ssl=true`. Internal URL scheme **`rediss`**, port **6380**, db `/0`    |
+| Custom `redis_conf`   | set: `appendonly yes`, `maxmemory 256mb`, `maxmemory-policy noeviction`        |
+| Verified in Redis     | `CONFIG GET`: appendonly=yes, maxmemory=268435456, maxmemory-policy=noeviction |
+| Coolify API `version` | reports `4.0.0`                                                                |
 
-**Keep 6379 unpublished.** Do not set `is_public` or a host `public_port`.
+**Keep 6379 unpublished.** Plain 6379 stays open **inside** Docker (Coolify healthcheck pings it). Do not set `is_public` or a host `public_port`. Do not set healthcheck `port 0`.
+
+`enable_ssl` is **not** an allowed Coolify API PATCH field (422). It was set on the Coolify control-plane DB (`standalone_redis.enable_ssl`) then the instance was started via `GET /databases/{uuid}/start`. Internal URL flipped to `rediss://…:6380` after that. `name` + `redis_conf` (base64) **are** valid PATCH fields.
 
 ---
 
 ## App Redis env (names only)
 
-Dedicated keys `REDIS_QUEUE_URL` / `REDIS_EVENTS_URL` / `REDIS_STATE_URL` are **unset** everywhere. Runtime falls back to `REDIS_URL` (see `queue-redis.ts`).
+Dedicated keys `REDIS_QUEUE_URL` / `REDIS_EVENTS_URL` / `REDIS_STATE_URL` remain **unset**. Runtime falls back to `REDIS_URL`.
 
-| App              | `REDIS_URL`   | Queue / events / state URLs |
-| ---------------- | ------------- | --------------------------- |
-| `nbos-api`       | set (runtime) | unset                       |
-| `nbos-worker`    | set (runtime) | unset                       |
-| `nbos-scheduler` | set (runtime) | unset                       |
-| `nbos-web`       | absent        | absent                      |
+| App              | Prod runtime `REDIS_URL`      | Preview `REDIS_URL`       | `NODE_EXTRA_CA_CERTS` (runtime) |
+| ---------------- | ----------------------------- | ------------------------- | ------------------------------- |
+| `nbos-api`       | self-hosted `rediss://` :6380 | still Upstash (untouched) | `/etc/coolify/coolify-ca.crt`   |
+| `nbos-worker`    | same                          | still Upstash (untouched) | `/etc/coolify/coolify-ca.crt`   |
+| `nbos-scheduler` | same                          | still Upstash (untouched) | `/etc/coolify/coolify-ca.crt`   |
+| `nbos-web`       | absent (not deployed)         | absent                    | absent                          |
 
-**Preview copies:** `nbos-api`, `nbos-worker`, and `nbos-scheduler` each also have `REDIS_URL` with `is_preview=true`. Coolify prod+preview pair, not a second production key. When flipping prod, do **not** point preview at prod Redis.
+Coolify file storage mounts CA PEM into api/worker/scheduler at `/etc/coolify/coolify-ca.crt` (host file `/data/coolify/ssl/coolify-ca.crt` exists on the NBOS VPS). Node without that CA fails `SELF_SIGNED_CERT_IN_CHAIN`; with CA, TLS verify is OK.
 
-**Out of this cutover:** `kovkasyanplennica` has `UPSTASH_REDIS_REST_*` (runtime + preview). `whatsapp-gateway` and `cursor-usage-tracker` have no NBOS Redis keys. Laptop `.env.local` `REDIS_URL` is commented and must stay off prod.
+Coolify `POST` env also cloned `NODE_EXTRA_CA_CERTS` onto preview; those preview copies were deleted. Do not put the prod Redis URL on preview.
 
----
-
-## TLS / `rediss://` (blocker if ignored)
-
-Production API/worker/scheduler **throw** unless the Redis URL starts with `rediss://` (`redis-connection.ts`, `queue-redis.ts`; [`docs/deploy.md`](../deploy.md) ~L124).
-
-Coolify internal URL today is `redis://…:6379`. Starting Redis and pointing apps at that URL **will crash** `NODE_ENV=production`.
-
-Coolify Redis **does** support TLS: UI/API `enable_ssl`. Start path adds `--tls-port 6380` plus server cert + Coolify CA, `--tls-auth-clients optional`. Plain **6379 stays open inside Docker** unless we later disable it. Host publish stays off.
-
-### Recommendation: Coolify native TLS
-
-**Do this:** before any app `REDIS_URL` flip, set `enable_ssl=true` on this Redis, start it, then use Coolify’s TLS internal URL (`rediss://`, port **6380**) on the `coolify` network only.
-
-| Option                                                    | Pros                                                                                        | Cons                                                                                                                                                                                                               |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Coolify `enable_ssl` (pick)**                           | Satisfies existing prod assert; no protocol exception; native certs; 6379 stays unpublished | Apps must use **6380**; Node may reject Coolify CA unless CA is mounted / `NODE_EXTRA_CA_CERTS`; Coolify healthcheck is `redis-cli ping` on plaintext — do **not** set `port 0` until healthcheck is proven on TLS |
-| Sidecar stunnel/TLS terminator                            | Familiar if Coolify TLS is flaky                                                            | Extra container, another secret surface                                                                                                                                                                            |
-| Documented exception + allow `redis://` on Docker network | Fastest start                                                                               | Weakens the written security baseline; job payloads in cleartext on the bridge; needs a code + `deploy.md` change — last resort only                                                                               |
-
-**Verify TLS from a one-off on network `coolify`**, not from a laptop. Confirm ioredis accepts the cert (or mount `/data/coolify/ssl/coolify-ca.crt`). Do not put the URL in the runbook log.
+**Out of this cutover:** `kovkasyanplennica` still has `UPSTASH_REDIS_REST_*`. Laptop `.env.local` `REDIS_URL` stays commented.
 
 ---
 
-## Desired end state
+## Cutover that ran (2026-08-18)
 
-1. Display name **`nbos-redis`**. Docker DNS / UUID likely stays `h9duuzmfd24lqw8g6zf6z599` — use Coolify’s generated internal host, not the display name.
-2. Volume `/data` kept. AOF on.
-3. Password required (already generated — rotate only if it leaked).
-4. **Do not publish 6379** to the host.
-5. Custom `redis_conf` **must** include AOF if we leave Coolify’s empty-conf default, because a custom conf **replaces** `--appendonly yes`:
+VPS RAM at decide time: 3.7Gi total, ~1.4Gi used, ~2.3Gi available, **1.1Gi swap in use**. Live containers: scheduler ~321MiB, api ~45MiB, worker ~34MiB, web ~60MiB. Chose **`maxmemory 256mb`** (not 512mb) because the box was already swapping.
 
-```
-appendonly yes
-maxmemory <size after VPS free-RAM check>
-maxmemory-policy noeviction
-```
-
-Do not invent `maxmemory` blindly. `noeviction` is mandatory (BullMQ keys must not be evicted). If the conf includes `requirepass`, Coolify will not append one — keep password in sync.
-
-6. Runtime `REDIS_URL` (`rediss://`) only on **api / worker / scheduler**, same queue Redis. Web never gets it.
-7. Remove Upstash from **prod** those three apps after cutover is green. Leave preview and laptop on non-prod Redis.
+1. Confirmed unpublished, password set, volume present, type `standalone-redis`.
+2. Renamed to `nbos-redis`. Set `redis_conf`. Set `enable_ssl=true` (control-plane DB). Started Redis. Healthcheck on 6379 passed; TLS accepted connections.
+3. One-off on network `coolify`: TLS PING :6380 with Coolify CA, OpenSSL verify 0, CONFIG GET as above.
+4. Upstash BullMQ depths (mail, reports.export-jobs, drive.zip-export-jobs, whatsapp.product-groups wait/active/delayed/paused) were **0**. Worker-first flip was safe.
+5. Runtime `REDIS_URL` only (not preview), then one deploy each:
+   - worker `l4o4jq9dcg3gl1341m73xhdn` → healthy
+   - api `wbd3y71478z8dhvg2mmdlz6e` → healthy
+   - scheduler `h21n1tyjgulgvvfxys6q8u96` → healthy
+6. Scheduler after flip: `SCHEDULER_ENABLED=true`, seven nest crons registered (billing, overdue-invoices, sales-kpi-month-close, expense-plan-auto-due, recurring-tasks-due, notification-inbox-reconcile, notification-enqueue-reconcile). WhatsApp **reconcile cron stayed off**. WhatsApp BullMQ worker stayed.
+7. Prod runtime Upstash replaced (no leftover Upstash on those three prod keys). Preview still Upstash. Web not deployed.
 
 ---
 
-## Cutover order (later — not today)
+## Still later
 
-BullMQ jobs (mail, reports, Drive ZIP, **WhatsApp product groups**) live on current Upstash via `REDIS_URL`. Flipping **only** `nbos-worker` leaves producers on Upstash and consumers on an empty new Redis.
-
-1. **Wait** until `nbos-scheduler` enable is green (see below).
-2. Rename → `redis_conf` (AOF + maxmemory + noeviction) → confirm password → confirm unpublished → **enable Coolify TLS**.
-3. **Start Redis.** Do not point apps yet.
-4. **One-off on `coolify`:** PING over TLS:6380; confirm AOF / `maxmemory` / policy via `CONFIG GET` (no URL in logs).
-5. **Drain plan, then worker:** either keep a consumer on Upstash until empty, or pause producers and drain, then point `nbos-worker` `REDIS_URL` to self-hosted `rediss://`. Deploy worker only.
-6. **Point `nbos-api`** the same URL (producers + denylist + pub/sub). Deploy api.
-7. **Point `nbos-scheduler`** last. Deploy scheduler only after 5–6 are healthy.
-8. Watch queues and JWT denylist. Then **remove Upstash** from prod api/worker/scheduler (runtime keys). Do not wipe preview blindly.
-9. **Client Services cron** (domains / hosting / licenses) stays **after** this cutover — see roster item 17 and `todo.md`.
-
-WhatsApp BullMQ queue + worker **stay**. Do not disable `WhatsAppProductGroupsWorker`. Group **cron** stays off (`SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED=false`).
+- **Client Services cron** (domains / hosting / licenses) stays after this cutover — roster item 17 and `todo.md`.
+- WhatsApp group **cron** stays off. Queue + worker stay.
+- Do not rotate the Redis password unless it leaked (it appeared in `docker inspect` Cmd on the VPS; treat as need-to-know, rotate if that log left the host).
 
 ---
 
@@ -115,26 +82,7 @@ WhatsApp BullMQ queue + worker **stay**. Do not disable `WhatsAppProductGroupsWo
 - Point laptop `.env.local` at prod Redis (even `rediss://` on an unpublished port).
 - Publish 6379 / set `is_public`.
 - Use Coolify `redis://…:6379` in production apps.
-- Flip `REDIS_QUEUE_URL` separately (unset today; would split producers/consumers).
+- Flip `REDIS_QUEUE_URL` separately (unset; would split producers/consumers).
 - Copy prod Redis URL into preview env keys.
-
----
-
-## Do not do today
-
-While scheduler enable is in progress on `nbos-scheduler` only:
-
-- Do not start this Redis.
-- Do not PATCH/deploy `nbos-scheduler`, `nbos-api`, `nbos-web`, or `nbos-worker`.
-- Do not change any app `REDIS_*`.
-- Do not enable Client Services cron.
-- Do not remove Upstash.
-- Do not attach a laptop to this instance.
-
-Safe now: read Coolify, finish this runbook, wait for scheduler enable green.
-
----
-
-## Recheck before execute
-
-Re-GET Coolify database `h9duuzmfd24lqw8g6zf6z599` (status, `enable_ssl`, `is_public`, `public_port`, `redis_conf` set?, volume present, password still set). Re-list `REDIS_*` key **names** on api/worker/scheduler. If facts drifted, update this file before touching Coolify.
+- `docker system prune -a` or volume prune.
+- Deploy `nbos-web` for Redis.

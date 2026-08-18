@@ -1,7 +1,7 @@
 # NBOS — реестр cron
 
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
-На проде сейчас всё ещё выкл. Решения ниже — после деплоя `nbos-scheduler`.
+Прод: мастер **вкл**, семь 🟢 крутятся. Жёлтые (в т.ч. пункт 17) не включать пакетом.
 
 - 🟢 включаем
 - 🟡 позже (время уже выставлено)
@@ -70,9 +70,8 @@
 16. 🖐️ **WhatsApp-группа продукта** — не cron. Очередь и воркер оставляем. Позже — честная кнопка со статусом.  
     `SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED`
 
-17. 🟡 **Client Services (домены, хостинг, лицензии)** — cron ещё не написан.  
-    Канон: каждый день смотреть `renewal_date`, за 2 месяца до срока создать Invoice (WE_PAY).  
-    Не пункт 8 и не пункт 2. Стоит в `todo.md`.
+17. 🟡 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. Код готов, флаг выкл.  
+    `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
 
 Ручной ремонт без cron: `POST /api/scheduler/sales-kpi-backfill-all`.
 
@@ -155,6 +154,8 @@ SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED=false
 SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED=false
 REPORT_SCHEDULES_DUE_CRON_ENABLED=false
 SCHEDULER_WHATSAPP_PRODUCT_GROUPS_RECONCILE_ENABLED=false
+SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED=false
+SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON=0 6 * * *
 ```
 
 Джобы 1 / 3 / 6 есть только в новом образе scheduler. Старый эти флаги проигнорирует.

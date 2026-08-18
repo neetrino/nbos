@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
+import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
@@ -17,6 +18,7 @@ import { SchedulerService } from './scheduler.service';
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
+  ClientServicesRenewalInvoiceCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
   PlatformTrashPurgeCron,
@@ -38,6 +40,7 @@ const EXPECTED_PROD_GREEN_JOBS = [
 
 const ABSENT_YELLOW_JOBS = [
   'auth-session-expiry-cleanup',
+  'client-services-renewal-invoice',
   'expense-backlog-reminders',
   'invoice-card-reminders',
   'platform-trash-purge',
@@ -63,6 +66,7 @@ function createSchedulerServiceMock(): SchedulerService {
     runNotificationEnqueueReconcile: vi.fn().mockResolvedValue({}),
     runRecurringTasksDue: vi.fn().mockResolvedValue({}),
     runAuthSessionExpiryCleanup: vi.fn().mockResolvedValue({}),
+    runClientServicesRenewalInvoice: vi.fn().mockResolvedValue({}),
   } as unknown as SchedulerService;
 }
 
