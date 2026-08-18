@@ -91,7 +91,7 @@ export interface MailMessageRow {
 
 export interface MailAttachmentRow {
   id: string;
-  fileAssetId: string;
+  fileAssetId: string | null;
   fileName: string;
   mimeType: string | null;
   sizeBytes: string | null;
@@ -335,6 +335,17 @@ export const mailApi = {
   async retryOutboundSend(threadId: string, messageId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(
       `/api/mail/threads/${threadId}/messages/${messageId}/retry-send`,
+    );
+    return resp.data;
+  },
+
+  async retryAttachmentDownload(
+    threadId: string,
+    messageId: string,
+    attachmentId: string,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/attachments/${attachmentId}/retry-download`,
     );
     return resp.data;
   },

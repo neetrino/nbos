@@ -75,7 +75,7 @@ export interface MailRecipientRow {
 
 export interface MailAttachmentRow {
   id: string;
-  fileAssetId: string;
+  fileAssetId: string | null;
   fileName: string;
   mimeType: string | null;
   sizeBytes: string | null;

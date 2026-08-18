@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { MAIL_QUEUED_TOAST, MAIL_RETRY_QUEUED_TOAST } from './mail-outbound-copy';
+import {
+  MAIL_ATTACHMENT_RETRY_TOAST,
+  MAIL_QUEUED_TOAST,
+  MAIL_RETRY_QUEUED_TOAST,
+} from './mail-outbound-copy';
 
 export interface UseMailThreadDetailOptions {
   threadId: string;
@@ -32,6 +36,7 @@ export function useMailThreadDetail({
   const [retryingSendMessageId, setRetryingSendMessageId] = useState<string | null>(null);
   const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
   const [retryingFailedMessageId, setRetryingFailedMessageId] = useState<string | null>(null);
+  const [retryingAttachmentId, setRetryingAttachmentId] = useState<string | null>(null);
   const [patchingNeedsLink, setPatchingNeedsLink] = useState(false);
   const [markingUnread, setMarkingUnread] = useState(false);
   const [markingSpam, setMarkingSpam] = useState(false);
@@ -169,6 +174,24 @@ export function useMailThreadDetail({
     [threadId],
   );
 
+  const retryAttachmentDownload = useCallback(
+    async (messageId: string, attachmentId: string) => {
+      if (!threadId) return;
+      setRetryingAttachmentId(attachmentId);
+      setError(null);
+      try {
+        const d = await mailApi.retryAttachmentDownload(threadId, messageId, attachmentId);
+        setDetail(d);
+        toast.success(MAIL_ATTACHMENT_RETRY_TOAST);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not retry attachment download.'));
+      } finally {
+        setRetryingAttachmentId(null);
+      }
+    },
+    [threadId],
+  );
+
   const setNeedsBusinessLink = useCallback(
     async (needsBusinessLink: boolean) => {
       if (!threadId) return;
@@ -233,6 +256,7 @@ export function useMailThreadDetail({
     retryingSendMessageId,
     cancellingMessageId,
     retryingFailedMessageId,
+    retryingAttachmentId,
     patchingNeedsLink,
     markRead,
     markUnread,
@@ -241,6 +265,7 @@ export function useMailThreadDetail({
     retryFailedSend,
     cancelOutbound,
     resetFailedToDraft,
+    retryAttachmentDownload,
     setNeedsBusinessLink,
   };
 }

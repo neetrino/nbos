@@ -1,7 +1,16 @@
 import { EmailRecipientKind, type PrismaClient, type TransactionClient } from '@nbos/database';
+import {
+  persistInboundAttachments,
+  type MailPendingAttachmentDownload,
+} from './mail-sync-upsert-attachments.ops';
 import { isUniqueConstraintError } from './mail-unique-violation';
 import type { NormalizedMessage } from './providers/mail-provider-adapter';
 import { normalizeEmailSubject, sanitizeEmailHtml } from './providers/mail-html-sanitize';
+
+export type UpsertNormalizedMessagesResult = {
+  stored: number;
+  pendingDownloads: MailPendingAttachmentDownload[];
+};
 
 async function resolveThreadId(
   tx: TransactionClient,
@@ -32,18 +41,36 @@ async function resolveThreadId(
   return created.id;
 }
 
+async function persistRecipients(
+  tx: TransactionClient,
+  messageId: string,
+  message: NormalizedMessage,
+): Promise<void> {
+  if (message.recipients.length === 0) {
+    return;
+  }
+  await tx.emailRecipient.createMany({
+    data: message.recipients.map((r) => ({
+      messageId,
+      kind: r.kind as EmailRecipientKind,
+      email: r.email,
+      displayName: r.displayName,
+    })),
+  });
+}
+
 async function persistMessage(
   tx: TransactionClient,
   mailAccountId: string,
   threadId: string,
   message: NormalizedMessage,
-): Promise<boolean> {
+): Promise<MailPendingAttachmentDownload[] | null> {
   const existing = await tx.emailMessage.findFirst({
     where: { mailAccountId, providerMessageId: message.providerMessageId },
     select: { id: true },
   });
   if (existing) {
-    return false;
+    return null;
   }
   const created = await tx.emailMessage.create({
     data: {
@@ -60,16 +87,8 @@ async function persistMessage(
       readState: 'UNREAD',
     },
   });
-  if (message.recipients.length > 0) {
-    await tx.emailRecipient.createMany({
-      data: message.recipients.map((r) => ({
-        messageId: created.id,
-        kind: r.kind as EmailRecipientKind,
-        email: r.email,
-        displayName: r.displayName,
-      })),
-    });
-  }
+  await persistRecipients(tx, created.id, message);
+  const pendingDownloads = await persistInboundAttachments(tx, created.id, message.attachments);
   await tx.emailThread.update({
     where: { id: threadId },
     data: {
@@ -78,19 +97,20 @@ async function persistMessage(
       hasUnread: true,
     },
   });
-  return true;
+  return pendingDownloads;
 }
 
 /**
  * Normalizes provider messages into EmailThread/EmailMessage/EmailRecipient,
- * deduping by providerMessageId. Returns the count of newly stored inbound messages.
+ * deduping by providerMessageId. Unique skip does not re-enqueue attachments.
  */
 export async function upsertNormalizedMessages(
   prisma: InstanceType<typeof PrismaClient>,
   mailAccountId: string,
   messages: NormalizedMessage[],
-): Promise<number> {
+): Promise<UpsertNormalizedMessagesResult> {
   let stored = 0;
+  const pendingDownloads: MailPendingAttachmentDownload[] = [];
   for (const message of messages) {
     try {
       const inserted = await prisma.$transaction(async (tx: TransactionClient) => {
@@ -99,6 +119,7 @@ export async function upsertNormalizedMessages(
       });
       if (inserted) {
         stored += 1;
+        pendingDownloads.push(...inserted);
       }
     } catch (error) {
       if (!isUniqueConstraintError(error)) {
@@ -106,5 +127,5 @@ export async function upsertNormalizedMessages(
       }
     }
   }
-  return stored;
+  return { stored, pendingDownloads };
 }

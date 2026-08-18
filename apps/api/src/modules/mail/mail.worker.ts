@@ -3,16 +3,22 @@ import { Worker } from 'bullmq';
 import type Redis from 'ioredis';
 import { resolveBullmqConcurrency } from '../../runtime/bullmq-concurrency';
 import { resolveBullmqWorkerRuntimeOptions } from '../../runtime/bullmq-worker-runtime';
-import { logBullmqJob } from '../../runtime/bullmq-job-log';
+import { logBullmqJob, type JobLogFields } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
 import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import { MailAttachmentDownloadService } from './mail-attachment-download.service';
 import {
+  MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
   MAIL_QUEUE_NAME,
   MAIL_SEND_JOB_NAME,
   MAIL_SYNC_JOB_NAME,
   type MailQueueJobPayload,
 } from './mail-queue.constants';
+import {
+  classifyMailProviderError,
+  type MailProviderErrorClass,
+} from './mail-provider-error.classify';
 import { MailSendService } from './mail-send.service';
 import { MailSyncService } from './mail-sync.service';
 
@@ -25,6 +31,7 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly syncService: MailSyncService,
     private readonly sendService: MailSendService,
+    private readonly downloadService: MailAttachmentDownloadService,
     private readonly registry: BullmqWorkerRegistry,
   ) {}
 
@@ -40,31 +47,7 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
     this.connection = createQueueWorkerConnection(redisUrl);
     this.worker = new Worker<MailQueueJobPayload>(
       MAIL_QUEUE_NAME,
-      async (job) => {
-        const started = Date.now();
-        try {
-          await this.process(job.name, job.data);
-          logBullmqJob(this.logger, {
-            queue: MAIL_QUEUE_NAME,
-            jobName: job.name,
-            jobId: job.id,
-            attempt: job.attemptsMade + 1,
-            durationMs: Date.now() - started,
-            status: 'completed',
-          });
-        } catch (error) {
-          logBullmqJob(this.logger, {
-            queue: MAIL_QUEUE_NAME,
-            jobName: job.name,
-            jobId: job.id,
-            attempt: job.attemptsMade + 1,
-            durationMs: Date.now() - started,
-            status: 'failed',
-            errorCode: error instanceof Error ? error.name : 'Error',
-          });
-          throw error;
-        }
-      },
+      async (job) => this.runLoggedJob(job.name, job.id, job.attemptsMade, job.data),
       { connection: this.connection, concurrency, ...resolveBullmqWorkerRuntimeOptions() },
     );
     this.registry.register(MAIL_QUEUE_NAME);
@@ -73,10 +56,49 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private async process(jobName: string, data: MailQueueJobPayload): Promise<void> {
+  private async runLoggedJob(
+    jobName: string,
+    jobId: string | undefined,
+    attemptsMade: number,
+    data: MailQueueJobPayload,
+  ): Promise<void> {
+    const started = Date.now();
+    const context = mailJobLogContext(data);
+    try {
+      const result = await this.process(jobName, data);
+      logBullmqJob(this.logger, {
+        queue: MAIL_QUEUE_NAME,
+        jobName,
+        jobId,
+        attempt: attemptsMade + 1,
+        durationMs: Date.now() - started,
+        status: 'completed',
+        ...context,
+        errorClass: result?.errorClass,
+      });
+    } catch (error) {
+      logBullmqJob(this.logger, {
+        queue: MAIL_QUEUE_NAME,
+        jobName,
+        jobId,
+        attempt: attemptsMade + 1,
+        durationMs: Date.now() - started,
+        status: 'failed',
+        errorCode: error instanceof Error ? error.name : 'Error',
+        errorClass: classifyMailProviderError(error),
+        ...context,
+      });
+      throw error;
+    }
+  }
+
+  private async process(
+    jobName: string,
+    data: MailQueueJobPayload,
+  ): Promise<{ errorClass?: MailProviderErrorClass } | undefined> {
     if (jobName === MAIL_SYNC_JOB_NAME && data.kind === 'sync') {
       await this.syncService.syncAccount(data.mailAccountId);
-      return;
+      return undefined;
     }
     if (jobName === MAIL_SEND_JOB_NAME && data.kind === 'send') {
       await this.sendService.sendQueuedMessage(
@@ -84,7 +106,12 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
         data.messageId,
         data.actorEmployeeId,
       );
+      return undefined;
     }
+    if (jobName === MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME && data.kind === 'attachment') {
+      return this.downloadService.downloadAttachment(data.messageId, data.attachmentId);
+    }
+    return undefined;
   }
 
   async onModuleDestroy() {
@@ -93,4 +120,16 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
     await this.connection?.quit();
     this.connection = null;
   }
+}
+
+function mailJobLogContext(
+  data: MailQueueJobPayload,
+): Pick<JobLogFields, 'mailAccountId' | 'messageId'> {
+  if (data.kind === 'sync') {
+    return { mailAccountId: data.mailAccountId };
+  }
+  if (data.kind === 'send') {
+    return { mailAccountId: data.mailAccountId, messageId: data.messageId };
+  }
+  return { messageId: data.messageId };
 }

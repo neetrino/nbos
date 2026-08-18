@@ -1,8 +1,10 @@
 import { google, type gmail_v1, type Auth } from 'googleapis';
+import { MailAttachmentPermanentError } from '../mail-provider-error.classify';
 import { resolveGmailDeltaMessageIds } from './gmail-history';
-import { buildRawGmailMessage } from './gmail-mime';
+import { buildRawGmailMessage, decodeBase64UrlToBuffer } from './gmail-mime';
 import { normalizeGmailMessage } from './gmail-message.normalize';
 import type {
+  DownloadedAttachment,
   FetchDeltaResult,
   MailProviderAdapter,
   MarkThreadReadInput,
@@ -133,6 +135,26 @@ export class GmailProviderAdapter implements MailProviderAdapter {
     } catch {
       return null;
     }
+  }
+
+  async downloadAttachment(input: {
+    providerMessageId: string;
+    providerAttachmentId: string;
+  }): Promise<DownloadedAttachment> {
+    const response = await this.gmail.users.messages.attachments.get({
+      userId: 'me',
+      messageId: input.providerMessageId,
+      id: input.providerAttachmentId,
+    });
+    const encoded = response.data.data;
+    if (!encoded) {
+      throw new MailAttachmentPermanentError('Gmail attachment has no data');
+    }
+    return {
+      filename: 'attachment',
+      contentType: 'application/octet-stream',
+      content: decodeBase64UrlToBuffer(encoded),
+    };
   }
 
   async sendMessage(input: SendMessageInput): Promise<SendMessageResult> {

@@ -1,15 +1,14 @@
 'use client';
 
-import { Mail, Paperclip } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared';
-import { formatFileSize } from '@/features/drive/drive-format';
 import type { MailMessageRow } from '@/lib/api/mail';
 import { MailFailedOutboundActions } from './MailFailedOutboundActions';
 import { MailMessageBody } from './MailMessageBody';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
+import { MailThreadAttachments } from './MailThreadAttachments';
 
 export interface MailThreadMessagesProps {
   threadId: string;
@@ -19,10 +18,12 @@ export interface MailThreadMessagesProps {
   retryingSendMessageId: string | null;
   cancellingMessageId: string | null;
   retryingFailedMessageId: string | null;
+  retryingAttachmentId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
   onRetryFailedSend: (messageId: string) => void | Promise<void>;
   onCancelOutbound: (messageId: string) => void | Promise<void>;
   onResetFailedToDraft: (messageId: string) => void | Promise<void>;
+  onRetryAttachmentDownload: (messageId: string, attachmentId: string) => void | Promise<void>;
 }
 
 export function MailThreadMessages({
@@ -33,10 +34,12 @@ export function MailThreadMessages({
   retryingSendMessageId,
   cancellingMessageId,
   retryingFailedMessageId,
+  retryingAttachmentId,
   onQueueDraft,
   onRetryFailedSend,
   onCancelOutbound,
   onResetFailedToDraft,
+  onRetryAttachmentDownload,
 }: MailThreadMessagesProps) {
   if (messages.length === 0) {
     return <EmptyState icon={Mail} title="No messages in this thread." />;
@@ -61,23 +64,12 @@ export function MailThreadMessages({
               {m.recipients.map((r) => `${r.kind}: ${r.displayName ?? r.email}`).join(' · ')}
             </p>
             <MailMessageBody bodyHtmlSanitized={m.bodyHtmlSanitized} bodyText={m.bodyText} />
-            {m.attachments.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {m.attachments.map((attachment) => {
-                  const formattedSize = attachment.sizeBytes
-                    ? formatFileSize(attachment.sizeBytes)
-                    : null;
-                  const size = formattedSize && formattedSize !== '-' ? formattedSize : null;
-                  return (
-                    <Badge key={attachment.id} variant="secondary" className="gap-1">
-                      <Paperclip size={12} aria-hidden />
-                      {attachment.fileName}
-                      {size ? ` · ${size}` : ''}
-                    </Badge>
-                  );
-                })}
-              </div>
-            ) : null}
+            <MailThreadAttachments
+              attachments={m.attachments}
+              canEdit={canEdit}
+              retryingAttachmentId={retryingAttachmentId}
+              onRetryDownload={(attachmentId) => void onRetryAttachmentDownload(m.id, attachmentId)}
+            />
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'DRAFT' ? (
               <div className="flex flex-wrap gap-2">
                 <Button

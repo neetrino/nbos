@@ -3,7 +3,9 @@ import type { Prisma } from '@nbos/database';
 import { MailSyncLogKind, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { MailImapIdleService } from './mail-imap-idle.service';
+import { MailQueueService } from './mail-queue.service';
 import { applyMailSyncFailure } from './mail-sync-failure.ops';
+import type { MailPendingAttachmentDownload } from './mail-sync-upsert-attachments.ops';
 import type { ProviderSyncCursor, WatchOrIdleResult } from './providers/mail-provider-adapter';
 import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
 import { upsertNormalizedMessages } from './mail-sync-upsert.ops';
@@ -16,6 +18,7 @@ export class MailSyncService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly adapterFactory: MailProviderAdapterFactory,
     private readonly idleService: MailImapIdleService,
+    private readonly queue: MailQueueService,
   ) {}
 
   /** Full receive flow: fetch delta → upsert → persist cursor → watch/IDLE side-effects. */
@@ -78,7 +81,12 @@ export class MailSyncService {
       imapLastUid: connection.imapLastUid ?? undefined,
     };
     const result = await adapter.fetchDelta(cursor);
-    const stored = await upsertNormalizedMessages(this.prisma, mailAccountId, result.messages);
+    const { stored, pendingDownloads } = await upsertNormalizedMessages(
+      this.prisma,
+      mailAccountId,
+      result.messages,
+    );
+    await this.enqueuePendingDownloads(pendingDownloads);
     await this.persistCursorAndHealth(mailAccountId, result.cursor);
     await this.afterSuccessfulSync(mailAccountId, account.providerType, adapter);
     await this.log(mailAccountId, MailSyncLogKind.SYNC_COMPLETED, `stored=${stored}`);
@@ -106,6 +114,17 @@ export class MailSyncService {
       data: { gmailWatchExpiresAt: watch.watchExpiresAt },
     });
     await this.log(mailAccountId, MailSyncLogKind.WATCH_RENEWED);
+  }
+
+  private async enqueuePendingDownloads(
+    pendingDownloads: MailPendingAttachmentDownload[],
+  ): Promise<void> {
+    for (const item of pendingDownloads) {
+      const queued = await this.queue.enqueueAttachmentDownload(item);
+      if (!queued) {
+        this.logger.warn(`Mail attachment download enqueue miss attachmentId=${item.attachmentId}`);
+      }
+    }
   }
 
   private async persistCursorAndHealth(

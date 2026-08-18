@@ -50,6 +50,15 @@ export class MailAttachmentLoadError extends Error {
   }
 }
 
+/** Permanent inbound-attachment failure (missing part, unusable provider id). */
+export class MailAttachmentPermanentError extends Error {
+  readonly name = 'MailAttachmentPermanentError';
+
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+  }
+}
+
 function readErrorField(error: unknown, key: string): string {
   if (typeof error !== 'object' || error === null || !(key in error)) {
     return '';
@@ -77,6 +86,9 @@ function extractHttpStatus(error: unknown): number | undefined {
 export function classifyMailProviderError(error: unknown): MailProviderErrorClass {
   if (error instanceof MailAmbiguousSendError) {
     return 'ambiguous';
+  }
+  if (error instanceof MailAttachmentPermanentError) {
+    return 'permanent';
   }
   if (error instanceof MailAttachmentLoadError) {
     return 'transient';

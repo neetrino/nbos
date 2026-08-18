@@ -6,6 +6,9 @@ import { MailAccountAccessService } from './mail-account-access.service';
 import { MailCollabController } from './mail-collab.controller';
 import { MailComposeService } from './mail-compose.service';
 import { MailConnectService } from './mail-connect.service';
+import { MailAttachmentController } from './mail-attachment.controller';
+import { MailAttachmentDownloadService } from './mail-attachment-download.service';
+import { MailAttachmentMutationService } from './mail-attachment-mutation.service';
 import { MailController } from './mail.controller';
 import { MailGmailOAuthService } from './mail-gmail-oauth.service';
 import { MailGmailWatchRenewService } from './mail-gmail-watch-renew.service';
@@ -29,7 +32,12 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
 /** Queue producers + domain services. BullMQ Worker lives in QueueWorkersModule. */
 @Module({
   imports: [AuditModule, NotificationModule, DriveModule],
-  controllers: [MailController, MailProviderController, MailCollabController],
+  controllers: [
+    MailController,
+    MailAttachmentController,
+    MailProviderController,
+    MailCollabController,
+  ],
   providers: [
     MailService,
     MailOutboundMutationService,
@@ -45,6 +53,8 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailSyncReconcileService,
     MailSyncService,
     MailSendService,
+    MailAttachmentDownloadService,
+    MailAttachmentMutationService,
     MailOutboundReconcileService,
     MailQueueService,
     MailImapIdleService,
@@ -56,6 +66,7 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailService,
     MailSyncService,
     MailSendService,
+    MailAttachmentDownloadService,
     MailQueueService,
     MailOutboundReconcileService,
     MailGmailWatchRenewService,

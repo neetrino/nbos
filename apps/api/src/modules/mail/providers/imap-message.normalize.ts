@@ -1,4 +1,5 @@
 import type { AddressObject, ParsedMail } from 'mailparser';
+import { collectImapAttachments } from './imap-message.attachments';
 import type {
   NormalizedMessage,
   NormalizedRecipient,
@@ -57,5 +58,6 @@ export function normalizeParsedMail(parsed: ParsedMail, uid: number): Normalized
     receivedAt,
     direction: 'INBOUND',
     recipients,
+    attachments: collectImapAttachments(parsed),
   };
 }

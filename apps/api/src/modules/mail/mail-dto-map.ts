@@ -20,7 +20,7 @@ export interface MessageWithRecipients {
   recipients: Array<{ kind: string; email: string; displayName: string | null }>;
   attachments: Array<{
     id: string;
-    fileAssetId: string;
+    fileAssetId: string | null;
     fileName: string;
     mimeType: string | null;
     sizeBytes: bigint | null;

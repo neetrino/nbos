@@ -12,6 +12,14 @@ export interface NormalizedRecipient {
   displayName: string | null;
 }
 
+export interface NormalizedAttachment {
+  providerAttachmentId: string;
+  fileName: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  isInline: boolean;
+}
+
 export interface NormalizedMessage {
   providerMessageId: string;
   messageIdHeader: string | null;
@@ -24,6 +32,13 @@ export interface NormalizedMessage {
   receivedAt: Date | null;
   direction: 'INBOUND' | 'OUTBOUND';
   recipients: NormalizedRecipient[];
+  attachments?: NormalizedAttachment[];
+}
+
+export interface DownloadedAttachment {
+  filename: string;
+  contentType: string;
+  content: Buffer;
 }
 
 export interface ValidateConnectionResult {
@@ -96,6 +111,10 @@ export interface MailProviderAdapter {
   startWatchOrIdle(): Promise<WatchOrIdleResult>;
   fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult>;
   fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null>;
+  downloadAttachment(input: {
+    providerMessageId: string;
+    providerAttachmentId: string;
+  }): Promise<DownloadedAttachment>;
   sendMessage(input: SendMessageInput): Promise<SendMessageResult>;
   /** Removes UNREAD / \\Seen on provider when supported. */
   markThreadRead(input: MarkThreadReadInput): Promise<void>;

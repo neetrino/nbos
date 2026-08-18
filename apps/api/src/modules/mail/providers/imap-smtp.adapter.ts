@@ -1,9 +1,12 @@
 import { ImapFlow } from 'imapflow';
-import { simpleParser } from 'mailparser';
+import { simpleParser, type ParsedMail } from 'mailparser';
 import { createTransport } from 'nodemailer';
+import { MailAttachmentPermanentError } from '../mail-provider-error.classify';
+import { extractImapAttachment } from './imap-message.attachments';
 import { normalizeParsedMail } from './imap-message.normalize';
 import { buildImapFetchPlan, resolveImapLastUid, type ImapFetchPlan } from './imap-fetch-plan';
 import type {
+  DownloadedAttachment,
   FetchDeltaResult,
   MailProviderAdapter,
   MarkThreadReadInput,
@@ -145,11 +148,7 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
     return { messages, maxUid };
   }
 
-  async fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null> {
-    const uid = Number(providerMessageId);
-    if (!Number.isFinite(uid)) {
-      return null;
-    }
+  private async fetchParsedByUid(uid: number): Promise<ParsedMail | null> {
     const client = this.createImapClient();
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
@@ -158,12 +157,35 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       if (!item || !item.source) {
         return null;
       }
-      const parsed = await simpleParser(item.source);
-      return normalizeParsedMail(parsed, item.uid);
+      return simpleParser(item.source);
     } finally {
       lock.release();
       await client.logout();
     }
+  }
+
+  async fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null> {
+    const uid = Number(providerMessageId);
+    if (!Number.isFinite(uid)) {
+      return null;
+    }
+    const parsed = await this.fetchParsedByUid(uid);
+    return parsed ? normalizeParsedMail(parsed, uid) : null;
+  }
+
+  async downloadAttachment(input: {
+    providerMessageId: string;
+    providerAttachmentId: string;
+  }): Promise<DownloadedAttachment> {
+    const uid = Number(input.providerMessageId);
+    if (!Number.isFinite(uid)) {
+      throw new MailAttachmentPermanentError('Invalid IMAP UID for attachment download');
+    }
+    const parsed = await this.fetchParsedByUid(uid);
+    if (!parsed) {
+      throw new MailAttachmentPermanentError('IMAP message not found for attachment download');
+    }
+    return extractImapAttachment(parsed, input.providerAttachmentId);
   }
 
   async sendMessage(input: SendMessageInput): Promise<SendMessageResult> {
