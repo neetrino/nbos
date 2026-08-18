@@ -20,6 +20,7 @@ export function logSchedulerBootSnapshot(
   knownJobFlagEnvKeys: readonly string[],
 ): void {
   const registry = app.get(ScheduledJobRegistry);
+  const nestRegistry = app.get(SchedulerRegistry, { strict: false });
   const decisions = knownJobFlagEnvKeys.map((envKey) => {
     const skip = describeCronSkipReason(envKey);
     return `${envKey}=${skip ?? 'would register'}`;
@@ -29,6 +30,7 @@ export function logSchedulerBootSnapshot(
     `${SCHEDULER_ENABLED_ENV}=${process.env[SCHEDULER_ENABLED_ENV] ?? ''}`,
     `jobFlags=${knownJobFlagEnvKeys.filter((envKey) => isEnvFlagEnabled(envKey)).join(',') || 'none'}`,
     `jobRegistry=${registry.list().join(',') || 'none'}`,
+    `scheduleRegistry=${nestRegistry ? 'yes' : 'no'}`,
     `nestCrons=${listNestCronJobNames(app).join(',') || 'none'}`,
     `gate=${decisions.join('; ') || 'none'}`,
   ].join(' ');

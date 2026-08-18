@@ -24,7 +24,7 @@ import { HealthController } from './health.controller';
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
     DatabaseModule,
-    SchedulerModule.forRoot(),
+    SchedulerModule.forRoot({ includeCrons: true }),
   ],
   controllers: [HealthController],
 })
