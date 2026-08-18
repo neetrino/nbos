@@ -51,13 +51,13 @@ export class MailSendService {
     if (!context) {
       return;
     }
-    const attachments = await loadOutboundAttachmentParts(
-      this.prisma,
-      this.driveR2,
-      messageId,
-      context.bodyHtml,
-    );
     try {
+      const attachments = await loadOutboundAttachmentParts(
+        this.prisma,
+        this.driveR2,
+        messageId,
+        context.bodyHtml,
+      );
       const adapter = await this.adapterFactory.forConnection(context.connection);
       const result = await adapter.sendMessage(buildSendMessageInput(context, attachments));
       await markOutboundSent({

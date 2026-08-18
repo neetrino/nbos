@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MailAmbiguousSendError } from './mail-provider-error.classify';
+import { MailAmbiguousSendError, MailAttachmentLoadError } from './mail-provider-error.classify';
 import { MailSendService } from './mail-send.service';
 
 function baseMessage(deliveryStatus: string, providerMessageId: string | null = null) {
@@ -18,10 +18,27 @@ function baseMessage(deliveryStatus: string, providerMessageId: string | null = 
   };
 }
 
+function attachmentRow(overrides?: { storageKey?: string | null; storageProvider?: string }) {
+  return {
+    id: 'att-1',
+    fileName: 'doc.pdf',
+    mimeType: 'application/pdf',
+    isInline: false,
+    fileAsset: {
+      storageKey: overrides && 'storageKey' in overrides ? overrides.storageKey : 'mail/doc.pdf',
+      storageProvider: overrides?.storageProvider ?? 'R2',
+      mimeType: 'application/pdf',
+      versions: [] as Array<{ storageKey: string }>,
+    },
+  };
+}
+
 function createService(options: {
   message: ReturnType<typeof baseMessage>;
   claimCount?: number;
   sendMessage?: ReturnType<typeof vi.fn>;
+  attachmentRows?: ReturnType<typeof attachmentRow>[];
+  r2Send?: ReturnType<typeof vi.fn>;
 }) {
   const sendMessage =
     options.sendMessage ??
@@ -50,15 +67,16 @@ function createService(options: {
         },
       }),
     },
-    emailAttachment: { findMany: vi.fn().mockResolvedValue([]) },
+    emailAttachment: { findMany: vi.fn().mockResolvedValue(options.attachmentRows ?? []) },
     mailDeliveryLog: { create: vi.fn() },
   };
   const adapterFactory = { forConnection: vi.fn().mockResolvedValue({ sendMessage }) };
+  const r2Send = options.r2Send ?? vi.fn();
   const service = new MailSendService(
     prisma as never,
     adapterFactory as never,
     { log: vi.fn() } as never,
-    { bucket: 'b', ensureS3: vi.fn() } as never,
+    { bucket: 'b', ensureS3: vi.fn().mockReturnValue({ send: r2Send }) } as never,
   );
   return { service, sendMessage, prisma, adapterFactory };
 }
@@ -100,6 +118,18 @@ describe('MailSendService.sendQueuedMessage', () => {
       sendMessage: vi.fn().mockRejectedValue(transient),
     });
     await expect(service.sendQueuedMessage('a1', 'm1', 'e1')).rejects.toThrow('socket hang up');
+    expect(prisma.emailMessage.update).not.toHaveBeenCalled();
+  });
+
+  it('throws when attachment rows exist but R2 bytes are missing', async () => {
+    const { service, sendMessage, prisma, adapterFactory } = createService({
+      message: baseMessage('QUEUED'),
+      attachmentRows: [attachmentRow()],
+      r2Send: vi.fn().mockResolvedValue({ Body: undefined }),
+    });
+    await expect(service.sendQueuedMessage('a1', 'm1', 'e1')).rejects.toBeInstanceOf(MailAttachmentLoadError);
+    expect(adapterFactory.forConnection).not.toHaveBeenCalled();
+    expect(sendMessage).not.toHaveBeenCalled();
     expect(prisma.emailMessage.update).not.toHaveBeenCalled();
   });
 

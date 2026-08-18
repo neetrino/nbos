@@ -41,6 +41,15 @@ export class MailAmbiguousSendError extends Error {
   }
 }
 
+/** Thrown when outbound FileAsset bytes cannot be loaded; BullMQ should retry. */
+export class MailAttachmentLoadError extends Error {
+  readonly name = 'MailAttachmentLoadError';
+
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+  }
+}
+
 function readErrorField(error: unknown, key: string): string {
   if (typeof error !== 'object' || error === null || !(key in error)) {
     return '';
@@ -68,6 +77,9 @@ function extractHttpStatus(error: unknown): number | undefined {
 export function classifyMailProviderError(error: unknown): MailProviderErrorClass {
   if (error instanceof MailAmbiguousSendError) {
     return 'ambiguous';
+  }
+  if (error instanceof MailAttachmentLoadError) {
+    return 'transient';
   }
   const message = error instanceof Error ? error.message : String(error);
   const code = readErrorField(error, 'code');
