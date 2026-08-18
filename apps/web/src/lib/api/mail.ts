@@ -219,11 +219,6 @@ export const mailApi = {
     return resp.data;
   },
 
-  async recordMailAccountSyncStub(accountId: string): Promise<MailAccountRow> {
-    const resp = await api.post<MailAccountRow>(`/api/mail/accounts/${accountId}/sync-stub`);
-    return resp.data;
-  },
-
   async listThreads(options: ListMailThreadsOptions = {}): Promise<MailThreadListPageDto> {
     const params: Record<string, string> = {};
     if (options.mailAccountId) {
@@ -333,12 +328,9 @@ export const mailApi = {
     return resp.data;
   },
 
-  async finalizeQueuedOutboundStub(
-    threadId: string,
-    messageId: string,
-  ): Promise<MailThreadDetailDto> {
+  async retryOutboundSend(threadId: string, messageId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(
-      `/api/mail/threads/${threadId}/messages/${messageId}/finalize-send-stub`,
+      `/api/mail/threads/${threadId}/messages/${messageId}/retry-send`,
     );
     return resp.data;
   },

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared';
 import { formatFileSize } from '@/features/drive/drive-format';
 import type { MailMessageRow } from '@/lib/api/mail';
+import { MAIL_OUTCOME_UNKNOWN_COPY } from './mail-outbound-copy';
 import { MailMessageBody } from './MailMessageBody';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
 
@@ -15,11 +16,11 @@ export interface MailThreadMessagesProps {
   messages: MailMessageRow[];
   canEdit: boolean;
   queueingMessageId: string | null;
-  finalizingMessageId: string | null;
+  retryingSendMessageId: string | null;
   cancellingMessageId: string | null;
   retryingFailedMessageId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
-  onFinalizeQueuedStub: (messageId: string) => void | Promise<void>;
+  onRetryFailedSend: (messageId: string) => void | Promise<void>;
   onCancelOutbound: (messageId: string) => void | Promise<void>;
   onResetFailedToDraft: (messageId: string) => void | Promise<void>;
 }
@@ -29,11 +30,11 @@ export function MailThreadMessages({
   messages,
   canEdit,
   queueingMessageId,
-  finalizingMessageId,
+  retryingSendMessageId,
   cancellingMessageId,
   retryingFailedMessageId,
   onQueueDraft,
-  onFinalizeQueuedStub,
+  onRetryFailedSend,
   onCancelOutbound,
   onResetFailedToDraft,
 }: MailThreadMessagesProps) {
@@ -42,7 +43,7 @@ export function MailThreadMessages({
   }
   const outboundBusy =
     queueingMessageId !== null ||
-    finalizingMessageId !== null ||
+    retryingSendMessageId !== null ||
     cancellingMessageId !== null ||
     retryingFailedMessageId !== null;
   return (
@@ -103,15 +104,6 @@ export function MailThreadMessages({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={outboundBusy}
-                  onClick={() => void onFinalizeQueuedStub(m.id)}
-                >
-                  {finalizingMessageId === m.id ? 'Finalizing…' : 'Finalize send (stub → failed)'}
-                </Button>
-                <Button
-                  type="button"
                   variant="outline"
                   size="sm"
                   disabled={outboundBusy}
@@ -122,15 +114,29 @@ export function MailThreadMessages({
               </div>
             ) : null}
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'FAILED' ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={outboundBusy}
-                onClick={() => void onResetFailedToDraft(m.id)}
-              >
-                {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft (retry)'}
-              </Button>
+              <div className="flex flex-col gap-2">
+                <p className="text-muted-foreground text-xs">{MAIL_OUTCOME_UNKNOWN_COPY}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={outboundBusy}
+                    onClick={() => void onRetryFailedSend(m.id)}
+                  >
+                    {retryingSendMessageId === m.id ? 'Retrying…' : 'Retry send'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={outboundBusy}
+                    onClick={() => void onResetFailedToDraft(m.id)}
+                  >
+                    {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft'}
+                  </Button>
+                </div>
+              </div>
             ) : null}
             {m.direction === 'OUTBOUND' ? (
               <MailOutboundDeliveryLogSection

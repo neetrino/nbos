@@ -51,14 +51,14 @@ export function MailThreadDetailContent({
     markingUnread,
     markingSpam,
     queueingMessageId,
-    finalizingMessageId,
+    retryingSendMessageId,
     cancellingMessageId,
     retryingFailedMessageId,
     markRead,
     markUnread,
     markSpam,
     queueDraftForSend,
-    finalizeQueuedStub,
+    retryFailedSend,
     cancelOutbound,
     resetFailedToDraft,
   } = detailState;
@@ -286,11 +286,11 @@ export function MailThreadDetailContent({
         messages={detail.messages}
         canEdit={canEdit}
         queueingMessageId={queueingMessageId}
-        finalizingMessageId={finalizingMessageId}
+        retryingSendMessageId={retryingSendMessageId}
         cancellingMessageId={cancellingMessageId}
         retryingFailedMessageId={retryingFailedMessageId}
         onQueueDraft={queueDraftForSend}
-        onFinalizeQueuedStub={finalizeQueuedStub}
+        onRetryFailedSend={retryFailedSend}
         onCancelOutbound={cancelOutbound}
         onResetFailedToDraft={resetFailedToDraft}
       />
