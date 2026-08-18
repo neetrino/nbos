@@ -1,10 +1,10 @@
 # NBOS — актуальные задачи
 
-Очередь сейчас: дожать scheduler → **свой Redis** → **Client Services cron**. WhatsApp-очередь оставляем.
+Очередь сейчас: свой Redis на проде **есть** → **Client Services cron**. WhatsApp-очередь оставляем.
 
 - [ ] Завершить Mail: отправку и синхронизацию полностью перевести на BullMQ Worker, удалить старые stub/direct-пути и добавить end-to-end тест.
 - [ ] Подключить отдельный development Upstash Redis через нативный `REDIS_URL` и удалить неиспользуемые `UPSTASH_REDIS_REST_*` из локального runtime ENV.
-- [ ] Прод Redis на том же Coolify/VPS пятым контейнером (уже создан в NBOS > production, сейчас красный/остановлен, имя авто `redis-database-h9duuzmfd24lqw8g6zf6z599`). Довести: переименовать в `nbos-redis`, volume + AOF, пароль, **не публиковать 6379**, `maxmemory` + `noeviction`. Runtime `REDIS_URL` только у api / worker / scheduler на внутренний хост. Upstash с прода снять. Локально прод-Redis не подключать.
+- [x] Прод Redis на Coolify/VPS: `nbos-redis` (`h9duuzmfd24lqw8g6zf6z599`), TLS `rediss://:6380`, AOF + `maxmemory 256mb` + `noeviction`, 6379 не опубликован. Runtime `REDIS_URL` у api / worker / scheduler. Preview и ноутбук на прод не смотрят. Upstash с прода тех трёх снят.
 - [ ] Найти и уменьшить постоянный расход Redis-команд от API, Worker, Scheduler и BullMQ без риска потерять очередь задач (после своего Redis — только если расход RAM/CPU на VPS станет заметным).
 - [ ] Оставить создание отчётов только ручным: кнопка → очередь → готовый файл → скачивание, без автоматического report cron.
 - [ ] Оставить создание Drive ZIP только ручным: кнопка → очередь → готовый ZIP → скачивание, без cron.
