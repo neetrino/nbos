@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { acquireMailIdleLock } from './mail-imap-idle.lock';
+import { acquireMailIdleLock, type MailIdleLockRedis } from './mail-imap-idle.lock';
 
 describe('IMAP IDLE lock', () => {
   it('prevents a second holder from acquiring the same mailbox lock', async () => {
@@ -16,7 +16,7 @@ describe('IMAP IDLE lock', () => {
       get: vi.fn(async (key: string) => store.get(key) ?? null),
       del: vi.fn(async () => 1),
       expire: vi.fn(async () => 1),
-    };
+    } as MailIdleLockRedis;
 
     const first = await acquireMailIdleLock(redis, 'acc-1', 'holder-a');
     const second = await acquireMailIdleLock(redis, 'acc-1', 'holder-b');

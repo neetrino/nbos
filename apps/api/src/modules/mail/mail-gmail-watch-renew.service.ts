@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Prisma } from '@nbos/database';
 import { MailSyncLogKind, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import {
@@ -53,21 +54,9 @@ export class MailGmailWatchRenewService {
     return { renewed, skipped };
   }
 
-  private async renewOne(account: {
-    id: string;
-    emailAddress: string;
-    displayName: string | null;
-    providerType: string;
-    providerConnection: {
-      username: string | null;
-      imapHost: string | null;
-      imapPort: number | null;
-      secureMode: string | null;
-      smtpHost: string | null;
-      smtpPort: number | null;
-      smtpSecureMode: string | null;
-    } | null;
-  }): Promise<boolean> {
+  private async renewOne(
+    account: Prisma.MailAccountGetPayload<{ include: { providerConnection: true } }>,
+  ): Promise<boolean> {
     const connection = account.providerConnection;
     if (!connection) {
       return false;

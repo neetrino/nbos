@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Prisma } from '@nbos/database';
 import { MailSyncLogKind, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { MailImapIdleService } from './mail-imap-idle.service';
@@ -52,25 +53,12 @@ export class MailSyncService {
 
   private async runSync(
     mailAccountId: string,
-    account: {
-      emailAddress: string;
-      displayName: string | null;
-      providerType: string;
-      providerConnection: {
-        username: string | null;
-        imapHost: string | null;
-        imapPort: number | null;
-        secureMode: string | null;
-        smtpHost: string | null;
-        smtpPort: number | null;
-        smtpSecureMode: string | null;
-        gmailHistoryId: string | null;
-        imapUidValidity: string | null;
-        imapLastUid: string | null;
-      };
-    },
+    account: Prisma.MailAccountGetPayload<{ include: { providerConnection: true } }>,
   ): Promise<{ stored: number }> {
     const connection = account.providerConnection;
+    if (!connection) {
+      return { stored: 0 };
+    }
     const adapter = await this.adapterFactory.forConnection({
       mailAccountId,
       emailAddress: account.emailAddress,

@@ -1,11 +1,7 @@
+import type Redis from 'ioredis';
 import { MAIL_IDLE_LOCK_TTL_SECONDS, mailIdleLockKey } from './mail-sync-runtime.constants';
 
-export interface MailIdleLockRedis {
-  set(key: string, value: string, ...args: Array<string | number>): Promise<string | null>;
-  get(key: string): Promise<string | null>;
-  del(...keys: string[]): Promise<number>;
-  expire(key: string, seconds: number): Promise<number>;
-}
+export type MailIdleLockRedis = Pick<Redis, 'set' | 'get' | 'del' | 'expire'>;
 
 export async function acquireMailIdleLock(
   redis: MailIdleLockRedis,
