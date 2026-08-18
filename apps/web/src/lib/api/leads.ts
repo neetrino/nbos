@@ -70,6 +70,7 @@ interface LeadQueryParams {
   pageSize?: number;
   status?: string;
   source?: string;
+  assignedTo?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';

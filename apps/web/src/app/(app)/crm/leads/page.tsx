@@ -27,10 +27,13 @@ import {
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { createLeadKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
-import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
+import { LEAD_STAGES } from '@/features/crm/constants/leadPipeline';
+import { buildLeadPipelineFilterConfigs } from '@/features/crm/filters/crm-pipeline-filter-configs';
+import { resolveLeadAssignedToFilter } from '@/features/crm/filters/crm-responsible-filter';
+import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
+import { usePermission } from '@/lib/permissions';
 import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
-  BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   getBoardStageKeys,
   resolveBoardLifecycleScope,
@@ -42,7 +45,10 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
-import { useCrmStageColumnBoard } from '@/features/crm/hooks/use-crm-stage-column-board';
+import {
+  useCrmStageColumnBoard,
+  type CrmStageColumnFetchParams,
+} from '@/features/crm/hooks/use-crm-stage-column-board';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
@@ -133,6 +139,10 @@ function LeadsPipelinePageContent() {
   const isMobileViewport = useIsMobileViewport();
   const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
   const effectiveView: ViewMode = isTrashView || !isMobileViewport ? view : 'kanban';
+  const { me } = usePermission();
+  const meId = me?.id ?? null;
+  const responsibleEmployees = useCrmResponsibleEmployeeOptions();
+  const assignedTo = resolveLeadAssignedToFilter(filters.responsible, meId);
 
   const pushOpenLeadToUrl = useCallback(
     (id: string) => {
@@ -151,20 +161,14 @@ function LeadsPipelinePageContent() {
   }, [boardScope, filters.status, isTrashView]);
 
   const fetchLeadPage = useCallback(
-    (params: {
-      page: number;
-      pageSize: number;
-      status: string;
-      search?: string;
-      source?: string;
-      scope: typeof scope;
-    }) =>
+    (params: CrmStageColumnFetchParams) =>
       leadsApi.getAll({
         page: params.page,
         pageSize: params.pageSize,
         status: params.status,
         search: params.search,
         source: params.source,
+        assignedTo: params.assignedTo,
         scope: params.scope,
       }),
     [],
@@ -175,6 +179,7 @@ function LeadsPipelinePageContent() {
     listScope: scope,
     search,
     source: filters.source && filters.source !== 'all' ? filters.source : undefined,
+    assignedTo,
     enabled: !isTrashView,
     fetchPage: fetchLeadPage,
   });
@@ -201,6 +206,7 @@ function LeadsPipelinePageContent() {
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         source: filters.source && filters.source !== 'all' ? filters.source : undefined,
+        assignedTo,
       });
       setTrashLeads(data.items);
       setTrashError(null);
@@ -209,7 +215,7 @@ function LeadsPipelinePageContent() {
     } finally {
       setTrashLoading(false);
     }
-  }, [filters.source, filters.status, scope, search]);
+  }, [assignedTo, filters.source, filters.status, scope, search]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashLeads();
@@ -509,29 +515,8 @@ function LeadsPipelinePageContent() {
   const leadTerminalZones = useMemo(() => buildTerminalDropZones(LEAD_STAGES), []);
 
   const filterConfigs = useMemo(
-    () => [
-      {
-        key: 'boardScope',
-        label: 'Status',
-        includeAllOption: false,
-        defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
-        options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
-          value: option.value,
-          label: option.label,
-        })),
-      },
-      {
-        key: 'source',
-        label: 'Source',
-        options: LEAD_SOURCES.map((s) => ({ value: s.value, label: s.label })),
-      },
-      {
-        key: 'status',
-        label: 'Stage',
-        options: LEAD_STAGES.map((s) => ({ value: s.key, label: s.label })),
-      },
-    ],
-    [],
+    () => buildLeadPipelineFilterConfigs(responsibleEmployees, meId),
+    [meId, responsibleEmployees],
   );
 
   const moduleHeroSlots = useMemo(

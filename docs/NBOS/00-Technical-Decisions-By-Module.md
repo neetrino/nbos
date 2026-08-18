@@ -69,15 +69,16 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### CRM And Marketing
 
-| Area          | Decision                                                                                                                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.                                                                                             |
-| Deal amount   | `CLASSIC`: total cost of work. `SUBSCRIPTION`: one billing period (UI: Amount / month). Fixed-term contract total is derived: `Order.totalAmount = Deal.amount × Deal.subscriptionTermMonths`. |
-| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).                                                                                     |
-| Attribution   | Marketing attribution is manual in MVP.                                                                                                                                                        |
-| Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing.                                                                                 |
-| External APIs | Meta/Google Ads APIs are not MVP.                                                                                                                                                              |
-| Reports       | Do not calculate CPL/ROI when spend is missing; show missing data.                                                                                                                             |
+| Area          | Decision                                                                                                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.                                                                                                        |
+| Deal amount   | `CLASSIC`: total cost of work. `SUBSCRIPTION`: one billing period (UI: Amount / month). Fixed-term contract total is derived: `Order.totalAmount = Deal.amount × Deal.subscriptionTermMonths`.            |
+| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).                                                                                                |
+| Attribution   | Marketing attribution is manual in MVP.                                                                                                                                                                   |
+| List owner    | Lead list: `assignedTo`. Deal list: `sellerId`, `sellerAssistantId`, `involvedEmployeeId` (seller OR assistant). UI tokens `me` / `me_seller` / `me_assistant` / employee id. Not a platform-wide filter. |
+| Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing.                                                                                            |
+| External APIs | Meta/Google Ads APIs are not MVP.                                                                                                                                                                         |
+| Reports       | Do not calculate CPL/ROI when spend is missing; show missing data.                                                                                                                                        |
 
 ### Finance And Partners
 

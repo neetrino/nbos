@@ -51,6 +51,15 @@ describe('LeadsService', () => {
         }),
       );
     });
+
+    it('applies assignedTo filter', async () => {
+      await service.findAll({ assignedTo: 'emp-1' });
+      expect(prisma.lead.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ assignedTo: 'emp-1' }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

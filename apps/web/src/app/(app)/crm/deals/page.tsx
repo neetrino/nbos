@@ -30,10 +30,13 @@ import { createDealKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kan
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
-import { DEAL_STAGES, DEAL_TYPES } from '@/features/crm/constants/dealPipeline';
+import { DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
+import { buildDealPipelineFilterConfigs } from '@/features/crm/filters/crm-pipeline-filter-configs';
+import { resolveDealResponsibilityQuery } from '@/features/crm/filters/crm-responsible-filter';
+import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
+import { usePermission } from '@/lib/permissions';
 import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
-  BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   getBoardStageKeys,
   resolveBoardLifecycleScope,
@@ -45,7 +48,10 @@ import {
   reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
-import { useCrmStageColumnBoard } from '@/features/crm/hooks/use-crm-stage-column-board';
+import {
+  useCrmStageColumnBoard,
+  type CrmStageColumnFetchParams,
+} from '@/features/crm/hooks/use-crm-stage-column-board';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { ClientsDirectorySettingsSheet } from '@/features/clients/components/clients-directory-settings-sheet';
 import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clients-directory-trash-banner';
@@ -146,6 +152,10 @@ function DealsPipelinePageContent() {
   const isMobileViewport = useIsMobileViewport();
   const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
   const effectiveView: ViewMode = isTrashView || !isMobileViewport ? view : 'kanban';
+  const { me } = usePermission();
+  const meId = me?.id ?? null;
+  const responsibleEmployees = useCrmResponsibleEmployeeOptions();
+  const dealResponsibility = resolveDealResponsibilityQuery(filters.responsible, meId);
 
   const pushOpenDealToUrl = useCallback(
     (id: string) => {
@@ -164,20 +174,16 @@ function DealsPipelinePageContent() {
   }, [boardScope, filters.status, isTrashView]);
 
   const fetchDealPage = useCallback(
-    (params: {
-      page: number;
-      pageSize: number;
-      status: string;
-      search?: string;
-      type?: string;
-      scope: typeof scope;
-    }) =>
+    (params: CrmStageColumnFetchParams) =>
       dealsApi.getAll({
         page: params.page,
         pageSize: params.pageSize,
         status: params.status,
         search: params.search,
         type: params.type,
+        sellerId: params.sellerId,
+        sellerAssistantId: params.sellerAssistantId,
+        involvedEmployeeId: params.involvedEmployeeId,
         scope: params.scope,
       }),
     [],
@@ -188,6 +194,9 @@ function DealsPipelinePageContent() {
     listScope: scope,
     search,
     type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+    sellerId: dealResponsibility.sellerId,
+    sellerAssistantId: dealResponsibility.sellerAssistantId,
+    involvedEmployeeId: dealResponsibility.involvedEmployeeId,
     enabled: !isTrashView,
     fetchPage: fetchDealPage,
   });
@@ -214,6 +223,9 @@ function DealsPipelinePageContent() {
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+        sellerId: dealResponsibility.sellerId,
+        sellerAssistantId: dealResponsibility.sellerAssistantId,
+        involvedEmployeeId: dealResponsibility.involvedEmployeeId,
       });
       setTrashDeals(data.items);
       setTrashError(null);
@@ -222,7 +234,7 @@ function DealsPipelinePageContent() {
     } finally {
       setTrashLoading(false);
     }
-  }, [filters.status, filters.type, scope, search]);
+  }, [dealResponsibility, filters.status, filters.type, scope, search]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashDeals();
@@ -556,29 +568,8 @@ function DealsPipelinePageContent() {
   );
 
   const filterConfigs = useMemo(
-    () => [
-      {
-        key: 'boardScope',
-        label: 'Status',
-        includeAllOption: false,
-        defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
-        options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
-          value: option.value,
-          label: option.label,
-        })),
-      },
-      {
-        key: 'type',
-        label: 'Type',
-        options: DEAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
-      },
-      {
-        key: 'status',
-        label: 'Stage',
-        options: DEAL_STAGES.map((s) => ({ value: s.key, label: s.label })),
-      },
-    ],
-    [],
+    () => buildDealPipelineFilterConfigs(responsibleEmployees, meId),
+    [meId, responsibleEmployees],
   );
 
   const moduleHeroSlots = useMemo(
