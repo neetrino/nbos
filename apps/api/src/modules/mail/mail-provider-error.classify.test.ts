@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MailAmbiguousSendError,
   MailAttachmentLoadError,
+  MailAttachmentPermanentError,
   classifyMailProviderError,
 } from './mail-provider-error.classify';
 
@@ -28,6 +29,12 @@ describe('classifyMailProviderError', () => {
     expect(classifyMailProviderError(new Error('Recipient rejected: invalid mailbox'))).toBe(
       'permanent',
     );
+  });
+
+  it('classifies inbound attachment permanent errors as permanent', () => {
+    expect(
+      classifyMailProviderError(new MailAttachmentPermanentError('IMAP attachment part not found')),
+    ).toBe('permanent');
   });
 
   it('classifies missing outbound attachment bytes as transient', () => {

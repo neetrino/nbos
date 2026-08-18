@@ -29,9 +29,13 @@ export function parseAddressList(value: string | undefined | null): ParsedAddres
   return result;
 }
 
-export function decodeBase64Url(data: string): string {
+export function decodeBase64UrlToBuffer(data: string): Buffer {
   const normalized = data.replace(/-/g, '+').replace(/_/g, '/');
-  return Buffer.from(normalized, 'base64').toString('utf8');
+  return Buffer.from(normalized, 'base64');
+}
+
+export function decodeBase64Url(data: string): string {
+  return decodeBase64UrlToBuffer(data).toString('utf8');
 }
 
 function encodeBase64Url(value: string | Buffer): string {

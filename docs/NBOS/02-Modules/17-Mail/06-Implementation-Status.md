@@ -23,9 +23,18 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 - Scheduler (default **off**): `mail-gmail-watch-renew` hourly, `mail-sync-reconcile` every 5 min.
 - `POST …/sync-stub` removed. Health: watch `not_configured|active|expired`, idle heartbeat.
 
+## Shipped — Mail runtime Slice C (inbound attachments)
+
+- `EmailAttachment.fileAssetId` optional; inbound rows start `PENDING` + `fileAssetId = null`.
+- Sync persists attachment metadata only; `mail.attachment.download` jobId `mail-att:{attachmentId}`.
+- Worker: `adapter.downloadAttachment` → Drive `FileAsset` (`MAIL` / `OTHER` / `RESTRICTED`) → `READY`. Cap **25 MiB**.
+- Transient errors throw (BullMQ retry). Permanent / oversize / auth → `FAILED` (auth also `NEEDS_RECONNECT`); job completes.
+- `POST …/attachments/:id/retry-download` (`FAILED → PENDING` + enqueue). Production enqueue miss → **503**, row stays `PENDING`.
+- UI: Pending / Ready / Failed + Retry; message body stays readable. Worker logs include `errorClass` when known.
+- No new Mail cron flags.
+
 ## Intentional placeholders / next slices
 
-- Inbound attachment download job (`fileAssetId` optional) — Slice C.
 - Provider mailbox delete — Cleanup Register.
 
 ## MVP assumptions (Trash)

@@ -14,7 +14,7 @@ type OutboundAttachmentRow = {
     storageProvider: string;
     mimeType: string | null;
     versions: Array<{ storageKey: string | null }>;
-  };
+  } | null;
 };
 
 async function bufferFromR2Body(
@@ -64,6 +64,9 @@ async function loadOneOutboundAttachmentPart(
   row: OutboundAttachmentRow,
   bodyHtml: string | null,
 ): Promise<SendMessageAttachment> {
+  if (!row.fileAsset) {
+    throw new MailAttachmentLoadError(`Outbound attachment ${row.id} has no Drive FileAsset`);
+  }
   const key = row.fileAsset.versions[0]?.storageKey ?? row.fileAsset.storageKey;
   if (!key || row.fileAsset.storageProvider !== 'R2') {
     throw new MailAttachmentLoadError(`Outbound attachment ${row.id} is missing an R2 storage key`);

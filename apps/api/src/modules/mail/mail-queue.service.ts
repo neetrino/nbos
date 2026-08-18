@@ -5,11 +5,13 @@ import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../runtime/bullmq-job-options';
 import { shouldRegisterQueueProducers } from '../../runtime/process-role';
 import { createQueueProducerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
 import {
+  MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
   MAIL_QUEUE_NAME,
   MAIL_SEND_JOB_NAME,
   MAIL_SYNC_JOB_NAME,
   type MailQueueJobPayload,
 } from './mail-queue.constants';
+import { mailAttachmentJobId } from './mail-attachment-runtime.constants';
 import { mailSendJobId } from './mail-outbound-runtime.constants';
 import { mailSyncJobId } from './mail-sync-runtime.constants';
 
@@ -62,6 +64,17 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
       MAIL_SEND_JOB_NAME,
       { kind: 'send', ...payload },
       mailSendJobId(payload.messageId),
+    );
+  }
+
+  async enqueueAttachmentDownload(payload: {
+    messageId: string;
+    attachmentId: string;
+  }): Promise<boolean> {
+    return this.add(
+      MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
+      { kind: 'attachment', ...payload },
+      mailAttachmentJobId(payload.attachmentId),
     );
   }
 

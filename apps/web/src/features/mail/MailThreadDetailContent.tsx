@@ -54,6 +54,7 @@ export function MailThreadDetailContent({
     retryingSendMessageId,
     cancellingMessageId,
     retryingFailedMessageId,
+    retryingAttachmentId,
     markRead,
     markUnread,
     markSpam,
@@ -61,6 +62,7 @@ export function MailThreadDetailContent({
     retryFailedSend,
     cancelOutbound,
     resetFailedToDraft,
+    retryAttachmentDownload,
   } = detailState;
 
   const [replyComposerOpen, setReplyComposerOpen] = useState(false);
@@ -289,10 +291,12 @@ export function MailThreadDetailContent({
         retryingSendMessageId={retryingSendMessageId}
         cancellingMessageId={cancellingMessageId}
         retryingFailedMessageId={retryingFailedMessageId}
+        retryingAttachmentId={retryingAttachmentId}
         onQueueDraft={queueDraftForSend}
         onRetryFailedSend={retryFailedSend}
         onCancelOutbound={cancelOutbound}
         onResetFailedToDraft={resetFailedToDraft}
+        onRetryAttachmentDownload={retryAttachmentDownload}
       />
       {canEdit && replyComposerOpen ? (
         <MailThreadReplyComposer

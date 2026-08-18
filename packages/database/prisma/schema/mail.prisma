@@ -263,7 +263,7 @@ model EmailMessage {
 model EmailAttachment {
   id                   String                        @id @default(uuid())
   messageId            String                        @map("message_id")
-  fileAssetId          String                        @map("file_asset_id")
+  fileAssetId          String?                       @map("file_asset_id")
   fileName             String                        @map("file_name")
   mimeType             String?                       @map("mime_type")
   sizeBytes            BigInt?                       @map("size_bytes")
@@ -273,7 +273,7 @@ model EmailAttachment {
   createdAt            DateTime                      @default(now()) @map("created_at")
 
   message   EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  fileAsset FileAsset    @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
+  fileAsset FileAsset?   @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
 
   @@index([messageId])
   @@index([fileAssetId])

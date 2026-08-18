@@ -1,4 +1,5 @@
 import type { gmail_v1 } from 'googleapis';
+import { collectGmailAttachments } from './gmail-message.attachments';
 import { decodeBase64Url, parseAddressList } from './gmail-mime';
 import type {
   NormalizedMessage,
@@ -62,5 +63,6 @@ export function normalizeGmailMessage(message: gmail_v1.Schema$Message): Normali
     receivedAt: internalDate,
     direction: 'INBOUND',
     recipients: collectRecipients(payload),
+    attachments: collectGmailAttachments(payload),
   };
 }
