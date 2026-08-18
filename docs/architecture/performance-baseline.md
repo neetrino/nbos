@@ -72,10 +72,10 @@
 
 ## Auth hot path
 
-| Guard           | Cost                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------- |
+| Guard           | Cost                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
 | `AuthGuard`     | JWT verify + denylist `isRevoked` → Redis **GET** on L1 miss; Redis result cached 5s (miss) / 60s (hit) |
-| `EmployeeGuard` | In-process cache 60s; miss → heavy `employee` + role + permissions include              |
+| `EmployeeGuard` | In-process cache 60s; miss → heavy `employee` + role + permissions include                              |
 
 ## Scheduler
 

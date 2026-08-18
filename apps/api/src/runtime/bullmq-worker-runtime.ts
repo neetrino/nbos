@@ -16,12 +16,7 @@ export type BullmqWorkerRuntimeOptions = {
   stalledInterval: number;
 };
 
-function parseBoundedInt(
-  raw: string,
-  envKey: string,
-  min: number,
-  max: number,
-): number {
+function parseBoundedInt(raw: string, envKey: string, min: number, max: number): number {
   const trimmed = raw.trim();
   if (!/^\d+$/.test(trimmed)) {
     throw new Error(`Invalid ${envKey}="${raw}": must be an integer between ${min} and ${max}.`);
