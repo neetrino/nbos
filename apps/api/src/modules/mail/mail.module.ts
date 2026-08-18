@@ -3,13 +3,14 @@ import { AuditModule } from '../audit/audit.module';
 import { DriveModule } from '../drive/drive.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { MailAccountAccessService } from './mail-account-access.service';
-import { MailAccountCommandService } from './mail-account-command.service';
 import { MailCollabController } from './mail-collab.controller';
 import { MailComposeService } from './mail-compose.service';
 import { MailConnectService } from './mail-connect.service';
 import { MailController } from './mail.controller';
 import { MailGmailOAuthService } from './mail-gmail-oauth.service';
+import { MailGmailWatchRenewService } from './mail-gmail-watch-renew.service';
 import { MailImapIdleService } from './mail-imap-idle.service';
+import { MailSyncReconcileService } from './mail-sync-reconcile.service';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { MailProviderController } from './mail-provider.controller';
@@ -35,12 +36,13 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailOutboundSendMutationService,
     MailThreadCommandService,
     MailThreadAssignmentService,
-    MailAccountCommandService,
     MailAccountAccessService,
     MailComposeService,
     MailConnectService,
     MailGmailOAuthService,
     MailPubSubService,
+    MailGmailWatchRenewService,
+    MailSyncReconcileService,
     MailSyncService,
     MailSendService,
     MailOutboundReconcileService,
@@ -56,6 +58,8 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailSendService,
     MailQueueService,
     MailOutboundReconcileService,
+    MailGmailWatchRenewService,
+    MailSyncReconcileService,
   ],
 })
 export class MailModule {}

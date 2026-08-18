@@ -25,6 +25,8 @@ export const SCHEDULER_JOB_NAMES = {
   authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
   mailOutboundReconcile: 'mail-outbound-reconcile',
+  mailGmailWatchRenew: 'mail-gmail-watch-renew',
+  mailSyncReconcile: 'mail-sync-reconcile',
 } as const;
 
 export type SchedulerJobName = (typeof SCHEDULER_JOB_NAMES)[keyof typeof SCHEDULER_JOB_NAMES];

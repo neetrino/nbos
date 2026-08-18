@@ -5,7 +5,9 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
+import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
+import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
@@ -27,6 +29,8 @@ const CRON_PROVIDERS = [
   NotificationEnqueueReconcileCron,
   AuthSessionCleanupCron,
   MailOutboundReconcileCron,
+  MailGmailWatchRenewCron,
+  MailSyncReconcileCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
@@ -49,6 +53,8 @@ const ABSENT_YELLOW_JOBS = [
   'report-schedules-due',
   'support-sla-escalation',
   'mail-outbound-reconcile',
+  'mail-gmail-watch-renew',
+  'mail-sync-reconcile',
 ];
 
 function createSchedulerServiceMock(): SchedulerService {
@@ -69,6 +75,8 @@ function createSchedulerServiceMock(): SchedulerService {
     runAuthSessionExpiryCleanup: vi.fn().mockResolvedValue({}),
     runClientServicesRenewalInvoice: vi.fn().mockResolvedValue({}),
     runMailOutboundReconcile: vi.fn().mockResolvedValue({}),
+    runMailGmailWatchRenew: vi.fn().mockResolvedValue({}),
+    runMailSyncReconcile: vi.fn().mockResolvedValue({}),
   } as unknown as SchedulerService;
 }
 

@@ -15,7 +15,9 @@ import { NotificationEnqueueReconcileService } from '../notifications/notificati
 import { AuthSessionService } from '../auth/auth-session.service';
 import { RecurringTasksService } from '../tasks/recurring-tasks.service';
 import { ClientServicesRenewalInvoiceService } from '../client-services/client-services-renewal-invoice.service';
+import { MailGmailWatchRenewService } from '../mail/mail-gmail-watch-renew.service';
 import { MailOutboundReconcileService } from '../mail/mail-outbound-reconcile.service';
+import { MailSyncReconcileService } from '../mail/mail-sync-reconcile.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -49,6 +51,8 @@ export class SchedulerService {
     private readonly recurringTasks: RecurringTasksService,
     private readonly clientServicesRenewalInvoice: ClientServicesRenewalInvoiceService,
     private readonly mailOutboundReconcile: MailOutboundReconcileService,
+    private readonly mailGmailWatchRenew: MailGmailWatchRenewService,
+    private readonly mailSyncReconcile: MailSyncReconcileService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -332,6 +336,34 @@ export class SchedulerService {
             sendingRequeued: result.sendingRequeued,
             sendingFinalized: result.sendingFinalized,
           },
+        };
+      },
+    );
+  }
+
+  async runMailGmailWatchRenew(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.mailGmailWatchRenew, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.mailGmailWatchRenew.renewExpiringWatches();
+        return {
+          processedCount: result.renewed,
+          metadata: { renewed: result.renewed, skipped: result.skipped },
+        };
+      },
+    );
+  }
+
+  async runMailSyncReconcile(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.mailSyncReconcile, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.mailSyncReconcile.enqueueActiveMailboxSyncs();
+        return {
+          processedCount: result.enqueued,
+          metadata: { enqueued: result.enqueued },
         };
       },
     );
