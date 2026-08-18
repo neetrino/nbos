@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { MailSyncLogKind, PrismaClient, type InputJsonValue } from '@nbos/database';
@@ -17,6 +18,7 @@ import type { ConnectCorporateMailboxDto } from './dto/connect-corporate-mailbox
 import { mailRoleCanManageAccess } from './mail-access.policy';
 import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
 import { toAccountRow } from './mail-dto-map';
+import { dispatchManualMailSync, enqueueMailSyncBestEffort } from './mail-sync-dispatch';
 import { MailQueueService } from './mail-queue.service';
 import { MailSyncService } from './mail-sync.service';
 import { ImapSmtpProviderAdapter } from './providers/imap-smtp.adapter';
@@ -26,6 +28,8 @@ import type { MailAccountRow } from './mail.types';
 
 @Injectable()
 export class MailConnectService {
+  private readonly logger = new Logger(MailConnectService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly secretStore: MailProviderSecretStore,
@@ -106,7 +110,12 @@ export class MailConnectService {
     await this.prisma.mailSyncLog.create({
       data: { mailAccountId, kind: MailSyncLogKind.CONNECTION_VALIDATED },
     });
-    await this.triggerSyncNow(mailAccountId);
+    await enqueueMailSyncBestEffort({
+      queue: this.queueService,
+      syncService: this.syncService,
+      logger: this.logger,
+      mailAccountId,
+    });
   }
 
   async triggerSync(
@@ -122,16 +131,14 @@ export class MailConnectService {
     if (!loaded) {
       throw new NotFoundException('Mail account not found');
     }
-    return { queued: await this.triggerSyncNow(mailAccountId) };
-  }
-
-  private async triggerSyncNow(mailAccountId: string): Promise<boolean> {
-    const queued = await this.queueService.enqueueSync(mailAccountId);
-    if (!queued) {
-      // No Redis/queue in this environment: run the sync inline (dev fallback).
-      await this.syncService.syncAccount(mailAccountId);
-    }
-    return queued;
+    return {
+      queued: await dispatchManualMailSync({
+        queue: this.queueService,
+        syncService: this.syncService,
+        logger: this.logger,
+        mailAccountId,
+      }),
+    };
   }
 
   async disconnect(

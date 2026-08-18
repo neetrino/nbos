@@ -18,7 +18,6 @@ import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
-import { MailAccountCommandService } from './mail-account-command.service';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { parseMailThreadListIntQuery } from './mail-thread-list-pagination.ops';
@@ -44,7 +43,6 @@ export class MailController {
     private readonly mailOutboundMutationService: MailOutboundMutationService,
     private readonly mailOutboundSendMutationService: MailOutboundSendMutationService,
     private readonly mailThreadCommandService: MailThreadCommandService,
-    private readonly mailAccountCommandService: MailAccountCommandService,
   ) {}
 
   @Get('accounts')
@@ -65,24 +63,6 @@ export class MailController {
     @Req() req: AuthedRequest,
   ) {
     return this.mailService.listAccountHealthSummaries(user.id, req.permissionScope ?? 'OWN');
-  }
-
-  @Post('accounts/:accountId/sync-stub')
-  @HttpCode(HttpStatus.OK)
-  @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({
-    summary: 'Stub sync mailbox (updates lastSyncAt only; no provider fetch in this MVP)',
-  })
-  async recordMailAccountSyncStub(
-    @CurrentUser() user: CurrentUserPayload,
-    @Req() req: AuthedRequest,
-    @Param('accountId') accountId: string,
-  ) {
-    return this.mailAccountCommandService.recordMailAccountSyncStub(
-      user.id,
-      req.permissionScope ?? 'OWN',
-      accountId,
-    );
   }
 
   @Get('threads')

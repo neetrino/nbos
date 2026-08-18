@@ -65,7 +65,7 @@ export class MailProviderController {
   @Post('accounts/:accountId/sync')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Trigger a provider sync for a mailbox (queued, or inline fallback)' })
+  @ApiOperation({ summary: 'Trigger a provider sync for a mailbox (queued; 503 if queue is down)' })
   async syncAccount(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,

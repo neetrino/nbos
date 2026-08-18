@@ -1,4 +1,5 @@
 import { EmailRecipientKind, type PrismaClient, type TransactionClient } from '@nbos/database';
+import { isUniqueConstraintError } from './mail-unique-violation';
 import type { NormalizedMessage } from './providers/mail-provider-adapter';
 import { normalizeEmailSubject, sanitizeEmailHtml } from './providers/mail-html-sanitize';
 
@@ -91,12 +92,18 @@ export async function upsertNormalizedMessages(
 ): Promise<number> {
   let stored = 0;
   for (const message of messages) {
-    const inserted = await prisma.$transaction(async (tx: TransactionClient) => {
-      const threadId = await resolveThreadId(tx, mailAccountId, message);
-      return persistMessage(tx, mailAccountId, threadId, message);
-    });
-    if (inserted) {
-      stored += 1;
+    try {
+      const inserted = await prisma.$transaction(async (tx: TransactionClient) => {
+        const threadId = await resolveThreadId(tx, mailAccountId, message);
+        return persistMessage(tx, mailAccountId, threadId, message);
+      });
+      if (inserted) {
+        stored += 1;
+      }
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
     }
   }
   return stored;

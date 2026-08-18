@@ -15,10 +15,18 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 
 - Inbox list, thread detail, outbound draft/queue stub, health summary, RBAC mailbox scope — see Cleanup Register §Runtime.
 
+## Shipped — Mail runtime Slice B (receive)
+
+- Unique inbound `(mailAccountId, providerMessageId)`; history 410 → last-30 recovery; UIDVALIDITY reset.
+- `enqueueSync` jobId `mail-sync:{accountId}`; production never inline-syncs (manual → 503).
+- IMAP IDLE on worker only (Redis lock, cap 20, backoff, watchdog); Gmail `users.watch` after successful sync.
+- Scheduler (default **off**): `mail-gmail-watch-renew` hourly, `mail-sync-reconcile` every 5 min.
+- `POST …/sync-stub` removed. Health: watch `not_configured|active|expired`, idle heartbeat.
+
 ## Intentional placeholders / next slices
 
-- Real SMTP/sync/worker, Gmail/IMAP adapters, provider mailbox delete — Cleanup Register.
-- Attachment provider download job — metadata + Drive `FileAsset` link exists; download job missing.
+- Inbound attachment download job (`fileAssetId` optional) — Slice C.
+- Provider mailbox delete — Cleanup Register.
 
 ## MVP assumptions (Trash)
 

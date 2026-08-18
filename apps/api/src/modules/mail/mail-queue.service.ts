@@ -11,6 +11,7 @@ import {
   type MailQueueJobPayload,
 } from './mail-queue.constants';
 import { mailSendJobId } from './mail-outbound-runtime.constants';
+import { mailSyncJobId } from './mail-sync-runtime.constants';
 
 @Injectable()
 export class MailQueueService implements OnModuleInit, OnModuleDestroy {
@@ -45,7 +46,11 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   async enqueueSync(mailAccountId: string): Promise<boolean> {
-    return this.add(MAIL_SYNC_JOB_NAME, { kind: 'sync', mailAccountId });
+    return this.add(
+      MAIL_SYNC_JOB_NAME,
+      { kind: 'sync', mailAccountId },
+      mailSyncJobId(mailAccountId),
+    );
   }
 
   async enqueueSend(payload: {

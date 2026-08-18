@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { enqueueMailSyncBestEffort } from './mail-sync-dispatch';
 import { MailQueueService } from './mail-queue.service';
 import { MailSyncService } from './mail-sync.service';
 import { MailProviderConfig } from './providers/mail-provider.config';
@@ -42,10 +43,12 @@ export class MailPubSubService {
     if (!account) {
       return;
     }
-    const queued = await this.queueService.enqueueSync(account.id);
-    if (!queued) {
-      await this.syncService.syncAccount(account.id);
-    }
+    await enqueueMailSyncBestEffort({
+      queue: this.queueService,
+      syncService: this.syncService,
+      logger: this.logger,
+      mailAccountId: account.id,
+    });
   }
 
   private decode(body: PubSubPushBody): GmailNotification | null {
