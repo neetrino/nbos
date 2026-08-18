@@ -2,23 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CheckSquare,
-  ChevronDown,
-  FileText,
-  MessageCircle,
-  Plus,
-  Rocket,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { CheckSquare, FileText, Plus, Rocket, type LucideIcon } from 'lucide-react';
 import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
@@ -34,8 +18,11 @@ import { dealsApi } from '@/lib/api/deals';
 import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { DealSheetActionsMenu } from './DealSheetActionsMenu';
 import { WhatsAppGroupMissingBadge } from './WhatsAppGroupMissingBadge';
 import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
+import { buildDealWhatsAppQuickAction } from '../deal-whatsapp-quick-action';
+import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -174,63 +161,21 @@ export function DealSheetQuickActions({
       });
     }
 
-    if (!productId) {
-      items.push({
-        id: 'whatsapp-group',
-        label: 'Create WhatsApp group',
-        icon: MessageCircle,
-        enabled: false,
-        disabledTitle: 'Product has not been created yet.',
-      });
-    } else if (bindingStatus === 'ACTIVE') {
-      items.push({
-        id: 'whatsapp-settings',
-        label: 'Open WhatsApp settings',
-        icon: MessageCircle,
-        enabled: true,
-        onClick: () => {
-          const projectHref = projectId
-            ? `/projects/${projectId}/products/${productId}?settings=whatsapp`
-            : `/projects`;
-          router.push(projectHref);
+    items.push(
+      buildDealWhatsAppQuickAction({
+        productId,
+        projectId,
+        bindingStatus,
+        latestOperationStatus: whatsappState?.latestOperation?.status,
+        whatsappBusy,
+        onEnsure: () => void handleEnsureWhatsApp(),
+        onOpenSettings: (id) => {
+          router.push(
+            projectId ? `/projects/${projectId}/products/${id}?settings=whatsapp` : '/projects',
+          );
         },
-      });
-    } else if (bindingStatus === 'PENDING' || bindingStatus === 'CREATING') {
-      items.push({
-        id: 'whatsapp-group',
-        label: 'Creating WhatsApp group...',
-        icon: MessageCircle,
-        enabled: false,
-        disabledTitle: 'WhatsApp group creation is in progress',
-      });
-    } else if (bindingStatus === 'OUTCOME_UNKNOWN' || bindingStatus === 'NEEDS_RECONCILIATION') {
-      items.push({
-        id: 'whatsapp-resolve',
-        label: 'Resolve WhatsApp group',
-        icon: MessageCircle,
-        enabled: true,
-        onClick: () => {
-          if (!projectId) return;
-          router.push(`/projects/${projectId}/products/${productId}?settings=whatsapp`);
-        },
-      });
-    } else if (bindingStatus === 'FAILED') {
-      items.push({
-        id: 'whatsapp-retry',
-        label: 'Retry WhatsApp group creation',
-        icon: MessageCircle,
-        enabled: !whatsappBusy,
-        onClick: () => void handleEnsureWhatsApp(),
-      });
-    } else {
-      items.push({
-        id: 'whatsapp-group',
-        label: 'Create WhatsApp group',
-        icon: MessageCircle,
-        enabled: !whatsappBusy,
-        onClick: () => void handleEnsureWhatsApp(),
-      });
-    }
+      }),
+    );
 
     if (projectId) {
       items.push({
@@ -267,6 +212,7 @@ export function DealSheetQuickActions({
     router,
     startingEarly,
     whatsappBusy,
+    whatsappState,
   ]);
 
   const showWhatsAppMissing =
@@ -284,33 +230,7 @@ export function DealSheetQuickActions({
           groupChatId={whatsappState?.binding?.groupChatId}
         />
       ) : null}
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={(props) => (
-            <Button {...props} type="button" variant="outline" size="sm" className="gap-1.5">
-              <Zap size={14} aria-hidden />
-              Actions
-              <ChevronDown size={14} className="opacity-60" aria-hidden />
-            </Button>
-          )}
-        />
-        <DropdownMenuContent align="end" className="min-w-44">
-          {actions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <DropdownMenuItem
-                key={action.id}
-                disabled={!action.enabled}
-                title={action.disabledTitle}
-                onClick={() => action.onClick?.()}
-              >
-                <Icon />
-                {action.label}
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <DealSheetActionsMenu actions={actions} />
 
       {canCreateInvoice ? (
         <CreateInvoiceDialog

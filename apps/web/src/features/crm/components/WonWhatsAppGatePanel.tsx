@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import type { Deal } from '@/lib/api/deals';
 import type { DealWonWhatsAppPayload } from '../deal-won-whatsapp-gate';
 import { useWonWhatsAppGate } from '../hooks/use-won-whatsapp-gate';
+import { whatsappCreateButtonLabel } from '../whatsapp-create-status';
 
 interface WonWhatsAppGatePanelProps {
   deal: Deal;
@@ -14,8 +15,15 @@ interface WonWhatsAppGatePanelProps {
 }
 
 export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhatsAppGatePanelProps) {
-  const { groupIdInput, setGroupIdInput, busy, createFailed, handleCreate, handleSaveId } =
-    useWonWhatsAppGate(deal, open, onSatisfiedChange);
+  const {
+    groupIdInput,
+    setGroupIdInput,
+    busy,
+    createFailed,
+    createInFlight,
+    handleCreate,
+    handleSaveId,
+  } = useWonWhatsAppGate(deal, open, onSatisfiedChange);
 
   return (
     <div className="border-border space-y-3 rounded-lg border p-3">
@@ -33,10 +41,14 @@ export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhats
         type="button"
         variant="outline"
         className="w-full"
-        disabled={busy}
+        disabled={busy || createInFlight}
         onClick={() => void handleCreate()}
       >
-        Create WhatsApp group
+        {whatsappCreateButtonLabel({
+          inFlight: createInFlight,
+          failed: createFailed,
+          idleLabel: 'Create WhatsApp group',
+        })}
       </Button>
       <div className="space-y-1.5">
         <Label htmlFor="won-wa-group-id">WhatsApp group ID</Label>
