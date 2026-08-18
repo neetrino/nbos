@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
 import {
   PLATFORM_TRASH_PURGE_CRON_ENV,
   PLATFORM_TRASH_PURGE_DEFAULT_CRON,
@@ -9,7 +8,7 @@ import {
 } from '../platform-lifecycle/platform-trash-purge.constants';
 import { SchedulerService } from './scheduler.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
-import { shouldStartCronJob } from './scheduler-cron-gate';
+import { startSchedulerCronJob, stopSchedulerCronJob } from './scheduler-cron-bind';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 
 @Injectable()
@@ -25,41 +24,20 @@ export class PlatformTrashPurgeCron implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
-    if (!shouldStartCronJob(PLATFORM_TRASH_PURGE_ENABLED_ENV)) {
-      this.logger.log(`Cron ${this.jobName} not registered (role/flags).`);
-      return;
-    }
-    if (this.schedulerRegistry.doesExist('cron', this.jobName)) return;
-    const expression =
-      this.config.get<string>(PLATFORM_TRASH_PURGE_CRON_ENV)?.trim() ||
-      PLATFORM_TRASH_PURGE_DEFAULT_CRON;
-    let job: CronJob;
-    try {
-      job = new CronJob(expression, () => {
-        void this.runSafely();
-      });
-    } catch (caught) {
-      this.logger.error(`Invalid cron for ${this.jobName}`, caught);
-      return;
-    }
-    this.schedulerRegistry.addCronJob(this.jobName, job);
-    job.start();
-    this.jobRegistry.register(this.jobName);
-    this.logger.log(`Registered cron ${this.jobName} (${expression})`);
+    startSchedulerCronJob({
+      jobName: this.jobName,
+      enabledEnvKey: PLATFORM_TRASH_PURGE_ENABLED_ENV,
+      cronEnvKey: PLATFORM_TRASH_PURGE_CRON_ENV,
+      defaultExpression: PLATFORM_TRASH_PURGE_DEFAULT_CRON,
+      config: this.config,
+      schedulerRegistry: this.schedulerRegistry,
+      jobRegistry: this.jobRegistry,
+      logger: this.logger,
+      run: () => this.schedulerService.runPlatformTrashPurge('cron'),
+    });
   }
 
   onModuleDestroy(): void {
-    if (this.schedulerRegistry.doesExist('cron', this.jobName)) {
-      this.schedulerRegistry.deleteCronJob(this.jobName);
-    }
-  }
-
-  private async runSafely(): Promise<void> {
-    if (this.jobRegistry.isShuttingDown()) return;
-    try {
-      await this.schedulerService.runPlatformTrashPurge('cron');
-    } catch (caught) {
-      this.logger.error(`Platform trash purge cron failed`, caught);
-    }
+    stopSchedulerCronJob(this.jobName, this.schedulerRegistry);
   }
 }
