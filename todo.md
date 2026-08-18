@@ -3,9 +3,9 @@
 Очередь сейчас: Mail BullMQ migration. WhatsApp-очередь оставляем. Upstash на проде больше не нужен.
 
 - [ ] Завершить Mail: отправку и синхронизацию полностью перевести на BullMQ Worker, удалить старые stub/direct-пути и добавить end-to-end тест.
-- [ ] Локальный Redis: на ноутбуке `REDIS_URL` закомментирован — так и оставить (не прод). Второй компьютер проверить так же. Dev-Redis позже свой/локальный, не Upstash и не prod `nbos-redis`.
-- [x] Прод Redis: `nbos-redis`, TLS `rediss://:6380`, AOF + `maxmemory 256mb` + `noeviction`, 6379 закрыт. Runtime `REDIS_URL` у api / worker / scheduler. Preview-ключи Coolify на Upstash ничего не жрут, пока нет Preview-деплоя. Upstash аккаунт можно удалить.
-- [ ] Найти и уменьшить постоянный расход Redis-команд от API, Worker, Scheduler и BullMQ без риска потерять очередь задач (после своего Redis — только если расход RAM/CPU на VPS станет заметным).
+- [x] Локальный Redis: на ноутбуке и втором компьютере `REDIS_URL` закомментирован — так и оставить (не прод). Dev-Redis позже свой/локальный, не Upstash и не prod `nbos-redis`.
+- [x] Прод Redis: `nbos-redis`, TLS `rediss://:6380`, AOF + `maxmemory 256mb` + `noeviction`, 6379 закрыт. Runtime `REDIS_URL` у api / worker / scheduler. Upstash аккаунт удалён.
+- [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным (Upstash burn больше не актуален).
 - [ ] Оставить создание отчётов только ручным: кнопка → очередь → готовый файл → скачивание, без автоматического report cron.
 - [ ] Оставить создание Drive ZIP только ручным: кнопка → очередь → готовый ZIP → скачивание, без cron.
 - [x] WhatsApp: крон-ремонт и batch-reconcile **удалены** (старые мигрированные продукты без группы не трогать). Очередь и воркер оставить. Автосоздание только у нового Product / Deal Won; иначе кнопка.
