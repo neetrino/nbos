@@ -36,11 +36,7 @@ export function decodeBase64Url(data: string): string {
 
 function encodeBase64Url(value: string | Buffer): string {
   const buffer = typeof value === 'string' ? Buffer.from(value, 'utf8') : value;
-  return buffer
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function wrapBase64(value: Buffer): string {
@@ -76,14 +72,19 @@ export function buildRawGmailMessage(input: SendMessageInput): string {
   if (attachments.length > 0) {
     const mixed = `nbos_mix_${randomBytes(12).toString('hex')}`;
     headers.push(`Content-Type: multipart/mixed; boundary="${mixed}"`);
-    const parts = [buildBodyPart(input, mixed), ...attachments.map((item) => buildAttachmentPart(mixed, item))];
+    const parts = [
+      buildBodyPart(input, mixed),
+      ...attachments.map((item) => buildAttachmentPart(mixed, item)),
+    ];
     return encodeBase64Url(`${headers.join('\r\n')}\r\n\r\n${parts.join('\r\n')}--${mixed}--\r\n`);
   }
   const html = input.bodyHtml?.trim();
   if (html) {
     const boundary = `nbos_${randomBytes(16).toString('hex')}`;
     headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
-    return encodeBase64Url(`${headers.join('\r\n')}\r\n\r\n${buildAlternativeBody(input, boundary)}`);
+    return encodeBase64Url(
+      `${headers.join('\r\n')}\r\n\r\n${buildAlternativeBody(input, boundary)}`,
+    );
   }
   headers.push('Content-Type: text/plain; charset="UTF-8"');
   return encodeBase64Url(`${headers.join('\r\n')}\r\n\r\n${input.bodyText}`);

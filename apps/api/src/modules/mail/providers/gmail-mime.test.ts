@@ -19,7 +19,9 @@ describe('buildRawGmailMessage', () => {
         },
       ],
     });
-    const decoded = Buffer.from(raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+    const decoded = Buffer.from(raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString(
+      'utf8',
+    );
     expect(decoded).toContain('multipart/mixed');
     expect(decoded).toContain('filename="note.txt"');
     expect(decoded).toContain(Buffer.from('file-bytes').toString('base64'));

@@ -17,7 +17,9 @@ type OutboundAttachmentRow = {
   };
 };
 
-async function bufferFromR2Body(body: AsyncIterable<Uint8Array> | undefined): Promise<Buffer | null> {
+async function bufferFromR2Body(
+  body: AsyncIterable<Uint8Array> | undefined,
+): Promise<Buffer | null> {
   if (!body) {
     return null;
   }
@@ -34,7 +36,9 @@ async function readOutboundAttachmentBytes(
   attachmentId: string,
 ): Promise<Buffer> {
   try {
-    const response = await r2.ensureS3().send(new GetObjectCommand({ Bucket: r2.bucket, Key: key }));
+    const response = await r2
+      .ensureS3()
+      .send(new GetObjectCommand({ Bucket: r2.bucket, Key: key }));
     const content = await bufferFromR2Body(response.Body as AsyncIterable<Uint8Array> | undefined);
     if (!content) {
       throw new MailAttachmentLoadError(
@@ -46,9 +50,12 @@ async function readOutboundAttachmentBytes(
     if (error instanceof MailAttachmentLoadError) {
       throw error;
     }
-    throw new MailAttachmentLoadError(`Failed to load outbound attachment ${attachmentId} from R2`, {
-      cause: error,
-    });
+    throw new MailAttachmentLoadError(
+      `Failed to load outbound attachment ${attachmentId} from R2`,
+      {
+        cause: error,
+      },
+    );
   }
 }
 
@@ -63,7 +70,9 @@ async function loadOneOutboundAttachmentPart(
   }
   const content = await readOutboundAttachmentBytes(r2, key, row.id);
   const cidToken = `att-${row.id}`;
-  const htmlHasCid = Boolean(bodyHtml?.includes(`cid:${cidToken}`) || bodyHtml?.includes(`cid:${row.fileName}`));
+  const htmlHasCid = Boolean(
+    bodyHtml?.includes(`cid:${cidToken}`) || bodyHtml?.includes(`cid:${row.fileName}`),
+  );
   const isInline = row.isInline || htmlHasCid;
   return {
     filename: row.fileName,

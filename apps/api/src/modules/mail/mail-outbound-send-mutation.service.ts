@@ -88,7 +88,11 @@ export class MailOutboundSendMutationService {
       messageId,
       actorEmployeeId: employeeId,
     });
-    return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope: accessScope, threadId });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 
   async retryFailedOutboundSend(
@@ -134,7 +138,11 @@ export class MailOutboundSendMutationService {
       messageId,
       actorEmployeeId: employeeId,
     });
-    return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope: accessScope, threadId });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 
   async cancelOutboundDraftOrQueued(
@@ -180,7 +188,11 @@ export class MailOutboundSendMutationService {
       ownerEmployeeId: account.ownerEmployeeId,
       previousDeliveryStatus,
     });
-    return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope: accessScope, threadId });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 
   async resetFailedOutboundToDraft(
@@ -220,7 +232,11 @@ export class MailOutboundSendMutationService {
       emailAddress: account.emailAddress,
       ownerEmployeeId: account.ownerEmployeeId,
     });
-    return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope: accessScope, threadId });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 
   private async requireOutboundMessage(

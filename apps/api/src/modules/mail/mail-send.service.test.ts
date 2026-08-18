@@ -127,7 +127,9 @@ describe('MailSendService.sendQueuedMessage', () => {
       attachmentRows: [attachmentRow()],
       r2Send: vi.fn().mockResolvedValue({ Body: undefined }),
     });
-    await expect(service.sendQueuedMessage('a1', 'm1', 'e1')).rejects.toBeInstanceOf(MailAttachmentLoadError);
+    await expect(service.sendQueuedMessage('a1', 'm1', 'e1')).rejects.toBeInstanceOf(
+      MailAttachmentLoadError,
+    );
     expect(adapterFactory.forConnection).not.toHaveBeenCalled();
     expect(sendMessage).not.toHaveBeenCalled();
     expect(prisma.emailMessage.update).not.toHaveBeenCalled();

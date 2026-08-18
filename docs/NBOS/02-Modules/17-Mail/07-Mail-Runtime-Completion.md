@@ -30,15 +30,15 @@
 
 ## 2. Что сознательно не делаем
 
-| Вне скоупа | Почему |
-|---|---|
-| Полноценный Gmail/Outlook-клиент | Канон: inbox + compose/reply + threads, не labels/filters/snooze |
-| Microsoft Graph / новые провайдеры | Только `GMAIL` и `CORPORATE_IMAP_SMTP` |
-| Отдельный процесс только для почты | Достаточно `api` + `worker` + `scheduler` |
-| KMS, field-encryption тела письма | Уже зафиксировано в `06-Mail-Security-Stance.md` |
-| Автосоздание Lead/Deal из письма | Mail не меняет чужой lifecycle |
-| Transactional email (инвайты, дайджесты) | Это Notifications, не inbox |
-| Prometheus/Grafana-платформа | Structured logs + существующие Mail logs/health; общий мониторинг BullMQ — отдельный todo |
+| Вне скоупа                               | Почему                                                                                    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Полноценный Gmail/Outlook-клиент         | Канон: inbox + compose/reply + threads, не labels/filters/snooze                          |
+| Microsoft Graph / новые провайдеры       | Только `GMAIL` и `CORPORATE_IMAP_SMTP`                                                    |
+| Отдельный процесс только для почты       | Достаточно `api` + `worker` + `scheduler`                                                 |
+| KMS, field-encryption тела письма        | Уже зафиксировано в `06-Mail-Security-Stance.md`                                          |
+| Автосоздание Lead/Deal из письма         | Mail не меняет чужой lifecycle                                                            |
+| Transactional email (инвайты, дайджесты) | Это Notifications, не inbox                                                               |
+| Prometheus/Grafana-платформа             | Structured logs + существующие Mail logs/health; общий мониторинг BullMQ — отдельный todo |
 
 ---
 
@@ -84,11 +84,11 @@
 
 ## 4. Процессы и ответственность
 
-| Процесс | `PROCESS_ROLE` | Mail делает |
-|---|---|---|
-| `nbos-api` | `api` | REST, Gmail OAuth, Pub/Sub webhook, enqueue, **не** держит IMAP IDLE, **не** шлёт SMTP |
-| `nbos-worker` | `worker` | `mail.sync`, `mail.send`, `mail.attachment.download`; **держит IDLE** под Redis lock |
-| `nbos-scheduler` | `scheduler` | Watch renewal, fallback poll, orphan-QUEUED reconcile, stale-IDLE reclaim |
+| Процесс          | `PROCESS_ROLE` | Mail делает                                                                            |
+| ---------------- | -------------- | -------------------------------------------------------------------------------------- |
+| `nbos-api`       | `api`          | REST, Gmail OAuth, Pub/Sub webhook, enqueue, **не** держит IMAP IDLE, **не** шлёт SMTP |
+| `nbos-worker`    | `worker`       | `mail.sync`, `mail.send`, `mail.attachment.download`; **держит IDLE** под Redis lock   |
+| `nbos-scheduler` | `scheduler`    | Watch renewal, fallback poll, orphan-QUEUED reconcile, stale-IDLE reclaim              |
 
 `PROCESS_ROLE=all` — только local/dev. В production `all` запрещён, как сейчас.
 
@@ -98,14 +98,14 @@
 
 ### 5.1 Ящик — `MailAccount.status`
 
-| Статус | Смысл | Sync | Send | IDLE / Watch |
-|---|---|---|---|---|
-| `ACTIVE` | Норма | да | да | да |
-| `SYNCING` | Идёт sync (короткое) | уже идёт | да | да |
-| `DEGRADED` | Повторяемые сбои провайдера | poll/retry | да, пока SMTP жив | reconnect |
-| `NEEDS_RECONNECT` | Auth/revoke/неверный пароль | нет | нет | нет |
-| `PAUSED` | Остановлено вручную | нет | нет | нет |
-| `DISABLED` | Отключено | нет | нет | нет |
+| Статус            | Смысл                       | Sync       | Send              | IDLE / Watch |
+| ----------------- | --------------------------- | ---------- | ----------------- | ------------ |
+| `ACTIVE`          | Норма                       | да         | да                | да           |
+| `SYNCING`         | Идёт sync (короткое)        | уже идёт   | да                | да           |
+| `DEGRADED`        | Повторяемые сбои провайдера | poll/retry | да, пока SMTP жив | reconnect    |
+| `NEEDS_RECONNECT` | Auth/revoke/неверный пароль | нет        | нет               | нет          |
+| `PAUSED`          | Остановлено вручную         | нет        | нет               | нет          |
+| `DISABLED`        | Отключено                   | нет        | нет               | нет          |
 
 `MailProviderConnection.status` зеркалит техническое состояние: `CONNECTED` / `DEGRADED` / `NEEDS_RECONNECT` / `NOT_CONNECTED` / `PAUSED`.
 
@@ -137,11 +137,11 @@ SENT терминален
 
 Очередь одна: `mail`. Три job.
 
-| Job | Payload | `jobId` | Смысл |
-|---|---|---|---|
-| `mail.sync` | `{ kind: 'sync', mailAccountId }` | `mail-sync:{mailAccountId}` | Один sync на ящик в полёте |
-| `mail.send` | `{ kind: 'send', mailAccountId, messageId, actorEmployeeId }` | `mail-send:{messageId}` | Одна отправка на письмо |
-| `mail.attachment.download` | `{ kind: 'attachment', messageId, attachmentId }` | `mail-att:{attachmentId}` | Один download на вложение |
+| Job                        | Payload                                                       | `jobId`                     | Смысл                      |
+| -------------------------- | ------------------------------------------------------------- | --------------------------- | -------------------------- |
+| `mail.sync`                | `{ kind: 'sync', mailAccountId }`                             | `mail-sync:{mailAccountId}` | Один sync на ящик в полёте |
+| `mail.send`                | `{ kind: 'send', mailAccountId, messageId, actorEmployeeId }` | `mail-send:{messageId}`     | Одна отправка на письмо    |
+| `mail.attachment.download` | `{ kind: 'attachment', messageId, attachmentId }`             | `mail-att:{attachmentId}`   | Один download на вложение  |
 
 Повторный `queue.add` с тем же `jobId`, пока job жив — no-op (уже есть / in-flight). Это основной debounce для Pub/Sub + IDLE + poll.
 
@@ -155,12 +155,12 @@ SENT терминален
 
 Классификация — общая функция `classifyMailProviderError(error)`:
 
-| Класс | Примеры | Действие |
-|---|---|---|
-| Transient | timeout, `ECONNRESET`, `ETIMEDOUT`, HTTP 429/5xx, IMAP drop, Redis blip внутри job | throw → BullMQ retry |
-| Auth permanent | `invalid_grant`, 401, IMAP AUTH fail | ящик `NEEDS_RECONNECT`, sync/send стоп, job complete |
-| Message permanent | 5.1.1 recipient, invalid mailbox, reject без retry-hint | письмо `FAILED`, ящик не трогаем, job complete |
-| Ambiguous send | SMTP/Gmail приняли запрос, ответ не дошёл (timeout после submit) | письмо `FAILED`, delivery log `OUTCOME_UNKNOWN`, **не** слепой retry; только ручной retry после проверки |
+| Класс             | Примеры                                                                            | Действие                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Transient         | timeout, `ECONNRESET`, `ETIMEDOUT`, HTTP 429/5xx, IMAP drop, Redis blip внутри job | throw → BullMQ retry                                                                                     |
+| Auth permanent    | `invalid_grant`, 401, IMAP AUTH fail                                               | ящик `NEEDS_RECONNECT`, sync/send стоп, job complete                                                     |
+| Message permanent | 5.1.1 recipient, invalid mailbox, reject без retry-hint                            | письмо `FAILED`, ящик не трогаем, job complete                                                           |
+| Ambiguous send    | SMTP/Gmail приняли запрос, ответ не дошёл (timeout после submit)                   | письмо `FAILED`, delivery log `OUTCOME_UNKNOWN`, **не** слепой retry; только ручной retry после проверки |
 
 ---
 
@@ -350,34 +350,34 @@ Inline CID (`isInline`) для исходящих: если в HTML есть cid
 
 ## 10. Несколько ящиков и несколько replica
 
-| Риск | Защита |
-|---|---|
-| Два sync одного ящика | `jobId = mail-sync:{id}` |
-| Два send одного письма | `jobId` + `QUEUED→SENDING` |
-| Два inbound insert | unique `(mailAccountId, providerMessageId)` |
-| N API × N IDLE | IDLE только worker + Redis lock на ящик |
-| N worker × один IDLE | один lock holder, heartbeat |
-| Pub/Sub шторм | тот же sync jobId |
-| Poll + IDLE одновременно | тот же sync jobId, upsert идемпотентен |
-| API горизонтально | только HTTP/enqueue, без сокетов IMAP |
+| Риск                     | Защита                                      |
+| ------------------------ | ------------------------------------------- |
+| Два sync одного ящика    | `jobId = mail-sync:{id}`                    |
+| Два send одного письма   | `jobId` + `QUEUED→SENDING`                  |
+| Два inbound insert       | unique `(mailAccountId, providerMessageId)` |
+| N API × N IDLE           | IDLE только worker + Redis lock на ящик     |
+| N worker × один IDLE     | один lock holder, heartbeat                 |
+| Pub/Sub шторм            | тот же sync jobId                           |
+| Poll + IDLE одновременно | тот же sync jobId, upsert идемпотентен      |
+| API горизонтально        | только HTTP/enqueue, без сокетов IMAP       |
 
 ---
 
 ## 11. Восстановление после сбоев
 
-| Сбой | Поведение |
-|---|---|
-| Redis down в production | HTTP не шлёт почту сам; `QUEUED`/команда видны; когда Redis жив — reconcile доставляет job |
-| Gmail API down | sync/send retry; ящик `DEGRADED`; poll продолжает пытаться |
-| SMTP down | send retry; письмо не `SENT` |
-| IMAP disconnect | backoff + lock refresh; poll подхватит письма |
-| OAuth revoke | `NEEDS_RECONNECT`, стоп watch/IDLE/send |
-| Rate limit | transient retry |
-| Worker restart | BullMQ заново отдаёт active job; send защищён статусом; IDLE перехватывает другой worker по stale lock |
-| API restart | webhook и REST поднимаются; IDLE не привязан к API |
-| DB transient | throw, retry job |
-| Watch истёк | hourly renew + poll как сетка |
-| historyId протух | recovery-окно 30 писем |
+| Сбой                    | Поведение                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| Redis down в production | HTTP не шлёт почту сам; `QUEUED`/команда видны; когда Redis жив — reconcile доставляет job             |
+| Gmail API down          | sync/send retry; ящик `DEGRADED`; poll продолжает пытаться                                             |
+| SMTP down               | send retry; письмо не `SENT`                                                                           |
+| IMAP disconnect         | backoff + lock refresh; poll подхватит письма                                                          |
+| OAuth revoke            | `NEEDS_RECONNECT`, стоп watch/IDLE/send                                                                |
+| Rate limit              | transient retry                                                                                        |
+| Worker restart          | BullMQ заново отдаёт active job; send защищён статусом; IDLE перехватывает другой worker по stale lock |
+| API restart             | webhook и REST поднимаются; IDLE не привязан к API                                                     |
+| DB transient            | throw, retry job                                                                                       |
+| Watch истёк             | hourly renew + poll как сетка                                                                          |
+| historyId протух        | recovery-окно 30 писем                                                                                 |
 
 «Без потери писем» значит: письмо, которое есть у провайдера в окне sync, появляется в NBOS не позже одного успешного poll/IDLE/push после восстановления. Не «в ту же секунду».
 
@@ -407,16 +407,16 @@ Inline CID (`isInline`) для исходящих: если в HTML есть cid
 
 ## 13. Что удаляем
 
-| Удалить | Замена |
-|---|---|
-| `POST /mail/accounts/:id/sync-stub` | только `POST …/sync` → enqueue (**удаление stub — срез B**; в A убрать вызовы из UI) |
-| `POST …/finalize-send-stub` | настоящий worker send |
-| `POST …/messages/:id/queue` как HTTP-send провайдеру | тот же endpoint остаётся: только `DRAFT→QUEUED` + `enqueueSend` |
-| Inline `sendQueuedMessage` из HTTP в production | `enqueueSend` |
-| Inline `syncAccount` из Pub/Sub / IDLE / connect в production | `enqueueSync` |
-| `MailImapIdleService` на API | тот же сервис на worker + lock |
-| Мёртвый `enqueueSend` «есть, но не вызывается» | единственный путь send |
-| Web-кнопки stub sync / finalize-stub | Sync + Send/Retry |
+| Удалить                                                       | Замена                                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `POST /mail/accounts/:id/sync-stub`                           | только `POST …/sync` → enqueue (**удаление stub — срез B**; в A убрать вызовы из UI) |
+| `POST …/finalize-send-stub`                                   | настоящий worker send                                                                |
+| `POST …/messages/:id/queue` как HTTP-send провайдеру          | тот же endpoint остаётся: только `DRAFT→QUEUED` + `enqueueSend`                      |
+| Inline `sendQueuedMessage` из HTTP в production               | `enqueueSend`                                                                        |
+| Inline `syncAccount` из Pub/Sub / IDLE / connect в production | `enqueueSync`                                                                        |
+| `MailImapIdleService` на API                                  | тот же сервис на worker + lock                                                       |
+| Мёртвый `enqueueSend` «есть, но не вызывается»                | единственный путь send                                                               |
+| Web-кнопки stub sync / finalize-stub                          | Sync + Send/Retry                                                                    |
 
 `queueOutboundDraftMessage` как **DB-хелпер** (`DRAFT→QUEUED`) остаётся внутри compose/retry. Это не BullMQ и не stub.
 
@@ -529,14 +529,14 @@ Web (в том же контуре, иначе UI врёт):
 
 ## 17. Тесты (минимум)
 
-| Слой | Обязательное |
-|---|---|
-| Unit | `classifyMailProviderError`; fetch plan UIDVALIDITY; jobId стабилен |
-| Ops | upsert не создаёт дубль; `QUEUED→SENDING` при гонке один победитель |
-| Worker | mock adapter: send один раз на три attempt; sync swallow больше нет |
+| Слой      | Обязательное                                                              |
+| --------- | ------------------------------------------------------------------------- |
+| Unit      | `classifyMailProviderError`; fetch plan UIDVALIDITY; jobId стабилен       |
+| Ops       | upsert не создаёт дубль; `QUEUED→SENDING` при гонке один победитель       |
+| Worker    | mock adapter: send один раз на три attempt; sync swallow больше нет       |
 | Scheduler | renew выбирает только истекающие watch; poll не трогает `NEEDS_RECONNECT` |
-| HTTP | compose не вызывает `sendMessage`; 503/queued без Redis в prod-режиме |
-| Web | нет вызовов `sync-stub` / `finalize-send-stub` |
+| HTTP      | compose не вызывает `sendMessage`; 503/queued без Redis в prod-режиме     |
+| Web       | нет вызовов `sync-stub` / `finalize-send-stub`                            |
 
 Живой Gmail/IMAP в CI не обязателен. Адаптеры мокаются. Один ручной smoke на стейдже: connect, приход письма, reply, restart worker, повтор не дублирует.
 
@@ -564,21 +564,21 @@ Web (в том же контуре, иначе UI врёт):
 
 Чтобы не оставлять дыры «уточним потом»:
 
-| Параметр | Значение |
-|---|---|
-| Initial / recovery окно | 30 писем |
-| Poll | каждые 5 минут |
-| Watch renew | каждый час, если expiry < 24 ч |
-| IDLE lock TTL | 90 с |
-| IDLE heartbeat | 30 с |
-| IDLE backoff | 5–120 с, jitter 20 % |
-| IDLE watchdog тишины | 10 минут |
-| Orphan QUEUED | старше 60 с |
-| Stale SENDING без provider id | 10 минут → снова QUEUED |
-| Вложение max | 25 MiB |
-| Mail concurrency | 5 |
-| Job attempts | 5, exp от 5 с |
-| Pub/Sub auth | существующий query token |
+| Параметр                      | Значение                       |
+| ----------------------------- | ------------------------------ |
+| Initial / recovery окно       | 30 писем                       |
+| Poll                          | каждые 5 минут                 |
+| Watch renew                   | каждый час, если expiry < 24 ч |
+| IDLE lock TTL                 | 90 с                           |
+| IDLE heartbeat                | 30 с                           |
+| IDLE backoff                  | 5–120 с, jitter 20 %           |
+| IDLE watchdog тишины          | 10 минут                       |
+| Orphan QUEUED                 | старше 60 с                    |
+| Stale SENDING без provider id | 10 минут → снова QUEUED        |
+| Вложение max                  | 25 MiB                         |
+| Mail concurrency              | 5                              |
+| Job attempts                  | 5, exp от 5 с                  |
+| Pub/Sub auth                  | существующий query token       |
 
 Флаги scheduler — в roster отдельными строками. `mail-outbound-reconcile` (срез A) и inbox poll / watch renew (срез B) **не** включать пакетом. Default всех новых mail-флагов — **off**.
 

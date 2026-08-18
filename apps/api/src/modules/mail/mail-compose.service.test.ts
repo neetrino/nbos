@@ -19,7 +19,12 @@ describe('MailComposeService.dispatch contour', () => {
     );
     await (
       service as unknown as {
-        dispatch: (threadId: string, messageId: string, accountId: string, employeeId: string) => Promise<void>;
+        dispatch: (
+          threadId: string,
+          messageId: string,
+          accountId: string,
+          employeeId: string,
+        ) => Promise<void>;
       }
     ).dispatch('t1', 'm1', 'a1', 'e1');
     expect(enqueueSend).toHaveBeenCalledWith({
@@ -40,7 +45,12 @@ describe('MailComposeService.dispatch contour', () => {
     await expect(
       (
         service as unknown as {
-          dispatch: (threadId: string, messageId: string, accountId: string, employeeId: string) => Promise<void>;
+          dispatch: (
+            threadId: string,
+            messageId: string,
+            accountId: string,
+            employeeId: string,
+          ) => Promise<void>;
         }
       ).dispatch('t1', 'm1', 'a1', 'e1'),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);

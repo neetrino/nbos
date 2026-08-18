@@ -201,7 +201,9 @@ export class MailCollabController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Compose and queue a new email (200 + QUEUED when the job is accepted)' })
+  @ApiOperation({
+    summary: 'Compose and queue a new email (200 + QUEUED when the job is accepted)',
+  })
   compose(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,

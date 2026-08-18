@@ -87,7 +87,10 @@ export function classifyMailProviderError(error: unknown): MailProviderErrorClas
   if (AMBIGUOUS_PATTERNS.some((pattern) => pattern.test(message))) {
     return 'ambiguous';
   }
-  if (status === 401 || AUTH_PATTERNS.some((pattern) => pattern.test(message) || pattern.test(code))) {
+  if (
+    status === 401 ||
+    AUTH_PATTERNS.some((pattern) => pattern.test(message) || pattern.test(code))
+  ) {
     return 'auth';
   }
   if (PERMANENT_PATTERNS.some((pattern) => pattern.test(message))) {

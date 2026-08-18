@@ -17,7 +17,10 @@ function attachmentRow(overrides?: { storageKey?: string | null; storageProvider
   };
 }
 
-function createDeps(options?: { rows?: ReturnType<typeof attachmentRow>[]; r2Send?: ReturnType<typeof vi.fn> }) {
+function createDeps(options?: {
+  rows?: ReturnType<typeof attachmentRow>[];
+  r2Send?: ReturnType<typeof vi.fn>;
+}) {
   const prisma = {
     emailAttachment: { findMany: vi.fn().mockResolvedValue(options?.rows ?? []) },
   };
@@ -29,7 +32,9 @@ function createDeps(options?: { rows?: ReturnType<typeof attachmentRow>[]; r2Sen
 describe('loadOutboundAttachmentParts', () => {
   it('returns empty parts when the message has no attachment rows', async () => {
     const { prisma, r2, r2Send } = createDeps();
-    await expect(loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null)).resolves.toEqual([]);
+    await expect(
+      loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null),
+    ).resolves.toEqual([]);
     expect(r2Send).not.toHaveBeenCalled();
   });
 
@@ -38,9 +43,9 @@ describe('loadOutboundAttachmentParts', () => {
       rows: [attachmentRow()],
       r2Send: vi.fn().mockResolvedValue({ Body: undefined }),
     });
-    await expect(loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null)).rejects.toBeInstanceOf(
-      MailAttachmentLoadError,
-    );
+    await expect(
+      loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null),
+    ).rejects.toBeInstanceOf(MailAttachmentLoadError);
     expect(r2Send).toHaveBeenCalled();
   });
 
@@ -50,9 +55,12 @@ describe('loadOutboundAttachmentParts', () => {
       rows: [attachmentRow()],
       r2Send: vi.fn().mockRejectedValue(networkError),
     });
-    const thrown = await loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null).catch(
-      (error: unknown) => error,
-    );
+    const thrown = await loadOutboundAttachmentParts(
+      prisma as never,
+      r2 as never,
+      'm1',
+      null,
+    ).catch((error: unknown) => error);
     expect(thrown).toBeInstanceOf(MailAttachmentLoadError);
     expect(thrown).toHaveProperty('cause', networkError);
   });

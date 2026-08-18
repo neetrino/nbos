@@ -49,7 +49,13 @@ export class MailOutboundReconcileService {
       if (!actorEmployeeId) {
         continue;
       }
-      if (await this.queue.enqueueSend({ mailAccountId: row.mailAccountId, messageId: row.id, actorEmployeeId })) {
+      if (
+        await this.queue.enqueueSend({
+          mailAccountId: row.mailAccountId,
+          messageId: row.id,
+          actorEmployeeId,
+        })
+      ) {
         count += 1;
       }
     }
@@ -80,7 +86,11 @@ export class MailOutboundReconcileService {
       const actorEmployeeId = await this.resolveActorEmployeeId(row.id, row.mailAccountId);
       if (
         actorEmployeeId &&
-        (await this.queue.enqueueSend({ mailAccountId: row.mailAccountId, messageId: row.id, actorEmployeeId }))
+        (await this.queue.enqueueSend({
+          mailAccountId: row.mailAccountId,
+          messageId: row.id,
+          actorEmployeeId,
+        }))
       ) {
         count += 1;
       }

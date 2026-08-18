@@ -53,7 +53,11 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
     messageId: string;
     actorEmployeeId: string;
   }): Promise<boolean> {
-    return this.add(MAIL_SEND_JOB_NAME, { kind: 'send', ...payload }, mailSendJobId(payload.messageId));
+    return this.add(
+      MAIL_SEND_JOB_NAME,
+      { kind: 'send', ...payload },
+      mailSendJobId(payload.messageId),
+    );
   }
 
   private async add(
@@ -79,5 +83,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
 
 function isDuplicateJobError(caught: unknown): boolean {
   const message = caught instanceof Error ? caught.message : String(caught);
-  return /already (exists|present)/i.test(message) || (/jobId/i.test(message) && /exist/i.test(message));
+  return (
+    /already (exists|present)/i.test(message) || (/jobId/i.test(message) && /exist/i.test(message))
+  );
 }
