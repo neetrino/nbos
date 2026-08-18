@@ -1,10 +1,20 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { assertCorsOriginsSafeForProduction, parseCorsOriginsFromEnv } from './cors-origins';
 
 describe('cors-origins', () => {
-  afterEach(() => {
+  const originalCorsOrigin = process.env.CORS_ORIGIN;
+  const originalNodeEnv = process.env.NODE_ENV;
+
+  beforeEach(() => {
     delete process.env.CORS_ORIGIN;
     delete process.env.NODE_ENV;
+  });
+
+  afterEach(() => {
+    if (originalCorsOrigin === undefined) delete process.env.CORS_ORIGIN;
+    else process.env.CORS_ORIGIN = originalCorsOrigin;
+    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = originalNodeEnv;
   });
 
   it('parses comma-separated origins and defaults in dev', () => {

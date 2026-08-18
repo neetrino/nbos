@@ -33,6 +33,8 @@ SCHEDULER_HEARTBEAT_INTERVAL_MS=30000
 
 `heartbeat < leaseTTL / 2` validated at scheduler startup.
 
+Automatic work runs as Nest CronJobs on `nbos-scheduler` (`SCHEDULER_ENABLED` + one per-job flag). HTTP `/api/scheduler/*` is leftover for rare manual/repair calls (`sales-kpi-backfill-all` has no cron). Do not add Coolify/external cron.
+
 ## Rollout
 
 See `docs/deploy.md` §4.2c and `docs/architecture/scheduler-inventory.md`.

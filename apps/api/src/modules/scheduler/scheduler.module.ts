@@ -21,6 +21,7 @@ import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
+import { INTERNAL_SCHEDULER_CRON_PROVIDERS } from './scheduler-internal.crons';
 import { SchedulerController } from './scheduler.controller';
 import { SchedulerDiagnosticsController } from './scheduler-diagnostics.controller';
 import { SchedulerReadyController } from './scheduler-ready.controller';
@@ -56,6 +57,7 @@ const CRON_PROVIDERS = [
   NotificationInboxReconcileCron,
   NotificationEnqueueReconcileCron,
   AuthSessionCleanupCron,
+  ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
 /**

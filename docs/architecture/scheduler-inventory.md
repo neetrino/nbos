@@ -23,9 +23,9 @@ Registered only when feature env is truthy. Historically lived inside `Scheduler
 | `credential-trash-purge` | `SCHEDULER_CREDENTIAL_TRASH_PURGE_ENABLED` + CronJob | env cron              | API (legacy)    |      minutes | retention TTL filter                  | hard-delete secrets              | high   | SET-BASED UPDATE          |
 | `platform-trash-purge`   | `SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED` + CronJob   | env cron              | API (legacy)    |      minutes | retention TTL + audit                 | Credentials + Drive purge        | high   | SET-BASED UPDATE          |
 
-## HTTP external cron (`POST /api/scheduler/*` + `SCHEDULER_API_KEY`)
+## HTTP leftover (`POST /api/scheduler/*` + `SCHEDULER_API_KEY`)
 
-Preferred production path before Phase 4. Runs inside **API** process when Coolify/cron hits the endpoint.
+Same handlers as Nest cron (lease `manual_http`). Not the production ticker. `sales-kpi-backfill-all` stays HTTP/manual only (no cron).
 
 | Job                                 | Current trigger                                     | Frequency          | Current process |    Max duration | Idempotency                | External effects            | Risk     | Class                |
 | ----------------------------------- | --------------------------------------------------- | ------------------ | --------------- | --------------: | -------------------------- | --------------------------- | -------- | -------------------- |
@@ -55,13 +55,13 @@ Preferred production path before Phase 4. Runs inside **API** process when Cooli
 
 ## Phase 4 transfer plan
 
-| Priority | Job                            | Action                                                                         |
-| -------- | ------------------------------ | ------------------------------------------------------------------------------ |
-| P0       | All four in-process CronJobs   | Move registration to `PROCESS_ROLE=scheduler` only; wrap `runWithLease`        |
-| P0       | `notification-inbox-reconcile` | Add scheduler cron + flag; Stage C canary                                      |
-| P1       | HTTP endpoints                 | Keep on API temporarily; wrap handlers with same lease (`trigger=manual_http`) |
-| P1       | Jobs with EXTERNAL SIDE EFFECT | Prefer enqueue BullMQ where queue exists; do not rewrite all mail inline       |
-| P2       | Remaining HTTP-only jobs       | Add optional scheduler crons behind per-job flags (default off)                |
+| Priority | Job                            | Action                                                                               |
+| -------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| P0       | All four in-process CronJobs   | Move registration to `PROCESS_ROLE=scheduler` only; wrap `runWithLease`              |
+| P0       | `notification-inbox-reconcile` | Add scheduler cron + flag; Stage C canary                                            |
+| P1       | HTTP endpoints                 | Keep on API temporarily; wrap handlers with same lease (`trigger=manual_http`)       |
+| P1       | Jobs with EXTERNAL SIDE EFFECT | Prefer enqueue BullMQ where queue exists; do not rewrite all mail inline             |
+| P2       | Remaining HTTP-only jobs       | ✅ Nest crons on `nbos-scheduler`, flags default off (`scheduler-internal.crons.ts`) |
 
 ## No `@Cron` / `@Interval` / `@Timeout` decorators found
 
