@@ -34,12 +34,17 @@ export function decodeBase64Url(data: string): string {
   return Buffer.from(normalized, 'base64').toString('utf8');
 }
 
-function encodeBase64Url(value: string): string {
-  return Buffer.from(value, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+function encodeBase64Url(value: string | Buffer): string {
+  const buffer = typeof value === 'string' ? Buffer.from(value, 'utf8') : value;
+  return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function wrapBase64(value: Buffer): string {
+  return value.toString('base64').replace(/(.{76})/g, '$1\r\n');
+}
+
+function quoteFileName(fileName: string): string {
+  return fileName.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
 
 function fromHeader(input: SendMessageInput): string {
@@ -63,28 +68,85 @@ export function buildRawGmailMessage(input: SendMessageInput): string {
     headers.push(`References: ${input.references}`);
   }
   headers.push('MIME-Version: 1.0');
+  const attachments = input.attachments ?? [];
+  if (attachments.length > 0) {
+    const mixed = `nbos_mix_${randomBytes(12).toString('hex')}`;
+    headers.push(`Content-Type: multipart/mixed; boundary="${mixed}"`);
+    const parts = [
+      buildBodyPart(input, mixed),
+      ...attachments.map((item) => buildAttachmentPart(mixed, item)),
+    ];
+    return encodeBase64Url(`${headers.join('\r\n')}\r\n\r\n${parts.join('\r\n')}--${mixed}--\r\n`);
+  }
   const html = input.bodyHtml?.trim();
   if (html) {
     const boundary = `nbos_${randomBytes(16).toString('hex')}`;
     headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
-    const body = [
-      `--${boundary}`,
+    return encodeBase64Url(
+      `${headers.join('\r\n')}\r\n\r\n${buildAlternativeBody(input, boundary)}`,
+    );
+  }
+  headers.push('Content-Type: text/plain; charset="UTF-8"');
+  return encodeBase64Url(`${headers.join('\r\n')}\r\n\r\n${input.bodyText}`);
+}
+
+function buildAlternativeBody(
+  input: Pick<SendMessageInput, 'bodyText' | 'bodyHtml'>,
+  boundary: string,
+): string {
+  const html = input.bodyHtml?.trim() ?? '';
+  return [
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    input.bodyText,
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    html,
+    `--${boundary}--`,
+    '',
+  ].join('\r\n');
+}
+
+function buildBodyPart(input: SendMessageInput, mixedBoundary: string): string {
+  const html = input.bodyHtml?.trim();
+  if (!html) {
+    return [
+      `--${mixedBoundary}`,
       'Content-Type: text/plain; charset="UTF-8"',
       'Content-Transfer-Encoding: 7bit',
       '',
       input.bodyText,
-      `--${boundary}`,
-      'Content-Type: text/html; charset="UTF-8"',
-      'Content-Transfer-Encoding: 7bit',
-      '',
-      html,
-      `--${boundary}--`,
       '',
     ].join('\r\n');
-    const raw = `${headers.join('\r\n')}\r\n\r\n${body}`;
-    return encodeBase64Url(raw);
   }
-  headers.push('Content-Type: text/plain; charset="UTF-8"');
-  const raw = `${headers.join('\r\n')}\r\n\r\n${input.bodyText}`;
-  return encodeBase64Url(raw);
+  const inner = `nbos_alt_${randomBytes(12).toString('hex')}`;
+  return [
+    `--${mixedBoundary}`,
+    `Content-Type: multipart/alternative; boundary="${inner}"`,
+    '',
+    buildAlternativeBody(input, inner),
+  ].join('\r\n');
+}
+
+function buildAttachmentPart(
+  mixedBoundary: string,
+  item: NonNullable<SendMessageInput['attachments']>[number],
+): string {
+  const safeName = quoteFileName(item.filename);
+  const disposition = item.isInline ? 'inline' : 'attachment';
+  const lines = [
+    `--${mixedBoundary}`,
+    `Content-Type: ${item.contentType}; name="${safeName}"`,
+    `Content-Disposition: ${disposition}; filename="${safeName}"`,
+    'Content-Transfer-Encoding: base64',
+  ];
+  if (item.contentId) {
+    lines.push(`Content-ID: <${item.contentId}>`);
+  }
+  lines.push('', wrapBase64(item.content), '');
+  return lines.join('\r\n');
 }

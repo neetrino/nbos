@@ -16,6 +16,7 @@ import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
+import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
 import { splitEmailList } from './mail-thread-helpers';
 
 export interface ComposeMailSheetProps {
@@ -73,7 +74,7 @@ export function ComposeMailSheet({
         bodyText,
         ...(bodyHtml ? { bodyHtml } : {}),
       });
-      toast.success('Email sent.');
+      toast.success(MAIL_QUEUED_TOAST);
       onSent(detail.thread.id);
     } catch (e) {
       toast.error(getApiErrorMessage(e, 'Email could not be sent.'));

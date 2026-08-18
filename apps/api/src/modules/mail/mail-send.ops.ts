@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@nbos/database';
 import type { ConnectionForAdapter } from './providers/mail-provider-adapter.factory';
-import type { SendMessageInput } from './providers/mail-provider-adapter';
+import type { SendMessageAttachment, SendMessageInput } from './providers/mail-provider-adapter';
 
 export interface OutboundSendContext {
   connection: ConnectionForAdapter;
@@ -38,7 +38,7 @@ export async function loadOutboundSendContext(
     !message ||
     message.mailAccountId !== mailAccountId ||
     message.direction !== 'OUTBOUND' ||
-    message.deliveryStatus !== 'QUEUED'
+    (message.deliveryStatus !== 'QUEUED' && message.deliveryStatus !== 'SENDING')
   ) {
     return null;
   }
@@ -83,7 +83,10 @@ export async function loadOutboundSendContext(
   };
 }
 
-export function buildSendMessageInput(context: OutboundSendContext): SendMessageInput {
+export function buildSendMessageInput(
+  context: OutboundSendContext,
+  attachments: SendMessageAttachment[] = [],
+): SendMessageInput {
   return {
     fromEmail: context.fromEmail,
     fromName: context.fromName,
@@ -96,5 +99,6 @@ export function buildSendMessageInput(context: OutboundSendContext): SendMessage
     inReplyToMessageIdHeader: context.inReplyToMessageIdHeader,
     references: context.references,
     providerThreadId: context.providerThreadId,
+    attachments,
   };
 }

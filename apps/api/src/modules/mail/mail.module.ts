@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { DriveModule } from '../drive/drive.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { MailAccountAccessService } from './mail-account-access.service';
 import { MailAccountCommandService } from './mail-account-command.service';
@@ -13,6 +14,7 @@ import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { MailProviderController } from './mail-provider.controller';
 import { MailPubSubService } from './mail-pubsub.service';
+import { MailOutboundReconcileService } from './mail-outbound-reconcile.service';
 import { MailQueueService } from './mail-queue.service';
 import { MailSendService } from './mail-send.service';
 import { MailService } from './mail.service';
@@ -25,7 +27,7 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
 
 /** Queue producers + domain services. BullMQ Worker lives in QueueWorkersModule. */
 @Module({
-  imports: [AuditModule, NotificationModule],
+  imports: [AuditModule, NotificationModule, DriveModule],
   controllers: [MailController, MailProviderController, MailCollabController],
   providers: [
     MailService,
@@ -41,12 +43,19 @@ import { MailProviderSecretStore } from './providers/mail-provider-secret.store'
     MailPubSubService,
     MailSyncService,
     MailSendService,
+    MailOutboundReconcileService,
     MailQueueService,
     MailImapIdleService,
     MailProviderConfig,
     MailProviderSecretStore,
     MailProviderAdapterFactory,
   ],
-  exports: [MailService, MailSyncService, MailSendService, MailQueueService],
+  exports: [
+    MailService,
+    MailSyncService,
+    MailSendService,
+    MailQueueService,
+    MailOutboundReconcileService,
+  ],
 })
 export class MailModule {}

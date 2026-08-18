@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { MAIL_QUEUED_TOAST, MAIL_RETRY_QUEUED_TOAST } from './mail-outbound-copy';
 
 export interface UseMailThreadDetailOptions {
   threadId: string;
@@ -28,7 +29,7 @@ export function useMailThreadDetail({
   const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
-  const [finalizingMessageId, setFinalizingMessageId] = useState<string | null>(null);
+  const [retryingSendMessageId, setRetryingSendMessageId] = useState<string | null>(null);
   const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
   const [retryingFailedMessageId, setRetryingFailedMessageId] = useState<string | null>(null);
   const [patchingNeedsLink, setPatchingNeedsLink] = useState(false);
@@ -106,6 +107,7 @@ export function useMailThreadDetail({
       try {
         const d = await mailApi.queueOutboundDraft(threadId, messageId);
         setDetail(d);
+        toast.success(MAIL_QUEUED_TOAST);
       } catch (e) {
         setError(getApiErrorMessage(e, 'Could not queue message.'));
       } finally {
@@ -115,18 +117,19 @@ export function useMailThreadDetail({
     [threadId],
   );
 
-  const finalizeQueuedStub = useCallback(
+  const retryFailedSend = useCallback(
     async (messageId: string) => {
       if (!threadId) return;
-      setFinalizingMessageId(messageId);
+      setRetryingSendMessageId(messageId);
       setError(null);
       try {
-        const d = await mailApi.finalizeQueuedOutboundStub(threadId, messageId);
+        const d = await mailApi.retryOutboundSend(threadId, messageId);
         setDetail(d);
+        toast.success(MAIL_RETRY_QUEUED_TOAST);
       } catch (e) {
-        setError(getApiErrorMessage(e, 'Could not finalize send (stub).'));
+        setError(getApiErrorMessage(e, 'Could not retry send.'));
       } finally {
-        setFinalizingMessageId(null);
+        setRetryingSendMessageId(null);
       }
     },
     [threadId],
@@ -227,7 +230,7 @@ export function useMailThreadDetail({
     markingUnread,
     markingSpam,
     queueingMessageId,
-    finalizingMessageId,
+    retryingSendMessageId,
     cancellingMessageId,
     retryingFailedMessageId,
     patchingNeedsLink,
@@ -235,7 +238,7 @@ export function useMailThreadDetail({
     markUnread,
     markSpam,
     queueDraftForSend,
-    finalizeQueuedStub,
+    retryFailedSend,
     cancelOutbound,
     resetFailedToDraft,
     setNeedsBusinessLink,

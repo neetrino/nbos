@@ -24,6 +24,7 @@ export const SCHEDULER_JOB_NAMES = {
   supportSlaEscalation: 'support-sla-escalation',
   authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
+  mailOutboundReconcile: 'mail-outbound-reconcile',
 } as const;
 
 export type SchedulerJobName = (typeof SCHEDULER_JOB_NAMES)[keyof typeof SCHEDULER_JOB_NAMES];

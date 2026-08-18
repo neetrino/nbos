@@ -11,6 +11,12 @@ export function formatMailDeliveryLogKind(kind: string): string {
       return 'Send cancelled';
     case 'OUTBOUND_FAILED_RESET_TO_DRAFT':
       return 'Failed send reset to draft';
+    case 'OUTBOUND_SENT':
+      return 'Sent';
+    case 'OUTBOUND_SEND_FAILED':
+      return 'Send failed';
+    case 'OUTCOME_UNKNOWN':
+      return 'Delivery unconfirmed';
     default:
       return kind.replaceAll('_', ' ');
   }

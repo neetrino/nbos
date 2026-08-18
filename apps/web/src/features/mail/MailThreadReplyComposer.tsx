@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { mailApi, type MailMessageRow, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
 import {
   defaultReplySubjectFromMessages,
   defaultReplyToFromMessages,
@@ -66,7 +67,7 @@ export function MailThreadReplyComposer({
       });
       onThreadUpdated(d);
       setBody('');
-      toast.success('Reply sent.');
+      toast.success(MAIL_QUEUED_TOAST);
       onSent?.();
     } catch (e) {
       toast.error(getApiErrorMessage(e, 'Reply could not be sent.'));

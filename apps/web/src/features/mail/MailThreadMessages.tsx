@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/shared';
 import { formatFileSize } from '@/features/drive/drive-format';
 import type { MailMessageRow } from '@/lib/api/mail';
+import { MailFailedOutboundActions } from './MailFailedOutboundActions';
 import { MailMessageBody } from './MailMessageBody';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
 
@@ -15,11 +16,11 @@ export interface MailThreadMessagesProps {
   messages: MailMessageRow[];
   canEdit: boolean;
   queueingMessageId: string | null;
-  finalizingMessageId: string | null;
+  retryingSendMessageId: string | null;
   cancellingMessageId: string | null;
   retryingFailedMessageId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
-  onFinalizeQueuedStub: (messageId: string) => void | Promise<void>;
+  onRetryFailedSend: (messageId: string) => void | Promise<void>;
   onCancelOutbound: (messageId: string) => void | Promise<void>;
   onResetFailedToDraft: (messageId: string) => void | Promise<void>;
 }
@@ -29,11 +30,11 @@ export function MailThreadMessages({
   messages,
   canEdit,
   queueingMessageId,
-  finalizingMessageId,
+  retryingSendMessageId,
   cancellingMessageId,
   retryingFailedMessageId,
   onQueueDraft,
-  onFinalizeQueuedStub,
+  onRetryFailedSend,
   onCancelOutbound,
   onResetFailedToDraft,
 }: MailThreadMessagesProps) {
@@ -42,7 +43,7 @@ export function MailThreadMessages({
   }
   const outboundBusy =
     queueingMessageId !== null ||
-    finalizingMessageId !== null ||
+    retryingSendMessageId !== null ||
     cancellingMessageId !== null ||
     retryingFailedMessageId !== null;
   return (
@@ -103,15 +104,6 @@ export function MailThreadMessages({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={outboundBusy}
-                  onClick={() => void onFinalizeQueuedStub(m.id)}
-                >
-                  {finalizingMessageId === m.id ? 'Finalizing…' : 'Finalize send (stub → failed)'}
-                </Button>
-                <Button
-                  type="button"
                   variant="outline"
                   size="sm"
                   disabled={outboundBusy}
@@ -122,15 +114,15 @@ export function MailThreadMessages({
               </div>
             ) : null}
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'FAILED' ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={outboundBusy}
-                onClick={() => void onResetFailedToDraft(m.id)}
-              >
-                {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft (retry)'}
-              </Button>
+              <MailFailedOutboundActions
+                threadId={threadId}
+                messageId={m.id}
+                outboundBusy={outboundBusy}
+                retryingSendMessageId={retryingSendMessageId}
+                retryingFailedMessageId={retryingFailedMessageId}
+                onRetryFailedSend={onRetryFailedSend}
+                onResetFailedToDraft={onResetFailedToDraft}
+              />
             ) : null}
             {m.direction === 'OUTBOUND' ? (
               <MailOutboundDeliveryLogSection

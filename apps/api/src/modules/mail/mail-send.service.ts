@@ -1,15 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MailDeliveryLogKind, PrismaClient, type InputJsonValue } from '@nbos/database';
+import { MailDeliveryLogKind, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
-import {
-  MAIL_AUDIT_ACTION_OUTBOUND_SENT,
-  MAIL_AUDIT_ACTION_OUTBOUND_SEND_FAILED,
-  MAIL_AUDIT_ENTITY_MESSAGE,
-} from './mail-audit.constants';
-import { appendMailDeliveryLog } from './mail-delivery-log-append.ops';
-import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
+import { DriveR2Client } from '../drive/drive-r2.client';
+import { classifyMailProviderError } from './mail-provider-error.classify';
+import { loadOutboundAttachmentParts } from './mail-send-attachments.ops';
+import { gateOutboundSendAttempt } from './mail-send-claim.ops';
 import { buildSendMessageInput, loadOutboundSendContext } from './mail-send.ops';
+import {
+  markMailboxNeedsReconnect,
+  markOutboundFailed,
+  markOutboundSent,
+} from './mail-send-outcome.ops';
+import { MailProviderAdapterFactory } from './providers/mail-provider-adapter.factory';
 
 @Injectable()
 export class MailSendService {
@@ -19,89 +22,83 @@ export class MailSendService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly adapterFactory: MailProviderAdapterFactory,
     private readonly auditService: AuditService,
+    private readonly driveR2: DriveR2Client,
   ) {}
 
-  /** Sends a QUEUED outbound message via its mailbox provider and records the outcome. */
+  /** Worker send: claim SENDING, call provider once, throw transient errors for BullMQ. */
   async sendQueuedMessage(
     mailAccountId: string,
     messageId: string,
     actorEmployeeId: string,
   ): Promise<void> {
+    const gate = await gateOutboundSendAttempt(this.prisma, messageId, mailAccountId);
+    if (gate.action === 'exit') {
+      return;
+    }
+    if (gate.action === 'finalize_sent') {
+      await markOutboundSent({
+        prisma: this.prisma,
+        auditService: this.auditService,
+        messageId,
+        mailAccountId,
+        actorEmployeeId,
+        providerMessageId: gate.providerMessageId,
+        messageIdHeader: null,
+      });
+      return;
+    }
     const context = await loadOutboundSendContext(this.prisma, mailAccountId, messageId);
     if (!context) {
       return;
     }
     try {
+      const attachments = await loadOutboundAttachmentParts(
+        this.prisma,
+        this.driveR2,
+        messageId,
+        context.bodyHtml,
+      );
       const adapter = await this.adapterFactory.forConnection(context.connection);
-      const result = await adapter.sendMessage(buildSendMessageInput(context));
-      await this.markSent(messageId, mailAccountId, actorEmployeeId, result.messageIdHeader);
+      const result = await adapter.sendMessage(buildSendMessageInput(context, attachments));
+      await markOutboundSent({
+        prisma: this.prisma,
+        auditService: this.auditService,
+        messageId,
+        mailAccountId,
+        actorEmployeeId,
+        providerMessageId: result.providerMessageId,
+        messageIdHeader: result.messageIdHeader,
+      });
     } catch (error) {
-      await this.markFailed(messageId, mailAccountId, actorEmployeeId, error);
+      await this.handleSendError(mailAccountId, messageId, actorEmployeeId, error);
     }
   }
 
-  private async markSent(
-    messageId: string,
+  private async handleSendError(
     mailAccountId: string,
-    actorEmployeeId: string,
-    messageIdHeader: string | null,
-  ): Promise<void> {
-    const now = new Date();
-    const message = await this.prisma.emailMessage.update({
-      where: { id: messageId },
-      data: {
-        deliveryStatus: 'SENT',
-        sentAt: now,
-        ...(messageIdHeader ? { messageIdHeader } : {}),
-      },
-      select: { threadId: true },
-    });
-    await this.prisma.emailThread.update({
-      where: { id: message.threadId },
-      data: { lastOutboundAt: now, lastMessageAt: now },
-    });
-    await appendMailDeliveryLog(this.prisma, {
-      emailMessageId: messageId,
-      mailAccountId,
-      actorEmployeeId,
-      kind: MailDeliveryLogKind.OUTBOUND_SENT,
-    });
-    const changes: InputJsonValue = { mailAccountId };
-    await this.auditService.log({
-      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
-      entityId: messageId,
-      action: MAIL_AUDIT_ACTION_OUTBOUND_SENT,
-      userId: actorEmployeeId,
-      changes,
-    });
-  }
-
-  private async markFailed(
     messageId: string,
-    mailAccountId: string,
     actorEmployeeId: string,
     error: unknown,
   ): Promise<void> {
+    const errorClass = classifyMailProviderError(error);
     const detail = error instanceof Error ? error.message : 'unknown error';
-    this.logger.error(`Outbound send failed for message ${messageId}: ${detail}`);
-    await this.prisma.emailMessage.update({
-      where: { id: messageId },
-      data: { deliveryStatus: 'FAILED' },
-    });
-    await appendMailDeliveryLog(this.prisma, {
-      emailMessageId: messageId,
+    this.logger.error(`Outbound send ${errorClass} for message ${messageId}: ${detail}`);
+    if (errorClass === 'transient') {
+      throw error;
+    }
+    const kind: MailDeliveryLogKind =
+      errorClass === 'ambiguous' ? 'OUTCOME_UNKNOWN' : 'OUTBOUND_SEND_FAILED';
+    await markOutboundFailed({
+      prisma: this.prisma,
+      auditService: this.auditService,
+      messageId,
       mailAccountId,
       actorEmployeeId,
-      kind: MailDeliveryLogKind.OUTBOUND_SEND_FAILED,
       detail,
+      kind,
     });
-    const changes: InputJsonValue = { mailAccountId, error: detail };
-    await this.auditService.log({
-      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
-      entityId: messageId,
-      action: MAIL_AUDIT_ACTION_OUTBOUND_SEND_FAILED,
-      userId: actorEmployeeId,
-      changes,
-    });
+    if (errorClass === 'auth') {
+      await markMailboxNeedsReconnect(this.prisma, mailAccountId, detail);
+    }
   }
 }

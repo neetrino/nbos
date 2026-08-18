@@ -206,7 +206,7 @@ export class MailController {
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({
-    summary: 'Cancel outbound draft or queued message (DRAFT|QUEUED → CANCELLED; no provider)',
+    summary: 'Cancel outbound draft or queued message (DRAFT|QUEUED only; not SENDING)',
   })
   async cancelOutboundDraftOrQueued(
     @CurrentUser() user: CurrentUserPayload,
@@ -242,19 +242,18 @@ export class MailController {
     );
   }
 
-  @Post('threads/:threadId/messages/:messageId/finalize-send-stub')
+  @Post('threads/:threadId/messages/:messageId/retry-send')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({
-    summary: 'Stub finalize queued send (QUEUED → FAILED; no mail provider or worker in this MVP)',
-  })
-  async finalizeQueuedOutboundStub(
+  @ApiOperation({ summary: 'Retry a failed outbound message (FAILED → QUEUED + enqueue)' })
+  async retryFailedOutboundSend(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailOutboundSendMutationService.finalizeQueuedOutboundStub(
+    return this.mailOutboundSendMutationService.retryFailedOutboundSend(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -267,7 +266,7 @@ export class MailController {
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({
-    summary: 'Queue outbound draft for send (DRAFT → QUEUED; no SMTP or worker yet)',
+    summary: 'Queue outbound draft for send (DRAFT → QUEUED + enqueue)',
   })
   async queueOutboundDraft(
     @CurrentUser() user: CurrentUserPayload,

@@ -10,6 +10,7 @@ import {
   MAIL_SYNC_JOB_NAME,
   type MailQueueJobPayload,
 } from './mail-queue.constants';
+import { mailSendJobId } from './mail-outbound-runtime.constants';
 
 @Injectable()
 export class MailQueueService implements OnModuleInit, OnModuleDestroy {
@@ -52,19 +53,37 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
     messageId: string;
     actorEmployeeId: string;
   }): Promise<boolean> {
-    return this.add(MAIL_SEND_JOB_NAME, { kind: 'send', ...payload });
+    return this.add(
+      MAIL_SEND_JOB_NAME,
+      { kind: 'send', ...payload },
+      mailSendJobId(payload.messageId),
+    );
   }
 
-  private async add(jobName: string, payload: MailQueueJobPayload): Promise<boolean> {
+  private async add(
+    jobName: string,
+    payload: MailQueueJobPayload,
+    jobId?: string,
+  ): Promise<boolean> {
     if (!this.queue) {
       return false;
     }
     try {
-      await this.queue.add(jobName, payload);
+      await this.queue.add(jobName, payload, jobId ? { jobId } : undefined);
       return true;
     } catch (caught) {
+      if (isDuplicateJobError(caught)) {
+        return true;
+      }
       this.logger.error(`Failed to enqueue Mail job ${jobName}.`, caught);
       return false;
     }
   }
+}
+
+function isDuplicateJobError(caught: unknown): boolean {
+  const message = caught instanceof Error ? caught.message : String(caught);
+  return (
+    /already (exists|present)/i.test(message) || (/jobId/i.test(message) && /exist/i.test(message))
+  );
 }
