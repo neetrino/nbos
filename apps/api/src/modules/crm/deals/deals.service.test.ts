@@ -53,6 +53,29 @@ describe('DealsService', () => {
         }),
       );
     });
+
+    it('applies seller and assistant filters', async () => {
+      await service.findAll({ sellerId: 's-1', sellerAssistantId: 'a-1' });
+      expect(prisma.deal.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            sellerId: 's-1',
+            sellerAssistantId: 'a-1',
+          }),
+        }),
+      );
+    });
+
+    it('applies involved employee as seller or assistant', async () => {
+      await service.findAll({ involvedEmployeeId: 'emp-1' });
+      expect(prisma.deal.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: [{ OR: [{ sellerId: 'emp-1' }, { sellerAssistantId: 'emp-1' }] }],
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

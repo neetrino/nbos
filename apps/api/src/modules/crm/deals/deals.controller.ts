@@ -38,6 +38,8 @@ export class DealsController {
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'type', required: false, type: String })
   @ApiQuery({ name: 'sellerId', required: false, type: String })
+  @ApiQuery({ name: 'sellerAssistantId', required: false, type: String })
+  @ApiQuery({ name: 'involvedEmployeeId', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
   async findAll(
@@ -46,6 +48,8 @@ export class DealsController {
     @Query('status') status?: string,
     @Query('type') type?: string,
     @Query('sellerId') sellerId?: string,
+    @Query('sellerAssistantId') sellerAssistantId?: string,
+    @Query('involvedEmployeeId') involvedEmployeeId?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -57,6 +61,8 @@ export class DealsController {
       status,
       type,
       sellerId,
+      sellerAssistantId,
+      involvedEmployeeId,
       search,
       sortBy,
       sortOrder,

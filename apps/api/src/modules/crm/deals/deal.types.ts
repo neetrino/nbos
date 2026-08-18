@@ -54,6 +54,9 @@ export interface DealQueryParams {
   status?: string;
   type?: string;
   sellerId?: string;
+  sellerAssistantId?: string;
+  /** Seller or sales assistant (OR). */
+  involvedEmployeeId?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';

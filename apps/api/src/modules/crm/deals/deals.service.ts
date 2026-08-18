@@ -17,6 +17,7 @@ import {
   dealUpdateInclude,
 } from './deal.includes';
 import type { CreateDealDto, DealForHandoff, DealQueryParams, UpdateDealDto } from './deal.types';
+import { applyDealListResponsibilityWhere } from './deal-list-responsibility.where';
 import { DealWonHandler } from './deal-won.handler';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
@@ -66,6 +67,8 @@ export class DealsService {
       status,
       type,
       sellerId,
+      sellerAssistantId,
+      involvedEmployeeId,
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
@@ -81,9 +84,11 @@ export class DealsService {
     if (type) {
       where.type = type as Prisma.EnumDealTypeEnumFilter['equals'];
     }
-    if (sellerId) {
-      where.sellerId = sellerId;
-    }
+    applyDealListResponsibilityWhere(where, {
+      sellerId,
+      sellerAssistantId,
+      involvedEmployeeId,
+    });
     if (search?.trim()) {
       const q = search.trim();
       const ic = { contains: q, mode: 'insensitive' as const };

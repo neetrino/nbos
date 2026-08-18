@@ -166,6 +166,8 @@ interface DealQueryParams {
   status?: string;
   type?: string;
   sellerId?: string;
+  sellerAssistantId?: string;
+  involvedEmployeeId?: string;
   search?: string;
   scope?: EntityLifecycleScope;
 }
