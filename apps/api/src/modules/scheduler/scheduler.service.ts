@@ -327,7 +327,11 @@ export class SchedulerService {
         const result = await this.mailOutboundReconcile.reconcileOrphans();
         return {
           processedCount: result.queuedEnqueued + result.sendingRequeued + result.sendingFinalized,
-          metadata: result,
+          metadata: {
+            queuedEnqueued: result.queuedEnqueued,
+            sendingRequeued: result.sendingRequeued,
+            sendingFinalized: result.sendingFinalized,
+          },
         };
       },
     );
