@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 47.87 35.47" role="img" aria-label="NBOS">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="-6.065 -12.265 58.87 58.87" role="img" aria-label="NBOS">
   <path
     fill="#2e3192"
+    fill-opacity="1"
+    shape-rendering="geometricPrecision"
     d="M38.73,23.46V0h8.14V23.46c0,6.04-4.96,11-11,11-3.78,0-6.47-1.73-8.58-4.8L13.48,9.38c-.49-.76-1.24-1.24-2.16-1.24-1.67,0-3.18,1.08-3.18,2.86v23.46H0V11C0,4.96,4.96,0,11,0c3.72,0,6.85,1.4,8.9,4.58l13.38,20.39c.59,.86,1.56,1.35,2.59,1.35,1.56,0,2.86-1.29,2.86-2.86Z"
   />
 </svg>
