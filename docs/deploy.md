@@ -179,6 +179,8 @@ REDIS_URL=rediss://... # same queue Redis as API producers
 # BULLMQ_WHATSAPP_CONCURRENCY=3
 # BULLMQ_REPORTS_CONCURRENCY=1
 # BULLMQ_DRIVE_ZIP_CONCURRENCY=1
+# BULLMQ_DRAIN_DELAY_SEC=20
+# BULLMQ_STALLED_INTERVAL_MS=120000
 # Total concurrency = worker_replicas × queue concurrency
 ```
 

@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Worker } from 'bullmq';
 import type Redis from 'ioredis';
 import { resolveBullmqConcurrency } from '../../runtime/bullmq-concurrency';
+import { resolveBullmqWorkerRuntimeOptions } from '../../runtime/bullmq-worker-runtime';
 import { logBullmqJob } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
@@ -60,7 +61,7 @@ export class ReportsExportWorker implements OnModuleInit, OnModuleDestroy {
           throw error;
         }
       },
-      { connection: this.connection, concurrency },
+      { connection: this.connection, concurrency, ...resolveBullmqWorkerRuntimeOptions() },
     );
     this.registry.register(REPORT_EXPORT_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {

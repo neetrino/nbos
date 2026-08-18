@@ -52,10 +52,17 @@ export function logRedisTopology(log: (message: string) => void, env = process.e
   log(`Events Redis: ${t.events}`);
 }
 
+/**
+ * Skip ioredis INFO ready-check. On Upstash every INFO is a billed command
+ * and reconnect storms multiply it.
+ */
+const SKIP_READY_CHECK = { enableReadyCheck: false } as const;
+
 /** BullMQ producer / Queue client — non-blocking. */
 export function createQueueProducerConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_QUEUE_URL / REDIS_URL');
   return new Redis(url, {
+    ...SKIP_READY_CHECK,
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false,
   });
@@ -65,6 +72,7 @@ export function createQueueProducerConnection(url: string): Redis {
 export function createQueueWorkerConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_QUEUE_URL / REDIS_URL');
   return new Redis(url, {
+    ...SKIP_READY_CHECK,
     maxRetriesPerRequest: null,
   });
 }
@@ -78,6 +86,7 @@ export function createQueueEventsConnection(url: string): Redis {
 export function createStateRedisConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_STATE_URL / REDIS_URL');
   return new Redis(url, {
+    ...SKIP_READY_CHECK,
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false,
   });
@@ -87,6 +96,7 @@ export function createStateRedisConnection(url: string): Redis {
 export function createEventsPublisherConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_EVENTS_URL / REDIS_URL');
   return new Redis(url, {
+    ...SKIP_READY_CHECK,
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false,
   });
@@ -96,6 +106,7 @@ export function createEventsPublisherConnection(url: string): Redis {
 export function createEventsSubscriberConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_EVENTS_URL / REDIS_URL');
   return new Redis(url, {
+    ...SKIP_READY_CHECK,
     maxRetriesPerRequest: null,
   });
 }
