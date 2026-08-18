@@ -11,7 +11,6 @@ function createMockBillingService(): Partial<BillingService> {
       errors: [],
       skippedLateDelivery: [],
     }),
-    runMonthlyExpenses: vi.fn().mockResolvedValue({ generated: 2 }),
   };
 }
 
@@ -94,7 +93,6 @@ describe('SchedulerService', () => {
       supportSlaOrchestrationService as never,
       salesKpiMonthClose as never,
       { runRetentionPurge: vi.fn() } as never,
-      { runRetentionPurge: vi.fn() } as never,
       { reconcileBatch: vi.fn() } as never,
       { reconcileAll: vi.fn() } as never,
       { reconcilePending: vi.fn() } as never,
@@ -112,14 +110,6 @@ describe('SchedulerService', () => {
       expect(billingService.runMonthlyBilling).toHaveBeenCalled();
       expect(result.status).toBe('SUCCEEDED');
       expect(lease.runWithLease).toHaveBeenCalled();
-    });
-  });
-
-  describe('runExpenses', () => {
-    it('should delegate to BillingService under lease', async () => {
-      const result = await service.runExpenses();
-      expect(billingService.runMonthlyExpenses).toHaveBeenCalled();
-      expect(result.status).toBe('SUCCEEDED');
     });
   });
 

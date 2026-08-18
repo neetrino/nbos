@@ -35,9 +35,11 @@ SCHEDULER_HEARTBEAT_INTERVAL_MS=30000
 
 Automatic work runs as Nest CronJobs on `nbos-scheduler` (`SCHEDULER_ENABLED` + one per-job flag). HTTP `/api/scheduler/*` is leftover for rare manual/repair calls (`sales-kpi-backfill-all` has no cron). Do not add Coolify/external cron.
 
+Living on/off roster (icons + decisions): [`scheduler-cron-roster.md`](./scheduler-cron-roster.md).
+
 ## Rollout
 
-See `docs/deploy.md` §4.2c and `docs/architecture/scheduler-inventory.md`.
+See `docs/deploy.md` §4.2c, `docs/architecture/scheduler-inventory.md`, and the roster.
 
 ## InboxState READ
 

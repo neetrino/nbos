@@ -12,9 +12,6 @@ import {
   EXPENSE_BACKLOG_REMINDERS_CRON_ENABLED_ENV,
   EXPENSE_BACKLOG_REMINDERS_CRON_ENV,
   EXPENSE_BACKLOG_REMINDERS_DEFAULT_CRON,
-  EXPENSES_CRON_ENABLED_ENV,
-  EXPENSES_CRON_ENV,
-  EXPENSES_DEFAULT_CRON,
   INVOICE_CARD_REMINDERS_CRON_ENABLED_ENV,
   INVOICE_CARD_REMINDERS_CRON_ENV,
   INVOICE_CARD_REMINDERS_DEFAULT_CRON,
@@ -89,15 +86,6 @@ export const BillingCron = createInternalCron(
   (service) => service.runBilling('cron'),
 );
 
-export const ExpensesCron = createInternalCron(
-  'ExpensesCron',
-  SCHEDULER_JOB_NAMES.expenses,
-  EXPENSES_CRON_ENABLED_ENV,
-  EXPENSES_CRON_ENV,
-  EXPENSES_DEFAULT_CRON,
-  (service) => service.runExpenses('cron'),
-);
-
 export const OverdueInvoicesCron = createInternalCron(
   'OverdueInvoicesCron',
   SCHEDULER_JOB_NAMES.overdueInvoices,
@@ -154,7 +142,6 @@ export const WhatsAppProductGroupsReconcileCron = createInternalCron(
 
 export const INTERNAL_SCHEDULER_CRON_PROVIDERS = [
   BillingCron,
-  ExpensesCron,
   OverdueInvoicesCron,
   InvoiceCardRemindersCron,
   ExpenseBacklogRemindersCron,

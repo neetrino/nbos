@@ -50,7 +50,6 @@ Scheduler should emit events or call owning services.
 Current scheduler runtime is narrow and Finance-oriented:
 
 - `runBilling`;
-- `runExpenses`;
 - `markOverdueInvoices`.
 
 It also uses old invoice status wording in code. This must be refactored when Finance runtime is aligned with the new Finance/Notifications canon.

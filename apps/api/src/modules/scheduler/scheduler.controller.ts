@@ -21,13 +21,6 @@ export class SchedulerController {
     return this.schedulerService.runBilling();
   }
 
-  @Post('expenses')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Trigger monthly expenses generation (external cron)' })
-  async runExpenses() {
-    return this.schedulerService.runExpenses();
-  }
-
   @Post('overdue-invoices')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark overdue invoices (external cron)' })
@@ -110,17 +103,6 @@ export class SchedulerController {
   })
   async runSalesKpiBackfillAll() {
     return this.schedulerService.runSalesKpiBackfillAll();
-  }
-
-  @Post('credential-trash-purge')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Purge trashed credentials past retention TTL (external cron)',
-    description:
-      'Legacy credential-only purge. Prefer POST /scheduler/platform-trash-purge for unified retention purge with audit.',
-  })
-  async runCredentialTrashPurge() {
-    return this.schedulerService.runCredentialTrashPurge();
   }
 
   @Post('platform-trash-purge')

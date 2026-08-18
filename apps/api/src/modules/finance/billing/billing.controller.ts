@@ -14,11 +14,4 @@ export class BillingController {
   async runMonthlyBilling() {
     return this.billingService.runMonthlyBilling();
   }
-
-  @Post('run-expenses')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Trigger monthly planned expenses generation' })
-  async runMonthlyExpenses() {
-    return this.billingService.runMonthlyExpenses();
-  }
 }
