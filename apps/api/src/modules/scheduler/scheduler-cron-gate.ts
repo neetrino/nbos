@@ -1,13 +1,9 @@
 import { shouldRegisterScheduledJobs, resolveProcessRole } from '../../runtime/process-role';
-import {
-  isEnvFlagEnabled,
-  isSchedulerEnabled,
-  SCHEDULER_ENABLED_ENV,
-} from './scheduler-lease.constants';
+import { isEnvFlagEnabled, isSchedulerEnabled } from './scheduler-lease.constants';
 
 /**
- * Why a CronJob must not be registered. `null` means role + master + job flag allow it.
- * Dedicated scheduler still requires `SCHEDULER_ENABLED`; local `all` may use job flags alone.
+ * Why a CronJob must not be registered. `null` means role + job flag allow it.
+ * Does not consider SCHEDULER_ENABLED — that only gates tick execution.
  */
 export function describeCronSkipReason(
   jobEnabledEnvKey: string,
@@ -19,12 +15,6 @@ export function describeCronSkipReason(
   if (!isEnvFlagEnabled(jobEnabledEnvKey, env)) {
     return `job flag ${jobEnabledEnvKey} off`;
   }
-  const role = resolveProcessRole(env);
-  if (role === 'scheduler' && !isSchedulerEnabled(env)) {
-    return env[SCHEDULER_ENABLED_ENV] === undefined
-      ? `${SCHEDULER_ENABLED_ENV} unset`
-      : `${SCHEDULER_ENABLED_ENV} off`;
-  }
   return null;
 }
 
@@ -34,4 +24,16 @@ export function shouldStartCronJob(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   return describeCronSkipReason(jobEnabledEnvKey, env) === null;
+}
+
+/** Whether registered cron ticks may run (master switch for dedicated scheduler). */
+export function shouldRunCronTick(env: NodeJS.ProcessEnv = process.env): boolean {
+  const role = resolveProcessRole(env);
+  if (role === 'all') {
+    return true;
+  }
+  if (role === 'scheduler') {
+    return isSchedulerEnabled(env);
+  }
+  return false;
 }
