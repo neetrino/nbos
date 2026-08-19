@@ -1,6 +1,15 @@
+import { ConflictException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
+import {
+  MAIL_LIVE_MAILBOX_CONFLICT_MESSAGE,
+  assertNoOtherLiveMailbox,
+  normalizeMailboxEmail,
+  resolveMailboxForConnect,
+} from './mail-account-uniqueness.ops';
+import { isUniqueConstraintError } from './mail-unique-violation';
 
 export const MAIL_NEEDS_RECONNECT_CODE = 'MAIL_NEEDS_RECONNECT';
+export { normalizeMailboxEmail };
 
 const CORPORATE_PROVIDER = 'CORPORATE_IMAP_SMTP';
 
@@ -16,24 +25,13 @@ export type CorporateMailboxSettings = {
   login: string;
 };
 
-export function normalizeMailboxEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
-
-export async function findOwnedCorporateMailbox(
+export async function findOwnedMailboxByEmail(
   prisma: InstanceType<typeof PrismaClient>,
   ownerEmployeeId: string,
   emailAddress: string,
 ) {
-  return prisma.mailAccount.findFirst({
-    where: {
-      ownerEmployeeId,
-      providerType: CORPORATE_PROVIDER,
-      emailAddress: normalizeMailboxEmail(emailAddress),
-    },
-    include: { providerConnection: true },
-    orderBy: { createdAt: 'desc' },
-  });
+  const resolved = await resolveMailboxForConnect(prisma, ownerEmployeeId, emailAddress);
+  return resolved.kind === 'reuse' ? resolved.account : null;
 }
 
 function connectionWriteData(dto: CorporateMailboxSettings) {
@@ -54,11 +52,28 @@ export async function upsertCorporateMailboxDraft(
   dto: CorporateMailboxSettings,
 ) {
   const email = normalizeMailboxEmail(dto.email);
-  const existing = await findOwnedCorporateMailbox(prisma, ownerEmployeeId, email);
+  const existing = await findOwnedMailboxByEmail(prisma, ownerEmployeeId, email);
   const connection = connectionWriteData({ ...dto, email });
   if (existing) {
     return writeCorporateMailboxDraft(prisma, existing.id, dto);
   }
+  try {
+    return await createCorporateMailboxDraft(prisma, ownerEmployeeId, dto, email, connection);
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new ConflictException(MAIL_LIVE_MAILBOX_CONFLICT_MESSAGE);
+    }
+    throw error;
+  }
+}
+
+async function createCorporateMailboxDraft(
+  prisma: InstanceType<typeof PrismaClient>,
+  ownerEmployeeId: string,
+  dto: CorporateMailboxSettings,
+  email: string,
+  connection: ReturnType<typeof connectionWriteData>,
+) {
   return prisma.mailAccount.create({
     data: {
       ownerEmployeeId,
@@ -81,14 +96,20 @@ export async function writeCorporateMailboxDraft(
   dto: CorporateMailboxSettings,
 ) {
   const email = normalizeMailboxEmail(dto.email);
+  await assertNoOtherLiveMailbox(prisma, email, mailAccountId);
   return prisma.mailAccount.update({
     where: { id: mailAccountId },
     data: {
       emailAddress: email,
       displayName: dto.displayName ?? undefined,
+      providerType: CORPORATE_PROVIDER,
       status: 'NEEDS_RECONNECT',
       providerConnection: {
-        update: { ...connectionWriteData({ ...dto, email }), status: 'NOT_CONNECTED' },
+        update: {
+          providerType: CORPORATE_PROVIDER,
+          ...connectionWriteData({ ...dto, email }),
+          status: 'NOT_CONNECTED',
+        },
       },
     },
     include: { providerConnection: true },

@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   normalizeMailboxEmail,
   resolveCorporateReconnectSettings,
+  upsertCorporateMailboxDraft,
 } from './mail-connect-corporate.ops';
 
 describe('corporate mailbox reconnect settings', () => {
@@ -44,5 +45,50 @@ describe('corporate mailbox reconnect settings', () => {
     expect(resolved).toEqual({
       error: 'Mailbox settings are incomplete. Fill the missing fields and reconnect.',
     });
+  });
+});
+
+const corporateDto = {
+  email: '  Test@Neetrino.com ',
+  displayName: 'Test',
+  imapHost: 'imap.beget.com',
+  imapPort: 993,
+  imapSecure: 'SSL',
+  smtpHost: 'smtp.beget.com',
+  smtpPort: 465,
+  smtpSecure: 'SSL',
+  login: 'test@neetrino.com',
+};
+
+describe('upsertCorporateMailboxDraft uniqueness', () => {
+  it('reuses a DISABLED mailbox for the same owner and email', async () => {
+    const disabled = {
+      id: 'acc-disabled',
+      ownerEmployeeId: 'owner-1',
+      status: 'DISABLED',
+      createdAt: new Date('2026-08-01T00:00:00.000Z'),
+      providerConnection: null,
+    };
+    const updated = { ...disabled, status: 'NEEDS_RECONNECT' };
+    const prisma = {
+      mailAccount: {
+        findMany: vi.fn().mockResolvedValue([disabled]),
+        update: vi.fn().mockResolvedValue(updated),
+        create: vi.fn(),
+      },
+    };
+    const result = await upsertCorporateMailboxDraft(prisma as never, 'owner-1', corporateDto);
+    expect(result.id).toBe('acc-disabled');
+    expect(prisma.mailAccount.create).not.toHaveBeenCalled();
+    expect(prisma.mailAccount.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'acc-disabled' },
+        data: expect.objectContaining({
+          emailAddress: 'test@neetrino.com',
+          providerType: 'CORPORATE_IMAP_SMTP',
+          status: 'NEEDS_RECONNECT',
+        }),
+      }),
+    );
   });
 });

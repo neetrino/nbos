@@ -530,6 +530,8 @@ export default function MailInboxPage() {
           'Google did not return a refresh token. Please reconnect with consent.',
         insufficient_scope:
           'Google OAuth scopes are insufficient. Reconnect and grant required access.',
+        mailbox_already_connected:
+          'This mailbox is already connected. Ask the owner to share access instead of connecting it again.',
         unknown: 'Gmail OAuth failed. Please try again.',
       };
       toast.error(messageByReason[oauthReason ?? 'unknown'] ?? messageByReason.unknown);
