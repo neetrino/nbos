@@ -13,7 +13,10 @@ import {
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import {
   expensesApi,
   type Expense,
@@ -61,6 +64,11 @@ import {
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
+import {
+  SEARCH_FILTER_PAGE_ID,
+  usePersistedSearchFilterField,
+  usePersistedSearchFilters,
+} from '@/lib/persisted-client-state';
 import { ExpensesPageMainPanel } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
@@ -107,11 +115,24 @@ export function ExpensesPageContent({
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
-  const [filters, setFilters] = useState<Record<string, string>>(() =>
+  const expenseFilterPageId =
+    pageVariant === 'backlog'
+      ? SEARCH_FILTER_PAGE_ID.financeExpensesBacklog
+      : pageVariant === 'closed'
+        ? SEARCH_FILTER_PAGE_ID.financeExpensesClosed
+        : SEARCH_FILTER_PAGE_ID.financeExpenses;
+  const [filters, setFilters] = usePersistedSearchFilters(
+    expenseFilterPageId,
     initialExpenseFilterRecord(pageVariant),
   );
   const [view, handleViewChange] = useExpensesBoardViewMode();
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    `${expenseFilterPageId}.period`,
+    'period',
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = useCallback((next: FinancePeriod) => setPeriodRaw(next), [setPeriodRaw]);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -172,7 +193,7 @@ export function ExpensesPageContent({
     if (projectIdFromUrl) {
       setFilters((prev) => ({ ...prev, project: projectIdFromUrl }));
     }
-  }, [projectIdFromUrl]);
+  }, [projectIdFromUrl, setFilters]);
 
   const effectiveProjectId = useMemo(() => {
     if (projectIdFromUrl) return projectIdFromUrl;
@@ -222,7 +243,7 @@ export function ExpensesPageContent({
   const handleClearProjectDrilldown = useCallback(() => {
     setFilters((prev) => expenseFiltersWithoutProjectDrilldown(prev, pageVariant));
     onClearProjectFilter();
-  }, [onClearProjectFilter, pageVariant]);
+  }, [onClearProjectFilter, pageVariant, setFilters]);
 
   const handleClearPlanDrilldown = useCallback(() => {
     replaceExpensesUrl((params) => {
@@ -242,7 +263,7 @@ export function ExpensesPageContent({
       }
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [pageVariant, projectIdFromUrl, replaceExpensesUrl],
+    [pageVariant, projectIdFromUrl, replaceExpensesUrl, setFilters],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -367,7 +388,7 @@ export function ExpensesPageContent({
       params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
       params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
     });
-  }, [pageVariant, replaceExpensesUrl, searchParams]);
+  }, [pageVariant, replaceExpensesUrl, searchParams, setFilters]);
 
   const payrollPaymentFocus = Boolean(
     selectedExpense && resolveExpensePayrollRunId(selectedExpense),
@@ -408,13 +429,13 @@ export function ExpensesPageContent({
       }
       handleFilterChange(key, value);
     },
-    [handleFilterChange, onSortByChange, onSortOrderChange, router, searchParams],
+    [handleFilterChange, onSortByChange, onSortOrderChange, router, searchParams, setPeriod],
   );
 
   const clearFilters = useCallback(() => {
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
     setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
-  }, [pageVariant, projectIdFromUrl]);
+  }, [pageVariant, projectIdFromUrl, setFilters, setPeriod]);
 
   const moduleHeroSlots = useMemo(
     () => ({

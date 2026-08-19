@@ -18,6 +18,7 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
+import { LeadBoardQuickCreateTask } from '@/features/crm/components/LeadBoardQuickCreateTask';
 import { LeadsListTable } from '@/features/crm/components/LeadsListTable';
 import {
   LeadSheet,
@@ -67,6 +68,7 @@ import { toast } from 'sonner';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -103,10 +105,11 @@ function LeadsPipelinePageContent() {
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.crmLeads);
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [quickCreateLeadId, setQuickCreateLeadId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stageGateHighlight, setStageGateHighlight] = useState<LeadSheetStageGateHighlight | null>(
     null,
@@ -483,6 +486,10 @@ function LeadsPipelinePageContent() {
     pushOpenLeadToUrl(lead.id);
   };
 
+  const handleCreateLeadTask = useCallback((lead: Lead) => {
+    setQuickCreateLeadId(lead.id);
+  }, []);
+
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
     requestStatusChange(itemId, toColumn);
   };
@@ -570,7 +577,17 @@ function LeadsPipelinePageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, showDesktopBoardChrome, view],
+    [
+      filterConfigs,
+      filters,
+      isTrashView,
+      scope,
+      search,
+      setFilters,
+      setScope,
+      showDesktopBoardChrome,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -610,7 +627,9 @@ function LeadsPipelinePageContent() {
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
             columns={kanbanColumns}
-            renderCard={(lead) => <LeadCard lead={lead} onClick={handleCardClick} />}
+            renderCard={(lead) => (
+              <LeadCard lead={lead} onClick={handleCardClick} onCreateTask={handleCreateLeadTask} />
+            )}
             getItemId={(lead) => lead.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
@@ -646,6 +665,11 @@ function LeadsPipelinePageContent() {
         onOpenChange={setShowCreate}
         onCreated={handleLeadCreated}
         onOpenExisting={(id) => pushOpenLeadToUrl(id)}
+      />
+
+      <LeadBoardQuickCreateTask
+        leadId={quickCreateLeadId}
+        onClose={() => setQuickCreateLeadId(null)}
       />
 
       <LeadSheet

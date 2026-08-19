@@ -8,8 +8,10 @@ import {
   DetailSheetCollapsibleSection,
   EntityDetailSheetContent,
 } from '@/components/shared';
-import { cn } from '@/lib/utils';
-import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
+import {
+  buildTaskCompletionBlockers,
+  getEnabledCompletionRules,
+} from '../utils/task-completion-readiness';
 import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
 import {
@@ -65,7 +67,7 @@ export function TaskSheet({
     onDelete,
     onRestore,
   });
-  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [extrasOpen, setExtrasOpen] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const task = state.task;
@@ -89,10 +91,7 @@ export function TaskSheet({
   const blockers = task ? buildTaskCompletionBlockers(task) : [];
   const hasExtras =
     task != null &&
-    (task.checklists.length > 0 ||
-      task.subtasks.length > 0 ||
-      (task.completionRules?.length ?? 0) > 0 ||
-      blockers.length > 0);
+    (task.subtasks.length > 0 || getEnabledCompletionRules(task).length > 0 || blockers.length > 0);
   const pipelineStatus =
     state.workflowFooterStatus ??
     (state.task ? normalizeTaskStatusForDraft(state.task.status) : 'OPEN');
@@ -173,9 +172,27 @@ export function TaskSheet({
                         onSearchEmployees={state.searchEmployees}
                       />
 
+                      <TaskChecklistSection
+                        task={state.task}
+                        newChecklistTitle={state.newChecklistTitle}
+                        newItemTexts={state.newItemTexts}
+                        onNewChecklistTitleChange={state.setNewChecklistTitle}
+                        onNewItemTextChange={(checklistId, value) =>
+                          state.setNewItemTexts((prev) => ({
+                            ...prev,
+                            [checklistId]: value,
+                          }))
+                        }
+                        onAddChecklist={state.handleAddChecklist}
+                        onAddItem={state.handleAddItem}
+                        onToggleItem={state.handleToggleItem}
+                        onDeleteChecklist={state.handleDeleteChecklist}
+                        onDeleteItem={state.handleDeleteItem}
+                      />
+
                       {hasExtras ? (
                         <DetailSheetCollapsibleSection
-                          title="Checklist & rules"
+                          title="Rules"
                           icon={<CheckSquare size={12} />}
                           open={extrasOpen}
                           onOpenChange={setExtrasOpen}
@@ -186,54 +203,12 @@ export function TaskSheet({
                               task={state.task}
                               serverBlockers={state.completionBlockers}
                             />
-
-                            {state.task.subtasks.length > 0 && (
+                            {state.task.subtasks.length > 0 ? (
                               <TaskSubtasksSection task={state.task} />
-                            )}
-
-                            {state.task.checklists.length > 0 && (
-                              <TaskChecklistSection
-                                task={state.task}
-                                newChecklistTitle={state.newChecklistTitle}
-                                newItemTexts={state.newItemTexts}
-                                onNewChecklistTitleChange={state.setNewChecklistTitle}
-                                onNewItemTextChange={(checklistId, value) =>
-                                  state.setNewItemTexts((prev) => ({
-                                    ...prev,
-                                    [checklistId]: value,
-                                  }))
-                                }
-                                onAddChecklist={state.handleAddChecklist}
-                                onAddItem={state.handleAddItem}
-                                onToggleItem={state.handleToggleItem}
-                                onDeleteChecklist={state.handleDeleteChecklist}
-                                onDeleteItem={state.handleDeleteItem}
-                              />
-                            )}
+                            ) : null}
                           </div>
                         </DetailSheetCollapsibleSection>
-                      ) : (
-                        <div className={cn(TASK_SHEET_SECTION_SURFACE_CLASS, 'space-y-4')}>
-                          <TaskCompletionRulesPanel
-                            task={state.task}
-                            serverBlockers={state.completionBlockers}
-                          />
-                          <TaskChecklistSection
-                            task={state.task}
-                            newChecklistTitle={state.newChecklistTitle}
-                            newItemTexts={state.newItemTexts}
-                            onNewChecklistTitleChange={state.setNewChecklistTitle}
-                            onNewItemTextChange={(checklistId, value) =>
-                              state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                            }
-                            onAddChecklist={state.handleAddChecklist}
-                            onAddItem={state.handleAddItem}
-                            onToggleItem={state.handleToggleItem}
-                            onDeleteChecklist={state.handleDeleteChecklist}
-                            onDeleteItem={state.handleDeleteItem}
-                          />
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 

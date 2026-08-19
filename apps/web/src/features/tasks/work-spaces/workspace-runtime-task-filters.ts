@@ -7,6 +7,7 @@ import {
 } from '@/features/shared/board-lifecycle';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
 import type { FilterConfig } from '@/components/shared';
+import { usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 export const WORKSPACE_TASK_FILTER_CONFIGS: FilterConfig[] = [
   {
@@ -41,25 +42,28 @@ export type WorkspaceRuntimeTaskFilters = {
 };
 
 /** Shared task search/filter state for workspace PageHero and runtime board filtering. */
-export function useWorkspaceRuntimeTaskFilters(): WorkspaceRuntimeTaskFilters {
+export function useWorkspaceRuntimeTaskFilters(pageId: string): WorkspaceRuntimeTaskFilters {
   const [search, setSearch] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [filterValues, setFilterValues] = usePersistedSearchFilters(pageId);
 
-  const onFilterChange = useCallback((key: string, value: string) => {
-    setFilterValues((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const onFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilterValues((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [setFilterValues],
+  );
 
   const onClearFilters = useCallback(() => {
     setSearch('');
     setFilterValues({});
-  }, []);
+  }, [setFilterValues]);
 
   return {
     search,

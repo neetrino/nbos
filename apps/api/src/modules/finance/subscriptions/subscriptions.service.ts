@@ -23,6 +23,7 @@ import {
 } from './subscription-reminder-language';
 import { mergeFinanceWhere, type FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolveSubscriptionParticipationWhere } from '../finance-module-participation.where';
+import { buildSubscriptionSearchOr } from './subscription-search.where';
 import {
   parseOptionalSubscriptionName,
   parseRequiredSubscriptionName,
@@ -200,16 +201,7 @@ export class SubscriptionsService {
     if (statusWhere) where.status = statusWhere;
     if (type) where.type = type as SubscriptionTypeEnum;
     if (search?.trim()) {
-      const q = search.trim();
-      const ic = { contains: q, mode: 'insensitive' as const };
-      where.OR = [
-        { code: ic },
-        { name: ic },
-        { project: { name: ic } },
-        { project: { code: ic } },
-        { project: { company: { name: ic } } },
-        { partner: { name: ic } },
-      ];
+      where.OR = buildSubscriptionSearchOr(search.trim());
     }
 
     const createdAt = this.buildDateRange(dateFrom, dateTo);

@@ -123,6 +123,7 @@ export function ProductFinanceSectionContent({
           open={orderSheet.isOpen}
           onOpenChange={orderSheet.handleOpenChange}
           onCreateInvoice={() => undefined}
+          canQuickCreateInvoice={false}
         />
       </>
     );

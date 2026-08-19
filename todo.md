@@ -1,6 +1,6 @@
 # NBOS — актуальные задачи
 
-Очередь сейчас: Mail unique mailbox + attachment Retry на проде (`215bfc4b` / PR #165). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
+Очередь сейчас: Mail leftover — полный smoke на проде ещё не закрыт. JobId hotfix (#167) + scheduler докатили; #168 (`81f25b07`) убирает sticky `mail-send` job. Письмо `NBOS jobId verify` всё ещё SENDING, inbound на Gmail нет. Toon Expo Retry→Ready закрыт. Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
 
 - [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`d6801b6d`), миграции на проде, api/worker/web выкатаны.
 - [ ] Mail — осталось после выкладки (не новый срез A/B/C):
@@ -9,8 +9,11 @@
   - [x] Prod migrate `20260819183000_mail_accounts_live_email_unique` — на Neon prod применена (`215bfc4b`).
   - [x] Attachment download — Retry для застрявшего Pending в коде (`1a383407`): UI FAILED сразу / PENDING >3 мин; API retry-download; queue re-enqueue.
   - [x] Attachment download — deploy api/worker/web (`215bfc4b`, running:healthy).
-  - [ ] Attachment download — verify Toon Expo PNG на prod test@ (Retry → Ready).
-  - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
+  - [x] BullMQ jobId hotfix (#167 / `444f312a`): api+worker `running:healthy`; compose/Retry enqueue больше не 503 (`mail-send-` / `mail-att-` / `mail-sync-`).
+  - [x] Scheduler на `toBullMqSafeJobId` + #168 (`81f25b07`): api+scheduler `running:healthy`; `mail.sync` colon-ошибок больше нет (`enqueued=2`). Worker остаётся на `444f312a`. Дубль Upstash `REDIS_URL` снят — только `nbos-redis`.
+  - [ ] Письмо `NBOS jobId verify 2026-08-19` (test@ → Gmail): после #168 воркер взял job (SENDING), SMTP/доставка не завершилась, inbound на Gmail нет. Smoke не закрывать.
+  - [x] Attachment download — verify Toon Expo PNG на prod test@ (Retry → Ready, файл в Drive).
+  - [x] Данные: 3 DISABLED `test@neetrino.com` в prod DB удалены (Prisma `deleteMany` status=DISABLED). Остались LIVE test@ и Gmail ACTIVE.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
     - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
     - [x] `SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED` — продление Gmail watch (только если есть Gmail-ящики).
@@ -30,3 +33,4 @@
 - [ ] Добавить production-мониторинг ошибок BullMQ jobs и Scheduler runs с понятными уведомлениями.
 - [ ] Вынести ops-токены из `.env.local` приложения и заменить секреты, если скриншоты или ENV попадали третьим лицам.
 - [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным (Upstash burn больше не актуален).
+- [ ] **Contact ↔ Product (не сейчас):** после Lead «Связать» / create-contact-from-lead — сначала canon NBOS (_зачем_ контакты на Project, не Product), потом проектировать и внедрить Contact ↔ Product. Сейчас доп. контакты на Project, у Product нет модели — project-contacts видны на product, но в одном project разные люди могут отвечать за разные product (сайт / CRM / app).

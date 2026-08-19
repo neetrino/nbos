@@ -239,6 +239,37 @@ body {
 }
 
 @layer components {
+  /* Global search results: thin scrollbar only while hovering / scrolling. */
+  .nbos-global-search-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .nbos-global-search-scroll:hover,
+  .nbos-global-search-scroll:focus-within,
+  .nbos-global-search-scroll:active {
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .nbos-global-search-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .nbos-global-search-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .nbos-global-search-scroll::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  .nbos-global-search-scroll:hover::-webkit-scrollbar-thumb,
+  .nbos-global-search-scroll:focus-within::-webkit-scrollbar-thumb,
+  .nbos-global-search-scroll:active::-webkit-scrollbar-thumb {
+    background: var(--border);
+  }
+
   .nbos-insight-panel {
     @apply border-border/80 bg-card rounded-2xl border p-4;
     background-image: linear-gradient(

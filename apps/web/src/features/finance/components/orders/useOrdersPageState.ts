@@ -8,13 +8,21 @@ import {
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { getBoardStageKeys, resolveBoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import {
+  SEARCH_FILTER_PAGE_ID,
+  usePersistedSearchFilterField,
+  usePersistedSearchFilters,
+} from '@/lib/persisted-client-state';
 import {
   ordersApi,
   type Order,
@@ -44,8 +52,14 @@ export function useOrdersPageState({
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.financeOrders);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    `${SEARCH_FILTER_PAGE_ID.financeOrders}.period`,
+    'period',
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = (next: FinancePeriod) => setPeriodRaw(next);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);

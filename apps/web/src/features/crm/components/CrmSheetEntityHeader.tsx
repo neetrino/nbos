@@ -43,9 +43,9 @@ export function CrmSheetEntityHeader({
   titleClassName,
 }: CrmSheetEntityHeaderProps) {
   return (
-    <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-0 flex-1">
+    <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
+        <div className="min-w-0 flex-1 basis-0">
           <div
             className={cn(
               'inline-flex max-w-full min-w-0 flex-wrap items-center gap-2',
@@ -83,7 +83,9 @@ export function CrmSheetEntityHeader({
           </div>
         </div>
         {actions ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-1.5">{actions}</div>
+          <div className="flex max-w-full min-w-0 flex-wrap items-center justify-end gap-1.5">
+            {actions}
+          </div>
         ) : null}
       </div>
     </div>

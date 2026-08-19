@@ -28,6 +28,15 @@ export const LEAD_ATTACH_ERROR = {
   CONTACT_TRASH: 'LEAD_ATTACH_CONTACT_TRASHED',
 } as const;
 
+/** Same source-Lead blocks as attach; pour/create-contact share these codes. */
+export const LEAD_SVYAZAT_ERROR = {
+  ...LEAD_ATTACH_ERROR,
+  ALREADY_IDENTIFIED: 'LEAD_CREATE_CONTACT_ALREADY_IDENTIFIED',
+  TARGET_NOT_FOUND: 'LEAD_CREATE_CONTACT_TARGET_NOT_FOUND',
+  TARGET_NOT_OPEN: 'LEAD_CREATE_CONTACT_TARGET_NOT_OPEN',
+  TARGET_SELF: 'LEAD_CREATE_CONTACT_TARGET_SELF',
+} as const;
+
 export type LeadAttachPhoneHandling = 'written' | 'extra' | 'same' | 'none';
 
 const AUTO_ATTACH_EXCLUDED: LeadStatusEnum[] = [...AUTO_ATTACH_EXCLUDED_LEAD_STATUSES];

@@ -29,6 +29,7 @@ import {
 } from '@/lib/api/finance-journal';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 const JOURNAL_MONTH_FILTER_KEY = 'month';
 
@@ -38,7 +39,11 @@ export default function FinanceJournalPage() {
   const [periods, setPeriods] = useState<FinancePostingPeriod[]>([]);
   const [entries, setEntries] = useState<OperationalJournalEntry[]>([]);
   const [search, setSearch] = useState('');
-  const [monthFilter, setMonthFilter] = useState('');
+  const [monthFilter, setMonthFilter] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.financeJournal,
+    JOURNAL_MONTH_FILTER_KEY,
+    '',
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -75,7 +80,7 @@ export default function FinanceJournalPage() {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setMonthFilter('');
-  }, []);
+  }, [setMonthFilter]);
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -117,7 +122,7 @@ export default function FinanceJournalPage() {
         </>
       ),
     }),
-    [handleClearFilters, load, loading, monthFilter, search],
+    [handleClearFilters, load, loading, monthFilter, search, setMonthFilter],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

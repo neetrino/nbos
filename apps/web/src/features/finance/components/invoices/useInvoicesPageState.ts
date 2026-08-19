@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
@@ -23,6 +26,11 @@ import {
   type InvoiceStats,
 } from '@/lib/api/finance';
 import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
+import {
+  SEARCH_FILTER_PAGE_ID,
+  usePersistedSearchFilterField,
+  usePersistedSearchFilters,
+} from '@/lib/persisted-client-state';
 
 interface RecordPaymentInput {
   invoiceId: string;
@@ -49,14 +57,20 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.financeInvoices);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    `${SEARCH_FILTER_PAGE_ID.financeInvoices}.period`,
+    'period',
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = (next: FinancePeriod) => setPeriodRaw(next);
   const [view, setView] = useInvoicesBoardViewMode();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stageGateHighlight, setStageGateHighlight] =
     useState<InvoiceSheetStageGateHighlight | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
 
   const boardScope = resolveBoardLifecycleScope(filters.boardScope);
   const stageKeys = useMemo(() => {

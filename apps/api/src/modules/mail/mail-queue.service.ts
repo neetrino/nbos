@@ -62,6 +62,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
     messageId: string;
     actorEmployeeId: string;
   }): Promise<boolean> {
+    // Replace completed/failed job with the same id (orphan QUEUED after worker restart).
     return this.add(
       MAIL_SEND_JOB_NAME,
       { kind: 'send', ...payload },

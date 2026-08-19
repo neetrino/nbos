@@ -268,6 +268,8 @@ uninvoiced and outstanding coverage.
 
 **Shipped (2026-08-19) C4 one-liner:** Lead→Contact attach + open Deal as context (`POST /crm/leads/:id/attach-contact`); ATS Contact-phone resolve; not entity merge, not Deal↔Deal.
 
+**Shipped (2026-08-19) C4 Связать:** Lead sheet **Связать** (merge vs add); `pour-into-contact` + `create-contact`; Deal→existing Project cascade; no Mail, no Deal↔Deal, no Contact↔Product.
+
 **Сознательно не делаем:** Deal↔Deal merge — не в roadmap. Случайный дубль Deal → Failed / Trash.
 
 **Отдельный канон (не Lead merge):** Contact merge — Clients (`../03-Clients/02-Contacts.md`).

@@ -15,6 +15,7 @@ import { refreshSalesKpiAfterClientPayment } from '../../payroll-runs/sales-kpi-
 import { mergeFinanceWhere } from '../finance-scoped-access';
 import type { FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolvePaymentParticipationWhere } from '../finance-module-participation.where';
+import { buildPaymentSearchWhere } from './payment-search.where';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -55,35 +56,7 @@ export class PaymentsService {
     if (invoiceId) parts.push({ invoiceId });
     const searchTrimmed = search?.trim();
     if (searchTrimmed) {
-      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
-      parts.push({
-        OR: [
-          { notes: ic },
-          {
-            invoice: {
-              OR: [
-                { code: ic },
-                { company: { name: ic } },
-                {
-                  order: {
-                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
-                  },
-                },
-                {
-                  subscription: {
-                    OR: [
-                      { code: ic },
-                      { name: ic },
-                      { project: { name: ic } },
-                      { project: { code: ic } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      });
+      parts.push(buildPaymentSearchWhere(searchTrimmed));
     }
     if (dateFrom || dateTo) {
       parts.push({

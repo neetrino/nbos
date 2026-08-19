@@ -1,21 +1,26 @@
 'use client';
 
 import type { KeyboardEvent, RefObject } from 'react';
-import { ArrowRight, Ban, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
+import { useMemo } from 'react';
+import { CheckSquare, History, LayoutGrid } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { buildLeadDetailSheetTabs } from './build-lead-detail-sheet-tabs';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead, LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import {
+  LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  LEAD_DETAIL_SHEET_WIDTH_CLASS,
+  LEAD_SHEET_PIPELINE_SCROLL_CLASS,
+} from '@/features/crm/constants/lead-sheet-layout';
 import { LEAD_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { LeadGeneralTab } from './LeadGeneralTab';
 import type { LeadGeneralDraft } from './lead-general-form-state';
@@ -28,11 +33,13 @@ import { canOfferLeadMerge } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions';
 import { LeadDuplicateBanner } from './LeadDuplicateBanner';
 import { LeadSheetIdentifySection } from './LeadSheetIdentifySection';
-import { LeadSheetMergeControls } from './LeadSheetMergeControls';
+import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
+import { LeadTasksTab } from './LeadTasksTab';
 
 export const LEAD_SHEET_TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
   { value: 'history', label: 'History', icon: History },
+  { value: 'task', label: 'Task', icon: CheckSquare },
 ] as const;
 
 export interface LeadSheetLoadedContentProps {
@@ -67,11 +74,24 @@ export interface LeadSheetLoadedContentProps {
   onConsumedMergeAbsorbed: () => void;
   onAttached: (lead: Lead) => void;
   onAttachedAndTrashed: () => void;
+  onRefresh?: () => void;
+  onTaskCreateOpenChange: (open: boolean) => void;
+  taskListRefreshSignal: number;
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
   const { me } = usePermission();
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const { renderLead, isTrashView, generalDraft, gateRequiredFields } = props;
+  const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
+  const detailSheetTabs = useMemo(
+    () =>
+      buildLeadDetailSheetTabs(LEAD_SHEET_TABS, {
+        canCreateTask,
+        onCreateTask: () => props.onTaskCreateOpenChange(true),
+      }),
+    [canCreateTask, props],
+  );
   const canMerge = canOfferLeadMerge(me?.role.slug);
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
@@ -106,7 +126,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
     <EntityDetailSheetContent
       open={props.open}
       layout="full"
-      width="medium"
+      contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
+      railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
       sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
     >
       <CrmSheetEntityHeader
@@ -136,6 +157,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
             mergeAbsorbedId={props.mergeAbsorbedId}
             onConsumedMergeAbsorbed={props.onConsumedMergeAbsorbed}
             onMerged={props.onMerged}
+            onUpdated={props.onAttached}
+            onTrashed={props.onAttachedAndTrashed}
             onConvertToDeal={props.onConvertToDeal}
             onRestore={props.onRestore}
             onPermanentDelete={props.onPermanentDelete}
@@ -145,7 +168,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         }
       />
 
-      <div className="shrink-0 pb-3">
+      <div className={`shrink-0 px-5 pb-3 ${LEAD_SHEET_PIPELINE_SCROLL_CLASS}`}>
         <LeadPipelineStages
           currentStatus={renderLead.status}
           onStageClick={isTrashView ? () => {} : (key) => props.onStatusChange(renderLead.id, key)}
@@ -153,14 +176,14 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       </div>
 
       <DetailSheetTabBar
-        tabs={LEAD_SHEET_TABS}
+        tabs={detailSheetTabs}
         activeTab={props.activeTab}
         onTabChange={(value) =>
           props.setActiveTab(value as (typeof LEAD_SHEET_TABS)[number]['value'])
         }
       />
 
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea className="min-h-0 min-w-0 flex-1">
         <div className="px-5 py-4">
           <LeadSheetIdentifySection
             lead={renderLead}
@@ -201,6 +224,14 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
                 History coming soon...
               </div>
             )}
+            {props.activeTab === 'task' ? (
+              <LeadTasksTab
+                lead={renderLead}
+                onRefresh={props.onRefresh}
+                onCreateOpenChange={props.onTaskCreateOpenChange}
+                tasksRefreshSignal={props.taskListRefreshSignal}
+              />
+            ) : null}
           </DetailSheetTabPanel>
         </div>
       </ScrollArea>
@@ -214,79 +245,5 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         onCancel={props.handleGeneralCancel}
       />
     </EntityDetailSheetContent>
-  );
-}
-
-function LeadSheetHeaderActions(props: {
-  renderLead: Lead;
-  isTrashView: boolean;
-  isTerminal: boolean;
-  mergeAbsorbedId: string | null;
-  onConsumedMergeAbsorbed: () => void;
-  onMerged?: (lead: Lead) => void;
-  onConvertToDeal?: (lead: Lead) => void;
-  onRestore?: (id: string) => void;
-  onPermanentDelete?: (id: string) => void;
-  onMoveToTrash?: (id: string) => void;
-  onStatusChange: (id: string, status: string) => Promise<void>;
-}) {
-  const { renderLead, isTrashView } = props;
-  return (
-    <>
-      {!isTrashView && props.onMerged ? (
-        <LeadSheetMergeControls
-          lead={renderLead}
-          isTrashView={isTrashView}
-          initialAbsorbedId={props.mergeAbsorbedId}
-          onConsumedInitialAbsorbed={props.onConsumedMergeAbsorbed}
-          onMerged={props.onMerged}
-        />
-      ) : null}
-      {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (
-        <Button type="button" size="sm" onClick={() => props.onConvertToDeal?.(renderLead)}>
-          <ArrowRight size={14} className="mr-1" />
-          Convert to Deal
-        </Button>
-      ) : null}
-      {isTrashView && props.onRestore ? (
-        <DetailSheetSettingsMenu>
-          <DropdownMenuItem
-            disabled={Boolean(renderLead.mergedIntoId)}
-            onClick={() => {
-              if (renderLead.mergedIntoId) return;
-              props.onRestore?.(renderLead.id);
-            }}
-          >
-            <RotateCcw />
-            {renderLead.mergedIntoId ? 'Restore blocked (merged)' : 'Restore'}
-          </DropdownMenuItem>
-          {props.onPermanentDelete ? (
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => props.onPermanentDelete?.(renderLead.id)}
-            >
-              <Trash2 />
-              Delete permanently
-            </DropdownMenuItem>
-          ) : null}
-        </DetailSheetSettingsMenu>
-      ) : props.onMoveToTrash ? (
-        <DetailSheetSettingsMenu>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => props.onMoveToTrash?.(renderLead.id)}
-          >
-            <Trash2 />
-            Move to Trash
-          </DropdownMenuItem>
-          {renderLead.status !== 'SPAM' ? (
-            <DropdownMenuItem onClick={() => void props.onStatusChange(renderLead.id, 'SPAM')}>
-              <Ban />
-              Mark as Spam
-            </DropdownMenuItem>
-          ) : null}
-        </DetailSheetSettingsMenu>
-      ) : null}
-    </>
   );
 }

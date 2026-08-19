@@ -27,6 +27,11 @@ import {
   buildReportFilters,
   type ReportFilterState,
 } from '../report-filters';
+import {
+  SEARCH_FILTER_PAGE_ID,
+  usePersistedSearchFilters,
+  type SearchFilterRecord,
+} from '@/lib/persisted-client-state';
 import { buildReportsViewPath, parseReportsPathname, type ReportsViewId } from '../reports-routing';
 import {
   useFinanceReportsTabData,
@@ -40,6 +45,14 @@ import { MarketingReportsTab } from './tabs/MarketingReportsTab';
 import { ProjectsReportsTab } from './tabs/ProjectsReportsTab';
 import { SalesReportsTab } from './tabs/SalesReportsTab';
 import { SpecialistsReportsTab } from './tabs/SpecialistsReportsTab';
+
+function reportFiltersToRecord(filters: ReportFilterState): SearchFilterRecord {
+  return {
+    dateFrom: filters.dateFrom,
+    dateTo: filters.dateTo,
+    asOf: filters.asOf,
+  };
+}
 
 export function ReportsCenter() {
   const pathname = usePathname();
@@ -59,7 +72,22 @@ export function ReportsCenter() {
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<ReportFilterState>(buildInitialReportFilters());
+  const [storedFilters, setStoredFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.reportsCenter,
+    reportFiltersToRecord(buildInitialReportFilters()),
+  );
+  const filters: ReportFilterState = useMemo(
+    () => ({
+      dateFrom: storedFilters.dateFrom ?? '',
+      dateTo: storedFilters.dateTo ?? '',
+      asOf: storedFilters.asOf ?? '',
+    }),
+    [storedFilters],
+  );
+  const setFilters = useCallback(
+    (next: ReportFilterState) => setStoredFilters(reportFiltersToRecord(next)),
+    [setStoredFilters],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creatingExportToken, setCreatingExportToken] = useState<string | null>(null);
@@ -146,7 +174,7 @@ export function ReportsCenter() {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setFilters(buildInitialReportFilters());
-  }, []);
+  }, [setFilters]);
 
   const showReportActions = isReportDataView(view);
 
@@ -178,6 +206,7 @@ export function ReportsCenter() {
       creatingExportToken,
       filters,
       handleClearFilters,
+      setFilters,
       requestExport,
       savedViews,
       search,

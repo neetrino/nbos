@@ -41,6 +41,7 @@ import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-q
 import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const PARTNERS_LIST_PAGE_SIZE = 12;
 
@@ -62,7 +63,7 @@ function PartnersPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.partners);
   const [view, setView] = useState<PartnersDirectoryViewMode>('grid');
   const [createOpen, setCreateOpen] = useState(false);
   const permanentDeleteConfirm = useDeleteConfirm();
@@ -246,8 +247,9 @@ function PartnersPageContent() {
                   onChange={(status) =>
                     setFilters((prev) => {
                       if (!status) {
-                        const { status: _removed, ...rest } = prev;
-                        return rest;
+                        const next = { ...prev };
+                        delete next.status;
+                        return next;
                       }
                       return { ...prev, status };
                     })

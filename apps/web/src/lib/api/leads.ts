@@ -150,6 +150,7 @@ export const leadsApi = {
   async create(data: {
     name: string;
     contactName?: string;
+    contactId?: string;
     phone?: string;
     email?: string;
     source?: string | null;
@@ -216,6 +217,19 @@ export const leadsApi = {
     data: { contactId: string; aboutDealId?: string },
   ): Promise<Lead> {
     const resp = await api.post<Lead>(`/api/crm/leads/${leadId}/attach-contact`, data);
+    return resp.data;
+  },
+
+  async pourIntoContact(leadId: string, data: { contactId: string }): Promise<Lead> {
+    const resp = await api.post<Lead>(`/api/crm/leads/${leadId}/pour-into-contact`, data);
+    return resp.data;
+  },
+
+  async createContact(
+    leadId: string,
+    data?: { attach?: { type: 'deal' | 'project' | 'lead'; id: string } },
+  ): Promise<Lead> {
+    const resp = await api.post<Lead>(`/api/crm/leads/${leadId}/create-contact`, data ?? {});
     return resp.data;
   },
 

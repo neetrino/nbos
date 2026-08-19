@@ -62,34 +62,37 @@ export const CENTER_SHEET_WIDTH_COMPACT_CLASS = 'flex w-[min(42rem,calc(100vw-2r
 
 export const CENTER_SHEET_WIDTH_AUXILIARY_CLASS = 'flex w-[min(36rem,calc(100vw-2rem-2.75rem))]';
 
+/** Shared right-sheet cap — leaves room for viewport margin + floating rail column. */
+export const DETAIL_SHEET_VIEWPORT_WIDTH_CAP = 'calc(100vw-2rem-2.75rem)';
+
 /** Matches Lead/Deal detail width: 75vw on `sm+`; 85vw on mobile. */
 export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[75vw]';
+  'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(75vw,calc(100vw-2rem-2.75rem))]';
 
 /** Anchor floating rail to the left edge of a 75vw / mobile 85vw right sheet. */
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[75vw]`;
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(75vw,calc(100vw-2rem-2.75rem))]`;
 
 /** Narrower detail sheet for entities with less form density (e.g. Finance invoice). */
 export const DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[42rem]';
+  'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(42rem,calc(100vw-2rem-2.75rem))]';
 
 /** Anchor floating rail to the left edge of a {@link DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS} sheet. */
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[42rem]`;
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(42rem,calc(100vw-2rem-2.75rem))]`;
 
 /** Medium detail sheet (e.g. client service with more fields than invoice). */
 export const DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[48rem]';
+  'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(48rem,calc(100vw-2rem-2.75rem))]';
 
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[48rem]`;
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(48rem,calc(100vw-2rem-2.75rem))]`;
 
 /**
  * Narrow auxiliary panel (bonus ledger, HR peek) — use with
  * {@link EntityDetailSheetContent} `layout="auxiliary"` (Close only by default).
  */
 export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[36rem]';
+  'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(36rem,calc(100vw-2rem-2.75rem))]';
 
-export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[36rem]`;
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(36rem,calc(100vw-2rem-2.75rem))]`;
 
 /** Block surface aligned with Deal General sections. */
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-border bg-card p-5';
@@ -307,7 +310,7 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'shrink-0 px-5 pb-0';
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-5 pb-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Archive, ShoppingCart, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -25,7 +25,8 @@ import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
 import { OrderReconciliationTab } from './OrderReconciliationTab';
-import { ORDER_DETAIL_SHEET_TABS, type OrderDetailSheetTab } from './order-detail-sheet-tabs';
+import { type OrderDetailSheetTab } from './order-detail-sheet-tabs';
+import { buildOrderDetailSheetTabs } from './build-order-detail-sheet-tabs';
 import { ORDER_STATUSES } from './order-statuses';
 
 /** Order detail: single-column general — narrower than shared auxiliary (36rem). */
@@ -41,6 +42,8 @@ interface OrderDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateInvoice: (order: Order) => void;
+  /** When false, hide tab hover + (e.g. stubbed create handler on Product Finance). */
+  canQuickCreateInvoice?: boolean;
   refreshSignal?: number;
   forceNestedBackdrop?: boolean;
 }
@@ -51,6 +54,7 @@ export function OrderDetailSheet({
   open,
   onOpenChange,
   onCreateInvoice,
+  canQuickCreateInvoice = true,
   refreshSignal = 0,
   forceNestedBackdrop = false,
 }: OrderDetailSheetProps) {
@@ -101,6 +105,15 @@ export function OrderDetailSheet({
     if (!order) return;
     onCreateInvoice(order);
   }, [onCreateInvoice, order]);
+
+  const detailSheetTabs = useMemo(
+    () =>
+      buildOrderDetailSheetTabs({
+        canQuickCreateInvoice,
+        onCreateInvoice: handleCreateInvoice,
+      }),
+    [canQuickCreateInvoice, handleCreateInvoice],
+  );
 
   const handleOrderUpdated = useCallback(() => {
     void refresh();
@@ -161,7 +174,7 @@ export function OrderDetailSheet({
           </div>
 
           <DetailSheetTabBar
-            tabs={ORDER_DETAIL_SHEET_TABS}
+            tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as OrderDetailSheetTab)}
           />

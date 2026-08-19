@@ -1,0 +1,32 @@
+/** Locked Lead sheet Связать copy. CRM has no locale files; keep labels in one place. */
+export const LEAD_SVYAZAT_LABELS = {
+  button: 'Связать',
+  merge: 'Объединить',
+  mergeLead: 'с лидом',
+  mergeContact: 'с контактом',
+  add: 'Добавить',
+  newContact: 'новый контакт',
+  contactToWork: 'контакт к работе',
+  searchContact: 'Найти контакт',
+  searchLead: 'Найти лид',
+  searchDeal: 'Найти сделку',
+  searchProject: 'Найти продукт',
+  apply: 'Применить',
+  cancel: 'Отмена',
+  createContactTitle: 'Новый контакт',
+  createContactBody: 'Сохранить человека с этого лида. Лид останется на доске.',
+  createContactApply: 'Создать контакт',
+  attachWorkTitle: 'Контакт к работе',
+  attachWorkHint: 'Создать контакт и повесить на одну открытую работу. Этот лид уйдёт в корзину.',
+  pourTitle: 'Объединить с контактом',
+  pourHint: 'Влить имя, телефоны и заметки в существующий контакт. Этот лид уйдёт в корзину.',
+  searchHint: 'Последние 10. Начните вводить — список обновится.',
+  emptyRecent: 'Нет недавних записей',
+  emptySearch: 'Ничего не найдено',
+  searching: 'Searching…',
+  targetDeal: 'Сделка',
+  targetProject: 'Продукт',
+  targetLead: 'Лид',
+} as const;
+
+export const LEAD_SVYAZAT_RECENT_LIMIT = 10;

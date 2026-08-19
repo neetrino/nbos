@@ -18,6 +18,8 @@ import { LeadConversionService } from './lead-conversion.service';
 import { FindLeadDuplicatesDto } from './dto/find-lead-duplicates.dto';
 import { MergeLeadDto } from './dto/merge-lead.dto';
 import { AttachLeadContactDto } from './dto/attach-lead-contact.dto';
+import { PourLeadIntoContactDto } from './dto/pour-lead-into-contact.dto';
+import { CreateLeadContactDto } from './dto/create-lead-contact.dto';
 
 @ApiTags('CRM / Leads')
 @ApiBearerAuth()
@@ -95,6 +97,7 @@ export class LeadsController {
     body: {
       name: string;
       contactName?: string;
+      contactId?: string;
       phone?: string;
       email?: string;
       source?: string | null;
@@ -180,6 +183,33 @@ export class LeadsController {
     return this.leadsService.mergeLeads(
       id,
       { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices, status: body.status },
+      { id: user.id, roleSlug: user.role },
+    );
+  }
+
+  @Post(':id/pour-into-contact')
+  @ApiOperation({ summary: 'Pour this Lead onto an existing Contact and trash the Lead' })
+  async pourIntoContact(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: PourLeadIntoContactDto,
+  ) {
+    return this.leadsService.pourIntoContact(id, body.contactId, {
+      id: user.id,
+      roleSlug: user.role,
+    });
+  }
+
+  @Post(':id/create-contact')
+  @ApiOperation({ summary: 'Create a Contact from this Lead; optionally attach to work and trash' })
+  async createContact(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: CreateLeadContactDto,
+  ) {
+    return this.leadsService.createContactFromLead(
+      id,
+      { attach: body.attach },
       { id: user.id, roleSlug: user.role },
     );
   }

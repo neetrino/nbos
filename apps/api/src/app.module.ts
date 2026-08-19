@@ -48,6 +48,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
+import { SearchModule } from './modules/search/search.module';
 import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -112,6 +113,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     ChecklistTemplatesModule,
     PlatformAccessModule,
     PlatformLifecycleModule,
+    SearchModule,
     QueueWorkersModule.register(),
   ],
   controllers: [HealthController],

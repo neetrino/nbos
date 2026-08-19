@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import {
   CashFlowSnapshot,
   CompanyPnlSnapshot,
@@ -30,6 +34,7 @@ import {
   type ProjectPnlReport,
 } from '@/lib/api/finance-reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function FinanceReportsPage() {
   useFinanceDocumentTitle(financeReportsPageTitle());
@@ -47,7 +52,13 @@ export default function FinanceReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.financeReports,
+    FINANCE_PERIOD_FILTER_KEY,
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = useCallback((next: FinancePeriod) => setPeriodRaw(next), [setPeriodRaw]);
 
   const reportQueryParams = useMemo((): FinanceReportQueryParams => {
     const periodParams = getFinancePeriodParams(period);
@@ -100,7 +111,7 @@ export default function FinanceReportsPage() {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
-  }, []);
+  }, [setPeriod]);
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -122,7 +133,7 @@ export default function FinanceReportsPage() {
         />
       ),
     }),
-    [fetchDefinitions, handleClearFilters, loading, period, search],
+    [fetchDefinitions, handleClearFilters, loading, period, search, setPeriod],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

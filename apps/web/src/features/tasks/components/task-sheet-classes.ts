@@ -1,15 +1,15 @@
 /** Layout / surface class strings for {@link TaskSheet}. */
 
 /** Right task sheet width on sm+ (fraction of viewport). */
-export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.68;
+export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.8;
 
-/** Right task sheet — 85vw on mobile, ~68vw on sm+ (room for detail + chat). */
+/** Right task sheet — 90vw on mobile, 80vw on sm+. */
 export const TASK_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[68vw]';
+  'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-[90vw] sm:max-w-none sm:data-[side=right]:w-[80vw]';
 
 /** Anchor floating rail to the left edge of {@link TASK_SHEET_WIDTH_CLASS}. */
 export const TASK_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[68vw]';
+  'max-sm:left-auto max-sm:right-[90vw] max-sm:translate-x-px sm:right-[80vw]';
 
 export const TASK_SHEET_DETAIL_COLUMN_CLASS =
   'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 xl:border-r dark:bg-muted/15';
@@ -21,7 +21,7 @@ export const TASK_SHEET_CHAT_COLUMN_CLASS =
 export const TASK_SHEET_CARD_CLASS =
   'min-w-0 rounded-xl bg-card p-3.5 shadow-sm ring-1 ring-border/50';
 
-/** Secondary blocks (checklist, rules) — slightly softer than primary cards. */
+/** Secondary blocks (rules extras) — slightly softer than primary cards. */
 export const TASK_SHEET_SECTION_SURFACE_CLASS =
   'min-w-0 rounded-xl bg-card/90 p-3.5 shadow-sm ring-1 ring-border/40';
 

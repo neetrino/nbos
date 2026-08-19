@@ -3,16 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckSquare, FileText, Plus, Rocket, type LucideIcon } from 'lucide-react';
-import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
-import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
-import { dealOrderToCreateInvoiceOrder } from '@/features/finance/components/invoices/deal-order-to-create-invoice-order';
 import {
   canCreateDepositInvoice,
   canOpenDealCreateInvoiceDialog,
 } from '@/features/crm/utils/deal-invoice-eligibility';
-import { submitDealInvoiceCreation } from '@/features/crm/utils/submit-deal-invoice-creation';
 import type { Deal } from '@/lib/api/deals';
 import { dealsApi } from '@/lib/api/deals';
 import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
@@ -27,7 +23,8 @@ import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
 interface DealSheetQuickActionsProps {
   deal: Deal;
   onRefresh?: () => void;
-  onOpenTaskTab?: () => void;
+  onCreateInvoice: () => void;
+  onCreateTask: () => void;
 }
 
 interface QuickActionItem {
@@ -48,12 +45,11 @@ function resolveDealProductId(deal: Deal): string | null {
 export function DealSheetQuickActions({
   deal,
   onRefresh,
-  onOpenTaskTab,
+  onCreateInvoice,
+  onCreateTask,
 }: DealSheetQuickActionsProps) {
   const router = useRouter();
-  const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
   const [startingEarly, setStartingEarly] = useState(false);
-  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [whatsappBusy, setWhatsappBusy] = useState(false);
   const [whatsappState, setWhatsappState] = useState<ProductWhatsAppState | null>(null);
   const { creatorId, creatorReady } = useTaskCreatorId();
@@ -62,7 +58,6 @@ export function DealSheetQuickActions({
   const projectId = deal.projectId ?? firstOrder?.projectId;
   const productId = resolveDealProductId(deal);
   const taxStatus = deal.taxStatus ?? 'TAX';
-  const createInvoiceOrder = firstOrder ? dealOrderToCreateInvoiceOrder(deal, firstOrder) : null;
   const canCreateInvoice = canOpenDealCreateInvoiceDialog(deal, taxStatus);
   const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
 
@@ -84,18 +79,6 @@ export function DealSheetQuickActions({
       cancelled = true;
     };
   }, [productId]);
-
-  const defaultLinks = useMemo(
-    () => (projectId ? getTaskLinks(deal.id, projectId) : undefined),
-    [deal.id, projectId],
-  );
-
-  const submitOverride = useCallback(
-    async (form: { amount: string; dueDate: string }) => {
-      await submitDealInvoiceCreation(deal.id, form, createInvoiceOrder);
-    },
-    [deal.id, createInvoiceOrder],
-  );
 
   const canStartEarlyDelivery = Boolean(
     firstOrder &&
@@ -146,7 +129,7 @@ export function DealSheetQuickActions({
         enabled: canCreateInvoice,
         disabledTitle:
           'Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company',
-        onClick: () => setCreateInvoiceOpen(true),
+        onClick: onCreateInvoice,
       },
     ];
 
@@ -177,16 +160,14 @@ export function DealSheetQuickActions({
       }),
     );
 
-    if (projectId) {
-      items.push({
-        id: 'create-task',
-        label: 'Create task',
-        icon: CheckSquare,
-        enabled: !creatorReady || Boolean(creatorId),
-        disabledTitle: creatorReady && !creatorId ? 'Employee profile required' : undefined,
-        onClick: () => setQuickCreateOpen(true),
-      });
-    }
+    items.push({
+      id: 'create-task',
+      label: 'Create task',
+      icon: CheckSquare,
+      enabled: !creatorReady || Boolean(creatorId),
+      disabledTitle: creatorReady && !creatorId ? 'Employee profile required' : undefined,
+      onClick: onCreateTask,
+    });
 
     items.push({
       id: 'open-drive',
@@ -207,6 +188,8 @@ export function DealSheetQuickActions({
     depositBootstrap,
     handleEnsureWhatsApp,
     handleStartEarlyDelivery,
+    onCreateInvoice,
+    onCreateTask,
     productId,
     projectId,
     router,
@@ -231,39 +214,6 @@ export function DealSheetQuickActions({
         />
       ) : null}
       <DealSheetActionsMenu actions={actions} />
-
-      {canCreateInvoice ? (
-        <CreateInvoiceDialog
-          open={createInvoiceOpen}
-          onOpenChange={setCreateInvoiceOpen}
-          order={createInvoiceOrder}
-          submitOverride={submitOverride}
-          forceNestedBackdrop
-          onCreated={() => {
-            onRefresh?.();
-          }}
-        />
-      ) : null}
-
-      <QuickCreateTaskDialog
-        open={quickCreateOpen}
-        onOpenChange={setQuickCreateOpen}
-        creatorId={creatorId ?? ''}
-        creatorReady={creatorReady}
-        defaultLinks={defaultLinks}
-        forceNestedBackdrop
-        onCreated={() => {
-          onOpenTaskTab?.();
-          onRefresh?.();
-        }}
-      />
     </>
   );
-}
-
-function getTaskLinks(dealId: string, projectId: string) {
-  return [
-    { entityType: 'DEAL', entityId: dealId },
-    { entityType: 'PROJECT', entityId: projectId },
-  ];
 }

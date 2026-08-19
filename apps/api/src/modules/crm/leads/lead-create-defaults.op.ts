@@ -1,6 +1,7 @@
 export interface CreateLeadDefaultsInput {
   name: string;
   contactName?: string;
+  contactId?: string;
   phone?: string;
   email?: string;
   source?: string | null;

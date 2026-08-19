@@ -22,6 +22,9 @@ export type NavChildLinkDefinition = {
 
 export type NavChildDefinition = NavChildGroupDefinition | NavChildLinkDefinition;
 
+/** Hover-only action on a top-level nav row. Tasks uses unsorted (no-link) create. */
+export type NavQuickAction = 'create-unsorted-task';
+
 export function isNavChildGroup(child: NavChildDefinition): child is NavChildGroupDefinition {
   return child.kind === 'group';
 }
@@ -36,6 +39,8 @@ export interface NavModuleDefinition {
   href: string;
   permission?: PermissionRequirement;
   children?: NavChildDefinition[];
+  /** Optional hover action on the module row (only Tasks today). */
+  quickAction?: NavQuickAction;
 }
 
 export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
@@ -69,6 +74,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'Tasks',
     href: '/tasks',
     permission: { module: 'TASKS', action: 'VIEW' },
+    quickAction: 'create-unsorted-task',
   },
   {
     key: 'work-spaces',

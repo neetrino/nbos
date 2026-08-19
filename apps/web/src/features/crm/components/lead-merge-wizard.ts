@@ -7,8 +7,16 @@ import {
   type LeadMergeFieldKey,
   type LeadMergeFieldSide,
 } from '@nbos/shared';
-import type { Lead } from '@/lib/api/leads';
+import type { Lead, LeadDuplicateCandidate } from '@/lib/api/leads';
 import { getLeadStage } from '../constants/leadPipeline';
+import { getLeadDisplayTitle } from '../utils/crm-entity-display';
+
+export const LEAD_MERGE_RECENT_LIMIT = 10;
+
+export type LeadMergeSearchHit = Pick<
+  LeadDuplicateCandidate,
+  'id' | 'code' | 'name' | 'contactName' | 'phone' | 'email' | 'status' | 'hasOpenDeal'
+>;
 
 export const LEAD_MERGE_FIELD_LABELS: Record<LeadMergeFieldKey, string> = {
   name: 'Title',
@@ -94,4 +102,75 @@ export function mergePreviewLines(survivor: Lead, absorbed: Lead, status: string
 
 export function suggestedMergeStatus(survivor: Lead, absorbed: Lead): string {
   return defaultLeadMergeStatus(survivor.status, absorbed.status);
+}
+
+/** Primary line for merge search / survivor labels — human title, not code. */
+export function getLeadMergeCandidateTitle(
+  hit: Pick<LeadMergeSearchHit, 'name' | 'contactName' | 'code'>,
+): string {
+  const name = hit.name?.trim();
+  if (name) return name;
+  const contact = hit.contactName?.trim();
+  if (contact) return contact;
+  return hit.code;
+}
+
+/** Secondary line: code (when not the title), contact name, phone/email, blockers. */
+export function getLeadMergeCandidateSubtitle(
+  hit: Pick<
+    LeadMergeSearchHit,
+    'name' | 'contactName' | 'code' | 'phone' | 'email' | 'hasOpenDeal'
+  >,
+): string {
+  const title = getLeadMergeCandidateTitle(hit);
+  const parts: string[] = [];
+  if (hit.code !== title) parts.push(hit.code);
+  const contact = hit.contactName?.trim();
+  if (contact && contact !== title) parts.push(contact);
+  const channel = [hit.phone, hit.email].filter(Boolean).join(' · ');
+  if (channel) parts.push(channel);
+  if (hit.hasOpenDeal) parts.push('has Deal (cannot merge)');
+  return parts.join(' · ');
+}
+
+export function getLeadMergeEntityLabel(lead: Lead): string {
+  const title = getLeadDisplayTitle(lead);
+  if (title !== lead.code) return title;
+  const contact = lead.contactName?.trim();
+  return contact || lead.code;
+}
+
+export function isLeadMergePickBlocked(
+  hit: Pick<LeadMergeSearchHit, 'hasOpenDeal' | 'status'>,
+): boolean {
+  return hit.hasOpenDeal || hit.status === 'SQL';
+}
+
+export function leadToMergeSearchHit(lead: Lead): LeadMergeSearchHit {
+  const deal = lead.deal;
+  const hasOpenDeal = Boolean(deal && deal.status !== 'WON' && deal.status !== 'FAILED');
+  return {
+    id: lead.id,
+    code: lead.code,
+    name: lead.name,
+    contactName: lead.contactName,
+    phone: lead.phone,
+    email: lead.email,
+    status: lead.status,
+    hasOpenDeal,
+  };
+}
+
+export function filterRecentLeadMergeHits(
+  leads: Lead[],
+  excludeId: string,
+  limit = LEAD_MERGE_RECENT_LIMIT,
+): LeadMergeSearchHit[] {
+  return leads
+    .filter(
+      (lead) =>
+        lead.id !== excludeId && lead.status !== 'SQL' && !lead.mergedIntoId && !lead.trashedAt,
+    )
+    .slice(0, limit)
+    .map(leadToMergeSearchHit);
 }

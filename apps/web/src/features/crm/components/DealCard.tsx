@@ -33,6 +33,7 @@ import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
 import type { Deal, DealEmployeeRef } from '@/lib/api/deals';
 import { getDealTypePresentation, type DealTypePresentation } from '@/lib/deal-type-visual';
 import { getDealCardMetaLabel, getDealDisplayTitle } from '../utils/crm-entity-display';
+import { BoardCardCreateTaskButton } from './BoardCardCreateTaskButton';
 
 const DEAL_CARD_AVATAR_BASE_CLASS =
   'relative flex h-8 w-8 items-center justify-center rounded-full border border-border/40 text-[10px] font-bold';
@@ -46,9 +47,10 @@ interface DealCardProps {
   deal: Deal;
   onClick: (deal: Deal) => void;
   onStatusChange: (id: string, status: string) => void;
+  onCreateTask?: (deal: Deal) => void;
 }
 
-export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
+export function DealCard({ deal, onClick, onStatusChange, onCreateTask }: DealCardProps) {
   const typeVisual = getDealTypePresentation(deal.type);
   const chrome = getDealTypeCardChrome(typeVisual);
   const title = getDealDisplayTitle(deal);
@@ -101,7 +103,10 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
         typeVisual={typeVisual}
       />
 
-      <DealCardTeamAvatars deal={deal} />
+      <DealCardTeamAvatars
+        deal={deal}
+        onCreateTask={onCreateTask ? () => onCreateTask(deal) : undefined}
+      />
     </KanbanCardShell>
   );
 }
@@ -187,19 +192,22 @@ function DealMetaLine({
   );
 }
 
-function DealCardTeamAvatars({ deal }: { deal: Deal }) {
+function DealCardTeamAvatars({ deal, onCreateTask }: { deal: Deal; onCreateTask?: () => void }) {
   return (
-    <div className="mt-2.5 flex items-center justify-start gap-2">
-      <div className="flex shrink-0 -space-x-1.5">
-        <DealCardPersonAvatar person={deal.seller} roleLabel="Seller" tone="seller" />
-        {deal.sellerAssistant ? (
-          <DealCardPersonAvatar
-            person={deal.sellerAssistant}
-            roleLabel="Assistant"
-            tone="assistant"
-          />
-        ) : null}
+    <div className="mt-2.5 flex items-end gap-2">
+      <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
+        <div className="flex shrink-0 -space-x-1.5">
+          <DealCardPersonAvatar person={deal.seller} roleLabel="Seller" tone="seller" />
+          {deal.sellerAssistant ? (
+            <DealCardPersonAvatar
+              person={deal.sellerAssistant}
+              roleLabel="Assistant"
+              tone="assistant"
+            />
+          ) : null}
+        </div>
       </div>
+      {onCreateTask ? <BoardCardCreateTaskButton onCreateTask={onCreateTask} /> : null}
     </div>
   );
 }

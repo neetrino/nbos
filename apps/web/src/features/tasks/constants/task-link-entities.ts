@@ -8,6 +8,7 @@ import {
   Link2,
   Puzzle,
   Receipt,
+  UserRound,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -19,6 +20,7 @@ export const TASK_LINK_ENTITY_LABELS: Record<string, string> = {
   EXTENSION: 'Extension',
   ORDER: 'Order',
   DEAL: 'Deal',
+  LEAD: 'Lead',
   INVOICE: 'Invoice',
   SUPPORT_TICKET: 'Ticket',
   WORK_SPACE: 'Work Space',
@@ -52,6 +54,8 @@ export function taskLinkEntityIcon(entityType: string): LucideIcon {
       return LayoutGrid;
     case 'DEAL':
       return Handshake;
+    case 'LEAD':
+      return UserRound;
     case 'ORDER':
       return FileText;
     case 'INVOICE':

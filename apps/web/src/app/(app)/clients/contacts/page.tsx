@@ -34,6 +34,7 @@ import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const OPEN_CONTACT_QUERY = 'openId';
 
@@ -55,7 +56,7 @@ function ContactsPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsContacts);
   const [showCreate, setShowCreate] = useState(false);
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [fetchedContact, setFetchedContact] = useState<Contact | null>(null);
@@ -253,7 +254,7 @@ function ContactsPageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
+    [filterConfigs, filters, isTrashView, scope, search, setFilters, setScope, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

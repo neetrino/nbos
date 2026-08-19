@@ -41,10 +41,8 @@ import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-p
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
-import {
-  CLIENT_SERVICE_DETAIL_SHEET_TABS,
-  type ClientServiceDetailSheetTab,
-} from './client-service-detail-sheet-tabs';
+import { type ClientServiceDetailSheetTab } from './client-service-detail-sheet-tabs';
+import { buildClientServiceDetailSheetTabs } from './build-client-service-detail-sheet-tabs';
 import { useClientServiceProjects } from './use-client-service-projects';
 
 interface ClientServiceDetailSheetProps {
@@ -221,13 +219,29 @@ export function ClientServiceDetailSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
+  const isCancelled = service?.status === 'CANCELLED';
+  const canCreateWePayFinance = Boolean(
+    service && !isCancelled && service.billingModel === 'WE_PAY',
+  );
+  const detailSheetTabs = useMemo(
+    () =>
+      buildClientServiceDetailSheetTabs({
+        canCreateInvoice: canCreateWePayFinance,
+        canCreateExpense: canCreateWePayFinance,
+        canCreateTask: canCreateTask && !isCancelled,
+        onCreateInvoice: () => setInvoiceOpen(true),
+        onCreateExpense: () => setExpenseOpen(true),
+        onCreateTask: () => setQuickCreateTaskOpen(true),
+      }),
+    [canCreateTask, canCreateWePayFinance, isCancelled],
+  );
+
   if (!hostMounted) return null;
 
   const typeLabel = service
     ? clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)
     : undefined;
   const statusMeta = service ? getClientServiceStatus(service.status) : undefined;
-  const isCancelled = service?.status === 'CANCELLED';
   const sourcePageHref = clientServicesListWithOpenServiceHref(sheetId ?? '');
 
   return (
@@ -281,7 +295,7 @@ export function ClientServiceDetailSheet({
           </div>
 
           <DetailSheetTabBar
-            tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
+            tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
           />

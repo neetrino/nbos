@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import { usePermission } from '@/lib/permissions';
@@ -34,12 +32,13 @@ export function LeadSheetIdentifySection({
     roleSlug: me?.role.slug,
     actorId: me?.id,
   });
-  const { search, setSearch, result } = useLeadIdentifyCandidates(lead, canAttach);
+  const { result } = useLeadIdentifyCandidates(lead, canAttach);
   const [attaching, setAttaching] = useState(false);
 
-  if (!canAttach) return null;
+  if (!canAttach || !result || !hasDuplicateHits(result)) return null;
 
-  const attach = async (contactId: string, aboutDealId?: string) => {
+  const attachAboutDeal = async (contactId: string, aboutDealId?: string) => {
+    if (!aboutDealId) return;
     setAttaching(true);
     try {
       const updated = await leadsApi.attachContact(lead.id, { contactId, aboutDealId });
@@ -48,10 +47,10 @@ export function LeadSheetIdentifySection({
         onAttachedAndTrashed();
         return;
       }
-      toast.success('Lead attached to Contact.');
+      toast.success('Lead attached to the open Deal.');
       onAttached(updated);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not attach this Lead.'));
+      toast.error(getApiErrorMessage(err, 'Could not complete Связать.'));
     } finally {
       setAttaching(false);
     }
@@ -59,27 +58,16 @@ export function LeadSheetIdentifySection({
 
   return (
     <div className="mb-4 space-y-2">
-      <div className="space-y-1.5">
-        <Label htmlFor="lead-identify-search">Identify person</Label>
-        <Input
-          id="lead-identify-search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search Contact by name…"
-        />
-      </div>
-      {result && hasDuplicateHits(result) ? (
-        <LeadDuplicateBanner
-          result={result}
-          mode="identify"
-          canAttach={canAttach}
-          attaching={attaching}
-          onOpen={onOpenRelatedLead ?? (() => undefined)}
-          onOpenContact={(id) => openInNewTab(`/clients/contacts?openId=${id}`)}
-          onOpenDeal={(id) => openInNewTab(`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${id}`)}
-          onAttachContact={(contactId, aboutDealId) => void attach(contactId, aboutDealId)}
-        />
-      ) : null}
+      <LeadDuplicateBanner
+        result={result}
+        mode="identify"
+        canAttach={canAttach}
+        attaching={attaching}
+        onOpen={onOpenRelatedLead ?? (() => undefined)}
+        onOpenContact={(id) => openInNewTab(`/clients/contacts?openId=${id}`)}
+        onOpenDeal={(id) => openInNewTab(`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${id}`)}
+        onAttachContact={(contactId, aboutDealId) => void attachAboutDeal(contactId, aboutDealId)}
+      />
     </div>
   );
 }

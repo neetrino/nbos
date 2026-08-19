@@ -19,6 +19,7 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
+import { DealBoardQuickCreateTask } from '@/features/crm/components/DealBoardQuickCreateTask';
 import { DealsListTable } from '@/features/crm/components/DealsListTable';
 import {
   DealSheet,
@@ -39,6 +40,7 @@ import { DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
 import { buildDealPipelineFilterConfigs } from '@/features/crm/filters/crm-pipeline-filter-configs';
 import { resolveDealResponsibilityQuery } from '@/features/crm/filters/crm-responsible-filter';
 import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
+import { resolveDealProjectId } from '@/features/crm/utils/crm-entity-task-links';
 import { usePermission } from '@/lib/permissions';
 import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
@@ -76,6 +78,7 @@ import {
 import { toast } from 'sonner';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -116,10 +119,14 @@ function DealsPipelinePageContent() {
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.crmDeals);
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [quickCreateDeal, setQuickCreateDeal] = useState<{
+    id: string;
+    projectId: string | null;
+  } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [wonWhatsApp, setWonWhatsApp] = useState<{
     satisfied: boolean;
@@ -532,6 +539,13 @@ function DealsPipelinePageContent() {
     pushOpenDealToUrl(deal.id);
   };
 
+  const handleCreateDealTask = useCallback((deal: Deal) => {
+    setQuickCreateDeal({
+      id: deal.id,
+      projectId: resolveDealProjectId(deal),
+    });
+  }, []);
+
   const handleOpenDealById = async (id: string) => {
     pushOpenDealToUrl(id);
     const existingDeal = deals.find((deal) => deal.id === id);
@@ -657,6 +671,7 @@ function DealsPipelinePageContent() {
       isTrashView,
       scope,
       search,
+      setFilters,
       setScope,
       showDesktopBoardChrome,
       view,
@@ -710,6 +725,7 @@ function DealsPipelinePageContent() {
                 deal={deal}
                 onClick={handleCardClick}
                 onStatusChange={requestStatusChange}
+                onCreateTask={handleCreateDealTask}
               />
             )}
             getItemId={(deal) => deal.id}
@@ -750,6 +766,12 @@ function DealsPipelinePageContent() {
         onOpenChange={setShowCreate}
         onCreated={handleDealCreated}
         prefill={dealPrefill}
+      />
+
+      <DealBoardQuickCreateTask
+        dealId={quickCreateDeal?.id ?? null}
+        projectId={quickCreateDeal?.projectId}
+        onClose={() => setQuickCreateDeal(null)}
       />
 
       <DealSheet

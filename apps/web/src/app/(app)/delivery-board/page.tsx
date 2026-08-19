@@ -10,13 +10,12 @@ import { DeliveryBoardClosedBoard } from '@/features/projects/components/deliver
 import {
   applyDeliveryBoardClosedFilters,
   buildClosedFilterOptions,
-  type DeliveryBoardClosedFiltersInput,
 } from '@/features/projects/components/delivery-board/delivery-board-closed-filters';
 import {
   applyDeliveryBoardActiveFilters,
   buildActiveFilterOptions,
-  DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
 } from '@/features/projects/components/delivery-board/delivery-board-active-filters';
+import { useDeliveryBoardPersistedFilters } from '@/features/projects/components/delivery-board/use-delivery-board-persisted-filters';
 import { DeliveryBoardItemsTable } from '@/features/projects/components/delivery-board/DeliveryBoardItemsTable';
 import { DeliveryItemDetailSheet } from '@/features/projects/components/delivery-board/DeliveryItemDetailSheet';
 import { mergeDeliveryBoardItems } from '@/features/projects/components/delivery-board/delivery-board-item-adapters';
@@ -33,7 +32,6 @@ import {
   getItemLifecycle,
   getProjectId,
   type DeliveryBoardItem,
-  type DeliveryBoardKindFilter,
 } from '@/features/projects/components/delivery-board/project-delivery-board-model';
 import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/delivery-board-open-query';
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
@@ -52,18 +50,6 @@ const DELIVERY_BOARD_PRODUCT_TAB: Record<ProductBoardTab, ProductDetailTab> = {
   extensions: PRODUCT_DETAIL_TAB.extensions,
 };
 
-const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
-  search: '',
-  projectId: '',
-  companyId: '',
-  ownerId: '',
-  productLineKey: '',
-  closedFrom: '',
-  closedTo: '',
-  deadlineResult: 'ALL',
-  result: 'ALL',
-};
-
 function DeliveryBoardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,14 +59,16 @@ function DeliveryBoardPageContent() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
-  const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
+  const {
+    kindFilter,
+    setKindFilter,
+    closedFilters,
+    setClosedFilters,
+    activePipelineFilters,
+    setActivePipelineFilters,
+  } = useDeliveryBoardPersistedFilters();
   const [activeViewMode, setActiveViewMode] = useState<'LIST' | 'BOARD'>('BOARD');
   const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('BOARD');
-  const [closedFilters, setClosedFilters] =
-    useState<DeliveryBoardClosedFiltersInput>(DEFAULT_CLOSED_FILTERS);
-  const [activePipelineFilters, setActivePipelineFilters] = useState(() => ({
-    ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
-  }));
   const [stageGateHighlight, setStageGateHighlight] =
     useState<DeliverySheetStageGateHighlight | null>(null);
   const isMobileViewport = useIsMobileViewport();
