@@ -50,6 +50,10 @@ import {
 } from './deal-general-form-state';
 import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { DealSheetQuickActions } from './DealSheetQuickActions';
+import { DealSheetCreateDialogs } from './DealSheetCreateDialogs';
+import { buildDealDetailSheetTabs } from './build-deal-detail-sheet-tabs';
+import { canOpenDealCreateInvoiceDialog } from '@/features/crm/utils/deal-invoice-eligibility';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { getDealDisplayTitle } from '../utils/crm-entity-display';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
@@ -129,7 +133,9 @@ export function DealSheet({
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
-  const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
+  const [invoiceCreateOpen, setInvoiceCreateOpen] = useState(false);
+  const [taskCreateOpen, setTaskCreateOpen] = useState(false);
+  const [taskListRefreshSignal, setTaskListRefreshSignal] = useState(0);
   const [exceptionDialogOpen, setExceptionDialogOpen] = useState(false);
   const [generalDraft, setGeneralDraft] = useState<DealGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<DealGeneralDraft | null>(null);
@@ -152,7 +158,7 @@ export function DealSheet({
       return;
     }
     setActiveTab('invoice');
-    setInvoiceCreateNonce((previous) => previous + 1);
+    setInvoiceCreateOpen(true);
   }, []);
 
   useLayoutEffect(() => {
@@ -248,6 +254,12 @@ export function DealSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
+  useEffect(() => {
+    if (open) return;
+    setInvoiceCreateOpen(false);
+    setTaskCreateOpen(false);
+  }, [open]);
+
   if (!hostMounted) return null;
 
   return (
@@ -293,7 +305,9 @@ export function DealSheet({
               generalDirty={generalDirty}
               generalError={generalError}
               gateRequiredFields={gateRequiredFields}
-              invoiceCreateNonce={invoiceCreateNonce}
+              onInvoiceCreateOpenChange={setInvoiceCreateOpen}
+              onTaskCreateOpenChange={setTaskCreateOpen}
+              taskListRefreshSignal={taskListRefreshSignal}
               onStatusChange={onStatusChange}
               onRefresh={onRefresh}
               onOpenDeal={onOpenDeal}
@@ -309,14 +323,25 @@ export function DealSheet({
         )}
       </Sheet>
       {renderDeal ? (
-        <DealExceptionOrderDialog
-          dealId={renderDeal.id}
-          open={exceptionDialogOpen}
-          onOpenChange={setExceptionDialogOpen}
-          onSuccess={() => {
-            onRefresh?.();
-          }}
-        />
+        <>
+          <DealExceptionOrderDialog
+            dealId={renderDeal.id}
+            open={exceptionDialogOpen}
+            onOpenChange={setExceptionDialogOpen}
+            onSuccess={() => {
+              onRefresh?.();
+            }}
+          />
+          <DealSheetCreateDialogs
+            deal={renderDeal}
+            invoiceCreateOpen={invoiceCreateOpen}
+            onInvoiceCreateOpenChange={setInvoiceCreateOpen}
+            taskCreateOpen={taskCreateOpen}
+            onTaskCreateOpenChange={setTaskCreateOpen}
+            onRefresh={onRefresh}
+            onTaskCreated={() => setTaskListRefreshSignal((previous) => previous + 1)}
+          />
+        </>
       ) : null}
     </EntityItemHost>
   );
@@ -336,7 +361,9 @@ function DealSheetBody({
   generalDirty,
   generalError,
   gateRequiredFields,
-  invoiceCreateNonce,
+  onInvoiceCreateOpenChange,
+  onTaskCreateOpenChange,
+  taskListRefreshSignal,
   onStatusChange,
   onRefresh,
   onOpenDeal,
@@ -361,7 +388,9 @@ function DealSheetBody({
   generalDirty: boolean;
   generalError: string | null;
   gateRequiredFields: ReadonlySet<string>;
-  invoiceCreateNonce: number;
+  onInvoiceCreateOpenChange: (open: boolean) => void;
+  onTaskCreateOpenChange: (open: boolean) => void;
+  taskListRefreshSignal: number;
   onStatusChange: (id: string, status: string) => Promise<void>;
   onRefresh?: () => void;
   onOpenDeal?: (id: string) => void;
@@ -373,7 +402,21 @@ function DealSheetBody({
   handleGeneralCancel: () => void;
   onOpenExceptionDialog: () => void;
 }) {
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const typeVisual = getDealTypePresentation(renderDeal.type);
+  const taxStatus = renderDeal.taxStatus ?? 'TAX';
+  const canCreateInvoice = !isTrashView && canOpenDealCreateInvoiceDialog(renderDeal, taxStatus);
+  const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
+  const detailSheetTabs = useMemo(
+    () =>
+      buildDealDetailSheetTabs(TABS, {
+        canCreateInvoice,
+        canCreateTask,
+        onCreateInvoice: () => onInvoiceCreateOpenChange(true),
+        onCreateTask: () => onTaskCreateOpenChange(true),
+      }),
+    [canCreateInvoice, canCreateTask, onInvoiceCreateOpenChange, onTaskCreateOpenChange],
+  );
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(renderDeal);
   const TypeIcon = typeVisual.Icon;
   const canCreateExceptionOrder =
@@ -431,7 +474,8 @@ function DealSheetBody({
               <DealSheetQuickActions
                 deal={renderDeal}
                 onRefresh={onRefresh}
-                onOpenTaskTab={() => setActiveTab('task')}
+                onCreateInvoice={() => onInvoiceCreateOpenChange(true)}
+                onCreateTask={() => onTaskCreateOpenChange(true)}
               />
             ) : null}
             {isTrashView && onRestore ? (
@@ -481,7 +525,7 @@ function DealSheetBody({
       </div>
 
       <DetailSheetTabBar
-        tabs={TABS}
+        tabs={detailSheetTabs}
         activeTab={activeTab}
         onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
       />
@@ -502,13 +546,16 @@ function DealSheetBody({
             ) : null}
             {activeTab === 'history' && <DealHistoryTab />}
             {activeTab === 'invoice' && (
-              <DealInvoiceTab
+              <DealInvoiceTab deal={renderDeal} onCreateOpenChange={onInvoiceCreateOpenChange} />
+            )}
+            {activeTab === 'task' && (
+              <DealTasksTab
                 deal={renderDeal}
                 onRefresh={onRefresh}
-                expandCreateFormNonce={invoiceCreateNonce}
+                onCreateOpenChange={onTaskCreateOpenChange}
+                tasksRefreshSignal={taskListRefreshSignal}
               />
             )}
-            {activeTab === 'task' && <DealTasksTab deal={renderDeal} onRefresh={onRefresh} />}
             {activeTab === 'calls' && <DealCallsTab />}
           </DetailSheetTabPanel>
         </div>

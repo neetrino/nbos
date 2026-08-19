@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } fr
 import { Loader2 } from 'lucide-react';
 import { leadsApi, type Lead, type LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { LeadSheetLoadedContent } from './LeadSheetLoadedContent';
+import { LeadSheetCreateDialogs } from './LeadSheetCreateDialogs';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent, EntityItemHost } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
@@ -80,6 +81,8 @@ export function LeadSheet({
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [taskCreateOpen, setTaskCreateOpen] = useState(false);
+  const [taskListRefreshSignal, setTaskListRefreshSignal] = useState(0);
   const [generalDraft, setGeneralDraft] = useState<LeadGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<LeadGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -199,6 +202,11 @@ export function LeadSheet({
 
   useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
+  useEffect(() => {
+    if (open) return;
+    setTaskCreateOpen(false);
+  }, [open]);
+
   if (!hostMounted) return null;
 
   return (
@@ -256,9 +264,20 @@ export function LeadSheet({
               onOpenChange(false);
             }}
             onRefresh={onRefresh}
+            onTaskCreateOpenChange={setTaskCreateOpen}
+            taskListRefreshSignal={taskListRefreshSignal}
           />
         )}
       </Sheet>
+      {renderLead ? (
+        <LeadSheetCreateDialogs
+          lead={renderLead}
+          taskCreateOpen={taskCreateOpen}
+          onTaskCreateOpenChange={setTaskCreateOpen}
+          onRefresh={onRefresh}
+          onTaskCreated={() => setTaskListRefreshSignal((previous) => previous + 1)}
+        />
+      ) : null}
     </EntityItemHost>
   );
 }

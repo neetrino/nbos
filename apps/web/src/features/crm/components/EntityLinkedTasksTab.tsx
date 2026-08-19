@@ -1,12 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   ENTITY_ITEM_VIEW_OPTIONS,
   EntityItemList,
-  QuickCreateTaskDialog,
   useOpenEntityItemFromSummary,
   ViewModeSwitch,
   type EntityItemVariant,
@@ -14,33 +13,37 @@ import {
 import { taskToItemSummary } from '@/features/tasks/entity-item/task-item-summary';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { useEntityLinkedTasks } from '../hooks/use-entity-linked-tasks';
-import type { TaskEntityLink } from '../utils/crm-entity-task-links';
 
 interface EntityLinkedTasksTabProps {
   entityType: string;
   entityId: string;
-  extraLinks?: TaskEntityLink[];
   onRefresh?: () => void;
   emptyDescription: string;
+  onCreateOpenChange: (open: boolean) => void;
+  /** Increment from parent after task create so the list refetches while the tab is open. */
+  tasksRefreshSignal?: number;
 }
 
 export function EntityLinkedTasksTab({
   entityType,
   entityId,
-  extraLinks,
   onRefresh,
   emptyDescription,
+  onCreateOpenChange,
+  tasksRefreshSignal = 0,
 }: EntityLinkedTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
-  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const { creatorId, creatorReady } = useTaskCreatorId();
   const { tasks, loading, fetchTasks } = useEntityLinkedTasks(entityType, entityId);
-  const defaultLinks = useMemo(
-    () => [{ entityType, entityId }, ...(extraLinks ?? [])],
-    [entityType, entityId, extraLinks],
-  );
-  const itemSummaries = useMemo(() => tasks.map(taskToItemSummary), [tasks]);
+
+  useEffect(() => {
+    if (tasksRefreshSignal === 0) return;
+    void fetchTasks();
+    onRefresh?.();
+  }, [tasksRefreshSignal, fetchTasks, onRefresh]);
+
+  const itemSummaries = tasks.map(taskToItemSummary);
 
   return (
     <div className="space-y-4">
@@ -49,19 +52,7 @@ export function EntityLinkedTasksTab({
         creatorReady={creatorReady}
         viewVariant={viewVariant}
         onViewVariantChange={setViewVariant}
-        onCreate={() => setQuickCreateOpen(true)}
-      />
-      <QuickCreateTaskDialog
-        open={quickCreateOpen}
-        onOpenChange={setQuickCreateOpen}
-        creatorId={creatorId ?? ''}
-        creatorReady={creatorReady}
-        defaultLinks={defaultLinks}
-        forceNestedBackdrop
-        onCreated={() => {
-          void fetchTasks();
-          onRefresh?.();
-        }}
+        onCreate={() => onCreateOpenChange(true)}
       />
       <EntityLinkedTasksList
         loading={loading}

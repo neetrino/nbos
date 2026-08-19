@@ -263,6 +263,7 @@ export function DeliveryItemCommercialSection({
         open={orderSheetOpen && Boolean(orderId)}
         onOpenChange={setOrderSheetOpen}
         onCreateInvoice={() => undefined}
+        canQuickCreateInvoice={false}
         forceNestedBackdrop
       />
     </>

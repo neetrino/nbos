@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, RefObject } from 'react';
+import { useMemo } from 'react';
 import { CheckSquare, History, LayoutGrid } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -9,6 +10,8 @@ import {
   DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { buildLeadDetailSheetTabs } from './build-lead-detail-sheet-tabs';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead, LeadDuplicateLookupResult } from '@/lib/api/leads';
@@ -72,11 +75,23 @@ export interface LeadSheetLoadedContentProps {
   onAttached: (lead: Lead) => void;
   onAttachedAndTrashed: () => void;
   onRefresh?: () => void;
+  onTaskCreateOpenChange: (open: boolean) => void;
+  taskListRefreshSignal: number;
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
   const { me } = usePermission();
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const { renderLead, isTrashView, generalDraft, gateRequiredFields } = props;
+  const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
+  const detailSheetTabs = useMemo(
+    () =>
+      buildLeadDetailSheetTabs(LEAD_SHEET_TABS, {
+        canCreateTask,
+        onCreateTask: () => props.onTaskCreateOpenChange(true),
+      }),
+    [canCreateTask, props],
+  );
   const canMerge = canOfferLeadMerge(me?.role.slug);
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
@@ -161,7 +176,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       </div>
 
       <DetailSheetTabBar
-        tabs={LEAD_SHEET_TABS}
+        tabs={detailSheetTabs}
         activeTab={props.activeTab}
         onTabChange={(value) =>
           props.setActiveTab(value as (typeof LEAD_SHEET_TABS)[number]['value'])
@@ -210,7 +225,12 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
               </div>
             )}
             {props.activeTab === 'task' ? (
-              <LeadTasksTab lead={renderLead} onRefresh={props.onRefresh} />
+              <LeadTasksTab
+                lead={renderLead}
+                onRefresh={props.onRefresh}
+                onCreateOpenChange={props.onTaskCreateOpenChange}
+                tasksRefreshSignal={props.taskListRefreshSignal}
+              />
             ) : null}
           </DetailSheetTabPanel>
         </div>

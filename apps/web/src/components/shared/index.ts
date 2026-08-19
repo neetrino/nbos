@@ -148,7 +148,17 @@ export {
   DetailSheetTabBar,
   type DetailSheetTabBarProps,
   type DetailSheetTabItem,
+  type DetailSheetTabQuickCreate,
 } from './DetailSheetTabBar';
+export {
+  TabQuickCreateButton,
+  stopTabQuickCreateClick,
+} from './tab-quick-create/TabQuickCreateButton';
+export {
+  TAB_QUICK_CREATE_BUTTON_CLASS,
+  TAB_QUICK_CREATE_ICON_SIZE_PX,
+  TAB_QUICK_CREATE_SLOT_CLASS,
+} from './tab-quick-create/tab-quick-create.constants';
 export { DetailSheetTabPanel, type DetailSheetTabPanelProps } from './DetailSheetTabPanel';
 export { DetailSheetPlaceholderTab } from './DetailSheetPlaceholderTab';
 export {

@@ -137,6 +137,7 @@ Rules:
 - Do not navigate away from the parent sheet for inspect-only flows.
 - Optional drill-down link to a filtered module page is allowed **in addition** to sheet open (e.g. “Open all in Finance”).
 - Map API rows via feature adapters (`*ToItemSummary`); keep business display logic out of shared components.
+- When a tab already has an in-panel **Create** action (invoice, task, expense, etc.), the tab strip may show a hover **+** to the right of the tab label. It opens the **same quick dialog** without switching tabs. The in-tab Create button stays unchanged.
 
 Engineering reference: `docs/reference/patterns/entity-item-surface.md`.
 
