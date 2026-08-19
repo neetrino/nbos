@@ -14,6 +14,7 @@ import {
 import { mailAttachmentJobId } from './mail-attachment-runtime.constants';
 import { mailSendJobId } from './mail-outbound-runtime.constants';
 import { mailSyncJobId } from './mail-sync-runtime.constants';
+import { prepareMailJobIdForEnqueue } from './mail-queue-replace-terminal';
 
 @Injectable()
 export class MailQueueService implements OnModuleInit, OnModuleDestroy {
@@ -75,6 +76,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
       MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
       { kind: 'attachment', ...payload },
       mailAttachmentJobId(payload.attachmentId),
+      true,
     );
   }
 
@@ -82,11 +84,18 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
     jobName: string,
     payload: MailQueueJobPayload,
     jobId?: string,
+    replaceTerminal = false,
   ): Promise<boolean> {
     if (!this.queue) {
       return false;
     }
     try {
+      if (replaceTerminal && jobId) {
+        const prepared = await prepareMailJobIdForEnqueue(this.queue, jobId);
+        if (prepared === 'in_flight') {
+          return true;
+        }
+      }
       await this.queue.add(jobName, payload, jobId ? { jobId } : undefined);
       return true;
     } catch (caught) {

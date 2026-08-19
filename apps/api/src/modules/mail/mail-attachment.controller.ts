@@ -18,7 +18,7 @@ export class MailAttachmentController {
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @RequirePermission('MAIL', 'EDIT')
   @ApiOperation({
-    summary: 'Retry a failed inbound attachment download (FAILED → PENDING + enqueue)',
+    summary: 'Retry inbound attachment download (FAILED → PENDING, or re-enqueue stuck PENDING)',
   })
   async retryAttachmentDownload(
     @CurrentUser() user: CurrentUserPayload,

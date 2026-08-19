@@ -3,6 +3,7 @@ import {
   persistInboundAttachments,
   type MailPendingAttachmentDownload,
 } from './mail-sync-upsert-attachments.ops';
+import { listStuckPendingAttachmentDownloads } from './mail-sync-upsert-stuck-attachments.ops';
 import { isUniqueConstraintError } from './mail-unique-violation';
 import type { NormalizedMessage } from './providers/mail-provider-adapter';
 import { normalizeEmailSubject, sanitizeEmailHtml } from './providers/mail-html-sanitize';
@@ -59,18 +60,26 @@ async function persistRecipients(
   });
 }
 
+type PersistMessageResult = {
+  stored: boolean;
+  pendingDownloads: MailPendingAttachmentDownload[];
+};
+
 async function persistMessage(
   tx: TransactionClient,
   mailAccountId: string,
   threadId: string,
   message: NormalizedMessage,
-): Promise<MailPendingAttachmentDownload[] | null> {
+): Promise<PersistMessageResult> {
   const existing = await tx.emailMessage.findFirst({
     where: { mailAccountId, providerMessageId: message.providerMessageId },
     select: { id: true },
   });
   if (existing) {
-    return null;
+    return {
+      stored: false,
+      pendingDownloads: await listStuckPendingAttachmentDownloads(tx, existing.id),
+    };
   }
   const created = await tx.emailMessage.create({
     data: {
@@ -97,12 +106,12 @@ async function persistMessage(
       hasUnread: true,
     },
   });
-  return pendingDownloads;
+  return { stored: true, pendingDownloads };
 }
 
 /**
  * Normalizes provider messages into EmailThread/EmailMessage/EmailRecipient,
- * deduping by providerMessageId. Unique skip does not re-enqueue attachments.
+ * deduping by providerMessageId. Unique skip re-enqueues stuck PENDING only.
  */
 export async function upsertNormalizedMessages(
   prisma: InstanceType<typeof PrismaClient>,
@@ -113,14 +122,14 @@ export async function upsertNormalizedMessages(
   const pendingDownloads: MailPendingAttachmentDownload[] = [];
   for (const message of messages) {
     try {
-      const inserted = await prisma.$transaction(async (tx: TransactionClient) => {
+      const persisted = await prisma.$transaction(async (tx: TransactionClient) => {
         const threadId = await resolveThreadId(tx, mailAccountId, message);
         return persistMessage(tx, mailAccountId, threadId, message);
       });
-      if (inserted) {
+      if (persisted.stored) {
         stored += 1;
-        pendingDownloads.push(...inserted);
       }
+      pendingDownloads.push(...persisted.pendingDownloads);
     } catch (error) {
       if (!isUniqueConstraintError(error)) {
         throw error;

@@ -4,7 +4,7 @@ export const MAIL_QUEUED_TOAST = 'Email queued.';
 /** Shown after FAILED → QUEUED retry. */
 export const MAIL_RETRY_QUEUED_TOAST = 'Retry queued.';
 
-/** Shown after FAILED → PENDING attachment download retry. */
+/** Shown after FAILED → PENDING or stuck PENDING re-enqueue. */
 export const MAIL_ATTACHMENT_RETRY_TOAST = 'Attachment download queued.';
 
 /** Ambiguous provider outcome — do not assume the message was sent. */
