@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 export const BOARD_CARD_CREATE_TASK_ICON = CheckSquare;
 
 export const BOARD_CARD_CREATE_TASK_ARIA_LABEL = 'Create task';
+export const BOARD_CARD_CREATE_TASK_LABEL = 'Task';
+const BOARD_CARD_CREATE_TASK_ICON_SIZE = 14;
 
 /** Reserved footer slot — bottom-right, does not overlay avatar/date. */
 export const BOARD_CARD_CREATE_TASK_SLOT_CLASS = 'ml-auto shrink-0 self-end';
@@ -27,19 +29,30 @@ export function stopBoardCardCreateTaskClick(
 
 interface BoardCardCreateTaskButtonProps {
   onCreateTask: () => void;
+  className?: string;
+  showLabel?: boolean;
 }
 
-export function BoardCardCreateTaskButton({ onCreateTask }: BoardCardCreateTaskButtonProps) {
+export function BoardCardCreateTaskButton({
+  onCreateTask,
+  className,
+  showLabel = false,
+}: BoardCardCreateTaskButtonProps) {
   return (
     <Button
       type="button"
       variant="ghost"
-      size="icon-xs"
-      className={cn(getBoardCardCreateTaskSlotClassName(), 'opacity-0 group-hover:opacity-100')}
+      size={showLabel ? 'sm' : 'icon-xs'}
+      className={cn(
+        getBoardCardCreateTaskSlotClassName(),
+        'opacity-0 group-hover:opacity-100',
+        className,
+      )}
       aria-label={BOARD_CARD_CREATE_TASK_ARIA_LABEL}
       onClick={(event) => stopBoardCardCreateTaskClick(event, onCreateTask)}
     >
-      <BOARD_CARD_CREATE_TASK_ICON size={14} />
+      <BOARD_CARD_CREATE_TASK_ICON size={BOARD_CARD_CREATE_TASK_ICON_SIZE} />
+      {showLabel ? BOARD_CARD_CREATE_TASK_LABEL : null}
     </Button>
   );
 }
