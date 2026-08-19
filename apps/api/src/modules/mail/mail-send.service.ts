@@ -6,7 +6,11 @@ import { DriveR2Client } from '../drive/drive-r2.client';
 import { classifyMailProviderError } from './mail-provider-error.classify';
 import { loadOutboundAttachmentParts } from './mail-send-attachments.ops';
 import { gateOutboundSendAttempt } from './mail-send-claim.ops';
-import { buildSendMessageInput, loadOutboundSendContext } from './mail-send.ops';
+import {
+  buildSendMessageInput,
+  loadOutboundSendContext,
+  type OutboundSendContext,
+} from './mail-send.ops';
 import {
   markMailboxNeedsReconnect,
   markOutboundFailed,
@@ -49,29 +53,54 @@ export class MailSendService {
     }
     const context = await loadOutboundSendContext(this.prisma, mailAccountId, messageId);
     if (!context) {
-      return;
+      return this.failMissingSendContext(mailAccountId, messageId, actorEmployeeId);
     }
     try {
-      const attachments = await loadOutboundAttachmentParts(
-        this.prisma,
-        this.driveR2,
-        messageId,
-        context.bodyHtml,
-      );
-      const adapter = await this.adapterFactory.forConnection(context.connection);
-      const result = await adapter.sendMessage(buildSendMessageInput(context, attachments));
-      await markOutboundSent({
-        prisma: this.prisma,
-        auditService: this.auditService,
-        messageId,
-        mailAccountId,
-        actorEmployeeId,
-        providerMessageId: result.providerMessageId,
-        messageIdHeader: result.messageIdHeader,
-      });
+      await this.deliverClaimedOutbound(context, mailAccountId, messageId, actorEmployeeId);
     } catch (error) {
       await this.handleSendError(mailAccountId, messageId, actorEmployeeId, error);
     }
+  }
+
+  private async failMissingSendContext(
+    mailAccountId: string,
+    messageId: string,
+    actorEmployeeId: string,
+  ): Promise<void> {
+    await markOutboundFailed({
+      prisma: this.prisma,
+      auditService: this.auditService,
+      messageId,
+      mailAccountId,
+      actorEmployeeId,
+      detail: 'Outbound send context missing after claim',
+      kind: MailDeliveryLogKind.OUTBOUND_SEND_FAILED,
+    });
+  }
+
+  private async deliverClaimedOutbound(
+    context: OutboundSendContext,
+    mailAccountId: string,
+    messageId: string,
+    actorEmployeeId: string,
+  ): Promise<void> {
+    const attachments = await loadOutboundAttachmentParts(
+      this.prisma,
+      this.driveR2,
+      messageId,
+      context.bodyHtml,
+    );
+    const adapter = await this.adapterFactory.forConnection(context.connection);
+    const result = await adapter.sendMessage(buildSendMessageInput(context, attachments));
+    await markOutboundSent({
+      prisma: this.prisma,
+      auditService: this.auditService,
+      messageId,
+      mailAccountId,
+      actorEmployeeId,
+      providerMessageId: result.providerMessageId,
+      messageIdHeader: result.messageIdHeader,
+    });
   }
 
   private async handleSendError(
