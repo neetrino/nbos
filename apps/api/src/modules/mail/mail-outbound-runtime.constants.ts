@@ -16,6 +16,9 @@ export const MAIL_ORPHAN_QUEUED_AGE_MS = 60_000;
 /** Stale SENDING without provider id is returned to QUEUED. */
 export const MAIL_STALE_SENDING_AGE_MS = 10 * 60 * 1000;
 
+/** Abort R2 GetObject so outbound send cannot hang after QUEUED→SENDING claim. */
+export const MAIL_OUTBOUND_R2_GET_TIMEOUT_MS = 15_000;
+
 export const MAIL_OUTBOUND_RECONCILE_BATCH_SIZE = 50;
 
 export const MAIL_OUTBOUND_RECONCILE_ENABLED_ENV = 'SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED';
