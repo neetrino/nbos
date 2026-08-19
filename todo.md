@@ -1,14 +1,15 @@
 # NBOS — актуальные задачи
 
-Очередь сейчас: Mail runtime A+B+C на проде (`d6801b6d`, раньше `23c72cb4` Mail C). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
+Очередь сейчас: Mail unique mailbox + attachment Retry на проде (`215bfc4b` / PR #165). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
 
 - [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`d6801b6d`), миграции на проде, api/worker/web выкатаны.
 - [ ] Mail — осталось после выкладки (не новый срез A/B/C):
   - [ ] Smoke на проде: connect → inbound (тело + вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
   - [x] Unique mailbox в коде (`567327f4`): global `lower(email)` среди live (`status <> DISABLED`); shared mailbox = один MailAccount + access; второй сотрудник → 409; reconnect/upsert своей DISABLED строки.
-  - [ ] Prod migrate `20260819183000_mail_accounts_live_email_unique` — локально есть, на Neon prod не применена.
+  - [x] Prod migrate `20260819183000_mail_accounts_live_email_unique` — на Neon prod применена (`215bfc4b`).
   - [x] Attachment download — Retry для застрявшего Pending в коде (`1a383407`): UI FAILED сразу / PENDING >3 мин; API retry-download; queue re-enqueue.
-  - [ ] Attachment download — deploy api/worker/web + verify Toon Expo PNG на prod test@ (Retry → Ready).
+  - [x] Attachment download — deploy api/worker/web (`215bfc4b`, running:healthy).
+  - [ ] Attachment download — verify Toon Expo PNG на prod test@ (Retry → Ready).
   - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
     - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
