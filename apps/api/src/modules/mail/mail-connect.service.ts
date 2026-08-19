@@ -213,9 +213,16 @@ export class MailConnectService {
       throw new ForbiddenException('You cannot disconnect this mailbox');
     }
     await this.secretStore.delete(mailAccountId);
-    const updated = await this.prisma.mailAccount.update({
+    await this.prisma.mailAccount.update({
       where: { id: mailAccountId },
-      data: { status: 'DISABLED', providerConnection: { update: { status: 'NOT_CONNECTED' } } },
+      data: { status: 'DISABLED' },
+    });
+    await this.prisma.mailProviderConnection.updateMany({
+      where: { mailAccountId },
+      data: { status: 'NOT_CONNECTED' },
+    });
+    const updated = await this.prisma.mailAccount.findUniqueOrThrow({
+      where: { id: mailAccountId },
       include: { providerConnection: true },
     });
     const changes: InputJsonValue = { emailAddress: updated.emailAddress };

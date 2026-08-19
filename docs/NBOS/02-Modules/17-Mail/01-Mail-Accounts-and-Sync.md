@@ -130,6 +130,8 @@ Corporate IMAP/SMTP: failed validation still persists hosts/login and the encryp
 3. сохранить историю и business links;
 4. дать owner/admin возможность архивировать или удалить данные по отдельной policy.
 
+MVP UX: Settings → **Delete mailbox** on the selected account disconnects it (`DISABLED`, secrets removed). Daily switcher and All-mailboxes inbox omit `DISABLED` rows so disconnected / leftover Off duplicates disappear. Reconnect is for `NEEDS_RECONNECT`, not a pile of Off rows. Same owner + email + corporate provider upserts one row.
+
 ## MVP decisions
 
 - Gmail и corporate IMAP/SMTP являются единственными mailbox types в MVP.
