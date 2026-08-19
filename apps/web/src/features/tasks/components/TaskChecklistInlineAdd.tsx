@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const ADD_TRIGGER_CLASS =
   'text-muted-foreground hover:text-foreground flex w-full items-center gap-1.5 rounded-md py-1.5 text-sm transition-colors';
@@ -81,7 +80,7 @@ export function TaskChecklistInlineAdd({
       }}
       placeholder={placeholder}
       aria-label={label}
-      className={cn(ADD_INPUT_CLASS)}
+      className={ADD_INPUT_CLASS}
     />
   );
 }

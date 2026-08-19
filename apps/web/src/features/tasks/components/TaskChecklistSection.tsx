@@ -66,5 +66,3 @@ export function TaskChecklistSection({
     </section>
   );
 }
-
-export { newEmptyChecklistId } from './task-checklist-helpers';

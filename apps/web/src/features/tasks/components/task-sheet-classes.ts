@@ -21,7 +21,7 @@ export const TASK_SHEET_CHAT_COLUMN_CLASS =
 export const TASK_SHEET_CARD_CLASS =
   'min-w-0 rounded-xl bg-card p-3.5 shadow-sm ring-1 ring-border/50';
 
-/** Secondary blocks (checklist, rules) — slightly softer than primary cards. */
+/** Secondary blocks (rules extras) — slightly softer than primary cards. */
 export const TASK_SHEET_SECTION_SURFACE_CLASS =
   'min-w-0 rounded-xl bg-card/90 p-3.5 shadow-sm ring-1 ring-border/40';
 
