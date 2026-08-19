@@ -14,9 +14,10 @@ import {
   toOpenDealHits,
   toProjectHits,
   type SvyazatSearchHit,
+  type SvyazatSearchKind,
 } from './lead-svyazat-search';
 
-export type SvyazatSearchKind = 'contact' | 'deal' | 'project' | 'lead';
+export type { SvyazatSearchKind };
 
 const LIST_PAGE_SIZE = 15;
 

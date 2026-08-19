@@ -5,38 +5,48 @@ import type { Project } from '@/lib/api/projects';
 import { getLeadMergeCandidateSubtitle, getLeadMergeCandidateTitle } from './lead-merge-wizard';
 import { LEAD_SVYAZAT_RECENT_LIMIT } from './lead-svyazat-labels';
 
+export type SvyazatSearchKind = 'contact' | 'deal' | 'project' | 'lead';
+
 export interface SvyazatSearchHit {
   id: string;
+  kind: SvyazatSearchKind;
   title: string;
   subtitle: string;
 }
+
+export const SVYAZAT_KIND_LABELS: Record<SvyazatSearchKind, string> = {
+  contact: 'Contact',
+  deal: 'Deal',
+  project: 'Product',
+  lead: 'Lead',
+};
 
 function isOpenDealStatus(status: string): boolean {
   return status !== 'WON' && status !== 'FAILED';
 }
 
-export function contactSvyazatTitle(contact: Pick<Contact, 'firstName' | 'lastName'>): string {
+function contactTitle(contact: Pick<Contact, 'firstName' | 'lastName'>): string {
   return `${contact.firstName} ${contact.lastName}`.trim() || contact.firstName;
 }
 
-export function contactSvyazatSubtitle(contact: Pick<Contact, 'phone' | 'email'>): string {
+function contactSubtitle(contact: Pick<Contact, 'phone' | 'email'>): string {
   return [contact.phone, contact.email].filter(Boolean).join(' · ');
 }
 
-export function dealSvyazatTitle(deal: Pick<Deal, 'name' | 'code'>): string {
+function dealTitle(deal: Pick<Deal, 'name' | 'code'>): string {
   return deal.name?.trim() || deal.code;
 }
 
-export function dealSvyazatSubtitle(deal: Pick<Deal, 'code' | 'name' | 'status'>): string {
+function dealSubtitle(deal: Pick<Deal, 'code' | 'name' | 'status'>): string {
   const parts = [deal.name?.trim() ? deal.code : null, deal.status.replace(/_/g, ' ')];
   return parts.filter(Boolean).join(' · ');
 }
 
-export function projectSvyazatTitle(project: Pick<Project, 'name' | 'code'>): string {
+function projectTitle(project: Pick<Project, 'name' | 'code'>): string {
   return project.name.trim() || project.code;
 }
 
-export function projectSvyazatSubtitle(project: Pick<Project, 'code' | 'name'>): string {
+function projectSubtitle(project: Pick<Project, 'code' | 'name'>): string {
   return project.name.trim() ? project.code : '';
 }
 
@@ -52,6 +62,7 @@ export function leadSvyazatHit(lead: Lead): SvyazatSearchHit {
   };
   return {
     id: lead.id,
+    kind: 'lead',
     title: getLeadMergeCandidateTitle(hit),
     subtitle: getLeadMergeCandidateSubtitle(hit),
   };
@@ -60,8 +71,9 @@ export function leadSvyazatHit(lead: Lead): SvyazatSearchHit {
 export function toContactHits(items: Contact[]): SvyazatSearchHit[] {
   return items.slice(0, LEAD_SVYAZAT_RECENT_LIMIT).map((contact) => ({
     id: contact.id,
-    title: contactSvyazatTitle(contact),
-    subtitle: contactSvyazatSubtitle(contact),
+    kind: 'contact',
+    title: contactTitle(contact),
+    subtitle: contactSubtitle(contact),
   }));
 }
 
@@ -71,8 +83,9 @@ export function toOpenDealHits(items: Deal[]): SvyazatSearchHit[] {
     .slice(0, LEAD_SVYAZAT_RECENT_LIMIT)
     .map((deal) => ({
       id: deal.id,
-      title: dealSvyazatTitle(deal),
-      subtitle: dealSvyazatSubtitle(deal),
+      kind: 'deal',
+      title: dealTitle(deal),
+      subtitle: dealSubtitle(deal),
     }));
 }
 
@@ -82,8 +95,9 @@ export function toProjectHits(items: Project[]): SvyazatSearchHit[] {
     .slice(0, LEAD_SVYAZAT_RECENT_LIMIT)
     .map((project) => ({
       id: project.id,
-      title: projectSvyazatTitle(project),
-      subtitle: projectSvyazatSubtitle(project),
+      kind: 'project',
+      title: projectTitle(project),
+      subtitle: projectSubtitle(project),
     }));
 }
 

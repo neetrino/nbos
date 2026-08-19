@@ -18,13 +18,10 @@ export function useLeadIdentifyCandidates(lead: Lead | null, enabled: boolean) {
   const leadId = lead?.id ?? null;
   const phone = lead?.phone?.trim() ?? '';
   const email = lead?.email?.trim() ?? '';
-  const defaultSearch = lead ? identifySearchFromLead(lead) : '';
-  const [searchByLeadId, setSearchByLeadId] = useState<Record<string, string>>({});
+  const search = lead ? identifySearchFromLead(lead) : '';
   const [resultByLeadId, setResultByLeadId] = useState<Record<string, LeadDuplicateLookupResult>>(
     {},
   );
-
-  const search = leadId ? (searchByLeadId[leadId] ?? defaultSearch) : '';
   const queryReady = Boolean(phone || email || search.trim());
 
   useEffect(() => {
@@ -53,11 +50,6 @@ export function useLeadIdentifyCandidates(lead: Lead | null, enabled: boolean) {
   }, [enabled, leadId, phone, email, search, queryReady]);
 
   return {
-    search,
-    setSearch: (value: string) => {
-      if (!leadId) return;
-      setSearchByLeadId((prev) => ({ ...prev, [leadId]: value }));
-    },
     result: enabled && queryReady && leadId ? (resultByLeadId[leadId] ?? null) : null,
   };
 }

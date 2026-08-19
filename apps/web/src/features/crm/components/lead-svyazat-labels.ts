@@ -18,9 +18,15 @@ export const LEAD_SVYAZAT_LABELS = {
   createContactApply: 'Создать контакт',
   attachWorkTitle: 'Контакт к работе',
   attachWorkHint: 'Создать контакт и повесить на одну открытую работу. Этот лид уйдёт в корзину.',
-  targetDeal: 'сделка',
-  targetProject: 'продукт',
-  targetLead: 'лид',
+  pourTitle: 'Объединить с контактом',
+  pourHint: 'Влить имя, телефоны и заметки в существующий контакт. Этот лид уйдёт в корзину.',
+  searchHint: 'Последние 10. Начните вводить — список обновится.',
+  emptyRecent: 'Нет недавних записей',
+  emptySearch: 'Ничего не найдено',
+  searching: 'Searching…',
+  targetDeal: 'Сделка',
+  targetProject: 'Продукт',
+  targetLead: 'Лид',
 } as const;
 
 export const LEAD_SVYAZAT_RECENT_LIMIT = 10;

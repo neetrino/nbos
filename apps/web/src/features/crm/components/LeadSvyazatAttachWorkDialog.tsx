@@ -1,17 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { DetailSheetFieldSegmented } from '@/components/shared';
 import { LeadSvyazatSearchDialog } from './LeadSvyazatSearchDialog';
 import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
-import { useSvyazatEntitySearch, type SvyazatSearchKind } from './use-svyazat-search';
+import { useSvyazatEntitySearch } from './use-svyazat-search';
+import type { SvyazatSearchKind } from './lead-svyazat-search';
 
 type WorkKind = Exclude<SvyazatSearchKind, 'contact'>;
 
-const WORK_KINDS: Array<{ id: WorkKind; label: string }> = [
-  { id: 'deal', label: LEAD_SVYAZAT_LABELS.targetDeal },
-  { id: 'project', label: LEAD_SVYAZAT_LABELS.targetProject },
-  { id: 'lead', label: LEAD_SVYAZAT_LABELS.targetLead },
+const WORK_KIND_OPTIONS: ReadonlyArray<{ value: WorkKind; label: string }> = [
+  { value: 'deal', label: LEAD_SVYAZAT_LABELS.targetDeal },
+  { value: 'project', label: LEAD_SVYAZAT_LABELS.targetProject },
+  { value: 'lead', label: LEAD_SVYAZAT_LABELS.targetLead },
 ];
 
 interface LeadSvyazatAttachWorkDialogProps {
@@ -30,8 +31,9 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
     <LeadSvyazatSearchDialog
       open={props.open}
       title={LEAD_SVYAZAT_LABELS.attachWorkTitle}
+      description={LEAD_SVYAZAT_LABELS.attachWorkHint}
       searchLabel={searchLabelFor(kind)}
-      placeholder={LEAD_SVYAZAT_LABELS.attachWorkHint}
+      placeholder={searchLabelFor(kind)}
       query={search.query}
       hits={search.hits}
       selectedId={search.selectedId}
@@ -45,22 +47,17 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
       }}
       onOpenChange={props.onOpenChange}
     >
-      <div className="flex flex-wrap gap-1.5">
-        {WORK_KINDS.map((item) => (
-          <Button
-            key={item.id}
-            type="button"
-            size="sm"
-            variant={kind === item.id ? 'default' : 'outline'}
-            onClick={() => {
-              setKind(item.id);
-              search.setSelectedId(null);
-            }}
-          >
-            {item.label}
-          </Button>
-        ))}
-      </div>
+      <DetailSheetFieldSegmented
+        label=""
+        hideLabel
+        ariaLabel={LEAD_SVYAZAT_LABELS.attachWorkTitle}
+        value={kind}
+        options={WORK_KIND_OPTIONS}
+        onValueChange={(value) => {
+          setKind(value);
+          search.setSelectedId(null);
+        }}
+      />
     </LeadSvyazatSearchDialog>
   );
 }

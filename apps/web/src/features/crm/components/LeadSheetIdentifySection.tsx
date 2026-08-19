@@ -37,22 +37,17 @@ export function LeadSheetIdentifySection({
 
   if (!canAttach || !result || !hasDuplicateHits(result)) return null;
 
-  const attach = async (contactId: string, aboutDealId?: string) => {
+  const attachAboutDeal = async (contactId: string, aboutDealId?: string) => {
+    if (!aboutDealId) return;
     setAttaching(true);
     try {
-      const updated = aboutDealId
-        ? await leadsApi.attachContact(lead.id, { contactId, aboutDealId })
-        : await leadsApi.pourIntoContact(lead.id, { contactId });
+      const updated = await leadsApi.attachContact(lead.id, { contactId, aboutDealId });
       if (updated.trashedAt) {
-        toast.success(
-          aboutDealId
-            ? 'Inbound treated as the open Deal. Stray Lead moved to Trash.'
-            : 'Lead poured into Contact and moved to Trash.',
-        );
+        toast.success('Inbound treated as the open Deal. Stray Lead moved to Trash.');
         onAttachedAndTrashed();
         return;
       }
-      toast.success('Lead attached to Contact.');
+      toast.success('Lead attached to the open Deal.');
       onAttached(updated);
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Could not complete Связать.'));
@@ -71,7 +66,7 @@ export function LeadSheetIdentifySection({
         onOpen={onOpenRelatedLead ?? (() => undefined)}
         onOpenContact={(id) => openInNewTab(`/clients/contacts?openId=${id}`)}
         onOpenDeal={(id) => openInNewTab(`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${id}`)}
-        onAttachContact={(contactId, aboutDealId) => void attach(contactId, aboutDealId)}
+        onAttachContact={(contactId, aboutDealId) => void attachAboutDeal(contactId, aboutDealId)}
       />
     </div>
   );

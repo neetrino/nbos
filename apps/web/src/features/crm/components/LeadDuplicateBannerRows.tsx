@@ -132,17 +132,6 @@ function ContactCandidateRow(props: {
             Open contact
           </Button>
         ) : null}
-        {props.showAttach ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            disabled={props.attaching}
-            onClick={() => props.onAttachContact?.(props.contact.id)}
-          >
-            Attach to contact
-          </Button>
-        ) : null}
         {props.openDeal && props.onOpenDeal ? (
           <Button
             type="button"
