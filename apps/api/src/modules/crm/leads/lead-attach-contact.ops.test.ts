@@ -232,6 +232,46 @@ describe('attachLeadToContact', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('rejects aboutDealId when the Deal belongs to another Contact', async () => {
+    const prisma = createMockPrisma();
+    prisma.lead.findUnique.mockResolvedValue(leadRow());
+    prisma.contact.findUnique.mockResolvedValue(contactRow());
+    prisma.deal.findUnique.mockResolvedValue(dealRow({ contactId: 'other-contact' }));
+    const audit = { log: vi.fn() };
+
+    await expect(
+      attachLeadToContact(prisma as never, audit as never, {
+        leadId: 'lead-1',
+        contactId: 'contact-1',
+        aboutDealId: 'deal-1',
+        ...actor({ roleSlug: 'ceo', id: 'ceo-1' }),
+      }),
+    ).rejects.toMatchObject({
+      response: { code: LEAD_ATTACH_ERROR.DEAL_CONTACT_MISMATCH },
+    });
+    expect(prisma.lead.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects aboutDealId when the Deal has no Contact', async () => {
+    const prisma = createMockPrisma();
+    prisma.lead.findUnique.mockResolvedValue(leadRow());
+    prisma.contact.findUnique.mockResolvedValue(contactRow());
+    prisma.deal.findUnique.mockResolvedValue(dealRow({ contactId: null }));
+    const audit = { log: vi.fn() };
+
+    await expect(
+      attachLeadToContact(prisma as never, audit as never, {
+        leadId: 'lead-1',
+        contactId: 'contact-1',
+        aboutDealId: 'deal-1',
+        ...actor({ roleSlug: 'ceo', id: 'ceo-1' }),
+      }),
+    ).rejects.toMatchObject({
+      response: { code: LEAD_ATTACH_ERROR.DEAL_CONTACT_MISMATCH },
+    });
+    expect(prisma.lead.update).not.toHaveBeenCalled();
+  });
+
   it('rejects Failed Deal the same as Won', async () => {
     const prisma = createMockPrisma();
     prisma.lead.findUnique.mockResolvedValue(leadRow());

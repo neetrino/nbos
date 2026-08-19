@@ -122,6 +122,38 @@ describe('AtsLeadIngestService', () => {
     );
   });
 
+  it('does not create a Lead when Contact has an open Deal without leadId', async () => {
+    state.contacts.push({ id: 'contact-3', phone: '+37499123456', trashedAt: null });
+    state.deals.push({
+      id: 'deal-orphan',
+      contactId: 'contact-3',
+      leadId: null,
+      status: 'START_CONVERSATION',
+      trashedAt: null,
+    });
+
+    await service.ingestCallEvent(inboundStart({ uid: 'uid-open-deal-no-lead' }));
+
+    expect(prisma.lead.create).not.toHaveBeenCalled();
+    expect(state.events.get('uid-open-deal-no-lead')?.leadId).toBeNull();
+  });
+
+  it('creates a Lead with contactId when the only Deal is closed', async () => {
+    state.contacts.push({ id: 'contact-4', phone: '+37499123456', trashedAt: null });
+    state.deals.push({
+      id: 'deal-won',
+      contactId: 'contact-4',
+      leadId: 'old-sql',
+      status: 'WON',
+      trashedAt: null,
+    });
+
+    await service.ingestCallEvent(inboundStart({ uid: 'uid-closed-deal' }));
+
+    expect(prisma.lead.create).toHaveBeenCalledTimes(1);
+    expect(state.leads.some((lead) => lead.contactId === 'contact-4')).toBe(true);
+  });
+
   it('does not create Lead on finish-only first sight', async () => {
     await service.ingestCallEvent(
       inboundStart({ state: 'finish', disposition: 'NO ANSWER', billsec: '0' }),

@@ -9,7 +9,7 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn().mockResolvedValue({ id: 'd-1', leadId: 'sql-1' }) },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: 'sql-1', contactId: 'c-1' });
+    expect(result).toEqual({ existingLeadId: 'sql-1', contactId: 'c-1', hasOpenDeal: true });
   });
 
   it('prefers an open non-SQL Lead of the Contact over the Deal thread', async () => {
@@ -19,7 +19,7 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn() },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: 'open-1', contactId: 'c-1' });
+    expect(result).toEqual({ existingLeadId: 'open-1', contactId: 'c-1', hasOpenDeal: false });
     expect(db.deal.findFirst).not.toHaveBeenCalled();
   });
 
@@ -30,6 +30,16 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn().mockResolvedValue(null) },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: null, contactId: 'c-1' });
+    expect(result).toEqual({ existingLeadId: null, contactId: 'c-1', hasOpenDeal: false });
+  });
+
+  it('flags an open Deal even when Deal.leadId is empty so ATS will not create a Lead', async () => {
+    const db = {
+      contact: { findFirst: vi.fn().mockResolvedValue({ id: 'c-1' }) },
+      lead: { findFirst: vi.fn().mockResolvedValue(null) },
+      deal: { findFirst: vi.fn().mockResolvedValue({ id: 'd-1', leadId: null }) },
+    };
+    const result = await resolveContactPhoneInbound(db as never, '+37499123456');
+    expect(result).toEqual({ existingLeadId: null, contactId: 'c-1', hasOpenDeal: true });
   });
 });

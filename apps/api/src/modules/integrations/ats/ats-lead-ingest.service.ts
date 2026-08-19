@@ -111,6 +111,9 @@ export class AtsLeadIngestService {
     if (byContact.existingLeadId) {
       return byContact.existingLeadId;
     }
+    if (byContact.hasOpenDeal) {
+      return null;
+    }
 
     return this.prisma.$transaction(async (tx) =>
       this.createInboundLead(tx, phone.e164, byContact.contactId),

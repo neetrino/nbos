@@ -246,7 +246,7 @@ function assertAboutDeal(deal: AttachDealRow, contactId: string): AttachDealRow 
       'Cannot treat this inbound as a closed Deal. Attach to the Contact only.',
     );
   }
-  if (deal.contactId && deal.contactId !== contactId) {
+  if (deal.contactId !== contactId) {
     throw attachBlocked(
       LEAD_ATTACH_ERROR.DEAL_CONTACT_MISMATCH,
       'This Deal belongs to a different Contact.',
