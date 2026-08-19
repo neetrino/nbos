@@ -1,16 +1,16 @@
-/** Compact plus glyph inside entity sheet tab pills. */
+/** Compact plus glyph inside the circular overlay control. */
 export const TAB_QUICK_CREATE_ICON_SIZE_PX = 14;
 
 /**
- * Reserved slot width keeps tab pills from shifting when the plus appears on hover.
- * Touch / coarse pointer: plus stays visible via {@link TAB_QUICK_CREATE_SLOT_CLASS}.
+ * Anchors the circle on the tab’s right edge without growing the pill
+ * (absolute; parent wrapper is `relative`).
  */
-export const TAB_QUICK_CREATE_SLOT_CLASS =
-  'ml-1.5 flex size-6 shrink-0 items-center justify-center';
+export const TAB_QUICK_CREATE_ANCHOR_CLASS =
+  'absolute top-1/2 right-0 z-10 -translate-y-1/2 translate-x-1/2';
 
 /**
- * Hover-reveal on pointer devices; always visible on coarse pointer (no hover).
- * Parent tab pill must use `group/tab`.
+ * Bitrix-style circular plus: bordered, soft fill, hover-reveal.
+ * Parent must use `group/tab`.
  */
 export const TAB_QUICK_CREATE_BUTTON_CLASS =
-  'text-muted-foreground hover:text-foreground focus-visible:text-foreground pointer-events-none flex size-6 items-center justify-center rounded-md opacity-0 transition-opacity group-hover/tab:pointer-events-auto group-hover/tab:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100 disabled:pointer-events-none disabled:opacity-0';
+  'border-border/70 bg-background/85 text-muted-foreground hover:bg-background hover:text-foreground focus-visible:bg-background focus-visible:text-foreground pointer-events-none flex size-6 items-center justify-center rounded-full border shadow-sm opacity-0 backdrop-blur-sm transition-opacity group-hover/tab:pointer-events-auto group-hover/tab:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100 disabled:pointer-events-none disabled:opacity-0';

@@ -43,7 +43,7 @@ export function DetailSheetTabBar({
 }: DetailSheetTabBarProps) {
   return (
     <div className={cn(DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS, className)}>
-      <div className={cn(DETAIL_SHEET_TAB_BAR_SCROLL_CLASS, scrollClassName)}>
+      <div className={cn(DETAIL_SHEET_TAB_BAR_SCROLL_CLASS, 'py-0.5', scrollClassName)}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.value;
@@ -51,23 +51,24 @@ export function DetailSheetTabBar({
           const showQuickCreate = Boolean(quickCreate && !quickCreate.disabled);
 
           return (
-            <button
-              key={tab.value}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => onTabChange(tab.value)}
-              className={cn(pillTabButtonClass(isActive), 'group/tab text-[15px]', tab.className)}
-            >
-              {Icon ? <Icon size={17} aria-hidden /> : null}
-              {tab.label}
+            <div key={tab.value} className="group/tab relative shrink-0">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onTabChange(tab.value)}
+                className={cn(pillTabButtonClass(isActive), 'text-[15px]', tab.className)}
+              >
+                {Icon ? <Icon size={17} aria-hidden /> : null}
+                {tab.label}
+              </button>
               {showQuickCreate && quickCreate ? (
                 <TabQuickCreateButton
                   ariaLabel={quickCreate.ariaLabel}
                   onCreate={quickCreate.onCreate}
                 />
               ) : null}
-            </button>
+            </div>
           );
         })}
       </div>

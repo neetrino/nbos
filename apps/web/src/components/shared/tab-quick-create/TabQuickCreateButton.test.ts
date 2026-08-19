@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  TAB_QUICK_CREATE_ANCHOR_CLASS,
   TAB_QUICK_CREATE_BUTTON_CLASS,
   TAB_QUICK_CREATE_ICON_SIZE_PX,
-  TAB_QUICK_CREATE_SLOT_CLASS,
 } from './tab-quick-create.constants';
 import { stopTabQuickCreateClick } from './TabQuickCreateButton';
 
@@ -19,12 +19,13 @@ describe('TabQuickCreateButton helpers', () => {
     expect(onCreate).toHaveBeenCalledOnce();
   });
 
-  it('reveals the plus on tab hover and keeps a reserved slot width', () => {
+  it('uses a circular overlay on the tab edge that does not grow the pill', () => {
+    expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('rounded-full');
     expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('opacity-0');
     expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('group-hover/tab:opacity-100');
-    expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('focus-visible:opacity-100');
     expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('[@media(hover:none)]:opacity-100');
-    expect(TAB_QUICK_CREATE_SLOT_CLASS).toContain('size-6');
+    expect(TAB_QUICK_CREATE_ANCHOR_CLASS).toContain('absolute');
+    expect(TAB_QUICK_CREATE_ANCHOR_CLASS).toContain('translate-x-1/2');
     expect(TAB_QUICK_CREATE_ICON_SIZE_PX).toBe(14);
   });
 });
