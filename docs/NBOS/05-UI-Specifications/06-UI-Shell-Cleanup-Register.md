@@ -100,13 +100,9 @@ My Company -> Departments
 
 ### B5. Sidebar search and header search may be duplicated
 
-Статус: `NEEDS DESIGN DECISION`
+Статус: `DONE IN UI SHELL SLICE`
 
-Runtime имеет search entry в sidebar. Canon допускает global search в header/sidebar, но нужно выбрать единый UX:
-
-- один visible entry;
-- одинаковый `Cmd/Ctrl + K`;
-- один search modal.
+Runtime: единый global search в header (`Search` / `⌘K` / `Ctrl+K`) + один overlay modal. Sidebar search entry не дублируется. Server: `GET /api/search` с RBAC и row-level filters по модулям (Leads, Deals, Products, Finance, Credentials).
 
 ### B6. Finance/CRM sidebar children are incomplete
 

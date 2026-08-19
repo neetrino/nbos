@@ -13,6 +13,10 @@ import {
   useHeaderModuleTitleResolved,
 } from '@/components/layout/header-context';
 import { NotificationDropdown } from '@/components/layout/NotificationDropdown';
+import {
+  GlobalSearchMobileTrigger,
+  GlobalSearchTrigger,
+} from '@/features/global-search/GlobalSearchTrigger';
 import { cn } from '@/lib/utils';
 
 type TopbarProps = {
@@ -68,6 +72,8 @@ export function Topbar({ showMobileMenuButton = false, onMobileMenuClick }: Topb
           </div>
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2 self-center overflow-visible sm:gap-3">
+          <GlobalSearchMobileTrigger />
+          <GlobalSearchTrigger />
           {showQuickNote ? <HeaderQuickNote /> : null}
           <NotificationDropdown />
           <AccountMenuDropdown me={me} />

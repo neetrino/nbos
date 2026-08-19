@@ -16,6 +16,7 @@ import {
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
+import { GlobalSearchProvider } from '@/features/global-search/GlobalSearchProvider';
 import { EmployeeDirectoryWarmup } from '@/lib/employees';
 
 interface AppLayoutProps {
@@ -77,39 +78,41 @@ export function AppLayout({ children }: AppLayoutProps) {
         <MyAccountSheetProvider>
           <MyWalletSheetProvider>
             <AppEntityRelationProvider>
-              <UnsortedTaskCreateProvider>
-                <EmployeeDirectoryWarmup />
-                <div
-                  className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
-                  style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
-                >
-                  <Sidebar
-                    collapsed={sidebarCollapsed}
-                    onCollapsedChange={setSidebarCollapsed}
-                    mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
-                    onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
-                  />
-                  <div className="flex min-w-0 flex-col overflow-hidden">
-                    <Topbar
-                      showMobileMenuButton={isMobileViewport}
-                      onMobileMenuClick={() => setMobileNavOpen(true)}
+              <GlobalSearchProvider>
+                <UnsortedTaskCreateProvider>
+                  <EmployeeDirectoryWarmup />
+                  <div
+                    className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+                    style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
+                  >
+                    <Sidebar
+                      collapsed={sidebarCollapsed}
+                      onCollapsedChange={setSidebarCollapsed}
+                      mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
+                      onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
                     />
-                    <main
-                      className={cn(
-                        'bg-background flex min-h-0 flex-1 flex-col overscroll-contain',
-                        isMessengerRoute
-                          ? 'overflow-hidden'
-                          : 'overflow-y-auto [scrollbar-gutter:stable]',
-                        APP_MAIN_CONTENT_INSET,
-                        isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
-                        isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
-                      )}
-                    >
-                      {children}
-                    </main>
+                    <div className="flex min-w-0 flex-col overflow-hidden">
+                      <Topbar
+                        showMobileMenuButton={isMobileViewport}
+                        onMobileMenuClick={() => setMobileNavOpen(true)}
+                      />
+                      <main
+                        className={cn(
+                          'bg-background flex min-h-0 flex-1 flex-col overscroll-contain',
+                          isMessengerRoute
+                            ? 'overflow-hidden'
+                            : 'overflow-y-auto [scrollbar-gutter:stable]',
+                          APP_MAIN_CONTENT_INSET,
+                          isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
+                          isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
+                        )}
+                      >
+                        {children}
+                      </main>
+                    </div>
                   </div>
-                </div>
-              </UnsortedTaskCreateProvider>
+                </UnsortedTaskCreateProvider>
+              </GlobalSearchProvider>
             </AppEntityRelationProvider>
           </MyWalletSheetProvider>
         </MyAccountSheetProvider>

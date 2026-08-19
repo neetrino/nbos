@@ -12,6 +12,7 @@ import type { OrderReconciliationListGap } from './order-reconciliation-list-fil
 import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
 import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
 import { queryOrderStatsForReconciliationGap } from './orders-reconciliation-gap-stats-query';
+import { buildOrderSearchOr } from './order-search.where';
 import {
   assertOrderClosable,
   assertOrderDraftDeletable,
@@ -87,20 +88,7 @@ export class OrdersService {
     if (partnerId) parts.push({ partnerId: partnerId });
     const searchTrimmed = search?.trim();
     if (searchTrimmed) {
-      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
-      parts.push({
-        OR: [
-          { code: ic },
-          { project: { name: ic } },
-          { project: { code: ic } },
-          { project: { company: { name: ic } } },
-          { deal: { code: ic } },
-          { deal: { name: ic } },
-          { product: { name: ic } },
-          { extension: { name: ic } },
-          { partner: { name: ic } },
-        ],
-      });
+      parts.push({ OR: buildOrderSearchOr(searchTrimmed) });
     }
 
     const createdAt = this.buildDateRange(dateFrom, dateTo);

@@ -32,6 +32,7 @@ import { attachLeadToContact } from './lead-attach-contact.ops';
 import { pourLeadIntoContact } from './lead-pour-into-contact.ops';
 import { createContactFromLead } from './lead-create-contact.ops';
 import { LEAD_MERGE_ERROR } from './lead-identity.ops';
+import { buildLeadSearchOr } from './lead-search.where';
 import type { LeadMergeFieldChoices } from '@nbos/shared';
 
 const LEAD_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'status', 'source']);
@@ -126,12 +127,7 @@ export class LeadsService {
       where.assignedTo = assignedTo;
     }
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { contactName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-      ];
+      where.OR = buildLeadSearchOr(search);
     }
 
     const [items, total] = await Promise.all([

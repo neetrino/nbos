@@ -37,6 +37,7 @@ import {
   requireDeliveryStage,
 } from '../delivery-lifecycle';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
+import { buildProductSearchOr } from './product-search.where';
 import { batchProductOpenCounts } from './batch-product-open-counts';
 import { buildProductCurrentStageReadiness } from './product-current-stage-readiness';
 import { buildProductDoneReadiness } from './product-done-readiness';
@@ -240,13 +241,7 @@ export class ProductsService {
     if (productType) where.productType = productType as ProductTypeEnum;
     if (pmId) where.pmId = pmId;
     if (search?.trim()) {
-      const q = search.trim();
-      where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { project: { name: { contains: q, mode: 'insensitive' } } },
-        { project: { code: { contains: q, mode: 'insensitive' } } },
-        { order: { code: { contains: q, mode: 'insensitive' } } },
-      ];
+      where.OR = buildProductSearchOr(search.trim());
     }
 
     const scopedWhere = mergeActiveParentProjectScope(where, { projectId });

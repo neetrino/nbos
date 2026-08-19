@@ -52,6 +52,7 @@ import {
   mergeProfileAListScope,
   parseLifecycleScopeFromQuery,
 } from '../../../common/lifecycle/entity-lifecycle-scope';
+import { buildDealSearchOr } from './deal-search.where';
 
 const DEAL_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code', 'status', 'amount']);
 
@@ -95,25 +96,7 @@ export class DealsService {
       involvedEmployeeId,
     });
     if (search?.trim()) {
-      const q = search.trim();
-      const ic = { contains: q, mode: 'insensitive' as const };
-      where.OR = [
-        { code: ic },
-        { name: ic },
-        { contact: { firstName: ic } },
-        { contact: { lastName: ic } },
-        { contact: { email: ic } },
-        { company: { name: ic } },
-        { lead: { code: ic } },
-        { lead: { contactName: ic } },
-        { existingProduct: { name: ic } },
-        { sourcePartner: { name: ic } },
-        { sourceContact: { firstName: ic } },
-        { sourceContact: { lastName: ic } },
-        { marketingAccount: { name: ic } },
-        { marketingActivity: { title: ic } },
-        { orders: { some: { code: ic } } },
-      ];
+      where.OR = buildDealSearchOr(search.trim());
     }
 
     const [items, total] = await Promise.all([

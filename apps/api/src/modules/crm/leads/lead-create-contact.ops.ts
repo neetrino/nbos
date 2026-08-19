@@ -46,7 +46,9 @@ export async function createContactFromLead(
     userId: input.actorId,
     changes: {
       contactId: result.contactId,
-      attachedTo: result.attachedTo,
+      attachedTo: result.attachedTo
+        ? { type: result.attachedTo.type, id: result.attachedTo.id }
+        : null,
       cascadedProjectId: result.cascadedProjectId,
       trashed: result.trashed,
     },

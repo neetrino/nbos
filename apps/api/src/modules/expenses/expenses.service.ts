@@ -55,6 +55,7 @@ import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-p
 import { mergeFinanceWhere } from '../finance/finance-scoped-access';
 import { assertExpenseAccessible } from './expense-access.op';
 import { resolveExpenseListParticipationWhere } from './expense-list-participation.op';
+import { buildExpenseSearchAnd } from './expense-search.where';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -494,19 +495,9 @@ export class ExpensesService {
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;
     const searchTrimmed = filters.search?.trim();
     if (searchTrimmed) {
-      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
-        {
-          OR: [
-            { name: ic },
-            { notes: ic },
-            { project: { name: ic } },
-            { project: { code: ic } },
-            { expensePlan: { name: ic } },
-            { expensePlan: { provider: ic } },
-          ],
-        },
+        buildExpenseSearchAnd(searchTrimmed),
       ];
     }
     const createdAt = this.buildDateRange(filters.dateFrom, filters.dateTo);
