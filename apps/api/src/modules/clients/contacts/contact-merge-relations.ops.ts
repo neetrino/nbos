@@ -10,13 +10,13 @@ export interface ContactMergeRelationCounts {
   additionalLinks: number;
 }
 
-interface JunctionDelegate {
+interface JunctionDelegate<TOwner extends string> {
   findMany: (args: {
     where: { contactId: string };
-    select: Record<string, boolean>;
-  }) => Promise<Array<Record<string, string>>>;
+    select: { [K in TOwner]: true };
+  }) => Promise<Array<{ [K in TOwner]: string }>>;
   createMany: (args: {
-    data: Array<Record<string, string>>;
+    data: Array<{ [K in TOwner]: string } & { contactId: string }>;
     skipDuplicates?: boolean;
   }) => Promise<{ count: number }>;
   deleteMany: (args: { where: { contactId: string } }) => Promise<{ count: number }>;
@@ -96,21 +96,27 @@ async function moveAllAdditionalLinks(
   return moved.reduce((sum, count) => sum + count, 0);
 }
 
-async function moveContactJunction(
-  model: JunctionDelegate,
-  ownerKey: string,
+async function moveContactJunction<TOwner extends string>(
+  model: JunctionDelegate<TOwner>,
+  ownerKey: TOwner,
   absorbedId: string,
   survivorId: string,
 ): Promise<number> {
+  const ownerSelect = { [ownerKey]: true } as { [K in TOwner]: true };
   const [absorbedLinks, survivorLinks] = await Promise.all([
-    model.findMany({ where: { contactId: absorbedId }, select: { [ownerKey]: true } }),
-    model.findMany({ where: { contactId: survivorId }, select: { [ownerKey]: true } }),
+    model.findMany({ where: { contactId: absorbedId }, select: ownerSelect }),
+    model.findMany({ where: { contactId: survivorId }, select: ownerSelect }),
   ]);
   const existing = new Set(survivorLinks.map((link) => link[ownerKey]));
   const toCreate = absorbedLinks
     .map((link) => link[ownerKey])
     .filter((ownerId) => ownerId && !existing.has(ownerId))
-    .map((ownerId) => ({ [ownerKey]: ownerId, contactId: survivorId }));
+    .map(
+      (ownerId) =>
+        ({ [ownerKey]: ownerId, contactId: survivorId }) as {
+          [K in TOwner]: string;
+        } & { contactId: string },
+    );
   if (toCreate.length > 0) {
     await model.createMany({ data: toCreate, skipDuplicates: true });
   }

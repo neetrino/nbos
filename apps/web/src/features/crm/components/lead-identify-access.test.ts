@@ -39,7 +39,10 @@ describe('canIdentifyLeadByState', () => {
     expect(canIdentifyLeadByState(lead({ status: 'SQL' }), false)).toBe(false);
     expect(canIdentifyLeadByState(lead({ mergedIntoId: 'other' }), false)).toBe(false);
     expect(
-      canIdentifyLeadByState(lead({ deal: { id: 'd1', code: 'D-1', name: null } }), false),
+      canIdentifyLeadByState(
+        lead({ deal: { id: 'd1', code: 'D-1', status: 'START_CONVERSATION' } }),
+        false,
+      ),
     ).toBe(false);
   });
 });

@@ -67,10 +67,7 @@ export function useRelationPickerDropdownBox(
   const [box, setBox] = useState<RelationPickerDropdownBox | null>(null);
 
   useLayoutEffect(() => {
-    if (!active) {
-      setBox(null);
-      return;
-    }
+    if (!active) return;
 
     const update = () => {
       const element = anchorRef.current;
@@ -92,5 +89,5 @@ export function useRelationPickerDropdownBox(
     };
   }, [active, anchorRef]);
 
-  return box;
+  return active ? box : null;
 }

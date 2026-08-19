@@ -154,19 +154,26 @@ function createLeadMocks(state: AtsIngestTestState) {
   };
 }
 
+function phonesFromContactWhere(where: ContactFindWhere): string[] {
+  const fromPhone = where.phone?.in ?? [];
+  const fromOr = (where.OR ?? []).flatMap((clause) => [
+    ...(clause.phone?.in ?? []),
+    ...(clause.extraPhones?.some?.e164?.in ?? []),
+  ]);
+  return [...fromPhone, ...fromOr];
+}
+
 function createContactMocks(state: AtsIngestTestState) {
   return {
-    findFirst: vi
-      .fn()
-      .mockImplementation(async ({ where }: { where: { phone?: { in: string[] } } }) => {
-        const phones = where.phone?.in ?? [];
-        return (
-          state.contacts.find(
-            (contact) =>
-              contact.trashedAt == null && contact.phone != null && phones.includes(contact.phone),
-          ) ?? null
-        );
-      }),
+    findFirst: vi.fn().mockImplementation(async ({ where }: { where: ContactFindWhere }) => {
+      const phones = phonesFromContactWhere(where);
+      return (
+        state.contacts.find(
+          (contact) =>
+            contact.trashedAt == null && contact.phone != null && phones.includes(contact.phone),
+        ) ?? null
+      );
+    }),
   };
 }
 
@@ -194,7 +201,7 @@ function wrapLeadFindFirst(
   lead: { findFirst: ReturnType<typeof vi.fn> },
   state: AtsIngestTestState,
 ): void {
-  const byPhone = lead.findFirst;
+  const byPhone = lead.findFirst as (args: unknown) => Promise<unknown>;
   lead.findFirst = vi.fn().mockImplementation(async (args: unknown) => {
     const typed = args as { where?: LeadFindWhere };
     if (typed.where?.code?.startsWith) {
@@ -216,8 +223,16 @@ function wrapLeadFindFirst(
       );
       return found ? { id: found.id } : null;
     }
-    return byPhone(args as never);
+    return byPhone(args);
   });
+}
+
+interface ContactFindWhere {
+  phone?: { in: string[] };
+  OR?: Array<{
+    phone?: { in: string[] };
+    extraPhones?: { some?: { e164?: { in: string[] } } };
+  }>;
 }
 
 interface LeadPhoneWhere {

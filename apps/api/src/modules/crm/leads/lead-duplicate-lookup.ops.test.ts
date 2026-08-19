@@ -102,17 +102,15 @@ describe('findLeadDuplicateCandidates', () => {
     const db = {
       lead: { findMany: vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([]) },
       contact: {
-        findMany: vi
-          .fn()
-          .mockResolvedValue([
-            {
-              id: 'c-1',
-              firstName: 'Anna',
-              lastName: 'Petrosyan',
-              phone: '+37499000000',
-              email: null,
-            },
-          ]),
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: 'c-1',
+            firstName: 'Anna',
+            lastName: 'Petrosyan',
+            phone: '+37499000000',
+            email: null,
+          },
+        ]),
       },
       deal: { findMany: vi.fn().mockResolvedValue([]) },
     };

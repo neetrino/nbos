@@ -68,7 +68,13 @@ export async function mergeContacts(
       survivorId: result.survivorId,
       fieldChoices: result.fieldChoices,
       extraPhones: result.extraPhones,
-      relations: result.relations,
+      companies: result.relations.companies,
+      billingCompanies: result.relations.billingCompanies,
+      projects: result.relations.projects,
+      leads: result.relations.leads,
+      deals: result.relations.deals,
+      extraPhoneCount: result.relations.extraPhones,
+      additionalLinks: result.relations.additionalLinks,
     },
   });
 

@@ -58,6 +58,6 @@ export function useLeadIdentifyCandidates(lead: Lead | null, enabled: boolean) {
       if (!leadId) return;
       setSearchByLeadId((prev) => ({ ...prev, [leadId]: value }));
     },
-    result: enabled && queryReady ? (resultByLeadId[leadId] ?? null) : null,
+    result: enabled && queryReady && leadId ? (resultByLeadId[leadId] ?? null) : null,
   };
 }
