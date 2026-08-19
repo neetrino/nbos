@@ -36,7 +36,7 @@ Contact (человек)
 | ----------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
 | first_name        | String   | ✅           | Имя                                                                                                             |
 | last_name         | String   | ✅           | Фамилия                                                                                                         |
-| phone             | String   | ✅           | Основной телефон                                                                                                |
+| phone             | String   | ✅           | Основной телефон. Дополнительные номера — `ContactPhone` (extra), не строка в notes                             |
 | email             | String   | —            | Email                                                                                                           |
 | whatsapp          | String   | —            | Номер WhatsApp (если отличается от phone)                                                                       |
 | telegram          | String   | —            | Telegram username или номер                                                                                     |

@@ -3,11 +3,14 @@ import type { PrismaClient, TransactionClient } from '@nbos/database';
 import { canAttachLeadToContact } from '@nbos/shared';
 import type { AuditService } from '../../audit/audit.service';
 import {
+  contactOwnsPhone,
+  createExtraContactPhone,
+} from '../../clients/contacts/contact-phone.ops';
+import {
   appendNoteLine,
   isOpenDealStatus,
   LEAD_ATTACH_ERROR,
   normalizePhoneForStorage,
-  phonesOverlap,
   type LeadAttachPhoneHandling,
 } from './lead-identity.ops';
 import { repointLeadAtsAndMeta } from './lead-merge-relations.ops';
@@ -27,8 +30,8 @@ const ATTACH_LEAD_SELECT = {
 const ATTACH_CONTACT_SELECT = {
   id: true,
   phone: true,
-  notes: true,
   trashedAt: true,
+  extraPhones: { select: { e164: true } },
 } as const;
 
 const ATTACH_DEAL_SELECT = {
@@ -56,8 +59,8 @@ type AttachLeadRow = {
 type AttachContactRow = {
   id: string;
   phone: string | null;
-  notes: string | null;
   trashedAt: Date | null;
+  extraPhones: Array<{ e164: string }>;
 };
 
 type AttachDealRow = {
@@ -186,12 +189,9 @@ async function applyContactPhone(
     await tx.contact.update({ where: { id: contact.id }, data: { phone: stored } });
     return 'written';
   }
-  if (phonesOverlap(contact.phone, stored)) return 'same';
-  await tx.contact.update({
-    where: { id: contact.id },
-    data: { notes: appendNoteLine(contact.notes, `${stored} added from Lead ${lead.code}`) },
-  });
-  return 'noted';
+  if (contactOwnsPhone(contact.phone, contact.extraPhones, stored)) return 'same';
+  await createExtraContactPhone(tx, contact.id, stored);
+  return 'extra';
 }
 
 function assertAttachLeadEligible(lead: AttachLeadRow): void {

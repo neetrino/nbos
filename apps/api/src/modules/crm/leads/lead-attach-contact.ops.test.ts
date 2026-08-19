@@ -25,6 +25,7 @@ function contactRow(overrides: Record<string, unknown> = {}) {
     phone: null,
     notes: null,
     trashedAt: null,
+    extraPhones: [],
     ...overrides,
   };
 }
@@ -84,7 +85,7 @@ describe('attachLeadToContact', () => {
     );
   });
 
-  it('does not overwrite a different Contact.phone and notes it instead', async () => {
+  it('adds a different Lead phone as an extra and does not overwrite primary', async () => {
     const prisma = createMockPrisma();
     prisma.lead.findUnique.mockResolvedValue(leadRow());
     prisma.contact.findUnique.mockResolvedValue(contactRow({ phone: '+37499000000' }));
@@ -96,16 +97,35 @@ describe('attachLeadToContact', () => {
       ...actor(),
     });
 
-    expect(result.phoneHandling).toBe('noted');
-    expect(prisma.contact.update).toHaveBeenCalledWith({
-      where: { id: 'contact-1' },
-      data: {
-        notes: '+37499111111 added from Lead L-2026-0100',
-      },
+    expect(result.phoneHandling).toBe('extra');
+    expect(prisma.contactPhone.create).toHaveBeenCalledWith({
+      data: { contactId: 'contact-1', e164: '+37499111111' },
+      select: { id: true, e164: true, createdAt: true },
     });
     expect(prisma.contact.update).not.toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ phone: '+37499111111' }) }),
     );
+    expect(prisma.contact.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ notes: expect.anything() }) }),
+    );
+  });
+
+  it('does not store a duplicate extra when the number already exists', async () => {
+    const prisma = createMockPrisma();
+    prisma.lead.findUnique.mockResolvedValue(leadRow());
+    prisma.contact.findUnique.mockResolvedValue(
+      contactRow({ phone: '+37499000000', extraPhones: [{ e164: '+37499111111' }] }),
+    );
+    const audit = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+
+    const result = await attachLeadToContact(prisma as never, audit as never, {
+      leadId: 'lead-1',
+      contactId: 'contact-1',
+      ...actor(),
+    });
+
+    expect(result.phoneHandling).toBe('same');
+    expect(prisma.contactPhone.create).not.toHaveBeenCalled();
   });
 
   it('trashes the stray Lead for an open Deal and does not change Deal.leadId', async () => {

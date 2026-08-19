@@ -35,9 +35,25 @@ model Contact {
   partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
+  extraPhones         ContactPhone[]
 
   @@index([trashedAt])
+  @@index([phone])
   @@map("contacts")
+}
+
+/// Extra numbers on a Contact. `Contact.phone` stays the primary.
+model ContactPhone {
+  id        String   @id @default(uuid())
+  contactId String   @map("contact_id")
+  e164      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, e164])
+  @@index([e164])
+  @@map("contact_phones")
 }
 
 enum CompanyType {

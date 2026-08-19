@@ -74,7 +74,7 @@ Prevention (слой 1) даёт наибольший ROI: не плодить �
 | Новый номер, у Contact есть **открытый** Deal, продавец: «это про эту сделку» | `Lead.contactId` = Contact; телефон на Contact; stray Lead → Trash (не `mergedIntoId`); ATS/Meta переносятся на исходный Lead сделки. Deal.leadId не менять. Новый Deal не создавать. |
 | Старый клиент, Deal/Lead **закрыт** (Won/Failed), новый номер                 | Attach Lead → Contact + телефон. Lead **оставить** (новое обращение). К закрытой сделке не привязывать.                                                                               |
 | Contact.phone пустой                                                          | Записать телефон Lead.                                                                                                                                                                |
-| Contact.phone уже другой                                                      | Не затирать. Второго слота телефона нет: номер остаётся на Lead, одна строка в `Contact.notes` (`+374… added from Lead L-…`).                                                         |
+| Contact.phone уже другой                                                      | Не затирать. Записать **extra phone** (`ContactPhone`), без строки в `Contact.notes`. Тот же нормализованный номер дважды не хранить.                                                 |
 
 Права как у идентификации карточки: Seller на назначенном Lead; Head of Sales / CEO / Owner — любой; Marketing — нет. Restore stray Lead после about-deal — обычный restore (это не merge).
 

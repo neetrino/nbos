@@ -1,5 +1,6 @@
 import type { TransactionClient } from '@nbos/database';
-import { openLeadAutoAttachWhere, phoneLookupVariantsFromRaw } from './lead-identity.ops';
+import { contactPhoneLookupWhere } from '../../clients/contacts/contact-phone.ops';
+import { openLeadAutoAttachWhere } from './lead-identity.ops';
 
 type InboundLookupDb = Pick<TransactionClient, 'lead' | 'contact' | 'deal'>;
 
@@ -14,10 +15,10 @@ async function findContactByPhone(
   db: InboundLookupDb,
   phone: string | null | undefined,
 ): Promise<{ id: string } | null> {
-  const variants = phoneLookupVariantsFromRaw(phone);
-  if (variants.length === 0) return null;
+  const match = contactPhoneLookupWhere(phone);
+  if (!match) return null;
   return db.contact.findFirst({
-    where: { trashedAt: null, phone: { in: variants } },
+    where: { trashedAt: null, ...match },
     select: { id: true },
   });
 }

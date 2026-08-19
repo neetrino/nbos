@@ -163,10 +163,14 @@ function ContactsPageContent() {
     };
   }, [openContactId, loading, listContact, stripOpenContactFromUrl]);
 
+  const applyPatchedContact = (updated: Contact) => {
+    setFetchedContact((prev) => (prev?.id === updated.id ? updated : prev));
+    setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  };
+
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
     const updated = await contactsApi.update(id, data);
-    setFetchedContact((prev) => (prev?.id === id ? updated : prev));
-    setContacts((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    applyPatchedContact(updated);
     await fetchContacts();
   };
 
@@ -319,6 +323,7 @@ function ContactsPageContent() {
           }
         }}
         onUpdate={handleUpdate}
+        onContactPatched={applyPatchedContact}
         isTrashView={isTrashView}
         onMoveToTrash={
           isTrashView

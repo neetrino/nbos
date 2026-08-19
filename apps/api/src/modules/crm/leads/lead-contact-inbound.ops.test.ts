@@ -33,6 +33,25 @@ describe('resolveContactPhoneInbound', () => {
     expect(result).toEqual({ existingLeadId: null, contactId: 'c-1', hasOpenDeal: false });
   });
 
+  it('looks up Contact by primary or extra phone', async () => {
+    const db = {
+      contact: { findFirst: vi.fn().mockResolvedValue(null) },
+      lead: { findFirst: vi.fn() },
+      deal: { findFirst: vi.fn() },
+    };
+    await resolveContactPhoneInbound(db as never, '+37499123456');
+    expect(db.contact.findFirst).toHaveBeenCalledWith({
+      where: {
+        trashedAt: null,
+        OR: [
+          { phone: { in: expect.arrayContaining(['+37499123456']) } },
+          { extraPhones: { some: { e164: { in: expect.arrayContaining(['+37499123456']) } } } },
+        ],
+      },
+      select: { id: true },
+    });
+  });
+
   it('flags an open Deal even when Deal.leadId is empty so ATS will not create a Lead', async () => {
     const db = {
       contact: { findFirst: vi.fn().mockResolvedValue({ id: 'c-1' }) },

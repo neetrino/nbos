@@ -28,7 +28,7 @@ export const LEAD_ATTACH_ERROR = {
   CONTACT_TRASH: 'LEAD_ATTACH_CONTACT_TRASHED',
 } as const;
 
-export type LeadAttachPhoneHandling = 'written' | 'noted' | 'same' | 'none';
+export type LeadAttachPhoneHandling = 'written' | 'extra' | 'same' | 'none';
 
 const AUTO_ATTACH_EXCLUDED: LeadStatusEnum[] = [...AUTO_ATTACH_EXCLUDED_LEAD_STATUSES];
 

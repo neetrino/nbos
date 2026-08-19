@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
@@ -10,6 +10,16 @@ import {
 } from '../../../common/lifecycle/entity-lifecycle-guards';
 import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
 import { mergeClientListScope } from '../client-entity-lifecycle';
+import {
+  CONTACT_LIST_INCLUDE,
+  CONTACT_PHONE_ERROR,
+  CONTACT_EXTRA_PHONE_SELECT,
+  assertStoredContactPhone,
+  contactDirectorySearchOr,
+  contactOwnsPhone,
+  createExtraContactPhone,
+  deleteOverlappingExtraPhones,
+} from './contact-phone.ops';
 
 const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
 
@@ -57,22 +67,12 @@ export class ContactsService {
     const where: Prisma.ContactWhereInput = mergeClientListScope({}, lifecycleScope);
     const typeFilter = contactType ?? role;
     if (typeFilter) where.role = typeFilter as ContactRole;
-    if (search) {
-      where.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+    if (search) where.OR = contactDirectorySearchOr(search);
 
     const [items, total] = await Promise.all([
       this.prisma.contact.findMany({
         where,
-        include: {
-          companies: { select: { id: true, name: true } },
-          _count: { select: { projects: true, leads: true, deals: true } },
-        },
+        include: CONTACT_LIST_INCLUDE,
         orderBy: {
           [resolveSortField(sortBy, CONTACT_SORT_FIELDS, 'createdAt')]:
             normalizeSortDirection(sortOrder),
@@ -93,6 +93,7 @@ export class ContactsService {
     const contact = await this.prisma.contact.findUnique({
       where: { id },
       include: {
+        extraPhones: { select: CONTACT_EXTRA_PHONE_SELECT, orderBy: { createdAt: 'asc' } },
         companies: true,
         projects: { select: { id: true, code: true, name: true } },
         leads: { select: { id: true, code: true, status: true } },
@@ -122,6 +123,9 @@ export class ContactsService {
   async update(id: string, data: Partial<CreateContactDto>) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Contact');
+    if (data.phone !== undefined) {
+      await deleteOverlappingExtraPhones(this.prisma, id, data.phone);
+    }
     return this.prisma.contact.update({
       where: { id },
       data: {
@@ -135,11 +139,48 @@ export class ContactsService {
           messengerLinks: JSON.parse(JSON.stringify(data.messengerLinks)),
         }),
       },
-      include: {
-        companies: { select: { id: true, name: true } },
-        _count: { select: { projects: true, leads: true, deals: true } },
+      include: CONTACT_LIST_INCLUDE,
+    });
+  }
+
+  async addExtraPhone(id: string, raw: string | undefined) {
+    const stored = assertStoredContactPhone(raw);
+    const contact = await this.prisma.contact.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        phone: true,
+        trashedAt: true,
+        extraPhones: { select: { e164: true } },
       },
     });
+    if (!contact) throw new NotFoundException(`Contact ${id} not found`);
+    assertEntityIsActive(contact, 'trashedAt', 'Contact');
+    if (contactOwnsPhone(contact.phone, contact.extraPhones, stored)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: CONTACT_PHONE_ERROR.DUPLICATE,
+        message: 'This number is already on the Contact.',
+      });
+    }
+    await createExtraContactPhone(this.prisma, id, stored);
+    return this.findById(id);
+  }
+
+  async removeExtraPhone(id: string, phoneId: string) {
+    const contact = await this.prisma.contact.findUnique({
+      where: { id },
+      select: { id: true, trashedAt: true },
+    });
+    if (!contact) throw new NotFoundException(`Contact ${id} not found`);
+    assertEntityIsActive(contact, 'trashedAt', 'Contact');
+    const extra = await this.prisma.contactPhone.findFirst({
+      where: { id: phoneId, contactId: id },
+      select: { id: true },
+    });
+    if (!extra) throw new NotFoundException(`Extra phone ${phoneId} not found`);
+    await this.prisma.contactPhone.delete({ where: { id: phoneId } });
+    return this.findById(id);
   }
 
   async moveToTrash(id: string) {
@@ -165,10 +206,7 @@ export class ContactsService {
     return this.prisma.contact.update({
       where: { id },
       data: { trashedAt: null },
-      include: {
-        companies: { select: { id: true, name: true } },
-        _count: { select: { projects: true, leads: true, deals: true } },
-      },
+      include: CONTACT_LIST_INCLUDE,
     });
   }
 

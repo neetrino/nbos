@@ -44,6 +44,7 @@ interface ContactSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, data: Record<string, unknown>) => Promise<void>;
+  onContactPatched?: (contact: Contact) => void;
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
@@ -63,6 +64,7 @@ export function ContactSheet({
   open,
   onOpenChange,
   onUpdate,
+  onContactPatched,
   isTrashView = false,
   onMoveToTrash,
   onRestore,
@@ -289,6 +291,7 @@ export function ContactSheet({
                       portfolioLoading={portfolio.loading}
                       portfolioError={portfolio.error}
                       onPortfolioRetry={portfolio.reload}
+                      onContactPatched={onContactPatched}
                     />
                   ) : (
                     <ClientPortfolioPanel

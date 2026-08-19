@@ -1,4 +1,5 @@
 import type { Prisma, TransactionClient } from '@nbos/database';
+import { contactAnyPhoneOr } from '../../clients/contacts/contact-phone.ops';
 import {
   normalizeLeadEmail,
   openLeadAutoAttachWhere,
@@ -210,7 +211,7 @@ async function findMatchingContacts(
   const email = normalizeLeadEmail(query.email);
   const search = query.search?.trim();
   const or: Prisma.ContactWhereInput[] = [];
-  if (phones.length > 0) or.push({ phone: { in: phones } });
+  if (phones.length > 0) or.push(contactAnyPhoneOr(phones));
   if (email) or.push({ email: { equals: email, mode: 'insensitive' } });
   if (search) or.push(...contactSearchOrFilters(search));
   if (or.length === 0) return [];

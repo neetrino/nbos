@@ -1,12 +1,19 @@
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
+export interface ContactExtraPhone {
+  id: string;
+  e164: string;
+  createdAt: string;
+}
+
 export interface Contact {
   id: string;
   firstName: string;
   lastName: string;
   phone: string | null;
   email: string | null;
+  extraPhones?: ContactExtraPhone[];
   role: string;
   notes: string | null;
   messengerLinks: Record<string, string> | null;
@@ -73,6 +80,14 @@ export const contactsApi = {
   },
   async permanentDelete(id: string): Promise<void> {
     await api.delete(`/api/clients/contacts/${id}/permanent`);
+  },
+  async addExtraPhone(id: string, phone: string): Promise<Contact> {
+    const resp = await api.post<Contact>(`/api/clients/contacts/${id}/phones`, { phone });
+    return resp.data;
+  },
+  async removeExtraPhone(id: string, phoneId: string): Promise<Contact> {
+    const resp = await api.delete<Contact>(`/api/clients/contacts/${id}/phones/${phoneId}`);
+    return resp.data;
   },
 };
 

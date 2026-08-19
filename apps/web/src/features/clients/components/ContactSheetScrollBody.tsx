@@ -12,6 +12,7 @@ import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { ContactGeneralDraft } from './contact-general-form-state';
 import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
+import { ContactExtraPhonesField } from './ContactExtraPhonesField';
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -32,6 +33,7 @@ export interface ContactSheetScrollBodyProps {
   portfolioLoading: boolean;
   portfolioError: string | null;
   onPortfolioRetry: () => void;
+  onContactPatched?: (contact: Contact) => void;
 }
 
 export function ContactSheetScrollBody({
@@ -45,6 +47,7 @@ export function ContactSheetScrollBody({
   portfolioLoading,
   portfolioError,
   onPortfolioRetry,
+  onContactPatched,
 }: ContactSheetScrollBodyProps) {
   const fieldDisabled = saving || readOnly;
   const channelOptions = PREFERRED_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
@@ -103,6 +106,16 @@ export function ContactSheetScrollBody({
               onValueChange={(v) => patchDraft({ email: v })}
             />
           </div>
+          {onContactPatched ? (
+            <div className="mt-4">
+              <ContactExtraPhonesField
+                contactId={contact.id}
+                extraPhones={contact.extraPhones ?? []}
+                disabled={fieldDisabled}
+                onChanged={onContactPatched}
+              />
+            </div>
+          ) : null}
         </DetailSheetSection>
 
         <DetailSheetSection title="Details" icon={<User size={12} />}>

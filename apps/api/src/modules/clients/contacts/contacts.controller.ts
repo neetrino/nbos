@@ -88,6 +88,18 @@ export class ContactsController {
     return this.contactsService.update(id, body);
   }
 
+  @Post(':id/phones')
+  @ApiOperation({ summary: 'Add an extra phone to a Contact' })
+  async addExtraPhone(@Param('id') id: string, @Body() body: { phone?: string }) {
+    return this.contactsService.addExtraPhone(id, body.phone);
+  }
+
+  @Delete(':id/phones/:phoneId')
+  @ApiOperation({ summary: 'Remove an extra phone from a Contact' })
+  async removeExtraPhone(@Param('id') id: string, @Param('phoneId') phoneId: string) {
+    return this.contactsService.removeExtraPhone(id, phoneId);
+  }
+
   @Post(':id/restore')
   @ApiOperation({ summary: 'Restore contact from Trash' })
   async restore(@Param('id') id: string) {
