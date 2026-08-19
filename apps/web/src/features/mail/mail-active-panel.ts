@@ -15,7 +15,7 @@ export type ActiveMailPanel =
       mode?: MailComposePanelMode;
       defaultSubject?: string;
     }
-  | { type: 'connect' }
+  | { type: 'connect'; accountId?: string }
   | { type: 'share'; accountId: string; accountEmail: string }
   | null;
 

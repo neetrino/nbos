@@ -17,6 +17,7 @@ import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
 import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
+import { isMailAccountSendable } from './mail-sendable-account';
 import { splitEmailList } from './mail-thread-helpers';
 
 export interface ComposeMailSheetProps {
@@ -50,7 +51,12 @@ export function ComposeMailSheet({
     if (!enabled) {
       return;
     }
-    setMailAccountId(defaultAccountId ?? accounts[0]?.id ?? '');
+    const sendable = accounts.filter((account) => isMailAccountSendable(account.status));
+    const preferred =
+      defaultAccountId && sendable.some((account) => account.id === defaultAccountId)
+        ? defaultAccountId
+        : sendable[0]?.id;
+    setMailAccountId(preferred ?? '');
     setTo('');
     setCc('');
     setSubject(defaultSubject);
@@ -111,11 +117,13 @@ export function ComposeMailSheet({
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {accounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  {account.emailAddress}
-                </SelectItem>
-              ))}
+              {accounts
+                .filter((account) => isMailAccountSendable(account.status))
+                .map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    {account.emailAddress}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

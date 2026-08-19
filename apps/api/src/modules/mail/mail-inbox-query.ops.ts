@@ -42,7 +42,7 @@ export async function listMailAccountsForViewer(
 ): Promise<MailAccountRow[]> {
   const rows = await prisma.mailAccount.findMany({
     where: mailAccountWhereForViewer(employeeId, viewScope),
-    include: { providerConnection: true },
+    include: { providerConnection: true, providerSecret: { select: { id: true } } },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });

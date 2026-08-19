@@ -15,14 +15,26 @@ import {
   MAIL_AUDIT_ENTITY_MAIL_ACCOUNT,
 } from './mail-audit.constants';
 import type { ConnectCorporateMailboxDto } from './dto/connect-corporate-mailbox.dto';
+import type { ReconnectCorporateMailboxDto } from './dto/reconnect-corporate-mailbox.dto';
 import { mailRoleCanManageAccess } from './mail-access.policy';
 import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
+import {
+  promoteCorporateMailboxConnected,
+  resolveCorporateReconnectSettings,
+  upsertCorporateMailboxDraft,
+  writeCorporateMailboxDraft,
+} from './mail-connect-corporate.ops';
+import {
+  mailboxNeedsReconnectException,
+  validateCorporateMailbox,
+} from './mail-connect-validate.ops';
 import { toAccountRow } from './mail-dto-map';
+import { isMailProductionRuntime } from './mail-outbound-dispatch';
+import { MAIL_INLINE_FALLBACK_LOG } from './mail-outbound-runtime.constants';
+import { markMailboxNeedsReconnect } from './mail-send-outcome.ops';
 import { dispatchManualMailSync, enqueueMailSyncBestEffort } from './mail-sync-dispatch';
 import { MailQueueService } from './mail-queue.service';
 import { MailSyncService } from './mail-sync.service';
-import { ImapSmtpProviderAdapter } from './providers/imap-smtp.adapter';
-import { isSecureModeTls } from './providers/mail-provider-adapter.factory';
 import { MailProviderSecretStore } from './providers/mail-provider-secret.store';
 import type { MailAccountRow } from './mail.types';
 
@@ -42,54 +54,84 @@ export class MailConnectService {
     employeeId: string,
     dto: ConnectCorporateMailboxDto,
   ): Promise<MailAccountRow> {
-    const adapter = new ImapSmtpProviderAdapter({
-      emailAddress: dto.email,
-      displayName: dto.displayName ?? null,
-      login: dto.login,
-      password: dto.password,
-      imapHost: dto.imapHost,
-      imapPort: dto.imapPort,
-      imapSecure: isSecureModeTls(dto.imapSecure),
-      smtpHost: dto.smtpHost,
-      smtpPort: dto.smtpPort,
-      smtpSecure: isSecureModeTls(dto.smtpSecure),
-    });
-    const validation = await adapter.validateConnection();
-    if (!validation.ok) {
-      throw new BadRequestException(validation.error ?? 'Mailbox validation failed');
-    }
-    const account = await this.persistCorporateMailbox(employeeId, dto);
+    const account = await upsertCorporateMailboxDraft(this.prisma, employeeId, dto);
     await this.secretStore.store(account.id, { kind: 'corporate', password: dto.password });
-    await this.afterConnect(account.id, employeeId, dto.email, 'CORPORATE_IMAP_SMTP');
-    return toAccountRow(account);
+    return this.validateAndActivate(account.id, employeeId, dto, dto.password);
   }
 
-  private async persistCorporateMailbox(employeeId: string, dto: ConnectCorporateMailboxDto) {
-    return this.prisma.mailAccount.create({
-      data: {
-        ownerEmployeeId: employeeId,
-        createdByEmployeeId: employeeId,
-        emailAddress: dto.email,
-        displayName: dto.displayName ?? null,
-        providerType: 'CORPORATE_IMAP_SMTP',
-        status: 'ACTIVE',
-        providerConnection: {
-          create: {
-            providerType: 'CORPORATE_IMAP_SMTP',
-            status: 'CONNECTED',
-            username: dto.login,
-            imapHost: dto.imapHost,
-            imapPort: dto.imapPort,
-            secureMode: dto.imapSecure,
-            smtpHost: dto.smtpHost,
-            smtpPort: dto.smtpPort,
-            smtpSecureMode: dto.smtpSecure,
-            lastValidatedAt: new Date(),
-          },
-        },
-      },
-      include: { providerConnection: true },
+  async reconnectCorporate(
+    employeeId: string,
+    viewScope: string,
+    mailAccountId: string,
+    dto: ReconnectCorporateMailboxDto,
+  ): Promise<MailAccountRow> {
+    const loaded = await loadMailAccountWithViewerRole(this.prisma, {
+      mailAccountId,
+      employeeId,
+      viewScope,
     });
+    if (!loaded) {
+      throw new NotFoundException('Mail account not found');
+    }
+    if (!mailRoleCanManageAccess(loaded.role)) {
+      throw new ForbiddenException('You cannot reconnect this mailbox');
+    }
+    if (loaded.account.providerType !== 'CORPORATE_IMAP_SMTP') {
+      throw new BadRequestException('Only corporate IMAP/SMTP mailboxes can reconnect here');
+    }
+    const settings = await this.mergeReconnectSettings(mailAccountId, loaded.account, dto);
+    const password = await this.resolveReconnectPassword(mailAccountId, dto.password);
+    await writeCorporateMailboxDraft(this.prisma, mailAccountId, settings);
+    if (dto.password) {
+      await this.secretStore.store(mailAccountId, { kind: 'corporate', password: dto.password });
+    }
+    return this.validateAndActivate(mailAccountId, employeeId, settings, password);
+  }
+
+  private async validateAndActivate(
+    mailAccountId: string,
+    employeeId: string,
+    settings: Parameters<typeof validateCorporateMailbox>[0],
+    password: string,
+  ): Promise<MailAccountRow> {
+    const validation = await validateCorporateMailbox(settings, password);
+    if (!validation.ok) {
+      const detail = validation.error ?? 'Mailbox validation failed';
+      await markMailboxNeedsReconnect(this.prisma, mailAccountId, detail);
+      throw mailboxNeedsReconnectException(mailAccountId, detail);
+    }
+    const promoted = await promoteCorporateMailboxConnected(this.prisma, mailAccountId);
+    await this.afterConnect(mailAccountId, employeeId, settings.email, 'CORPORATE_IMAP_SMTP');
+    return toAccountRow(promoted);
+  }
+
+  private async mergeReconnectSettings(
+    mailAccountId: string,
+    account: { emailAddress: string; displayName: string | null },
+    dto: ReconnectCorporateMailboxDto,
+  ) {
+    const connection = await this.prisma.mailProviderConnection.findUnique({
+      where: { mailAccountId },
+    });
+    const resolved = resolveCorporateReconnectSettings({ account, connection, patch: dto });
+    if ('error' in resolved) {
+      throw new BadRequestException(resolved.error);
+    }
+    return resolved;
+  }
+
+  private async resolveReconnectPassword(
+    mailAccountId: string,
+    password: string | undefined,
+  ): Promise<string> {
+    if (password) {
+      return password;
+    }
+    const secret = await this.secretStore.read(mailAccountId);
+    if (secret?.kind === 'corporate' && secret.password) {
+      return secret.password;
+    }
+    throw new BadRequestException('Password is required to reconnect this mailbox');
   }
 
   /** Shared post-connect side effects: audit, sync log, and initial sync kick-off. */
@@ -110,11 +152,24 @@ export class MailConnectService {
     await this.prisma.mailSyncLog.create({
       data: { mailAccountId, kind: MailSyncLogKind.CONNECTION_VALIDATED },
     });
-    await enqueueMailSyncBestEffort({
+    const queued = await enqueueMailSyncBestEffort({
       queue: this.queueService,
       syncService: this.syncService,
       logger: this.logger,
       mailAccountId,
+      allowLocalInline: false,
+    });
+    this.kickLocalInlineSyncIfNeeded(queued, mailAccountId);
+  }
+
+  /** Local without Redis: start sync after HTTP returns. Never block connect. */
+  private kickLocalInlineSyncIfNeeded(queued: boolean, mailAccountId: string): void {
+    if (queued || isMailProductionRuntime()) {
+      return;
+    }
+    this.logger.warn(`${MAIL_INLINE_FALLBACK_LOG} mailAccountId=${mailAccountId}`);
+    void this.syncService.syncAccount(mailAccountId).catch((caught: unknown) => {
+      this.logger.error(`Local inline mail sync failed for ${mailAccountId}`, caught);
     });
   }
 

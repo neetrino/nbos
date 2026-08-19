@@ -110,11 +110,14 @@ Admin/owner должен видеть проблемные аккаунты в s
 User/Admin opens Mail Settings
   -> chooses provider type
   -> completes OAuth or enters server settings
+  -> NBOS saves MailAccount (corporate: NEEDS_RECONNECT / NOT_CONNECTED until valid)
   -> NBOS validates connection
-  -> MailAccount created
-  -> initial limited import starts
+  -> on success: ACTIVE + initial limited import
+  -> on failure: keep NEEDS_RECONNECT; user edits one field and reconnects
   -> account appears in Inbox
 ```
+
+Corporate IMAP/SMTP: failed validation still persists hosts/login and the encrypted password. The next attempt is **Reconnect** (same row), not a new mailbox. Password may be omitted if a secret is already stored.
 
 ## Отключение mailbox
 

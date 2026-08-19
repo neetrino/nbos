@@ -21,6 +21,7 @@ import {
   RequirePermission,
 } from '../../common/decorators';
 import { ConnectCorporateMailboxDto } from './dto/connect-corporate-mailbox.dto';
+import { ReconnectCorporateMailboxDto } from './dto/reconnect-corporate-mailbox.dto';
 import { MailConnectService } from './mail-connect.service';
 import { MailGmailOAuthService, type GmailOAuthErrorReason } from './mail-gmail-oauth.service';
 import { MailPubSubService } from './mail-pubsub.service';
@@ -42,12 +43,35 @@ export class MailProviderController {
   @Post('accounts/corporate/connect')
   @HttpCode(HttpStatus.CREATED)
   @RequirePermission('MAIL', 'EDIT')
-  @ApiOperation({ summary: 'Connect a corporate mailbox (validates IMAP + SMTP, then creates it)' })
+  @ApiOperation({
+    summary: 'Connect a corporate mailbox (saves draft, validates IMAP + SMTP, activates if ok)',
+  })
   async connectCorporate(
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: ConnectCorporateMailboxDto,
   ) {
     return this.connectService.connectCorporate(user.id, body);
+  }
+
+  @Post('accounts/:accountId/reconnect')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary:
+      'Reconnect a corporate mailbox (partial settings; password optional if already stored)',
+  })
+  async reconnectCorporate(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('accountId') accountId: string,
+    @Body() body: ReconnectCorporateMailboxDto,
+  ) {
+    return this.connectService.reconnectCorporate(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      accountId,
+      body,
+    );
   }
 
   @Post('accounts/:accountId/disconnect')

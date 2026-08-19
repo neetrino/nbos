@@ -217,10 +217,11 @@ Long-lived соединение живёт **только в worker**, не в A
 
 После `connectCorporate` API:
 
-1. Сохраняет ящик и секрет.
-2. Ставит `mail.sync`.
-3. IDLE стартует **только как side-effect connect-sync** в worker: после успешного initial/recovery sync worker вызывает `ensureIdle(accountId)`. Отдельный job `mail.idle.ensure` **не** вводим. Это **срез B**, не A.
-4. Рестарт API **не требуется**.
+1. Сохраняет ящик и секрет **сразу** (даже если IMAP/SMTP ещё не прошли). Пока невалидно — `NEEDS_RECONNECT`.
+2. При успешной валидации — `ACTIVE`, ставит `mail.sync`.
+3. Повтор — `POST …/reconnect` по тому же `accountId` (частичные поля; пароль можно не слать, если секрет уже есть).
+4. IDLE стартует **только как side-effect connect-sync** в worker: после успешного initial/recovery sync worker вызывает `ensureIdle(accountId)`. Отдельный job `mail.idle.ensure` **не** вводим. Это **срез B**, не A.
+5. Рестарт API **не требуется**.
 
 Внутри IDLE:
 

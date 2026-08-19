@@ -7,5 +7,6 @@ describe('mailApi Slice A surface', () => {
     expect('finalizeQueuedOutboundStub' in mailApi).toBe(false);
     expect('retryOutboundSend' in mailApi).toBe(true);
     expect('syncAccount' in mailApi).toBe(true);
+    expect('reconnectCorporate' in mailApi).toBe(true);
   });
 });

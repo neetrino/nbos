@@ -6,6 +6,7 @@ export interface MailAccountRow {
   status: string;
   lastSyncAt: string | null;
   lastErrorAt: string | null;
+  hasStoredPassword: boolean;
   providerConnection: MailProviderConnectionRow | null;
 }
 
@@ -21,6 +22,7 @@ export interface MailProviderConnectionRow {
   smtpHost: string | null;
   smtpPort: number | null;
   secureMode: string | null;
+  smtpSecureMode: string | null;
   lastValidatedAt: string | null;
   lastErrorAt: string | null;
   lastErrorMessage: string | null;
