@@ -9,6 +9,10 @@ export const GLOBAL_SEARCH_HINT =
 
 export const GLOBAL_SEARCH_SHORT_QUERY_HINT = 'Type at least 2 characters to search.';
 
+/** Fixed results panel height so empty → loading → results does not resize the dialog. */
+export const GLOBAL_SEARCH_RESULTS_PANEL_CLASS =
+  'nbos-global-search-scroll h-[min(22rem,calc(100vh-14rem))] overflow-y-auto';
+
 export function isGlobalSearchShortcut(event: KeyboardEvent): boolean {
   const key = event.key.toLowerCase();
   return key === 'k' && (event.metaKey || event.ctrlKey);

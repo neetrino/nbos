@@ -32,20 +32,18 @@ export function GlobalSearchResultRow({
       onMouseEnter={() => onHover(index)}
       onClick={() => onSelect(hit)}
       className={cn(
-        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-        selected ? 'bg-muted' : 'hover:bg-muted/70',
+        'flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors',
+        selected ? 'bg-muted/80' : 'hover:bg-muted/55',
       )}
     >
-      <span className="bg-background text-muted-foreground ring-border/60 flex size-9 shrink-0 items-center justify-center rounded-lg ring-1">
-        <GlobalSearchEntityIcon entityType={hit.entityType} className="size-4" />
-      </span>
+      <GlobalSearchEntityIcon entityType={hit.entityType} withTile />
       <span className="min-w-0 flex-1">
         <span className="text-foreground block truncate text-sm font-medium">
           <GlobalSearchHighlightText text={hit.title} query={query} />
         </span>
-        <span className="text-muted-foreground block truncate text-xs">{hit.subtitle}</span>
+        <span className="text-muted-foreground mt-0.5 block truncate text-xs">{hit.subtitle}</span>
       </span>
-      <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+      <span className="text-muted-foreground/80 shrink-0 text-xs tabular-nums">
         {formatGlobalSearchDate(hit.occurredAt)}
       </span>
     </button>
@@ -71,7 +69,7 @@ export function GlobalSearchResults({
 }: GlobalSearchResultsProps) {
   if (loading && items.length === 0) {
     return (
-      <div className="text-muted-foreground flex items-center justify-center gap-2 py-10 text-sm">
+      <div className="text-muted-foreground flex h-full min-h-full items-center justify-center gap-2 text-sm">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         Searching…
       </div>
@@ -79,11 +77,15 @@ export function GlobalSearchResults({
   }
 
   if (items.length === 0) {
-    return <div className="text-muted-foreground py-10 text-center text-sm">No results found.</div>;
+    return (
+      <div className="text-muted-foreground flex h-full min-h-full items-center justify-center text-sm">
+        No results found.
+      </div>
+    );
   }
 
   return (
-    <ul role="listbox" className="space-y-1 p-1">
+    <ul role="listbox" className="space-y-0.5 px-2 py-1.5">
       {items.map((hit, index) => (
         <li key={`${hit.entityType}-${hit.id}`}>
           <GlobalSearchResultRow

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SearchHit, SearchQueryGroup } from '@/lib/api/search';
 import {
   GLOBAL_SEARCH_HINT,
   GLOBAL_SEARCH_QUERY_GROUP_ALL,
+  GLOBAL_SEARCH_RESULTS_PANEL_CLASS,
   GLOBAL_SEARCH_SHORT_QUERY_HINT,
 } from './global-search-constants';
 import { GlobalSearchResults } from './GlobalSearchResults';
@@ -46,12 +46,11 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
   const { loading, error, response } = useGlobalSearchQuery({ open, query, group });
 
   const items = response?.items ?? [];
-  const availableGroups = response?.groups ?? [];
   const activeSelectedIndex = items.length === 0 ? 0 : Math.min(selectedIndex, items.length - 1);
 
   const tabs = useMemo(
-    () => [{ id: GLOBAL_SEARCH_QUERY_GROUP_ALL, label: 'All' }, ...availableGroups],
-    [availableGroups],
+    () => [{ id: GLOBAL_SEARCH_QUERY_GROUP_ALL, label: 'All' }, ...(response?.groups ?? [])],
+    [response?.groups],
   );
 
   const handleOpenChange = useCallback(
@@ -101,6 +100,11 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
   };
 
   const showHint = query.trim().length < 2;
+  const clearQuery = useCallback(() => {
+    setQuery('');
+    setSelectedIndex(0);
+    inputRef.current?.focus();
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -116,9 +120,8 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
           <DialogDescription>Search across modules you can access.</DialogDescription>
         </DialogHeader>
 
-        <div className="border-border flex items-center gap-2 border-b px-4 py-3">
-          <Search className="text-muted-foreground size-4 shrink-0" aria-hidden />
-          <Input
+        <div className="flex items-center gap-2 px-5 pt-4 pb-2">
+          <input
             ref={inputRef}
             value={query}
             onChange={(event) => {
@@ -127,7 +130,7 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
             }}
             onKeyDown={handleInputKeyDown}
             placeholder="Search…"
-            className="h-10 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+            className="text-foreground placeholder:text-muted-foreground/70 h-11 min-w-0 flex-1 bg-transparent text-base outline-none md:text-sm"
             autoComplete="off"
             spellCheck={false}
           />
@@ -136,19 +139,18 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
               type="button"
               variant="ghost"
               size="sm"
-              className="text-muted-foreground h-8 shrink-0 px-2"
-              onClick={() => {
-                setQuery('');
-                setSelectedIndex(0);
-              }}
+              className="text-muted-foreground hover:text-foreground h-9 shrink-0 rounded-full px-3.5 text-sm"
+              onClick={clearQuery}
             >
               Clear
             </Button>
           ) : null}
+          <span className="bg-border/70 h-5 w-px shrink-0" aria-hidden />
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground size-9 shrink-0 rounded-full"
             aria-label="Close search"
             onClick={close}
           >
@@ -157,7 +159,7 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
         </div>
 
         {tabs.length > 1 ? (
-          <div className="border-border flex flex-wrap gap-2 border-b px-4 py-3">
+          <div className="flex flex-wrap gap-1.5 px-5 pt-1 pb-3">
             {tabs.map((tab) => {
               const active = group === tab.id;
               return (
@@ -169,10 +171,10 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
                     setSelectedIndex(0);
                   }}
                   className={cn(
-                    'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                    'rounded-full px-4 py-2 text-sm font-medium transition-colors',
                     active
                       ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                   )}
                 >
                   {tab.label}
@@ -182,11 +184,13 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
           </div>
         ) : null}
 
-        <div className="max-h-[min(28rem,calc(100vh-12rem))] overflow-y-auto">
+        <div className={GLOBAL_SEARCH_RESULTS_PANEL_CLASS}>
           {error ? (
-            <div className="text-destructive px-4 py-8 text-center text-sm">{error}</div>
+            <div className="text-destructive flex h-full items-center justify-center px-5 text-center text-sm">
+              {error}
+            </div>
           ) : showHint ? (
-            <div className="text-muted-foreground px-4 py-10 text-center text-sm">
+            <div className="text-muted-foreground flex h-full flex-col items-center justify-center px-5 text-center text-sm">
               <p>{GLOBAL_SEARCH_SHORT_QUERY_HINT}</p>
               <p className="mt-2 text-xs">{GLOBAL_SEARCH_HINT}</p>
             </div>
@@ -202,12 +206,17 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
           )}
         </div>
 
-        {loading && items.length > 0 ? (
-          <div className="border-border text-muted-foreground flex items-center gap-2 border-t px-4 py-2 text-xs">
-            <Loader2 className="size-3.5 animate-spin" aria-hidden />
-            Updating results…
-          </div>
-        ) : null}
+        <div
+          className="text-muted-foreground flex h-9 items-center gap-2 px-5 text-xs"
+          aria-live="polite"
+        >
+          {loading && items.length > 0 ? (
+            <>
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              Updating results…
+            </>
+          ) : null}
+        </div>
       </DialogContent>
     </Dialog>
   );
