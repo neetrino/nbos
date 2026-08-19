@@ -10,7 +10,7 @@
   - [x] Attachment download — Retry для застрявшего Pending в коде (`1a383407`): UI FAILED сразу / PENDING >3 мин; API retry-download; queue re-enqueue.
   - [x] Attachment download — deploy api/worker/web (`215bfc4b`, running:healthy).
   - [ ] Attachment download — verify Toon Expo PNG на prod test@ (Retry → Ready).
-  - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
+  - [x] Данные: 3 DISABLED `test@neetrino.com` в prod DB удалены (Prisma `deleteMany` status=DISABLED). Остались LIVE test@ и Gmail ACTIVE.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
     - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
     - [x] `SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED` — продление Gmail watch (только если есть Gmail-ящики).
@@ -30,4 +30,4 @@
 - [ ] Добавить production-мониторинг ошибок BullMQ jobs и Scheduler runs с понятными уведомлениями.
 - [ ] Вынести ops-токены из `.env.local` приложения и заменить секреты, если скриншоты или ENV попадали третьим лицам.
 - [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным (Upstash burn больше не актуален).
-- [ ] **Contact ↔ Product (не сейчас):** после Lead «Связать» / create-contact-from-lead — сначала canon NBOS (*зачем* контакты на Project, не Product), потом проектировать и внедрить Contact ↔ Product. Сейчас доп. контакты на Project, у Product нет модели — project-contacts видны на product, но в одном project разные люди могут отвечать за разные product (сайт / CRM / app).
+- [ ] **Contact ↔ Product (не сейчас):** после Lead «Связать» / create-contact-from-lead — сначала canon NBOS (_зачем_ контакты на Project, не Product), потом проектировать и внедрить Contact ↔ Product. Сейчас доп. контакты на Project, у Product нет модели — project-contacts видны на product, но в одном project разные люди могут отвечать за разные product (сайт / CRM / app).
