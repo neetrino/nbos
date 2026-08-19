@@ -7,6 +7,7 @@ alwaysApply: false
 # Git workflow
 
 - **Branches:** `feature/*`, `bugfix/*`, `hotfix/*`; `main` protected; `develop` if team uses Git Flow.
+- **NBOS working branch:** long-lived `sipan`. Land work with a PR `sipan` → `main` and a **merge commit** (not squash, not rebase) so the graph shows the merge from `sipan` into `main`. After merge, fast-forward `sipan` to `main`; do not squash-reset history.
 - **Conventional Commits** — `feat:`, `fix:`, `chore:`, `docs:` …
 - **PRs** — small, focused, green CI, description template, self-review first.
 - **No force-push** to `main`/`develop`; no secrets in commits.
