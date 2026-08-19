@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
 import { useEditor } from '@tiptap/react';
-import { NOTES_EDIT_ACTIVATE_GUARD_MS } from './entity-notes-edit-focus';
 import { buildEntityNotesExtensions } from './entity-notes-extensions';
 import { editorHtmlToNotesValue, notesValueToEditorHtml } from './entity-notes-value';
 
@@ -19,13 +18,6 @@ export function useEntityNotesEditor(opts: {
   const { value, onChange, onBlur, placeholder, disabled, isActive = true } = opts;
   const skipEmitRef = useRef(false);
   const lastExternalRef = useRef(value);
-  const onBlurRef = useRef(onBlur);
-  const suppressBlurRef = useRef(false);
-  const wasActiveRef = useRef(false);
-
-  useEffect(() => {
-    onBlurRef.current = onBlur;
-  }, [onBlur]);
 
   const editor = useEditor(
     {
@@ -42,30 +34,26 @@ export function useEntityNotesEditor(opts: {
         if (skipEmitRef.current) return;
         onChange(editorHtmlToNotesValue(ed.getHTML()));
       },
-      onBlur: () => {
-        if (suppressBlurRef.current) return;
-        onBlurRef.current?.();
-      },
+      onBlur: () => onBlur?.(),
     },
     [placeholder],
   );
 
   useEffect(() => {
     if (!editor) return;
-
-    const shouldFocus = isActive && !disabled && !wasActiveRef.current;
-    if (shouldFocus) suppressBlurRef.current = true;
-
     editor.setEditable(!disabled && isActive);
-    if (shouldFocus) editor.commands.focus();
+  }, [disabled, isActive, editor]);
 
-    wasActiveRef.current = disabled ? false : isActive;
-    if (!shouldFocus) return;
-
-    const timer = window.setTimeout(() => {
-      suppressBlurRef.current = false;
-    }, NOTES_EDIT_ACTIVATE_GUARD_MS);
-    return () => window.clearTimeout(timer);
+  const wasActiveRef = useRef(false);
+  useEffect(() => {
+    if (!editor || disabled) {
+      wasActiveRef.current = false;
+      return;
+    }
+    if (isActive && !wasActiveRef.current) {
+      editor.commands.focus();
+    }
+    wasActiveRef.current = isActive;
   }, [disabled, editor, isActive]);
 
   useEffect(() => {

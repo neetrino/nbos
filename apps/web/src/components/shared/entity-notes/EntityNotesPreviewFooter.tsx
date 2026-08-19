@@ -28,7 +28,6 @@ export function EntityNotesPreviewFooter({
         type="button"
         disabled={disabled}
         className={cn(PREVIEW_ACTION_CLASS, disabled && 'pointer-events-none opacity-50')}
-        onPointerDown={(event) => event.preventDefault()}
         onClick={onEdit}
       >
         <Pencil className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />

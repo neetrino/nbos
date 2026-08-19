@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -8,10 +8,6 @@ import {
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
 } from '../detail-sheet-classes';
-import {
-  NOTES_EDIT_ACTIVATE_GUARD_MS,
-  shouldCloseNotesEditorAfterBlur,
-} from './entity-notes-edit-focus';
 import {
   ENTITY_NOTES_COLLAPSE_FADE_CLASS,
   ENTITY_NOTES_COLLAPSED_PREVIEW_CLASS,
@@ -31,6 +27,11 @@ import { useEntityNotesEditor } from './use-entity-notes-editor';
 const DEFAULT_PLACEHOLDER = 'Description';
 const DEFAULT_FIELD_LABEL = 'Description';
 
+function focusLeftShell(shell: HTMLElement | null): boolean {
+  const active = document.activeElement;
+  return active !== null && shell !== null && !shell.contains(active);
+}
+
 export function EntityNotesField({
   entityType: _entityType,
   entityId: _entityId,
@@ -48,8 +49,6 @@ export function EntityNotesField({
   const isLocked = disabled || loading;
   const shellRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const activatingRef = useRef(false);
-  const activatingTimerRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
   const isEditing = isActive && !isLocked;
   const isEmpty = isNotesValueEmpty(value);
@@ -60,34 +59,10 @@ export function EntityNotesField({
     setIsActive(false);
   }, []);
 
-  const markActivating = useCallback(() => {
-    activatingRef.current = true;
-    if (activatingTimerRef.current != null) window.clearTimeout(activatingTimerRef.current);
-    activatingTimerRef.current = window.setTimeout(() => {
-      activatingRef.current = false;
-      activatingTimerRef.current = null;
-    }, NOTES_EDIT_ACTIVATE_GUARD_MS);
-  }, []);
-
-  useEffect(
-    () => () => {
-      if (activatingTimerRef.current != null) window.clearTimeout(activatingTimerRef.current);
-    },
-    [],
-  );
-
   const handleEditorBlur = useCallback(() => {
     onBlur?.();
     requestAnimationFrame(() => {
-      if (
-        !shouldCloseNotesEditorAfterBlur({
-          activating: activatingRef.current,
-          shell: shellRef.current,
-          activeElement: document.activeElement,
-        })
-      ) {
-        return;
-      }
+      if (!focusLeftShell(shellRef.current)) return;
       deactivate();
     });
   }, [deactivate, onBlur]);
@@ -110,10 +85,9 @@ export function EntityNotesField({
 
   const activate = useCallback(() => {
     if (isLocked) return;
-    markActivating();
     setIsActive(true);
     resetExpanded();
-  }, [isLocked, markActivating, resetExpanded]);
+  }, [isLocked, resetExpanded]);
 
   const onShellPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isLocked || isActive) return;

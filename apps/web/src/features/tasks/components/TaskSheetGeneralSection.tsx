@@ -81,7 +81,6 @@ export function TaskSheetGeneralSection({
         disabled={disabled}
         label={null}
         placeholder="Description"
-        collapsiblePreview
         shellClassName="[&_.entity-notes-prosemirror]:text-sm"
       />
 
