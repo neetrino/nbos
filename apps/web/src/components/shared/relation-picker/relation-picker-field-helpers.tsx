@@ -24,6 +24,7 @@ export function useRelationPickerOpenEffects({
   disabled,
   doSearch,
   containerRef,
+  panelRef,
   inputRef,
   debounceRef,
   setOpen,
@@ -33,6 +34,7 @@ export function useRelationPickerOpenEffects({
   disabled: boolean;
   doSearch: (q: string) => void;
   containerRef: RefObject<HTMLDivElement | null>;
+  panelRef: RefObject<HTMLDivElement | null>;
   inputRef: RefObject<HTMLInputElement | null>;
   debounceRef: MutableRefObject<ReturnType<typeof setTimeout> | undefined>;
   setOpen: (open: boolean) => void;
@@ -57,12 +59,13 @@ export function useRelationPickerOpenEffects({
   useEffect(() => {
     if (!open) return;
     const handler = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-        setQuery('');
-      }
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (containerRef.current?.contains(target) || panelRef.current?.contains(target)) return;
+      setOpen(false);
+      setQuery('');
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open, containerRef, setOpen, setQuery]);
+  }, [open, containerRef, panelRef, setOpen, setQuery]);
 }

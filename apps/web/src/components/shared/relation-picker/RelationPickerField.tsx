@@ -8,7 +8,6 @@ import {
   DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
-  RELATION_PICKER_DROPDOWN_LIST_CLASS,
 } from '../detail-sheet-classes';
 import { ClosedRelationPicker, isMultiProps } from './ClosedRelationPicker';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
@@ -42,7 +41,6 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     className,
     onSearch,
     maxResults: maxResultsProp,
-    listMaxHeightClass = RELATION_PICKER_DROPDOWN_LIST_CLASS,
     onOpenSelected,
     onCreate,
   } = props;
@@ -59,6 +57,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const [loading, setLoading] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const employeeDirectoryReadyRef = useRef(false);
@@ -98,6 +97,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     disabled: interactionLocked,
     doSearch,
     containerRef,
+    panelRef,
     inputRef,
     debounceRef,
     setOpen,
@@ -217,7 +217,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           onSelect={handleSelect}
           onKeyDown={handleKeyDown}
           inputRef={inputRef}
-          listMaxHeightClass={listMaxHeightClass}
+          panelRef={panelRef}
         />
       ) : (
         <ClosedRelationPicker
