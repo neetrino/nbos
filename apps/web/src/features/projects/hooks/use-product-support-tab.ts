@@ -15,6 +15,7 @@ import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-b
 import { useSupportTicketActions } from '@/features/support/hooks/use-support-ticket-actions';
 import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 export interface UseProductSupportTabResult {
   tickets: SupportTicket[];
@@ -43,7 +44,7 @@ export function useProductSupportTab(
 ): UseProductSupportTabResult {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.productSupport);
   const [view, setView] = useSupportPageViewMode();
   const [errorOverride, setErrorOverride] = useState<string | null>(null);
 
@@ -104,20 +105,23 @@ export function useProductSupportTab(
     setError: setErrorOverride,
   });
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [setFilters],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters({});
-  }, []);
+  }, [setFilters]);
 
   const kanbanColumns = useMemo((): SupportKanbanColumn[] => {
     const visibleKeys = getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);

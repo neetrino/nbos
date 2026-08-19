@@ -13,6 +13,7 @@ import {
   resolveCredentialVaultListSort,
 } from '@/features/credentials/constants/credential-vault-list-sort';
 import { useCredentialVaultPagePreferences } from '@/features/credentials/constants/credential-vault-page-state-storage';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { quickCategoryChipsForVaultScope } from '@/features/credentials/constants/credential-vault-categories';
 import type { VaultListScope } from '@/features/credentials/components/credential-vault-table';
 import {
@@ -58,9 +59,10 @@ export function useCredentialsVaultPage() {
   const { viewMode, activeTab, vaultListScope, pageSize } = preferences;
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>(() => ({
-    ...CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
-  }));
+  const [filters, setFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.credentialsVault,
+    CREDENTIAL_VAULT_DEFAULT_FILTER_VALUES,
+  );
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
@@ -452,7 +454,7 @@ export function useCredentialsVaultPage() {
         });
       }
     },
-    [setPreferences],
+    [setPreferences, setFilters],
   );
 
   const clearFilters = useCallback(() => {
@@ -462,7 +464,7 @@ export function useCredentialsVaultPage() {
     });
     setQuickCategory(null);
     setQuickFilters(new Set());
-  }, [vaultListScope]);
+  }, [vaultListScope, setFilters]);
 
   const restoreCredential = useCallback(
     async (id: string) => {
@@ -541,7 +543,7 @@ export function useCredentialsVaultPage() {
         project: 'all',
       }));
     },
-    [setPreferences, viewMode],
+    [setPreferences, viewMode, setFilters],
   );
 
   return {

@@ -24,6 +24,7 @@ import { TASK_LIST_GLOBAL_PAGE_SIZE } from '@/features/tasks/constants/task-list
 import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { taskDetailPlaceholderFromListItem } from '@/features/tasks/utils/task-detail-placeholder';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
@@ -62,7 +63,7 @@ export function useTasksListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.tasksList);
   const [boardView, persistBoardView] = useTasksBoardViewMode();
   const setBoardView = useCallback(
     (value: TasksListBoardView) => {
@@ -256,20 +257,23 @@ export function useTasksListPage() {
     return tasks.filter((task) => taskMatchesTaskBoardScope(task.status, boardScope));
   }, [tasks, boardScope, hasStatusFilter]);
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [setFilters],
+  );
 
   const handleClearFilters = useCallback(() => {
     setFilters({});
-  }, []);
+  }, [setFilters]);
 
   const renderBoard = (overrideBoardView?: TasksListBoardView) =>
     createElement(TasksListKanbanViews, {

@@ -38,6 +38,13 @@ import {
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+
+const CLIENT_SERVICE_FILTER_DEFAULTS: Record<string, string> = {
+  [CLIENT_SERVICE_FILTER_TYPE_KEY]: 'all',
+  [CLIENT_SERVICE_FILTER_STATUS_KEY]: 'all',
+  [CLIENT_SERVICE_FILTER_BILLING_KEY]: 'all',
+};
 
 export function ClientServicesPageContent() {
   return (
@@ -63,9 +70,13 @@ function ClientServicesPageInner() {
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [billingFilter, setBillingFilter] = useState('all');
+  const [clientFilters, setClientFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financeClientServices,
+    CLIENT_SERVICE_FILTER_DEFAULTS,
+  );
+  const typeFilter = clientFilters[CLIENT_SERVICE_FILTER_TYPE_KEY] ?? 'all';
+  const statusFilter = clientFilters[CLIENT_SERVICE_FILTER_STATUS_KEY] ?? 'all';
+  const billingFilter = clientFilters[CLIENT_SERVICE_FILTER_BILLING_KEY] ?? 'all';
   const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
 
   const baseParams = useMemo<ClientServiceRecordListParams>(
@@ -89,18 +100,17 @@ function ClientServicesPageInner() {
     [billingFilter, statusFilter, typeFilter],
   );
 
-  const handleClientServiceFilterChange = useCallback((key: string, value: string) => {
-    if (key === CLIENT_SERVICE_FILTER_TYPE_KEY) setTypeFilter(value);
-    else if (key === CLIENT_SERVICE_FILTER_STATUS_KEY) setStatusFilter(value);
-    else if (key === CLIENT_SERVICE_FILTER_BILLING_KEY) setBillingFilter(value);
-  }, []);
+  const handleClientServiceFilterChange = useCallback(
+    (key: string, value: string) => {
+      setClientFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [setClientFilters],
+  );
 
   const handleClearClientServiceFilters = useCallback(() => {
     setSearch('');
-    setTypeFilter('all');
-    setStatusFilter('all');
-    setBillingFilter('all');
-  }, []);
+    setClientFilters(CLIENT_SERVICE_FILTER_DEFAULTS);
+  }, [setClientFilters]);
 
   const openCreate = useCallback(() => setCreateOpen(true), []);
 

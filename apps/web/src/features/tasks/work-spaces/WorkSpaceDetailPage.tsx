@@ -32,11 +32,14 @@ import {
 } from './workspace-runtime-task-filters';
 import { useWorkSpaceDetailHeader } from './use-work-space-detail-header';
 import { useWorkSpaceDetail } from './use-work-space-detail';
+import { SEARCH_FILTER_PAGE_ID } from '@/lib/persisted-client-state';
 
 export function WorkSpaceDetailPage() {
   const params = useParams<{ id: string }>();
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const taskViewFilters = useWorkspaceRuntimeTaskFilters();
+  const taskViewFilters = useWorkspaceRuntimeTaskFilters(
+    SEARCH_FILTER_PAGE_ID.tasksWorkspaceRuntime,
+  );
   const {
     workspace,
     tasks,

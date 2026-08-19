@@ -40,6 +40,15 @@ import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economic
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { buildUnitEconomicsOrderDetailPlaceholder } from '@/features/finance/utils/unit-economics-order-detail-placeholder';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+
+function toUnitEconomicsFilters(record: Record<string, string>): UnitEconomicsFilterValues {
+  return {
+    project: record.project ?? UE_FILTER_DEFAULTS.project,
+    orderType: record.orderType ?? UE_FILTER_DEFAULTS.orderType,
+    delivery: record.delivery ?? UE_FILTER_DEFAULTS.delivery,
+  };
+}
 
 /** Operational finance per delivery unit — money in, money out, balance. */
 export function UnitEconomicsPageContent() {
@@ -51,7 +60,10 @@ export function UnitEconomicsPageContent() {
 
   const { items, projects, products, totals, loading, error, reload } = useUnitEconomicsList();
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<UnitEconomicsFilterValues>(UE_FILTER_DEFAULTS);
+  const [filters, setFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financeUnitEconomics,
+    UE_FILTER_DEFAULTS,
+  );
   const [view, handleViewChange] = useUnitEconomicsBoardViewMode();
 
   const [drilldownOrderId, setDrilldownOrderId] = useState<string | null>(null);
@@ -120,17 +132,19 @@ export function UnitEconomicsPageContent() {
     [projectOptions],
   );
 
+  const ueFilters = toUnitEconomicsFilters(filters);
+
   const filteredItems = useMemo(
-    () => filterUnitEconomicsItems(items, search, filters),
-    [items, search, filters],
+    () => filterUnitEconomicsItems(items, search, ueFilters),
+    [items, search, ueFilters],
   );
   const filteredProjects = useMemo(
-    () => filterUnitEconomicsProjects(projects, search, filters),
-    [projects, search, filters],
+    () => filterUnitEconomicsProjects(projects, search, ueFilters),
+    [projects, search, ueFilters],
   );
   const filteredProducts = useMemo(
-    () => filterUnitEconomicsProducts(products, search, filters),
-    [products, search, filters],
+    () => filterUnitEconomicsProducts(products, search, ueFilters),
+    [products, search, ueFilters],
   );
   const filteredTotals = useMemo(
     () => computeUnitEconomicsFilteredTotals(filteredItems),
@@ -184,31 +198,34 @@ export function UnitEconomicsPageContent() {
 
   const filterValues = useMemo(
     () => ({
-      [UE_FILTER_PROJECT_KEY]: filters.project,
-      [UE_FILTER_ORDER_TYPE_KEY]: filters.orderType,
-      [UE_FILTER_DELIVERY_KEY]: filters.delivery,
+      [UE_FILTER_PROJECT_KEY]: ueFilters.project,
+      [UE_FILTER_ORDER_TYPE_KEY]: ueFilters.orderType,
+      [UE_FILTER_DELIVERY_KEY]: ueFilters.delivery,
     }),
-    [filters],
+    [ueFilters],
   );
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    if (key === UE_FILTER_PROJECT_KEY) {
-      setFilters((prev) => ({ ...prev, project: value === 'all' ? 'all' : value }));
-      return;
-    }
-    if (key === UE_FILTER_ORDER_TYPE_KEY) {
-      setFilters((prev) => ({ ...prev, orderType: value === 'all' ? 'all' : value }));
-      return;
-    }
-    if (key === UE_FILTER_DELIVERY_KEY) {
-      setFilters((prev) => ({ ...prev, delivery: value === 'all' ? 'all' : value }));
-    }
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === UE_FILTER_PROJECT_KEY) {
+        setFilters((prev) => ({ ...prev, project: value === 'all' ? 'all' : value }));
+        return;
+      }
+      if (key === UE_FILTER_ORDER_TYPE_KEY) {
+        setFilters((prev) => ({ ...prev, orderType: value === 'all' ? 'all' : value }));
+        return;
+      }
+      if (key === UE_FILTER_DELIVERY_KEY) {
+        setFilters((prev) => ({ ...prev, delivery: value === 'all' ? 'all' : value }));
+      }
+    },
+    [setFilters],
+  );
 
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setFilters(UE_FILTER_DEFAULTS);
-  }, []);
+  }, [setFilters]);
 
   const moduleHeroSlots = useMemo(
     () => ({

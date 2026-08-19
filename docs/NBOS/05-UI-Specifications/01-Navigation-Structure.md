@@ -548,7 +548,7 @@ Module Page
 - short description/status;
 - contextual create button;
 - secondary actions;
-- filters/search if they apply to whole module.
+- filters/search if they apply to whole module. Filter values in `IntegratedSearchFilters` persist per page (like Board/List); the search text does not.
 
 ### Tabs / Section Navigation
 

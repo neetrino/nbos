@@ -35,6 +35,7 @@ import { invalidateEmployeeDirectoryCaches } from '@/lib/employees';
 import { PermissionGate, usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 type ViewMode = 'list' | 'grid';
 
@@ -62,7 +63,7 @@ function TeamDirectoryPageContent() {
   const canEdit = can('EDIT', 'COMPANY');
 
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.hrTeam);
   const [quickStatus, setQuickStatus] = useState<string | null>(null);
   const [showTerminated, setShowTerminated] = useState(false);
   const [view, setView] = useState<ViewMode>('grid');
@@ -229,7 +230,7 @@ function TeamDirectoryPageContent() {
         </>
       ),
     }),
-    [activeCount, filterConfigs, filters, search, total, view],
+    [activeCount, filterConfigs, filters, search, setFilters, total, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

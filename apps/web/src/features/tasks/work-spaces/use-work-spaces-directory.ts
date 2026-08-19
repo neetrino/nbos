@@ -4,6 +4,14 @@ import {
   WORK_SPACES_PAGE_SIZE,
   WORK_SPACES_SEARCH_DEBOUNCE_MS,
 } from './work-spaces-page-constants';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
+
+type WorkSpaceModeFilter = 'all' | 'scrum' | 'kanban';
+
+function parseWorkSpaceModeFilter(raw: string): WorkSpaceModeFilter {
+  if (raw === 'scrum' || raw === 'kanban') return raw;
+  return 'all';
+}
 
 export type WorkSpaceDirectoryTab = 'standalone' | 'product';
 
@@ -23,7 +31,13 @@ export function useWorkSpacesDirectory() {
   const [tab, setTab] = useState<WorkSpaceDirectoryTab>('standalone');
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [mode, setMode] = useState<'all' | 'scrum' | 'kanban'>('all');
+  const [modeRaw, setModeRaw] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.tasksWorkSpaces,
+    'mode',
+    'all',
+  );
+  const mode = parseWorkSpaceModeFilter(modeRaw);
+  const setMode = (next: WorkSpaceModeFilter) => setModeRaw(next);
   const [page, setPage] = useState(1);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [payload, setPayload] = useState<WorkSpaceListPayload | null>(null);

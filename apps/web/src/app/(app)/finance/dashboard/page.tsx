@@ -8,7 +8,11 @@ import {
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import {
   DashboardLoadingSkeleton,
   ExpenseCardsSnapshot,
@@ -35,11 +39,18 @@ import { downloadFinanceDashboardCsv } from '@/features/finance/utils/export-fin
 import { financeSummaryApi } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.financeDashboard,
+    FINANCE_PERIOD_FILTER_KEY,
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = useCallback((next: FinancePeriod) => setPeriodRaw(next), [setPeriodRaw]);
   const [search, setSearch] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -71,7 +82,7 @@ export default function FinanceDashboardPage() {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
-  }, []);
+  }, [setPeriod]);
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -100,7 +111,7 @@ export default function FinanceDashboardPage() {
         />
       ),
     }),
-    [data, fetchDashboard, handleClearFilters, loading, period, search],
+    [data, fetchDashboard, handleClearFilters, loading, period, search, setPeriod],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

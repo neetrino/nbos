@@ -34,6 +34,7 @@ import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { companiesApi, type Company } from '@/lib/api/clients';
 import { toast } from 'sonner';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const OPEN_COMPANY_QUERY = 'openId';
 
@@ -55,7 +56,7 @@ function CompaniesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsCompanies);
   const [showCreate, setShowCreate] = useState(false);
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -252,7 +253,7 @@ function CompaniesPageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, view],
+    [filterConfigs, filters, isTrashView, scope, search, setFilters, setScope, view],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

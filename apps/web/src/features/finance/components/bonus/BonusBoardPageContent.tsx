@@ -59,6 +59,14 @@ import {
   type BonusStats,
   type BonusType,
 } from '@/lib/api/bonus';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+
+const BONUS_FILTER_DEFAULTS: Record<string, string> = {
+  type: 'ALL',
+  employee: 'ALL',
+  project: 'ALL',
+  boardScope: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+};
 
 export function BonusBoardPageContent() {
   useFinanceDocumentTitle(bonusBoardPageTitle());
@@ -73,16 +81,21 @@ export function BonusBoardPageContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
-  const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
-  const [projectFilter, setProjectFilter] = useState<string>('ALL');
-  const [boardScopeFilter, setBoardScopeFilter] = useState<string>(DEFAULT_BOARD_LIFECYCLE_SCOPE);
+  const [bonusFilters, setBonusFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financeBonus,
+    BONUS_FILTER_DEFAULTS,
+  );
+  const typeFilter = (bonusFilters.type ?? 'ALL') as BonusType | 'ALL';
+  const employeeFilter = bonusFilters.employee ?? 'ALL';
+  const projectFilter = bonusFilters.project ?? 'ALL';
+  const boardScopeFilter = bonusFilters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE;
   const [view, handleViewChange] = useBonusBoardViewMode();
   const [createOpen, setCreateOpen] = useState(false);
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
-    setProjectFilter(raw && raw.length > 0 ? raw : 'ALL');
-  }, [searchParams]);
+    if (!raw) return;
+    setBonusFilters((prev) => ({ ...prev, project: raw }));
+  }, [searchParams, setBonusFilters]);
 
   const replaceBonusUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -192,7 +205,7 @@ export function BonusBoardPageContent() {
 
   const handleProjectFilterChange = useCallback(
     (value: string) => {
-      setProjectFilter(value);
+      setBonusFilters((prev) => ({ ...prev, project: value }));
       replaceBonusUrl((params) => {
         if (value === 'ALL') {
           params.delete(BONUS_BOARD_PROJECT_FILTER_QUERY);
@@ -201,7 +214,7 @@ export function BonusBoardPageContent() {
         }
       });
     },
-    [replaceBonusUrl],
+    [replaceBonusUrl, setBonusFilters],
   );
 
   const boardScope: BoardLifecycleScope = resolveBoardLifecycleScope(boardScopeFilter);
@@ -253,13 +266,18 @@ export function BonusBoardPageContent() {
   const handleBonusFilterChange = useCallback(
     (key: string, value: string) => {
       if (key === BONUS_FILTER_BOARD_SCOPE_KEY) {
-        setBoardScopeFilter(
-          value === DEFAULT_BOARD_LIFECYCLE_SCOPE ? DEFAULT_BOARD_LIFECYCLE_SCOPE : value,
-        );
+        setBonusFilters((prev) => ({
+          ...prev,
+          boardScope:
+            value === DEFAULT_BOARD_LIFECYCLE_SCOPE ? DEFAULT_BOARD_LIFECYCLE_SCOPE : value,
+        }));
         return;
       }
       if (key === BONUS_FILTER_TYPE_KEY) {
-        setTypeFilter(value === 'all' ? 'ALL' : (value as BonusType));
+        setBonusFilters((prev) => ({
+          ...prev,
+          type: value === 'all' ? 'ALL' : value,
+        }));
         return;
       }
       if (key === BONUS_FILTER_PROJECT_KEY) {
@@ -267,19 +285,20 @@ export function BonusBoardPageContent() {
         return;
       }
       if (key === BONUS_FILTER_EMPLOYEE_KEY) {
-        setEmployeeFilter(value === 'all' ? 'ALL' : value);
+        setBonusFilters((prev) => ({
+          ...prev,
+          employee: value === 'all' ? 'ALL' : value,
+        }));
       }
     },
-    [handleProjectFilterChange],
+    [handleProjectFilterChange, setBonusFilters],
   );
 
   const handleClearBonusFilters = useCallback(() => {
     setSearch('');
-    setTypeFilter('ALL');
-    setEmployeeFilter('ALL');
-    setBoardScopeFilter(DEFAULT_BOARD_LIFECYCLE_SCOPE);
+    setBonusFilters(BONUS_FILTER_DEFAULTS);
     handleProjectFilterChange('ALL');
-  }, [handleProjectFilterChange]);
+  }, [handleProjectFilterChange, setBonusFilters]);
 
   const moduleHeroSlots = useMemo(
     () => ({

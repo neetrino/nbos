@@ -201,6 +201,8 @@ Shared `KanbanBoard` uses horizontal scroll (`overflow-x-auto`) inside a `min-h-
 
 List views use `overflow-auto` on the table wrapper. Scope toggles (`Active` / `Closed` / `All`) stay in the filter bar; on small screens they wrap with the search row rather than switching to a different layout per scope.
 
+**Search filters persist per screen** in `localStorage` (`nbos:search-filters:{pageId}`), same as Board/List view. The search query itself does not persist. Clear (X) writes the empty/default filter set. URL drill-downs still override when present.
+
 ---
 
 ## Delivery Board (implemented)

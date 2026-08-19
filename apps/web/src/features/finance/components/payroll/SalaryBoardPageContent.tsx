@@ -56,6 +56,7 @@ import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll
 import { SalaryBoardPageSettingsSheet } from '@/features/finance/components/payroll/SalaryBoardPageSettingsSheet';
 import { useSalaryBoardCsvExport } from '@/features/finance/components/payroll/use-salary-board-csv-export';
 import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
   return board.rows.some((row) => row.cells.some((cell) => cell?.salaryLineId === salaryLineId));
@@ -82,15 +83,22 @@ export function SalaryBoardPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
+  const [clientFilters, setClientFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financeSalary,
+    INITIAL_CLIENT_FILTERS,
+  );
   const [view, handleViewChange] = useSalaryBoardViewMode();
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
-    searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
+    searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY) ??
+      clientFilters[PAYROLL_FILTER_MONTH_FROM_KEY] ??
+      null,
   );
   const monthTo = parsePayrollRunsListMonthParam(
-    searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY),
+    searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY) ??
+      clientFilters[PAYROLL_FILTER_MONTH_TO_KEY] ??
+      null,
   );
 
   const load = useCallback(async () => {
@@ -200,6 +208,7 @@ export function SalaryBoardPageContent() {
     (key: string, value: string) => {
       const monthValue = value === 'all' ? undefined : value;
       if (key === PAYROLL_FILTER_MONTH_FROM_KEY) {
+        setClientFilters((prev) => ({ ...prev, [key]: monthValue ?? '' }));
         replaceSalaryBoardUrl((params) => {
           if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
           else params.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, monthValue);
@@ -207,6 +216,7 @@ export function SalaryBoardPageContent() {
         return;
       }
       if (key === PAYROLL_FILTER_MONTH_TO_KEY) {
+        setClientFilters((prev) => ({ ...prev, [key]: monthValue ?? '' }));
         replaceSalaryBoardUrl((params) => {
           if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
           else params.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, monthValue);
@@ -215,7 +225,7 @@ export function SalaryBoardPageContent() {
       }
       setClientFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [replaceSalaryBoardUrl],
+    [replaceSalaryBoardUrl, setClientFilters],
   );
 
   const handleClearSalaryFilters = useCallback(() => {
@@ -225,7 +235,7 @@ export function SalaryBoardPageContent() {
     });
     setSearch('');
     setClientFilters(INITIAL_CLIENT_FILTERS);
-  }, [replaceSalaryBoardUrl]);
+  }, [replaceSalaryBoardUrl, setClientFilters]);
 
   const openSalaryLineId = searchParams.get(SALARY_BOARD_OPEN_LINE_QUERY)?.trim() || null;
   const monthSheetOpen = Boolean(openSalaryLineId);

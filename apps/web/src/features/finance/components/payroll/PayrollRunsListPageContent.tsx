@@ -47,6 +47,7 @@ import { PayrollRunsPageSettingsSheet } from '@/features/finance/components/payr
 import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
 import { usePayrollRunsScopeStatsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-scope-stats-csv-export';
 import { sumPayrollRunsRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 function defaultPayrollMonth(): string {
   const d = new Date();
@@ -67,26 +68,20 @@ export function PayrollRunsListPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<PayrollRunStatus | 'ALL'>(() =>
-    parsePayrollRunsListStatusParam(searchParams.get(PAYROLL_RUNS_LIST_STATUS_QUERY)),
+  const [payrollFilters, setPayrollFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financePayrollRuns,
+    { status: 'ALL', monthFrom: '', monthTo: '' },
   );
-  const [monthFrom, setMonthFrom] = useState<string | undefined>(() =>
-    parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY)),
+  const statusFilter = parsePayrollRunsListStatusParam(
+    searchParams.get(PAYROLL_RUNS_LIST_STATUS_QUERY) ?? payrollFilters.status ?? 'ALL',
   );
-  const [monthTo, setMonthTo] = useState<string | undefined>(() =>
-    parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY)),
+  const monthFrom = parsePayrollRunsListMonthParam(
+    searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY) ?? payrollFilters.monthFrom ?? null,
+  );
+  const monthTo = parsePayrollRunsListMonthParam(
+    searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY) ?? payrollFilters.monthTo ?? null,
   );
   const [view, handleViewChange] = usePayrollRunsListViewMode();
-
-  useEffect(() => {
-    setStatusFilter(
-      parsePayrollRunsListStatusParam(searchParams.get(PAYROLL_RUNS_LIST_STATUS_QUERY)),
-    );
-    setMonthFrom(
-      parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY)),
-    );
-    setMonthTo(parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY)));
-  }, [searchParams]);
 
   const replaceListUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -178,7 +173,7 @@ export function PayrollRunsListPageContent() {
   const handleStatusChange = useCallback(
     (value: string) => {
       const next = value === 'ALL' ? 'ALL' : (value as PayrollRunStatus);
-      setStatusFilter(next);
+      setPayrollFilters((prev) => ({ ...prev, status: next }));
       replaceListUrl((params) => {
         if (next === 'ALL') {
           params.delete(PAYROLL_RUNS_LIST_STATUS_QUERY);
@@ -187,13 +182,13 @@ export function PayrollRunsListPageContent() {
         }
       });
     },
-    [replaceListUrl],
+    [replaceListUrl, setPayrollFilters],
   );
 
   const handleMonthFromChange = useCallback(
     (value: string) => {
       const next = value ? value : undefined;
-      setMonthFrom(next);
+      setPayrollFilters((prev) => ({ ...prev, monthFrom: next ?? '' }));
       replaceListUrl((params) => {
         if (!next) {
           params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
@@ -202,13 +197,13 @@ export function PayrollRunsListPageContent() {
         }
       });
     },
-    [replaceListUrl],
+    [replaceListUrl, setPayrollFilters],
   );
 
   const handleMonthToChange = useCallback(
     (value: string) => {
       const next = value ? value : undefined;
-      setMonthTo(next);
+      setPayrollFilters((prev) => ({ ...prev, monthTo: next ?? '' }));
       replaceListUrl((params) => {
         if (!next) {
           params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
@@ -217,7 +212,7 @@ export function PayrollRunsListPageContent() {
         }
       });
     },
-    [replaceListUrl],
+    [replaceListUrl, setPayrollFilters],
   );
 
   const payrollFilterConfigs = useMemo(() => buildPayrollIntegratedFilterConfigs(), []);
@@ -248,15 +243,13 @@ export function PayrollRunsListPageContent() {
     [handleMonthFromChange, handleMonthToChange, handleStatusChange],
   );
   const handleClearPayrollFilters = useCallback(() => {
-    setStatusFilter('ALL');
-    setMonthFrom(undefined);
-    setMonthTo(undefined);
+    setPayrollFilters({ status: 'ALL', monthFrom: '', monthTo: '' });
     replaceListUrl((params) => {
       params.delete(PAYROLL_RUNS_LIST_STATUS_QUERY);
       params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
       params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
     });
-  }, [replaceListUrl]);
+  }, [replaceListUrl, setPayrollFilters]);
 
   const moduleHeroSlots = useMemo(
     () => ({

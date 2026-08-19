@@ -67,6 +67,7 @@ import { toast } from 'sonner';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -103,7 +104,7 @@ function LeadsPipelinePageContent() {
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.crmLeads);
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -570,7 +571,17 @@ function LeadsPipelinePageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setScope, showDesktopBoardChrome, view],
+    [
+      filterConfigs,
+      filters,
+      isTrashView,
+      scope,
+      search,
+      setFilters,
+      setScope,
+      showDesktopBoardChrome,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

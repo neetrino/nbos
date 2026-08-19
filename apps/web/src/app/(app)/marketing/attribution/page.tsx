@@ -24,6 +24,7 @@ import {
 } from '@/features/marketing/constants/marketing-attribution-filters';
 import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 type AttributionEntityTab = 'leads' | 'deals';
 
@@ -42,7 +43,11 @@ export default function AttributionReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.marketingAttribution,
+    'status',
+    '',
+  );
   const [activeTab, setActiveTab] = useState<AttributionEntityTab>('leads');
   const [openLead, setOpenLead] = useState<Lead | null>(null);
   const [openDeal, setOpenDeal] = useState<Deal | null>(null);
@@ -85,7 +90,7 @@ export default function AttributionReviewPage() {
     if (!statusOptions.some((option) => option.value === statusFilter)) {
       setStatusFilter('');
     }
-  }, [statusFilter, statusOptions]);
+  }, [setStatusFilter, statusFilter, statusOptions]);
 
   const filteredReview = useMemo(() => {
     const filterItem = (item: Lead | Deal) => {
@@ -170,7 +175,7 @@ export default function AttributionReviewPage() {
         </div>
       ),
     }),
-    [activeTab, search, statusFilter, statusOptions, tabOptions],
+    [activeTab, search, setStatusFilter, statusFilter, statusOptions, tabOptions],
   );
 
   useModuleHeroSlots(moduleHeroSlots);

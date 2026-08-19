@@ -12,6 +12,7 @@ import {
   resolveBoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const CHANGE_REQUEST_CATEGORY = 'CHANGE_REQUEST';
 
@@ -19,7 +20,7 @@ export function useSupportTicketsQuery() {
   const [stats, setStats] = useState<SupportStats | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.supportTickets);
   const [view, handleViewModeChange] = useSupportPageViewMode();
   const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
@@ -119,20 +120,23 @@ export function useSupportTicketsQuery() {
     };
   }, []);
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => {
-      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
-        const next = { ...prev };
-        delete next.boardScope;
-        return next;
-      }
-      return { ...prev, [key]: value };
-    });
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [setFilters],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters({});
-  }, []);
+  }, [setFilters]);
 
   const setError = useCallback((message: string | null) => {
     setErrorOverride(message);

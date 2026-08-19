@@ -17,24 +17,38 @@ import {
   productFinanceSearchPlaceholder,
 } from '@/features/projects/constants/product-finance-filter-configs';
 import { productFinanceFilterValuesForUi } from '@/features/projects/utils/filter-product-finance-data';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
-type SectionUiState = {
-  search: string;
-  filters: Record<string, string>;
+const EMPTY_SECTION_SEARCH: Record<ProductFinanceSection, string> = {
+  orders: '',
+  subscriptions: '',
+  expenses: '',
+  'client-services': '',
 };
 
-const EMPTY_SECTION_STATE: SectionUiState = { search: '', filters: {} };
+function defaultFiltersForSection(section: ProductFinanceSection): Record<string, string> {
+  if (section === 'expenses') {
+    return { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' };
+  }
+  return {};
+}
 
-function createInitialSectionState(): Record<ProductFinanceSection, SectionUiState> {
-  return {
-    orders: { ...EMPTY_SECTION_STATE },
-    subscriptions: { ...EMPTY_SECTION_STATE },
-    expenses: {
-      search: '',
-      filters: { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' },
-    },
-    'client-services': { ...EMPTY_SECTION_STATE },
-  };
+function nextSectionFilters(
+  current: Record<string, string>,
+  key: string,
+  value: string,
+): Record<string, string> {
+  if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+    const next = { ...current };
+    delete next.boardScope;
+    return next;
+  }
+  if (key === EXPENSE_BOARD_SCOPE_FILTER_KEY && value === 'active') {
+    const next = { ...current };
+    delete next[EXPENSE_BOARD_SCOPE_FILTER_KEY];
+    return next;
+  }
+  return { ...current, [key]: value };
 }
 
 export function useProductFinanceSection() {
@@ -42,10 +56,13 @@ export function useProductFinanceSection() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeSection = parseProductFinanceSection(searchParams.get(PRODUCT_FINANCE_SECTION_QUERY));
-  const [sectionState, setSectionState] =
-    useState<Record<ProductFinanceSection, SectionUiState>>(createInitialSectionState);
+  const [sectionSearch, setSectionSearch] = useState(EMPTY_SECTION_SEARCH);
+  const [filters, setFilters] = usePersistedSearchFilters(
+    `${SEARCH_FILTER_PAGE_ID.productFinance}.${activeSection}`,
+    defaultFiltersForSection(activeSection),
+  );
 
-  const { search, filters } = sectionState[activeSection];
+  const search = sectionSearch[activeSection];
   const debouncedSearchRaw = useDebouncedValue(search, PRODUCT_FINANCE_SEARCH_DEBOUNCE_MS);
   const debouncedSearch = debouncedSearchRaw.trim();
 
@@ -65,58 +82,28 @@ export function useProductFinanceSection() {
 
   const setSearch = useCallback(
     (value: string) => {
-      setSectionState((prev) => ({
-        ...prev,
-        [activeSection]: { ...prev[activeSection], search: value },
-      }));
+      setSectionSearch((prev) => ({ ...prev, [activeSection]: value }));
     },
-    [activeSection],
+    [activeSection, setSectionSearch],
   );
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
-      setSectionState((prev) => {
-        const current = prev[activeSection];
-        const nextFilters =
-          key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE
-            ? (() => {
-                const next = { ...current.filters };
-                delete next.boardScope;
-                return next;
-              })()
-            : key === EXPENSE_BOARD_SCOPE_FILTER_KEY && value === 'active'
-              ? (() => {
-                  const next = { ...current.filters };
-                  delete next[EXPENSE_BOARD_SCOPE_FILTER_KEY];
-                  return next;
-                })()
-              : { ...current.filters, [key]: value };
-        return {
-          ...prev,
-          [activeSection]: { ...current, filters: nextFilters },
-        };
-      });
+      setFilters((current) => nextSectionFilters(current, key, value));
     },
-    [activeSection],
+    [setFilters],
   );
 
   const clearFilters = useCallback(() => {
-    setSectionState((prev) => ({
-      ...prev,
-      [activeSection]:
-        activeSection === 'expenses'
-          ? { search: '', filters: { [EXPENSE_BOARD_SCOPE_FILTER_KEY]: 'active' } }
-          : { ...EMPTY_SECTION_STATE },
-    }));
-  }, [activeSection]);
+    setSearch('');
+    setFilters(defaultFiltersForSection(activeSection));
+  }, [activeSection, setFilters, setSearch]);
 
   const filterConfigs = useMemo(() => productFinanceFilterConfigs(activeSection), [activeSection]);
-
   const filterValuesForUi = useMemo(
     () => productFinanceFilterValuesForUi(activeSection, filters),
     [activeSection, filters],
   );
-
   const searchPlaceholder = useMemo(
     () => productFinanceSearchPlaceholder(activeSection),
     [activeSection],

@@ -76,6 +76,7 @@ import {
 import { toast } from 'sonner';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -116,7 +117,7 @@ function DealsPipelinePageContent() {
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.crmDeals);
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
@@ -657,6 +658,7 @@ function DealsPipelinePageContent() {
       isTrashView,
       scope,
       search,
+      setFilters,
       setScope,
       showDesktopBoardChrome,
       view,

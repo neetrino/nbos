@@ -30,6 +30,7 @@ import {
   WORKSPACE_TASK_FILTER_CONFIGS,
 } from '@/features/tasks/work-spaces/workspace-runtime-task-filters';
 import type { UseProductWorkSpaceTabResult } from '@/features/projects/hooks/use-product-work-space-tab';
+import { SEARCH_FILTER_PAGE_ID } from '@/lib/persisted-client-state';
 
 type ProductTasksTabProps = UseProductWorkSpaceTabResult;
 
@@ -49,7 +50,7 @@ export function ProductTasksTab({
   taskMeta,
 }: ProductTasksTabProps) {
   const { creatorReady, creatorId } = useTaskCreatorId();
-  const taskViewFilters = useWorkspaceRuntimeTaskFilters();
+  const taskViewFilters = useWorkspaceRuntimeTaskFilters(SEARCH_FILTER_PAGE_ID.productTasks);
   const [editOpen, setEditOpen] = useState(false);
   const { boardView, handleBoardViewChange, workspaceArea, setWorkspaceArea } =
     useWorkspaceBoardViewState();

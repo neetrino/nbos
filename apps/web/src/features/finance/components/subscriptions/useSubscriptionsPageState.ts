@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
-import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
+import {
+  FINANCE_DEFAULT_LIST_PERIOD,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import {
   buildSubscriptionListApiParams,
   buildSubscriptionListQuery,
@@ -16,6 +19,11 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
 import type { SubscriptionListParams } from '@/lib/api/subscriptions';
+import {
+  SEARCH_FILTER_PAGE_ID,
+  usePersistedSearchFilterField,
+  usePersistedSearchFilters,
+} from '@/lib/persisted-client-state';
 
 interface UseSubscriptionsPageStateOptions {
   partnerIdFromUrl?: string | null;
@@ -32,8 +40,16 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [holdingId, setHoldingId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [filters, setFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.financeSubscriptions,
+  );
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    `${SEARCH_FILTER_PAGE_ID.financeSubscriptions}.period`,
+    'period',
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = (next: FinancePeriod) => setPeriodRaw(next);
 
   const subscriptionListExportParams: Omit<SubscriptionListParams, 'page' | 'pageSize'> = useMemo(
     () =>

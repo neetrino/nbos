@@ -30,6 +30,7 @@ import {
   type PaymentStats,
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -37,7 +38,13 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
+  const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
+    SEARCH_FILTER_PAGE_ID.financePayments,
+    FINANCE_PERIOD_FILTER_KEY,
+    FINANCE_DEFAULT_LIST_PERIOD,
+  );
+  const period = parseFinancePeriodFilterValue(periodRaw);
+  const setPeriod = useCallback((next: FinancePeriod) => setPeriodRaw(next), [setPeriodRaw]);
 
   const paymentListExportParams: Omit<PaymentListParams, 'page' | 'pageSize'> = useMemo(
     () => buildPaymentListApiParams({ search, period }),
@@ -91,16 +98,19 @@ export default function PaymentsPage() {
 
   const paymentFilterValues = useMemo(() => ({ [FINANCE_PERIOD_FILTER_KEY]: period }), [period]);
 
-  const handlePaymentFilterChange = useCallback((key: string, value: string) => {
-    if (key === FINANCE_PERIOD_FILTER_KEY) {
-      setPeriod(parseFinancePeriodFilterValue(value));
-    }
-  }, []);
+  const handlePaymentFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === FINANCE_PERIOD_FILTER_KEY) {
+        setPeriod(parseFinancePeriodFilterValue(value));
+      }
+    },
+    [setPeriod],
+  );
 
   const handleClearPaymentFilters = useCallback(() => {
     setSearch('');
     setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
-  }, []);
+  }, [setPeriod]);
 
   const moduleHeroSlots = useMemo(
     () => ({

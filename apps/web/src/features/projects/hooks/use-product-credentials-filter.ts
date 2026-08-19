@@ -12,10 +12,14 @@ import {
   productCredentialsFilterValuesForUi,
   productCredentialsQuickCategoryChips,
 } from '@/features/projects/utils/filter-product-credentials';
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 export function useProductCredentialsFilter(credentials: CredentialListItem[]) {
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState(productCredentialsDefaultFilters);
+  const [filters, setFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.productCredentials,
+    productCredentialsDefaultFilters(),
+  );
   const [quickCategory, setQuickCategory] = useState<string | null>(null);
   const [quickFilters, setQuickFilters] = useState<Set<CredentialQuickFilterKey>>(new Set());
 
@@ -40,9 +44,12 @@ export function useProductCredentialsFilter(credentials: CredentialListItem[]) {
     [quickCategoryChips, quickCategory],
   );
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [setFilters],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters({
@@ -52,7 +59,7 @@ export function useProductCredentialsFilter(credentials: CredentialListItem[]) {
     setQuickCategory(null);
     setQuickFilters(new Set());
     setSearch('');
-  }, []);
+  }, [setFilters]);
 
   const toggleQuickFilter = useCallback((key: CredentialQuickFilterKey) => {
     setQuickFilters((prev) => {
