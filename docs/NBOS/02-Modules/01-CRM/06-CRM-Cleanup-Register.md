@@ -260,23 +260,18 @@ uninvoiced and outstanding coverage.
 - углубить Extension delivery board depth after Done gate foundation;
 - later deepen reconciliation and activation rules in Finance instead of CRM.
 
-### C4. Нет Lead/Deal merge и кросс-канального дедупа на входе
+### C4. Lead/Deal merge и кросс-канальный дедуп
 
 Канон: `07-Lead-and-Deal-Merge.md`.
 
-Проблема:
+**Phase 1–2 shipped (2026-08-19):** `mergedIntoId`, `GET /crm/leads/duplicates`, `POST /crm/leads/:id/merge`, create/phone-add banners, Lead merge wizard, ATS phone attach (now skips Spam/absorbed), Meta same-username does not create a second Lead (new dialog stays unlinked — 1:1), restore blocked after merge.
 
-- Meta ingest создаёт Lead на каждый Instagram-диалог (`MetaConversation.leadId` 1:1), обычно без телефона;
-- ATS ищет открытый Lead только по телефону, иначе создаёт новый;
-- Instagram + позже звонок = две карточки Lead;
-- wizard merge и указатель `mergedIntoId` в runtime отсутствуют.
+Ещё не в runtime:
 
-Что потом нужно сделать (не сейчас; фазы в каноне § 11):
-
-1. intake attach / баннер кандидатов;
-2. Lead merge wizard;
 3. Contact merge — уже Clients, не замена Lead merge;
 4. Deal merge последним, со строгими стражами. Не MVP-next.
+
+Instagram + звонок без общего телефона по-прежнему две карточки — это чинится баннером / wizard после того, как Seller дописал телефон, не авто-merge.
 
 ---
 

@@ -452,8 +452,8 @@ function LeadsPipelinePageContent() {
       toast.success('Lead restored');
       setSelectedLead(restored);
       await fetchLeads();
-    } catch {
-      toast.error('Could not restore lead');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not restore lead'));
     }
   };
 
@@ -645,6 +645,7 @@ function LeadsPipelinePageContent() {
         open={showCreate}
         onOpenChange={setShowCreate}
         onCreated={handleLeadCreated}
+        onOpenExisting={(id) => pushOpenLeadToUrl(id)}
       />
 
       <LeadSheet
@@ -660,6 +661,13 @@ function LeadsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
+        onRefresh={() => void fetchLeads()}
+        onOpenRelatedLead={(id) => pushOpenLeadToUrl(id)}
+        onMerged={(lead) => {
+          setSelectedLead(lead);
+          pushOpenLeadToUrl(lead.id);
+          void fetchLeads();
+        }}
         isTrashView={isTrashView}
         onMoveToTrash={
           isTrashView

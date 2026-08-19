@@ -193,6 +193,35 @@ describe('LeadsService', () => {
     });
   });
 
+  describe('restoreFromTrash', () => {
+    it('restores a trashed Lead that was not merged', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date(),
+        mergedIntoId: null,
+      });
+      await service.restoreFromTrash('1');
+      expect(prisma.lead.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { trashedAt: null },
+        }),
+      );
+    });
+
+    it('blocks restore when mergedIntoId is set', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date(),
+        mergedIntoId: 'surv-1',
+      });
+      await expect(service.restoreFromTrash('1')).rejects.toMatchObject({
+        response: { code: 'LEAD_RESTORE_BLOCKED_MERGED' },
+      });
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('moveToTrash', () => {
     it('sets trashedAt when active', async () => {
       prisma.lead.findUnique.mockResolvedValue({ id: '1', trashedAt: null });

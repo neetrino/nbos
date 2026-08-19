@@ -37,6 +37,7 @@ function createPrismaMock() {
       phone: string | null;
       status: string;
       trashedAt: Date | null;
+      mergedIntoId: string | null;
       code: string;
     }>,
   };
@@ -89,16 +90,21 @@ function createPrismaMock() {
         }: {
           where: {
             phone?: { in: string[] };
-            status?: { not: string };
+            status?: { not: string; notIn?: string[] };
             trashedAt?: null;
+            mergedIntoId?: null;
           };
         }) => {
           const phones = where.phone?.in ?? [];
+          const excluded = new Set(
+            where.status?.notIn ?? (where.status?.not ? [where.status.not] : []),
+          );
           return (
             state.leads.find(
               (lead) =>
                 lead.trashedAt == null &&
-                lead.status !== 'SQL' &&
+                lead.mergedIntoId == null &&
+                !excluded.has(lead.status) &&
                 lead.phone != null &&
                 phones.includes(lead.phone),
             ) ?? null
@@ -114,6 +120,7 @@ function createPrismaMock() {
               phone: data.phone,
               status: 'NEW',
               trashedAt: null,
+              mergedIntoId: null,
               code: data.code,
             };
             state.leads.push(row);
@@ -183,6 +190,7 @@ describe('AtsLeadIngestService', () => {
       phone: '+37499123456',
       status: 'NEW',
       trashedAt: null,
+      mergedIntoId: null,
       code: 'L-2026-0001',
     });
 
@@ -200,6 +208,55 @@ describe('AtsLeadIngestService', () => {
     expect(state.events.has('out-1')).toBe(true);
     expect(state.leads).toHaveLength(0);
     expect(prisma.lead.create).not.toHaveBeenCalled();
+  });
+
+  it('attaches to an Instagram Lead that already has the same phone', async () => {
+    state.leads.push({
+      id: 'ig-lead',
+      phone: '+37499123456',
+      status: 'CONTACT_ESTABLISHED',
+      trashedAt: null,
+      mergedIntoId: null,
+      code: 'L-2026-0008',
+    });
+
+    await service.ingestCallEvent(inboundStart({ uid: 'uid-ig' }));
+
+    expect(prisma.lead.create).not.toHaveBeenCalled();
+    expect(state.events.get('uid-ig')?.leadId).toBe('ig-lead');
+  });
+
+  it('does not auto-attach to Spam or absorbed Leads', async () => {
+    state.leads.push({
+      id: 'spam-lead',
+      phone: '+37499123456',
+      status: 'SPAM',
+      trashedAt: null,
+      mergedIntoId: null,
+      code: 'L-2026-0009',
+    });
+
+    await service.ingestCallEvent(inboundStart({ uid: 'uid-spam' }));
+
+    expect(state.leads.some((lead) => lead.id !== 'spam-lead')).toBe(true);
+    expect(state.events.get('uid-spam')?.leadId).not.toBe('spam-lead');
+  });
+
+  it('does not auto-attach to an absorbed Lead with the same phone', async () => {
+    state.leads.push({
+      id: 'absorbed-lead',
+      phone: '+37499123456',
+      status: 'NEW',
+      trashedAt: new Date('2026-08-01'),
+      mergedIntoId: 'surv-1',
+      code: 'L-2026-0010',
+    });
+
+    await service.ingestCallEvent(inboundStart({ uid: 'uid-absorbed' }));
+
+    expect(state.events.get('uid-absorbed')?.leadId).not.toBe('absorbed-lead');
+    expect(state.leads.some((lead) => lead.id === 'absorbed-lead')).toBe(true);
+    expect(state.leads.some((lead) => lead.id !== 'absorbed-lead')).toBe(true);
   });
 
   it('does not create Lead on finish-only first sight', async () => {

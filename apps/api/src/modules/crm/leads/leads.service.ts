@@ -23,6 +23,13 @@ import {
   mergeProfileAListScope,
   parseLifecycleScopeFromQuery,
 } from '../../../common/lifecycle/entity-lifecycle-scope';
+import {
+  findLeadDuplicateCandidates,
+  type LeadDuplicateLookupQuery,
+} from './lead-duplicate-lookup.ops';
+import { mergeLeads } from './lead-merge.ops';
+import { LEAD_MERGE_ERROR } from './lead-identity.ops';
+import type { LeadMergeFieldChoices } from '@nbos/shared';
 
 const LEAD_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'status', 'source']);
 
@@ -101,6 +108,9 @@ export class LeadsService {
 
     const lifecycleScope = parseLifecycleScopeFromQuery(scope);
     const where: Prisma.LeadWhereInput = mergeProfileAListScope({}, lifecycleScope);
+    if (lifecycleScope === 'active') {
+      where.mergedIntoId = null;
+    }
 
     if (status) {
       where.status = status as Prisma.EnumLeadStatusEnumFilter['equals'];
@@ -306,14 +316,41 @@ export class LeadsService {
   async restoreFromTrash(id: string) {
     const lead = await this.prisma.lead.findUnique({
       where: { id },
-      select: { id: true, trashedAt: true },
+      select: { id: true, trashedAt: true, mergedIntoId: true },
     });
     if (!lead) throw new NotFoundException(`Lead ${id} not found`);
     assertEntityIsTrashed(lead, 'trashedAt', 'Lead');
+    if (lead.mergedIntoId) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: LEAD_MERGE_ERROR.RESTORE,
+        message: 'This Lead was merged into another card. Restore without un-merge is not allowed.',
+      });
+    }
     return this.prisma.lead.update({
       where: { id },
       data: { trashedAt: null },
     });
+  }
+
+  async findDuplicates(query: LeadDuplicateLookupQuery) {
+    return findLeadDuplicateCandidates(this.prisma, query);
+  }
+
+  async mergeLeads(
+    survivorId: string,
+    body: { absorbedId: string; fieldChoices?: LeadMergeFieldChoices; status?: string },
+    actor: { id: string; roleSlug: string },
+  ) {
+    await mergeLeads(this.prisma, this.auditService, {
+      survivorId,
+      absorbedId: body.absorbedId,
+      fieldChoices: body.fieldChoices ?? {},
+      status: body.status,
+      actorId: actor.id,
+      actorRoleSlug: actor.roleSlug,
+    });
+    return this.findById(survivorId);
   }
 
   async permanentlyDeleteFromTrash(id: string, userId: string) {
@@ -332,7 +369,7 @@ export class LeadsService {
   }
 
   async getStats() {
-    const activeWhere = mergeProfileAListScope({}, 'active');
+    const activeWhere = mergeProfileAListScope({ mergedIntoId: null }, 'active');
     const [total, byStatus, bySource] = await Promise.all([
       this.prisma.lead.count({ where: activeWhere }),
       this.prisma.lead.groupBy({

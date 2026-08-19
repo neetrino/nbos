@@ -7,7 +7,8 @@ import {
   ATS_LEAD_SOURCE_DETAIL,
   ATS_TERMINAL_STATES,
 } from './ats.constants';
-import { atsPhoneLookupVariants, normalizeAtsCallerPhone } from './ats-phone.util';
+import { normalizeAtsCallerPhone } from './ats-phone.util';
+import { findOpenLeadByPhone } from '../../crm/leads/lead-duplicate-lookup.ops';
 import type { AtsWebhookPayload } from './ats.types';
 
 interface AtsCallEventRow {
@@ -100,16 +101,7 @@ export class AtsLeadIngestService {
       return null;
     }
 
-    const variants = atsPhoneLookupVariants(phone.e164, phone.digits);
-    const openLead = await this.prisma.lead.findFirst({
-      where: {
-        trashedAt: null,
-        status: { not: 'SQL' },
-        phone: { in: variants },
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    });
+    const openLead = await findOpenLeadByPhone(this.prisma, phone.e164);
     if (openLead) {
       return openLead.id;
     }

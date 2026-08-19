@@ -29,6 +29,8 @@ export interface Lead {
   assignedTo: string | null;
   contactId: string | null;
   notes: string | null;
+  trashedAt?: string | null;
+  mergedIntoId?: string | null;
   createdAt: string;
   updatedAt: string;
   metaConversation?: LeadMetaConversation | null;
@@ -57,6 +59,62 @@ export interface LeadListData {
     pageSize: number;
     totalPages: number;
   };
+}
+
+export type LeadMergeFieldSide = 'survivor' | 'absorbed';
+
+export type LeadMergeFieldChoices = Partial<{
+  name: LeadMergeFieldSide;
+  contactName: LeadMergeFieldSide;
+  phone: LeadMergeFieldSide;
+  email: LeadMergeFieldSide;
+  assignedTo: LeadMergeFieldSide;
+  source: LeadMergeFieldSide;
+  sourceDetail: LeadMergeFieldSide;
+  sourcePartnerId: LeadMergeFieldSide;
+  sourceContactId: LeadMergeFieldSide;
+  marketingAccountId: LeadMergeFieldSide;
+  marketingActivityId: LeadMergeFieldSide;
+}>;
+
+export interface LeadDuplicateCandidate {
+  id: string;
+  code: string;
+  name: string | null;
+  contactName: string;
+  phone: string | null;
+  email: string | null;
+  status: string;
+  assignedTo: string | null;
+  createdAt: string;
+  source: string | null;
+  sourceDetail: string | null;
+  isSpam: boolean;
+  isOpenForAttach: boolean;
+  hasOpenDeal: boolean;
+  deal: { id: string; code: string; status: string } | null;
+}
+
+export interface LeadDuplicateContact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  email: string | null;
+}
+
+export interface LeadDuplicateOpenDeal {
+  id: string;
+  code: string;
+  status: string;
+  contactId: string | null;
+  leadId: string | null;
+}
+
+export interface LeadDuplicateLookupResult {
+  leads: LeadDuplicateCandidate[];
+  contacts: LeadDuplicateContact[];
+  openDeals: LeadDuplicateOpenDeal[];
 }
 
 export interface LeadStats {
@@ -130,6 +188,25 @@ export const leadsApi = {
 
   async getStats(): Promise<LeadStats> {
     const resp = await api.get<LeadStats>('/api/crm/leads/stats');
+    return resp.data;
+  },
+
+  async findDuplicates(params: {
+    phone?: string;
+    email?: string;
+    instagramUsername?: string;
+    excludeId?: string;
+    q?: string;
+  }): Promise<LeadDuplicateLookupResult> {
+    const resp = await api.get<LeadDuplicateLookupResult>('/api/crm/leads/duplicates', { params });
+    return resp.data;
+  },
+
+  async merge(
+    survivorId: string,
+    data: { absorbedId: string; fieldChoices?: LeadMergeFieldChoices; status?: string },
+  ): Promise<Lead> {
+    const resp = await api.post<Lead>(`/api/crm/leads/${survivorId}/merge`, data);
     return resp.data;
   },
 

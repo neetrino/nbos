@@ -2,7 +2,7 @@
 
 > NBOS Platform — идентичность человека, attach входящих и merge карточек
 >
-> **Статус:** канон (2026-08-19). Runtime: **не реализован**, кроме уже существующего ATS attach по точному телефону (`06-Integrations/09-ATS-AM-Integration.md`).
+> **Статус:** канон (2026-08-19). Runtime: Phase 1–2 shipped (`06-Implementation-Status.md`). ATS exact-phone attach kept. Deal merge (Phase 4) not shipped.
 >
 > Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
 

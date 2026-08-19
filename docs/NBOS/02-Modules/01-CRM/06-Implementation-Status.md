@@ -19,24 +19,39 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
 
-## Canon, not shipped — Lead/Deal merge and intake dedupe
+## Shipped — Lead intake attach (Phase 1) and Lead merge (Phase 2)
 
-Canon locked in `07-Lead-and-Deal-Merge.md` (2026-08-19). **Not in runtime**, except ATS exact-phone attach to an open non-SQL Lead.
+Canon: `07-Lead-and-Deal-Merge.md`. Runtime now implements Phases 1–2. Deal merge (Phase 4) is **not** shipped.
 
-Implementation later, in this order (Deal merge is **not** MVP-next):
+- **Schema:** `Lead.mergedIntoId` (`20260819140000_crm_lead_merged_into`). No `MERGED` stage.
+- **Intake attach:** `GET /crm/leads/duplicates` (phone / email / Instagram username / search). ATS exact-phone attach kept; lookup now excludes Spam, absorbed, and Trash. Meta ingest: if an open Lead already has this Instagram username (via its conversation), do not create a second Lead; a new dialog stays unlinked because Meta is 1:1. A Lead is created only when no open username match exists.
+- **Manual create / phone-add:** yellow banner — Open / Attach / Create anyway; after adding a phone to a Lead that had none, offer merge (no auto-merge).
+- **Lead merge:** `POST /crm/leads/:id/merge` wizard (search → survivor → conflicts → preview). Field picks; first-touch marketing (`createdAt`); notes append; ATS events move; Meta 1:1 reassign or unlink; extra contacts move; empty survivor Contact fills from absorbed (a different absorbed primary becomes extra). Absorbed → `mergedIntoId` + Profile A Trash. Audit `lead.merged`.
+- **Blocks:** SQL / Deal on either side; already absorbed or trashed; Seller unless both `assignedTo` match; Marketing never. Head of Sales / CEO / Owner any.
+- **Restore:** blocked when `mergedIntoId` is set (no un-merge in this slice).
 
-1. Intake dedupe / attach (highest ROI).
-2. Lead merge wizard (`mergedIntoId` + Profile A Trash; no `MERGED` stage).
+Runtime notes (canon silent → safer):
+
+- Frozen is not in `LeadStatusEnum`; attach treats only non-SQL / non-Spam as open.
+- Owner is treated as CEO-equivalent for merge (not listed in canon §9).
+- Lead has no files/links in the data model; merge does not move Drive assets.
+- Status override cannot be Spam or SQL.
+- Cross-channel without a shared phone / email / Instagram username still does not auto-attach.
+
+## Canon, not shipped — Contact merge and Deal merge
+
 3. Contact merge — already Clients canon (`../03-Clients/02-Contacts.md`); not a substitute for Lead merge.
-4. Deal merge last — strict guards; default do not merge.
+4. Deal merge last — strict guards; default do not merge. **Not** shipped.
 
 ## MVP assumptions (Trash)
 
 - Operational delete = **Trash-first** (`09-Entity-Lifecycle-Standard.md`). Hard purge via retention job or `DELETE …/permanent` (relation guards).
 
-## API routes (lifecycle)
+## API routes (lifecycle + merge)
 
 - `crm/leads`, `crm/deals` — list + `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
+- `GET /crm/leads/duplicates` — intake / phone-add / merge search candidates.
+- `POST /crm/leads/:id/merge` — survivor path id; body `{ absorbedId, fieldChoices?, status? }`.
 
 ## Related code
 

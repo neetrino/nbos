@@ -15,6 +15,8 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
+import { FindLeadDuplicatesDto } from './dto/find-lead-duplicates.dto';
+import { MergeLeadDto } from './dto/merge-lead.dto';
 
 @ApiTags('CRM / Leads')
 @ApiBearerAuth()
@@ -64,6 +66,18 @@ export class LeadsController {
   @ApiOperation({ summary: 'Get leads statistics' })
   async getStats() {
     return this.leadsService.getStats();
+  }
+
+  @Get('duplicates')
+  @ApiOperation({ summary: 'Find duplicate / attach-candidate leads by identity or search' })
+  async findDuplicates(@Query() query: FindLeadDuplicatesDto) {
+    return this.leadsService.findDuplicates({
+      phone: query.phone,
+      email: query.email,
+      instagramUsername: query.instagramUsername,
+      excludeId: query.excludeId,
+      search: query.q,
+    });
   }
 
   @Get(':id')
@@ -153,6 +167,20 @@ export class LeadsController {
     },
   ) {
     return this.leadConversionService.convertToDeal(id, body, { actorRoleLevel: user?.roleLevel });
+  }
+
+  @Post(':id/merge')
+  @ApiOperation({ summary: 'Merge another Lead into this survivor Lead' })
+  async merge(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: MergeLeadDto,
+  ) {
+    return this.leadsService.mergeLeads(
+      id,
+      { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices, status: body.status },
+      { id: user.id, roleSlug: user.role },
+    );
   }
 
   @Post(':id/restore')
