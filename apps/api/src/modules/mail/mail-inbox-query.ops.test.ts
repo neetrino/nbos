@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listMailThreadsForViewer } from './mail-inbox-query.ops';
+import { inboxMailAccountIdsForList, listMailThreadsForViewer } from './mail-inbox-query.ops';
 
-function mockPrismaForThreads() {
+function mockPrismaForThreads(
+  accounts: { id: string; status: string }[] = [{ id: 'acc-1', status: 'ACTIVE' }],
+) {
   const emailThreadCount = vi.fn().mockResolvedValue(0);
   const emailThreadFindMany = vi.fn().mockResolvedValue([]);
   const prisma = {
     mailAccount: {
-      findMany: vi.fn().mockResolvedValue([{ id: 'acc-1' }]),
+      findMany: vi.fn().mockResolvedValue(accounts),
     },
     emailThread: { count: emailThreadCount, findMany: emailThreadFindMany },
     $transaction: (ops: unknown[]) => Promise.all(ops as [Promise<unknown>, Promise<unknown>]),
@@ -66,5 +68,38 @@ describe('listMailThreadsForViewer', () => {
     expect(emailThreadFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 10, take: 10 }),
     );
+  });
+
+  it('excludes DISABLED accounts from All mailboxes', async () => {
+    const { prisma, emailThreadFindMany } = mockPrismaForThreads([
+      { id: 'live', status: 'ACTIVE' },
+      { id: 'off', status: 'DISABLED' },
+    ]);
+    await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', {});
+    expect(emailThreadFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ mailAccountId: { in: ['live'] } }),
+      }),
+    );
+  });
+});
+
+describe('inboxMailAccountIdsForList', () => {
+  it('keeps an explicit DISABLED mailbox when it is the selected filter', () => {
+    const scoped = inboxMailAccountIdsForList(
+      [
+        { id: 'live', status: 'ACTIVE' },
+        { id: 'off', status: 'DISABLED' },
+      ],
+      'off',
+    );
+    expect(scoped).toEqual({ ok: true, ids: ['off'] });
+  });
+
+  it('returns not found for an unknown mailbox id', () => {
+    expect(inboxMailAccountIdsForList([{ id: 'live', status: 'ACTIVE' }], 'missing')).toEqual({
+      ok: false,
+      error: 'mail_account_not_found',
+    });
   });
 });

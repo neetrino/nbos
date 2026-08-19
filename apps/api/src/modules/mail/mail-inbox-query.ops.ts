@@ -35,6 +35,40 @@ export type ListMailThreadsQueryResult =
   | { ok: true; data: MailThreadListPageDto }
   | { ok: false; error: 'mail_account_not_found' };
 
+function emptyMailThreadListPage(
+  page?: number,
+  pageSize?: number,
+): Extract<ListMailThreadsQueryResult, { ok: true }> {
+  const pagination = normalizeMailThreadListPagination({ page, pageSize });
+  return {
+    ok: true,
+    data: {
+      items: [],
+      meta: buildMailThreadListPageMeta({
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        totalCount: 0,
+      }),
+    },
+  };
+}
+
+export function inboxMailAccountIdsForList(
+  accounts: { id: string; status: string }[],
+  mailAccountId?: string,
+): { ok: true; ids: string[] } | { ok: false; error: 'mail_account_not_found' } {
+  if (mailAccountId) {
+    if (!accounts.some((account) => account.id === mailAccountId)) {
+      return { ok: false, error: 'mail_account_not_found' };
+    }
+    return { ok: true, ids: [mailAccountId] };
+  }
+  return {
+    ok: true,
+    ids: accounts.filter((account) => account.status !== 'DISABLED').map((account) => account.id),
+  };
+}
+
 export async function listMailAccountsForViewer(
   prisma: InstanceType<typeof PrismaClient>,
   employeeId: string,
@@ -61,24 +95,15 @@ export async function listMailThreadsForViewer(
   const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
   const accounts = await prisma.mailAccount.findMany({
     where: accountWhere,
-    select: { id: true },
+    select: { id: true, status: true },
   });
-  const ids = accounts.map((a) => a.id);
-  if (ids.length === 0) {
-    const { page, pageSize } = normalizeMailThreadListPagination({
-      page: options.page,
-      pageSize: options.pageSize,
-    });
-    return {
-      ok: true,
-      data: {
-        items: [],
-        meta: buildMailThreadListPageMeta({ page, pageSize, totalCount: 0 }),
-      },
-    };
+  const scoped = inboxMailAccountIdsForList(accounts, mailAccountId);
+  if (!scoped.ok) {
+    return scoped;
   }
-  if (mailAccountId && !ids.includes(mailAccountId)) {
-    return { ok: false, error: 'mail_account_not_found' };
+  const ids = scoped.ids;
+  if (ids.length === 0) {
+    return emptyMailThreadListPage(options.page, options.pageSize);
   }
   const where: Prisma.EmailThreadWhereInput = {
     ...(mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } }),

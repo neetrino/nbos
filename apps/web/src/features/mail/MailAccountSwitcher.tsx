@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
+import { mailAccountsForDailySwitcher } from '@/features/mail/mail-folder-config';
 
 function accountStatusBadge(status: string) {
   if (status === 'NEEDS_RECONNECT') {
@@ -60,6 +61,7 @@ export function MailAccountSwitcher({
   disabled = false,
   onSelectAccount,
 }: MailAccountSwitcherProps) {
+  const listedAccounts = mailAccountsForDailySwitcher(accounts, filterAccountId);
   const label = accountLabel(filterAccountId, accounts);
 
   return (
@@ -86,10 +88,10 @@ export function MailAccountSwitcher({
           />
           <span className="truncate">All mailboxes</span>
         </DropdownMenuItem>
-        {accounts.length === 0 ? (
+        {listedAccounts.length === 0 ? (
           <p className="text-muted-foreground px-2 py-2 text-sm">No mailboxes connected.</p>
         ) : (
-          accounts.map((account) => (
+          listedAccounts.map((account) => (
             <DropdownMenuItem
               key={account.id}
               className="cursor-pointer"
