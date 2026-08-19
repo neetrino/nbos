@@ -24,7 +24,7 @@ describe('mail job terminal replace', () => {
           remove,
         }),
       },
-      'mail-att:a1',
+      'mail-att-a1',
     );
     expect(result).toBe('in_flight');
     expect(remove).not.toHaveBeenCalled();
@@ -39,7 +39,7 @@ describe('mail job terminal replace', () => {
           remove,
         }),
       },
-      'mail-att:a1',
+      'mail-att-a1',
     );
     expect(result).toBe('ready');
     expect(remove).toHaveBeenCalledOnce();

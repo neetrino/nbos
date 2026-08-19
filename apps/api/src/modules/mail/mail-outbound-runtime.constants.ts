@@ -1,8 +1,10 @@
-/** BullMQ jobId for one outbound send (debounce + idempotency). */
+import { toBullMqSafeJobId } from '@nbos/shared';
+
+/** Logical BullMQ jobId prefix for one outbound send (debounce + idempotency). */
 export const MAIL_SEND_JOB_ID_PREFIX = 'mail-send:';
 
 export function mailSendJobId(messageId: string): string {
-  return `${MAIL_SEND_JOB_ID_PREFIX}${messageId}`;
+  return toBullMqSafeJobId(`${MAIL_SEND_JOB_ID_PREFIX}${messageId}`);
 }
 
 /** Structured log name when local/dev sends inline because Redis is absent. */
