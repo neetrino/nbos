@@ -1,10 +1,13 @@
 # NBOS — актуальные задачи
 
-Очередь сейчас: Mail runtime A+B+C на проде (`23c72cb4`). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
+Очередь сейчас: Mail runtime A+B+C на проде (`d6801b6d`, раньше `23c72cb4` Mail C). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
 
-- [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`23c72cb4`), миграции на проде, api/worker/web выкатаны.
+- [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`d6801b6d`), миграции на проде, api/worker/web выкатаны.
 - [ ] Mail — осталось после выкладки (не новый срез A/B/C):
-  - [ ] Smoke на проде: connect → пришло письмо (тело видно, вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
+  - [ ] Smoke на проде: connect → inbound (тело + вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
+  - [ ] Unique mailbox: один сотрудник — один email (не 3 Connect). DB unique owner+email (corporate + Gmail); upsert в app есть — нужен unique constraint. DISABLED-дубликаты скрыты; новый Connect не должен создавать 4-ю строку.
+  - [ ] Attachment download: Pending без Retry в UI (Toon Expo ticket на test@) — проверить на проде; если нет Retry или job не enqueue — поправить.
+  - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
     - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
     - [x] `SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED` — продление Gmail watch (только если есть Gmail-ящики).
