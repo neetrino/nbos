@@ -7,7 +7,8 @@
   - [ ] Smoke на проде: connect → inbound (тело + вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
   - [x] Unique mailbox в коде (`567327f4`): global `lower(email)` среди live (`status <> DISABLED`); shared mailbox = один MailAccount + access; второй сотрудник → 409; reconnect/upsert своей DISABLED строки.
   - [ ] Prod migrate `20260819183000_mail_accounts_live_email_unique` — локально есть, на Neon prod не применена.
-  - [ ] Attachment download: Pending без Retry в UI (Toon Expo ticket на test@) — проверить на проде; если нет Retry или job не enqueue — поправить.
+  - [x] Attachment download — Retry для застрявшего Pending в коде (`1a383407`): UI FAILED сразу / PENDING >3 мин; API retry-download; queue re-enqueue.
+  - [ ] Attachment download — deploy api/worker/web + verify Toon Expo PNG на prod test@ (Retry → Ready).
   - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
     - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
