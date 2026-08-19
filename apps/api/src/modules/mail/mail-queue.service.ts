@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { toBullMqSafeJobId } from '@nbos/shared';
 import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../runtime/bullmq-job-options';
@@ -90,19 +91,21 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
     try {
-      if (replaceTerminal && jobId) {
-        const prepared = await prepareMailJobIdForEnqueue(this.queue, jobId);
+      const safeJobId = jobId ? toBullMqSafeJobId(jobId) : undefined;
+      if (replaceTerminal && safeJobId) {
+        const prepared = await prepareMailJobIdForEnqueue(this.queue, safeJobId);
         if (prepared === 'in_flight') {
           return true;
         }
       }
-      await this.queue.add(jobName, payload, jobId ? { jobId } : undefined);
+      await this.queue.add(jobName, payload, safeJobId ? { jobId: safeJobId } : undefined);
       return true;
     } catch (caught) {
       if (isDuplicateJobError(caught)) {
         return true;
       }
-      this.logger.error(`Failed to enqueue Mail job ${jobName}.`, caught);
+      const detail = caught instanceof Error ? caught.message : String(caught);
+      this.logger.error(`Failed to enqueue Mail job ${jobName}: ${detail}`);
       return false;
     }
   }

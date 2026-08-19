@@ -18,7 +18,7 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 ## Shipped — Mail runtime Slice B (receive)
 
 - Unique inbound `(mailAccountId, providerMessageId)`; history 410 → last-30 recovery; UIDVALIDITY reset.
-- `enqueueSync` jobId `mail-sync:{accountId}`; production never inline-syncs (manual → 503).
+- `enqueueSync` jobId `mail-sync-{accountId}` (BullMQ forbids `:` in custom jobId); production never inline-syncs (manual → 503).
 - IMAP IDLE on worker only (Redis lock, cap 20, backoff, watchdog); Gmail `users.watch` after successful sync.
 - Scheduler (default **off**): `mail-gmail-watch-renew` hourly, `mail-sync-reconcile` every 5 min.
 - `POST …/sync-stub` removed. Health: watch `not_configured|active|expired`, idle heartbeat.
@@ -26,12 +26,12 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 ## Shipped — Mail runtime Slice C (inbound attachments)
 
 - `EmailAttachment.fileAssetId` optional; inbound rows start `PENDING` + `fileAssetId = null`.
-- Sync persists attachment metadata only; `mail.attachment.download` jobId `mail-att:{attachmentId}`.
+- Sync persists attachment metadata only; `mail.attachment.download` jobId `mail-att-{attachmentId}`.
 - Worker: `adapter.downloadAttachment` → Drive `FileAsset` (`MAIL` / `OTHER` / `RESTRICTED`) → `READY`. Cap **25 MiB**.
 - Transient errors throw (BullMQ retry). Permanent / oversize / auth → `FAILED` (auth also `NEEDS_RECONNECT`); job completes.
 - `POST …/attachments/:id/retry-download` (`FAILED → PENDING`, or re-enqueue `PENDING`) + enqueue. Production enqueue miss → **503**, row stays `PENDING`.
 - UI: Pending / Ready / Failed; Retry for Failed and for Pending older than **3 min** (stuck / enqueue-miss). Body stays readable.
-- Attachment enqueue replaces completed/failed BullMQ jobs (`mail-att:{id}`) so Retry actually runs. Sync unique-skip re-enqueues stuck PENDING (no `fileAsset`).
+- Attachment enqueue replaces completed/failed BullMQ jobs (`mail-att-{id}`) so Retry actually runs. Sync unique-skip re-enqueues stuck PENDING (no `fileAsset`).
 - Worker logs include `errorClass` when known. No new Mail cron flags.
 
 ## Shipped — unique live mailbox per email
