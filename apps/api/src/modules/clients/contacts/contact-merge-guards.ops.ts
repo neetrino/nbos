@@ -46,6 +46,6 @@ export function assertCanMergeContacts(roleSlug: string): void {
   });
 }
 
-export function mergeBlocked(code: string, message: string): BadRequestException {
+function mergeBlocked(code: string, message: string): BadRequestException {
   return new BadRequestException({ statusCode: 400, code, message });
 }

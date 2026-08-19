@@ -18,6 +18,7 @@ export interface Contact {
   notes: string | null;
   messengerLinks: Record<string, string> | null;
   trashedAt?: string | null;
+  mergedIntoId?: string | null;
   createdAt: string;
   updatedAt: string;
   companies: Array<{ id: string; name: string }>;

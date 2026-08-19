@@ -17,18 +17,10 @@ export type ContactMergeFieldSide = 'survivor' | 'absorbed';
 
 export type ContactMergeFieldChoices = Partial<Record<ContactMergeFieldKey, ContactMergeFieldSide>>;
 
-export function isContactMergeAllowedRole(roleSlug: string): boolean {
-  return (CONTACT_MERGE_ALLOWED_ROLE_SLUGS as readonly string[]).includes(roleSlug);
-}
-
-export function isContactMergeBlockedRole(roleSlug: string): boolean {
-  return (CONTACT_MERGE_BLOCKED_ROLE_SLUGS as readonly string[]).includes(roleSlug);
-}
-
 /** Canon §7: CEO / PM; Owner treated as CEO. Seller and Marketing cannot merge. */
 export function canMergeContacts(roleSlug: string): boolean {
-  if (isContactMergeBlockedRole(roleSlug)) return false;
-  return isContactMergeAllowedRole(roleSlug);
+  if ((CONTACT_MERGE_BLOCKED_ROLE_SLUGS as readonly string[]).includes(roleSlug)) return false;
+  return (CONTACT_MERGE_ALLOWED_ROLE_SLUGS as readonly string[]).includes(roleSlug);
 }
 
 export function canOfferContactMerge(roleSlug: string | null | undefined): boolean {

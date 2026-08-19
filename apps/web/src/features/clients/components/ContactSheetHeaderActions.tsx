@@ -8,6 +8,7 @@ import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
 import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
 import { ContactSheetMergeControls } from './ContactSheetMergeControls';
+import { isContactRestoreBlocked } from './contact-merge-wizard';
 
 interface ContactSheetHeaderActionsProps {
   contact: Contact;
@@ -71,9 +72,15 @@ export function ContactSheetHeaderActions({
       ) : null}
       {isTrashView && onRestore ? (
         <DetailSheetSettingsMenu>
-          <DropdownMenuItem onClick={() => onRestore(contact.id)}>
+          <DropdownMenuItem
+            disabled={isContactRestoreBlocked(contact)}
+            onClick={() => {
+              if (isContactRestoreBlocked(contact)) return;
+              onRestore(contact.id);
+            }}
+          >
             <RotateCcw />
-            Restore
+            {isContactRestoreBlocked(contact) ? 'Restore blocked (merged)' : 'Restore'}
           </DropdownMenuItem>
           {onPermanentDelete ? (
             <DropdownMenuItem variant="destructive" onClick={() => onPermanentDelete(contact.id)}>

@@ -22,6 +22,13 @@ export function contactDisplayName(contact: Pick<Contact, 'firstName' | 'lastNam
   return `${contact.firstName} ${contact.lastName}`.trim() || 'Contact';
 }
 
+/** Canon §7: restore absorbed without un-merge is blocked, same as Lead. */
+export function isContactRestoreBlocked(
+  contact: Pick<Contact, 'mergedIntoId'> | null | undefined,
+): boolean {
+  return Boolean(contact?.mergedIntoId);
+}
+
 export function displayContactMergeField(contact: Contact, key: ContactMergeFieldKey): string {
   if (key === 'role') return getContactRole(contact.role)?.label ?? contact.role;
   const value = contact[key];

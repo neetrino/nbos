@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildContactMergeConflicts, defaultContactFieldChoices } from './contact-merge-wizard';
+import {
+  buildContactMergeConflicts,
+  defaultContactFieldChoices,
+  isContactRestoreBlocked,
+} from './contact-merge-wizard';
 import type { Contact } from '@/lib/api/clients';
 
 function contact(overrides: Partial<Contact> = {}): Contact {
@@ -32,5 +36,12 @@ describe('buildContactMergeConflicts', () => {
       firstName: 'survivor',
       phone: 'survivor',
     });
+  });
+});
+
+describe('isContactRestoreBlocked', () => {
+  it('blocks restore when mergedIntoId is set', () => {
+    expect(isContactRestoreBlocked(contact({ mergedIntoId: 'surv-1' }))).toBe(true);
+    expect(isContactRestoreBlocked(contact({ mergedIntoId: null }))).toBe(false);
   });
 });

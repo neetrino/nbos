@@ -132,6 +132,7 @@ describe('ContactsService', () => {
       prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
       prisma.contact.update.mockResolvedValue({ id: '1', phone: '+37499123456' });
       await service.update('1', { phone: '+37499123456' });
+      expect(prisma.$transaction).toHaveBeenCalled();
       expect(prisma.contactPhone.deleteMany).toHaveBeenCalledWith({
         where: { contactId: '1', e164: { in: expect.arrayContaining(['+37499123456']) } },
       });

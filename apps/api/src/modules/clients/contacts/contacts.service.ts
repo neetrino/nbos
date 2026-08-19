@@ -1,5 +1,11 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
+import {
+  PrismaClient,
+  type Prisma,
+  type ContactRole,
+  type InputJsonValue,
+  type TransactionClient,
+} from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
@@ -25,6 +31,31 @@ import { findContactMergeCandidates, mergeContacts as runContactMerge } from './
 import { CONTACT_MERGE_ERROR } from './contact-merge-guards.ops';
 
 const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
+
+async function applyContactUpdate(
+  tx: TransactionClient,
+  id: string,
+  data: Partial<CreateContactDto>,
+) {
+  if (data.phone !== undefined) {
+    await deleteOverlappingExtraPhones(tx, id, data.phone);
+  }
+  return tx.contact.update({
+    where: { id },
+    data: {
+      ...(data.firstName && { firstName: data.firstName }),
+      ...(data.lastName && { lastName: data.lastName }),
+      ...(data.phone !== undefined && { phone: data.phone }),
+      ...(data.email !== undefined && { email: data.email }),
+      ...(data.role && { role: data.role as ContactRole }),
+      ...(data.notes !== undefined && { notes: data.notes }),
+      ...(data.messengerLinks !== undefined && {
+        messengerLinks: JSON.parse(JSON.stringify(data.messengerLinks)),
+      }),
+    },
+    include: CONTACT_LIST_INCLUDE,
+  });
+}
 
 interface CreateContactDto {
   firstName: string;
@@ -127,24 +158,7 @@ export class ContactsService {
   async update(id: string, data: Partial<CreateContactDto>) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Contact');
-    if (data.phone !== undefined) {
-      await deleteOverlappingExtraPhones(this.prisma, id, data.phone);
-    }
-    return this.prisma.contact.update({
-      where: { id },
-      data: {
-        ...(data.firstName && { firstName: data.firstName }),
-        ...(data.lastName && { lastName: data.lastName }),
-        ...(data.phone !== undefined && { phone: data.phone }),
-        ...(data.email !== undefined && { email: data.email }),
-        ...(data.role && { role: data.role as ContactRole }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-        ...(data.messengerLinks !== undefined && {
-          messengerLinks: JSON.parse(JSON.stringify(data.messengerLinks)),
-        }),
-      },
-      include: CONTACT_LIST_INCLUDE,
-    });
+    return this.prisma.$transaction((tx) => applyContactUpdate(tx, id, data));
   }
 
   async addExtraPhone(id: string, raw: string | undefined) {
