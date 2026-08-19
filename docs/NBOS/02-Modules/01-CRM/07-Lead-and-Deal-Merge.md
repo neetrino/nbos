@@ -2,7 +2,7 @@
 
 > NBOS Platform — идентичность человека, attach входящих и merge карточек Lead
 >
-> **Статус:** канон (2026-08-19). Runtime: intake attach + Lead merge + Lead→Contact attach shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются.
+> **Статус:** канон (2026-08-19). Runtime: intake attach + Lead merge + Lead→Contact attach + Lead **Связать** (pour / create-contact) shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются. **Contact↔Product не в этом срезе.**
 >
 > Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
 
@@ -112,9 +112,23 @@ Wizard: выбрать **survivor** и **absorbed**.
 
 ## 8. UX (Lead)
 
-Действие на шите Lead: **Объединить** → поиск другой карточки → survivor → таблица конфликтов → превью что переносится → подтверждение.
+Одна кнопка на шите Lead: **Связать ▾** (split / dropdown). Отдельных кнопок Merge / Identify нет. Жёлтый баннер — подсказка: открыть карточку или открыть Связать. «Новое обращение» в меню нет. Существующего юриста / знакомого на сделке ставят через обычный picker доп. контактов Deal — не через Связать.
 
-Жёлтый баннер, если телефон/email/имя совпал с другим открытым Lead, Contact или открытым Deal. Действия: открыть / привязать к Contact / «Это про эту сделку» (только OPEN Deal) / всё равно создать.
+```
+Связать ▾
+  Объединить
+    с лидом          → wizard Lead↔Lead (§6). Не требует Contact.
+    с контактом      → тот же человек: влить имя/телефоны/заметки в существующий Contact, extra phone через ContactPhone (не затирать primary, не писать телефон в notes). Lead → Trash. Не `Lead.mergedIntoId` (это Lead↔Lead). Не `Contact.mergedIntoId` (это Contact↔Contact).
+  Добавить
+    новый контакт    → создать Contact из полей Lead, никуда не вешать. `Lead.contactId` = новый Contact, Lead **оставить**. Free-text имя/телефон/email скрыть, когда contactId задан.
+    контакт к работе → MAIN: создать Contact из Lead, повесить additional (или primary, если пусто) на одну цель: открытая Deal | активный Project | открытый не-SQL Lead (не self). Затем Trash этого входящего Lead. `Deal.leadId` не менять. Второй Deal не создавать. Если у Deal уже есть `projectId` — того же Contact добавить и на этот Project (не Product).
+```
+
+Каждый путь — одно модальное окно: live search + last 10 + человеческий заголовок + Apply/Cancel. «контакт к работе»: сначала тип цели (сделка / продукт=проект / лид), затем поиск этого типа, single select.
+
+Ручное создание Lead и шит: поиск Contact как у Deal (`RelationPickerField`). Если Contact выбран / связан — скрыть free-text contactName / phone / email (они с Contact).
+
+Жёлтый баннер, если телефон/email/имя совпал с другим открытым Lead, Contact или открытым Deal. Действия: открыть / Связать. «Это про эту сделку» (OPEN Deal + существующий Contact) остаётся shortcut баннера на `attach-contact` + `aboutDealId` — не пункт меню Связать.
 
 Отдельный admin-only экран **не** единственный путь.
 
@@ -144,9 +158,11 @@ Wizard: выбрать **survivor** и **absorbed**.
 | ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
 | Intake attach       | § 5 — баннер, attach, предупреждение об открытом Deal        | Shipped                                                                   |
 | Lead→Contact attach | § 5a — идентификация; открытый Deal = контекст + trash stray | Shipped                                                                   |
+| Lead Связать        | § 8 — merge vs add; pour + create-contact                    | Shipped                                                                   |
 | Lead merge wizard   | § 6 — коррекция дублей Lead                                  | Shipped                                                                   |
 | Contact merge       | Clients (`02-Contacts.md`)                                   | Shipped: Trash + `mergedIntoId`; extra phones union; не замена Lead merge |
 | Deal↔Deal merge     | —                                                            | **Не делаем**                                                             |
+| Contact↔Product     | —                                                            | **Не в этом срезе**                                                       |
 
 ## 12. Никогда
 
