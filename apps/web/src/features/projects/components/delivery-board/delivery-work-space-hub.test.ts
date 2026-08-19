@@ -40,6 +40,7 @@ function task(overrides: Partial<Task> & Pick<Task, 'id' | 'status'>): Task {
     links: [],
     checklists: [],
     subtasks: [],
+    _count: { subtasks: 0, checklists: 0 },
     ...overrides,
   };
 }
