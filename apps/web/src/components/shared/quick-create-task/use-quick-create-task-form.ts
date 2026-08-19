@@ -6,6 +6,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import type { MeResponse } from '@/lib/permissions/types';
+import { resolveQuickCreateTaskLinks } from './resolve-quick-create-task-links';
 
 export interface QuickCreateTaskDialogProps {
   open: boolean;
@@ -99,7 +100,7 @@ export function useQuickCreateTaskForm({
         dueDate: dueDate || undefined,
         workspaceId: defaultWorkspaceId,
         planningStatus: defaultPlanningStatus,
-        links: defaultLinks ?? (defaultLink ? [defaultLink] : undefined),
+        links: resolveQuickCreateTaskLinks(defaultLinks, defaultLink),
       });
       onCreated?.(task);
       applyDefaults();

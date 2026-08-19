@@ -18,6 +18,7 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
+import { LeadBoardQuickCreateTask } from '@/features/crm/components/LeadBoardQuickCreateTask';
 import { LeadsListTable } from '@/features/crm/components/LeadsListTable';
 import {
   LeadSheet,
@@ -108,6 +109,7 @@ function LeadsPipelinePageContent() {
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [quickCreateLeadId, setQuickCreateLeadId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stageGateHighlight, setStageGateHighlight] = useState<LeadSheetStageGateHighlight | null>(
     null,
@@ -484,6 +486,10 @@ function LeadsPipelinePageContent() {
     pushOpenLeadToUrl(lead.id);
   };
 
+  const handleCreateLeadTask = useCallback((lead: Lead) => {
+    setQuickCreateLeadId(lead.id);
+  }, []);
+
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
     requestStatusChange(itemId, toColumn);
   };
@@ -621,7 +627,9 @@ function LeadsPipelinePageContent() {
           <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
             columns={kanbanColumns}
-            renderCard={(lead) => <LeadCard lead={lead} onClick={handleCardClick} />}
+            renderCard={(lead) => (
+              <LeadCard lead={lead} onClick={handleCardClick} onCreateTask={handleCreateLeadTask} />
+            )}
             getItemId={(lead) => lead.id}
             onMove={handleMove}
             onReorderWithinColumn={handleReorder}
@@ -657,6 +665,11 @@ function LeadsPipelinePageContent() {
         onOpenChange={setShowCreate}
         onCreated={handleLeadCreated}
         onOpenExisting={(id) => pushOpenLeadToUrl(id)}
+      />
+
+      <LeadBoardQuickCreateTask
+        leadId={quickCreateLeadId}
+        onClose={() => setQuickCreateLeadId(null)}
       />
 
       <LeadSheet

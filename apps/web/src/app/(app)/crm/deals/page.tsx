@@ -19,6 +19,7 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
+import { DealBoardQuickCreateTask } from '@/features/crm/components/DealBoardQuickCreateTask';
 import { DealsListTable } from '@/features/crm/components/DealsListTable';
 import {
   DealSheet,
@@ -39,6 +40,7 @@ import { DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
 import { buildDealPipelineFilterConfigs } from '@/features/crm/filters/crm-pipeline-filter-configs';
 import { resolveDealResponsibilityQuery } from '@/features/crm/filters/crm-responsible-filter';
 import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
+import { resolveDealProjectId } from '@/features/crm/utils/crm-entity-task-links';
 import { usePermission } from '@/lib/permissions';
 import { CRM_TRASH_LIST_PAGE_SIZE } from '@/features/crm/constants/crm-kanban-column-page';
 import {
@@ -121,6 +123,10 @@ function DealsPipelinePageContent() {
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [quickCreateDeal, setQuickCreateDeal] = useState<{
+    id: string;
+    projectId: string | null;
+  } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [wonWhatsApp, setWonWhatsApp] = useState<{
     satisfied: boolean;
@@ -533,6 +539,13 @@ function DealsPipelinePageContent() {
     pushOpenDealToUrl(deal.id);
   };
 
+  const handleCreateDealTask = useCallback((deal: Deal) => {
+    setQuickCreateDeal({
+      id: deal.id,
+      projectId: resolveDealProjectId(deal),
+    });
+  }, []);
+
   const handleOpenDealById = async (id: string) => {
     pushOpenDealToUrl(id);
     const existingDeal = deals.find((deal) => deal.id === id);
@@ -712,6 +725,7 @@ function DealsPipelinePageContent() {
                 deal={deal}
                 onClick={handleCardClick}
                 onStatusChange={requestStatusChange}
+                onCreateTask={handleCreateDealTask}
               />
             )}
             getItemId={(deal) => deal.id}
@@ -752,6 +766,12 @@ function DealsPipelinePageContent() {
         onOpenChange={setShowCreate}
         onCreated={handleDealCreated}
         prefill={dealPrefill}
+      />
+
+      <DealBoardQuickCreateTask
+        dealId={quickCreateDeal?.id ?? null}
+        projectId={quickCreateDeal?.projectId}
+        onClose={() => setQuickCreateDeal(null)}
       />
 
       <DealSheet

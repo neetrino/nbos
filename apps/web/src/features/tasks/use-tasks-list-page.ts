@@ -23,6 +23,7 @@ import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/
 import { TASK_LIST_GLOBAL_PAGE_SIZE } from '@/features/tasks/constants/task-list-pagination';
 import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { usePrependExternallyCreatedTask } from '@/features/tasks/use-prepend-externally-created-task';
 import { taskDetailPlaceholderFromListItem } from '@/features/tasks/utils/task-detail-placeholder';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
@@ -95,6 +96,7 @@ export function useTasksListPage() {
     myPlanStages,
     setMyPlanStages,
   });
+  usePrependExternallyCreatedTask(setTasks);
 
   const stripTaskOpenFromUrl = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());

@@ -1,13 +1,10 @@
 'use client';
 
 import type { KeyboardEvent, RefObject } from 'react';
-import { ArrowRight, Ban, RotateCcw, Trash2, LayoutGrid, History } from 'lucide-react';
+import { CheckSquare, History, LayoutGrid } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -33,11 +30,13 @@ import { canOfferLeadMerge } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions';
 import { LeadDuplicateBanner } from './LeadDuplicateBanner';
 import { LeadSheetIdentifySection } from './LeadSheetIdentifySection';
-import { LeadSvyazatMenu } from './LeadSvyazatMenu';
+import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
+import { LeadTasksTab } from './LeadTasksTab';
 
 export const LEAD_SHEET_TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
   { value: 'history', label: 'History', icon: History },
+  { value: 'task', label: 'Task', icon: CheckSquare },
 ] as const;
 
 export interface LeadSheetLoadedContentProps {
@@ -72,6 +71,7 @@ export interface LeadSheetLoadedContentProps {
   onConsumedMergeAbsorbed: () => void;
   onAttached: (lead: Lead) => void;
   onAttachedAndTrashed: () => void;
+  onRefresh?: () => void;
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
@@ -209,6 +209,9 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
                 History coming soon...
               </div>
             )}
+            {props.activeTab === 'task' ? (
+              <LeadTasksTab lead={renderLead} onRefresh={props.onRefresh} />
+            ) : null}
           </DetailSheetTabPanel>
         </div>
       </ScrollArea>
@@ -222,83 +225,5 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         onCancel={props.handleGeneralCancel}
       />
     </EntityDetailSheetContent>
-  );
-}
-
-function LeadSheetHeaderActions(props: {
-  renderLead: Lead;
-  isTrashView: boolean;
-  isTerminal: boolean;
-  mergeAbsorbedId: string | null;
-  onConsumedMergeAbsorbed: () => void;
-  onMerged?: (lead: Lead) => void;
-  onUpdated: (lead: Lead) => void;
-  onTrashed: () => void;
-  onConvertToDeal?: (lead: Lead) => void;
-  onRestore?: (id: string) => void;
-  onPermanentDelete?: (id: string) => void;
-  onMoveToTrash?: (id: string) => void;
-  onStatusChange: (id: string, status: string) => Promise<void>;
-}) {
-  const { renderLead, isTrashView } = props;
-  return (
-    <>
-      {!isTrashView && props.onMerged ? (
-        <LeadSvyazatMenu
-          lead={renderLead}
-          isTrashView={isTrashView}
-          initialAbsorbedId={props.mergeAbsorbedId}
-          onConsumedInitialAbsorbed={props.onConsumedMergeAbsorbed}
-          onMerged={props.onMerged}
-          onUpdated={props.onUpdated}
-          onTrashed={props.onTrashed}
-        />
-      ) : null}
-      {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (
-        <Button type="button" size="sm" onClick={() => props.onConvertToDeal?.(renderLead)}>
-          <ArrowRight size={14} className="mr-1" />
-          Convert to Deal
-        </Button>
-      ) : null}
-      {isTrashView && props.onRestore ? (
-        <DetailSheetSettingsMenu>
-          <DropdownMenuItem
-            disabled={Boolean(renderLead.mergedIntoId)}
-            onClick={() => {
-              if (renderLead.mergedIntoId) return;
-              props.onRestore?.(renderLead.id);
-            }}
-          >
-            <RotateCcw />
-            {renderLead.mergedIntoId ? 'Restore blocked (merged)' : 'Restore'}
-          </DropdownMenuItem>
-          {props.onPermanentDelete ? (
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => props.onPermanentDelete?.(renderLead.id)}
-            >
-              <Trash2 />
-              Delete permanently
-            </DropdownMenuItem>
-          ) : null}
-        </DetailSheetSettingsMenu>
-      ) : props.onMoveToTrash ? (
-        <DetailSheetSettingsMenu>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => props.onMoveToTrash?.(renderLead.id)}
-          >
-            <Trash2 />
-            Move to Trash
-          </DropdownMenuItem>
-          {renderLead.status !== 'SPAM' ? (
-            <DropdownMenuItem onClick={() => void props.onStatusChange(renderLead.id, 'SPAM')}>
-              <Ban />
-              Mark as Spam
-            </DropdownMenuItem>
-          ) : null}
-        </DetailSheetSettingsMenu>
-      ) : null}
-    </>
   );
 }

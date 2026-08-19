@@ -111,6 +111,9 @@ export function taskCardContextChipClass(kind: TaskCardContextKind, entityType?:
   if (entityType === 'DEAL') {
     return 'bg-blue-500/10 text-blue-800 dark:text-blue-300';
   }
+  if (entityType === 'LEAD') {
+    return 'bg-sky-500/10 text-sky-800 dark:text-sky-300';
+  }
   return 'bg-muted/70 text-muted-foreground';
 }
 

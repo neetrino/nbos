@@ -254,6 +254,7 @@ export function LeadSheet({
             onRefresh?.();
             onOpenChange(false);
           }}
+          onRefresh={onRefresh}
         />
       )}
     </Sheet>

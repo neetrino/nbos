@@ -23,6 +23,7 @@ import { WhatsAppGroupMissingBadge } from './WhatsAppGroupMissingBadge';
 import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
 import { buildDealWhatsAppQuickAction } from '../deal-whatsapp-quick-action';
 import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
+import { buildDealTaskDefaultLinks } from '../utils/crm-entity-task-links';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -86,7 +87,7 @@ export function DealSheetQuickActions({
   }, [productId]);
 
   const defaultLinks = useMemo(
-    () => (projectId ? getTaskLinks(deal.id, projectId) : undefined),
+    () => buildDealTaskDefaultLinks(deal.id, projectId),
     [deal.id, projectId],
   );
 
@@ -177,16 +178,14 @@ export function DealSheetQuickActions({
       }),
     );
 
-    if (projectId) {
-      items.push({
-        id: 'create-task',
-        label: 'Create task',
-        icon: CheckSquare,
-        enabled: !creatorReady || Boolean(creatorId),
-        disabledTitle: creatorReady && !creatorId ? 'Employee profile required' : undefined,
-        onClick: () => setQuickCreateOpen(true),
-      });
-    }
+    items.push({
+      id: 'create-task',
+      label: 'Create task',
+      icon: CheckSquare,
+      enabled: !creatorReady || Boolean(creatorId),
+      disabledTitle: creatorReady && !creatorId ? 'Employee profile required' : undefined,
+      onClick: () => setQuickCreateOpen(true),
+    });
 
     items.push({
       id: 'open-drive',
@@ -259,11 +258,4 @@ export function DealSheetQuickActions({
       />
     </>
   );
-}
-
-function getTaskLinks(dealId: string, projectId: string) {
-  return [
-    { entityType: 'DEAL', entityId: dealId },
-    { entityType: 'PROJECT', entityId: projectId },
-  ];
 }

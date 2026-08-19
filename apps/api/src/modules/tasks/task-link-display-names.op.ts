@@ -2,42 +2,73 @@ import { PrismaClient } from '@nbos/database';
 
 type TaskLinkRow = { entityType: string; entityId: string };
 
-function collectTypedIds(links: TaskLinkRow[]) {
-  const projectIds = new Set<string>();
-  const productIds = new Set<string>();
-  const extensionIds = new Set<string>();
-  const orderIds = new Set<string>();
-  const dealIds = new Set<string>();
-  for (const link of links) {
-    switch (link.entityType) {
-      case 'PROJECT':
-        projectIds.add(link.entityId);
-        break;
-      case 'PRODUCT':
-        productIds.add(link.entityId);
-        break;
-      case 'EXTENSION':
-        extensionIds.add(link.entityId);
-        break;
-      case 'ORDER':
-        orderIds.add(link.entityId);
-        break;
-      case 'DEAL':
-        dealIds.add(link.entityId);
-        break;
-      default:
-        break;
-    }
-  }
-  return { projectIds, productIds, extensionIds, orderIds, dealIds };
+type TypedIdSets = {
+  projectIds: Set<string>;
+  productIds: Set<string>;
+  extensionIds: Set<string>;
+  orderIds: Set<string>;
+  dealIds: Set<string>;
+  leadIds: Set<string>;
+};
+
+export function resolveNamedCodeLabel(row: { name?: string | null; code: string }): string {
+  return row.name?.trim() || row.code;
 }
 
-async function loadLabelMaps(
-  prisma: InstanceType<typeof PrismaClient>,
-  sets: ReturnType<typeof collectTypedIds>,
-) {
-  const { projectIds, productIds, extensionIds, orderIds, dealIds } = sets;
-  const [projects, products, extensions, orders, deals] = await Promise.all([
+function emptyTypedIdSets(): TypedIdSets {
+  return {
+    projectIds: new Set<string>(),
+    productIds: new Set<string>(),
+    extensionIds: new Set<string>(),
+    orderIds: new Set<string>(),
+    dealIds: new Set<string>(),
+    leadIds: new Set<string>(),
+  };
+}
+
+function addTypedId(sets: TypedIdSets, link: TaskLinkRow): void {
+  switch (link.entityType) {
+    case 'PROJECT':
+      sets.projectIds.add(link.entityId);
+      return;
+    case 'PRODUCT':
+      sets.productIds.add(link.entityId);
+      return;
+    case 'EXTENSION':
+      sets.extensionIds.add(link.entityId);
+      return;
+    case 'ORDER':
+      sets.orderIds.add(link.entityId);
+      return;
+    case 'DEAL':
+      sets.dealIds.add(link.entityId);
+      return;
+    case 'LEAD':
+      sets.leadIds.add(link.entityId);
+      return;
+    default:
+      return;
+  }
+}
+
+function collectTypedIds(links: TaskLinkRow[]): TypedIdSets {
+  const sets = emptyTypedIdSets();
+  for (const link of links) addTypedId(sets, link);
+  return sets;
+}
+
+function mergeTypedIdSets(into: TypedIdSets, from: TypedIdSets): void {
+  from.projectIds.forEach((id) => into.projectIds.add(id));
+  from.productIds.forEach((id) => into.productIds.add(id));
+  from.extensionIds.forEach((id) => into.extensionIds.add(id));
+  from.orderIds.forEach((id) => into.orderIds.add(id));
+  from.dealIds.forEach((id) => into.dealIds.add(id));
+  from.leadIds.forEach((id) => into.leadIds.add(id));
+}
+
+async function loadLinkEntities(prisma: InstanceType<typeof PrismaClient>, sets: TypedIdSets) {
+  const { projectIds, productIds, extensionIds, orderIds, dealIds, leadIds } = sets;
+  const [projects, products, extensions, orders, deals, leads] = await Promise.all([
     projectIds.size > 0
       ? prisma.project.findMany({
           where: { id: { in: [...projectIds] } },
@@ -68,13 +99,25 @@ async function loadLabelMaps(
           select: { id: true, code: true, name: true },
         })
       : [],
+    leadIds.size > 0
+      ? prisma.lead.findMany({
+          where: { id: { in: [...leadIds] } },
+          select: { id: true, code: true, name: true },
+        })
+      : [],
   ]);
+  return { projects, products, extensions, orders, deals, leads };
+}
+
+async function loadLabelMaps(prisma: InstanceType<typeof PrismaClient>, sets: TypedIdSets) {
+  const rows = await loadLinkEntities(prisma, sets);
   return {
-    PROJECT: new Map(projects.map((p) => [p.id, p.name] as const)),
-    PRODUCT: new Map(products.map((p) => [p.id, p.name] as const)),
-    EXTENSION: new Map(extensions.map((e) => [e.id, e.name] as const)),
-    ORDER: new Map(orders.map((o) => [o.id, o.code] as const)),
-    DEAL: new Map(deals.map((d) => [d.id, (d.name?.trim() ? d.name : d.code) ?? d.code] as const)),
+    PROJECT: new Map(rows.projects.map((p) => [p.id, p.name] as const)),
+    PRODUCT: new Map(rows.products.map((p) => [p.id, p.name] as const)),
+    EXTENSION: new Map(rows.extensions.map((e) => [e.id, e.name] as const)),
+    ORDER: new Map(rows.orders.map((o) => [o.id, o.code] as const)),
+    DEAL: new Map(rows.deals.map((d) => [d.id, resolveNamedCodeLabel(d)] as const)),
+    LEAD: new Map(rows.leads.map((lead) => [lead.id, resolveNamedCodeLabel(lead)] as const)),
   };
 }
 
@@ -95,21 +138,8 @@ export async function attachTaskLinkDisplayNames(
   tasks: Array<{ links?: TaskLinkRow[] | null }>,
 ): Promise<void> {
   if (tasks.length === 0) return;
-  const merged = {
-    projectIds: new Set<string>(),
-    productIds: new Set<string>(),
-    extensionIds: new Set<string>(),
-    orderIds: new Set<string>(),
-    dealIds: new Set<string>(),
-  };
-  for (const task of tasks) {
-    const s = collectTypedIds(task.links ?? []);
-    s.projectIds.forEach((id) => merged.projectIds.add(id));
-    s.productIds.forEach((id) => merged.productIds.add(id));
-    s.extensionIds.forEach((id) => merged.extensionIds.add(id));
-    s.orderIds.forEach((id) => merged.orderIds.add(id));
-    s.dealIds.forEach((id) => merged.dealIds.add(id));
-  }
+  const merged = emptyTypedIdSets();
+  for (const task of tasks) mergeTypedIdSets(merged, collectTypedIds(task.links ?? []));
   const maps = await loadLabelMaps(prisma, merged);
   for (const task of tasks) {
     const links = task.links ?? [];
