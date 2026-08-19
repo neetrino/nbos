@@ -1,8 +1,15 @@
 # NBOS — актуальные задачи
 
-Очередь сейчас: Mail slice A — другой чат, ветка `feat/mail-runtime-a` (не `sipan`). WhatsApp Won на проде (`9b7414f8`, PR #158). Очередь групп оставляем.
+Очередь сейчас: Mail runtime A+B+C на проде (`23c72cb4`). Почтовые cron 18–20 на scheduler включены по одному. WhatsApp Won на проде. Очередь групп оставляем.
 
-- [ ] Завершить Mail: отправку и синхронизацию полностью перевести на BullMQ Worker, удалить старые stub/direct-пути и добавить end-to-end тест.
+- [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`23c72cb4`), миграции на проде, api/worker/web выкатаны.
+- [ ] Mail — осталось после выкладки (не новый срез A/B/C):
+  - [ ] Smoke на проде: connect → пришло письмо (тело видно, вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
+  - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
+    - [x] `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` — застрявшие исходящие (QUEUED / stale SENDING).
+    - [x] `SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED` — продление Gmail watch (только если есть Gmail-ящики).
+    - [x] `SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED` — сетка inbox раз в 5 мин; без неё новые письма только пока живы Pub/Sub / IDLE / ручной Sync.
+  - [ ] Помнить, не чинить «заодно»: IMAP id вложения (`part:{n}:{name}`) может дать Failed → Retry; enqueue-miss оставляет Pending без cron — только Retry в UI; удаления письма у Gmail/IMAP нет (сознательно).
 - [x] Локальный Redis: на ноутбуке и втором компьютере `REDIS_URL` закомментирован — так и оставить (не прод). Dev-Redis позже свой/локальный, не Upstash и не prod `nbos-redis`.
 - [x] Прод Redis: `nbos-redis`, TLS `rediss://:6380`, AOF + `maxmemory 256mb` + `noeviction`, 6379 закрыт. Runtime `REDIS_URL` у api / worker / scheduler. Upstash аккаунт удалён.
 - [ ] Оставить создание отчётов только ручным: кнопка → очередь → готовый файл → скачивание, без автоматического report cron.

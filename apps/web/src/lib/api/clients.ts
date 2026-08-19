@@ -1,16 +1,24 @@
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
 
+export interface ContactExtraPhone {
+  id: string;
+  e164: string;
+  createdAt: string;
+}
+
 export interface Contact {
   id: string;
   firstName: string;
   lastName: string;
   phone: string | null;
   email: string | null;
+  extraPhones?: ContactExtraPhone[];
   role: string;
   notes: string | null;
   messengerLinks: Record<string, string> | null;
   trashedAt?: string | null;
+  mergedIntoId?: string | null;
   createdAt: string;
   updatedAt: string;
   companies: Array<{ id: string; name: string }>;
@@ -47,6 +55,25 @@ interface ListData<T> {
 
 type ClientsListParams = Record<string, unknown> & { scope?: EntityLifecycleScope };
 
+export type ContactMergeFieldSide = 'survivor' | 'absorbed';
+
+export type ContactMergeFieldChoices = Partial<{
+  firstName: ContactMergeFieldSide;
+  lastName: ContactMergeFieldSide;
+  phone: ContactMergeFieldSide;
+  email: ContactMergeFieldSide;
+  role: ContactMergeFieldSide;
+}>;
+
+export interface ContactMergeCandidate {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  email: string | null;
+  role: string;
+}
+
 export const contactsApi = {
   async getAll(params?: ClientsListParams): Promise<ListData<Contact>> {
     const resp = await api.get<ListData<Contact>>('/api/clients/contacts', { params });
@@ -73,6 +100,30 @@ export const contactsApi = {
   },
   async permanentDelete(id: string): Promise<void> {
     await api.delete(`/api/clients/contacts/${id}/permanent`);
+  },
+  async addExtraPhone(id: string, phone: string): Promise<Contact> {
+    const resp = await api.post<Contact>(`/api/clients/contacts/${id}/phones`, { phone });
+    return resp.data;
+  },
+  async removeExtraPhone(id: string, phoneId: string): Promise<Contact> {
+    const resp = await api.delete<Contact>(`/api/clients/contacts/${id}/phones/${phoneId}`);
+    return resp.data;
+  },
+  async findMergeCandidates(params: {
+    q: string;
+    excludeId: string;
+  }): Promise<ContactMergeCandidate[]> {
+    const resp = await api.get<ContactMergeCandidate[]>('/api/clients/contacts/duplicates', {
+      params,
+    });
+    return resp.data;
+  },
+  async merge(
+    survivorId: string,
+    data: { absorbedId: string; fieldChoices?: ContactMergeFieldChoices },
+  ): Promise<Contact> {
+    const resp = await api.post<Contact>(`/api/clients/contacts/${survivorId}/merge`, data);
+    return resp.data;
   },
 };
 

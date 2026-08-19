@@ -296,12 +296,6 @@ export const RELATION_PICKER_CHIP_TRAILING_SELECT_IDLE_CLASS = [
   'data-popup-open:border-0 data-popup-open:bg-muted/30 data-popup-open:text-foreground data-popup-open:shadow-none',
 ].join(' ');
 
-/** Default relation picker dropdown list (~4 rows). */
-export const RELATION_PICKER_DROPDOWN_LIST_CLASS = 'max-h-56 overflow-y-auto';
-
-/** Taller list for employee pickers in sheets (~6 rows with subtitle). */
-export const RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS = 'max-h-96 overflow-y-auto';
-
 /** Empty / add trigger aligned with relation chip width. */
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,

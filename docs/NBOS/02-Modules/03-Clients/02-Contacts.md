@@ -36,7 +36,7 @@ Contact (человек)
 | ----------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
 | first_name        | String   | ✅           | Имя                                                                                                             |
 | last_name         | String   | ✅           | Фамилия                                                                                                         |
-| phone             | String   | ✅           | Основной телефон                                                                                                |
+| phone             | String   | ✅           | Основной телефон. Дополнительные номера — `ContactPhone` (extra), не строка в notes                             |
 | email             | String   | —            | Email                                                                                                           |
 | whatsapp          | String   | —            | Номер WhatsApp (если отличается от phone)                                                                       |
 | telegram          | String   | —            | Telegram username или номер                                                                                     |
@@ -217,7 +217,7 @@ Lead получает статус SQL (Quality Lead)
 
 ### Contact → Leads (1:1 или 1:N)
 
-Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact.
+Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Lead merge и intake attach — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`); Deal↔Deal merge не делаем. Merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
 
 ---
 
@@ -242,12 +242,16 @@ Contact создаётся из Lead. Если один человек обра�
 
 ### Merge контактов:
 
-Если дубликат всё-таки был создан, CEO/PM может объединить два Contact:
+Если дубликат всё-таки был создан, CEO / PM (и Owner как CEO) может объединить два Contact:
 
-- Выбирается «основной» контакт (чьи данные сохраняются)
-- Все проекты, компании, сделки, история «дубликата» переносятся на основной
-- Дубликат удаляется
-- Audit Log фиксирует merge
+- Пользователь выбирает **survivor** и **absorbed**, затем конфликтующие поля (имя, primary phone, email, type и т.д.)
+- Extra phones: **union** по нормализованному номеру; primary = выбор пользователя
+- На survivor в транзакции переносятся: companies (primary / billing / additional), deals (`contactId` + additional), leads (`contactId` + additional; **без** авто Lead-merge), projects, история/notes (append), extra phones и остальные FK Contact
+- Поглощённый Contact: указатель `mergedIntoId` + Profile A **Trash**. Не hard delete. Старое «дубликат удаляется» больше не действует
+- Restore absorbed без отдельного un-merge **блокируется** (как Lead)
+- Audit: кто, когда, from→to, выбранные поля
+- Seller / Marketing — нет (отдельного правила «свои контакты» в runtime нет)
+- **Deal↔Deal merge не делается** — только re-point `Deal.contactId` / additional на survivor
 
 ---
 

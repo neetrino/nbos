@@ -127,6 +127,67 @@ describe('ContactsService', () => {
         BadRequestException,
       );
     });
+
+    it('drops an extra phone that matches the new primary', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
+      prisma.contact.update.mockResolvedValue({ id: '1', phone: '+37499123456' });
+      await service.update('1', { phone: '+37499123456' });
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.contactPhone.deleteMany).toHaveBeenCalledWith({
+        where: { contactId: '1', e164: { in: expect.arrayContaining(['+37499123456']) } },
+      });
+    });
+  });
+
+  describe('addExtraPhone', () => {
+    it('stores a normalized extra when primary is different', async () => {
+      prisma.contact.findUnique
+        .mockResolvedValueOnce({
+          id: '1',
+          phone: '+37499000000',
+          trashedAt: null,
+          extraPhones: [],
+        })
+        .mockResolvedValueOnce({
+          id: '1',
+          phone: '+37499000000',
+          extraPhones: [{ id: 'p-1', e164: '+37499111111' }],
+        });
+      const result = await service.addExtraPhone('1', '+374 99 111111');
+      expect(prisma.contactPhone.create).toHaveBeenCalledWith({
+        data: { contactId: '1', e164: '+37499111111' },
+        select: { id: true, e164: true, createdAt: true },
+      });
+      expect(result.extraPhones).toEqual([{ id: 'p-1', e164: '+37499111111' }]);
+    });
+
+    it('rejects a duplicate of the primary', async () => {
+      prisma.contact.findUnique.mockResolvedValue({
+        id: '1',
+        phone: '+37499111111',
+        trashedAt: null,
+        extraPhones: [],
+      });
+      await expect(service.addExtraPhone('1', '+37499111111')).rejects.toMatchObject({
+        response: { code: 'CONTACT_PHONE_DUPLICATE' },
+      });
+      expect(prisma.contactPhone.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects empty junk', async () => {
+      await expect(service.addExtraPhone('1', '   ')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('removeExtraPhone', () => {
+    it('deletes the extra row', async () => {
+      prisma.contact.findUnique
+        .mockResolvedValueOnce({ id: '1', trashedAt: null })
+        .mockResolvedValueOnce({ id: '1', extraPhones: [] });
+      prisma.contactPhone.findFirst.mockResolvedValue({ id: 'p-1' });
+      await service.removeExtraPhone('1', 'p-1');
+      expect(prisma.contactPhone.delete).toHaveBeenCalledWith({ where: { id: 'p-1' } });
+    });
   });
 
   describe('moveToTrash', () => {
@@ -162,6 +223,17 @@ describe('ContactsService', () => {
     it('throws when not in Trash', async () => {
       prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
       await expect(service.restoreFromTrash('1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('blocks restore when mergedIntoId is set', async () => {
+      prisma.contact.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date(),
+        mergedIntoId: 'surv-1',
+      });
+      await expect(service.restoreFromTrash('1')).rejects.toMatchObject({
+        response: { code: 'CONTACT_RESTORE_BLOCKED_MERGED' },
+      });
     });
   });
 });

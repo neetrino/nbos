@@ -313,6 +313,14 @@ export function EntityRelationHost({
           setContactSheet(updated);
           onEntityChanged?.();
         }}
+        onContactPatched={(updated) => {
+          setContactSheet(updated);
+          onEntityChanged?.();
+        }}
+        onMerged={(survivor) => {
+          setContactSheet(survivor);
+          onEntityChanged?.();
+        }}
       />
 
       <CompanySheet

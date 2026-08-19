@@ -7,6 +7,8 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 - **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`, **Profile A Trash** (`scope=active|trash` via page settings): Move to Trash, Restore, **Delete permanently** (name-match confirm) in trash sheets.
 - **Company / Contact row sheets** use the same detail-sheet pattern as CRM (75vw panel, floating close + rail, inline fields with draft + Save/Cancel footer). **Portfolio** opens as a nested right sheet over the row sheet (permalink + list deep link still available inside portfolio).
 - **Contact create/update** persists `messengerLinks` (WhatsApp, Telegram, preferred channel, language) via API.
+- **Extra phones:** `ContactPhone` (`contact_phones`) — primary stays `Contact.phone`. Lead→Contact attach writes an extra when primary already differs (not a notes line). Directory search / ATS / intake lookup match any phone. Sheet: add/remove extra (`POST/DELETE /clients/contacts/:id/phones`). Same normalized number is not stored twice.
+- **Contact merge:** `GET /clients/contacts/duplicates?q=&excludeId=`, `POST /clients/contacts/:id/merge`. Wizard: survivor + field picks; extra phones union; re-point Company/Deal/Lead/Project and other Contact FKs. Absorbed → `mergedIntoId` + Trash (not hard delete). Restore of absorbed blocked. CEO / PM / Owner; Seller and Marketing 403. Deal↔Deal merge is not built.
 - **Company create**: multi-select **contacts** (optional; first = primary), optional **billing contact**, optional company phone/email/country; no manual contact UUID.
 - **Company update**: contacts list + billing contact, phone/email/country; **tax status cannot be changed** after creation (API enforced).
 - **Schema**: `companies.contact_id` nullable; `companies.billing_contact_id`, phone/email/country; `company_additional_contacts` junction; Prisma `CompanyPrimaryContact` / `CompanyBillingContact` / `CompanyAdditionalContact`.
@@ -16,7 +18,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 ## Intentional placeholders / next slices
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
-- **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
+- **Bank details** UI, **Client Service** detail in portfolio — not in this slice.
 
 ## MVP assumptions (launch scope)
 
@@ -25,12 +27,12 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 ## API routes (Nest)
 
-- `clients/contacts`, `clients/companies` — CRUD + `?scope=active|trash` (default active), `DELETE` → Trash, `POST :id/restore`, `DELETE :id/permanent`.
+- `clients/contacts`, `clients/companies` — CRUD + `?scope=active|trash` (default active), `DELETE` → Trash, `POST :id/restore`, `DELETE :id/permanent`. Contacts: `POST :id/phones`, `DELETE :id/phones/:phoneId`, `GET duplicates`, `POST :id/merge`.
 - `clients/portfolio/contact/:contactId`, `clients/portfolio/company/:companyId` — read-only computed JSON.
 
 ## Related code (for maintainers)
 
 - Web: `apps/web/src/features/clients/*`, `apps/web/src/lib/api/clients.ts`, `apps/web/src/lib/api/client-portfolio.ts`, `apps/web/src/app/(app)/clients/portfolio/*`.
 - API: `apps/api/src/modules/clients/portfolio/*` (`portfolio-access-mask.ts`, `portfolio-payload-policy.ts`), `contacts.service.ts`, `companies.service.ts`.
-- DB: migrations `20260512140000_company_billing_and_contact_fields`, `20260612120000_contact_company_trash_lifecycle` (`trashed_at` on contacts/companies), `20260812140000_company_optional_primary_and_additional_contacts`.
+- DB: migrations `20260512140000_company_billing_and_contact_fields`, `20260612120000_contact_company_trash_lifecycle` (`trashed_at` on contacts/companies), `20260812140000_company_optional_primary_and_additional_contacts`, `20260819160000_contact_extra_phones`, `20260819170000_contact_merged_into`.
 - Platform index: `docs/NBOS/03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.

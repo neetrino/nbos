@@ -18,6 +18,7 @@ import {
 import { MetaProfileService } from './meta-profile.service';
 import type { MetaMessagingUserProfile } from './meta-messaging-profile.types';
 import type { ParsedMetaInboundMessage } from './meta.types';
+import { resolveMetaIngestLeadId } from './meta-lead-attach.ops';
 
 const LEAD_SOURCE = 'MARKETING' as const;
 const LEAD_SOURCE_DETAIL = 'SMM' as const;
@@ -90,7 +91,7 @@ export class MetaLeadIngestService {
     message: ParsedMetaInboundMessage;
     platform: MetaLeadPlatform;
     resolvedProfile: Awaited<ReturnType<MetaProfileService['resolveSenderProfile']>>;
-  }): Promise<string> {
+  }): Promise<string | null> {
     const { account, message, platform, resolvedProfile } = params;
     const preview = buildLatestMessagePreview(message.messageText);
     const sentAt = resolveMessageSentAt(message.timestamp);
@@ -144,23 +145,17 @@ export class MetaLeadIngestService {
 
             let leadId = conversation.leadId;
             if (!leadId) {
-              const leadNames = buildMetaLeadNames(platform, resolvedProfile.profile);
-              const lead = await tx.lead.create({
-                data: {
-                  code: await this.generateLeadCode(tx),
-                  name: leadNames.name,
-                  contactName: leadNames.contactName,
-                  source: LEAD_SOURCE,
-                  sourceDetail: LEAD_SOURCE_DETAIL,
-                  marketingAccountId: account.marketingAccountId,
-                },
-                select: { id: true },
+              leadId = await this.attachOrCreateLead(tx, {
+                platform,
+                profile: resolvedProfile.profile,
+                marketingAccountId: account.marketingAccountId,
               });
-              leadId = lead.id;
-              await tx.metaConversation.update({
-                where: { id: conversation.id },
-                data: { leadId },
-              });
+              if (leadId) {
+                await tx.metaConversation.update({
+                  where: { id: conversation.id },
+                  data: { leadId },
+                });
+              }
             } else if (resolvedProfile.fetchedNow) {
               await this.maybeEnrichExistingLead(tx, leadId, platform, resolvedProfile.profile);
             }
@@ -210,6 +205,31 @@ export class MetaLeadIngestService {
     }
 
     throw new Error('Meta lead ingest transaction failed after retries');
+  }
+
+  private async attachOrCreateLead(
+    tx: TransactionClient,
+    params: {
+      platform: MetaLeadPlatform;
+      profile: MetaMessagingUserProfile;
+      marketingAccountId: string | null;
+    },
+  ): Promise<string | null> {
+    return resolveMetaIngestLeadId(tx, params.profile.username, async () => {
+      const leadNames = buildMetaLeadNames(params.platform, params.profile);
+      const lead = await tx.lead.create({
+        data: {
+          code: await this.generateLeadCode(tx),
+          name: leadNames.name,
+          contactName: leadNames.contactName,
+          source: LEAD_SOURCE,
+          sourceDetail: LEAD_SOURCE_DETAIL,
+          marketingAccountId: params.marketingAccountId,
+        },
+        select: { id: true },
+      });
+      return lead.id;
+    });
   }
 
   private async maybeEnrichExistingLead(

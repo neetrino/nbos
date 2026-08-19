@@ -136,6 +136,8 @@ model Lead {
   contactId           String?         @map("contact_id")
   notes               String?
   trashedAt           DateTime?       @map("trashed_at")
+  /// Profile A pointer after Lead merge; absorbed card is also trashed. Not a MERGED stage.
+  mergedIntoId        String?         @map("merged_into_id")
   createdAt           DateTime        @default(now()) @map("created_at")
   updatedAt           DateTime        @updatedAt @map("updated_at")
 
@@ -145,6 +147,8 @@ model Lead {
   sourceContact     Contact?           @relation("LeadSourceContact", fields: [sourceContactId], references: [id])
   marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
   marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
+  mergedInto         Lead?             @relation("LeadMergedInto", fields: [mergedIntoId], references: [id])
+  absorbedLeads      Lead[]            @relation("LeadMergedInto")
   deal               Deal?
   additionalContacts LeadAdditionalContact[]
   metaProviderEvents MetaProviderEvent[]
@@ -153,6 +157,7 @@ model Lead {
 
   @@index([trashedAt])
   @@index([phone])
+  @@index([mergedIntoId])
   @@map("leads")
 }
 

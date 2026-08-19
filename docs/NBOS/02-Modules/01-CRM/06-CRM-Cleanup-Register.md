@@ -24,6 +24,7 @@
 - `03-Deal-Pipeline.md`
 - `04-Offers-and-Handoff.md`
 - `05-Deal-Stage-Gates-and-Won-Override.md`
+- `07-Lead-and-Deal-Merge.md`
 - `../../04-Finance/03-Subscriptions.md`
 - `../../../03-Business-Logic/04-Subscription-Billing-Logic.md`
 
@@ -258,6 +259,20 @@ uninvoiced and outstanding coverage.
 
 - углубить Extension delivery board depth after Done gate foundation;
 - later deepen reconciliation and activation rules in Finance instead of CRM.
+
+### C4. Lead merge, intake attach и кросс-канальный дедуп
+
+Канон: `07-Lead-and-Deal-Merge.md`.
+
+**Shipped (2026-08-19):** `mergedIntoId` на Lead, `GET /crm/leads/duplicates`, `POST /crm/leads/:id/merge`, create/phone-add banners, Lead merge wizard, ATS phone attach (now skips Spam/absorbed), Meta same-username does not create a second Lead (new dialog stays unlinked — 1:1), restore blocked after merge.
+
+**Shipped (2026-08-19) C4 one-liner:** Lead→Contact attach + open Deal as context (`POST /crm/leads/:id/attach-contact`); ATS Contact-phone resolve; not entity merge, not Deal↔Deal.
+
+**Сознательно не делаем:** Deal↔Deal merge — не в roadmap. Случайный дубль Deal → Failed / Trash.
+
+**Отдельный канон (не Lead merge):** Contact merge — Clients (`../03-Clients/02-Contacts.md`).
+
+Instagram + звонок без общего телефона по-прежнему две карточки — это чинится баннером / wizard после того, как Seller дописал телефон, не авто-merge.
 
 ---
 

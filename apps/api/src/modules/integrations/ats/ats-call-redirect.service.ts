@@ -7,6 +7,7 @@ import {
   ATS_STATE_FINISH,
   ATS_STATE_START,
 } from './ats.constants';
+import { contactAnyPhoneOr } from '../../clients/contacts/contact-phone.ops';
 import { atsPhoneLookupVariants, normalizeAtsCallerPhone } from './ats-phone.util';
 import type { AtsWebhookPayload } from './ats.types';
 
@@ -57,7 +58,7 @@ export class AtsCallRedirectService {
   /** `undefined` = no contact; `null` = contact found but no usable SIP. */
   private async sipForContactPhone(variants: string[]): Promise<string | null | undefined> {
     const contact = await this.prisma.contact.findFirst({
-      where: { trashedAt: null, phone: { in: variants } },
+      where: { trashedAt: null, ...contactAnyPhoneOr(variants) },
       orderBy: { updatedAt: 'desc' },
       select: { id: true },
     });
