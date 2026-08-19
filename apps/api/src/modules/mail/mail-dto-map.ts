@@ -44,6 +44,7 @@ function toProviderConnectionRow(
     smtpHost: string | null;
     smtpPort: number | null;
     secureMode: string | null;
+    smtpSecureMode: string | null;
     lastValidatedAt: Date | null;
     lastErrorAt: Date | null;
     lastErrorMessage: string | null;
@@ -64,6 +65,7 @@ function toProviderConnectionRow(
     smtpHost: row.smtpHost,
     smtpPort: row.smtpPort,
     secureMode: row.secureMode,
+    smtpSecureMode: row.smtpSecureMode,
     lastValidatedAt: row.lastValidatedAt?.toISOString() ?? null,
     lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
     lastErrorMessage: row.lastErrorMessage,
@@ -79,6 +81,7 @@ export function toAccountRow(row: {
   lastSyncAt: Date | null;
   lastErrorAt: Date | null;
   providerConnection?: Parameters<typeof toProviderConnectionRow>[0];
+  providerSecret?: { id: string } | null;
 }): MailAccountRow {
   return {
     id: row.id,
@@ -88,6 +91,7 @@ export function toAccountRow(row: {
     status: row.status,
     lastSyncAt: row.lastSyncAt?.toISOString() ?? null,
     lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
+    hasStoredPassword: Boolean(row.providerSecret),
     providerConnection: toProviderConnectionRow(row.providerConnection ?? null),
   };
 }

@@ -51,7 +51,7 @@ export function resolveMailFolderCount(
 ): number | null {
   const scoped = filterAccountId
     ? accounts.filter((account) => account.id === filterAccountId)
-    : accounts;
+    : accounts.filter((account) => account.status !== 'DISABLED');
 
   if (scoped.length === 0) {
     return null;

@@ -36,6 +36,7 @@ export interface MailToolbarRowProps {
   onShareAccount: (account: MailAccountHealthSummaryRow) => void;
   onDeleteAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
+  onReconnectMailbox: (account: MailAccountHealthSummaryRow) => void;
 }
 
 export function MailToolbarRow({
@@ -54,6 +55,7 @@ export function MailToolbarRow({
   onShareAccount,
   onDeleteAccount,
   onConnectMailbox,
+  onReconnectMailbox,
 }: MailToolbarRowProps) {
   const selectedAccount =
     filterAccountId !== null
@@ -154,6 +156,16 @@ export function MailToolbarRow({
                 <Share2 />
                 Share mailbox
               </DropdownMenuItem>
+              {selectedAccount.providerType === 'CORPORATE_IMAP_SMTP' ? (
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  disabled={busy}
+                  onClick={() => onReconnectMailbox(selectedAccount)}
+                >
+                  <RefreshCcw />
+                  Reconnect mailbox
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem
                 className="cursor-pointer"
                 variant="destructive"

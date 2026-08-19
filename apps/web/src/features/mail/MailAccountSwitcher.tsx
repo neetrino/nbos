@@ -11,6 +11,31 @@ import {
 import { cn } from '@/lib/utils';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 
+function accountStatusBadge(status: string) {
+  if (status === 'NEEDS_RECONNECT') {
+    return (
+      <Badge variant="outline" className="shrink-0">
+        Reconnect
+      </Badge>
+    );
+  }
+  if (status === 'DISABLED' || status === 'PAUSED') {
+    return (
+      <Badge variant="outline" className="shrink-0">
+        Off
+      </Badge>
+    );
+  }
+  if (status === 'DEGRADED') {
+    return (
+      <Badge variant="outline" className="shrink-0">
+        Degraded
+      </Badge>
+    );
+  }
+  return null;
+}
+
 function accountLabel(
   filterAccountId: string | null,
   accounts: MailAccountHealthSummaryRow[],
@@ -78,6 +103,7 @@ export function MailAccountSwitcher({
                 aria-hidden
               />
               <span className="min-w-0 flex-1 truncate">{account.emailAddress}</span>
+              {accountStatusBadge(account.status)}
               {account.unreadThreadCount > 0 ? (
                 <Badge variant="secondary" className="shrink-0 tabular-nums">
                   {account.unreadThreadCount}

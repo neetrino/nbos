@@ -37,6 +37,20 @@ describe('mail sync dispatch', () => {
     expect(syncAccount).not.toHaveBeenCalled();
   });
 
+  it('does not inline connect/Pub/Sub when allowLocalInline is false', async () => {
+    process.env.NODE_ENV = 'development';
+    const syncAccount = vi.fn();
+    const queued = await enqueueMailSyncBestEffort({
+      queue: { enqueueSync: vi.fn().mockResolvedValue(false) } as never,
+      syncService: { syncAccount } as never,
+      logger: { warn: vi.fn() } as unknown as Logger,
+      mailAccountId: 'a1',
+      allowLocalInline: false,
+    });
+    expect(queued).toBe(false);
+    expect(syncAccount).not.toHaveBeenCalled();
+  });
+
   it('uses inline fallback outside production and logs mail.inline_fallback', async () => {
     process.env.NODE_ENV = 'development';
     const syncAccount = vi.fn();

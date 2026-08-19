@@ -34,8 +34,11 @@ import { usePermission } from '@/lib/permissions';
 
 import { MailActivePanelHost } from '@/features/mail/MailActivePanelHost';
 import {
+  applyMailConnectPanelQuery,
+  clearMailConnectPanelQuery,
   MAIL_ACCOUNT_QUERY_KEY,
   MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY,
+  MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY,
   MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY,
   MAIL_OPEN_THREAD_QUERY_KEY,
 } from '@/features/mail/mail-query-params';
@@ -111,6 +114,8 @@ export default function MailInboxPage() {
     searchParams.get(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY)?.trim() || null;
   const queryOpenConnectMailbox =
     searchParams.get(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY)?.trim() || null;
+  const queryOpenReconnectMailboxId =
+    searchParams.get(MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY)?.trim() || null;
 
   useHeaderModuleTitle('Mail');
 
@@ -260,7 +265,7 @@ export default function MailInboxPage() {
         params.delete(MAIL_ACCOUNT_QUERY_KEY);
         params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+        clearMailConnectPanelQuery(params);
       });
       await load();
     } catch (disconnectError) {
@@ -288,20 +293,18 @@ export default function MailInboxPage() {
           if (panel?.type === 'thread') {
             params.set(MAIL_OPEN_THREAD_QUERY_KEY, panel.threadId);
             params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           if (panel?.type === 'share') {
             params.set(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY, panel.accountId);
             params.set(MAIL_ACCOUNT_QUERY_KEY, panel.accountId);
             params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           if (panel?.type === 'connect') {
-            params.set(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY, '1');
-            params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
-            params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
+            applyMailConnectPanelQuery(params, panel.accountId);
             return;
           }
           if (panel === null && activePanel?.type === 'share') {
@@ -309,12 +312,12 @@ export default function MailInboxPage() {
             return;
           }
           if (panel === null && activePanel?.type === 'connect') {
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
           params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-          params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+          clearMailConnectPanelQuery(params);
         },
         panel?.type === 'thread' || panel?.type === 'share' || panel?.type === 'connect'
           ? 'push'
@@ -336,7 +339,7 @@ export default function MailInboxPage() {
       }
       params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
       params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-      params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+      clearMailConnectPanelQuery(params);
     });
   };
 
@@ -566,7 +569,7 @@ export default function MailInboxPage() {
         params.delete(MAIL_ACCOUNT_QUERY_KEY);
         params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+        clearMailConnectPanelQuery(params);
       });
       if (filterAccountId !== null) {
         setThreadPage(1);
@@ -647,23 +650,52 @@ export default function MailInboxPage() {
     if (!canView || loading) {
       return;
     }
-    const shouldOpenConnect = queryOpenConnectMailbox === '1';
-    if (!shouldOpenConnect) {
-      if (queryOpenConnectMailbox !== null) {
+    if (queryOpenReconnectMailboxId) {
+      const reconnectAccount = accountHealth.find(
+        (account) => account.id === queryOpenReconnectMailboxId,
+      );
+      if (!reconnectAccount) {
+        if (accountHealth.length === 0) {
+          return;
+        }
         updateMailQuery((params) => {
-          params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+          params.delete(MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY);
         });
+        if (activePanel?.type === 'connect') {
+          setActivePanel(null);
+        }
+        return;
       }
+      if (activePanel?.type === 'connect' && activePanel.accountId === reconnectAccount.id) {
+        return;
+      }
+      setActivePanel({ type: 'connect', accountId: reconnectAccount.id });
+      return;
+    }
+    if (queryOpenConnectMailbox === '1') {
       if (activePanel?.type === 'connect') {
-        setActivePanel(null);
+        return;
       }
+      setActivePanel({ type: 'connect' });
       return;
     }
-    if (activePanel?.type === 'connect') {
-      return;
+    if (queryOpenConnectMailbox !== null) {
+      updateMailQuery((params) => {
+        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+      });
     }
-    setActivePanel({ type: 'connect' });
-  }, [canView, loading, queryOpenConnectMailbox, activePanel, updateMailQuery]);
+    if (activePanel?.type === 'connect' && !activePanel.accountId) {
+      setActivePanel(null);
+    }
+  }, [
+    canView,
+    loading,
+    queryOpenConnectMailbox,
+    queryOpenReconnectMailboxId,
+    accountHealth,
+    activePanel,
+    updateMailQuery,
+  ]);
 
   useEffect(() => {
     if (!canView || loading) {
@@ -750,6 +782,9 @@ export default function MailInboxPage() {
           setDeleteMailboxTarget({ id: account.id, emailAddress: account.emailAddress })
         }
         onConnectMailbox={() => handleActivePanelChange({ type: 'connect' })}
+        onReconnectMailbox={(account) =>
+          handleActivePanelChange({ type: 'connect', accountId: account.id })
+        }
       />
 
       <div className="flex min-h-0 flex-1">

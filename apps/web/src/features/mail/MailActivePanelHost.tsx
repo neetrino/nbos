@@ -116,7 +116,16 @@ export function MailActivePanelHost({
           ) : null}
 
           {activePanel?.type === 'connect' ? (
-            <ConnectMailboxSheet enabled onConnected={onMailboxConnected} onClose={closePanel} />
+            <ConnectMailboxSheet
+              enabled
+              reconnectAccount={
+                activePanel.accountId
+                  ? (accounts.find((account) => account.id === activePanel.accountId) ?? null)
+                  : null
+              }
+              onConnected={onMailboxConnected}
+              onClose={closePanel}
+            />
           ) : null}
 
           {activePanel?.type === 'share' ? (

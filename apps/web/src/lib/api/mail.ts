@@ -8,6 +8,7 @@ export interface MailAccountRow {
   status: string;
   lastSyncAt: string | null;
   lastErrorAt: string | null;
+  hasStoredPassword: boolean;
   providerConnection: MailProviderConnectionRow | null;
 }
 
@@ -23,6 +24,7 @@ export interface MailProviderConnectionRow {
   smtpHost: string | null;
   smtpPort: number | null;
   secureMode: string | null;
+  smtpSecureMode: string | null;
   lastValidatedAt: string | null;
   lastErrorAt: string | null;
   lastErrorMessage: string | null;
@@ -148,6 +150,19 @@ export interface MailSyncLogRow {
 }
 
 export type MailSecureMode = 'SSL' | 'STARTTLS' | 'NONE';
+
+export interface ReconnectCorporateMailboxPayload {
+  email?: string;
+  displayName?: string;
+  imapHost?: string;
+  imapPort?: number;
+  imapSecure?: MailSecureMode;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: MailSecureMode;
+  login?: string;
+  password?: string;
+}
 
 export interface ConnectCorporateMailboxPayload {
   email: string;
@@ -372,6 +387,17 @@ export const mailApi = {
 
   async connectCorporate(payload: ConnectCorporateMailboxPayload): Promise<MailAccountRow> {
     const resp = await api.post<MailAccountRow>('/api/mail/accounts/corporate/connect', payload);
+    return resp.data;
+  },
+
+  async reconnectCorporate(
+    accountId: string,
+    payload: ReconnectCorporateMailboxPayload,
+  ): Promise<MailAccountRow> {
+    const resp = await api.post<MailAccountRow>(
+      `/api/mail/accounts/${accountId}/reconnect`,
+      payload,
+    );
     return resp.data;
   },
 
