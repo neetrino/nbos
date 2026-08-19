@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { canOfferLeadMerge } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions';
 import { LeadDuplicateBanner } from './LeadDuplicateBanner';
+import { LeadSheetIdentifySection } from './LeadSheetIdentifySection';
 import { LeadSheetMergeControls } from './LeadSheetMergeControls';
 
 export const LEAD_SHEET_TABS = [
@@ -64,6 +65,8 @@ export interface LeadSheetLoadedContentProps {
   mergeAbsorbedId: string | null;
   onMergeFromBanner: (id: string) => void;
   onConsumedMergeAbsorbed: () => void;
+  onAttached: (lead: Lead) => void;
+  onAttachedAndTrashed: () => void;
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
@@ -159,6 +162,13 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="px-5 py-4">
+          <LeadSheetIdentifySection
+            lead={renderLead}
+            isTrashView={isTrashView}
+            onOpenRelatedLead={props.onOpenRelatedLead}
+            onAttached={props.onAttached}
+            onAttachedAndTrashed={props.onAttachedAndTrashed}
+          />
           {props.phoneDuplicates && props.onOpenRelatedLead ? (
             <div className="mb-4">
               <LeadDuplicateBanner

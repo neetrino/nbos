@@ -16,6 +16,20 @@ export const LEAD_MERGE_ERROR = {
   RESTORE: 'LEAD_RESTORE_BLOCKED_MERGED',
 } as const;
 
+export const LEAD_ATTACH_ERROR = {
+  SQL: 'LEAD_ATTACH_BLOCKED_SQL',
+  DEAL: 'LEAD_ATTACH_BLOCKED_DEAL',
+  ABSORBED: 'LEAD_ATTACH_BLOCKED_ABSORBED',
+  TRASH: 'LEAD_ATTACH_BLOCKED_TRASH',
+  FORBIDDEN: 'LEAD_ATTACH_FORBIDDEN',
+  DEAL_NOT_OPEN: 'LEAD_ATTACH_DEAL_NOT_OPEN',
+  DEAL_CONTACT_MISMATCH: 'LEAD_ATTACH_DEAL_CONTACT_MISMATCH',
+  CONTACT_MISMATCH: 'LEAD_ATTACH_CONTACT_MISMATCH',
+  CONTACT_TRASH: 'LEAD_ATTACH_CONTACT_TRASHED',
+} as const;
+
+export type LeadAttachPhoneHandling = 'written' | 'noted' | 'same' | 'none';
+
 const AUTO_ATTACH_EXCLUDED: LeadStatusEnum[] = [...AUTO_ATTACH_EXCLUDED_LEAD_STATUSES];
 
 export function normalizeLeadEmail(email: string | null | undefined): string | null {
@@ -55,4 +69,25 @@ export function openLeadBannerWhere(extra: Prisma.LeadWhereInput = {}): Prisma.L
 
 export function isOpenDealStatus(status: string): boolean {
   return status !== 'WON' && status !== 'FAILED';
+}
+
+export function phonesOverlap(
+  left: string | null | undefined,
+  right: string | null | undefined,
+): boolean {
+  const rightSet = new Set(phoneLookupVariantsFromRaw(right));
+  if (rightSet.size === 0) return false;
+  return phoneLookupVariantsFromRaw(left).some((variant) => rightSet.has(variant));
+}
+
+export function normalizePhoneForStorage(raw: string | null | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  const normalized = normalizeAtsCallerPhone(trimmed);
+  return normalized.success ? normalized.e164 : trimmed;
+}
+
+export function appendNoteLine(existing: string | null | undefined, line: string): string {
+  const trimmed = existing?.trim();
+  return trimmed ? `${trimmed}\n${line}` : line;
 }

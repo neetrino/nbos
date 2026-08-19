@@ -3,8 +3,9 @@
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { LeadDuplicateLookupResult } from '@/lib/api/leads';
+import { LeadCandidateList } from './LeadDuplicateBannerRows';
 
-export type LeadDuplicateBannerMode = 'create' | 'phone-add';
+export type LeadDuplicateBannerMode = 'create' | 'phone-add' | 'identify';
 
 interface LeadDuplicateBannerProps {
   result: LeadDuplicateLookupResult;
@@ -12,6 +13,11 @@ interface LeadDuplicateBannerProps {
   onOpen: (leadId: string) => void;
   onMerge?: (leadId: string) => void;
   onDismiss?: () => void;
+  onOpenContact?: (contactId: string) => void;
+  onAttachContact?: (contactId: string, aboutDealId?: string) => void;
+  onOpenDeal?: (dealId: string) => void;
+  canAttach?: boolean;
+  attaching?: boolean;
 }
 
 export function LeadDuplicateBanner({
@@ -20,10 +26,16 @@ export function LeadDuplicateBanner({
   onOpen,
   onMerge,
   onDismiss,
+  onOpenContact,
+  onAttachContact,
+  onOpenDeal,
+  canAttach = false,
+  attaching = false,
 }: LeadDuplicateBannerProps) {
-  if (result.leads.length === 0 && result.openDeals.length === 0) return null;
+  if (!hasDuplicateHits(result)) return null;
 
   const hasOpenDeal = result.openDeals.length > 0 || result.leads.some((lead) => lead.hasOpenDeal);
+  const showAttach = canAttach && mode !== 'phone-add' && Boolean(onAttachContact);
 
   return (
     <div
@@ -33,54 +45,21 @@ export function LeadDuplicateBanner({
       <div className="flex gap-2">
         <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
         <div className="min-w-0 flex-1 space-y-2">
-          <p className="font-medium">
-            {mode === 'phone-add'
-              ? 'Another open Lead uses this phone. Merge only if it is the same request.'
-              : 'Possible existing Lead or open Deal for this person.'}
-          </p>
+          <p className="font-medium">{bannerTitle(mode)}</p>
           {hasOpenDeal ? (
             <p>This person already has an open Deal. Do not create a second Lead silently.</p>
           ) : null}
-          <ul className="space-y-2">
-            {result.leads.map((lead) => (
-              <li
-                key={lead.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white/70 px-2 py-1.5"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">
-                    {lead.code}
-                    {lead.name ? ` · ${lead.name}` : ''}
-                  </p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {lead.contactName}
-                    {lead.status === 'SPAM' ? ' · Spam (not auto-attached)' : ''}
-                    {lead.hasOpenDeal && lead.deal ? ` · Deal ${lead.deal.code}` : ''}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  <Button type="button" size="sm" variant="outline" onClick={() => onOpen(lead.id)}>
-                    Open
-                  </Button>
-                  {mode === 'create' ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => onOpen(lead.id)}
-                    >
-                      Attach
-                    </Button>
-                  ) : null}
-                  {mode === 'phone-add' && onMerge && lead.isOpenForAttach && !lead.hasOpenDeal ? (
-                    <Button type="button" size="sm" onClick={() => onMerge(lead.id)}>
-                      Merge
-                    </Button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <LeadCandidateList
+            result={result}
+            mode={mode}
+            showAttach={showAttach}
+            attaching={attaching}
+            onOpen={onOpen}
+            onMerge={onMerge}
+            onOpenContact={onOpenContact}
+            onAttachContact={onAttachContact}
+            onOpenDeal={onOpenDeal}
+          />
           {mode === 'create' ? (
             <p className="text-muted-foreground text-xs">
               Attach opens the existing card. Create anyway is still available below.
@@ -95,4 +74,18 @@ export function LeadDuplicateBanner({
       </div>
     </div>
   );
+}
+
+export function hasDuplicateHits(result: LeadDuplicateLookupResult): boolean {
+  return result.leads.length > 0 || result.contacts.length > 0 || result.openDeals.length > 0;
+}
+
+function bannerTitle(mode: LeadDuplicateBannerMode): string {
+  if (mode === 'phone-add') {
+    return 'Another open Lead uses this phone. Merge only if it is the same request.';
+  }
+  if (mode === 'identify') {
+    return 'Possible existing Contact or open Deal for this person.';
+  }
+  return 'Possible existing Lead, Contact, or open Deal for this person.';
 }

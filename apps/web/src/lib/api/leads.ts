@@ -106,6 +106,7 @@ export interface LeadDuplicateContact {
 export interface LeadDuplicateOpenDeal {
   id: string;
   code: string;
+  name: string | null;
   status: string;
   contactId: string | null;
   leadId: string | null;
@@ -207,6 +208,14 @@ export const leadsApi = {
     data: { absorbedId: string; fieldChoices?: LeadMergeFieldChoices; status?: string },
   ): Promise<Lead> {
     const resp = await api.post<Lead>(`/api/crm/leads/${survivorId}/merge`, data);
+    return resp.data;
+  },
+
+  async attachContact(
+    leadId: string,
+    data: { contactId: string; aboutDealId?: string },
+  ): Promise<Lead> {
+    const resp = await api.post<Lead>(`/api/crm/leads/${leadId}/attach-contact`, data);
     return resp.data;
   },
 

@@ -24,7 +24,8 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 Canon: `07-Lead-and-Deal-Merge.md`. Runtime implements intake attach + Lead merge wizard. **Deal↔Deal merge is not a product feature** — not shipped, not planned.
 
 - **Schema:** `Lead.mergedIntoId` (`20260819140000_crm_lead_merged_into`). No `MERGED` stage.
-- **Intake attach:** `GET /crm/leads/duplicates` (phone / email / Instagram username / search). ATS exact-phone attach kept; lookup now excludes Spam, absorbed, and Trash. Meta ingest: if an open Lead already has this Instagram username (via its conversation), do not create a second Lead; a new dialog stays unlinked because Meta is 1:1. A Lead is created only when no open username match exists.
+- **Intake attach:** `GET /crm/leads/duplicates` (phone / email / Instagram username / search). Returns other Leads, Contacts, and open Deals (`id, code, name, status, contactId`). ATS exact-phone attach kept; lookup now excludes Spam, absorbed, and Trash. After the number is on Contact: ATS resolves Contact by phone — open Deal → no new Lead (call on Deal’s original Lead or an open non-SQL Lead of that Contact); no open Deal → create Lead with `contactId`. Meta ingest: if an open Lead already has this Instagram username (via its conversation), do not create a second Lead; a new dialog stays unlinked because Meta is 1:1. A Lead is created only when no open username match exists.
+- **Lead→Contact attach:** `POST /crm/leads/:id/attach-contact` `{ contactId, aboutDealId? }`. Sets `contactId`; writes Lead phone onto empty Contact.phone; if Contact already has a different phone, does not overwrite (v1: one-line `Contact.notes`, number stays on Lead — no second phone slot). `aboutDealId` + OPEN Deal: trash stray Lead (not `mergedIntoId`), move ATS/Meta onto Deal’s original Lead, Deal.leadId unchanged, no new Deal. Without `aboutDealId` the Lead stays (new inquiry). Closed/Won/Failed Deal → 4xx. Audit `lead.attached_to_contact`. Restore of an about-deal trash is normal restore. Seller on assigned Lead; Head of Sales / CEO / Owner any; Marketing 403.
 - **Manual create / phone-add:** yellow banner — Open / Attach / Create anyway; after adding a phone to a Lead that had none, offer merge (no auto-merge).
 - **Lead merge:** `POST /crm/leads/:id/merge` wizard (search → survivor → conflicts → preview). Field picks; first-touch marketing (`createdAt`); notes append; ATS events move; Meta 1:1 reassign or unlink; extra contacts move; empty survivor Contact fills from absorbed (a different absorbed primary becomes extra). Absorbed → `mergedIntoId` + Profile A Trash. Audit `lead.merged`.
 - **Blocks:** SQL / Deal on either side; already absorbed or trashed; Seller unless both `assignedTo` match; Marketing never. Head of Sales / CEO / Owner any.
@@ -50,8 +51,9 @@ Runtime notes (canon silent → safer):
 ## API routes (lifecycle + merge)
 
 - `crm/leads`, `crm/deals` — list + `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
-- `GET /crm/leads/duplicates` — intake / phone-add / merge search candidates.
+- `GET /crm/leads/duplicates` — intake / phone-add / merge / identify candidates (Leads, Contacts, open Deals).
 - `POST /crm/leads/:id/merge` — survivor path id; body `{ absorbedId, fieldChoices?, status? }`.
+- `POST /crm/leads/:id/attach-contact` — body `{ contactId, aboutDealId? }`. Not a merge.
 
 ## Related code
 

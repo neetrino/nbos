@@ -17,6 +17,7 @@ import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
 import { FindLeadDuplicatesDto } from './dto/find-lead-duplicates.dto';
 import { MergeLeadDto } from './dto/merge-lead.dto';
+import { AttachLeadContactDto } from './dto/attach-lead-contact.dto';
 
 @ApiTags('CRM / Leads')
 @ApiBearerAuth()
@@ -179,6 +180,20 @@ export class LeadsController {
     return this.leadsService.mergeLeads(
       id,
       { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices, status: body.status },
+      { id: user.id, roleSlug: user.role },
+    );
+  }
+
+  @Post(':id/attach-contact')
+  @ApiOperation({ summary: 'Attach a stray Lead to an existing Contact (optional open Deal)' })
+  async attachContact(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: AttachLeadContactDto,
+  ) {
+    return this.leadsService.attachContact(
+      id,
+      { contactId: body.contactId, aboutDealId: body.aboutDealId },
       { id: user.id, roleSlug: user.role },
     );
   }

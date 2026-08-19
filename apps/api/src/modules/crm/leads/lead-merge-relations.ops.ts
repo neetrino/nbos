@@ -24,21 +24,34 @@ export async function moveLeadMergeRelations(
   input: LeadMergeRelationInput,
 ): Promise<LeadMergeRelationResult> {
   const { survivorId, absorbedId } = input;
-  const ats = await tx.atsCallEvent.updateMany({
-    where: { leadId: absorbedId },
-    data: { leadId: survivorId },
-  });
-
-  const meta = await reassignMetaConversation(tx, survivorId, absorbedId);
+  const channels = await repointLeadAtsAndMeta(tx, absorbedId, survivorId);
   const additionalContactsMoved =
     (await adoptAbsorbedPrimaryContact(tx, input)) +
     (await moveAdditionalContacts(tx, survivorId, absorbedId));
 
   return {
+    metaReassigned: channels.metaReassigned,
+    metaUnlinked: channels.metaUnlinked,
+    atsEventsMoved: channels.atsEventsMoved,
+    additionalContactsMoved,
+  };
+}
+
+/** Move ATS events; Meta 1:1 reassigns if free, otherwise unlinks the source. */
+export async function repointLeadAtsAndMeta(
+  tx: TransactionClient,
+  fromLeadId: string,
+  toLeadId: string,
+): Promise<{ atsEventsMoved: number; metaReassigned: boolean; metaUnlinked: boolean }> {
+  const ats = await tx.atsCallEvent.updateMany({
+    where: { leadId: fromLeadId },
+    data: { leadId: toLeadId },
+  });
+  const meta = await reassignMetaConversation(tx, toLeadId, fromLeadId);
+  return {
+    atsEventsMoved: ats.count,
     metaReassigned: meta.reassigned,
     metaUnlinked: meta.unlinked,
-    atsEventsMoved: ats.count,
-    additionalContactsMoved,
   };
 }
 

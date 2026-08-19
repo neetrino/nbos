@@ -84,6 +84,7 @@ describe('findLeadDuplicateCandidates', () => {
           {
             id: 'deal-1',
             code: 'D-1',
+            name: 'Site',
             status: 'START_CONVERSATION',
             contactId: null,
             leadId: 'lead-1',
@@ -94,5 +95,36 @@ describe('findLeadDuplicateCandidates', () => {
     const result = await findLeadDuplicateCandidates(db as never, { phone: '+37499123456' });
     expect(result.leads[0]?.hasOpenDeal).toBe(true);
     expect(result.openDeals).toHaveLength(1);
+    expect(result.openDeals[0]?.name).toBe('Site');
+  });
+
+  it('returns Contact matches by name search when phone does not match', async () => {
+    const db = {
+      lead: { findMany: vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([]) },
+      contact: {
+        findMany: vi
+          .fn()
+          .mockResolvedValue([
+            {
+              id: 'c-1',
+              firstName: 'Anna',
+              lastName: 'Petrosyan',
+              phone: '+37499000000',
+              email: null,
+            },
+          ]),
+      },
+      deal: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const result = await findLeadDuplicateCandidates(db as never, { search: 'Anna Petrosyan' });
+    expect(result.contacts).toHaveLength(1);
+    expect(result.contacts[0]?.id).toBe('c-1');
+    expect(db.contact.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([expect.objectContaining({ firstName: expect.anything() })]),
+        }),
+      }),
+    );
   });
 });

@@ -28,6 +28,7 @@ import {
   type LeadDuplicateLookupQuery,
 } from './lead-duplicate-lookup.ops';
 import { mergeLeads } from './lead-merge.ops';
+import { attachLeadToContact } from './lead-attach-contact.ops';
 import { LEAD_MERGE_ERROR } from './lead-identity.ops';
 import type { LeadMergeFieldChoices } from '@nbos/shared';
 
@@ -351,6 +352,21 @@ export class LeadsService {
       actorRoleSlug: actor.roleSlug,
     });
     return this.findById(survivorId);
+  }
+
+  async attachContact(
+    leadId: string,
+    body: { contactId: string; aboutDealId?: string },
+    actor: { id: string; roleSlug: string },
+  ) {
+    await attachLeadToContact(this.prisma, this.auditService, {
+      leadId,
+      contactId: body.contactId,
+      aboutDealId: body.aboutDealId,
+      actorId: actor.id,
+      actorRoleSlug: actor.roleSlug,
+    });
+    return this.findById(leadId);
   }
 
   async permanentlyDeleteFromTrash(id: string, userId: string) {

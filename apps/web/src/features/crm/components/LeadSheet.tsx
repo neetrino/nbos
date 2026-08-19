@@ -237,6 +237,14 @@ export function LeadSheet({
           mergeAbsorbedId={mergeAbsorbedId}
           onMergeFromBanner={(id) => setMergeAbsorbedId(id)}
           onConsumedMergeAbsorbed={() => setMergeAbsorbedId(null)}
+          onAttached={(updated) => {
+            onMerged?.(updated);
+            onRefresh?.();
+          }}
+          onAttachedAndTrashed={() => {
+            onRefresh?.();
+            onOpenChange(false);
+          }}
         />
       )}
     </Sheet>

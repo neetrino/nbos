@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canAttachLeadToContact,
   canMergeLeads,
+  canOfferLeadAttach,
   canOfferLeadMerge,
   defaultLeadMergeStatus,
   isAllowedLeadMergeStatusOverride,
@@ -63,6 +65,31 @@ describe('canMergeLeads', () => {
       }),
     ).toBe(false);
     expect(canOfferLeadMerge('head-marketing')).toBe(false);
+  });
+});
+
+describe('canAttachLeadToContact', () => {
+  it('allows Seller only on their assigned Lead', () => {
+    expect(canAttachLeadToContact({ roleSlug: 'seller', actorId: 's1', assignedTo: 's1' })).toBe(
+      true,
+    );
+    expect(canAttachLeadToContact({ roleSlug: 'seller', actorId: 's1', assignedTo: 's2' })).toBe(
+      false,
+    );
+    expect(canAttachLeadToContact({ roleSlug: 'seller', actorId: 's1', assignedTo: null })).toBe(
+      false,
+    );
+  });
+
+  it('allows Head of Sales on any Lead and blocks Marketing', () => {
+    expect(
+      canAttachLeadToContact({ roleSlug: 'head-sales', actorId: 'h1', assignedTo: 'other' }),
+    ).toBe(true);
+    expect(canAttachLeadToContact({ roleSlug: 'marketing', actorId: 'm1', assignedTo: 'm1' })).toBe(
+      false,
+    );
+    expect(canOfferLeadAttach('marketing')).toBe(false);
+    expect(canOfferLeadAttach('seller')).toBe(true);
   });
 });
 

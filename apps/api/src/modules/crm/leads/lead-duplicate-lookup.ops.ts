@@ -55,6 +55,7 @@ export interface LeadDuplicateContact {
 export interface LeadDuplicateOpenDeal {
   id: string;
   code: string;
+  name: string | null;
   status: string;
   contactId: string | null;
   leadId: string | null;
@@ -207,15 +208,34 @@ async function findMatchingContacts(
 ): Promise<LeadDuplicateContact[]> {
   const phones = phoneLookupVariantsFromRaw(query.phone);
   const email = normalizeLeadEmail(query.email);
+  const search = query.search?.trim();
   const or: Prisma.ContactWhereInput[] = [];
   if (phones.length > 0) or.push({ phone: { in: phones } });
   if (email) or.push({ email: { equals: email, mode: 'insensitive' } });
+  if (search) or.push(...contactSearchOrFilters(search));
   if (or.length === 0) return [];
   return db.contact.findMany({
     where: { trashedAt: null, OR: or },
     select: { id: true, firstName: true, lastName: true, phone: true, email: true },
     take: CANDIDATE_LIMIT,
   });
+}
+
+function contactSearchOrFilters(search: string): Prisma.ContactWhereInput[] {
+  const filters: Prisma.ContactWhereInput[] = [
+    { firstName: { contains: search, mode: 'insensitive' } },
+    { lastName: { contains: search, mode: 'insensitive' } },
+  ];
+  const parts = search.split(/\s+/).filter((part) => part.length > 0);
+  if (parts.length >= 2) {
+    filters.push({
+      AND: [
+        { firstName: { contains: parts[0], mode: 'insensitive' } },
+        { lastName: { contains: parts[parts.length - 1], mode: 'insensitive' } },
+      ],
+    });
+  }
+  return filters;
 }
 
 async function findLeadsForContacts(
@@ -256,7 +276,7 @@ async function findOpenDealsForIdentities(
       status: { notIn: ['WON', 'FAILED'] },
       OR: or,
     },
-    select: { id: true, code: true, status: true, contactId: true, leadId: true },
+    select: { id: true, code: true, name: true, status: true, contactId: true, leadId: true },
     take: CANDIDATE_LIMIT,
   });
   return rows;

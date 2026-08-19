@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label';
 import { leadsApi, type Lead, type LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { LeadDuplicateBanner } from './LeadDuplicateBanner';
+import { LeadDuplicateBanner, hasDuplicateHits } from './LeadDuplicateBanner';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 const DUPLICATE_LOOKUP_DEBOUNCE_MS = 350;
 
@@ -128,7 +129,21 @@ export function CreateLeadDialog({
           </div>
 
           {duplicates ? (
-            <LeadDuplicateBanner result={duplicates} mode="create" onOpen={openExisting} />
+            <LeadDuplicateBanner
+              result={duplicates}
+              mode="create"
+              onOpen={openExisting}
+              onOpenContact={(id) =>
+                window.open(`/clients/contacts?openId=${id}`, '_blank', 'noopener,noreferrer')
+              }
+              onOpenDeal={(id) =>
+                window.open(
+                  `/crm/deals?${CRM_OPEN_DEAL_QUERY}=${id}`,
+                  '_blank',
+                  'noopener,noreferrer',
+                )
+              }
+            />
           ) : null}
 
           <DialogFooter>
@@ -146,7 +161,7 @@ export function CreateLeadDialog({
             <Button type="submit" disabled={loading || !canSubmit}>
               {loading
                 ? 'Creating...'
-                : duplicates && (duplicates.leads.length > 0 || duplicates.openDeals.length > 0)
+                : duplicates && hasDuplicateHits(duplicates)
                   ? 'Create anyway'
                   : 'Create Lead'}
             </Button>

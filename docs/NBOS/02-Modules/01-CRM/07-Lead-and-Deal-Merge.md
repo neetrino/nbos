@@ -2,7 +2,7 @@
 
 > NBOS Platform — идентичность человека, attach входящих и merge карточек Lead
 >
-> **Статус:** канон (2026-08-19). Runtime: intake attach + Lead merge shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются.
+> **Статус:** канон (2026-08-19). Runtime: intake attach + Lead merge + Lead→Contact attach shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются.
 >
 > Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
 
@@ -57,6 +57,27 @@ Prevention (слой 1) даёт наибольший ROI: не плодить �
 
 **Открытый Lead** для attach: не SQL, не поглощён (`mergedIntoId` пуст), не в Trash. **SPAM** — не цель авто-attach (в ручном баннере можно показать как кандидата). **Frozen** — открытый для **точного** совпадения телефона/email (как ATS non-SQL).
 
+После того как телефон оказался на Contact, ATS (и тот же lookup) резолвит **Contact по телефону**:
+
+- есть **открытый Deal** → новый Lead **не** создавать; звонок на исходный Lead сделки (SQL-источник) или на открытый не-SQL Lead этого Contact;
+- открытого Deal нет → создать Lead **уже с `contactId`** (новое обращение).
+- точный телефон → открытый не-SQL Lead — как сегодня.
+
+## 5a. Lead → Contact attach (идентификация, не merge)
+
+Новый телефон/email всегда принадлежит **человеку (Contact)**. Deal — только **контекст**, если он **OPEN** и продавец подтверждает «это про эту сделку».
+
+Это **не** merge сущностей: нет Deal↔Deal, нет Lead→Deal merge, нет Lead↔Lead, если второй уже SQL / с Deal (тот блок остаётся).
+
+| Сценарий                                                                      | Действие                                                                                                                                                                              |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Новый номер, у Contact есть **открытый** Deal, продавец: «это про эту сделку» | `Lead.contactId` = Contact; телефон на Contact; stray Lead → Trash (не `mergedIntoId`); ATS/Meta переносятся на исходный Lead сделки. Deal.leadId не менять. Новый Deal не создавать. |
+| Старый клиент, Deal/Lead **закрыт** (Won/Failed), новый номер                 | Attach Lead → Contact + телефон. Lead **оставить** (новое обращение). К закрытой сделке не привязывать.                                                                               |
+| Contact.phone пустой                                                          | Записать телефон Lead.                                                                                                                                                                |
+| Contact.phone уже другой                                                      | Не затирать. Второго слота телефона нет: номер остаётся на Lead, одна строка в `Contact.notes` (`+374… added from Lead L-…`).                                                         |
+
+Права как у идентификации карточки: Seller на назначенном Lead; Head of Sales / CEO / Owner — любой; Marketing — нет. Restore stray Lead после about-deal — обычный restore (это не merge).
+
 ## 6. Слой 2 — Lead merge (исправление)
 
 Wizard: выбрать **survivor** и **absorbed**.
@@ -93,7 +114,7 @@ Wizard: выбрать **survivor** и **absorbed**.
 
 Действие на шите Lead: **Объединить** → поиск другой карточки → survivor → таблица конфликтов → превью что переносится → подтверждение.
 
-Жёлтый баннер, если телефон/email совпал с другим открытым Lead (или при создании — с открытым Deal как предупреждение).
+Жёлтый баннер, если телефон/email/имя совпал с другим открытым Lead, Contact или открытым Deal. Действия: открыть / привязать к Contact / «Это про эту сделку» (только OPEN Deal) / всё равно создать.
 
 Отдельный admin-only экран **не** единственный путь.
 
@@ -119,12 +140,13 @@ Wizard: выбрать **survivor** и **absorbed**.
 
 ## 11. Реализация
 
-| Срез              | Что                                                   | Статус                                |
-| ----------------- | ----------------------------------------------------- | ------------------------------------- |
-| Intake attach     | § 5 — баннер, attach, предупреждение об открытом Deal | Shipped                               |
-| Lead merge wizard | § 6 — коррекция дублей Lead                           | Shipped                               |
-| Contact merge     | Clients (`02-Contacts.md`)                            | Отдельный канон; не замена Lead merge |
-| Deal↔Deal merge   | —                                                     | **Не делаем**                         |
+| Срез                | Что                                                          | Статус                                |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------- |
+| Intake attach       | § 5 — баннер, attach, предупреждение об открытом Deal        | Shipped                               |
+| Lead→Contact attach | § 5a — идентификация; открытый Deal = контекст + trash stray | Shipped                               |
+| Lead merge wizard   | § 6 — коррекция дублей Lead                                  | Shipped                               |
+| Contact merge       | Clients (`02-Contacts.md`)                                   | Отдельный канон; не замена Lead merge |
+| Deal↔Deal merge     | —                                                            | **Не делаем**                         |
 
 ## 12. Никогда
 

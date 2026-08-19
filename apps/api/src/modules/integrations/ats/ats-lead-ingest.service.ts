@@ -9,6 +9,7 @@ import {
 } from './ats.constants';
 import { normalizeAtsCallerPhone } from './ats-phone.util';
 import { findOpenLeadByPhone } from '../../crm/leads/lead-duplicate-lookup.ops';
+import { resolveContactPhoneInbound } from '../../crm/leads/lead-contact-inbound.ops';
 import type { AtsWebhookPayload } from './ats.types';
 
 interface AtsCallEventRow {
@@ -106,10 +107,21 @@ export class AtsLeadIngestService {
       return openLead.id;
     }
 
-    return this.prisma.$transaction(async (tx) => this.createInboundLead(tx, phone.e164));
+    const byContact = await resolveContactPhoneInbound(this.prisma, phone.e164);
+    if (byContact.existingLeadId) {
+      return byContact.existingLeadId;
+    }
+
+    return this.prisma.$transaction(async (tx) =>
+      this.createInboundLead(tx, phone.e164, byContact.contactId),
+    );
   }
 
-  private async createInboundLead(tx: TransactionClient, e164: string): Promise<string> {
+  private async createInboundLead(
+    tx: TransactionClient,
+    e164: string,
+    contactId: string | null,
+  ): Promise<string> {
     // TODO: map MarketingAccount by DID (`input`) when call-tracking accounts exist.
     const contactName = `Incoming call ${e164}`;
     const lead = await tx.lead.create({
@@ -120,6 +132,7 @@ export class AtsLeadIngestService {
         phone: e164,
         source: ATS_LEAD_SOURCE,
         sourceDetail: ATS_LEAD_SOURCE_DETAIL,
+        ...(contactId ? { contactId } : {}),
       },
       select: { id: true },
     });

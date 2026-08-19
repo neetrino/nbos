@@ -266,6 +266,8 @@ uninvoiced and outstanding coverage.
 
 **Shipped (2026-08-19):** `mergedIntoId` на Lead, `GET /crm/leads/duplicates`, `POST /crm/leads/:id/merge`, create/phone-add banners, Lead merge wizard, ATS phone attach (now skips Spam/absorbed), Meta same-username does not create a second Lead (new dialog stays unlinked — 1:1), restore blocked after merge.
 
+**Shipped (2026-08-19) C4 one-liner:** Lead→Contact attach + open Deal as context (`POST /crm/leads/:id/attach-contact`); ATS Contact-phone resolve; not entity merge, not Deal↔Deal.
+
 **Сознательно не делаем:** Deal↔Deal merge — не в roadmap. Случайный дубль Deal → Failed / Trash.
 
 **Отдельный канон (не Lead merge):** Contact merge — Clients (`../03-Clients/02-Contacts.md`).

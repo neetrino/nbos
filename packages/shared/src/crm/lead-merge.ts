@@ -90,6 +90,25 @@ export function canOfferLeadMerge(roleSlug: string | null | undefined): boolean 
   return isLeadMergeUnrestrictedRole(roleSlug) || roleSlug === LEAD_MERGE_SELLER_ROLE_SLUG;
 }
 
+/**
+ * Seller on the assigned Lead; Head of Sales / CEO / Owner any; Marketing never.
+ * Same roles as merge; only one Lead is checked (not a pair).
+ */
+export function canAttachLeadToContact(params: {
+  roleSlug: string;
+  actorId: string;
+  assignedTo: string | null;
+}): boolean {
+  if (isLeadMergeBlockedRole(params.roleSlug)) return false;
+  if (isLeadMergeUnrestrictedRole(params.roleSlug)) return true;
+  if (params.roleSlug !== LEAD_MERGE_SELLER_ROLE_SLUG) return false;
+  return params.assignedTo === params.actorId;
+}
+
+export function canOfferLeadAttach(roleSlug: string | null | undefined): boolean {
+  return canOfferLeadMerge(roleSlug);
+}
+
 export function isEmptyMergeField(value: string | null | undefined): boolean {
   return value == null || value.trim() === '';
 }
