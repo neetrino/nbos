@@ -30,6 +30,21 @@ describe('mail job terminal replace', () => {
     expect(remove).not.toHaveBeenCalled();
   });
 
+  it('removes completed send jobs so reconcile can enqueue again', async () => {
+    const remove = vi.fn().mockResolvedValue(undefined);
+    const result = await prepareMailJobIdForEnqueue(
+      {
+        getJob: vi.fn().mockResolvedValue({
+          getState: vi.fn().mockResolvedValue('failed'),
+          remove,
+        }),
+      },
+      'mail-send-eade12ef-e4b3-42c1-baad-c6411683eeba',
+    );
+    expect(result).toBe('ready');
+    expect(remove).toHaveBeenCalledOnce();
+  });
+
   it('removes completed jobs so retry can enqueue again', async () => {
     const remove = vi.fn().mockResolvedValue(undefined);
     const result = await prepareMailJobIdForEnqueue(
