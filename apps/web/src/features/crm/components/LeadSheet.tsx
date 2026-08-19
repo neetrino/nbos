@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { leadsApi, type Lead, type LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { LeadSheetLoadedContent } from './LeadSheetLoadedContent';
 import { Sheet } from '@/components/ui/sheet';
-import { EntityDetailSheetContent } from '@/components/shared';
+import { EntityDetailSheetContent, EntityItemHost } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 import { applyLeadRelationCreated } from './apply-lead-relation-created';
@@ -202,61 +202,63 @@ export function LeadSheet({
   if (!hostMounted) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
-      {!renderLead ? (
-        <EntityDetailSheetContent
-          open={open}
-          layout="full"
-          contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
-          railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
-        >
-          <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
-            <Loader2 className="size-4 animate-spin" aria-hidden />
-            Loading lead…
-          </div>
-        </EntityDetailSheetContent>
-      ) : (
-        <LeadSheetLoadedContent
-          renderLead={renderLead}
-          open={open}
-          isTrashView={isTrashView}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          editingName={editingName}
-          nameValue={nameValue}
-          setNameValue={setNameValue}
-          setEditingName={setEditingName}
-          nameInputRef={nameInputRef}
-          generalDraft={generalDraft}
-          generalDirty={generalDirty}
-          generalError={generalError}
-          gateRequiredFields={gateRequiredFields}
-          onConvertToDeal={onConvertToDeal}
-          onRestore={onRestore}
-          onPermanentDelete={onPermanentDelete}
-          onMoveToTrash={onMoveToTrash}
-          onStatusChange={onStatusChange}
-          patchGeneralDraft={patchGeneralDraft}
-          handleGeneralSave={handleGeneralSave}
-          handleGeneralCancel={handleGeneralCancel}
-          phoneDuplicates={phoneDuplicates}
-          onDismissPhoneDuplicates={() => setPhoneDuplicates(null)}
-          onOpenRelatedLead={onOpenRelatedLead}
-          onMerged={onMerged}
-          mergeAbsorbedId={mergeAbsorbedId}
-          onMergeFromBanner={(id) => setMergeAbsorbedId(id)}
-          onConsumedMergeAbsorbed={() => setMergeAbsorbedId(null)}
-          onAttached={(updated) => {
-            onMerged?.(updated);
-            onRefresh?.();
-          }}
-          onAttachedAndTrashed={() => {
-            onRefresh?.();
-            onOpenChange(false);
-          }}
-          onRefresh={onRefresh}
-        />
-      )}
-    </Sheet>
+    <EntityItemHost nested onEntityChanged={onRefresh}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
+        {!renderLead ? (
+          <EntityDetailSheetContent
+            open={open}
+            layout="full"
+            contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
+            railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+          >
+            <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              Loading lead…
+            </div>
+          </EntityDetailSheetContent>
+        ) : (
+          <LeadSheetLoadedContent
+            renderLead={renderLead}
+            open={open}
+            isTrashView={isTrashView}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            editingName={editingName}
+            nameValue={nameValue}
+            setNameValue={setNameValue}
+            setEditingName={setEditingName}
+            nameInputRef={nameInputRef}
+            generalDraft={generalDraft}
+            generalDirty={generalDirty}
+            generalError={generalError}
+            gateRequiredFields={gateRequiredFields}
+            onConvertToDeal={onConvertToDeal}
+            onRestore={onRestore}
+            onPermanentDelete={onPermanentDelete}
+            onMoveToTrash={onMoveToTrash}
+            onStatusChange={onStatusChange}
+            patchGeneralDraft={patchGeneralDraft}
+            handleGeneralSave={handleGeneralSave}
+            handleGeneralCancel={handleGeneralCancel}
+            phoneDuplicates={phoneDuplicates}
+            onDismissPhoneDuplicates={() => setPhoneDuplicates(null)}
+            onOpenRelatedLead={onOpenRelatedLead}
+            onMerged={onMerged}
+            mergeAbsorbedId={mergeAbsorbedId}
+            onMergeFromBanner={(id) => setMergeAbsorbedId(id)}
+            onConsumedMergeAbsorbed={() => setMergeAbsorbedId(null)}
+            onAttached={(updated) => {
+              onMerged?.(updated);
+              onRefresh?.();
+            }}
+            onAttachedAndTrashed={() => {
+              onRefresh?.();
+              onOpenChange(false);
+            }}
+            onRefresh={onRefresh}
+          />
+        )}
+      </Sheet>
+    </EntityItemHost>
   );
 }
