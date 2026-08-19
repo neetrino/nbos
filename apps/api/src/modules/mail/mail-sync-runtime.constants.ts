@@ -1,8 +1,10 @@
-/** BullMQ jobId for one mailbox sync (debounce Pub/Sub + IDLE + poll). */
+import { toBullMqSafeJobId } from '@nbos/shared';
+
+/** Logical BullMQ jobId prefix for one mailbox sync (debounce Pub/Sub + IDLE + poll). */
 export const MAIL_SYNC_JOB_ID_PREFIX = 'mail-sync:';
 
 export function mailSyncJobId(mailAccountId: string): string {
-  return `${MAIL_SYNC_JOB_ID_PREFIX}${mailAccountId}`;
+  return toBullMqSafeJobId(`${MAIL_SYNC_JOB_ID_PREFIX}${mailAccountId}`);
 }
 
 export const MAIL_IDLE_LOCK_KEY_PREFIX = 'mail:idle:';

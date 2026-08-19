@@ -50,7 +50,7 @@
   IMAP:   mailbox → IDLE (один holder на ящик) → exists
   Safety: scheduler poll (раз в 5 мин) по активным ящикам
                  ↓
-            enqueue mail.sync   jobId = mail-sync:{mailAccountId}
+            enqueue mail.sync   jobId = mail-sync-{mailAccountId}
                  ↓
             Mail Worker
                  ↓
@@ -59,7 +59,7 @@
 ОТПРАВКА
   UI → POST compose/reply
      → persist DRAFT → QUEUED (одна транзакция)
-     → enqueue mail.send   jobId = mail-send:{messageId}
+     → enqueue mail.send   jobId = mail-send-{messageId}
      → HTTP **200** + thread (`deliveryStatus=QUEUED`) когда job принят очередью
                  ↓
             Mail Worker
@@ -139,9 +139,11 @@ SENT терминален
 
 | Job                        | Payload                                                       | `jobId`                     | Смысл                      |
 | -------------------------- | ------------------------------------------------------------- | --------------------------- | -------------------------- |
-| `mail.sync`                | `{ kind: 'sync', mailAccountId }`                             | `mail-sync:{mailAccountId}` | Один sync на ящик в полёте |
-| `mail.send`                | `{ kind: 'send', mailAccountId, messageId, actorEmployeeId }` | `mail-send:{messageId}`     | Одна отправка на письмо    |
-| `mail.attachment.download` | `{ kind: 'attachment', messageId, attachmentId }`             | `mail-att:{attachmentId}`   | Один download на вложение  |
+| `mail.sync`                | `{ kind: 'sync', mailAccountId }`                             | `mail-sync-{mailAccountId}` | Один sync на ящик в полёте |
+| `mail.send`                | `{ kind: 'send', mailAccountId, messageId, actorEmployeeId }` | `mail-send-{messageId}`     | Одна отправка на письмо    |
+| `mail.attachment.download` | `{ kind: 'attachment', messageId, attachmentId }`             | `mail-att-{attachmentId}`   | Один download на вложение  |
+
+BullMQ 5 custom `jobId` cannot contain `:`. Runtime ids are `toBullMqSafeJobId` of the logical `mail-*:{id}` keys (`mail-send-…`, `mail-att-…`, `mail-sync-…`).
 
 Повторный `queue.add` с тем же `jobId`, пока job жив — no-op (уже есть / in-flight). Это основной debounce для Pub/Sub + IDLE + poll.
 
@@ -272,7 +274,7 @@ Inbox poll (`mail-sync-reconcile`, каждые 5 мин) — **только с�
 
 ```text
 DB commit QUEUED
-  → enqueue mail.send  jobId = mail-send:{messageId}
+  → enqueue mail.send  jobId = mail-send-{messageId}
   → enqueue принят: HTTP 200 + thread, deliveryStatus=QUEUED
   → enqueue fail в production: оставить QUEUED, HTTP 503
     (не inline-send, не rollback в DRAFT; reconcile поставит job)
@@ -353,7 +355,7 @@ Inline CID (`isInline`) для исходящих: если в HTML есть cid
 
 | Риск                     | Защита                                      |
 | ------------------------ | ------------------------------------------- |
-| Два sync одного ящика    | `jobId = mail-sync:{id}`                    |
+| Два sync одного ящика    | `jobId = mail-sync-{id}`                    |
 | Два send одного письма   | `jobId` + `QUEUED→SENDING`                  |
 | Два inbound insert       | unique `(mailAccountId, providerMessageId)` |
 | N API × N IDLE           | IDLE только worker + Redis lock на ящик     |
