@@ -207,7 +207,7 @@ function DealCardTeamAvatars({ deal, onCreateTask }: { deal: Deal; onCreateTask?
           ) : null}
         </div>
       </div>
-      {onCreateTask ? <BoardCardCreateTaskButton onCreateTask={onCreateTask} /> : null}
+      {onCreateTask ? <BoardCardCreateTaskButton onCreateTask={onCreateTask} showLabel /> : null}
     </div>
   );
 }
