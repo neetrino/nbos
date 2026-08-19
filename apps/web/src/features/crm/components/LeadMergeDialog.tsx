@@ -12,20 +12,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  leadsApi,
-  type Lead,
-  type LeadDuplicateCandidate,
-  type LeadMergeFieldChoices,
-} from '@/lib/api/leads';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
+import { leadsApi, type Lead, type LeadMergeFieldChoices } from '@/lib/api/leads';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { LEAD_MERGE_ALLOWED_STATUS_OVERRIDES } from '@nbos/shared';
 import { getLeadStage } from '../constants/leadPipeline';
 import {
   buildLeadMergeConflicts,
   defaultFieldChoices,
+  filterRecentLeadMergeHits,
+  getLeadMergeCandidateSubtitle,
+  getLeadMergeCandidateTitle,
+  getLeadMergeEntityLabel,
+  isLeadMergePickBlocked,
   mergePreviewLines,
   suggestedMergeStatus,
+  type LeadMergeSearchHit,
 } from './lead-merge-wizard';
 
 type WizardStep = 'search' | 'survivor' | 'conflicts' | 'preview';
@@ -47,13 +49,15 @@ export function LeadMergeDialog({
 }: LeadMergeDialogProps) {
   const [step, setStep] = useState<WizardStep>('search');
   const [query, setQuery] = useState('');
-  const [hits, setHits] = useState<LeadDuplicateCandidate[]>([]);
+  const [hits, setHits] = useState<LeadMergeSearchHit[]>([]);
   const [other, setOther] = useState<Lead | null>(null);
   const [currentIsSurvivor, setCurrentIsSurvivor] = useState(true);
   const [choices, setChoices] = useState<LeadMergeFieldChoices>({});
   const [status, setStatus] = useState('NEW');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS).trim();
 
   const survivor = currentIsSurvivor ? currentLead : other;
   const absorbed = currentIsSurvivor ? other : currentLead;
@@ -86,20 +90,45 @@ export function LeadMergeDialog({
     setChoices(defaultFieldChoices(survivor, absorbed, conflicts));
   }, [survivor, absorbed, conflicts]);
 
-  const search = async () => {
-    const q = query.trim();
-    if (!q) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await leadsApi.findDuplicates({ q, excludeId: currentLead.id });
-      setHits(result.leads);
-    } catch (err) {
-      setError(getApiErrorMessage(err, 'Could not search Leads.'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!open || step !== 'search') return;
+    let cancelled = false;
+
+    const loadHits = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const nextHits = debouncedQuery
+          ? (
+              await leadsApi.findDuplicates({
+                q: debouncedQuery,
+                excludeId: currentLead.id,
+              })
+            ).leads
+          : filterRecentLeadMergeHits(
+              (
+                await leadsApi.getAll({
+                  pageSize: 15,
+                  scope: 'active',
+                  sortBy: 'createdAt',
+                  sortOrder: 'desc',
+                })
+              ).items,
+              currentLead.id,
+            );
+        if (!cancelled) setHits(nextHits);
+      } catch (err) {
+        if (!cancelled) setError(getApiErrorMessage(err, 'Could not search Leads.'));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void loadHits();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, step, debouncedQuery, currentLead.id]);
 
   const pickOther = async (id: string) => {
     setLoading(true);
@@ -145,31 +174,26 @@ export function LeadMergeDialog({
         {step === 'search' ? (
           <div className="space-y-3">
             <Label htmlFor="lead-merge-search">Find the other Lead</Label>
-            <div className="flex gap-2">
-              <Input
-                id="lead-merge-search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Code, name, phone, email…"
-              />
-              <Button type="button" onClick={() => void search()} disabled={loading}>
-                Search
-              </Button>
-            </div>
+            <Input
+              id="lead-merge-search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Name, contact, phone, email, code…"
+              autoComplete="off"
+            />
+            {loading ? <p className="text-muted-foreground text-xs">Searching…</p> : null}
             <ul className="max-h-56 space-y-1 overflow-auto">
               {hits.map((hit) => (
                 <li key={hit.id}>
                   <button
                     type="button"
                     className="hover:bg-muted w-full rounded-md px-2 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={hit.hasOpenDeal}
+                    disabled={isLeadMergePickBlocked(hit)}
                     onClick={() => void pickOther(hit.id)}
                   >
-                    <span className="font-medium">{hit.code}</span>
-                    {hit.name ? ` · ${hit.name}` : ''}
+                    <span className="font-medium">{getLeadMergeCandidateTitle(hit)}</span>
                     <span className="text-muted-foreground block text-xs">
-                      {hit.contactName}
-                      {hit.hasOpenDeal ? ' · has Deal (cannot merge)' : ''}
+                      {getLeadMergeCandidateSubtitle(hit) || 'Lead'}
                     </span>
                   </button>
                 </li>
@@ -189,7 +213,8 @@ export function LeadMergeDialog({
                 onChange={() => setCurrentIsSurvivor(true)}
               />
               <span>
-                Keep {currentLead.code} — absorb {other.code}
+                Keep {getLeadMergeEntityLabel(currentLead)} — absorb{' '}
+                {getLeadMergeEntityLabel(other)}
               </span>
             </label>
             <label className="flex items-start gap-2">
@@ -200,7 +225,8 @@ export function LeadMergeDialog({
                 onChange={() => setCurrentIsSurvivor(false)}
               />
               <span>
-                Keep {other.code} — absorb {currentLead.code}
+                Keep {getLeadMergeEntityLabel(other)} — absorb{' '}
+                {getLeadMergeEntityLabel(currentLead)}
               </span>
             </label>
           </div>
@@ -224,7 +250,7 @@ export function LeadMergeDialog({
                       onChange={() => setChoices((prev) => ({ ...prev, [row.key]: 'survivor' }))}
                     />
                     <span>
-                      Keep {survivor.code}: {row.survivorValue}
+                      Keep {getLeadMergeEntityLabel(survivor)}: {row.survivorValue}
                     </span>
                   </label>
                   <label className="flex gap-2">
@@ -235,7 +261,7 @@ export function LeadMergeDialog({
                       onChange={() => setChoices((prev) => ({ ...prev, [row.key]: 'absorbed' }))}
                     />
                     <span>
-                      Use {absorbed.code}: {row.absorbedValue}
+                      Use {getLeadMergeEntityLabel(absorbed)}: {row.absorbedValue}
                     </span>
                   </label>
                 </fieldset>
