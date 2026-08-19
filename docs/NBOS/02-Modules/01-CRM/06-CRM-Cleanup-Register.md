@@ -24,6 +24,7 @@
 - `03-Deal-Pipeline.md`
 - `04-Offers-and-Handoff.md`
 - `05-Deal-Stage-Gates-and-Won-Override.md`
+- `07-Lead-and-Deal-Merge.md`
 - `../../04-Finance/03-Subscriptions.md`
 - `../../../03-Business-Logic/04-Subscription-Billing-Logic.md`
 
@@ -258,6 +259,24 @@ uninvoiced and outstanding coverage.
 
 - углубить Extension delivery board depth after Done gate foundation;
 - later deepen reconciliation and activation rules in Finance instead of CRM.
+
+### C4. Нет Lead/Deal merge и кросс-канального дедупа на входе
+
+Канон: `07-Lead-and-Deal-Merge.md`.
+
+Проблема:
+
+- Meta ingest создаёт Lead на каждый Instagram-диалог (`MetaConversation.leadId` 1:1), обычно без телефона;
+- ATS ищет открытый Lead только по телефону, иначе создаёт новый;
+- Instagram + позже звонок = две карточки Lead;
+- wizard merge и указатель `mergedIntoId` в runtime отсутствуют.
+
+Что потом нужно сделать (не сейчас; фазы в каноне § 11):
+
+1. intake attach / баннер кандидатов;
+2. Lead merge wizard;
+3. Contact merge — уже Clients, не замена Lead merge;
+4. Deal merge последним, со строгими стражами. Не MVP-next.
 
 ---
 

@@ -19,6 +19,17 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
 
+## Canon, not shipped — Lead/Deal merge and intake dedupe
+
+Canon locked in `07-Lead-and-Deal-Merge.md` (2026-08-19). **Not in runtime**, except ATS exact-phone attach to an open non-SQL Lead.
+
+Implementation later, in this order (Deal merge is **not** MVP-next):
+
+1. Intake dedupe / attach (highest ROI).
+2. Lead merge wizard (`mergedIntoId` + Profile A Trash; no `MERGED` stage).
+3. Contact merge — already Clients canon (`../03-Clients/02-Contacts.md`); not a substitute for Lead merge.
+4. Deal merge last — strict guards; default do not merge.
+
 ## MVP assumptions (Trash)
 
 - Operational delete = **Trash-first** (`09-Entity-Lifecycle-Standard.md`). Hard purge via retention job or `DELETE …/permanent` (relation guards).

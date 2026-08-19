@@ -43,6 +43,12 @@ For stale logic and removal tracking see `06-CRM-Cleanup-Register.md`.
 2. Данные контакта (имя, телефон, email) переносятся из лида
 3. Источник лида сохраняется для аналитики
 
+### Дубли входящих и объединение карточек
+
+Канал (Instagram, звонок, форма) — история на карточке, не вторая карточка Lead. Тот же человек + два разных запроса — два Lead на одном Contact. Две сделки на одном Contact часто корректны.
+
+Полный канон (intake attach, Lead merge, строгий Deal merge, права, фазы): `07-Lead-and-Deal-Merge.md`. Merge Contact — `../03-Clients/02-Contacts.md`; это не замена merge Lead.
+
 ---
 
 ## Основные сценарии сделок
