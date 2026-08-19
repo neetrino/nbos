@@ -16,6 +16,11 @@ import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead, LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
+import {
+  LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  LEAD_DETAIL_SHEET_WIDTH_CLASS,
+  LEAD_SHEET_PIPELINE_SCROLL_CLASS,
+} from '@/features/crm/constants/lead-sheet-layout';
 import { LEAD_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { LeadGeneralTab } from './LeadGeneralTab';
 import type { LeadGeneralDraft } from './lead-general-form-state';
@@ -28,7 +33,7 @@ import { canOfferLeadMerge } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions';
 import { LeadDuplicateBanner } from './LeadDuplicateBanner';
 import { LeadSheetIdentifySection } from './LeadSheetIdentifySection';
-import { LeadSheetMergeControls } from './LeadSheetMergeControls';
+import { LeadSvyazatMenu } from './LeadSvyazatMenu';
 
 export const LEAD_SHEET_TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -106,7 +111,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
     <EntityDetailSheetContent
       open={props.open}
       layout="full"
-      width="medium"
+      contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
+      railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
       sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
     >
       <CrmSheetEntityHeader
@@ -136,6 +142,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
             mergeAbsorbedId={props.mergeAbsorbedId}
             onConsumedMergeAbsorbed={props.onConsumedMergeAbsorbed}
             onMerged={props.onMerged}
+            onUpdated={props.onAttached}
+            onTrashed={props.onAttachedAndTrashed}
             onConvertToDeal={props.onConvertToDeal}
             onRestore={props.onRestore}
             onPermanentDelete={props.onPermanentDelete}
@@ -145,7 +153,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         }
       />
 
-      <div className="shrink-0 pb-3">
+      <div className={`shrink-0 px-5 pb-3 ${LEAD_SHEET_PIPELINE_SCROLL_CLASS}`}>
         <LeadPipelineStages
           currentStatus={renderLead.status}
           onStageClick={isTrashView ? () => {} : (key) => props.onStatusChange(renderLead.id, key)}
@@ -160,7 +168,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         }
       />
 
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea className="min-h-0 min-w-0 flex-1">
         <div className="px-5 py-4">
           <LeadSheetIdentifySection
             lead={renderLead}
@@ -224,6 +232,8 @@ function LeadSheetHeaderActions(props: {
   mergeAbsorbedId: string | null;
   onConsumedMergeAbsorbed: () => void;
   onMerged?: (lead: Lead) => void;
+  onUpdated: (lead: Lead) => void;
+  onTrashed: () => void;
   onConvertToDeal?: (lead: Lead) => void;
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
@@ -234,12 +244,14 @@ function LeadSheetHeaderActions(props: {
   return (
     <>
       {!isTrashView && props.onMerged ? (
-        <LeadSheetMergeControls
+        <LeadSvyazatMenu
           lead={renderLead}
           isTrashView={isTrashView}
           initialAbsorbedId={props.mergeAbsorbedId}
           onConsumedInitialAbsorbed={props.onConsumedMergeAbsorbed}
           onMerged={props.onMerged}
+          onUpdated={props.onUpdated}
+          onTrashed={props.onTrashed}
         />
       ) : null}
       {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (

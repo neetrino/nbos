@@ -16,6 +16,10 @@ import {
   isLeadGeneralDirty,
   type LeadGeneralDraft,
 } from './lead-general-form-state';
+import {
+  LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
+  LEAD_DETAIL_SHEET_WIDTH_CLASS,
+} from '@/features/crm/constants/lead-sheet-layout';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import type { ApiFieldError } from '@/lib/api-errors';
 
@@ -200,7 +204,12 @@ export function LeadSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       {!renderLead ? (
-        <EntityDetailSheetContent open={open} layout="full" width="medium">
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
+          railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+        >
           <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
             <Loader2 className="size-4 animate-spin" aria-hidden />
             Loading lead…

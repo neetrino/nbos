@@ -168,7 +168,7 @@ export function PipelineStagesBar({
 
   return (
     <div
-      className={`flex select-none ${disabled ? 'pointer-events-none opacity-60' : ''}`}
+      className={`flex w-full min-w-0 select-none ${disabled ? 'pointer-events-none opacity-60' : ''}`}
       onMouseLeave={() => setHoverIdx(null)}
     >
       {stages.map((stage, index) => {
@@ -193,7 +193,7 @@ export function PipelineStagesBar({
             onMouseEnter={() => setHoverIdx(index)}
             title={stage.label}
             className={
-              'relative flex-1 active:scale-[0.98] ' +
+              'relative min-w-0 flex-1 active:scale-[0.98] ' +
               (clickable ? 'cursor-pointer' : isFuture ? 'cursor-not-allowed' : 'cursor-default')
             }
             style={{

@@ -29,6 +29,8 @@ import {
 } from './lead-duplicate-lookup.ops';
 import { mergeLeads } from './lead-merge.ops';
 import { attachLeadToContact } from './lead-attach-contact.ops';
+import { pourLeadIntoContact } from './lead-pour-into-contact.ops';
+import { createContactFromLead } from './lead-create-contact.ops';
 import { LEAD_MERGE_ERROR } from './lead-identity.ops';
 import type { LeadMergeFieldChoices } from '@nbos/shared';
 
@@ -46,6 +48,7 @@ const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
 interface CreateLeadDto {
   name: string;
   contactName?: string;
+  contactId?: string;
   phone?: string;
   email?: string;
   source?: string | null;
@@ -195,6 +198,15 @@ export class LeadsService {
         meta.actorRoleLevel,
       );
     }
+    if (resolved.contactId) {
+      const contact = await this.prisma.contact.findUnique({
+        where: { id: resolved.contactId },
+        select: { id: true, trashedAt: true },
+      });
+      if (!contact || contact.trashedAt) {
+        throw new NotFoundException(`Contact ${resolved.contactId} not found`);
+      }
+    }
     const code = await this.generateCode();
     const createData: Prisma.LeadUncheckedCreateInput = {
       code,
@@ -212,6 +224,7 @@ export class LeadsService {
       marketingActivityId: resolved.marketingActivityId,
       assignedTo: resolved.assignedTo,
       notes: resolved.notes,
+      ...(resolved.contactId ? { contactId: resolved.contactId } : {}),
     };
 
     return this.prisma.lead.create({
@@ -363,6 +376,34 @@ export class LeadsService {
       leadId,
       contactId: body.contactId,
       aboutDealId: body.aboutDealId,
+      actorId: actor.id,
+      actorRoleSlug: actor.roleSlug,
+    });
+    return this.findById(leadId);
+  }
+
+  async pourIntoContact(
+    leadId: string,
+    contactId: string,
+    actor: { id: string; roleSlug: string },
+  ) {
+    await pourLeadIntoContact(this.prisma, this.auditService, {
+      leadId,
+      contactId,
+      actorId: actor.id,
+      actorRoleSlug: actor.roleSlug,
+    });
+    return this.findById(leadId);
+  }
+
+  async createContactFromLead(
+    leadId: string,
+    body: { attach?: { type: 'deal' | 'project' | 'lead'; id: string } },
+    actor: { id: string; roleSlug: string },
+  ) {
+    await createContactFromLead(this.prisma, this.auditService, {
+      leadId,
+      attach: body.attach,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
     });

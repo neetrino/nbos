@@ -150,7 +150,7 @@ export function EntityDetailSheetContent({
       className={cn(contentClassName ?? preset.contentClass, className)}
       {...props}
     >
-      {children}
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">{children}</div>
     </SheetContent>
   );
 }

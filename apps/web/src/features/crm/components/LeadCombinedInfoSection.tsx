@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { User, Phone, Mail, Link2, LayoutGrid } from 'lucide-react';
 import {
-  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DetailSheetCollapsibleSection,
@@ -21,6 +20,7 @@ import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import { LeadMarketingFields } from './LeadGeneralMarketingSection';
+import { shouldHideLeadIdentityFields } from './lead-identity-fields';
 
 interface LeadCombinedInfoSectionProps {
   lead: Lead;
@@ -49,6 +49,10 @@ export function LeadCombinedInfoSection({
   const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
   const searchEmployees = useEmployeeRelationSearch();
+  const hideIdentityFields = shouldHideLeadIdentityFields({
+    contactId: lead.contactId,
+    contactIds: draft.contactIds,
+  });
 
   return (
     <DetailSheetCollapsibleSection
@@ -57,46 +61,50 @@ export function LeadCombinedInfoSection({
       open={open}
       onOpenChange={setOpen}
     >
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
-        <div id={sectionIds.contact} className="min-w-0 sm:pr-5">
+      <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 md:gap-0">
+        <div id={sectionIds.contact} className="min-w-0 md:pr-5">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Contact</p>
           <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-            <InlineField
-              variant="controlled"
-              label="Contact name"
-              hideLabel
-              type="text"
-              value={draft.contactName}
-              placeholder="Contact name…"
-              icon={<User size={18} />}
-              disabled={formDisabled}
-              className={leadStageGateFieldClass(gateRequiredFields, 'contactName')}
-              onValueChange={(v) => patchDraft({ contactName: v })}
-            />
-            <InlineField
-              variant="controlled"
-              label="Phone"
-              hideLabel
-              type="phone"
-              value={draft.phone ?? ''}
-              placeholder="+374…"
-              icon={<Phone size={18} />}
-              disabled={formDisabled}
-              className={leadStageGateFieldClass(gateRequiredFields, 'phone')}
-              onValueChange={(v) => patchDraft({ phone: v || null })}
-            />
-            <InlineField
-              variant="controlled"
-              label="Email"
-              hideLabel
-              type="email"
-              value={draft.email ?? ''}
-              placeholder="email@example.com"
-              icon={<Mail size={18} />}
-              disabled={formDisabled}
-              className={leadStageGateFieldClass(gateRequiredFields, 'email')}
-              onValueChange={(v) => patchDraft({ email: v || null })}
-            />
+            {!hideIdentityFields ? (
+              <>
+                <InlineField
+                  variant="controlled"
+                  label="Contact name"
+                  hideLabel
+                  type="text"
+                  value={draft.contactName}
+                  placeholder="Contact name…"
+                  icon={<User size={18} />}
+                  disabled={formDisabled}
+                  className={leadStageGateFieldClass(gateRequiredFields, 'contactName')}
+                  onValueChange={(v) => patchDraft({ contactName: v })}
+                />
+                <InlineField
+                  variant="controlled"
+                  label="Phone"
+                  hideLabel
+                  type="phone"
+                  value={draft.phone ?? ''}
+                  placeholder="+374…"
+                  icon={<Phone size={18} />}
+                  disabled={formDisabled}
+                  className={leadStageGateFieldClass(gateRequiredFields, 'phone')}
+                  onValueChange={(v) => patchDraft({ phone: v || null })}
+                />
+                <InlineField
+                  variant="controlled"
+                  label="Email"
+                  hideLabel
+                  type="email"
+                  value={draft.email ?? ''}
+                  placeholder="email@example.com"
+                  icon={<Mail size={18} />}
+                  disabled={formDisabled}
+                  className={leadStageGateFieldClass(gateRequiredFields, 'email')}
+                  onValueChange={(v) => patchDraft({ email: v || null })}
+                />
+              </>
+            ) : null}
             <RelationPickerField
               label="Contacts"
               entityKind="contact"
@@ -146,7 +154,7 @@ export function LeadCombinedInfoSection({
             </div>
           </div>
         </div>
-        <div id={sectionIds.marketing} className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+        <div id={sectionIds.marketing} className="border-border min-w-0 md:border-l md:pl-5">
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Marketing</p>
           <LeadMarketingFields
             lead={lead}
