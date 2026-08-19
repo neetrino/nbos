@@ -65,8 +65,13 @@ export function TaskSheet({
     onDelete,
     onRestore,
   });
-  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [extrasOpen, setExtrasOpen] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  function handleAddChecklist() {
+    setExtrasOpen(true);
+    void state.handleAddChecklist();
+  }
 
   const task = state.task;
   const isTrashed = Boolean(task && (isTaskInTrash(task) || isTrashView));
@@ -203,7 +208,7 @@ export function TaskSheet({
                                     [checklistId]: value,
                                   }))
                                 }
-                                onAddChecklist={state.handleAddChecklist}
+                                onAddChecklist={handleAddChecklist}
                                 onAddItem={state.handleAddItem}
                                 onToggleItem={state.handleToggleItem}
                                 onDeleteChecklist={state.handleDeleteChecklist}
@@ -226,7 +231,7 @@ export function TaskSheet({
                             onNewItemTextChange={(checklistId, value) =>
                               state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
                             }
-                            onAddChecklist={state.handleAddChecklist}
+                            onAddChecklist={handleAddChecklist}
                             onAddItem={state.handleAddItem}
                             onToggleItem={state.handleToggleItem}
                             onDeleteChecklist={state.handleDeleteChecklist}

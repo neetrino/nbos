@@ -48,6 +48,7 @@ export function TaskChecklistSection({
               key={checklist.id}
               checklist={checklist}
               newItemText={newItemTexts[checklist.id] ?? ''}
+              autoFocusItem={checklist.id === newEmptyChecklistId(task.checklists)}
               onNewItemTextChange={(value) => onNewItemTextChange(checklist.id, value)}
               onAddItem={() => onAddItem(checklist.id)}
               onToggleItem={(itemId) => onToggleItem(checklist.id, itemId)}
@@ -83,9 +84,17 @@ export function TaskChecklistSection({
   );
 }
 
+export function newEmptyChecklistId(
+  checklists: ReadonlyArray<{ id: string; items: readonly unknown[] }>,
+): string | null {
+  const last = checklists.at(-1);
+  return last && last.items.length === 0 ? last.id : null;
+}
+
 interface ChecklistCardProps {
   checklist: Task['checklists'][number];
   newItemText: string;
+  autoFocusItem?: boolean;
   onNewItemTextChange: (value: string) => void;
   onAddItem: () => void;
   onToggleItem: (itemId: string) => void;
@@ -96,6 +105,7 @@ interface ChecklistCardProps {
 function ChecklistCard({
   checklist,
   newItemText,
+  autoFocusItem = false,
   onNewItemTextChange,
   onAddItem,
   onToggleItem,
@@ -148,6 +158,7 @@ function ChecklistCard({
           onChange={(event) => onNewItemTextChange(event.target.value)}
           placeholder="Add item..."
           className="h-8 text-sm"
+          autoFocus={autoFocusItem}
           onKeyDown={(event) => event.key === 'Enter' && onAddItem()}
         />
         <Button
