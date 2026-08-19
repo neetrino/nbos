@@ -5,6 +5,8 @@ import * as jwt from 'jsonwebtoken';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { MailConnectService } from './mail-connect.service';
+import { normalizeMailboxEmail } from './mail-account-uniqueness.ops';
+import { upsertGmailMailbox } from './mail-connect-gmail.ops';
 import {
   GMAIL_SCOPES,
   hasGmailModifyScope,
@@ -26,6 +28,7 @@ export type GmailOAuthErrorReason =
   | 'token_exchange_failed'
   | 'missing_refresh_token'
   | 'insufficient_scope'
+  | 'mailbox_already_connected'
   | 'unknown';
 
 @Injectable()
@@ -114,8 +117,16 @@ export class MailGmailOAuthService {
     }
     const gmail = google.gmail({ version: 'v1', auth: client });
     const profile = await gmail.users.getProfile({ userId: 'me' });
-    const emailAddress = profile.data.emailAddress ?? '';
-    const accountId = await this.upsertGmailAccount(employeeId, emailAddress, grantedScopes);
+    const emailAddress = normalizeMailboxEmail(profile.data.emailAddress ?? '');
+    if (!emailAddress) {
+      throw new BadRequestException('Google did not return a Gmail address');
+    }
+    const accountId = await upsertGmailMailbox(
+      this.prisma,
+      employeeId,
+      emailAddress,
+      grantedScopes,
+    );
     const existingSecret = await this.secretStore.read(accountId);
     const refreshToken =
       tokens.refresh_token ??
@@ -138,55 +149,6 @@ export class MailGmailOAuthService {
     } catch {
       throw new BadRequestException('Invalid or expired OAuth state');
     }
-  }
-
-  private async upsertGmailAccount(
-    employeeId: string,
-    emailAddress: string,
-    grantedScopes: string[],
-  ): Promise<string> {
-    const existing = await this.prisma.mailAccount.findFirst({
-      where: { ownerEmployeeId: employeeId, emailAddress, providerType: 'GMAIL' },
-      select: { id: true },
-    });
-    if (existing) {
-      await this.prisma.mailProviderConnection.update({
-        where: { mailAccountId: existing.id },
-        data: {
-          status: 'CONNECTED',
-          providerAccountId: emailAddress,
-          grantedScopes,
-          lastValidatedAt: new Date(),
-          lastErrorAt: null,
-          lastErrorMessage: null,
-        },
-      });
-      await this.prisma.mailAccount.update({
-        where: { id: existing.id },
-        data: { status: 'ACTIVE' },
-      });
-      return existing.id;
-    }
-    const created = await this.prisma.mailAccount.create({
-      data: {
-        ownerEmployeeId: employeeId,
-        createdByEmployeeId: employeeId,
-        emailAddress,
-        providerType: 'GMAIL',
-        status: 'ACTIVE',
-        providerConnection: {
-          create: {
-            providerType: 'GMAIL',
-            status: 'CONNECTED',
-            providerAccountId: emailAddress,
-            grantedScopes: GMAIL_SCOPES,
-            lastValidatedAt: new Date(),
-          },
-        },
-      },
-      select: { id: true },
-    });
-    return created.id;
   }
 
   private async exchangeCodeForTokens(

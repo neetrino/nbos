@@ -3,7 +3,10 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { dispatchAttachmentDownload } from './mail-attachment-dispatch';
 import { MailAttachmentDownloadService } from './mail-attachment-download.service';
-import { queueFailedAttachmentForRetry } from './mail-attachment-retry.ops';
+import {
+  isAttachmentDownloadRetryable,
+  queueFailedAttachmentForRetry,
+} from './mail-attachment-retry.ops';
 import { MailQueueService } from './mail-queue.service';
 import { fetchMailThreadMessageForEdit } from './mail-thread-message-access.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
@@ -45,7 +48,7 @@ export class MailAttachmentMutationService {
     if (!attachment) {
       throw new NotFoundException('Attachment not found');
     }
-    await this.queueFailedAndDispatch(messageId, attachmentId, attachment.downloadStatus);
+    await this.queueRetryableAndDispatch(messageId, attachmentId, attachment.downloadStatus);
     return requireMailThreadDetailDto(this.prisma, {
       employeeId,
       viewScope: accessScope,
@@ -53,17 +56,19 @@ export class MailAttachmentMutationService {
     });
   }
 
-  private async queueFailedAndDispatch(
+  private async queueRetryableAndDispatch(
     messageId: string,
     attachmentId: string,
     downloadStatus: string,
   ): Promise<void> {
-    if (downloadStatus !== 'FAILED') {
-      throw new BadRequestException('Only failed attachments can be retried');
+    if (!isAttachmentDownloadRetryable(downloadStatus)) {
+      throw new BadRequestException('Only pending or failed attachments can be retried');
     }
-    const updated = await queueFailedAttachmentForRetry(this.prisma, { messageId, attachmentId });
-    if (!updated) {
-      throw new BadRequestException('Only failed attachments can be retried');
+    if (downloadStatus === 'FAILED') {
+      const updated = await queueFailedAttachmentForRetry(this.prisma, { messageId, attachmentId });
+      if (!updated) {
+        throw new BadRequestException('Only pending or failed attachments can be retried');
+      }
     }
     await dispatchAttachmentDownload({
       queue: this.queue,

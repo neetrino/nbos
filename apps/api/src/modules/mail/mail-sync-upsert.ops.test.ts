@@ -47,7 +47,10 @@ function createPrisma(options: {
         : vi.fn().mockResolvedValue({ id: 'msg-1' }),
     },
     emailRecipient: { createMany: vi.fn() },
-    emailAttachment: { create: vi.fn().mockResolvedValue(createdAttachment) },
+    emailAttachment: {
+      create: vi.fn().mockResolvedValue(createdAttachment),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   };
   return {
     tx,
@@ -76,10 +79,22 @@ describe('upsertNormalizedMessages attachments', () => {
     expect(data.fileAssetId).toBeUndefined();
   });
 
-  it('skips unique duplicates and does not re-enqueue attachments', async () => {
+  it('skips unique duplicates and does not re-enqueue fresh attachments', async () => {
     const { prisma, tx } = createPrisma({ existingMessage: true });
     const result = await upsertNormalizedMessages(prisma as never, 'acc-1', [inboundMessage()]);
     expect(result).toEqual({ stored: 0, pendingDownloads: [] });
+    expect(tx.emailAttachment.create).not.toHaveBeenCalled();
+    expect(tx.emailAttachment.findMany).toHaveBeenCalled();
+  });
+
+  it('re-enqueues stuck PENDING attachments on unique skip', async () => {
+    const { prisma, tx } = createPrisma({ existingMessage: true });
+    tx.emailAttachment.findMany.mockResolvedValue([{ id: 'att-stuck' }]);
+    const result = await upsertNormalizedMessages(prisma as never, 'acc-1', [inboundMessage()]);
+    expect(result).toEqual({
+      stored: 0,
+      pendingDownloads: [{ messageId: 'msg-old', attachmentId: 'att-stuck' }],
+    });
     expect(tx.emailAttachment.create).not.toHaveBeenCalled();
   });
 

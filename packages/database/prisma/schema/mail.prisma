@@ -66,6 +66,7 @@ model MailAccount {
   providerSecret     MailProviderSecret?
 
   @@index([ownerEmployeeId])
+  /// Partial unique: `mail_accounts_live_email_lower_uidx` on lower(email_address) WHERE status <> DISABLED.
   @@map("mail_accounts")
 }
 

@@ -29,9 +29,16 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 - Sync persists attachment metadata only; `mail.attachment.download` jobId `mail-att:{attachmentId}`.
 - Worker: `adapter.downloadAttachment` → Drive `FileAsset` (`MAIL` / `OTHER` / `RESTRICTED`) → `READY`. Cap **25 MiB**.
 - Transient errors throw (BullMQ retry). Permanent / oversize / auth → `FAILED` (auth also `NEEDS_RECONNECT`); job completes.
-- `POST …/attachments/:id/retry-download` (`FAILED → PENDING` + enqueue). Production enqueue miss → **503**, row stays `PENDING`.
-- UI: Pending / Ready / Failed + Retry; message body stays readable. Worker logs include `errorClass` when known.
-- No new Mail cron flags.
+- `POST …/attachments/:id/retry-download` (`FAILED → PENDING`, or re-enqueue `PENDING`) + enqueue. Production enqueue miss → **503**, row stays `PENDING`.
+- UI: Pending / Ready / Failed; Retry for Failed and for Pending older than **3 min** (stuck / enqueue-miss). Body stays readable.
+- Attachment enqueue replaces completed/failed BullMQ jobs (`mail-att:{id}`) so Retry actually runs. Sync unique-skip re-enqueues stuck PENDING (no `fileAsset`).
+- Worker logs include `errorClass` when known. No new Mail cron flags.
+
+## Shipped — unique live mailbox per email
+
+- Canon: shared mailbox is one `MailAccount` + `MailAccountAccess`, not two owners Connecting the same address. Unique key is **global** `lower(email_address)` among live rows (`status <> DISABLED`), not `(owner, email)`.
+- Migration `20260819183000_mail_accounts_live_email_unique` normalizes emails, disables extra live duplicates (keeps secret / last sync / newest), then creates partial unique index `mail_accounts_live_email_lower_uidx`. DISABLED leftovers (e.g. junk `test@`) may coexist.
+- Corporate and Gmail Connect reuse the owner’s existing row (including `DISABLED`); another employee’s live mailbox of the same address → 409 (Gmail OAuth → `mailbox_already_connected`). Prod still needs `migrate deploy` of this migration.
 
 ## Shipped — corporate persist-on-fail + reconnect
 

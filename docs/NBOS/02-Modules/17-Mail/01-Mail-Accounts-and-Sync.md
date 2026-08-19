@@ -130,7 +130,7 @@ Corporate IMAP/SMTP: failed validation still persists hosts/login and the encryp
 3. сохранить историю и business links;
 4. дать owner/admin возможность архивировать или удалить данные по отдельной policy.
 
-MVP UX: Settings → **Delete mailbox** on the selected account disconnects it (`DISABLED`, secrets removed). Daily switcher and All-mailboxes inbox omit `DISABLED` rows so disconnected / leftover Off duplicates disappear. Reconnect is for `NEEDS_RECONNECT`, not a pile of Off rows. Same owner + email + corporate provider upserts one row.
+MVP UX: Settings → **Delete mailbox** on the selected account disconnects it (`DISABLED`, secrets removed). Daily switcher and All-mailboxes inbox omit `DISABLED` rows so disconnected / leftover Off duplicates disappear. Reconnect is for `NEEDS_RECONNECT`, not a pile of Off rows. Connect (corporate or Gmail) upserts the existing row for that address, including `DISABLED` / `NEEDS_RECONNECT`. A second live Connect of the same address is rejected: shared mailbox is one `MailAccount` plus `MailAccountAccess`, not three Connects of `sales@`. Hard uniqueness is a partial unique index on `lower(email_address)` among non-`DISABLED` rows — leftover Off duplicates may remain until cleanup, but two live mailboxes of the same address cannot.
 
 ## MVP decisions
 

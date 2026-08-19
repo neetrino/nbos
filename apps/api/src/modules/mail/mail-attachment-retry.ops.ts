@@ -1,5 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
 
+export function isAttachmentDownloadRetryable(downloadStatus: string): boolean {
+  return downloadStatus === 'FAILED' || downloadStatus === 'PENDING';
+}
+
 /**
  * Moves a FAILED inbound attachment back to PENDING for another download.
  * @returns whether a row was updated

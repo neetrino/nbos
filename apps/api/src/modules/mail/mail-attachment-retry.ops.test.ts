@@ -1,5 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { queueFailedAttachmentForRetry } from './mail-attachment-retry.ops';
+import {
+  isAttachmentDownloadRetryable,
+  queueFailedAttachmentForRetry,
+} from './mail-attachment-retry.ops';
+
+describe('isAttachmentDownloadRetryable', () => {
+  it('allows Failed and Pending, not Ready', () => {
+    expect(isAttachmentDownloadRetryable('FAILED')).toBe(true);
+    expect(isAttachmentDownloadRetryable('PENDING')).toBe(true);
+    expect(isAttachmentDownloadRetryable('READY')).toBe(false);
+  });
+});
 
 describe('queueFailedAttachmentForRetry', () => {
   it('returns true when a FAILED row is moved to PENDING', async () => {

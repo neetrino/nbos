@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
   HttpCode,
@@ -181,6 +182,9 @@ export class MailProviderController {
         return 'token_exchange_failed';
       }
       return 'unknown';
+    }
+    if (error instanceof ConflictException) {
+      return 'mailbox_already_connected';
     }
     if (error instanceof InternalServerErrorException) {
       return 'unknown';
