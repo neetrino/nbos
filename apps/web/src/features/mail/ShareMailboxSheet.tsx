@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/select';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LoadingState, RelationPickerField } from '@/components/shared';
-import { RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS } from '@/components/shared/detail-sheet-classes';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { mailApi, type MailAccountAccessListDto, type MailAccountAccessRole } from '@/lib/api/mail';
@@ -198,7 +197,6 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
                     setGrantEmployeeId('');
                     setGrantEmployeeLabel(null);
                   }}
-                  listMaxHeightClass={RELATION_PICKER_DROPDOWN_LIST_SIX_ROWS_CLASS}
                   maxResults={12}
                   {...employeePicker}
                 />

@@ -43,11 +43,6 @@ type RelationPickerBaseProps = {
   className?: string;
   onSearch: RelationPickerSearchFn;
   maxResults?: number;
-  /**
-   * Legacy list height class. The results panel is portaled and capped to leftover
-   * viewport space so sheet overflow cannot clip employees.
-   */
-  listMaxHeightClass?: string;
   /** Opens the linked entity sheet (avatar + label on the chip). */
   onOpenSelected?: (id: string) => void;
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
