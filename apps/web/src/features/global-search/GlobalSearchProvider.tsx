@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { GlobalSearchOverlay } from './GlobalSearchOverlay';
+import { GlobalSearchEntitySheetsHost } from './GlobalSearchEntitySheetsHost';
 import { isGlobalSearchShortcut } from './global-search-constants';
 
 interface GlobalSearchContextValue {
@@ -49,9 +50,11 @@ export function GlobalSearchProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <GlobalSearchCtx.Provider value={value}>
-      {children}
-      <GlobalSearchOverlay open={open} onOpenChange={setOpen} />
-    </GlobalSearchCtx.Provider>
+    <GlobalSearchEntitySheetsHost>
+      <GlobalSearchCtx.Provider value={value}>
+        {children}
+        <GlobalSearchOverlay open={open} onOpenChange={setOpen} />
+      </GlobalSearchCtx.Provider>
+    </GlobalSearchEntitySheetsHost>
   );
 }

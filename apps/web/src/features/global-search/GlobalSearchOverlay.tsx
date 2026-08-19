@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Loader2, Search, X } from 'lucide-react';
 import {
   Dialog,
@@ -21,6 +20,7 @@ import {
 } from './global-search-constants';
 import { GlobalSearchResults } from './GlobalSearchResults';
 import { useGlobalSearchQuery } from './use-global-search-query';
+import { useGlobalSearchEntitySheets } from './global-search-entity-sheets-context';
 
 interface GlobalSearchOverlayProps {
   open: boolean;
@@ -38,8 +38,8 @@ function resetOverlayState(
 }
 
 export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayProps) {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { openSearchHit } = useGlobalSearchEntitySheets();
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<SearchQueryGroup>(GLOBAL_SEARCH_QUERY_GROUP_ALL);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -69,9 +69,9 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
   const navigateToHit = useCallback(
     (hit: SearchHit) => {
       close();
-      router.push(hit.href);
+      openSearchHit(hit);
     },
-    [close, router],
+    [close, openSearchHit],
   );
 
   useEffect(() => {
