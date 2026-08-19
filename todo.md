@@ -30,3 +30,4 @@
 - [ ] Добавить production-мониторинг ошибок BullMQ jobs и Scheduler runs с понятными уведомлениями.
 - [ ] Вынести ops-токены из `.env.local` приложения и заменить секреты, если скриншоты или ENV попадали третьим лицам.
 - [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным (Upstash burn больше не актуален).
+- [ ] **Contact ↔ Product (не сейчас):** после Lead «Связать» / create-contact-from-lead — сначала canon NBOS (*зачем* контакты на Project, не Product), потом проектировать и внедрить Contact ↔ Product. Сейчас доп. контакты на Project, у Product нет модели — project-contacts видны на product, но в одном project разные люди могут отвечать за разные product (сайт / CRM / app).
