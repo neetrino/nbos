@@ -5,7 +5,8 @@
 - [x] Mail runtime A+B+C: compose/reply через очередь, inbound sync/IDLE на worker, inbound attachments в Drive. Код в `main` (`d6801b6d`), миграции на проде, api/worker/web выкатаны.
 - [ ] Mail — осталось после выкладки (не новый срез A/B/C):
   - [ ] Smoke на проде: connect → inbound (тело + вложение Pending→Ready) → reply ушёл → рестарт worker → письмо не задвоилось.
-  - [ ] Unique mailbox: один сотрудник — один email (не 3 Connect). DB unique owner+email (corporate + Gmail); upsert в app есть — нужен unique constraint. DISABLED-дубликаты скрыты; новый Connect не должен создавать 4-ю строку.
+  - [x] Unique mailbox в коде (`567327f4`): global `lower(email)` среди live (`status <> DISABLED`); shared mailbox = один MailAccount + access; второй сотрудник → 409; reconnect/upsert своей DISABLED строки.
+  - [ ] Prod migrate `20260819183000_mail_accounts_live_email_unique` — локально есть, на Neon prod не применена.
   - [ ] Attachment download: Pending без Retry в UI (Toon Expo ticket на test@) — проверить на проде; если нет Retry или job не enqueue — поправить.
   - [ ] (опционально) Данные: 3 DISABLED `test@neetrino.com` в prod DB (история сохранена) — убрать позже, не срочно.
   - [x] Включить почтовые cron **по одному**, не пакетом (реестр 18–20, default off):
