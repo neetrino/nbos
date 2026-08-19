@@ -5,6 +5,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
+  EntityItemHost,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
@@ -51,6 +52,8 @@ import {
 } from './delivery-board-item-adapters';
 import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
+import { DeliveryItemDetailWorkSpaceCreateDialog } from './DeliveryItemDetailWorkSpaceCreateDialog';
+import { buildDeliveryDetailSheetTabs } from './build-delivery-detail-sheet-tabs';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
 import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
 import {
@@ -58,6 +61,7 @@ import {
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -102,6 +106,9 @@ export function DeliveryItemDetailSheet({
   const [extensionSnap, setExtensionSnap] = useState<ExtensionPlanSnapshot | null>(null);
   const [planningSaving, setPlanningSaving] = useState(false);
   const [planningError, setPlanningError] = useState<string | null>(null);
+  const [taskCreateOpen, setTaskCreateOpen] = useState(false);
+  const [taskListRefreshSignal, setTaskListRefreshSignal] = useState(0);
+  const { creatorId, creatorReady } = useTaskCreatorId();
 
   const gateRequiredFields = useMemo(() => {
     if (!stageGateHighlight) return new Set<string>();
@@ -361,145 +368,178 @@ export function DeliveryItemDetailSheet({
     if (extensionSnap) setExtensionPlan(extensionSnap);
   }, [productSnap, extensionSnap]);
 
+  const canQuickCreateTask = !creatorReady || Boolean(creatorId);
+  const detailSheetTabs = useMemo(
+    () =>
+      buildDeliveryDetailSheetTabs({
+        canQuickCreateTask,
+        onQuickCreateTask: () => setTaskCreateOpen(true),
+      }),
+    [canQuickCreateTask],
+  );
+
+  useEffect(() => {
+    if (open) return;
+    setTaskCreateOpen(false);
+  }, [open]);
+
   if (!hostMounted) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        contentClassName={DELIVERY_DETAIL_SHEET_CONTENT_CLASS}
-        railAnchorClassName={DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
-        showRailActions={Boolean(headerProps)}
-        sourcePageHref={headerProps?.sourcePageHref ?? '#'}
-        workspaceHref={headerProps?.workSpaceHref}
-      >
-        {!renderItem ? null : (
-          <>
-            <DeliveryItemDetailHeader
-              title={displayTitle}
-              entityKind={headerProps?.entityKind ?? 'PRODUCT'}
-              workspaceHref={headerProps?.workSpaceHref ?? '#'}
-              loading={detailHydrating}
-              onCommitTitle={handleCommitTitle}
-            />
-
-            {lifecycle?.isTerminal ? (
-              <div className="bg-muted/40 shrink-0 px-7 py-2.5">
-                <p className="text-muted-foreground text-sm">
-                  {lifecycle.resolution === 'DONE'
-                    ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
-                    : 'This delivery item is cancelled. Details are read-only; use the board for audit history.'}
-                </p>
-              </div>
-            ) : null}
-
-            {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
-              <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
-                <p className="text-muted-foreground text-sm">Delivery is paused.</p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => void boardMutations.handleBoardAction(renderItem, 'RESUME')}
-                >
-                  Resume
-                </Button>
-              </div>
-            ) : null}
-
-            <div className="shrink-0 pb-3">
-              <DeliveryPipelineStages
-                lifecycle={lifecycle}
-                disabled={busy || !boardMutations}
-                onSelect={handlePipelineSelect}
+    <EntityItemHost nested onEntityChanged={onEntityUpdated}>
+      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          contentClassName={DELIVERY_DETAIL_SHEET_CONTENT_CLASS}
+          railAnchorClassName={DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+          showRailActions={Boolean(headerProps)}
+          sourcePageHref={headerProps?.sourcePageHref ?? '#'}
+          workspaceHref={headerProps?.workSpaceHref}
+        >
+          {!renderItem ? null : (
+            <>
+              <DeliveryItemDetailHeader
+                title={displayTitle}
+                entityKind={headerProps?.entityKind ?? 'PRODUCT'}
+                workspaceHref={headerProps?.workSpaceHref ?? '#'}
+                loading={detailHydrating}
+                onCommitTitle={handleCommitTitle}
               />
-            </div>
 
-            <DeliveryItemDetailTabBar panel={panel} onSelect={setPanel} />
+              {lifecycle?.isTerminal ? (
+                <div className="bg-muted/40 shrink-0 px-7 py-2.5">
+                  <p className="text-muted-foreground text-sm">
+                    {lifecycle.resolution === 'DONE'
+                      ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
+                      : 'This delivery item is cancelled. Details are read-only; use the board for audit history.'}
+                  </p>
+                </div>
+              ) : null}
 
-            <ScrollArea className="min-h-0 flex-1">
-              <DetailSheetTabPanel tabKey={panel}>
-                {detailHydrating && panel === 'general' ? (
-                  <div className="space-y-4 px-7 py-6">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                  </div>
-                ) : panel === 'general' && renderItem && headerProps ? (
-                  <DeliveryItemDetailGeneralTab
-                    item={renderItem}
-                    product={product}
-                    extension={extension}
-                    lifecycle={lifecycle}
-                    workSpaceHref={headerProps.workSpaceHref}
-                    sourcePageHref={headerProps.sourcePageHref}
-                    credentialsTabHref={credentialsTabHref}
-                    projectHubHref={projectHubHref}
-                    onRefreshDetail={refreshDetailAndBoard}
-                    productPlan={productPlan}
-                    onProductPlanChange={setProductPlan}
-                    extensionPlan={extensionPlan}
-                    onExtensionPlanChange={setExtensionPlan}
-                    planningDisabled={planningSaving || Boolean(lifecycle?.isTerminal)}
-                    gateRequiredFields={gateRequiredFields}
-                    stageGateActionBlockers={stageGateActionBlockers}
-                  />
-                ) : detailHydrating && panel !== 'general' ? (
-                  <div className="space-y-4 px-7 py-6">
-                    <Skeleton className="h-40 w-full" />
-                  </div>
-                ) : panel !== 'general' && headerProps && renderItem ? (
-                  <DeliveryItemDetailSecondaryPanels
-                    view={panel}
-                    auditEntityType={renderItem.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
-                    auditEntityId={
-                      renderItem.kind === 'PRODUCT'
-                        ? renderItem.product.id
-                        : renderItem.extension.id
-                    }
-                    financeTabHref={financeTabHref}
-                    projectHubHref={projectHubHref}
-                    workSpaceHref={headerProps.workSpaceHref}
-                    bonusOrderId={product?.order?.id ?? extension?.order?.id ?? seedOrderId ?? null}
-                    openDealHref={
-                      product?.order?.deal?.id != null
-                        ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
-                        : extension?.order?.deal?.id != null
-                          ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
-                          : seedDeal?.id != null
-                            ? `/crm/deals?openDealId=${encodeURIComponent(seedDeal.id)}`
-                            : null
-                    }
-                    dealCode={
-                      product?.order?.deal?.code ??
-                      extension?.order?.deal?.code ??
-                      seedDeal?.code ??
-                      null
-                    }
-                  />
-                ) : (
-                  <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
-                )}
-              </DetailSheetTabPanel>
-            </ScrollArea>
+              {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
+                <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
+                  <p className="text-muted-foreground text-sm">Delivery is paused.</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => void boardMutations.handleBoardAction(renderItem, 'RESUME')}
+                  >
+                    Resume
+                  </Button>
+                </div>
+              ) : null}
 
-            <DetailSheetFormFooter
-              visible={
-                panel === 'general' &&
-                !detailHydrating &&
-                Boolean(product || extension) &&
-                !lifecycle?.isTerminal
-              }
-              dirty={planningDirty}
-              saving={planningSaving}
-              errorMessage={planningError}
-              onSave={() => void handlePlanningSave()}
-              onCancel={handlePlanningCancel}
-            />
-          </>
-        )}
-      </EntityDetailSheetContent>
-    </Sheet>
+              <div className="shrink-0 pb-3">
+                <DeliveryPipelineStages
+                  lifecycle={lifecycle}
+                  disabled={busy || !boardMutations}
+                  onSelect={handlePipelineSelect}
+                />
+              </div>
+
+              <DeliveryItemDetailTabBar tabs={detailSheetTabs} panel={panel} onSelect={setPanel} />
+
+              <ScrollArea className="min-h-0 flex-1">
+                <DetailSheetTabPanel tabKey={panel}>
+                  {detailHydrating && panel === 'general' ? (
+                    <div className="space-y-4 px-7 py-6">
+                      <Skeleton className="h-32 w-full" />
+                      <Skeleton className="h-48 w-full" />
+                    </div>
+                  ) : panel === 'general' && renderItem && headerProps ? (
+                    <DeliveryItemDetailGeneralTab
+                      item={renderItem}
+                      product={product}
+                      extension={extension}
+                      lifecycle={lifecycle}
+                      workSpaceHref={headerProps.workSpaceHref}
+                      sourcePageHref={headerProps.sourcePageHref}
+                      credentialsTabHref={credentialsTabHref}
+                      projectHubHref={projectHubHref}
+                      onRefreshDetail={refreshDetailAndBoard}
+                      productPlan={productPlan}
+                      onProductPlanChange={setProductPlan}
+                      extensionPlan={extensionPlan}
+                      onExtensionPlanChange={setExtensionPlan}
+                      planningDisabled={planningSaving || Boolean(lifecycle?.isTerminal)}
+                      gateRequiredFields={gateRequiredFields}
+                      stageGateActionBlockers={stageGateActionBlockers}
+                    />
+                  ) : detailHydrating && panel !== 'general' ? (
+                    <div className="space-y-4 px-7 py-6">
+                      <Skeleton className="h-40 w-full" />
+                    </div>
+                  ) : panel !== 'general' && headerProps && renderItem ? (
+                    <DeliveryItemDetailSecondaryPanels
+                      view={panel}
+                      auditEntityType={renderItem.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
+                      auditEntityId={
+                        renderItem.kind === 'PRODUCT'
+                          ? renderItem.product.id
+                          : renderItem.extension.id
+                      }
+                      financeTabHref={financeTabHref}
+                      projectHubHref={projectHubHref}
+                      workSpaceHref={headerProps.workSpaceHref}
+                      productId={headerProps.productId}
+                      onTaskCreateOpenChange={setTaskCreateOpen}
+                      tasksRefreshSignal={taskListRefreshSignal}
+                      bonusOrderId={
+                        product?.order?.id ?? extension?.order?.id ?? seedOrderId ?? null
+                      }
+                      openDealHref={
+                        product?.order?.deal?.id != null
+                          ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
+                          : extension?.order?.deal?.id != null
+                            ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
+                            : seedDeal?.id != null
+                              ? `/crm/deals?openDealId=${encodeURIComponent(seedDeal.id)}`
+                              : null
+                      }
+                      dealCode={
+                        product?.order?.deal?.code ??
+                        extension?.order?.deal?.code ??
+                        seedDeal?.code ??
+                        null
+                      }
+                    />
+                  ) : (
+                    <p className="text-muted-foreground px-7 py-6 text-sm">
+                      Could not load details.
+                    </p>
+                  )}
+                </DetailSheetTabPanel>
+              </ScrollArea>
+
+              <DetailSheetFormFooter
+                visible={
+                  panel === 'general' &&
+                  !detailHydrating &&
+                  Boolean(product || extension) &&
+                  !lifecycle?.isTerminal
+                }
+                dirty={planningDirty}
+                saving={planningSaving}
+                errorMessage={planningError}
+                onSave={() => void handlePlanningSave()}
+                onCancel={handlePlanningCancel}
+              />
+            </>
+          )}
+        </EntityDetailSheetContent>
+      </Sheet>
+      {headerProps?.productId ? (
+        <DeliveryItemDetailWorkSpaceCreateDialog
+          productId={headerProps.productId}
+          sheetOpen={open}
+          taskCreateOpen={taskCreateOpen}
+          onTaskCreateOpenChange={setTaskCreateOpen}
+          onCreated={() => setTaskListRefreshSignal((previous) => previous + 1)}
+        />
+      ) : null}
+    </EntityItemHost>
   );
 }
