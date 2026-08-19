@@ -2,6 +2,7 @@ import { GetObjectCommand } from '@aws-sdk/client-s3';
 import type { PrismaClient } from '@nbos/database';
 import type { DriveR2Client } from '../drive/drive-r2.client';
 import { MailAttachmentLoadError } from './mail-provider-error.classify';
+import { MAIL_OUTBOUND_R2_GET_TIMEOUT_MS } from './mail-outbound-runtime.constants';
 import type { SendMessageAttachment } from './providers/mail-provider-adapter';
 
 type OutboundAttachmentRow = {
@@ -38,7 +39,9 @@ async function readOutboundAttachmentBytes(
   try {
     const response = await r2
       .ensureS3()
-      .send(new GetObjectCommand({ Bucket: r2.bucket, Key: key }));
+      .send(new GetObjectCommand({ Bucket: r2.bucket, Key: key }), {
+        abortSignal: AbortSignal.timeout(MAIL_OUTBOUND_R2_GET_TIMEOUT_MS),
+      });
     const content = await bufferFromR2Body(response.Body as AsyncIterable<Uint8Array> | undefined);
     if (!content) {
       throw new MailAttachmentLoadError(

@@ -135,6 +135,18 @@ describe('MailSendService.sendQueuedMessage', () => {
     expect(prisma.emailMessage.update).not.toHaveBeenCalled();
   });
 
+  it('fails the row when send context is missing after claim', async () => {
+    const { service, prisma, sendMessage } = createService({
+      message: baseMessage('SENDING'),
+    });
+    prisma.mailAccount.findUnique.mockResolvedValue(null);
+    await service.sendQueuedMessage('a1', 'm1', 'e1');
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect(prisma.emailMessage.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: 'FAILED' }) }),
+    );
+  });
+
   it('marks ambiguous failures without retry', async () => {
     const { service, prisma } = createService({
       message: baseMessage('QUEUED'),

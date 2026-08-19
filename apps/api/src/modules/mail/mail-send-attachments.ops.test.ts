@@ -46,7 +46,10 @@ describe('loadOutboundAttachmentParts', () => {
     await expect(
       loadOutboundAttachmentParts(prisma as never, r2 as never, 'm1', null),
     ).rejects.toBeInstanceOf(MailAttachmentLoadError);
-    expect(r2Send).toHaveBeenCalled();
+    expect(r2Send).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) }),
+    );
   });
 
   it('wraps R2 network errors as a transient attachment load failure', async () => {
