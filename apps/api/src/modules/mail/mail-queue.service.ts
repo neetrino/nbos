@@ -67,7 +67,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
       MAIL_SEND_JOB_NAME,
       { kind: 'send', ...payload },
       mailSendJobId(payload.messageId),
-      true,
+      true, // drop completed/failed so reconcile can re-enqueue the same message
     );
   }
 
