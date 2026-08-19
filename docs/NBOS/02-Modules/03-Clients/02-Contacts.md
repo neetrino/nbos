@@ -217,7 +217,7 @@ Lead получает статус SQL (Quality Lead)
 
 ### Contact → Leads (1:1 или 1:N)
 
-Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Объединение карточек Lead / Deal — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`): merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
+Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Lead merge и intake attach — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`); Deal↔Deal merge не делаем. Merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
 
 ---
 

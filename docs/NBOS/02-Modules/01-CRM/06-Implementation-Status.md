@@ -19,9 +19,9 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
 
-## Shipped — Lead intake attach (Phase 1) and Lead merge (Phase 2)
+## Shipped — Lead intake attach and Lead merge
 
-Canon: `07-Lead-and-Deal-Merge.md`. Runtime now implements Phases 1–2. Deal merge (Phase 4) is **not** shipped.
+Canon: `07-Lead-and-Deal-Merge.md`. Runtime implements intake attach + Lead merge wizard. **Deal↔Deal merge is not a product feature** — not shipped, not planned.
 
 - **Schema:** `Lead.mergedIntoId` (`20260819140000_crm_lead_merged_into`). No `MERGED` stage.
 - **Intake attach:** `GET /crm/leads/duplicates` (phone / email / Instagram username / search). ATS exact-phone attach kept; lookup now excludes Spam, absorbed, and Trash. Meta ingest: if an open Lead already has this Instagram username (via its conversation), do not create a second Lead; a new dialog stays unlinked because Meta is 1:1. A Lead is created only when no open username match exists.
@@ -38,10 +38,10 @@ Runtime notes (canon silent → safer):
 - Status override cannot be Spam or SQL.
 - Cross-channel without a shared phone / email / Instagram username still does not auto-attach.
 
-## Canon, not shipped — Contact merge and Deal merge
+## Out of scope / separate canon
 
-3. Contact merge — already Clients canon (`../03-Clients/02-Contacts.md`); not a substitute for Lead merge.
-4. Deal merge last — strict guards; default do not merge. **Not** shipped.
+- **Deal↔Deal merge** — consciously not built; duplicate Deals → Failed / Trash (existing flows).
+- **Contact merge** — Clients canon (`../03-Clients/02-Contacts.md`); not a substitute for Lead merge.
 
 ## MVP assumptions (Trash)
 
