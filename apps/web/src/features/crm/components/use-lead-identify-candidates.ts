@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { leadsApi, type Lead, type LeadDuplicateLookupResult } from '@/lib/api/leads';
 
 const IDENTIFY_LOOKUP_DEBOUNCE_MS = 350;
@@ -38,12 +40,13 @@ export function useLeadIdentifyCandidates(lead: Lead | null, enabled: boolean) {
         .then((data) => {
           setResultByLeadId((prev) => ({ ...prev, [leadId]: data }));
         })
-        .catch(() => {
+        .catch((err) => {
           setResultByLeadId((prev) => {
             const next = { ...prev };
             delete next[leadId];
             return next;
           });
+          toast.error(getApiErrorMessage(err, 'Could not look up existing Contacts or Deals.'));
         });
     }, IDENTIFY_LOOKUP_DEBOUNCE_MS);
     return () => window.clearTimeout(handle);

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { canOfferLeadAttach } from '@nbos/shared';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -10,6 +9,7 @@ import { leadsApi, type Lead } from '@/lib/api/leads';
 import { usePermission } from '@/lib/permissions';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { LeadDuplicateBanner, hasDuplicateHits } from './LeadDuplicateBanner';
+import { canShowLeadIdentifySection } from './lead-identify-access';
 import { useLeadIdentifyCandidates } from './use-lead-identify-candidates';
 
 interface LeadSheetIdentifySectionProps {
@@ -28,12 +28,16 @@ export function LeadSheetIdentifySection({
   onAttachedAndTrashed,
 }: LeadSheetIdentifySectionProps) {
   const { me } = usePermission();
-  const canAttach = canOfferLeadAttach(me?.role.slug);
-  const enabled = canIdentifyLead(lead, isTrashView);
-  const { search, setSearch, result } = useLeadIdentifyCandidates(lead, enabled);
+  const canAttach = canShowLeadIdentifySection({
+    lead,
+    isTrashView,
+    roleSlug: me?.role.slug,
+    actorId: me?.id,
+  });
+  const { search, setSearch, result } = useLeadIdentifyCandidates(lead, canAttach);
   const [attaching, setAttaching] = useState(false);
 
-  if (!enabled || !canAttach) return null;
+  if (!canAttach) return null;
 
   const attach = async (contactId: string, aboutDealId?: string) => {
     setAttaching(true);
@@ -78,13 +82,6 @@ export function LeadSheetIdentifySection({
       ) : null}
     </div>
   );
-}
-
-function canIdentifyLead(lead: Lead, isTrashView: boolean): boolean {
-  if (isTrashView) return false;
-  if (lead.status === 'SQL' || lead.deal) return false;
-  if (lead.mergedIntoId) return false;
-  return true;
 }
 
 function openInNewTab(href: string): void {
