@@ -22,43 +22,41 @@ export function TaskCompletionRulesPanel({
   const localBlockers = buildTaskCompletionBlockers(task);
   const blockers = serverBlockers.length > 0 ? serverBlockers : localBlockers;
 
+  if (rules.length === 0) return null;
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
         <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Completion Rules</h4>
-        {rules.length > 0 && blockers.length === 0 && <StatusBadge label="Ready" variant="green" />}
+        {blockers.length === 0 && <StatusBadge label="Ready" variant="green" />}
         {blockers.length > 0 && <StatusBadge label="Blocked" variant="red" />}
       </div>
 
-      {rules.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No completion rules configured.</p>
-      ) : (
-        <div className="space-y-2">
-          {rules.map((rule) => {
-            const ruleBlockers = blockers.filter((blocker) => blocker.ruleType === rule.type);
-            return (
-              <div
-                key={rule.type}
-                className="bg-muted/20 ring-foreground/[0.06] rounded-xl p-3 ring-1 dark:ring-white/[0.06]"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{getCompletionRuleLabel(rule)}</p>
-                  {ruleBlockers.length === 0 ? (
-                    <CheckCircle2 size={14} className="text-green-500" />
-                  ) : (
-                    <AlertTriangle size={14} className="text-red-500" />
-                  )}
-                </div>
-                {ruleBlockers.map((blocker) => (
-                  <p key={blocker.code} className="text-muted-foreground mt-1 text-xs">
-                    {blocker.message}
-                  </p>
-                ))}
+      <div className="space-y-2">
+        {rules.map((rule) => {
+          const ruleBlockers = blockers.filter((blocker) => blocker.ruleType === rule.type);
+          return (
+            <div
+              key={rule.type}
+              className="bg-muted/20 ring-foreground/[0.06] rounded-xl p-3 ring-1 dark:ring-white/[0.06]"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium">{getCompletionRuleLabel(rule)}</p>
+                {ruleBlockers.length === 0 ? (
+                  <CheckCircle2 size={14} className="text-green-500" />
+                ) : (
+                  <AlertTriangle size={14} className="text-red-500" />
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
+              {ruleBlockers.map((blocker) => (
+                <p key={blocker.code} className="text-muted-foreground mt-1 text-xs">
+                  {blocker.message}
+                </p>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
