@@ -26,6 +26,7 @@ describe('TabQuickCreateButton helpers', () => {
     expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('[@media(hover:none)]:opacity-100');
     expect(TAB_QUICK_CREATE_ANCHOR_CLASS).toContain('absolute');
     expect(TAB_QUICK_CREATE_ANCHOR_CLASS).toContain('translate-x-1/2');
-    expect(TAB_QUICK_CREATE_ICON_SIZE_PX).toBe(14);
+    expect(TAB_QUICK_CREATE_BUTTON_CLASS).toContain('size-8');
+    expect(TAB_QUICK_CREATE_ICON_SIZE_PX).toBe(17);
   });
 });
