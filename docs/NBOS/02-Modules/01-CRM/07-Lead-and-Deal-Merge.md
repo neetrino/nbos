@@ -140,13 +140,13 @@ Wizard: выбрать **survivor** и **absorbed**.
 
 ## 11. Реализация
 
-| Срез                | Что                                                          | Статус                                |
-| ------------------- | ------------------------------------------------------------ | ------------------------------------- |
-| Intake attach       | § 5 — баннер, attach, предупреждение об открытом Deal        | Shipped                               |
-| Lead→Contact attach | § 5a — идентификация; открытый Deal = контекст + trash stray | Shipped                               |
-| Lead merge wizard   | § 6 — коррекция дублей Lead                                  | Shipped                               |
-| Contact merge       | Clients (`02-Contacts.md`)                                   | Отдельный канон; не замена Lead merge |
-| Deal↔Deal merge     | —                                                            | **Не делаем**                         |
+| Срез                | Что                                                          | Статус                                                                    |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Intake attach       | § 5 — баннер, attach, предупреждение об открытом Deal        | Shipped                                                                   |
+| Lead→Contact attach | § 5a — идентификация; открытый Deal = контекст + trash stray | Shipped                                                                   |
+| Lead merge wizard   | § 6 — коррекция дублей Lead                                  | Shipped                                                                   |
+| Contact merge       | Clients (`02-Contacts.md`)                                   | Shipped: Trash + `mergedIntoId`; extra phones union; не замена Lead merge |
+| Deal↔Deal merge     | —                                                            | **Не делаем**                                                             |
 
 ## 12. Никогда
 

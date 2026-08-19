@@ -9,6 +9,7 @@ import {
   assertEntityIsTrashed,
 } from '../../../common/lifecycle/entity-lifecycle-guards';
 import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
+import type { ContactMergeFieldChoices } from '@nbos/shared';
 import { mergeClientListScope } from '../client-entity-lifecycle';
 import {
   CONTACT_LIST_INCLUDE,
@@ -20,6 +21,8 @@ import {
   createExtraContactPhone,
   deleteOverlappingExtraPhones,
 } from './contact-phone.ops';
+import { findContactMergeCandidates, mergeContacts as runContactMerge } from './contact-merge.ops';
+import { CONTACT_MERGE_ERROR } from './contact-merge-guards.ops';
 
 const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
 
@@ -68,6 +71,7 @@ export class ContactsService {
     const typeFilter = contactType ?? role;
     if (typeFilter) where.role = typeFilter as ContactRole;
     if (search) where.OR = contactDirectorySearchOr(search);
+    if (lifecycleScope !== 'trash') where.mergedIntoId = null;
 
     const [items, total] = await Promise.all([
       this.prisma.contact.findMany({
@@ -199,15 +203,42 @@ export class ContactsService {
   async restoreFromTrash(id: string) {
     const contact = await this.prisma.contact.findUnique({
       where: { id },
-      select: { id: true, trashedAt: true },
+      select: { id: true, trashedAt: true, mergedIntoId: true },
     });
     if (!contact) throw new NotFoundException(`Contact ${id} not found`);
     assertEntityIsTrashed(contact, 'trashedAt', 'Contact');
+    if (contact.mergedIntoId) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: CONTACT_MERGE_ERROR.RESTORE,
+        message:
+          'This Contact was merged into another card. Restore without un-merge is not allowed.',
+      });
+    }
     return this.prisma.contact.update({
       where: { id },
       data: { trashedAt: null },
       include: CONTACT_LIST_INCLUDE,
     });
+  }
+
+  async findMergeCandidates(query: { q?: string; excludeId?: string }) {
+    return findContactMergeCandidates(this.prisma, query);
+  }
+
+  async mergeContacts(
+    survivorId: string,
+    body: { absorbedId: string; fieldChoices?: ContactMergeFieldChoices },
+    actor: { id: string; roleSlug: string },
+  ) {
+    await runContactMerge(this.prisma, this.auditService, {
+      survivorId,
+      absorbedId: body.absorbedId,
+      fieldChoices: body.fieldChoices ?? {},
+      actorId: actor.id,
+      actorRoleSlug: actor.roleSlug,
+    });
+    return this.findById(survivorId);
   }
 
   async permanentlyDeleteFromTrash(id: string, userId: string) {

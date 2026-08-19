@@ -42,7 +42,7 @@ Runtime notes (canon silent → safer):
 ## Out of scope / separate canon
 
 - **Deal↔Deal merge** — consciously not built; duplicate Deals → Failed / Trash (existing flows).
-- **Contact merge** — Clients canon (`../03-Clients/02-Contacts.md`); not a substitute for Lead merge.
+- **Contact merge** — shipped in Clients (`../03-Clients/02-Contacts.md` §7); not a substitute for Lead merge.
 
 ## MVP assumptions (Trash)
 

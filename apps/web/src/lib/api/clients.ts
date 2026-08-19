@@ -54,6 +54,25 @@ interface ListData<T> {
 
 type ClientsListParams = Record<string, unknown> & { scope?: EntityLifecycleScope };
 
+export type ContactMergeFieldSide = 'survivor' | 'absorbed';
+
+export type ContactMergeFieldChoices = Partial<{
+  firstName: ContactMergeFieldSide;
+  lastName: ContactMergeFieldSide;
+  phone: ContactMergeFieldSide;
+  email: ContactMergeFieldSide;
+  role: ContactMergeFieldSide;
+}>;
+
+export interface ContactMergeCandidate {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  email: string | null;
+  role: string;
+}
+
 export const contactsApi = {
   async getAll(params?: ClientsListParams): Promise<ListData<Contact>> {
     const resp = await api.get<ListData<Contact>>('/api/clients/contacts', { params });
@@ -87,6 +106,22 @@ export const contactsApi = {
   },
   async removeExtraPhone(id: string, phoneId: string): Promise<Contact> {
     const resp = await api.delete<Contact>(`/api/clients/contacts/${id}/phones/${phoneId}`);
+    return resp.data;
+  },
+  async findMergeCandidates(params: {
+    q: string;
+    excludeId: string;
+  }): Promise<ContactMergeCandidate[]> {
+    const resp = await api.get<ContactMergeCandidate[]>('/api/clients/contacts/duplicates', {
+      params,
+    });
+    return resp.data;
+  },
+  async merge(
+    survivorId: string,
+    data: { absorbedId: string; fieldChoices?: ContactMergeFieldChoices },
+  ): Promise<Contact> {
+    const resp = await api.post<Contact>(`/api/clients/contacts/${survivorId}/merge`, data);
     return resp.data;
   },
 };

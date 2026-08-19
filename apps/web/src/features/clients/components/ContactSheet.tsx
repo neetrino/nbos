@@ -1,14 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DeleteConfirmDialog,
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
   StatusBadge,
@@ -32,7 +28,7 @@ import {
   ClientPortfolioPanel,
   useClientPortfolioData,
 } from './client-portfolio/ClientPortfolioEmbedded';
-import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
+import { ContactSheetHeaderActions } from './ContactSheetHeaderActions';
 import type {
   ClientDetailTabId,
   ClientEmbeddedPortfolioTabId,
@@ -45,6 +41,7 @@ interface ContactSheetProps {
   onOpenChange: (open: boolean) => void;
   onUpdate: (id: string, data: Record<string, unknown>) => Promise<void>;
   onContactPatched?: (contact: Contact) => void;
+  onMerged?: (survivor: Contact) => void;
   isTrashView?: boolean;
   onMoveToTrash?: (id: string) => void;
   onRestore?: (id: string) => void;
@@ -65,6 +62,7 @@ export function ContactSheet({
   onOpenChange,
   onUpdate,
   onContactPatched,
+  onMerged,
   isTrashView = false,
   onMoveToTrash,
   onRestore,
@@ -217,57 +215,20 @@ export function ContactSheet({
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex h-9 shrink-0 items-center gap-1.5">
-                    {onRemoveParticipant ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive shrink-0"
-                        disabled={removingFromProject || saving}
-                        onClick={() => setRemoveFromProjectOpen(true)}
-                        aria-label="Remove contact from project"
-                      >
-                        <Trash2 className="size-4" />
-                        Remove
-                      </Button>
-                    ) : null}
-                    {!isTrashView ? (
-                      <ClientPortfolioQuickActionsHeader
-                        variant="contact"
-                        entityId={renderContact.id}
-                        data={portfolio.data}
-                        loading={portfolio.loading}
-                      />
-                    ) : null}
-                    {isTrashView && onRestore ? (
-                      <DetailSheetSettingsMenu>
-                        <DropdownMenuItem onClick={() => onRestore(renderContact.id)}>
-                          <RotateCcw />
-                          Restore
-                        </DropdownMenuItem>
-                        {onPermanentDelete ? (
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => onPermanentDelete(renderContact.id)}
-                          >
-                            <Trash2 />
-                            Delete permanently
-                          </DropdownMenuItem>
-                        ) : null}
-                      </DetailSheetSettingsMenu>
-                    ) : onMoveToTrash ? (
-                      <DetailSheetSettingsMenu>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => onMoveToTrash(renderContact.id)}
-                        >
-                          <Trash2 />
-                          Move to Trash
-                        </DropdownMenuItem>
-                      </DetailSheetSettingsMenu>
-                    ) : null}
-                  </div>
+                  <ContactSheetHeaderActions
+                    contact={renderContact}
+                    isTrashView={isTrashView}
+                    saving={saving}
+                    removingFromProject={removingFromProject}
+                    portfolioData={portfolio.data}
+                    portfolioLoading={portfolio.loading}
+                    onRemoveParticipant={onRemoveParticipant}
+                    onMerged={onMerged}
+                    onRestore={onRestore}
+                    onPermanentDelete={onPermanentDelete}
+                    onMoveToTrash={onMoveToTrash}
+                    onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
+                  />
                 </div>
               </div>
 

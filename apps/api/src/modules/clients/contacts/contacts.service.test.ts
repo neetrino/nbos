@@ -223,5 +223,16 @@ describe('ContactsService', () => {
       prisma.contact.findUnique.mockResolvedValue({ id: '1', trashedAt: null });
       await expect(service.restoreFromTrash('1')).rejects.toThrow(BadRequestException);
     });
+
+    it('blocks restore when mergedIntoId is set', async () => {
+      prisma.contact.findUnique.mockResolvedValue({
+        id: '1',
+        trashedAt: new Date(),
+        mergedIntoId: 'surv-1',
+      });
+      await expect(service.restoreFromTrash('1')).rejects.toMatchObject({
+        response: { code: 'CONTACT_RESTORE_BLOCKED_MERGED' },
+      });
+    });
   });
 });

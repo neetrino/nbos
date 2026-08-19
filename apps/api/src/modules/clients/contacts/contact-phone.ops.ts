@@ -88,6 +88,21 @@ export async function createExtraContactPhone(
   });
 }
 
+export function unionExtraPhoneE164(
+  primary: string | null,
+  phones: Array<string | null | undefined>,
+): string[] {
+  const extras: string[] = [];
+  for (const raw of phones) {
+    const stored = normalizePhoneForStorage(raw);
+    if (!stored) continue;
+    if (primary && phonesOverlap(primary, stored)) continue;
+    if (extras.some((existing) => phonesOverlap(existing, stored))) continue;
+    extras.push(stored);
+  }
+  return extras;
+}
+
 export async function deleteOverlappingExtraPhones(
   db: Pick<TransactionClient, 'contactPhone'>,
   contactId: string,

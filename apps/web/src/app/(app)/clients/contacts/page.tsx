@@ -324,6 +324,11 @@ function ContactsPageContent() {
         }}
         onUpdate={handleUpdate}
         onContactPatched={applyPatchedContact}
+        onMerged={(survivor) => {
+          applyPatchedContact(survivor);
+          openContactSheet(survivor);
+          void fetchContacts();
+        }}
         isTrashView={isTrashView}
         onMoveToTrash={
           isTrashView

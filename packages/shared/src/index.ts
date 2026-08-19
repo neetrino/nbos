@@ -7,6 +7,7 @@ export * from './crm/attribution-gate';
 export * from './crm/deal-stage-gate';
 export * from './crm/lead-stage-gate';
 export * from './crm/lead-merge';
+export * from './clients/contact-merge';
 export * from './crm/entity-contact-list';
 export * from './stage-gates/types';
 export * from './projects/product-stage-gate';

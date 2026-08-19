@@ -7,6 +7,7 @@ import {
   contactOwnsPhone,
   contactPhoneLookupWhere,
   deleteOverlappingExtraPhones,
+  unionExtraPhoneE164,
 } from './contact-phone.ops';
 
 describe('contactPhoneLookupWhere', () => {
@@ -48,6 +49,19 @@ describe('assertStoredContactPhone', () => {
 
   it('normalizes a valid number to e164', () => {
     expect(assertStoredContactPhone('+374 99 123456')).toBe('+37499123456');
+  });
+});
+
+describe('unionExtraPhoneE164', () => {
+  it('drops the chosen primary and duplicate variants', () => {
+    expect(
+      unionExtraPhoneE164('+37499222222', [
+        '+37499000000',
+        '+374 99 000000',
+        '+37499222222',
+        '+37499333333',
+      ]),
+    ).toEqual(['+37499000000', '+37499333333']);
   });
 });
 

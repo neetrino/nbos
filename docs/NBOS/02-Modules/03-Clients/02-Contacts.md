@@ -242,12 +242,16 @@ Contact создаётся из Lead. Если один человек обра�
 
 ### Merge контактов:
 
-Если дубликат всё-таки был создан, CEO/PM может объединить два Contact:
+Если дубликат всё-таки был создан, CEO / PM (и Owner как CEO) может объединить два Contact:
 
-- Выбирается «основной» контакт (чьи данные сохраняются)
-- Все проекты, компании, сделки, история «дубликата» переносятся на основной
-- Дубликат удаляется
-- Audit Log фиксирует merge
+- Пользователь выбирает **survivor** и **absorbed**, затем конфликтующие поля (имя, primary phone, email, type и т.д.)
+- Extra phones: **union** по нормализованному номеру; primary = выбор пользователя
+- На survivor в транзакции переносятся: companies (primary / billing / additional), deals (`contactId` + additional), leads (`contactId` + additional; **без** авто Lead-merge), projects, история/notes (append), extra phones и остальные FK Contact
+- Поглощённый Contact: указатель `mergedIntoId` + Profile A **Trash**. Не hard delete. Старое «дубликат удаляется» больше не действует
+- Restore absorbed без отдельного un-merge **блокируется** (как Lead)
+- Audit: кто, когда, from→to, выбранные поля
+- Seller / Marketing — нет (отдельного правила «свои контакты» в runtime нет)
+- **Deal↔Deal merge не делается** — только re-point `Deal.contactId` / additional на survivor
 
 ---
 

@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import type { InputJsonValue } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { ContactsService } from './contacts.service';
+import { FindContactMergeCandidatesDto, MergeContactDto } from './dto/merge-contact.dto';
 
 @ApiTags('Clients / Contacts')
 @ApiBearerAuth()
@@ -47,10 +48,33 @@ export class ContactsController {
     });
   }
 
+  @Get('duplicates')
+  @ApiOperation({ summary: 'Search other contacts for merge' })
+  async findDuplicates(@Query() query: FindContactMergeCandidatesDto) {
+    return this.contactsService.findMergeCandidates({
+      q: query.q,
+      excludeId: query.excludeId,
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get contact by ID' })
   async findOne(@Param('id') id: string) {
     return this.contactsService.findById(id);
+  }
+
+  @Post(':id/merge')
+  @ApiOperation({ summary: 'Merge another Contact into this survivor Contact' })
+  async merge(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: MergeContactDto,
+  ) {
+    return this.contactsService.mergeContacts(
+      id,
+      { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices },
+      { id: user.id, roleSlug: user.role },
+    );
   }
 
   @Post()

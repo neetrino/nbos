@@ -17,6 +17,8 @@ model Contact {
   role           ContactRole @default(CLIENT)
   notes          String?
   trashedAt      DateTime?   @map("trashed_at")
+  /// Profile A pointer after Contact merge; absorbed card is also trashed. Not hard delete.
+  mergedIntoId   String?     @map("merged_into_id")
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
 
@@ -36,9 +38,12 @@ model Contact {
   partnerServiceTerms PartnerServiceTerm[]
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
   extraPhones         ContactPhone[]
+  mergedInto          Contact?       @relation("ContactMergedInto", fields: [mergedIntoId], references: [id])
+  absorbedContacts    Contact[]      @relation("ContactMergedInto")
 
   @@index([trashedAt])
   @@index([phone])
+  @@index([mergedIntoId])
   @@map("contacts")
 }
 
