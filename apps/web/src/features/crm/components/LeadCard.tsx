@@ -19,7 +19,6 @@ import { employeeFullName } from '@/features/hr/utils/employee-display';
 import { formatBoardCardDate } from '@/lib/format/board-card-date';
 import { cn } from '@/lib/utils';
 import { getLeadSource } from '../constants/leadPipeline';
-import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
 import type { Lead } from '@/lib/api/leads';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 import {
@@ -33,6 +32,9 @@ const LEAD_CARD_PERSON_AVATAR_CLASS = 'size-6 text-[9px]';
 const LEAD_CARD_ACCENT_FILL_CLASS = 'bg-sky-500';
 const LEAD_CARD_DATE_ICON_WRAP_CLASS =
   'bg-sky-500/10 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300';
+const LEAD_CARD_SOURCE_BADGE_CLASS = 'h-5 shrink-0 px-1.5 py-0 text-[10px] leading-none';
+const LEAD_CARD_FOOTER_CLASS = 'mt-2.5 grid grid-cols-3 items-center';
+const LEAD_CARD_TASK_CENTER_CLASS = 'ml-0 self-center';
 const DAY_MS = 1000 * 60 * 60 * 24;
 
 interface LeadCardProps {
@@ -63,7 +65,6 @@ export function LeadCard({ lead, onClick, onCreateTask }: LeadCardProps) {
       <LeadCardHeader
         title={view.title}
         metaLabel={view.metaLabel}
-        sourceLabel={view.sourceLabel}
         Icon={leadVisual.Icon}
         iconWrapClassName={leadVisual.iconWrapClassName}
         entityLabel={leadVisual.label}
@@ -81,7 +82,7 @@ export function LeadCard({ lead, onClick, onCreateTask }: LeadCardProps) {
       <LeadCardFooter
         assigneeName={view.assigneeName}
         assigneeAvatar={lead.assignee?.avatar}
-        channelLabel={view.channelLabel}
+        sourceLabel={view.sourceLabel}
         isOverdue={view.isOverdue}
         daysSinceCreation={view.daysSinceCreation}
         onCreateTask={onCreateTask ? () => onCreateTask(lead) : undefined}
@@ -98,7 +99,6 @@ function getLeadCardView(lead: Lead, currentTime: number) {
     metaLabel: getLeadCardMetaLabel(lead),
     latestMessage: getLeadLatestMessagePreview(lead),
     sourceLabel: source ? `${source.icon} ${source.label}` : null,
-    channelLabel: formatMarketingChannelLabel(lead),
     daysSinceCreation,
     isOverdue: lead.status === 'NEW' && daysSinceCreation >= 1,
     assigneeName: lead.assignee ? employeeFullName(lead.assignee) : null,
@@ -108,14 +108,12 @@ function getLeadCardView(lead: Lead, currentTime: number) {
 function LeadCardHeader({
   title,
   metaLabel,
-  sourceLabel,
   Icon,
   iconWrapClassName,
   entityLabel,
 }: {
   title: string;
   metaLabel: string | null;
-  sourceLabel: string | null;
   Icon: typeof LEAD_ENTITY_VISUAL.Icon;
   iconWrapClassName: string;
   entityLabel: string;
@@ -135,13 +133,6 @@ function LeadCardHeader({
           <p className="text-muted-foreground mt-0.5 truncate text-xs">{metaLabel}</p>
         ) : null}
       </div>
-      {sourceLabel ? (
-        <StatusBadge
-          label={sourceLabel}
-          variant="default"
-          className="h-5 shrink-0 self-start px-1.5 py-0 text-[10px] leading-none"
-        />
-      ) : null}
     </div>
   );
 }
@@ -199,45 +190,73 @@ function LeadCardMetaLine({
   );
 }
 
+function LeadCardAssigneeAvatar({
+  assigneeName,
+  assigneeAvatar,
+}: {
+  assigneeName: string | null;
+  assigneeAvatar?: string | null;
+}) {
+  if (assigneeName) {
+    return (
+      <span title={assigneeName}>
+        <EmployeePersonAvatar
+          label={assigneeName}
+          imageUrl={assigneeAvatar}
+          className={LEAD_CARD_PERSON_AVATAR_CLASS}
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span className="text-muted-foreground flex h-6 w-6 items-center justify-center rounded-full border border-dashed">
+      <User size={10} />
+    </span>
+  );
+}
+
 function LeadCardFooter({
   assigneeName,
   assigneeAvatar,
-  channelLabel,
+  sourceLabel,
   isOverdue,
   daysSinceCreation,
   onCreateTask,
 }: {
   assigneeName: string | null;
   assigneeAvatar?: string | null;
-  channelLabel: string | null;
+  sourceLabel: string | null;
   isOverdue: boolean;
   daysSinceCreation: number;
   onCreateTask?: () => void;
 }) {
   return (
-    <div className="mt-2.5 flex items-end gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        {assigneeName ? (
-          <span title={assigneeName}>
-            <EmployeePersonAvatar
-              label={assigneeName}
-              imageUrl={assigneeAvatar}
-              className={LEAD_CARD_PERSON_AVATAR_CLASS}
-            />
-          </span>
-        ) : (
-          <span className="text-muted-foreground flex h-6 w-6 items-center justify-center rounded-full border border-dashed">
-            <User size={10} />
-          </span>
-        )}
-        {channelLabel ? (
-          <span className="text-muted-foreground truncate text-[10px]">{channelLabel}</span>
-        ) : null}
+    <div className={LEAD_CARD_FOOTER_CLASS}>
+      <div className="flex min-w-0 items-center gap-2">
+        <LeadCardAssigneeAvatar assigneeName={assigneeName} assigneeAvatar={assigneeAvatar} />
         {isOverdue ? (
           <StatusBadge label={`${daysSinceCreation}d`} variant="red" className="text-[9px]" />
         ) : null}
       </div>
-      {onCreateTask ? <BoardCardCreateTaskButton onCreateTask={onCreateTask} /> : null}
+      <div className="flex justify-center">
+        {onCreateTask ? (
+          <BoardCardCreateTaskButton
+            onCreateTask={onCreateTask}
+            showLabel
+            className={LEAD_CARD_TASK_CENTER_CLASS}
+          />
+        ) : null}
+      </div>
+      <div className="flex justify-end">
+        {sourceLabel ? (
+          <StatusBadge
+            label={sourceLabel}
+            variant="default"
+            className={LEAD_CARD_SOURCE_BADGE_CLASS}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
