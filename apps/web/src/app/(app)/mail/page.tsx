@@ -34,8 +34,11 @@ import { usePermission } from '@/lib/permissions';
 
 import { MailActivePanelHost } from '@/features/mail/MailActivePanelHost';
 import {
+  applyMailConnectPanelQuery,
+  clearMailConnectPanelQuery,
   MAIL_ACCOUNT_QUERY_KEY,
   MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY,
+  MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY,
   MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY,
   MAIL_OPEN_THREAD_QUERY_KEY,
 } from '@/features/mail/mail-query-params';
@@ -50,7 +53,19 @@ import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
 
 import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
 
+import {
+  bulkMarkReadFailedTargets,
+  bulkMarkReadPartialToast,
+  bulkMarkReadSuccessToast,
+  bulkMarkReadSucceededTargets,
+  bulkMarkThreadIds,
+  bulkMarkUnreadPartialToast,
+  bulkMarkUnreadSuccessToast,
+  selectReadBulkMarkTargets,
+  selectUnreadBulkMarkTargets,
+} from '@/features/mail/mail-bulk-read-actions';
 import { mailFolderListParams, type MailFolderKey } from '@/features/mail/mail-folder-config';
+import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
 
 function clearThreadSelection(setSelectedThreadIds: (ids: Set<string>) => void) {
   setSelectedThreadIds(new Set());
@@ -60,9 +75,10 @@ export default function MailInboxPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { can } = usePermission();
+  const { can, isLoading: permissionsLoading } = usePermission();
 
   const canView = can('VIEW', 'MAIL');
+  const accessPhase = resolveMailModuleAccessPhase(permissionsLoading, canView);
 
   const canEdit = can('EDIT', 'MAIL');
 
@@ -111,6 +127,8 @@ export default function MailInboxPage() {
     searchParams.get(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY)?.trim() || null;
   const queryOpenConnectMailbox =
     searchParams.get(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY)?.trim() || null;
+  const queryOpenReconnectMailboxId =
+    searchParams.get(MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY)?.trim() || null;
 
   useHeaderModuleTitle('Mail');
 
@@ -260,7 +278,7 @@ export default function MailInboxPage() {
         params.delete(MAIL_ACCOUNT_QUERY_KEY);
         params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+        clearMailConnectPanelQuery(params);
       });
       await load();
     } catch (disconnectError) {
@@ -271,6 +289,10 @@ export default function MailInboxPage() {
   }, [deleteMailboxTarget, load, updateMailQuery]);
 
   useEffect(() => {
+    if (permissionsLoading) {
+      return;
+    }
+
     if (!canView) {
       setLoading(false);
 
@@ -278,7 +300,7 @@ export default function MailInboxPage() {
     }
 
     void load();
-  }, [canView, load]);
+  }, [permissionsLoading, canView, load]);
 
   const handleActivePanelChange = useCallback(
     (panel: ActiveMailPanel) => {
@@ -288,20 +310,18 @@ export default function MailInboxPage() {
           if (panel?.type === 'thread') {
             params.set(MAIL_OPEN_THREAD_QUERY_KEY, panel.threadId);
             params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           if (panel?.type === 'share') {
             params.set(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY, panel.accountId);
             params.set(MAIL_ACCOUNT_QUERY_KEY, panel.accountId);
             params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           if (panel?.type === 'connect') {
-            params.set(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY, '1');
-            params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
-            params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
+            applyMailConnectPanelQuery(params, panel.accountId);
             return;
           }
           if (panel === null && activePanel?.type === 'share') {
@@ -309,12 +329,12 @@ export default function MailInboxPage() {
             return;
           }
           if (panel === null && activePanel?.type === 'connect') {
-            params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+            clearMailConnectPanelQuery(params);
             return;
           }
           params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
           params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-          params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+          clearMailConnectPanelQuery(params);
         },
         panel?.type === 'thread' || panel?.type === 'share' || panel?.type === 'connect'
           ? 'push'
@@ -336,7 +356,7 @@ export default function MailInboxPage() {
       }
       params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
       params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-      params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+      clearMailConnectPanelQuery(params);
     });
   };
 
@@ -407,28 +427,26 @@ export default function MailInboxPage() {
   };
 
   const runBulkMarkRead = async () => {
-    const targets = threads.filter(
-      (thread) => selectedThreadIds.has(thread.id) && thread.hasUnread,
-    );
+    const targets = selectUnreadBulkMarkTargets(threads, selectedThreadIds);
 
     if (targets.length === 0) {
       return;
     }
 
     setBulkBusy(true);
+    targets.forEach((thread) => {
+      handleThreadMarkedRead(thread.id, thread.mailAccountId);
+    });
 
     try {
-      const result = await mailApi.bulkMarkThreadsRead(targets.map((thread) => thread.id));
-      const succeededSet = new Set(result.succeededThreadIds);
-      const succeededTargets = targets.filter((thread) => succeededSet.has(thread.id));
-      succeededTargets.forEach((thread) => {
-        handleThreadMarkedRead(thread.id, thread.mailAccountId);
+      const result = await mailApi.bulkMarkThreadsRead(bulkMarkThreadIds(targets));
+      const failedTargets = bulkMarkReadFailedTargets(targets, result);
+      failedTargets.forEach((thread) => {
+        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
       });
       if (result.failed === 0) {
         clearThreadSelection(setSelectedThreadIds);
-        toast.success(
-          `Marked ${result.succeeded} thread${result.succeeded === 1 ? '' : 's'} as read.`,
-        );
+        toast.success(bulkMarkReadSuccessToast(result.succeeded));
         return;
       }
       if (result.succeeded === 0) {
@@ -437,13 +455,14 @@ export default function MailInboxPage() {
       }
       setSelectedThreadIds((prev) => {
         const next = new Set(prev);
-        result.succeededThreadIds.forEach((threadId: string) => next.delete(threadId));
+        bulkMarkReadSucceededTargets(targets, result).forEach((thread) => next.delete(thread.id));
         return next;
       });
-      toast.error(
-        `Marked ${result.succeeded} of ${result.total} thread${result.total === 1 ? '' : 's'} as read. ${result.failed} failed.`,
-      );
+      toast.error(bulkMarkReadPartialToast(result));
     } catch (bulkError) {
+      targets.forEach((thread) => {
+        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
+      });
       toast.error(getApiErrorMessage(bulkError, 'Bulk mark read failed.'));
     } finally {
       setBulkBusy(false);
@@ -451,28 +470,26 @@ export default function MailInboxPage() {
   };
 
   const runBulkMarkUnread = async () => {
-    const targets = threads.filter(
-      (thread) => selectedThreadIds.has(thread.id) && !thread.hasUnread,
-    );
+    const targets = selectReadBulkMarkTargets(threads, selectedThreadIds);
 
     if (targets.length === 0) {
       return;
     }
 
     setBulkBusy(true);
+    targets.forEach((thread) => {
+      handleThreadMarkedUnread(thread.id, thread.mailAccountId);
+    });
 
     try {
-      const result = await mailApi.bulkMarkThreadsUnread(targets.map((thread) => thread.id));
-      const succeededSet = new Set(result.succeededThreadIds);
-      const succeededTargets = targets.filter((thread) => succeededSet.has(thread.id));
-      succeededTargets.forEach((thread) => {
-        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
+      const result = await mailApi.bulkMarkThreadsUnread(bulkMarkThreadIds(targets));
+      const failedTargets = bulkMarkReadFailedTargets(targets, result);
+      failedTargets.forEach((thread) => {
+        handleThreadMarkedRead(thread.id, thread.mailAccountId);
       });
       if (result.failed === 0) {
         clearThreadSelection(setSelectedThreadIds);
-        toast.success(
-          `Marked ${result.succeeded} thread${result.succeeded === 1 ? '' : 's'} as unread.`,
-        );
+        toast.success(bulkMarkUnreadSuccessToast(result.succeeded));
         return;
       }
       if (result.succeeded === 0) {
@@ -481,13 +498,14 @@ export default function MailInboxPage() {
       }
       setSelectedThreadIds((prev) => {
         const next = new Set(prev);
-        result.succeededThreadIds.forEach((threadId: string) => next.delete(threadId));
+        bulkMarkReadSucceededTargets(targets, result).forEach((thread) => next.delete(thread.id));
         return next;
       });
-      toast.error(
-        `Marked ${result.succeeded} of ${result.total} thread${result.total === 1 ? '' : 's'} as unread. ${result.failed} failed.`,
-      );
+      toast.error(bulkMarkUnreadPartialToast(result));
     } catch (bulkError) {
+      targets.forEach((thread) => {
+        handleThreadMarkedRead(thread.id, thread.mailAccountId);
+      });
       toast.error(getApiErrorMessage(bulkError, 'Bulk mark unread failed.'));
     } finally {
       setBulkBusy(false);
@@ -566,7 +584,7 @@ export default function MailInboxPage() {
         params.delete(MAIL_ACCOUNT_QUERY_KEY);
         params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
-        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+        clearMailConnectPanelQuery(params);
       });
       if (filterAccountId !== null) {
         setThreadPage(1);
@@ -647,23 +665,52 @@ export default function MailInboxPage() {
     if (!canView || loading) {
       return;
     }
-    const shouldOpenConnect = queryOpenConnectMailbox === '1';
-    if (!shouldOpenConnect) {
-      if (queryOpenConnectMailbox !== null) {
+    if (queryOpenReconnectMailboxId) {
+      const reconnectAccount = accountHealth.find(
+        (account) => account.id === queryOpenReconnectMailboxId,
+      );
+      if (!reconnectAccount) {
+        if (accountHealth.length === 0) {
+          return;
+        }
         updateMailQuery((params) => {
-          params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+          params.delete(MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY);
         });
+        if (activePanel?.type === 'connect') {
+          setActivePanel(null);
+        }
+        return;
       }
+      if (activePanel?.type === 'connect' && activePanel.accountId === reconnectAccount.id) {
+        return;
+      }
+      setActivePanel({ type: 'connect', accountId: reconnectAccount.id });
+      return;
+    }
+    if (queryOpenConnectMailbox === '1') {
       if (activePanel?.type === 'connect') {
-        setActivePanel(null);
+        return;
       }
+      setActivePanel({ type: 'connect' });
       return;
     }
-    if (activePanel?.type === 'connect') {
-      return;
+    if (queryOpenConnectMailbox !== null) {
+      updateMailQuery((params) => {
+        params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
+      });
     }
-    setActivePanel({ type: 'connect' });
-  }, [canView, loading, queryOpenConnectMailbox, activePanel, updateMailQuery]);
+    if (activePanel?.type === 'connect' && !activePanel.accountId) {
+      setActivePanel(null);
+    }
+  }, [
+    canView,
+    loading,
+    queryOpenConnectMailbox,
+    queryOpenReconnectMailboxId,
+    accountHealth,
+    activePanel,
+    updateMailQuery,
+  ]);
 
   useEffect(() => {
     if (!canView || loading) {
@@ -710,7 +757,15 @@ export default function MailInboxPage() {
     updateMailQuery,
   ]);
 
-  if (!canView) {
+  if (accessPhase === 'loading') {
+    return (
+      <div className="flex h-full flex-col gap-5">
+        <LoadingState />
+      </div>
+    );
+  }
+
+  if (accessPhase === 'denied') {
     return (
       <div className="flex h-full flex-col gap-5">
         <EmptyState
@@ -750,6 +805,9 @@ export default function MailInboxPage() {
           setDeleteMailboxTarget({ id: account.id, emailAddress: account.emailAddress })
         }
         onConnectMailbox={() => handleActivePanelChange({ type: 'connect' })}
+        onReconnectMailbox={(account) =>
+          handleActivePanelChange({ type: 'connect', accountId: account.id })
+        }
       />
 
       <div className="flex min-h-0 flex-1">

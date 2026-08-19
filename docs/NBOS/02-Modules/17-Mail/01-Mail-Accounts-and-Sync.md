@@ -110,11 +110,14 @@ Admin/owner должен видеть проблемные аккаунты в s
 User/Admin opens Mail Settings
   -> chooses provider type
   -> completes OAuth or enters server settings
+  -> NBOS saves MailAccount (corporate: NEEDS_RECONNECT / NOT_CONNECTED until valid)
   -> NBOS validates connection
-  -> MailAccount created
-  -> initial limited import starts
+  -> on success: ACTIVE + initial limited import
+  -> on failure: keep NEEDS_RECONNECT; user edits one field and reconnects
   -> account appears in Inbox
 ```
+
+Corporate IMAP/SMTP: failed validation still persists hosts/login and the encrypted password. The next attempt is **Reconnect** (same row), not a new mailbox. Password may be omitted if a secret is already stored.
 
 ## Отключение mailbox
 
@@ -126,6 +129,8 @@ User/Admin opens Mail Settings
 2. запретить отправку из mailbox;
 3. сохранить историю и business links;
 4. дать owner/admin возможность архивировать или удалить данные по отдельной policy.
+
+MVP UX: Settings → **Delete mailbox** on the selected account disconnects it (`DISABLED`, secrets removed). Daily switcher and All-mailboxes inbox omit `DISABLED` rows so disconnected / leftover Off duplicates disappear. Reconnect is for `NEEDS_RECONNECT`, not a pile of Off rows. Same owner + email + corporate provider upserts one row.
 
 ## MVP decisions
 

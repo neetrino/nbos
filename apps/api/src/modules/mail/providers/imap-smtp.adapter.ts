@@ -18,6 +18,7 @@ import type {
   ProviderHealth,
   WatchOrIdleResult,
 } from './mail-provider-adapter';
+import { MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS } from './imap-smtp-timeouts';
 
 export interface ImapSmtpProviderConfig {
   emailAddress: string;
@@ -43,6 +44,9 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       secure: this.config.imapSecure,
       auth: { user: this.config.login, pass: this.config.password },
       logger: false,
+      connectionTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
+      greetingTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
+      socketTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
     });
   }
 
@@ -52,6 +56,9 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       port: this.config.smtpPort,
       secure: this.config.smtpSecure,
       auth: { user: this.config.login, pass: this.config.password },
+      connectionTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
+      greetingTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
+      socketTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
     });
   }
 

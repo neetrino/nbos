@@ -44,6 +44,21 @@ export function mailFolderListParams(folder: MailFolderKey): {
   }
 }
 
+/** Disconnected mailboxes stay in history but are not daily inbox targets. */
+export function isMailAccountListedInDailySwitcher(status: string): boolean {
+  return status !== 'DISABLED';
+}
+
+export function mailAccountsForDailySwitcher<T extends { id: string; status: string }>(
+  accounts: T[],
+  selectedAccountId: string | null,
+): T[] {
+  return accounts.filter(
+    (account) =>
+      isMailAccountListedInDailySwitcher(account.status) || account.id === selectedAccountId,
+  );
+}
+
 export function resolveMailFolderCount(
   folder: MailFolderKey,
   accounts: MailAccountHealthSummaryRow[],
@@ -51,7 +66,7 @@ export function resolveMailFolderCount(
 ): number | null {
   const scoped = filterAccountId
     ? accounts.filter((account) => account.id === filterAccountId)
-    : accounts;
+    : accounts.filter((account) => isMailAccountListedInDailySwitcher(account.status));
 
   if (scoped.length === 0) {
     return null;

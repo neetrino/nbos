@@ -33,6 +33,12 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 - UI: Pending / Ready / Failed + Retry; message body stays readable. Worker logs include `errorClass` when known.
 - No new Mail cron flags.
 
+## Shipped — corporate persist-on-fail + reconnect
+
+- `POST /mail/accounts/corporate/connect` upserts the owner+email draft first (`NEEDS_RECONNECT`), then validates. Failure keeps the row; success promotes to `ACTIVE`.
+- `POST /mail/accounts/:id/reconnect` accepts partial IMAP/SMTP fields; password optional when a secret exists.
+- Web: Mail settings **Reconnect mailbox** prefills saved settings; switcher badges `Reconnect` / `Off` / `Degraded`. Daily switcher and All-inbox omit `DISABLED`; Delete mailbox disconnects the selected account (history kept).
+
 ## Intentional placeholders / next slices
 
 - Provider mailbox delete — Cleanup Register.
