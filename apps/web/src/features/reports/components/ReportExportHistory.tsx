@@ -54,12 +54,7 @@ export function ReportExportHistory({
       ) : (
         <div className="mt-5 space-y-3">
           {jobs.map((job) => (
-            <ReportExportRow
-              key={job.id}
-              job={job}
-              onRetry={onRetry}
-              onCancel={onCancel}
-            />
+            <ReportExportRow key={job.id} job={job} onRetry={onRetry} onCancel={onCancel} />
           ))}
         </div>
       )}
