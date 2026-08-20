@@ -741,21 +741,21 @@ Contact (человек)
 
 Активность телефонии. **Не воронка.** Один `uid` провайдера (ATS.am) = одна запись. Канон: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`.
 
-| Поле | Тип | Описание |
-| --- | --- | --- |
-| id | UUID | Идентификатор |
-| uid | String unique | Id звонка у ATS |
-| direction | inbound / outbound | Входящий / исходящий |
-| phone | String | Нормализованный номер собеседника |
-| lead_id | FK → Lead? | Обращение, если есть |
-| contact_id | FK → Contact? | Человек, если Contact уже есть (на звонке Contact не создаём) |
-| deal_id | FK → Deal? | Контекст открытой сделки |
-| project_id | FK → Project? | Контекст |
-| product_id | FK → Product? | Контекст |
-| responsible_employee_id | FK → Employee? | Кому redirect / кто начал исходящий |
-| answered_employee_id | FK → Employee? | Кто взял трубку |
-| note | Text? | Заметка после звонка |
-| recording_file_asset_id | FK → FileAsset? | Запись в Drive (`CALL_RECORDING`) |
+| Поле                    | Тип                | Описание                                                      |
+| ----------------------- | ------------------ | ------------------------------------------------------------- |
+| id                      | UUID               | Идентификатор                                                 |
+| uid                     | String unique      | Id звонка у ATS                                               |
+| direction               | inbound / outbound | Входящий / исходящий                                          |
+| phone                   | String             | Нормализованный номер собеседника                             |
+| lead_id                 | FK → Lead?         | Обращение, если есть                                          |
+| contact_id              | FK → Contact?      | Человек, если Contact уже есть (на звонке Contact не создаём) |
+| deal_id                 | FK → Deal?         | Контекст открытой сделки                                      |
+| project_id              | FK → Project?      | Контекст                                                      |
+| product_id              | FK → Product?      | Контекст                                                      |
+| responsible_employee_id | FK → Employee?     | Кому redirect / кто начал исходящий                           |
+| answered_employee_id    | FK → Employee?     | Кто взял трубку                                               |
+| note                    | Text?              | Заметка после звонка                                          |
+| recording_file_asset_id | FK → FileAsset?    | Запись в Drive (`CALL_RECORDING`)                             |
 
 **Связи:** Call → optional Lead, Contact, Deal, Project, Product, FileAsset. Виден на Lead и Contact; Deal/Project/Product — проекция контекста.
 

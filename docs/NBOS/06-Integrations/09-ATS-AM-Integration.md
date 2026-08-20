@@ -8,12 +8,12 @@
 
 ATS отдаёт **четыре** возможности. Транскрипта нет.
 
-| API | Направление | Зачем NBOS |
-| --- | --- | --- |
-| Active Call webhook | ATS → NBOS | Старт / ответ / конец, `redirect_call` |
-| `callback` | NBOS → ATS | Click-to-call |
-| `history` | NBOS → ATS | Сверка пропущенных `uid` |
-| `call-record` | NBOS → ATS | Скачать файл записи по `uid` |
+| API                 | Направление | Зачем NBOS                             |
+| ------------------- | ----------- | -------------------------------------- |
+| Active Call webhook | ATS → NBOS  | Старт / ответ / конец, `redirect_call` |
+| `callback`          | NBOS → ATS  | Click-to-call                          |
+| `history`           | NBOS → ATS  | Сверка пропущенных `uid`               |
+| `call-record`       | NBOS → ATS  | Скачать файл записи по `uid`           |
 
 Перед исходящими вызовами ATS (`callback` / `history` / `call-record`) им нужно отдать **IP** API и worker. Это их требование, не настройка в коде.
 
@@ -21,11 +21,11 @@ ATS отдаёт **четыре** возможности. Транскрипта
 
 ## 1. Environment
 
-| Variable | Где | Notes |
-| --- | --- | --- |
-| `ATS_API_KEY` | `nbos-api` обязательно для webhook; `nbos-worker` для download/callback | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`. |
-| `ATS_API_KEY` | `nbos-scheduler` | Не нужен. Сверка history идёт через API/worker с ключом процесса, который зовёт ATS. |
-| `ATS_API_KEY` | `nbos-web` | Не нужен. Браузер не зовёт ATS напрямую. |
+| Variable      | Где                                                                     | Notes                                                                                |
+| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ATS_API_KEY` | `nbos-api` обязательно для webhook; `nbos-worker` для download/callback | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`.            |
+| `ATS_API_KEY` | `nbos-scheduler`                                                        | Не нужен. Сверка history идёт через API/worker с ключом процесса, который зовёт ATS. |
+| `ATS_API_KEY` | `nbos-web`                                                              | Не нужен. Браузер не зовёт ATS напрямую.                                             |
 
 Ключ = код из кабинета ATS, раздел «Зарегистрированные данные». Не коммитить. Тот же ключ в URL webhook кабинета: `?key=`.
 
@@ -33,13 +33,13 @@ ATS отдаёт **четыре** возможности. Транскрипта
 
 ## 2. Active Call webhook (ATS → NBOS)
 
-| Item | Value |
-| --- | --- |
-| Method | `POST` |
-| Path | `/api/integrations/ats/webhook` |
-| Auth | Query `key` = env `ATS_API_KEY` |
-| Body | `application/x-www-form-urlencoded` или `multipart/form-data` |
-| Success | HTTP `200` + **голый** JSON (не `{ data: … }`) |
+| Item    | Value                                                         |
+| ------- | ------------------------------------------------------------- |
+| Method  | `POST`                                                        |
+| Path    | `/api/integrations/ats/webhook`                               |
+| Auth    | Query `key` = env `ATS_API_KEY`                               |
+| Body    | `application/x-www-form-urlencoded` или `multipart/form-data` |
+| Success | HTTP `200` + **голый** JSON (не `{ data: … }`)                |
 
 Production: `https://nbos.neetrino.com/api/integrations/ats/webhook?key=…`
 
@@ -51,9 +51,9 @@ Ops: Cloudflare не должен резать server-to-server POST (Bot Fight 
 
 `redirect_call` — поле **нашего** JSON. Отдельный запрос на `account.ats.am` не делаем. ATS ждёт этот JSON для маршрута.
 
-| Case | Body |
-| --- | --- |
-| Нет маршрута / finish·end / outbound | `{ "status": "success" }` |
+| Case                                                     | Body                                                |
+| -------------------------------------------------------- | --------------------------------------------------- |
+| Нет маршрута / finish·end / outbound                     | `{ "status": "success" }`                           |
 | Inbound `state=start` + известный Contact или Lead с SIP | `{ "status": "success", "redirect_call": "<sip>" }` |
 
 SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
@@ -62,17 +62,17 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
 
 `state`, `uid`, `input`, `clid`, `op`, `rate`, `billsec`, `calldirect`, `disposition`, `channel`, `record_link`
 
-| Field | Semantics |
-| --- | --- |
-| `state` | `start` \| `status` (answered) \| `finish` \| `end` |
-| `calldirect` | `"0"` inbound, `"1"` outbound |
-| `disposition` | `ANSWERED` \| `NO ANSWER` |
-| `uid` | Уникальный id звонка (идемпотентность) |
-| `clid` | Номер собеседника |
-| `op` | Номер/SIP, на который сел звонок |
-| `input` | DID (маркетинг later) |
-| `rate` | 0–5, обычно на конце |
-| `billsec` | Длительность |
+| Field         | Semantics                                                  |
+| ------------- | ---------------------------------------------------------- |
+| `state`       | `start` \| `status` (answered) \| `finish` \| `end`        |
+| `calldirect`  | `"0"` inbound, `"1"` outbound                              |
+| `disposition` | `ANSWERED` \| `NO ANSWER`                                  |
+| `uid`         | Уникальный id звонка (идемпотентность)                     |
+| `clid`        | Номер собеседника                                          |
+| `op`          | Номер/SIP, на который сел звонок                           |
+| `input`       | DID (маркетинг later)                                      |
+| `rate`        | 0–5, обычно на конце                                       |
+| `billsec`     | Длительность                                               |
 | `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls` |
 
 Неизвестные поля игнорировать.
@@ -81,16 +81,16 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
 
 Продуктовые правила attach — `08-Calls` + `07-Lead-and-Deal-Merge`. Здесь только граница провайдера:
 
-| Case | NBOS |
-| --- | --- |
-| Неверный / пустой `key` | `401`, ничего не писать |
-| Ключ не задан | `503` |
-| Нет `uid` | `400` |
-| Тот же `uid` | Update той же строки Call |
-| Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead |
-| Outbound | Строка Call; Lead если номер новый (продукт `08-Calls`) |
-| `finish` / `end` | Update; **без** `redirect_call` |
-| Inbound `start` + SIP | `redirect_call` в голом JSON |
+| Case                                                         | NBOS                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| Неверный / пустой `key`                                      | `401`, ничего не писать                                 |
+| Ключ не задан                                                | `503`                                                   |
+| Нет `uid`                                                    | `400`                                                   |
+| Тот же `uid`                                                 | Update той же строки Call                               |
+| Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead                   |
+| Outbound                                                     | Строка Call; Lead если номер новый (продукт `08-Calls`) |
+| `finish` / `end`                                             | Update; **без** `redirect_call`                         |
+| Inbound `start` + SIP                                        | `redirect_call` в голом JSON                            |
 
 ### 2.4 Резолв `redirect_call` (inbound `start` only)
 
@@ -104,13 +104,13 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
 
 ### 2.5 Lead при создании с ATS
 
-| Field | Value |
-| --- | --- |
-| `source` | `MARKETING` |
-| `sourceDetail` | `ATS` |
-| `phone` | `+{digits}` |
-| `contactName` / `name` | `Incoming call {phone}` |
-| `code` | Тот же генератор `L-{year}-{nnnn}`, что Meta |
+| Field                  | Value                                        |
+| ---------------------- | -------------------------------------------- |
+| `source`               | `MARKETING`                                  |
+| `sourceDetail`         | `ATS`                                        |
+| `phone`                | `+{digits}`                                  |
+| `contactName` / `name` | `Incoming call {phone}`                      |
+| `code`                 | Тот же генератор `L-{year}-{nnnn}`, что Meta |
 
 Contact на webhook не создаём.
 
@@ -122,11 +122,11 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 `GET https://account.ats.am/docs/api/v1/callback?key=…&from=…&to=…`
 
-| Query | Смысл |
-| --- | --- |
-| `key` | Тот же `ATS_API_KEY` |
+| Query  | Смысл                                   |
+| ------ | --------------------------------------- |
+| `key`  | Тот же `ATS_API_KEY`                    |
 | `from` | SIP / номер вызывающего (наш сотрудник) |
-| `to` | Номер клиента |
+| `to`   | Номер клиента                           |
 
 Внутренний NBOS `POST` (авторизованный employee) → сервер собирает `from`/`to` → ATS. Пустой SIP инициатора → 4xx.
 
@@ -152,19 +152,19 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 ## 6. Employee SIP
 
-| Field | Storage | Editable |
-| --- | --- | --- |
+| Field            | Storage            | Editable                                                   |
+| ---------------- | ------------------ | ---------------------------------------------------------- |
 | `Employee.sipId` | `employees.sip_id` | HR employee sheet; `PUT /me/profile`; `PUT /employees/:id` |
 
 ---
 
 ## 7. Runtime сегодня vs канон
 
-| Есть в коде | Ещё нет |
-| --- | --- |
-| Webhook, ключ, inbound Lead, дедуп `uid`, логика redirect | Голый JSON ответа (сейчас может быть обёртка `{ data }`) |
-| `AtsCallEvent` + `leadId` | `contactId`, контекст Deal/Project, note, recording FileAsset |
-| — | Окно, list API, callback, history reconcile, download job |
+| Есть в коде                                               | Ещё нет                                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------- |
+| Webhook, ключ, inbound Lead, дедуп `uid`, логика redirect | Голый JSON ответа (сейчас может быть обёртка `{ data }`)      |
+| `AtsCallEvent` + `leadId`                                 | `contactId`, контекст Deal/Project, note, recording FileAsset |
+| —                                                         | Окно, list API, callback, history reconcile, download job     |
 
 ---
 

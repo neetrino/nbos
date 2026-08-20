@@ -50,26 +50,26 @@
 
 Примеры:
 
-| Purpose                 | Где используется                              |
-| ----------------------- | --------------------------------------------- |
-| `OFFER_DRAFT`           | Черновик КП                                   |
-| `OFFER_SENT`            | Отправленное КП                               |
-| `OFFER_APPROVED`        | Согласованное КП                              |
-| `MESSENGER_PROOF`       | Screenshot переписки с подтверждением условий |
-| `CONTRACT`              | Договор                                       |
-| `HANDOFF_DOCUMENT`      | Документ передачи Seller -> PM                |
-| `DESIGN_ASSET`          | Макеты, картинки, брендовые материалы клиента |
-| `DELIVERY_FILE`         | Итоговая передача клиенту                     |
-| `INVOICE_REQUEST_PROOF` | Подтверждение отправки запроса бухгалтерии    |
-| `PAYMENT_PROOF`         | Подтверждение оплаты                          |
-| `EXPENSE_PROOF`         | Чек / подтверждение расхода                   |
-| `PARTNER_AGREEMENT`     | Партнёрское соглашение                        |
-| `SUPPORT_EVIDENCE`      | Screenshot / log / запись проблемы            |
-| `TASK_ATTACHMENT`       | Вложение задачи                               |
-| `WORKSPACE_ARTIFACT`    | Файл из Work Space / Scrum                    |
-| `SOP_DOCUMENT`          | SOP / инструкция                              |
-| `TRAINING_MATERIAL`     | Обучающий материал                            |
-| `MEETING_RECORDING`     | Запись встречи                                |
+| Purpose                 | Где используется                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `OFFER_DRAFT`           | Черновик КП                                                                                                  |
+| `OFFER_SENT`            | Отправленное КП                                                                                              |
+| `OFFER_APPROVED`        | Согласованное КП                                                                                             |
+| `MESSENGER_PROOF`       | Screenshot переписки с подтверждением условий                                                                |
+| `CONTRACT`              | Договор                                                                                                      |
+| `HANDOFF_DOCUMENT`      | Документ передачи Seller -> PM                                                                               |
+| `DESIGN_ASSET`          | Макеты, картинки, брендовые материалы клиента                                                                |
+| `DELIVERY_FILE`         | Итоговая передача клиенту                                                                                    |
+| `INVOICE_REQUEST_PROOF` | Подтверждение отправки запроса бухгалтерии                                                                   |
+| `PAYMENT_PROOF`         | Подтверждение оплаты                                                                                         |
+| `EXPENSE_PROOF`         | Чек / подтверждение расхода                                                                                  |
+| `PARTNER_AGREEMENT`     | Партнёрское соглашение                                                                                       |
+| `SUPPORT_EVIDENCE`      | Screenshot / log / запись проблемы                                                                           |
+| `TASK_ATTACHMENT`       | Вложение задачи                                                                                              |
+| `WORKSPACE_ARTIFACT`    | Файл из Work Space / Scrum                                                                                   |
+| `SOP_DOCUMENT`          | SOP / инструкция                                                                                             |
+| `TRAINING_MATERIAL`     | Обучающий материал                                                                                           |
+| `MEETING_RECORDING`     | Запись встречи                                                                                               |
 | `CALL_RECORDING`        | Запись звонка. ATS: один FileAsset + FileLink на LEAD и CONTACT; канон `../01-CRM/08-Calls-and-Telephony.md` |
 
 Purpose используется для:
