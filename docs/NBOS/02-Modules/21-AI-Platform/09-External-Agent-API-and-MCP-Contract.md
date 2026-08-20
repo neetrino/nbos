@@ -79,20 +79,20 @@ Exact route mechanics may adapt to established NBOS API conventions, but the sem
 
 ## 3. Phase 1 capability mapping
 
-| REST operation | Capability | Notes |
-|---|---|---|
-| GET workspaces | `workspaces.read` | returns only authorized Work Spaces |
-| GET workspace | `workspaces.read` | scope checked |
-| GET workspace tasks | `tasks.list` | scope checked |
-| GET task | `tasks.read` | minimal projection |
-| POST task | `tasks.create` | optional grant; allowed in Phase 1 |
-| PATCH task | `tasks.update` | optional grant; field allowlist only |
-| POST start | `tasks.start` | semantic transition |
-| POST comments | `tasks.comment` | preserves AI provenance |
-| POST submit-review | `tasks.submit_review` | semantic transition |
-| GET discussion | `tasks.read_discussion` | scoped read |
-| GET artifacts | `drive.read_task_artifact` | linked artifacts only |
-| POST artifacts | `tasks.attach_artifact` | through Drive contracts |
+| REST operation      | Capability                 | Notes                                |
+| ------------------- | -------------------------- | ------------------------------------ |
+| GET workspaces      | `workspaces.read`          | returns only authorized Work Spaces  |
+| GET workspace       | `workspaces.read`          | scope checked                        |
+| GET workspace tasks | `tasks.list`               | scope checked                        |
+| GET task            | `tasks.read`               | minimal projection                   |
+| POST task           | `tasks.create`             | optional grant; allowed in Phase 1   |
+| PATCH task          | `tasks.update`             | optional grant; field allowlist only |
+| POST start          | `tasks.start`              | semantic transition                  |
+| POST comments       | `tasks.comment`            | preserves AI provenance              |
+| POST submit-review  | `tasks.submit_review`      | semantic transition                  |
+| GET discussion      | `tasks.read_discussion`    | scoped read                          |
+| GET artifacts       | `drive.read_task_artifact` | linked artifacts only                |
+| POST artifacts      | `tasks.attach_artifact`    | through Drive contracts              |
 
 Phase 1 deliberately does **not** expose:
 
@@ -320,21 +320,21 @@ Tools must use structured schemas and never instruct the model to call internal 
 
 ## 13. MCP -> capability mapping
 
-| MCP tool | Capability |
-|---|---|
-| `nbos_list_workspaces` | `workspaces.read` |
-| `nbos_get_workspace` | `workspaces.read` |
-| `nbos_list_tasks` | `tasks.list` |
-| `nbos_get_task` | `tasks.read` |
-| `nbos_create_task` | `tasks.create` |
-| `nbos_update_task` | `tasks.update` |
-| `nbos_start_task` | `tasks.start` |
-| `nbos_get_task_discussion` | `tasks.read_discussion` |
-| `nbos_add_task_comment` | `tasks.comment` |
-| `nbos_list_task_artifacts` | `drive.read_task_artifact` |
-| `nbos_get_task_artifact` | `drive.read_task_artifact` |
-| `nbos_attach_task_artifact` | `tasks.attach_artifact` |
-| `nbos_submit_task_review` | `tasks.submit_review` |
+| MCP tool                    | Capability                 |
+| --------------------------- | -------------------------- |
+| `nbos_list_workspaces`      | `workspaces.read`          |
+| `nbos_get_workspace`        | `workspaces.read`          |
+| `nbos_list_tasks`           | `tasks.list`               |
+| `nbos_get_task`             | `tasks.read`               |
+| `nbos_create_task`          | `tasks.create`             |
+| `nbos_update_task`          | `tasks.update`             |
+| `nbos_start_task`           | `tasks.start`              |
+| `nbos_get_task_discussion`  | `tasks.read_discussion`    |
+| `nbos_add_task_comment`     | `tasks.comment`            |
+| `nbos_list_task_artifacts`  | `drive.read_task_artifact` |
+| `nbos_get_task_artifact`    | `drive.read_task_artifact` |
+| `nbos_attach_task_artifact` | `tasks.attach_artifact`    |
+| `nbos_submit_task_review`   | `tasks.submit_review`      |
 
 REST and MCP must produce equivalent authorization decisions for equivalent operations.
 
