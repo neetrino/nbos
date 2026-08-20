@@ -54,6 +54,15 @@ describe('PlatformOwnershipService transfer', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
+  it('allows Founder to update their own record and blocks others', async () => {
+    await expect(
+      service.assertFounderNotMutatedByOthers(FOUNDER_ID, FOUNDER_ID),
+    ).resolves.toBeUndefined();
+    await expect(
+      service.assertFounderNotMutatedByOthers('ceo-employee', FOUNDER_ID),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('10. audits integrity failure when env mismatches', async () => {
     const prisma = {
       platformOwnership: {

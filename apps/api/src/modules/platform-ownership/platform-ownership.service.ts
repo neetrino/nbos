@@ -63,6 +63,12 @@ export class PlatformOwnershipService implements OnModuleInit {
     throw new ForbiddenException('The platform owner account cannot be changed this way.');
   }
 
+  /** Others cannot mutate the Founder record (email, profile, departments). Self is allowed. */
+  async assertFounderNotMutatedByOthers(actorId: string, targetEmployeeId: string): Promise<void> {
+    if (actorId === targetEmployeeId) return;
+    await this.assertFounderNotTarget(targetEmployeeId);
+  }
+
   async evaluate(employeeId: string): Promise<{ ok: boolean; reason: string }> {
     const ownership = await this.loadOwnership();
     const employee = await this.prisma.employee.findUnique({

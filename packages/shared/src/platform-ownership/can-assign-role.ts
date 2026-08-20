@@ -19,16 +19,20 @@ export function canAssignRole(input: CanAssignRoleInput): CanAssignRoleResult {
   if (!input.targetRoleAssignable || target === PLATFORM_OWNER_ROLE_SLUG) {
     return { allowed: false, reason: 'Platform Owner is not an assignable role.' };
   }
-  if (target === CEO_ROLE_SLUG) {
-    if (!input.actorIsPlatformOwner) {
-      return { allowed: false, reason: 'Only the platform owner can assign CEO.' };
-    }
-    if (input.ceoHeldByOtherEmployee) {
+  if (input.actorIsPlatformOwner) {
+    if (target === CEO_ROLE_SLUG && input.ceoHeldByOtherEmployee) {
       return { allowed: false, reason: 'A CEO already exists. Demote the current CEO first.' };
     }
     return { allowed: true, reason: 'ok' };
   }
-  return { allowed: true, reason: 'ok' };
+  const actor = input.actorRoleSlug.trim().toLowerCase();
+  if (actor === CEO_ROLE_SLUG) {
+    if (target === CEO_ROLE_SLUG) {
+      return { allowed: false, reason: 'Only the platform owner can assign CEO.' };
+    }
+    return { allowed: true, reason: 'ok' };
+  }
+  return { allowed: false, reason: 'Only the platform owner or CEO can assign roles.' };
 }
 
 /** UI filter only. API `canAssignRole` remains the enforcement gate. */
@@ -36,9 +40,13 @@ export function isRoleVisibleInAssignmentPicker(params: {
   roleSlug: string;
   assignable: boolean;
   actorIsPlatformOwner: boolean;
+  actorRoleSlug: string;
 }): boolean {
-  const slug = params.roleSlug.trim().toLowerCase();
-  if (!params.assignable || slug === PLATFORM_OWNER_ROLE_SLUG) return false;
-  if (slug === CEO_ROLE_SLUG) return params.actorIsPlatformOwner;
-  return true;
+  return canAssignRole({
+    actorIsPlatformOwner: params.actorIsPlatformOwner,
+    actorRoleSlug: params.actorRoleSlug,
+    targetRoleSlug: params.roleSlug,
+    targetRoleAssignable: params.assignable,
+    ceoHeldByOtherEmployee: false,
+  }).allowed;
 }

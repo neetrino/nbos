@@ -49,6 +49,18 @@ describe('platform owner security acceptance (domain)', () => {
     ).toBe(false);
   });
 
+  it('4b. Finance cannot assign operational privileged roles', () => {
+    expect(
+      canAssignRole({
+        actorIsPlatformOwner: false,
+        actorRoleSlug: 'finance-director',
+        targetRoleSlug: 'pm',
+        targetRoleAssignable: true,
+        ceoHeldByOtherEmployee: false,
+      }).allowed,
+    ).toBe(false);
+  });
+
   it('5. CEO cannot assign Founder', () => {
     expect(
       canAssignRole({

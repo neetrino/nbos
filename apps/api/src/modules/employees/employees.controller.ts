@@ -129,6 +129,7 @@ export class EmployeesController {
   @ApiOperation({ summary: 'Update employee' })
   async update(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       firstName?: string;
@@ -143,6 +144,7 @@ export class EmployeesController {
       hireDate?: string | null;
     },
   ) {
+    await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
     const { hireDate, sipId, ...rest } = body;
     const data: Record<string, unknown> = { ...rest };
     if (hireDate !== undefined) {
@@ -200,8 +202,10 @@ export class EmployeesController {
   @ApiOperation({ summary: 'Add employee to department' })
   async addDepartment(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
     @Body() body: { departmentId: string; deptRole?: string; isPrimary?: boolean },
   ) {
+    await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
     return this.prisma.employeeDepartment.create({
       data: {
         employeeId: id,
@@ -219,8 +223,10 @@ export class EmployeesController {
   async updateDepartment(
     @Param('id') id: string,
     @Param('deptId') deptId: string,
+    @CurrentUser() user: CurrentUserPayload,
     @Body() body: { deptRole?: string; isPrimary?: boolean },
   ) {
+    await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
     const record = await this.prisma.employeeDepartment.findUnique({
       where: { employeeId_departmentId: { employeeId: id, departmentId: deptId } },
     });
@@ -238,7 +244,12 @@ export class EmployeesController {
   @Delete(':id/departments/:deptId')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Remove employee from department' })
-  async removeDepartment(@Param('id') id: string, @Param('deptId') deptId: string) {
+  async removeDepartment(
+    @Param('id') id: string,
+    @Param('deptId') deptId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
     const record = await this.prisma.employeeDepartment.findUnique({
       where: { employeeId_departmentId: { employeeId: id, departmentId: deptId } },
     });

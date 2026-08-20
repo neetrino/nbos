@@ -48,7 +48,10 @@ import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
 import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
-import { filterRolesForAssignmentPicker } from '@/features/hr/utils/role-assignment-picker';
+import {
+  assignmentPickerActor,
+  filterRolesForAssignmentPicker,
+} from '@/features/hr/utils/role-assignment-picker';
 import { usePermission } from '@/lib/permissions';
 import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
@@ -363,7 +366,7 @@ export function EmployeeSheet({
                   patchDraft={patchDraft}
                   roles={filterRolesForAssignmentPicker(
                     roles,
-                    me?.isPlatformOwner === true,
+                    assignmentPickerActor(me),
                     displayEmployee.role.id,
                   )}
                   saving={saving}

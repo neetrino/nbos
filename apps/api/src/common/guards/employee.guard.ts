@@ -93,7 +93,10 @@ export class EmployeeGuard implements CanActivate {
 
     const cached = this.cache.get(employeeId);
     if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
-      request.user = { ...request.user, ...cached };
+      request.user = {
+        ...request.user,
+        ...(await this.withLiveOwnerFlag(employeeId, cached)),
+      };
       return true;
     }
 
@@ -193,5 +196,17 @@ export class EmployeeGuard implements CanActivate {
 
     this.cache.set(employeeId, enriched);
     return enriched;
+  }
+
+  private async withLiveOwnerFlag(
+    employeeId: string,
+    cached: CachedEmployee,
+  ): Promise<CachedEmployee> {
+    const isPlatformOwner = await this.platformOwnership.isPlatformOwner(employeeId);
+    return {
+      ...cached,
+      isPlatformOwner,
+      meProfile: { ...cached.meProfile, isPlatformOwner },
+    };
   }
 }
