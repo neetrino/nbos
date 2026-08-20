@@ -247,24 +247,24 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 
 ### Runtime сегодня (webhook MVP)
 
-| Capability | Behavior |
-| --- | --- |
-| Webhook | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…` |
-| Auth | Query `key` = env `ATS_API_KEY` |
-| Lead | Inbound → Lead only (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём |
-| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId` |
-| Idempotency | `AtsCallEvent.uid` unique |
+| Capability      | Behavior                                                                         |
+| --------------- | -------------------------------------------------------------------------------- |
+| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                          |
+| Auth            | Query `key` = env `ATS_API_KEY`                                                  |
+| Lead            | Inbound → Lead only (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём |
+| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                      |
+| Idempotency     | `AtsCallEvent.uid` unique                                                        |
 
 ### Канон полного среза (после MVP)
 
-| Capability | Canon |
-| --- | --- |
-| Окно ответственного | App-shell realtime, не Messenger |
-| История | Вкладка Calls на Lead/Deal; Communication у Contact |
-| Запись | Worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT |
-| Исходящий | Server-side `callback` |
-| Сверка | Scheduler `ats-call-history-reconcile` |
-| DID → MarketingAccount | Later |
+| Capability             | Canon                                                |
+| ---------------------- | ---------------------------------------------------- |
+| Окно ответственного    | App-shell realtime, не Messenger                     |
+| История                | Вкладка Calls на Lead/Deal; Communication у Contact  |
+| Запись                 | Worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT |
+| Исходящий              | Server-side `callback`                               |
+| Сверка                 | Scheduler `ats-call-history-reconcile`               |
+| DID → MarketingAccount | Later                                                |
 
 Env: `ATS_API_KEY` на api (+ worker для download/callback). SIP: `Employee.sipId`.
 

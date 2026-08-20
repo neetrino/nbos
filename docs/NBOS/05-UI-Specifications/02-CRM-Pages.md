@@ -374,10 +374,10 @@ Project + Product
 
 **Calls ≠ History.** History — аудит / смена стадий. Calls — телефония (канон `../02-Modules/01-CRM/08-Calls-and-Telephony.md`, окно `11-Call-Screen.md`).
 
-| Sheet | Tabs |
-| --- | --- |
-| Lead | General · **Calls** · History · Task |
-| Deal | General · History · Invoice · Task · **Calls** |
+| Sheet | Tabs                                           |
+| ----- | ---------------------------------------------- |
+| Lead  | General · **Calls** · History · Task           |
+| Deal  | General · History · Invoice · Task · **Calls** |
 
 На обеих: кнопка «Позвонить» (внутренний click-to-call). Полноэкранное окно звонка — не sheet, см. `11-Call-Screen.md`.
 
