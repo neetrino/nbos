@@ -906,6 +906,7 @@ Contact (человек)
 | work_schedule         | JSON            | Рабочий график                                             |
 | status                | Enum            | Active, Probation, On Leave, Fired                         |
 | hire_date             | Date            | Дата найма                                                 |
+| auth_version          | Int             | Бампается при смене/сбросе пароля, terminate, logout-all   |
 
 `role` и `department` не должны быть простыми scalar fields источника истины. Бизнес-функции сотрудника задаются через `Seat Assignment`.
 
@@ -918,6 +919,13 @@ Contact (человек)
 - Employee → many Compensation Profiles
 - Employee → many Payroll Runs / Salary Lines
 - Employee → many Credentials (доступ)
+- Employee → many AuthSession (вход; канон `06-Authentication-and-Sessions.md`)
+
+### 2.17.0. AuthSession (вход)
+
+Серверная сессия Authentication V2. Один логин = одна строка. Сырой refresh не хранится.
+
+Поля и статусы — в `06-Authentication-and-Sessions.md`. Не путать с Credentials vault unlock.
 
 ---
 

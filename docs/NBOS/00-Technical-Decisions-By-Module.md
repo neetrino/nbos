@@ -59,13 +59,13 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Auth, RBAC And Audit
 
-| Area  | Decision                                                                                         |
-| ----- | ------------------------------------------------------------------------------------------------ |
-| Auth  | NextAuth session on web plus backend JWT for API calls.                                          |
-| RBAC  | Enforce module, project and record-level access in NestJS guards/services.                       |
-| Audit | Log permission changes, credential reveals, finance/payment actions, exports and external sends. |
-| MVP   | Invite-only access, role-based navigation, backend enforcement and audit foundation.             |
-| Later | 2FA hardening, impersonation only if explicitly approved and audited.                            |
+| Area  | Decision                                                                                                                                                                                                                                                                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth  | **Session V2:** server `AuthSession` + short access JWT + rotating refresh. Web: NextAuth BFF + HttpOnly refresh cookie (refresh never in browser JSON). Native: same sessions, refresh in JSON → Keychain/Keystore. Canon: `01-Platform-Overview/06-Authentication-and-Sessions.md`. Legacy long-lived JWT + denylist stays until V2 is the only live login. |
+| RBAC  | Enforce module, project and record-level access in NestJS guards/services. Permissions are **not** in the JWT.                                                                                                                                                                                                                                                |
+| Audit | Log permission changes, credential reveals, finance/payment actions, exports, external sends, and auth session security events.                                                                                                                                                                                                                               |
+| MVP   | Invite-only access, role-based navigation, backend enforcement and audit foundation.                                                                                                                                                                                                                                                                          |
+| Later | 2FA hardening, impersonation only if explicitly approved and audited. Cross-app SSO is not part of V2.                                                                                                                                                                                                                                                        |
 
 ### CRM And Marketing
 

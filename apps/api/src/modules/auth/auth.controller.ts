@@ -28,6 +28,11 @@ import {
 import { resolveAuthRefreshCookieName } from './auth-session.flags';
 import { assertRefreshCsrf } from './auth-session.csrf';
 import { toAuthPublicResponse, type AuthPublicResponse } from './auth-public-response';
+import {
+  resolveIssuedClientKind,
+  resolveSessionDeviceLabel,
+  shouldExposeRefreshInJson,
+} from './auth-session.client';
 
 const ONE_MINUTE_MS = 60_000;
 const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
@@ -52,7 +57,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description:
-      'Returns access token and user info. Refresh token is set only via HttpOnly cookie (not in JSON).',
+      'Returns access token and user info. Refresh is HttpOnly cookie for web; native JSON when clientKind is a mobile app.',
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(
@@ -61,12 +66,34 @@ export class AuthController {
     @Res({ passthrough: true })
     res: { setHeader: (name: string, value: string | string[]) => void },
   ): Promise<AuthPublicResponse> {
+    const origin = headerValue(req.headers['origin']);
+    const referer = headerValue(req.headers['referer']);
+    const bffHeader = headerValue(req.headers['x-nbos-bff']);
+    const userAgent = headerValue(req.headers['user-agent']);
+    const clientKind = resolveIssuedClientKind({
+      requested: dto.clientKind,
+      origin,
+      referer,
+      bffHeader,
+    });
     const result = await this.authService.login(dto.email, dto.password, {
       ip: req.ip,
-      userAgent: headerValue(req.headers['user-agent']),
+      userAgent,
+      clientKind,
+      deviceLabel: resolveSessionDeviceLabel({
+        deviceLabel: dto.deviceLabel,
+        userAgent,
+      }),
     });
     this.setRefreshCookieIfPresent(res, result.refreshToken);
-    return toAuthPublicResponse(result);
+    return toAuthPublicResponse(result, {
+      includeRefreshToken: shouldExposeRefreshInJson({
+        clientKind,
+        origin,
+        referer,
+        bffHeader,
+      }),
+    });
   }
 
   @Post('refresh')
@@ -76,11 +103,12 @@ export class AuthController {
   @ApiOperation({
     summary: 'Rotate refresh session and issue short access token',
     description:
-      'Refresh token is accepted from HttpOnly cookie or request body (server-side BFF). Rotated refresh is set only via Set-Cookie, never in JSON.',
+      'Refresh token is accepted from HttpOnly cookie or request body (native / BFF). Rotated refresh is Set-Cookie for web; native JSON when the session is a mobile app.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Access token and user info. Refresh token only in HttpOnly cookie.',
+    description:
+      'Access token and user info. Refresh is HttpOnly cookie for web; native JSON for mobile sessions.',
   })
   async refresh(
     @Body() dto: RefreshDto,
@@ -114,7 +142,14 @@ export class AuthController {
       userAgent: headerValue(req.headers['user-agent']),
     });
     this.setRefreshCookieIfPresent(res, result.refreshToken);
-    return toAuthPublicResponse(result);
+    return toAuthPublicResponse(result, {
+      includeRefreshToken: shouldExposeRefreshInJson({
+        clientKind: result.clientKind ?? 'web',
+        origin,
+        referer,
+        bffHeader,
+      }),
+    });
   }
 
   @Post('accept-invite')
@@ -177,6 +212,14 @@ export class AuthController {
     return this.authService.logoutAll(user.id);
   }
 
+  @Post('logout-others')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke every AuthSession except the current one' })
+  async logoutOthers(@CurrentUser() user: CurrentUserPayload) {
+    return this.authService.logoutOthers(user.id, user.sessionId);
+  }
+
   @Get('sessions')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List active sessions for the current user' })
@@ -206,9 +249,8 @@ export class AuthController {
     refreshToken: string | undefined,
   ): void {
     if (!refreshToken) return;
-    // Refresh tokens are intentionally transported in an HttpOnly, Secure (prod),
-    // SameSite and path-scoped cookie. The raw secret is not persisted and is
-    // excluded from the JSON response (see `toAuthPublicResponse`).
+    // Refresh tokens are also set as an HttpOnly, Secure (prod), SameSite,
+    // path-scoped cookie. Native JSON exposure is decided in `toAuthPublicResponse`.
     // codeql[js/clear-text-storage-of-sensitive-data]
     res.setHeader('Set-Cookie', serializeRefreshCookie(buildRefreshCookieOptions(refreshToken)));
   }

@@ -13,7 +13,37 @@ export interface ResetPasswordInfo {
   email: string;
 }
 
+export type AuthSessionClientKind = 'web' | 'mobile_work' | 'mobile_messenger' | 'mobile_vault';
+
+export interface AuthSessionRow {
+  id: string;
+  status: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  expiresAt: string;
+  deviceLabel: string | null;
+  clientKind: AuthSessionClientKind;
+  current: boolean;
+}
+
 export const authApi = {
+  listSessions: async (): Promise<AuthSessionRow[]> => {
+    const { data } = await api.get<AuthSessionRow[]>('/api/v1/auth/sessions');
+    return data;
+  },
+
+  revokeSession: async (sessionId: string): Promise<{ success: true }> => {
+    const { data } = await api.delete<{ success: true }>(`/api/v1/auth/sessions/${sessionId}`);
+    return data;
+  },
+
+  logoutOthers: async (): Promise<{ success: true; revoked: number }> => {
+    const { data } = await api.post<{ success: true; revoked: number }>(
+      '/api/v1/auth/logout-others',
+    );
+    return data;
+  },
+
   changePassword: async (input: {
     currentPassword: string;
     newPassword: string;

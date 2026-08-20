@@ -18,6 +18,11 @@ import {
   refreshHashesEqual,
 } from './auth-session.tokens';
 import { recordAuthMetric } from './auth-session.metrics';
+import {
+  fromPrismaAuthSessionClientKind,
+  toPrismaAuthSessionClientKind,
+} from './auth-session.client';
+import type { AuthSessionClientKindApi } from '@nbos/shared';
 
 export type SessionRevokeReason =
   | 'logout'
@@ -35,6 +40,7 @@ export interface CreateSessionInput {
   ip?: string;
   userAgent?: string;
   deviceLabel?: string;
+  clientKind?: AuthSessionClientKindApi;
 }
 
 export interface CreateSessionResult {
@@ -51,6 +57,7 @@ export interface RotateSessionResult {
   email: string;
   refreshToken: string;
   expiresAt: Date;
+  clientKind: AuthSessionClientKindApi;
 }
 
 type SessionRow = {
@@ -65,6 +72,7 @@ type SessionRow = {
   version: number;
   lastIpHash: string | null;
   userAgentHash: string | null;
+  clientKind?: string;
 };
 
 @Injectable()
@@ -108,6 +116,7 @@ export class AuthSessionService {
         lastIpHash: input.ip ? hashAuthMetadata(input.ip, pepper) : null,
         userAgentHash: input.userAgent ? hashAuthMetadata(input.userAgent, pepper) : null,
         deviceLabel: input.deviceLabel?.slice(0, 120) ?? null,
+        clientKind: toPrismaAuthSessionClientKind(input.clientKind ?? 'web'),
       },
     });
 
@@ -271,6 +280,7 @@ export class AuthSessionService {
         email: result.employee.email,
         refreshToken: result.refreshToken,
         expiresAt: result.session.expiresAt,
+        clientKind: fromPrismaAuthSessionClientKind(result.session.clientKind),
       };
     } catch (err) {
       if (err instanceof UnauthorizedException) {
@@ -385,6 +395,7 @@ export class AuthSessionService {
         lastUsedAt: true,
         expiresAt: true,
         deviceLabel: true,
+        clientKind: true,
       },
     });
     return sessions.map((s) => ({
@@ -394,6 +405,7 @@ export class AuthSessionService {
       lastUsedAt: s.lastUsedAt?.toISOString() ?? null,
       expiresAt: s.expiresAt.toISOString(),
       deviceLabel: s.deviceLabel,
+      clientKind: fromPrismaAuthSessionClientKind(s.clientKind),
       current: currentSessionId ? s.id === currentSessionId : false,
     }));
   }

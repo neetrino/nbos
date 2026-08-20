@@ -12,7 +12,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequirePermission,
+  RequireActiveSession,
+} from '../../common/decorators';
 import { credentialsAccessFromUser } from './credentials-access';
 import { CredentialsService } from './credentials.service';
 import { normalizeCredentialTab } from './credential-tab';
@@ -264,6 +269,7 @@ export class CredentialsController {
 
   @Post('export/file')
   @RequirePermission('CREDENTIALS', 'VIEW')
+  @RequireActiveSession()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Export visible credentials as encrypted file (step-up required)',
@@ -414,6 +420,7 @@ export class CredentialsController {
 
   @Post(':id/secret-versions/:versionId/reveal')
   @RequirePermission('CREDENTIALS', 'VIEW')
+  @RequireActiveSession()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Reveal a historical secret version (executive or vault-wide access + step-up)',
@@ -483,6 +490,7 @@ export class CredentialsController {
 
   @Post(':id/secrets/reveal')
   @RequirePermission('CREDENTIALS', 'VIEW')
+  @RequireActiveSession()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reveal one encrypted secret field (audited as secret_revealed)' })
   async revealSecret(
@@ -500,6 +508,7 @@ export class CredentialsController {
 
   @Post(':id/secrets/copy')
   @RequirePermission('CREDENTIALS', 'VIEW')
+  @RequireActiveSession()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Return one decrypted secret for client clipboard (audited as secret_copied)',
@@ -519,6 +528,7 @@ export class CredentialsController {
 
   @Post('export')
   @RequirePermission('CREDENTIALS', 'VIEW')
+  @RequireActiveSession()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:

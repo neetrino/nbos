@@ -54,6 +54,7 @@ import {
 } from '@/features/hr/utils/role-assignment-picker';
 import { usePermission } from '@/lib/permissions';
 import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
+import { ActiveSessionsPanel } from '@/features/account/components/active-sessions-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
 import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
@@ -389,7 +390,10 @@ export function EmployeeSheet({
                 />
               ) : null}
               {activeTab === 'security' && selfProfile ? (
-                <ChangePasswordPanel accountEmail={displayEmployee.email} />
+                <>
+                  <ChangePasswordPanel accountEmail={displayEmployee.email} />
+                  <ActiveSessionsPanel />
+                </>
               ) : null}
               {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
                 <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />

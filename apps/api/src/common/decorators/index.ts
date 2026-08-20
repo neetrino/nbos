@@ -7,3 +7,7 @@ export {
   PERMISSION_KEY,
   type RequiredPermission,
 } from './require-permission.decorator';
+export {
+  RequireActiveSession,
+  REQUIRE_ACTIVE_SESSION_KEY,
+} from './require-active-session.decorator';
