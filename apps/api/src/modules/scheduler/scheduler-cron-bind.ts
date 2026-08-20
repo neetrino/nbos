@@ -4,9 +4,11 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { describeCronSkipReason, shouldRunCronTick } from './scheduler-cron-gate';
+import { isSchedulerJobPolicyEnabled } from './scheduler-job-policy.accessor';
 
 export type StartSchedulerCronJobArgs = {
   jobName: string;
+  /** Kept for ops logging / seed; registration no longer gates on this flag. */
   enabledEnvKey: string;
   cronEnvKey: string;
   defaultExpression: string;
@@ -33,10 +35,10 @@ function resolveCronExpression(
   return defaultExpression;
 }
 
-/** Register a Nest CronJob when role + per-job flag allow it. */
+/** Register a Nest CronJob when process role allows it. Ticks check policy + master switch. */
 export function startSchedulerCronJob(args: StartSchedulerCronJobArgs): void {
-  const { jobName, enabledEnvKey, cronEnvKey, defaultExpression } = args;
-  const skipReason = describeCronSkipReason(enabledEnvKey);
+  const { jobName, cronEnvKey, defaultExpression } = args;
+  const skipReason = describeCronSkipReason(args.enabledEnvKey);
   if (skipReason !== null) {
     const message = `Cron ${jobName} not registered (${skipReason}).`;
     args.logger.log(message);
@@ -58,7 +60,10 @@ export function startSchedulerCronJob(args: StartSchedulerCronJobArgs): void {
     job = new CronJob(expression, () => {
       if (!shouldRunCronTick()) return;
       if (args.jobRegistry.isShuttingDown()) return;
-      void args.run().catch((caught: unknown) => {
+      void (async () => {
+        if (!(await isSchedulerJobPolicyEnabled(jobName))) return;
+        await args.run();
+      })().catch((caught: unknown) => {
         args.logger.error(`Cron ${jobName} failed`, caught);
       });
     });

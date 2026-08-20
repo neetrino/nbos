@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.controller';
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
+import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 import { SchedulerJobRuntimeSnapshotService } from './scheduler-job-runtime-snapshot.service';
 import { SchedulerModule } from './scheduler.module';
 
@@ -23,7 +24,7 @@ describe('SchedulerModule.forRoot', () => {
     expect(module.providers).not.toContain(SchedulerJobRuntimeSnapshotService);
   });
 
-  it('registers Settings catalog API on both roles', () => {
+  it('registers Settings catalog API and policy on both roles', () => {
     const withCrons = SchedulerModule.forRoot({ includeCrons: true });
     const withoutCrons = SchedulerModule.forRoot({ includeCrons: false });
 
@@ -31,5 +32,7 @@ describe('SchedulerModule.forRoot', () => {
     expect(withoutCrons.controllers).toContain(PlatformSchedulerJobsController);
     expect(withCrons.providers).toContain(PlatformSchedulerJobsService);
     expect(withoutCrons.providers).toContain(PlatformSchedulerJobsService);
+    expect(withCrons.providers).toContain(SchedulerJobPolicyService);
+    expect(withoutCrons.providers).toContain(SchedulerJobPolicyService);
   });
 });

@@ -17,9 +17,9 @@ import {
 } from './scheduler-job-catalog';
 import {
   DEFAULT_SCHEDULER_RUNTIME_SNAPSHOT_INTERVAL_MS,
-  isEnvFlagEnabled,
   isSchedulerEnabled,
 } from './scheduler-lease.constants';
+import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 
 @Injectable()
 export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstrap, OnModuleDestroy {
@@ -32,10 +32,11 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
     private readonly config: ConfigService,
     private readonly jobRegistry: ScheduledJobRegistry,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly policyService: SchedulerJobPolicyService,
   ) {}
 
   onApplicationBootstrap(): void {
-    void this.writeSnapshot().catch((caught: unknown) => {
+    void this.bootstrapSnapshot().catch((caught: unknown) => {
       this.logger.error('Initial SchedulerJobRuntime snapshot failed', caught);
     });
     this.intervalHandle = setInterval(() => {
@@ -53,16 +54,23 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
     }
   }
 
+  private async bootstrapSnapshot(): Promise<void> {
+    await this.policyService.seedMissingFromEnv();
+    await this.writeSnapshot();
+  }
+
   async writeSnapshot(): Promise<void> {
     const masterEnabled = isSchedulerEnabled();
     const timezone = process.env.TZ?.trim() || 'UTC';
     const heartbeatAt = new Date();
     const registeredNames = new Set(this.jobRegistry.list());
     const nestCronNames = this.listNestCronNames();
+    const policies = await this.policyService.listByJobNames(
+      listPlatformCronCatalogEntries().map((entry) => entry.jobName),
+    );
 
     for (const entry of listPlatformCronCatalogEntries()) {
-      const enabledByEnv =
-        entry.enabledEnvKey !== null ? isEnvFlagEnabled(entry.enabledEnvKey) : false;
+      const policyEnabled = policies.get(entry.jobName)?.enabled === true;
       const registered = registeredNames.has(entry.jobName) || nestCronNames.has(entry.jobName);
       const expression = this.resolveExpression(entry);
 
@@ -72,7 +80,7 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
           jobName: entry.jobName,
           masterEnabled,
           registered,
-          enabledByEnv,
+          enabledByEnv: policyEnabled,
           expression,
           timezone,
           heartbeatAt,
@@ -81,7 +89,7 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
         update: {
           masterEnabled,
           registered,
-          enabledByEnv,
+          enabledByEnv: policyEnabled,
           expression,
           timezone,
           heartbeatAt,

@@ -50,3 +50,15 @@ model SchedulerJobRuntime {
   @@index([heartbeatAt])
   @@map("scheduler_job_runtimes")
 }
+
+/// Admin enable/disable policy (Settings → Scheduler). Seeded from env once; then env is not source of truth.
+model SchedulerJobPolicy {
+  jobName     String   @id @map("job_name")
+  enabled     Boolean
+  updatedById String?  @map("updated_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([enabled])
+  @@map("scheduler_job_policies")
+}

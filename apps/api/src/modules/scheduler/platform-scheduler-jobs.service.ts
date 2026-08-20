@@ -1,33 +1,39 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CronJob } from 'cron';
-import { PrismaClient } from '@nbos/database';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 import {
+  getSchedulerJobCatalogEntry,
   listVisibleSchedulerJobs,
   SCHEDULER_JOB_KIND,
+  SCHEDULER_JOB_VISIBILITY,
   type SchedulerJobCatalogEntry,
   type SchedulerJobKind,
   type SchedulerJobRisk,
   type SchedulerRosterIntent,
 } from './scheduler-job-catalog';
+import { DEFAULT_SCHEDULER_RUNTIME_OFFLINE_AFTER_MS } from './scheduler-lease.constants';
+import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 import {
-  DEFAULT_SCHEDULER_RUNTIME_OFFLINE_AFTER_MS,
-  SCHEDULER_RUN_STATUS,
-} from './scheduler-lease.constants';
+  SCHEDULER_AUDIT_ACTION_JOB_DISABLED,
+  SCHEDULER_AUDIT_ACTION_JOB_ENABLED,
+  SCHEDULER_AUDIT_ENTITY,
+} from './scheduler-job-policy.constants';
+import {
+  computeNextRunAt,
+  deriveCatalogStatus,
+  type CatalogLastRunSnapshot,
+  type CatalogLeaseSnapshot,
+  type CatalogRuntimeSnapshot,
+  type SchedulerCatalogStatus,
+} from './platform-scheduler-jobs.status';
 
-export const SCHEDULER_CATALOG_STATUS = {
-  active: 'active',
-  paused: 'paused',
-  blocked: 'blocked',
-  running: 'running',
-  failed: 'failed',
-  schedulerOffline: 'schedulerOffline',
-  manual: 'manual',
-  disabledByCanon: 'disabledByCanon',
-} as const;
-
-export type SchedulerCatalogStatus =
-  (typeof SCHEDULER_CATALOG_STATUS)[keyof typeof SCHEDULER_CATALOG_STATUS];
+export {
+  computeNextRunAt,
+  deriveCatalogStatus,
+  SCHEDULER_CATALOG_STATUS,
+  type SchedulerCatalogStatus,
+} from './platform-scheduler-jobs.status';
 
 export type PlatformSchedulerJobRow = {
   jobName: string;
@@ -42,7 +48,9 @@ export type PlatformSchedulerJobRow = {
   expression: string | null;
   timezone: string | null;
   status: SchedulerCatalogStatus;
+  /** @deprecated use policyEnabled — kept for stage-1 clients */
   enabledByEnv: boolean | null;
+  policyEnabled: boolean | null;
   masterEnabled: boolean | null;
   registered: boolean | null;
   lastRunAt: string | null;
@@ -50,6 +58,7 @@ export type PlatformSchedulerJobRow = {
   lastErrorMessage: string | null;
   nextRunAt: string | null;
   runtimeHeartbeatAt: string | null;
+  canToggle: boolean;
 };
 
 export type PlatformSchedulerJobsResponse = {
@@ -61,39 +70,23 @@ export type PlatformSchedulerJobsResponse = {
   jobs: PlatformSchedulerJobRow[];
 };
 
-type RuntimeRow = {
-  jobName: string;
-  masterEnabled: boolean;
-  registered: boolean;
-  enabledByEnv: boolean;
-  expression: string | null;
-  timezone: string;
-  heartbeatAt: Date;
-  schedulerOwnerId: string;
-};
-
-type LastRunRow = {
-  jobName: string;
-  status: string;
-  startedAt: Date;
-  finishedAt: Date | null;
-  errorMessage: string | null;
-};
-
-type LeaseRow = {
-  jobName: string;
-  leaseUntil: Date;
-};
-
 @Injectable()
 export class PlatformSchedulerJobsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly policyService: SchedulerJobPolicyService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async listJobs(): Promise<PlatformSchedulerJobsResponse> {
+    await this.policyService.seedMissingFromEnv();
     const catalog = listVisibleSchedulerJobs();
     const jobNames = catalog.map((entry) => entry.jobName);
+    const platformNames = catalog
+      .filter((entry) => entry.kind === SCHEDULER_JOB_KIND.platformCron)
+      .map((entry) => entry.jobName);
 
-    const [runtimes, lastRuns, leases] = await Promise.all([
+    const [runtimes, lastRuns, leases, policies] = await Promise.all([
       this.prisma.schedulerJobRuntime.findMany({
         where: { jobName: { in: jobNames } },
       }),
@@ -101,6 +94,7 @@ export class PlatformSchedulerJobsService {
       this.prisma.schedulerLease.findMany({
         where: { jobName: { in: jobNames } },
       }),
+      this.policyService.listByJobNames(platformNames),
     ]);
 
     const runtimeByName = new Map(runtimes.map((row) => [row.jobName, row]));
@@ -127,31 +121,78 @@ export class PlatformSchedulerJobsService {
       process.env.TZ?.trim() ??
       'Asia/Yerevan';
 
-    const jobs = catalog.map((entry) =>
-      this.toRow({
+    const jobs = catalog.map((entry) => {
+      const policy = policies.get(entry.jobName);
+      return this.toRow({
         entry,
         runtime: runtimeByName.get(entry.jobName) ?? null,
         lastRun: lastRunByName.get(entry.jobName) ?? null,
         lease: leaseByName.get(entry.jobName) ?? null,
+        policyEnabled: policy?.enabled ?? null,
         schedulerOnline,
         now,
         fallbackTimezone: timezone,
-      }),
-    );
+      });
+    });
 
     return {
       generatedAt: new Date().toISOString(),
       timezone,
       masterEnabled,
       schedulerOnline,
-      note: 'BullMQ workers and IMAP IDLE are not listed here. User schedules (reports, recurring tasks) appear only via their platform tick jobs.',
+      note: 'BullMQ workers and IMAP IDLE are not listed here. Enable/disable is stored in SchedulerJobPolicy; SCHEDULER_ENABLED remains the process kill switch.',
       jobs,
     };
   }
 
-  private async loadLatestRuns(jobNames: string[]): Promise<LastRunRow[]> {
+  async setJobEnabled(input: {
+    jobName: string;
+    enabled: boolean;
+    actorId: string;
+    changeReason?: string;
+  }): Promise<PlatformSchedulerJobRow> {
+    const entry = getSchedulerJobCatalogEntry(input.jobName);
+    if (!entry || entry.visibility !== SCHEDULER_JOB_VISIBILITY.list) {
+      throw new NotFoundException(`Unknown scheduler job: ${input.jobName}`);
+    }
+    if (entry.kind !== SCHEDULER_JOB_KIND.platformCron) {
+      throw new BadRequestException(`Job ${input.jobName} cannot be toggled`);
+    }
+
+    await this.policyService.seedMissingFromEnv();
+    const result = await this.policyService.setEnabled({
+      jobName: input.jobName,
+      enabled: input.enabled,
+      actorId: input.actorId,
+    });
+
+    await this.auditService.log({
+      entityType: SCHEDULER_AUDIT_ENTITY,
+      entityId: input.jobName,
+      action: input.enabled
+        ? SCHEDULER_AUDIT_ACTION_JOB_ENABLED
+        : SCHEDULER_AUDIT_ACTION_JOB_DISABLED,
+      userId: input.actorId,
+      changes: {
+        before: { enabled: result.previousEnabled },
+        after: { enabled: result.enabled },
+        jobName: input.jobName,
+        changeReason: input.changeReason?.trim() || null,
+        risk: entry.risk,
+      } as InputJsonValue,
+    });
+
+    const list = await this.listJobs();
+    const row = list.jobs.find((job) => job.jobName === input.jobName);
+    if (!row) {
+      throw new NotFoundException(`Scheduler job missing after update: ${input.jobName}`);
+    }
+    return row;
+  }
+
+  private async loadLatestRuns(jobNames: string[]): Promise<CatalogLastRunSnapshot[]> {
     if (jobNames.length === 0) return [];
-    const rows: LastRunRow[] = [];
+    const rows: CatalogLastRunSnapshot[] = [];
     for (const jobName of jobNames) {
       const latest = await this.prisma.schedulerRun.findFirst({
         where: { jobName },
@@ -171,14 +212,24 @@ export class PlatformSchedulerJobsService {
 
   private toRow(input: {
     entry: SchedulerJobCatalogEntry;
-    runtime: RuntimeRow | null;
-    lastRun: LastRunRow | null;
-    lease: LeaseRow | null;
+    runtime: CatalogRuntimeSnapshot | null;
+    lastRun: CatalogLastRunSnapshot | null;
+    lease: CatalogLeaseSnapshot | null;
+    policyEnabled: boolean | null;
     schedulerOnline: boolean;
     now: number;
     fallbackTimezone: string;
   }): PlatformSchedulerJobRow {
-    const { entry, runtime, lastRun, lease, schedulerOnline, now, fallbackTimezone } = input;
+    const {
+      entry,
+      runtime,
+      lastRun,
+      lease,
+      policyEnabled,
+      schedulerOnline,
+      now,
+      fallbackTimezone,
+    } = input;
     const expression = runtime?.expression ?? entry.defaultExpression;
     const timezone = runtime?.timezone ?? fallbackTimezone;
     const status = deriveCatalogStatus({
@@ -186,6 +237,7 @@ export class PlatformSchedulerJobsService {
       runtime,
       lastRun,
       lease,
+      policyEnabled,
       schedulerOnline,
       now,
     });
@@ -203,7 +255,8 @@ export class PlatformSchedulerJobsService {
       expression,
       timezone: runtime?.timezone ?? null,
       status,
-      enabledByEnv: runtime?.enabledByEnv ?? null,
+      enabledByEnv: policyEnabled,
+      policyEnabled,
       masterEnabled: runtime?.masterEnabled ?? null,
       registered: runtime?.registered ?? null,
       lastRunAt: lastRun?.startedAt.toISOString() ?? null,
@@ -211,63 +264,7 @@ export class PlatformSchedulerJobsService {
       lastErrorMessage: lastRun?.errorMessage ?? null,
       nextRunAt: computeNextRunAt(expression, timezone),
       runtimeHeartbeatAt: runtime?.heartbeatAt.toISOString() ?? null,
+      canToggle: entry.kind === SCHEDULER_JOB_KIND.platformCron,
     };
-  }
-}
-
-export function deriveCatalogStatus(input: {
-  entry: SchedulerJobCatalogEntry;
-  runtime: RuntimeRow | null;
-  lastRun: LastRunRow | null;
-  lease: LeaseRow | null;
-  schedulerOnline: boolean;
-  now: number;
-}): SchedulerCatalogStatus {
-  const { entry, runtime, lastRun, lease, schedulerOnline, now } = input;
-
-  if (entry.kind === SCHEDULER_JOB_KIND.manualOnly) {
-    return SCHEDULER_CATALOG_STATUS.manual;
-  }
-  if (entry.kind === SCHEDULER_JOB_KIND.notACron) {
-    return SCHEDULER_CATALOG_STATUS.disabledByCanon;
-  }
-
-  if (lastRun?.status === SCHEDULER_RUN_STATUS.RUNNING) {
-    return SCHEDULER_CATALOG_STATUS.running;
-  }
-  if (lease !== null && lease.leaseUntil.getTime() > now) {
-    return SCHEDULER_CATALOG_STATUS.running;
-  }
-
-  if (!schedulerOnline || runtime === null) {
-    return SCHEDULER_CATALOG_STATUS.schedulerOffline;
-  }
-
-  if (
-    lastRun?.status === SCHEDULER_RUN_STATUS.FAILED ||
-    lastRun?.status === SCHEDULER_RUN_STATUS.TIMED_OUT
-  ) {
-    return SCHEDULER_CATALOG_STATUS.failed;
-  }
-
-  if (!runtime.enabledByEnv || !runtime.registered) {
-    return SCHEDULER_CATALOG_STATUS.paused;
-  }
-
-  if (!runtime.masterEnabled) {
-    return SCHEDULER_CATALOG_STATUS.blocked;
-  }
-
-  return SCHEDULER_CATALOG_STATUS.active;
-}
-
-export function computeNextRunAt(expression: string | null, timezone: string): string | null {
-  if (expression === null || expression.trim().length === 0) return null;
-  try {
-    const job = new CronJob(expression, () => undefined, null, false, timezone);
-    const next = job.nextDate();
-    return next.toJSDate().toISOString();
-  } catch {
-    return null;
   }
 }

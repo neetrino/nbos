@@ -31,7 +31,7 @@ describe('BillingCron', () => {
     process.env = { ...original };
   });
 
-  it('does not register when disabled', () => {
+  it('registers even when env flag is off (policy gates ticks)', () => {
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new BillingCron(
       createConfig({}),
@@ -40,7 +40,7 @@ describe('BillingCron', () => {
       jobRegistry,
     );
     cron.onModuleInit();
-    expect(addSpy).not.toHaveBeenCalled();
+    expect(addSpy).toHaveBeenCalledWith(SCHEDULER_JOB_NAMES.billing, expect.any(Object));
   });
 
   it('registers when enabled', () => {

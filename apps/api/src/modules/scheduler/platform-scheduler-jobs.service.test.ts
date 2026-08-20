@@ -30,6 +30,7 @@ describe('deriveCatalogStatus', () => {
         runtime: null,
         lastRun: null,
         lease: null,
+        policyEnabled: null,
         schedulerOnline: true,
         now: Date.now(),
       }),
@@ -43,13 +44,14 @@ describe('deriveCatalogStatus', () => {
         runtime: null,
         lastRun: null,
         lease: null,
+        policyEnabled: true,
         schedulerOnline: false,
         now: Date.now(),
       }),
     ).toBe(SCHEDULER_CATALOG_STATUS.schedulerOffline);
   });
 
-  it('returns paused when env flag off', () => {
+  it('returns paused when policy off', () => {
     const now = Date.now();
     expect(
       deriveCatalogStatus({
@@ -57,22 +59,21 @@ describe('deriveCatalogStatus', () => {
         runtime: {
           jobName: 'billing',
           masterEnabled: true,
-          registered: false,
-          enabledByEnv: false,
+          registered: true,
           expression: '0 3 1 * *',
           timezone: 'Asia/Yerevan',
           heartbeatAt: new Date(now),
-          schedulerOwnerId: 'host:1',
         },
         lastRun: null,
         lease: null,
+        policyEnabled: false,
         schedulerOnline: true,
         now,
       }),
     ).toBe(SCHEDULER_CATALOG_STATUS.paused);
   });
 
-  it('returns blocked when master off but job enabled', () => {
+  it('returns blocked when master off but policy on', () => {
     const now = Date.now();
     expect(
       deriveCatalogStatus({
@@ -81,14 +82,13 @@ describe('deriveCatalogStatus', () => {
           jobName: 'billing',
           masterEnabled: false,
           registered: true,
-          enabledByEnv: true,
           expression: '0 3 1 * *',
           timezone: 'Asia/Yerevan',
           heartbeatAt: new Date(now),
-          schedulerOwnerId: 'host:1',
         },
         lastRun: null,
         lease: null,
+        policyEnabled: true,
         schedulerOnline: true,
         now,
       }),
@@ -104,11 +104,9 @@ describe('deriveCatalogStatus', () => {
           jobName: 'billing',
           masterEnabled: true,
           registered: true,
-          enabledByEnv: true,
           expression: '0 3 1 * *',
           timezone: 'Asia/Yerevan',
           heartbeatAt: new Date(now),
-          schedulerOwnerId: 'host:1',
         },
         lastRun: {
           jobName: 'billing',
@@ -118,13 +116,14 @@ describe('deriveCatalogStatus', () => {
           errorMessage: 'boom',
         },
         lease: null,
+        policyEnabled: true,
         schedulerOnline: true,
         now,
       }),
     ).toBe(SCHEDULER_CATALOG_STATUS.failed);
   });
 
-  it('returns active when master on, registered, env on', () => {
+  it('returns active when master on, registered, policy on', () => {
     const now = Date.now();
     expect(
       deriveCatalogStatus({
@@ -133,11 +132,9 @@ describe('deriveCatalogStatus', () => {
           jobName: 'billing',
           masterEnabled: true,
           registered: true,
-          enabledByEnv: true,
           expression: '0 3 1 * *',
           timezone: 'Asia/Yerevan',
           heartbeatAt: new Date(now),
-          schedulerOwnerId: 'host:1',
         },
         lastRun: {
           jobName: 'billing',
@@ -147,6 +144,7 @@ describe('deriveCatalogStatus', () => {
           errorMessage: null,
         },
         lease: null,
+        policyEnabled: true,
         schedulerOnline: true,
         now,
       }),

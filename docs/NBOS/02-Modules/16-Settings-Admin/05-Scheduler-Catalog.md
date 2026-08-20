@@ -36,26 +36,35 @@ Settings → Scheduler = видимость и (позже) политика э�
 5. UI не создаёт новые джобы и не редактирует cron high-risk jobs.
 6. High-risk (billing, trash purge, invoice WhatsApp reminders): на этапе 2 — confirm + audit.
 
-## Статусы (этап 1)
+## Статусы
 
-| Status             | Смысл                                                     |
-| ------------------ | --------------------------------------------------------- |
-| `active`           | Master on, env on, cron зарегистрирован, heartbeat свежий |
-| `paused`           | Джоба выключена флагом env                                |
-| `blocked`          | Джоба on, но `SCHEDULER_ENABLED=false`                    |
-| `running`          | Сейчас выполняется (run или живой lease)                  |
-| `failed`           | Последний run `FAILED` / `TIMED_OUT`                      |
-| `schedulerOffline` | Нет свежего heartbeat от `nbos-scheduler`                 |
-| `manual`           | Только ручной HTTP / кнопка                               |
-| `disabledByCanon`  | Cron намеренно выключен каноном (например reports)        |
+| Status             | Смысл                                                            |
+| ------------------ | ---------------------------------------------------------------- |
+| `active`           | Master on, policy on, cron зарегистрирован, heartbeat свежий     |
+| `paused`           | Джоба выключена в `SchedulerJobPolicy` (или не зарегистрирована) |
+| `blocked`          | Policy on, но `SCHEDULER_ENABLED=false`                          |
+| `running`          | Сейчас выполняется (run или живой lease)                         |
+| `failed`           | Последний run `FAILED` / `TIMED_OUT`                             |
+| `schedulerOffline` | Нет свежего heartbeat от `nbos-scheduler`                        |
+| `manual`           | Только ручной HTTP / кнопка                                      |
+| `disabledByCanon`  | Cron намеренно выключен каноном                                  |
+
+## Политика (этап 2)
+
+- Таблица `SchedulerJobPolicy`: `enabled`, `updatedById`, timestamps.
+- Первый seed: из env `*_ENABLED` (если задан) иначе `rosterIntent=on`.
+- После seed env `*_ENABLED` не источник правды для ticks.
+- Nest регистрирует **все** `platform_cron` по роли; тик: `SCHEDULER_ENABLED` + policy.
+- `PATCH /api/platform/scheduler/jobs/:jobName` + audit `scheduler.job_enabled` / `scheduler.job_disabled`.
+- High-risk: confirm в UI перед PATCH.
 
 ## Этапы
 
-| Этап       | Что                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| 1 (сейчас) | Каталог + runtime snapshot + read-only Settings                                            |
-| 2          | Toggle из админки (`SchedulerJobPolicy`); env `*_ENABLED` перестаёт быть источником правды |
-| 3          | Run now, алерты падений, cron override только low/medium                                   |
+| Этап       | Что                                                                       |
+| ---------- | ------------------------------------------------------------------------- |
+| 1          | Каталог + runtime snapshot + Settings list                                |
+| 2 (сейчас) | Toggle из админки (`SchedulerJobPolicy`); env `*_ENABLED` только для seed |
+| 3          | Run now, алерты падений, cron override только low/medium                  |
 
 ## Связанные документы
 

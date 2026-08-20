@@ -18,11 +18,11 @@ import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { INTERNAL_SCHEDULER_CRON_PROVIDERS } from './scheduler-internal.crons';
 import { SchedulerService } from './scheduler.service';
+import { listPlatformCronCatalogEntries } from './scheduler-job-catalog';
 import {
-  listPlatformCronCatalogEntries,
-  listRosterOnPlatformCronJobNames,
-  SCHEDULER_ROSTER_INTENT,
-} from './scheduler-job-catalog';
+  resetSchedulerJobPolicyChecker,
+  setSchedulerJobPolicyChecker,
+} from './scheduler-job-policy.accessor';
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
@@ -39,10 +39,7 @@ const CRON_PROVIDERS = [
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
-const EXPECTED_PROD_GREEN_JOBS = listRosterOnPlatformCronJobNames();
-
-const ABSENT_YELLOW_JOBS = listPlatformCronCatalogEntries()
-  .filter((entry) => entry.rosterIntent !== SCHEDULER_ROSTER_INTENT.on)
+const ALL_PLATFORM_CRON_JOBS = listPlatformCronCatalogEntries()
   .map((entry) => entry.jobName)
   .sort();
 
@@ -75,23 +72,6 @@ function applySchedulerRoleEnv(base: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     NODE_ENV: 'development',
     PROCESS_ROLE: 'scheduler',
     TZ: 'Asia/Yerevan',
-    SCHEDULER_BILLING_ENABLED: 'true',
-    SCHEDULER_OVERDUE_INVOICES_ENABLED: 'true',
-    SCHEDULER_SALES_KPI_MONTH_CLOSE_ENABLED: 'true',
-    SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED: 'true',
-    SCHEDULER_RECURRING_TASKS_DUE_ENABLED: 'true',
-    SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED: 'true',
-    SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_ENABLED: 'true',
-    REPORT_SCHEDULES_DUE_CRON_ENABLED: 'true',
-    SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'true',
-    SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED: 'false',
-    SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED: 'false',
-    SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED: 'false',
-    SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED: 'false',
-    SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED: 'false',
-    SCHEDULER_INVOICE_CARD_REMINDERS_ENABLED: 'false',
-    SCHEDULER_EXPENSE_BACKLOG_REMINDERS_ENABLED: 'false',
-    SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED: 'false',
   };
 }
 
@@ -111,43 +91,37 @@ async function bootSchedulerCronModule(): Promise<INestApplication> {
   return app;
 }
 
-function assertProdGreenCronRegistration(app: INestApplication, schedulerEnabled: boolean): void {
-  const jobRegistry = app.get(ScheduledJobRegistry);
-  const schedulerRegistry = app.get(SchedulerRegistry);
-
-  expect(jobRegistry.list()).toEqual(EXPECTED_PROD_GREEN_JOBS);
-  expect([...schedulerRegistry.getCronJobs().keys()].sort()).toEqual(EXPECTED_PROD_GREEN_JOBS);
-  expect(() => jobRegistry.assertHasScheduledJobsWhenEnabled(schedulerEnabled)).not.toThrow();
-
-  for (const jobName of ABSENT_YELLOW_JOBS) {
-    expect(jobRegistry.list()).not.toContain(jobName);
-    expect(schedulerRegistry.doesExist('cron', jobName)).toBe(false);
-  }
-}
-
 describe('scheduler cron registration (scheduler role)', () => {
   const originalEnv = { ...process.env };
   let app: INestApplication | undefined;
 
   beforeEach(() => {
     process.env = applySchedulerRoleEnv(originalEnv);
+    setSchedulerJobPolicyChecker(async () => true);
   });
 
   afterEach(async () => {
     await app?.close();
     app = undefined;
+    resetSchedulerJobPolicyChecker();
     process.env = { ...originalEnv };
   });
 
-  it('registers prod-green crons when SCHEDULER_ENABLED=false (paused ticks)', async () => {
+  it('registers all platform crons when SCHEDULER_ENABLED=false (paused ticks)', async () => {
     process.env.SCHEDULER_ENABLED = 'false';
     app = await bootSchedulerCronModule();
-    assertProdGreenCronRegistration(app, false);
+    const jobRegistry = app.get(ScheduledJobRegistry);
+    const schedulerRegistry = app.get(SchedulerRegistry);
+    expect(jobRegistry.list()).toEqual(ALL_PLATFORM_CRON_JOBS);
+    expect([...schedulerRegistry.getCronJobs().keys()].sort()).toEqual(ALL_PLATFORM_CRON_JOBS);
+    expect(() => jobRegistry.assertHasScheduledJobsWhenEnabled(false)).not.toThrow();
   });
 
-  it('registers prod-green crons when SCHEDULER_ENABLED=true (active ticks)', async () => {
+  it('registers all platform crons when SCHEDULER_ENABLED=true', async () => {
     process.env.SCHEDULER_ENABLED = 'true';
     app = await bootSchedulerCronModule();
-    assertProdGreenCronRegistration(app, true);
+    const jobRegistry = app.get(ScheduledJobRegistry);
+    expect(jobRegistry.list()).toEqual(ALL_PLATFORM_CRON_JOBS);
+    expect(() => jobRegistry.assertHasScheduledJobsWhenEnabled(true)).not.toThrow();
   });
 });

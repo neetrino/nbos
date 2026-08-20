@@ -24,6 +24,7 @@ export type PlatformSchedulerJobRow = {
   timezone: string | null;
   status: SchedulerCatalogStatus;
   enabledByEnv: boolean | null;
+  policyEnabled: boolean | null;
   masterEnabled: boolean | null;
   registered: boolean | null;
   lastRunAt: string | null;
@@ -31,6 +32,7 @@ export type PlatformSchedulerJobRow = {
   lastErrorMessage: string | null;
   nextRunAt: string | null;
   runtimeHeartbeatAt: string | null;
+  canToggle: boolean;
 };
 
 export type PlatformSchedulerJobsResponse = {
@@ -45,6 +47,16 @@ export type PlatformSchedulerJobsResponse = {
 export const schedulerJobsApi = {
   async listJobs(): Promise<PlatformSchedulerJobsResponse> {
     const resp = await api.get<PlatformSchedulerJobsResponse>('/api/platform/scheduler/jobs');
+    return resp.data;
+  },
+  async setJobEnabled(
+    jobName: string,
+    body: { enabled: boolean; changeReason?: string },
+  ): Promise<PlatformSchedulerJobRow> {
+    const resp = await api.patch<PlatformSchedulerJobRow>(
+      `/api/platform/scheduler/jobs/${encodeURIComponent(jobName)}`,
+      body,
+    );
     return resp.data;
   },
 };

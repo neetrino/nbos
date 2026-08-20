@@ -32,7 +32,7 @@ describe('ClientServicesRenewalInvoiceCron', () => {
     process.env = { ...original };
   });
 
-  it('does not register when disabled', () => {
+  it('registers even when env flag is off (policy gates ticks)', () => {
     const config = createConfig({});
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new ClientServicesRenewalInvoiceCron(
@@ -42,7 +42,10 @@ describe('ClientServicesRenewalInvoiceCron', () => {
       jobRegistry,
     );
     cron.onModuleInit();
-    expect(addSpy).not.toHaveBeenCalled();
+    expect(addSpy).toHaveBeenCalledWith(
+      SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice,
+      expect.any(Object),
+    );
   });
 
   it('registers cron when enabled', () => {

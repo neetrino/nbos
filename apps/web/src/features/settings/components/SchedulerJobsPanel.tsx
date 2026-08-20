@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Clock3, RefreshCw, Timer } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -58,9 +60,18 @@ function formatSchedule(row: PlatformSchedulerJobRow): string {
   return row.expression ?? row.defaultExpression ?? '—';
 }
 
+function confirmHighRiskToggle(row: PlatformSchedulerJobRow, nextEnabled: boolean): boolean {
+  if (row.risk !== 'high') return true;
+  const action = nextEnabled ? 'ENABLE' : 'DISABLE';
+  return window.confirm(
+    `${action} high-risk job "${row.title}" (${row.jobName})?\n\n${row.description}\n\nThis is audited.`,
+  );
+}
+
 export function SchedulerJobsPanel() {
   const [data, setData] = useState<PlatformSchedulerJobsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [togglingJob, setTogglingJob] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -78,6 +89,27 @@ export function SchedulerJobsPanel() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const handleToggle = async (row: PlatformSchedulerJobRow, nextEnabled: boolean) => {
+    if (!row.canToggle) return;
+    if (!confirmHighRiskToggle(row, nextEnabled)) return;
+    setTogglingJob(row.jobName);
+    try {
+      const updated = await schedulerJobsApi.setJobEnabled(row.jobName, { enabled: nextEnabled });
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          jobs: prev.jobs.map((job) => (job.jobName === updated.jobName ? updated : job)),
+        };
+      });
+      toast.success(`${updated.title} ${nextEnabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not update job');
+    } finally {
+      setTogglingJob(null);
+    }
+  };
 
   if (loading && !data) {
     return <LoadingState variant="list" count={6} />;
@@ -102,6 +134,7 @@ export function SchedulerJobsPanel() {
               <TableHead>Job</TableHead>
               <TableHead>Group</TableHead>
               <TableHead>Schedule</TableHead>
+              <TableHead>Enabled</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Last run</TableHead>
               <TableHead>Last result</TableHead>
@@ -111,7 +144,12 @@ export function SchedulerJobsPanel() {
           </TableHeader>
           <TableBody>
             {data.jobs.map((row) => (
-              <SchedulerJobTableRow key={row.jobName} row={row} />
+              <SchedulerJobTableRow
+                key={row.jobName}
+                row={row}
+                toggling={togglingJob === row.jobName}
+                onToggle={(enabled) => void handleToggle(row, enabled)}
+              />
             ))}
           </TableBody>
         </Table>
@@ -153,7 +191,14 @@ function SchedulerJobsHeader(props: {
   );
 }
 
-function SchedulerJobTableRow({ row }: { row: PlatformSchedulerJobRow }) {
+function SchedulerJobTableRow(props: {
+  row: PlatformSchedulerJobRow;
+  toggling: boolean;
+  onToggle: (enabled: boolean) => void;
+}) {
+  const { row, toggling, onToggle } = props;
+  const enabled = row.policyEnabled === true;
+
   return (
     <TableRow>
       <TableCell>
@@ -169,6 +214,18 @@ function SchedulerJobTableRow({ row }: { row: PlatformSchedulerJobRow }) {
           <Timer className="size-3.5 shrink-0" aria-hidden />
           {formatSchedule(row)}
         </span>
+      </TableCell>
+      <TableCell>
+        {row.canToggle ? (
+          <Switch
+            checked={enabled}
+            disabled={toggling}
+            onCheckedChange={(checked) => onToggle(checked)}
+            aria-label={`${enabled ? 'Disable' : 'Enable'} ${row.title}`}
+          />
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
       </TableCell>
       <TableCell>
         <StatusBadge variant={STATUS_VARIANT[row.status]} label={STATUS_LABEL[row.status]} />

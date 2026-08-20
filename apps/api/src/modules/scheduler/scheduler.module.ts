@@ -38,6 +38,8 @@ import { shouldRegisterScheduledJobs } from '../../runtime/process-role';
 import { SchedulerJobRuntimeSnapshotService } from './scheduler-job-runtime-snapshot.service';
 import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.controller';
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
+import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
+import { AuditModule } from '../audit/audit.module';
 
 const SCHEDULER_IMPORTS = [
   BillingModule,
@@ -54,6 +56,7 @@ const SCHEDULER_IMPORTS = [
   TasksModule,
   ClientServicesModule,
   MailModule,
+  AuditModule,
 ] as const;
 
 const CRON_PROVIDERS = [
@@ -101,10 +104,17 @@ export class SchedulerModule {
         SchedulerRunService,
         ScheduledJobRegistry,
         ServiceApiKeyGuard,
+        SchedulerJobPolicyService,
         PlatformSchedulerJobsService,
         ...(includeCrons ? [...CRON_PROVIDERS, SchedulerJobRuntimeSnapshotService] : []),
       ],
-      exports: [SchedulerService, SchedulerLeaseService, ScheduledJobRegistry, SchedulerRunService],
+      exports: [
+        SchedulerService,
+        SchedulerLeaseService,
+        ScheduledJobRegistry,
+        SchedulerRunService,
+        SchedulerJobPolicyService,
+      ],
     };
   }
 }
