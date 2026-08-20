@@ -12,5 +12,5 @@
 - [ ] После того как новый вход (Auth Session V2) полностью заменит старый JWT и все зайдут по-новому — удалить legacy-логин (v1) и denylist. Сейчас не трогать: иначе никто не войдёт. Джоба 14 включать только вместе с V2.
 - [x] Добавить production-мониторинг ошибок BullMQ jobs и Scheduler runs с понятными уведомлениями.
 - [x] Вынести ops-токены из `.env.local` приложения и заменить секреты, если скриншоты или ENV попадали третьим лицам.
-- [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным.
+- [x] Парковка Redis-команд: **не делать.** Проверено 2026-08-20 на `nbos-redis`: ~2.6 MB / 256 MB, CPU ~0.2 %, ~2 ops/s, evicted=0. Срез команд уже в коде (`drainDelay=20s`, `stalledInterval=120s`, без `INFO` ready-check). Возвращаться только если **контейнер Redis** станет заметным по RAM/CPU — не путать со swap хоста.
 - [x] **Contact ↔ Product:** канон `07-Contact-and-Product.md` + schema/API/Связать/Won/merge/WhatsApp/UI.
