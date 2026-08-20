@@ -98,7 +98,8 @@ export function SchedulerJobsPanel() {
               <TableHead>Schedule</TableHead>
               <TableHead>On</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Timing</TableHead>
+              <TableHead>Last run</TableHead>
+              <TableHead>Next run</TableHead>
               <TableHead>Result</TableHead>
               <TableHead>Risk</TableHead>
               <TableHead>Actions</TableHead>

@@ -112,17 +112,44 @@ function padTime(hour: string, minute: string): string {
   return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
 }
 
-export function formatSchedulerWhen(iso: string | null, timezone?: string | null): string {
-  if (!iso) return '—';
+export type SchedulerWhenParts = {
+  primary: string;
+  secondary: string;
+};
+
+/** Day + time on primary line; month + year secondary (smaller). */
+export function splitSchedulerWhen(
+  iso: string | null,
+  timezone?: string | null,
+): SchedulerWhenParts | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const tz = timezone && timezone.trim().length > 0 ? timezone : undefined;
   try {
-    return new Date(iso).toLocaleString(undefined, {
-      timeZone: timezone && timezone.trim().length > 0 ? timezone : undefined,
-      month: 'short',
-      day: 'numeric',
+    const day = date.toLocaleString(undefined, { timeZone: tz, day: 'numeric' });
+    const time = date.toLocaleString(undefined, {
+      timeZone: tz,
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     });
+    const month = date.toLocaleString(undefined, { timeZone: tz, month: 'short' });
+    const year = date.toLocaleString(undefined, { timeZone: tz, year: 'numeric' });
+    return {
+      primary: `${day} · ${time}`,
+      secondary: `${month} ${year}`,
+    };
   } catch {
-    return new Date(iso).toLocaleString();
+    return {
+      primary: date.toLocaleString(),
+      secondary: '',
+    };
   }
+}
+
+export function formatSchedulerWhen(iso: string | null, timezone?: string | null): string {
+  const parts = splitSchedulerWhen(iso, timezone);
+  if (!parts) return '—';
+  return parts.secondary ? `${parts.primary} · ${parts.secondary}` : parts.primary;
 }

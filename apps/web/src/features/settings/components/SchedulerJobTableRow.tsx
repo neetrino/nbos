@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock3, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -13,6 +13,7 @@ import {
   describeCronExpression,
   formatSchedulerWhen,
   parseCronExpression,
+  splitSchedulerWhen,
 } from './scheduler-cron-format';
 
 export const SCHEDULER_STATUS_LABEL: Record<SchedulerCatalogStatus, string> = {
@@ -143,19 +144,10 @@ export function SchedulerJobTableRow(props: {
         />
       </TableCell>
       <TableCell className="align-top">
-        <div className="space-y-1.5 text-xs">
-          <div>
-            <p className="text-muted-foreground text-[10px] tracking-wide uppercase">Last</p>
-            <p className="tabular-nums">{formatSchedulerWhen(row.lastRunAt, timezone)}</p>
-          </div>
-          <div className="border-border/60 border-t pt-1.5">
-            <p className="text-muted-foreground inline-flex items-center gap-1 text-[10px] tracking-wide uppercase">
-              <Clock3 className="size-3" aria-hidden />
-              Next
-            </p>
-            <p className="tabular-nums">{formatSchedulerWhen(row.nextRunAt, timezone)}</p>
-          </div>
-        </div>
+        <SchedulerWhenStack iso={row.lastRunAt} timezone={timezone} />
+      </TableCell>
+      <TableCell className="align-top">
+        <SchedulerWhenStack iso={row.nextRunAt} timezone={timezone} />
       </TableCell>
       <TableCell className="align-top text-sm">
         <p className="text-xs font-medium">{row.lastRunStatus ?? '—'}</p>
@@ -182,5 +174,20 @@ export function SchedulerJobTableRow(props: {
         )}
       </TableCell>
     </TableRow>
+  );
+}
+
+function SchedulerWhenStack(props: { iso: string | null; timezone: string }) {
+  const parts = splitSchedulerWhen(props.iso, props.timezone);
+  if (!parts) {
+    return <span className="text-muted-foreground text-xs">—</span>;
+  }
+  return (
+    <div className="leading-tight">
+      <p className="text-sm font-medium tabular-nums">{parts.primary}</p>
+      {parts.secondary ? (
+        <p className="text-muted-foreground text-[11px] tabular-nums">{parts.secondary}</p>
+      ) : null}
+    </div>
   );
 }

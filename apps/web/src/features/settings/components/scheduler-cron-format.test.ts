@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { describeCronExpression, parseCronExpression } from './scheduler-cron-format';
+import {
+  describeCronExpression,
+  parseCronExpression,
+  splitSchedulerWhen,
+} from './scheduler-cron-format';
 
 describe('scheduler-cron-format', () => {
   it('parses five fields', () => {
@@ -17,5 +21,11 @@ describe('scheduler-cron-format', () => {
     expect(describeCronExpression('*/10 * * * *')).toBe('Every 10 minutes');
     expect(describeCronExpression('0 11 * * *')).toBe('Every day at 11:00');
     expect(describeCronExpression('30 3 * * 0')).toBe('Every Sunday at 03:30');
+  });
+
+  it('splits day-time above month-year', () => {
+    const parts = splitSchedulerWhen('2026-08-20T15:02:00.000Z', 'UTC');
+    expect(parts?.primary).toMatch(/20 · 15:02/);
+    expect(parts?.secondary).toBe('Aug 2026');
   });
 });
