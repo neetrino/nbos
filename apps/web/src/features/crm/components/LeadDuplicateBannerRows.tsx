@@ -12,12 +12,9 @@ import type { LeadDuplicateBannerMode } from './LeadDuplicateBanner';
 interface LeadCandidateListProps {
   result: LeadDuplicateLookupResult;
   mode: LeadDuplicateBannerMode;
-  showAttach: boolean;
-  attaching: boolean;
   onOpen: (leadId: string) => void;
   onMerge?: (leadId: string) => void;
   onOpenContact?: (contactId: string) => void;
-  onAttachContact?: (contactId: string, aboutDealId?: string) => void;
   onOpenDeal?: (dealId: string) => void;
 }
 
@@ -38,22 +35,12 @@ export function LeadCandidateList(props: LeadCandidateListProps) {
           key={contact.id}
           contact={contact}
           openDeal={openDealForContact(props.result.openDeals, contact.id)}
-          showAttach={props.showAttach}
-          attaching={props.attaching}
           onOpenContact={props.onOpenContact}
-          onAttachContact={props.onAttachContact}
           onOpenDeal={props.onOpenDeal}
         />
       ))}
       {orphanOpenDeals(props.result).map((deal) => (
-        <OrphanDealRow
-          key={deal.id}
-          deal={deal}
-          showAttach={props.showAttach}
-          attaching={props.attaching}
-          onOpenDeal={props.onOpenDeal}
-          onAttachContact={props.onAttachContact}
-        />
+        <OrphanDealRow key={deal.id} deal={deal} onOpenDeal={props.onOpenDeal} />
       ))}
     </ul>
   );
@@ -104,10 +91,7 @@ function LeadCandidateRow(props: {
 function ContactCandidateRow(props: {
   contact: LeadDuplicateContact;
   openDeal: LeadDuplicateOpenDeal | null;
-  showAttach: boolean;
-  attaching: boolean;
   onOpenContact?: (contactId: string) => void;
-  onAttachContact?: (contactId: string, aboutDealId?: string) => void;
   onOpenDeal?: (dealId: string) => void;
 }) {
   const name = `${props.contact.firstName} ${props.contact.lastName}`.trim();
@@ -142,16 +126,6 @@ function ContactCandidateRow(props: {
             Open Deal
           </Button>
         ) : null}
-        {props.openDeal && props.showAttach ? (
-          <Button
-            type="button"
-            size="sm"
-            disabled={props.attaching}
-            onClick={() => props.onAttachContact?.(props.contact.id, props.openDeal?.id)}
-          >
-            Это про эту сделку
-          </Button>
-        ) : null}
       </div>
     </li>
   );
@@ -159,12 +133,8 @@ function ContactCandidateRow(props: {
 
 function OrphanDealRow(props: {
   deal: LeadDuplicateOpenDeal;
-  showAttach: boolean;
-  attaching: boolean;
   onOpenDeal?: (dealId: string) => void;
-  onAttachContact?: (contactId: string, aboutDealId?: string) => void;
 }) {
-  const canAbout = Boolean(props.deal.contactId && props.showAttach && props.onAttachContact);
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-white/70 px-2 py-1.5">
       <div className="min-w-0">
@@ -183,16 +153,6 @@ function OrphanDealRow(props: {
             onClick={() => props.onOpenDeal?.(props.deal.id)}
           >
             Open Deal
-          </Button>
-        ) : null}
-        {canAbout ? (
-          <Button
-            type="button"
-            size="sm"
-            disabled={props.attaching}
-            onClick={() => props.onAttachContact?.(props.deal.contactId ?? '', props.deal.id)}
-          >
-            Это про эту сделку
           </Button>
         ) : null}
       </div>

@@ -32,7 +32,6 @@ import { cn } from '@/lib/utils';
 import { canOfferLeadMerge } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions';
 import { LeadDuplicateBanner } from './LeadDuplicateBanner';
-import { LeadSheetIdentifySection } from './LeadSheetIdentifySection';
 import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
 import { LeadTasksTab } from './LeadTasksTab';
 
@@ -185,13 +184,6 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
         <div className="px-5 py-4">
-          <LeadSheetIdentifySection
-            lead={renderLead}
-            isTrashView={isTrashView}
-            onOpenRelatedLead={props.onOpenRelatedLead}
-            onAttached={props.onAttached}
-            onAttachedAndTrashed={props.onAttachedAndTrashed}
-          />
           {props.phoneDuplicates && props.onOpenRelatedLead ? (
             <div className="mb-4">
               <LeadDuplicateBanner
