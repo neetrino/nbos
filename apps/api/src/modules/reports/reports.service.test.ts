@@ -253,6 +253,7 @@ describe('ReportsService', () => {
           format: 'CSV',
           ownerId: 'employee-1',
           recipientEmails: ['finance@example.com'],
+          recipientRoles: [],
           scheduleLabel: 'Monthly finance packet',
           frequency: 'MONTHLY',
           timeOfDay: '09:00',
@@ -268,6 +269,33 @@ describe('ReportsService', () => {
         changes: expect.objectContaining({
           sensitive: true,
           confidentiality: 'FINANCE_SENSITIVE',
+        }),
+      }),
+    );
+  });
+
+  it('resolves Owner and CEO emails from the employee directory', async () => {
+    prisma.employee.findMany.mockResolvedValueOnce([
+      { email: 'owner@neetrino.com' },
+      { email: 'suren@neetrino.com' },
+    ]);
+
+    await service.createSchedule('employee-1', FINANCE_PERMISSIONS, {
+      reportKey: 'company-pnl',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+      recipientRoles: ['OWNER', 'CEO'],
+      scheduleLabel: 'Monthly finance packet',
+      frequency: 'MONTHLY',
+      timeOfDay: '09:00',
+      dayOfMonth: 5,
+    });
+
+    expect(prisma.reportSchedule.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          recipientRoles: ['OWNER', 'CEO'],
+          recipientEmails: ['owner@neetrino.com', 'suren@neetrino.com'],
         }),
       }),
     );

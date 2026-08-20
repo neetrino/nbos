@@ -41,6 +41,7 @@ const EXPECTED_PROD_GREEN_JOBS = [
   'notification-inbox-reconcile',
   'overdue-invoices',
   'recurring-tasks-due',
+  'report-schedules-due',
   'sales-kpi-month-close',
 ];
 
@@ -50,7 +51,6 @@ const ABSENT_YELLOW_JOBS = [
   'expense-backlog-reminders',
   'invoice-card-reminders',
   'platform-trash-purge',
-  'report-schedules-due',
   'support-sla-escalation',
   'mail-outbound-reconcile',
   'mail-gmail-watch-renew',
@@ -93,6 +93,16 @@ function applySchedulerRoleEnv(base: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     SCHEDULER_RECURRING_TASKS_DUE_ENABLED: 'true',
     SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED: 'true',
     SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_ENABLED: 'true',
+    REPORT_SCHEDULES_DUE_CRON_ENABLED: 'true',
+    SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'false',
+    SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED: 'false',
+    SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED: 'false',
+    SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED: 'false',
+    SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED: 'false',
+    SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED: 'false',
+    SCHEDULER_INVOICE_CARD_REMINDERS_ENABLED: 'false',
+    SCHEDULER_EXPENSE_BACKLOG_REMINDERS_ENABLED: 'false',
+    SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED: 'false',
   };
 }
 

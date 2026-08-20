@@ -10,6 +10,7 @@ import {
   type ReportDefinition,
   type ReportExportFormat,
   type ReportExportJob,
+  type ReportSchedule,
   type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -22,6 +23,7 @@ import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
 import { ReportActions } from './tabs/ReportActions';
 import { useReportExportJobsPoll } from '../hooks/use-report-export-jobs-poll';
+import { filterReportDefinitions, loadReportShellData } from '../reports-center-shell';
 import {
   buildInitialReportFilters,
   buildReportFilters,
@@ -32,12 +34,7 @@ import {
   usePersistedSearchFilters,
   type SearchFilterRecord,
 } from '@/lib/persisted-client-state';
-import {
-  buildReportsViewPath,
-  isReportDataView,
-  parseReportsPathname,
-  type ReportsViewId,
-} from '../reports-routing';
+import { buildReportsViewPath, isReportDataView, parseReportsPathname } from '../reports-routing';
 import {
   useFinanceReportsTabData,
   useMarketingReportsTabData,
@@ -73,7 +70,9 @@ export function ReportsCenter() {
 
   const [definitions, setDefinitions] = useState<ReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
+  const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
+  const [generatingScheduleId, setGeneratingScheduleId] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [search, setSearch] = useState('');
   const [storedFilters, setStoredFilters] = usePersistedSearchFilters(
@@ -110,6 +109,7 @@ export function ReportsCenter() {
       const loaded = await loadReportShellData();
       setDefinitions(loaded.definitions);
       setExportJobs(loaded.exportJobs);
+      setSchedules(loaded.schedules);
       setSavedViews(loaded.savedViews);
       setWarnings(loaded.warnings);
     } catch (caught) {
@@ -129,7 +129,7 @@ export function ReportsCenter() {
   useReportExportJobsPoll(handleExportJobs);
 
   const visibleDefinitions = useMemo(
-    () => filterDefinitions(definitions, view, search),
+    () => filterReportDefinitions(definitions, view, search),
     [definitions, view, search],
   );
 
@@ -154,6 +154,26 @@ export function ReportsCenter() {
     },
     [exportFilters, router],
   );
+
+  async function generateFromSchedule(schedule: ReportSchedule) {
+    setGeneratingScheduleId(schedule.id);
+    setError(null);
+    try {
+      const job = await reportsApi.createExportJob({
+        reportKey: schedule.reportKey,
+        ownerModule: schedule.ownerModule,
+        format: schedule.format,
+        filters: schedule.filters ?? undefined,
+        scheduleId: schedule.id,
+      });
+      setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
+      router.push(buildReportsViewPath('EXPORTS'));
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report file could not be requested.'));
+    } finally {
+      setGeneratingScheduleId(null);
+    }
+  }
 
   async function retryExport(jobId: string) {
     setError(null);
@@ -234,7 +254,15 @@ export function ReportsCenter() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
       {view === 'SCHEDULED' ? (
-        <ReportsSchedulePanel />
+        <ReportsSchedulePanel
+          definitions={definitions}
+          schedules={schedules}
+          filters={exportFilters}
+          onSchedulesChange={setSchedules}
+          onRefresh={() => void load()}
+          onGenerateNow={(schedule) => void generateFromSchedule(schedule)}
+          generatingScheduleId={generatingScheduleId}
+        />
       ) : view === 'EXPORTS' ? (
         <ReportExportHistory
           jobs={exportJobs}
@@ -258,36 +286,3 @@ export function ReportsCenter() {
     </div>
   );
 }
-
-function filterDefinitions(
-  definitions: ReportDefinition[],
-  view: ReportsViewId,
-  search: string,
-): ReportDefinition[] {
-  const q = search.trim().toLowerCase();
-  return definitions.filter((definition) => {
-    const viewMatches = definition.category === view;
-    if (!viewMatches) return false;
-    if (!q) return true;
-    return [definition.title, definition.description, definition.category, ...definition.audience]
-      .join(' ')
-      .toLowerCase()
-      .includes(q);
-  });
-}
-
-async function loadReportShellData() {
-  const [definitions, exportJobs, savedViews, quality] = await Promise.all([
-    reportsApi.listDefinitions(),
-    reportsApi.listExportJobs(),
-    reportsApi.listSavedViews(),
-    reportsApi.listDataQualityWarnings(),
-  ]);
-  return {
-    definitions: definitions.items,
-    exportJobs,
-    savedViews,
-    warnings: quality.items,
-  };
-}
-

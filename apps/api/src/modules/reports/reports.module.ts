@@ -3,6 +3,7 @@ import { AuditModule } from '../audit/audit.module';
 import { DriveModule } from '../drive/drive.module';
 import { FinanceReportsModule } from '../finance/reports/reports.module';
 import { ReportsController } from './reports.controller';
+import { ReportsExportEmailService } from './reports-export-email.service';
 import { ReportsQueueService } from './reports-queue.service';
 import { ReportsScheduleManagementService } from './reports-schedule-management.service';
 import { ReportsScheduleRunnerService } from './reports-schedule-runner.service';
@@ -14,6 +15,7 @@ import { ReportsService } from './reports.service';
   controllers: [ReportsController],
   providers: [
     ReportsService,
+    ReportsExportEmailService,
     ReportsQueueService,
     ReportsScheduleRunnerService,
     ReportsScheduleManagementService,

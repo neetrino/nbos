@@ -1,4 +1,5 @@
 import type { InputJsonValue } from '@nbos/database';
+import type { ReportScheduleRecipientRole } from './reports-recipient-roles';
 import type { ReportScheduleFrequency } from './reports-schedule-recurrence';
 
 export const REPORT_EXPORT_FORMATS = ['CSV', 'XLSX', 'PDF'] as const;
@@ -21,10 +22,12 @@ export interface CreateReportExportJobDto {
   ownerModule?: unknown;
   format?: unknown;
   filters?: unknown;
+  scheduleId?: unknown;
 }
 
 export interface CreateReportScheduleDto extends CreateReportExportJobDto {
   recipientEmails?: unknown;
+  recipientRoles?: unknown;
   scheduleLabel?: unknown;
   frequency?: unknown;
   timezone?: unknown;
@@ -75,10 +78,12 @@ export interface ParsedReportExportJobInput {
   ownerModule: ReportExportOwnerModule;
   format: ReportExportFormat;
   filters?: InputJsonValue;
+  scheduleId?: string;
 }
 
 export interface ParsedReportScheduleInput extends ParsedReportExportJobInput {
   recipientEmails: string[];
+  recipientRoles: ReportScheduleRecipientRole[];
   scheduleLabel: string;
   frequency: ReportScheduleFrequency;
   timezone: string;

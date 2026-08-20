@@ -1,4 +1,5 @@
 import {
+  CalendarClock,
   Download,
   FileChartColumn,
   FolderKanban,
@@ -31,6 +32,7 @@ export const REPORTS_DELIVERY_NAV: PageHeroNavLinkItem[] = [
 ];
 
 export const REPORTS_CENTER_NAV: PageHeroNavLinkItem[] = [
+  { href: '/reports/center/scheduled', label: 'Scheduled', icon: CalendarClock },
   { href: '/reports/center/exports', label: 'Report files', icon: Download },
   { href: '/reports/center/quality', label: 'Data quality', icon: ShieldAlert },
 ];

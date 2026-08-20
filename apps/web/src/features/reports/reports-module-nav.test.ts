@@ -1,17 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import {
-  REPORTS_CENTER_NAV,
-  resolveReportsZoneNav,
-} from '@/features/reports/reports-module-nav';
+import { REPORTS_CENTER_NAV, resolveReportsZoneNav } from '@/features/reports/reports-module-nav';
 
 describe('REPORTS_CENTER_NAV', () => {
-  it('shows report files and quality, not scheduled', () => {
+  it('shows scheduled, report files and quality', () => {
     expect(REPORTS_CENTER_NAV.map((item) => item.href)).toEqual([
+      '/reports/center/scheduled',
       '/reports/center/exports',
       '/reports/center/quality',
     ]);
-    expect(REPORTS_CENTER_NAV.some((item) => item.href.includes('scheduled'))).toBe(false);
-    expect(REPORTS_CENTER_NAV[0]?.label).toBe('Report files');
+    expect(REPORTS_CENTER_NAV[0]?.label).toBe('Scheduled');
+    expect(REPORTS_CENTER_NAV[1]?.label).toBe('Report files');
   });
 });
 

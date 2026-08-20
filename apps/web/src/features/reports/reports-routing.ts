@@ -107,8 +107,8 @@ export function reportsViewSlug(viewId: ReportsViewId): string {
   return VIEW_SLUG_BY_ID[viewId];
 }
 
-/** Center slugs that stay mounted. `scheduled` redirects to report files. */
-export const REPORTS_CENTER_LIVE_SLUGS = ['exports', 'quality'] as const;
+/** Center slugs that stay mounted. */
+export const REPORTS_CENTER_LIVE_SLUGS = ['scheduled', 'exports', 'quality'] as const;
 
 export function isLiveReportsCenterSlug(view: string): boolean {
   return (REPORTS_CENTER_LIVE_SLUGS as readonly string[]).includes(view);

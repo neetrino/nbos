@@ -53,10 +53,10 @@ describe('buildReportsViewPath', () => {
 });
 
 describe('isLiveReportsCenterSlug', () => {
-  it('keeps exports and quality, and sends scheduled to report files', () => {
+  it('keeps scheduled, exports and quality mounted', () => {
+    expect(isLiveReportsCenterSlug('scheduled')).toBe(true);
     expect(isLiveReportsCenterSlug('exports')).toBe(true);
     expect(isLiveReportsCenterSlug('quality')).toBe(true);
-    expect(isLiveReportsCenterSlug('scheduled')).toBe(false);
     expect(isLiveReportsCenterSlug('unknown')).toBe(false);
   });
 });

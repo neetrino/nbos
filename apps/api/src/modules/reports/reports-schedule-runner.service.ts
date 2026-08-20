@@ -63,6 +63,10 @@ export class ReportsScheduleRunnerService {
       },
       include: { fileAsset: true },
     });
+    await this.prisma.reportSchedule.update({
+      where: { id: schedule.id },
+      data: { lastExportJobId: exportJob.id },
+    });
     await this.reportsService.dispatchReportExportJob(exportJob.id, schedule.ownerId);
     await this.advanceSchedule(schedule, exportJob.id, now);
   }
