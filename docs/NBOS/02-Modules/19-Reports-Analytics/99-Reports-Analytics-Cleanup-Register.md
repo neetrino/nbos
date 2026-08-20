@@ -113,15 +113,16 @@ Shipped model:
 - simple Reports recurrence model: `DAILY`, `WEEKLY`, `MONTHLY`, `timeOfDay`, `timezone`, weekly day and monthly day `1-28`;
 - monthly days are intentionally limited to `1-28` for Reports so February and short months are never skipped.
 - due schedule runner creates queued `ReportExportJob` records, enqueues them through the Reports export queue and advances `nextRunAt`;
-- `POST /scheduler/report-schedules-due` plus optional in-process cron when `REPORT_SCHEDULES_DUE_CRON_ENABLED=true`.
+- `POST /scheduler/report-schedules-due` plus in-process cron when `REPORT_SCHEDULES_DUE_CRON_ENABLED=true` (roster item 15 🟢). Files land in Report files.
+- After the Drive file exists, the same completion path emails Owner and/or CEO (directory roles, not hardcoded addresses) with the CSV/XLSX/PDF attached. `Create file now` uses the schedule recipients.
 - schedule management actions: pause, resume and archive for owned schedules, with audit and UI controls.
 
 Later depth, not required for current MVP:
 
-- delivery attempts and recipient channel integration;
+- per-recipient delivery attempts and retry history;
 - link last run to real export job execution.
 - richer run history beyond `lastRunAt` / `lastExportJobId`.
-- product decision (2026-05-06): keep export+history path active; recipient delivery channels stay deferred until real sending is required.
+- product decision (2026-08-20): email delivery with attachment is live for scheduled reports and Create file now.
 
 Note: Bitrix-like recurring task templates belong to the Tasks module, not Reports. Reports scheduled exports use the simpler recurrence above.
 
@@ -145,7 +146,7 @@ Shipped foundation:
 Later depth, not required for current MVP:
 
 - approved retry/backoff and queue retention policy;
-- recipient delivery channels and per-recipient delivery attempts;
+- per-recipient email retry history;
 - source-permission-aware export/schedule warnings in UI.
 
 ### B6. Data quality warnings are missing

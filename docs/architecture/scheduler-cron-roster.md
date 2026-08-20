@@ -1,7 +1,7 @@
 # NBOS — реестр cron
 
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
-Прод: мастер **вкл**, восемь 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services). Остальные жёлтые не включать пакетом.
+Прод: мастер **вкл**, девять 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services, отчёты по расписанию). Остальные жёлтые не включать пакетом.
 
 - 🟢 включаем
 - 🟡 позже (время уже выставлено)
@@ -64,8 +64,8 @@
     Старый вход не удаляем сейчас — иначе никто не зайдёт. В `todo.md` после перехода.  
     `SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED`
 
-15. 🖐️ **Отложенные отчёты** — кнопка, cron не нужен.  
-    `REPORT_SCHEDULES_DUE_CRON_ENABLED`
+15. 🟢 **Отчёты по расписанию** — каждые **5 минут**: due `ReportSchedule` → очередь → файл в Report files.  
+    Ручная кнопка «Create file now» остаётся. `REPORT_SCHEDULES_DUE_CRON_ENABLED` · cron `REPORT_SCHEDULES_DUE_CRON` (default `*/5 * * * *`)
 
 16. 🗑️ **WhatsApp-группа продукта — крон-ремонт удалён.** Нельзя обходить старые продукты без группы (миграция). Очередь, воркер и кнопка остаются. Тихий auto-create при Product / Won **выключен**; создание только из модалки Won или Settings.
 
@@ -160,7 +160,7 @@ SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED=false
 SCHEDULER_PLATFORM_TRASH_PURGE_CRON=30 3 * * 0
 SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED=false
 SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED=false
-REPORT_SCHEDULES_DUE_CRON_ENABLED=false
+REPORT_SCHEDULES_DUE_CRON_ENABLED=true
 SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED=true
 SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON=0 6 * * *
 ```

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildReportsViewPath, parseReportsPathname } from '@/features/reports/reports-routing';
+import {
+  buildReportsViewPath,
+  isLiveReportsCenterSlug,
+  isReportDataView,
+  parseReportsPathname,
+} from '@/features/reports/reports-routing';
 
 describe('parseReportsPathname', () => {
   it('parses finance overview', () => {
@@ -25,6 +30,10 @@ describe('parseReportsPathname', () => {
       sectionId: 'center',
       viewId: 'EXPORTS',
     });
+    expect(parseReportsPathname('/reports/center/scheduled')).toEqual({
+      sectionId: 'center',
+      viewId: 'SCHEDULED',
+    });
   });
 
   it('rejects unknown paths', () => {
@@ -39,5 +48,25 @@ describe('buildReportsViewPath', () => {
     expect(buildReportsViewPath('FINANCE')).toBe('/reports/finance');
     expect(buildReportsViewPath('MARKETING')).toBe('/reports/growth/marketing');
     expect(buildReportsViewPath('QUALITY')).toBe('/reports/center/quality');
+    expect(buildReportsViewPath('EXPORTS')).toBe('/reports/center/exports');
+  });
+});
+
+describe('isLiveReportsCenterSlug', () => {
+  it('keeps scheduled, exports and quality mounted', () => {
+    expect(isLiveReportsCenterSlug('scheduled')).toBe(true);
+    expect(isLiveReportsCenterSlug('exports')).toBe(true);
+    expect(isLiveReportsCenterSlug('quality')).toBe(true);
+    expect(isLiveReportsCenterSlug('unknown')).toBe(false);
+  });
+});
+
+describe('isReportDataView', () => {
+  it('is true only for report tabs that can create a file', () => {
+    expect(isReportDataView('FINANCE')).toBe(true);
+    expect(isReportDataView('SALES')).toBe(true);
+    expect(isReportDataView('EXPORTS')).toBe(false);
+    expect(isReportDataView('SCHEDULED')).toBe(false);
+    expect(isReportDataView('QUALITY')).toBe(false);
   });
 });

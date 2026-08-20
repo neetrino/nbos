@@ -27,7 +27,13 @@ import { buildRuntimeDataQualityWarnings } from './reports-data-quality-runtime'
 import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
 import { assertReportExportDispatchForHttp } from './reports-export-availability';
+import { ReportsExportEmailService } from './reports-export-email.service';
+import { attachExportJobToOwnedSchedule } from './reports-export-schedule-link';
 import { ReportsQueueService } from './reports-queue.service';
+import {
+  parseRecipientRoles,
+  requireReportScheduleRecipientEmails,
+} from './reports-recipient-resolve';
 import {
   parseReportExportJobInput,
   parseReportScheduleInput,
@@ -60,6 +66,7 @@ export class ReportsService {
     private readonly payrollReportService: PayrollReportService,
     private readonly projectPnlService: ProjectPnlService,
     private readonly reportsQueueService?: ReportsQueueService,
+    private readonly exportEmailService?: ReportsExportEmailService,
   ) {}
 
   listDefinitions(userPermissions: Record<string, string>) {
@@ -199,6 +206,13 @@ export class ReportsService {
       changes: this.buildAuditChanges(job.reportKey, job.format, parsed.filters),
     });
 
+    if (parsed.scheduleId) {
+      await attachExportJobToOwnedSchedule(this.prisma, {
+        scheduleId: parsed.scheduleId,
+        exportJobId: job.id,
+        ownerId: requestedById,
+      });
+    }
     await this.dispatchReportExportJob(job.id, requestedById);
     return job;
   }
@@ -310,6 +324,11 @@ export class ReportsService {
       userPermissions,
     );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
+    const recipientEmails = await requireReportScheduleRecipientEmails(this.prisma, {
+      recipientRoles: parseRecipientRoles(parsed.recipientRoles),
+      ownerId,
+      storedEmails: parsed.recipientEmails,
+    });
     const schedule = await this.prisma.reportSchedule.create({
       data: {
         reportKey: definition.key,
@@ -317,7 +336,8 @@ export class ReportsService {
         ownerModule: parsed.ownerModule,
         format: parsed.format,
         ownerId,
-        recipientEmails: parsed.recipientEmails,
+        recipientEmails,
+        recipientRoles: parsed.recipientRoles,
         scheduleLabel: parsed.scheduleLabel,
         filters: parsed.filters,
         frequency: parsed.frequency,
@@ -338,6 +358,7 @@ export class ReportsService {
       changes: {
         format: schedule.format,
         recipientCount: schedule.recipientEmails.length,
+        recipientRoles: schedule.recipientRoles,
         scheduleLabel: schedule.scheduleLabel,
         frequency: schedule.frequency,
         timeOfDay: schedule.timeOfDay,
@@ -414,6 +435,7 @@ export class ReportsService {
       changes: { fileAssetId, ...buildSensitiveReportAuditContext(job.reportKey) },
     });
 
+    await this.exportEmailService?.sendForCompletedJob(job, actorId);
     return job;
   }
 

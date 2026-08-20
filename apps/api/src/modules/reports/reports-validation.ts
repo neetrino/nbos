@@ -7,6 +7,7 @@ import {
   DEFAULT_REPORT_SCHEDULE_TIME_OF_DAY,
   REPORT_SCHEDULE_FREQUENCIES,
 } from './reports-schedule-recurrence';
+import { parseRecipientRoles } from './reports-recipient-resolve';
 import {
   REPORT_EXPORT_FORMATS,
   REPORT_EXPORT_OWNER_MODULES,
@@ -32,7 +33,8 @@ export function parseReportExportJobInput(
     'ownerModule',
   );
   const filters = parseFilters(input.filters);
-  return { reportKey, ownerModule, format, filters };
+  const scheduleId = parseOptionalText(input.scheduleId);
+  return { reportKey, ownerModule, format, filters, scheduleId };
 }
 
 export function parseReportScheduleInput(
@@ -52,9 +54,15 @@ export function parseReportScheduleInput(
     dayOfMonth: parseOptionalInteger(input.dayOfMonth),
   };
   assertReportScheduleRecurrence(recurrence);
+  const recipientRoles = parseRecipientRoles(input.recipientRoles);
+  const recipientEmails = parseOptionalRecipientEmails(input.recipientEmails);
+  if (recipientRoles.length === 0 && recipientEmails.length === 0) {
+    throw new BadRequestException('Select Owner and/or CEO, or provide recipientEmails.');
+  }
   return {
     ...parseReportExportJobInput(input),
-    recipientEmails: parseRecipientEmails(input.recipientEmails),
+    recipientEmails,
+    recipientRoles,
     scheduleLabel: parseRequiredText(input.scheduleLabel, 'scheduleLabel'),
     ...recurrence,
     nextRunAt: calculateNextReportScheduleRun(recurrence, new Date()),
@@ -106,6 +114,11 @@ export function parseFilters(value: unknown): InputJsonValue | undefined {
     throw new BadRequestException(`filters cannot contain more than ${MAX_FILTER_KEYS} keys.`);
   }
   return Object.fromEntries(entries.map(([key, item]) => [key, parseFilterValue(item)]));
+}
+
+function parseOptionalRecipientEmails(value: unknown): string[] {
+  if (value === undefined || value === null) return [];
+  return parseRecipientEmails(value);
 }
 
 function parseRecipientEmails(value: unknown): string[] {

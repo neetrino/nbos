@@ -100,7 +100,7 @@ ScheduledReport
 
 Possible delivery:
 
-- email later;
+- email with the generated file attached (Owner / CEO / schedule owner);
 - internal notification;
 - Drive generated file;
 - Dashboard priority card for failed report;

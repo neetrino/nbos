@@ -22,6 +22,8 @@ import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
 import { ReportActions } from './tabs/ReportActions';
+import { useReportExportJobsPoll } from '../hooks/use-report-export-jobs-poll';
+import { filterReportDefinitions, loadReportShellData } from '../reports-center-shell';
 import {
   buildInitialReportFilters,
   buildReportFilters,
@@ -32,7 +34,7 @@ import {
   usePersistedSearchFilters,
   type SearchFilterRecord,
 } from '@/lib/persisted-client-state';
-import { buildReportsViewPath, parseReportsPathname, type ReportsViewId } from '../reports-routing';
+import { buildReportsViewPath, isReportDataView, parseReportsPathname } from '../reports-routing';
 import {
   useFinanceReportsTabData,
   useMarketingReportsTabData,
@@ -70,6 +72,7 @@ export function ReportsCenter() {
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
+  const [generatingScheduleId, setGeneratingScheduleId] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [search, setSearch] = useState('');
   const [storedFilters, setStoredFilters] = usePersistedSearchFilters(
@@ -120,8 +123,13 @@ export function ReportsCenter() {
     void load();
   }, [load]);
 
+  const handleExportJobs = useCallback((jobs: ReportExportJob[]) => {
+    setExportJobs(jobs);
+  }, []);
+  useReportExportJobsPoll(handleExportJobs);
+
   const visibleDefinitions = useMemo(
-    () => filterDefinitions(definitions, view, search),
+    () => filterReportDefinitions(definitions, view, search),
     [definitions, view, search],
   );
 
@@ -146,6 +154,26 @@ export function ReportsCenter() {
     },
     [exportFilters, router],
   );
+
+  async function generateFromSchedule(schedule: ReportSchedule) {
+    setGeneratingScheduleId(schedule.id);
+    setError(null);
+    try {
+      const job = await reportsApi.createExportJob({
+        reportKey: schedule.reportKey,
+        ownerModule: schedule.ownerModule,
+        format: schedule.format,
+        filters: schedule.filters ?? undefined,
+        scheduleId: schedule.id,
+      });
+      setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
+      router.push(buildReportsViewPath('EXPORTS'));
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report file could not be requested.'));
+    } finally {
+      setGeneratingScheduleId(null);
+    }
+  }
 
   async function retryExport(jobId: string) {
     setError(null);
@@ -191,7 +219,7 @@ export function ReportsCenter() {
       trailing: showReportActions ? (
         <ReportsPageSettingsSheet
           title={`${reportViewLabel(view)} — settings`}
-          description="Download report files for the current filters."
+          description="Create a file for the current dates. It appears under Report files, where you can download it."
           triggerAriaLabel={`${reportViewLabel(view)} settings`}
         >
           <ReportActions
@@ -232,6 +260,8 @@ export function ReportsCenter() {
           filters={exportFilters}
           onSchedulesChange={setSchedules}
           onRefresh={() => void load()}
+          onGenerateNow={(schedule) => void generateFromSchedule(schedule)}
+          generatingScheduleId={generatingScheduleId}
         />
       ) : view === 'EXPORTS' ? (
         <ReportExportHistory
@@ -254,49 +284,5 @@ export function ReportsCenter() {
         <SpecialistsReportsTab state={specialists} />
       )}
     </div>
-  );
-}
-
-function filterDefinitions(
-  definitions: ReportDefinition[],
-  view: ReportsViewId,
-  search: string,
-): ReportDefinition[] {
-  const q = search.trim().toLowerCase();
-  return definitions.filter((definition) => {
-    const viewMatches = definition.category === view;
-    if (!viewMatches) return false;
-    if (!q) return true;
-    return [definition.title, definition.description, definition.category, ...definition.audience]
-      .join(' ')
-      .toLowerCase()
-      .includes(q);
-  });
-}
-
-async function loadReportShellData() {
-  const [definitions, exportJobs, schedules, savedViews, quality] = await Promise.all([
-    reportsApi.listDefinitions(),
-    reportsApi.listExportJobs(),
-    reportsApi.listSchedules(),
-    reportsApi.listSavedViews(),
-    reportsApi.listDataQualityWarnings(),
-  ]);
-  return {
-    definitions: definitions.items,
-    exportJobs,
-    schedules,
-    savedViews,
-    warnings: quality.items,
-  };
-}
-
-function isReportDataView(view: ReportsViewId): boolean {
-  return (
-    view === 'FINANCE' ||
-    view === 'SALES' ||
-    view === 'MARKETING' ||
-    view === 'PROJECTS' ||
-    view === 'SPECIALISTS'
   );
 }

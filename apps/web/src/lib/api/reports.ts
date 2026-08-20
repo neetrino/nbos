@@ -24,6 +24,7 @@ export type ReportCategory =
 export type ReportExportJobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type ReportScheduleStatus = 'ACTIVE' | 'PAUSED' | 'FAILED' | 'ARCHIVED';
 export type ReportScheduleFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY';
+export type ReportScheduleRecipientRole = 'OWNER' | 'CEO' | 'SCHEDULE_OWNER';
 export type ReportDataQualitySeverity = 'INFO' | 'WARNING';
 
 export interface ReportDefinition {
@@ -78,6 +79,7 @@ export interface ReportSchedule {
   status: ReportScheduleStatus;
   ownerId: string;
   recipientEmails: string[];
+  recipientRoles: ReportScheduleRecipientRole[];
   scheduleLabel: string;
   filters: Record<string, string | number | boolean | null> | null;
   frequency: ReportScheduleFrequency;
@@ -143,6 +145,7 @@ export const reportsApi = {
     ownerModule?: ReportOwnerModule;
     format: ReportExportFormat;
     filters?: Record<string, string | number | boolean | null>;
+    scheduleId?: string;
   }): Promise<ReportExportJob> {
     const resp = await api.post<ReportExportJob>('/api/reports/export-jobs', data);
     return resp.data;
@@ -167,7 +170,8 @@ export const reportsApi = {
     reportKey: string;
     ownerModule?: ReportOwnerModule;
     format: ReportExportFormat;
-    recipientEmails: string[];
+    recipientEmails?: string[];
+    recipientRoles: ReportScheduleRecipientRole[];
     scheduleLabel: string;
     frequency: ReportScheduleFrequency;
     timezone?: string;

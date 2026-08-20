@@ -65,6 +65,7 @@ model ReportSchedule {
   status          ReportScheduleStatusEnum    @default(ACTIVE)
   ownerId         String                      @map("owner_id")
   recipientEmails String[]                    @map("recipient_emails")
+  recipientRoles  String[]                    @default([]) @map("recipient_roles")
   scheduleLabel   String                      @map("schedule_label")
   filters         Json?
   frequency       ReportScheduleFrequencyEnum @default(MONTHLY)
