@@ -164,7 +164,9 @@ Click-to-call. Браузер **не** вызывает ATS.
 | ------------------------------------------------------------------------ | -------------------------------------------------------- |
 | Webhook, ключ, inbound/outbound CRM Call, дедуп `uid`, логика redirect   | Голый JSON ответа (сейчас может быть обёртка `{ data }`) |
 | `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context | `projectId` / `productId`, note, recording FileAsset     |
-| `GET /crm/calls`, `GET /crm/calls/:id`                                   | Окно, callback, history reconcile, download job          |
+| `GET /crm/calls`, `GET /crm/calls/:id`                                   | Callback, history reconcile, download job                |
+| Incoming-call SSE (`GET /realtime/calls`) + app-shell popup              | `call.answered` / `call.finished` windows                |
+| CALL activities on Lead/Deal History and Contact Communication           | Recording player, click-to-call                          |
 
 ---
 

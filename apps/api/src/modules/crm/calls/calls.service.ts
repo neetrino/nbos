@@ -1,27 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { CALL_LIST_SELECT } from './call-list.select';
 import { mapCallResponse } from './call-response.map';
+import { assertCanListCalls, assertCanViewCall, resolveCallListParent } from './calls-access';
 import { CALLS_PAGE_SIZE_DEFAULT, CALLS_PAGE_SIZE_MAX } from './calls.constants';
-
-const CALL_SELECT = {
-  id: true,
-  uid: true,
-  calldirect: true,
-  phone: true,
-  clid: true,
-  state: true,
-  billsec: true,
-  disposition: true,
-  rate: true,
-  leadId: true,
-  contactId: true,
-  dealId: true,
-  responsibleEmployeeId: true,
-  answeredEmployeeId: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
 
 export interface ListCallsQuery {
   leadId?: string;
@@ -35,7 +18,10 @@ export interface ListCallsQuery {
 export class CallsService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async findAll(query: ListCallsQuery) {
+  async findAll(query: ListCallsQuery, permissions: Record<string, string>) {
+    const parent = resolveCallListParent(query);
+    assertCanListCalls(permissions, parent);
+
     const page = query.page && query.page > 0 ? query.page : 1;
     const pageSize = clampPageSize(query.pageSize);
     const where = buildCallListWhere(query);
@@ -43,7 +29,7 @@ export class CallsService {
     const [rows, total] = await Promise.all([
       this.prisma.atsCallEvent.findMany({
         where,
-        select: CALL_SELECT,
+        select: CALL_LIST_SELECT,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -57,14 +43,15 @@ export class CallsService {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, permissions: Record<string, string>) {
     const row = await this.prisma.atsCallEvent.findUnique({
       where: { id },
-      select: CALL_SELECT,
+      select: CALL_LIST_SELECT,
     });
     if (!row) {
       throw new NotFoundException(`Call ${id} not found`);
     }
+    assertCanViewCall(permissions, row);
     return mapCallResponse(row);
   }
 }
@@ -75,9 +62,7 @@ function clampPageSize(pageSize: number | undefined): number {
 }
 
 function buildCallListWhere(query: ListCallsQuery): Prisma.AtsCallEventWhereInput {
-  const where: Prisma.AtsCallEventWhereInput = {};
-  if (query.leadId) where.leadId = query.leadId;
-  if (query.contactId) where.contactId = query.contactId;
-  if (query.dealId) where.dealId = query.dealId;
-  return where;
+  if (query.leadId) return { leadId: query.leadId };
+  if (query.contactId) return { contactId: query.contactId };
+  return { dealId: query.dealId };
 }

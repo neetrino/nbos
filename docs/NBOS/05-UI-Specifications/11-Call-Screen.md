@@ -2,6 +2,8 @@
 
 > Полноэкранное окно текущего звонка. Не sheet и не toast.
 >
+> **Runtime (Phase 2):** app-shell incoming-call modal (SSE). This document remains the target for the full Call Screen (answered / finished / player / note).
+>
 > Продукт: [`../02-Modules/01-CRM/08-Calls-and-Telephony.md`](../02-Modules/01-CRM/08-Calls-and-Telephony.md).  
 > Visual model шитов: [`10-Entity-Detail-Sheet-Standard.md`](10-Entity-Detail-Sheet-Standard.md) — к этому окну не применять.
 
@@ -9,13 +11,13 @@
 
 Только у одного сотрудника (правила в каноне Calls §4). Слушатель в app shell (layout / Topbar), не на `/messenger`.
 
-| Событие | Окно |
-| --- | --- |
-| inbound `start` + redirect SIP | Сразу, полноэкранно |
-| inbound без SIP | Не открывать |
-| inbound answered (`op` = мой SIP) | Открыть / обновить, если ещё не открыто |
-| outbound из NBOS | Сразу у инициатора |
-| `finish` / `end` | То же окно: статус, длительность, плеер, поле заметки. Не закрывать само |
+| Событие                           | Окно                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| inbound `start` + redirect SIP    | Сразу, полноэкранно                                                      |
+| inbound без SIP                   | Не открывать                                                             |
+| inbound answered (`op` = мой SIP) | Открыть / обновить, если ещё не открыто                                  |
+| outbound из NBOS                  | Сразу у инициатора                                                       |
+| `finish` / `end`                  | То же окно: статус, длительность, плеер, поле заметки. Не закрывать само |
 
 Пользователь закрывает сам. Повтор того же `uid` не открывает второе окно.
 

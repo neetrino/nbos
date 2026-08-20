@@ -46,6 +46,7 @@ Neon Postgres / R2 / Resend — внешние SaaS
 - HTTP из браузера: `/api/*` → Next.js **BFF** → Nest; JWT только в **httpOnly** cookie.
 - Messenger: `/api/auth/realtime-token` + `NEXT_PUBLIC_BACKEND_URL`.
 - Notification unread: `EventSource` → `/api/realtime/notifications` (Next SSE proxy) → Nest; multi-replica via `REDIS_EVENTS_URL` (fallback `REDIS_URL`).
+- Incoming call popup: `EventSource` → `/api/realtime/calls` (Next SSE proxy) → Nest; same Redis fan-out (`nbos:realtime:calls`). Only the responsible employee receives the event.
 - Logout JWT: `POST /api/v1/auth/logout` + Redis denylist по `jti`.
 - Scheduler: `ServiceApiKeyGuard` на `/api/scheduler/*`.
 

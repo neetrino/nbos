@@ -36,5 +36,40 @@ describe('call-response.map', () => {
     });
     expect(mapped.phone).toBe('+37499123456');
     expect(mapped.direction).toBe('OUTBOUND');
+    expect(mapped.type).toBe('CALL');
+    expect(mapped.contactName).toBeNull();
+  });
+
+  it('maps related names without duplicating call metrics', () => {
+    const mapped = mapCallResponse({
+      id: 'call-2',
+      uid: 'uid-2',
+      calldirect: '0',
+      phone: '+37499111111',
+      clid: '+37499111111',
+      state: 'finish',
+      billsec: '200',
+      disposition: 'ANSWERED',
+      rate: null,
+      leadId: 'lead-1',
+      contactId: null,
+      dealId: null,
+      responsibleEmployeeId: 'emp-1',
+      answeredEmployeeId: null,
+      createdAt: new Date('2026-08-21T10:00:00.000Z'),
+      updatedAt: new Date('2026-08-21T10:00:00.000Z'),
+      lead: { name: 'Website project', contactName: 'John' },
+      contact: null,
+      deal: null,
+      responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
+      answeredEmployee: null,
+    });
+    expect(mapped).toMatchObject({
+      type: 'CALL',
+      durationSec: 200,
+      contactName: null,
+      leadName: 'Website project',
+      employeeName: 'Edgar Sargsyan',
+    });
   });
 });

@@ -1,17 +1,16 @@
 'use client';
 
-import { History } from 'lucide-react';
+import { CrmCallActivityGate } from '@/features/crm/calls/CrmCallActivityGate';
+import { CallActivityTimeline } from '@/features/crm/calls/CallActivityTimeline';
 
-export function DealHistoryTab() {
+export function DealHistoryTab({ dealId }: { dealId: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="bg-muted mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-        <History size={24} className="text-stone-400" />
-      </div>
-      <h3 className="text-foreground mb-1.5 text-sm font-semibold">Activity History</h3>
-      <p className="text-muted-foreground max-w-[280px] text-xs leading-relaxed">
-        All changes, status updates, and team activities related to this deal will be tracked here
-      </p>
-    </div>
+    <CrmCallActivityGate parent="deal">
+      <CallActivityTimeline
+        key={dealId}
+        scope={{ parent: 'deal', id: dealId }}
+        emptyDescription="Calls related to this deal will appear here alongside other activities."
+      />
+    </CrmCallActivityGate>
   );
 }

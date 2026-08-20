@@ -30,6 +30,7 @@ import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
+import { LeadHistoryTab } from './LeadHistoryTab';
 import { LeadTasksTab } from './LeadTasksTab';
 
 export const LEAD_SHEET_TABS = [
@@ -187,11 +188,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
                 }}
               />
             ) : null}
-            {props.activeTab === 'history' && (
-              <div className="text-muted-foreground py-12 text-center text-sm">
-                History coming soon...
-              </div>
-            )}
+            {props.activeTab === 'history' && <LeadHistoryTab leadId={renderLead.id} />}
             {props.activeTab === 'task' ? (
               <LeadTasksTab
                 lead={renderLead}

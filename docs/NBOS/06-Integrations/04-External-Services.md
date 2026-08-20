@@ -257,6 +257,8 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 | `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                    |
 | Idempotency     | `AtsCallEvent.uid` unique; repeat webhook updates the same row                 |
 | Read API        | `GET /api/crm/calls`, `GET /api/crm/calls/:id`                                 |
+| Incoming popup  | Employee SSE `GET /api/realtime/calls` + app-shell modal                       |
+| CRM activity    | CALL items on Lead History, Deal History/Calls, Contact Communication          |
 
 ### Канон полного среза (после MVP)
 

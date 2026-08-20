@@ -544,7 +544,7 @@ function DealSheetBody({
                 gateRequiredFields={gateRequiredFields}
               />
             ) : null}
-            {activeTab === 'history' && <DealHistoryTab />}
+            {activeTab === 'history' && <DealHistoryTab dealId={renderDeal.id} />}
             {activeTab === 'invoice' && (
               <DealInvoiceTab deal={renderDeal} onCreateOpenChange={onInvoiceCreateOpenChange} />
             )}
@@ -556,7 +556,7 @@ function DealSheetBody({
                 tasksRefreshSignal={taskListRefreshSignal}
               />
             )}
-            {activeTab === 'calls' && <DealCallsTab />}
+            {activeTab === 'calls' && <DealCallsTab dealId={renderDeal.id} />}
           </DetailSheetTabPanel>
         </div>
       </ScrollArea>

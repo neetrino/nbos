@@ -2,6 +2,7 @@ import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/comm
 import { describe, expect, it, vi } from 'vitest';
 import { AtsWebhookService } from './ats-webhook.service';
 import type { AtsCallRedirectService } from './ats-call-redirect.service';
+import type { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import type { AtsCallService } from './ats-call.service';
 import type { AtsProviderConfig } from './ats-provider.config';
 
@@ -9,6 +10,7 @@ function createService(options: {
   apiKey?: string;
   ingest?: AtsCallService['ingestCallEvent'];
   resolveRedirect?: AtsCallRedirectService['resolveRedirectCall'];
+  publish?: AtsCallRealtimePublisher['publishIncomingStart'];
 }): AtsWebhookService {
   const config = {
     apiKey: options.apiKey ?? 'test-ats-key',
@@ -23,7 +25,11 @@ function createService(options: {
     resolveRedirectCall: options.resolveRedirect ?? vi.fn().mockResolvedValue(null),
   } as unknown as AtsCallRedirectService;
 
-  return new AtsWebhookService(config, callService, callRedirect);
+  const publisher = {
+    publishIncomingStart: options.publish ?? vi.fn().mockResolvedValue(undefined),
+  } as unknown as AtsCallRealtimePublisher;
+
+  return new AtsWebhookService(config, callService, callRedirect, publisher);
 }
 
 const startBody: Record<string, unknown> = {
@@ -79,5 +85,27 @@ describe('AtsWebhookService', () => {
       status: 'success',
       redirect_call: '3126107',
     });
+  });
+
+  it('publishes incoming-call SSE after ingest', async () => {
+    const ingest = vi.fn().mockResolvedValue(undefined);
+    const publish = vi.fn().mockResolvedValue(undefined);
+    const service = createService({ ingest, publish });
+
+    await service.handleWebhook('test-ats-key', startBody);
+    expect(ingest).toHaveBeenCalled();
+    expect(publish).toHaveBeenCalled();
+    expect(ingest).toHaveBeenCalledBefore(publish);
+  });
+
+  it('still returns success when SSE publish throws', async () => {
+    const ingest = vi.fn().mockResolvedValue(undefined);
+    const publish = vi.fn().mockRejectedValue(new Error('sse down'));
+    const service = createService({ ingest, publish });
+
+    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
+      status: 'success',
+    });
+    expect(ingest).toHaveBeenCalled();
   });
 });

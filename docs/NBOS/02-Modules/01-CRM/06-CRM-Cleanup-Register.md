@@ -283,9 +283,9 @@ Instagram + звонок без общего телефона по-прежне�
 
 Канон: `08-Calls-and-Telephony.md`, UI `../../05-UI-Specifications/11-Call-Screen.md`, контракт `../../06-Integrations/09-ATS-AM-Integration.md`.
 
-**Shipped (Call core Phase 1):** `AtsCallEvent` = Call; inbound/outbound CRM attach (`leadId` / `contactId` / `dealId`); uid idempotency; `redirect_call` by `Employee.sipId`; `GET /crm/calls`. Contact on call не создаём.
+**Shipped (Call core + incoming popup + CRM activity):** `AtsCallEvent` = Call; inbound/outbound CRM attach; uid idempotency; `redirect_call`; `GET /crm/calls` as CALL activity feed; employee SSE `incoming_call` + app-shell modal; Lead History, Deal History/Calls, Contact Communication timelines. Contact on call не создаём.
 
-**Runtime gaps vs canon:** обёртка `{ data }` на webhook JSON; нет `projectId` / записи Drive / note; нет окна; Deal Calls tab и Lead History — заглушки; Contact Communication без ленты звонков; Settings ATS card = «Applicant tracking».
+**Runtime gaps vs canon:** обёртка `{ data }` на webhook JSON; нет `projectId` / записи Drive / note; полный Call Screen (answered/finished) later; Settings ATS card = «Applicant tracking».
 
 **Сознательно later:** транскрипт, DID → MarketingAccount, импорт Bitrix, popup всем.
 

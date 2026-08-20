@@ -1,22 +1,27 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
 import { AtsCallService } from './ats-call.service';
 import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
-import type { AtsWebhookSuccessResponse } from './ats.types';
+import type { AtsWebhookPayload, AtsWebhookSuccessResponse } from './ats.types';
 
 @Injectable()
 export class AtsWebhookService {
+  private readonly logger = new Logger(AtsWebhookService.name);
+
   constructor(
     private readonly config: AtsProviderConfig,
     private readonly callService: AtsCallService,
     private readonly callRedirectService: AtsCallRedirectService,
+    private readonly callRealtimePublisher: AtsCallRealtimePublisher,
   ) {}
 
   async handleWebhook(
@@ -26,11 +31,24 @@ export class AtsWebhookService {
     this.assertApiKey(key);
     const payload = this.parseBody(body);
     await this.callService.ingestCallEvent(payload);
+    await this.publishIncomingSafely(payload);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
     if (!redirectCall) {
       return ATS_WEBHOOK_SUCCESS;
     }
     return { status: 'success', redirect_call: redirectCall };
+  }
+
+  private async publishIncomingSafely(payload: AtsWebhookPayload): Promise<void> {
+    try {
+      await this.callRealtimePublisher.publishIncomingStart(payload);
+    } catch (err) {
+      this.logger.error({
+        event: 'ats_incoming_call_sse_failed',
+        uid: payload.uid,
+        error: String(err),
+      });
+    }
   }
 
   private assertApiKey(key: string | undefined): void {

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AtsCallContextResolver } from './ats-call-context.resolver';
+import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
 import { AtsCallService } from './ats-call.service';
 import { AtsController } from './ats.controller';
@@ -14,6 +15,7 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallService,
     AtsCallContextResolver,
     AtsCallRedirectService,
+    AtsCallRealtimePublisher,
   ],
 })
 export class AtsModule {}

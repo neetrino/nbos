@@ -2,7 +2,7 @@
 
 > NBOS Platform — звонки как активность CRM, не отдельная воронка.
 >
-> **Статус:** канон Accepted (2026-08-20). Runtime: Call core Phase 1 (`AtsCallEvent` = Call, CRM attach inbound/outbound, `GET /crm/calls`). Окно, запись, исходящий callback и сверка history — следующий срез.
+> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + incoming-call SSE + CALL activities on Lead/Deal History and Contact Communication. Запись, исходящий callback и сверка history — следующий срез.
 >
 > Провайдер: ATS.am. Контракт API: [`../../06-Integrations/09-ATS-AM-Integration.md`](../../06-Integrations/09-ATS-AM-Integration.md).  
 > Окно звонка (UI): [`../../05-UI-Specifications/11-Call-Screen.md`](../../05-UI-Specifications/11-Call-Screen.md).  

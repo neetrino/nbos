@@ -1,18 +1,17 @@
 'use client';
 
-import { Phone } from 'lucide-react';
+import { CrmCallActivityGate } from '@/features/crm/calls/CrmCallActivityGate';
+import { CallActivityTimeline } from '@/features/crm/calls/CallActivityTimeline';
 
-export function DealCallsTab() {
+export function DealCallsTab({ dealId }: { dealId: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="bg-muted mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-        <Phone size={24} className="text-stone-400" />
-      </div>
-      <h3 className="text-foreground mb-1.5 text-sm font-semibold">Calls & Recordings</h3>
-      <p className="text-muted-foreground max-w-[280px] text-xs leading-relaxed">
-        Phone calls and recordings with the client will sync here from your telephony provider,
-        organized by date
-      </p>
-    </div>
+    <CrmCallActivityGate parent="deal">
+      <CallActivityTimeline
+        key={dealId}
+        scope={{ parent: 'deal', id: dealId }}
+        emptyTitle="No calls yet"
+        emptyDescription="Phone calls with this deal will appear here, organized by date."
+      />
+    </CrmCallActivityGate>
   );
 }
