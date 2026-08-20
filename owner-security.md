@@ -6,6 +6,7 @@ This document is the source of truth.
 Perform a complete audit of the NBOS repository.
 
 Find every place where:
+
 - Owner and CEO are treated as the same entity;
 - security permissions depend on roles;
 - credentials bypass can be inherited through RBAC;
