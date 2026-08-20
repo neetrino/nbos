@@ -56,6 +56,7 @@ export type SchedulerRunStatus = (typeof SCHEDULER_RUN_STATUS)[keyof typeof SCHE
 export const SCHEDULER_TRIGGER = {
   cron: 'cron',
   manualHttp: 'manual_http',
+  manualAdmin: 'manual_admin',
 } as const;
 
 export type SchedulerTrigger = (typeof SCHEDULER_TRIGGER)[keyof typeof SCHEDULER_TRIGGER];

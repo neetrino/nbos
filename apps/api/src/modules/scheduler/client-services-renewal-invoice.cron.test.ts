@@ -32,7 +32,7 @@ describe('ClientServicesRenewalInvoiceCron', () => {
     process.env = { ...original };
   });
 
-  it('registers even when env flag is off (policy gates ticks)', () => {
+  it('registers even when env flag is off (policy gates ticks)', async () => {
     const config = createConfig({});
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new ClientServicesRenewalInvoiceCron(
@@ -48,7 +48,7 @@ describe('ClientServicesRenewalInvoiceCron', () => {
     );
   });
 
-  it('registers cron when enabled', () => {
+  it('registers cron when enabled', async () => {
     process.env.SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED = 'true';
     const config = createConfig({
       SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'true',
@@ -73,7 +73,7 @@ describe('ClientServicesRenewalInvoiceCron', () => {
     );
   });
 
-  it('does not register for PROCESS_ROLE=api', () => {
+  it('does not register for PROCESS_ROLE=api', async () => {
     process.env.PROCESS_ROLE = 'api';
     const config = createConfig({
       SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'true',

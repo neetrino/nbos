@@ -10,9 +10,9 @@ export default function SchedulerSettingsPage() {
       <PageHero title="Scheduler" />
       <p className="text-muted-foreground flex items-start gap-2 text-sm">
         <Timer className="mt-0.5 size-4 shrink-0" aria-hidden />
-        Platform cron and time jobs that run without a person. Toggle enable/disable here (audited).
-        High-risk jobs ask for confirm. Process kill switch remains SCHEDULER_ENABLED. Timezone:
-        Asia/Yerevan.
+        Platform cron and time jobs that run without a person. Toggle enable/disable and Run now
+        here (audited). High-risk jobs ask for confirm. Cron schedule changes only in code / deploy.
+        Process kill switch remains SCHEDULER_ENABLED. Timezone: Asia/Yerevan.
       </p>
       <SchedulerJobsPanel />
     </div>

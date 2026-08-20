@@ -9,6 +9,12 @@ import {
 import { isEnvFlagEnabled } from './scheduler-lease.constants';
 import { setSchedulerJobPolicyChecker } from './scheduler-job-policy.accessor';
 
+export type SchedulerJobPolicyRow = {
+  enabled: boolean;
+  updatedById: string | null;
+  updatedAt: Date;
+};
+
 @Injectable()
 export class SchedulerJobPolicyService implements OnModuleInit {
   private readonly logger = new Logger(SchedulerJobPolicyService.name);
@@ -27,18 +33,25 @@ export class SchedulerJobPolicyService implements OnModuleInit {
     return row?.enabled === true;
   }
 
-  async listByJobNames(
-    jobNames: string[],
-  ): Promise<Map<string, { enabled: boolean; updatedById: string | null; updatedAt: Date }>> {
+  async listByJobNames(jobNames: string[]): Promise<Map<string, SchedulerJobPolicyRow>> {
     if (jobNames.length === 0) return new Map();
     const rows = await this.prisma.schedulerJobPolicy.findMany({
       where: { jobName: { in: jobNames } },
-      select: { jobName: true, enabled: true, updatedById: true, updatedAt: true },
+      select: {
+        jobName: true,
+        enabled: true,
+        updatedById: true,
+        updatedAt: true,
+      },
     });
     return new Map(
       rows.map((row) => [
         row.jobName,
-        { enabled: row.enabled, updatedById: row.updatedById, updatedAt: row.updatedAt },
+        {
+          enabled: row.enabled,
+          updatedById: row.updatedById,
+          updatedAt: row.updatedAt,
+        },
       ]),
     );
   }

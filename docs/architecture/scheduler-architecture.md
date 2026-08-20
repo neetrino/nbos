@@ -35,7 +35,7 @@ SCHEDULER_HEARTBEAT_INTERVAL_MS=30000
 
 Automatic work runs as Nest CronJobs on `nbos-scheduler` (`SCHEDULER_ENABLED` + one per-job flag). HTTP `/api/scheduler/*` is leftover for rare manual/repair calls (`sales-kpi-backfill-all` has no cron). Do not add Coolify/external cron.
 
-**Code catalog** is the source of “which jobs exist” (`apps/api/.../scheduler-job-catalog.ts`). Settings → Scheduler lists them with runtime snapshot (`SchedulerJobRuntime`) and admin policy (`SchedulerJobPolicy`). Product canon: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md).
+**Code catalog** is the source of “which jobs exist” and default cron (`apps/api/.../scheduler-job-catalog.ts`). Settings → Scheduler lists them with runtime snapshot (`SchedulerJobRuntime`) and admin policy (`SchedulerJobPolicy`: enable/disable, Run now). Cron schedule changes only in code/deploy. Product canon: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md).
 
 Nest registers all `platform_cron` jobs on `nbos-scheduler`. Each tick requires `SCHEDULER_ENABLED` (kill switch) **and** `SchedulerJobPolicy.enabled`. Per-job env `*_ENABLED` seeds policy once, then is not the source of truth.
 

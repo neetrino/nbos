@@ -1,77 +1,23 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Clock3, RefreshCw, Timer } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { ErrorState, LoadingState, StatusBadge, type StatusVariant } from '@/components/shared';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
   schedulerJobsApi,
   type PlatformSchedulerJobRow,
   type PlatformSchedulerJobsResponse,
-  type SchedulerCatalogStatus,
 } from '@/lib/api/scheduler-jobs';
-
-const STATUS_LABEL: Record<SchedulerCatalogStatus, string> = {
-  active: 'Active',
-  paused: 'Paused',
-  blocked: 'Blocked',
-  running: 'Running',
-  failed: 'Failed',
-  schedulerOffline: 'Scheduler offline',
-  manual: 'Manual only',
-  disabledByCanon: 'Disabled by canon',
-};
-
-const STATUS_VARIANT: Record<SchedulerCatalogStatus, StatusVariant> = {
-  active: 'green',
-  paused: 'gray',
-  blocked: 'amber',
-  running: 'blue',
-  failed: 'red',
-  schedulerOffline: 'orange',
-  manual: 'violet',
-  disabledByCanon: 'zinc',
-};
-
-const RISK_VARIANT: Record<PlatformSchedulerJobRow['risk'], StatusVariant> = {
-  low: 'gray',
-  medium: 'amber',
-  high: 'red',
-};
-
-function formatWhen(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString();
-}
-
-function formatSchedule(row: PlatformSchedulerJobRow): string {
-  if (row.kind === 'manual_only') return 'Manual HTTP only';
-  return row.expression ?? row.defaultExpression ?? '—';
-}
-
-function confirmHighRiskToggle(row: PlatformSchedulerJobRow, nextEnabled: boolean): boolean {
-  if (row.risk !== 'high') return true;
-  const action = nextEnabled ? 'ENABLE' : 'DISABLE';
-  return window.confirm(
-    `${action} high-risk job "${row.title}" (${row.jobName})?\n\n${row.description}\n\nThis is audited.`,
-  );
-}
+import { confirmHighRiskSchedulerAction, SchedulerJobTableRow } from './SchedulerJobTableRow';
 
 export function SchedulerJobsPanel() {
   const [data, setData] = useState<PlatformSchedulerJobsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [togglingJob, setTogglingJob] = useState<string | null>(null);
+  const [busyJob, setBusyJob] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -90,24 +36,43 @@ export function SchedulerJobsPanel() {
     void load();
   }, [load]);
 
+  const replaceJob = (updated: PlatformSchedulerJobRow) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        jobs: prev.jobs.map((job) => (job.jobName === updated.jobName ? updated : job)),
+      };
+    });
+  };
+
   const handleToggle = async (row: PlatformSchedulerJobRow, nextEnabled: boolean) => {
     if (!row.canToggle) return;
-    if (!confirmHighRiskToggle(row, nextEnabled)) return;
-    setTogglingJob(row.jobName);
+    if (!confirmHighRiskSchedulerAction(row, nextEnabled ? 'ENABLE' : 'DISABLE')) return;
+    setBusyJob(row.jobName);
     try {
       const updated = await schedulerJobsApi.setJobEnabled(row.jobName, { enabled: nextEnabled });
-      setData((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          jobs: prev.jobs.map((job) => (job.jobName === updated.jobName ? updated : job)),
-        };
-      });
+      replaceJob(updated);
       toast.success(`${updated.title} ${nextEnabled ? 'enabled' : 'disabled'}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not update job');
     } finally {
-      setTogglingJob(null);
+      setBusyJob(null);
+    }
+  };
+
+  const handleRunNow = async (row: PlatformSchedulerJobRow) => {
+    if (!row.canRunNow) return;
+    if (!confirmHighRiskSchedulerAction(row, 'RUN NOW')) return;
+    setBusyJob(row.jobName);
+    try {
+      await schedulerJobsApi.runJobNow(row.jobName);
+      toast.success(`Started ${row.title}`);
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not run job');
+    } finally {
+      setBusyJob(null);
     }
   };
 
@@ -140,6 +105,7 @@ export function SchedulerJobsPanel() {
               <TableHead>Last result</TableHead>
               <TableHead>Next run</TableHead>
               <TableHead>Risk</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -147,8 +113,9 @@ export function SchedulerJobsPanel() {
               <SchedulerJobTableRow
                 key={row.jobName}
                 row={row}
-                toggling={togglingJob === row.jobName}
+                busy={busyJob === row.jobName}
                 onToggle={(enabled) => void handleToggle(row, enabled)}
+                onRunNow={() => void handleRunNow(row)}
               />
             ))}
           </TableBody>
@@ -188,69 +155,5 @@ function SchedulerJobsHeader(props: {
         Refresh
       </Button>
     </div>
-  );
-}
-
-function SchedulerJobTableRow(props: {
-  row: PlatformSchedulerJobRow;
-  toggling: boolean;
-  onToggle: (enabled: boolean) => void;
-}) {
-  const { row, toggling, onToggle } = props;
-  const enabled = row.policyEnabled === true;
-
-  return (
-    <TableRow>
-      <TableCell>
-        <div className="space-y-0.5">
-          <p className="font-medium">{row.title}</p>
-          <p className="text-muted-foreground text-xs">{row.jobName}</p>
-          <p className="text-muted-foreground max-w-xs text-xs">{row.description}</p>
-        </div>
-      </TableCell>
-      <TableCell className="text-muted-foreground text-sm">{row.group}</TableCell>
-      <TableCell>
-        <span className="inline-flex items-center gap-1 font-mono text-xs">
-          <Timer className="size-3.5 shrink-0" aria-hidden />
-          {formatSchedule(row)}
-        </span>
-      </TableCell>
-      <TableCell>
-        {row.canToggle ? (
-          <Switch
-            checked={enabled}
-            disabled={toggling}
-            onCheckedChange={(checked) => onToggle(checked)}
-            aria-label={`${enabled ? 'Disable' : 'Enable'} ${row.title}`}
-          />
-        ) : (
-          <span className="text-muted-foreground text-xs">—</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <StatusBadge variant={STATUS_VARIANT[row.status]} label={STATUS_LABEL[row.status]} />
-      </TableCell>
-      <TableCell className="text-muted-foreground text-sm">{formatWhen(row.lastRunAt)}</TableCell>
-      <TableCell className="text-sm">
-        {row.lastRunStatus ?? '—'}
-        {row.lastErrorMessage ? (
-          <p
-            className="text-destructive max-w-[12rem] truncate text-xs"
-            title={row.lastErrorMessage}
-          >
-            {row.lastErrorMessage}
-          </p>
-        ) : null}
-      </TableCell>
-      <TableCell className="text-muted-foreground text-sm">
-        <span className="inline-flex items-center gap-1">
-          <Clock3 className="size-3.5 shrink-0" aria-hidden />
-          {formatWhen(row.nextRunAt)}
-        </span>
-      </TableCell>
-      <TableCell>
-        <StatusBadge variant={RISK_VARIANT[row.risk]} label={row.risk} />
-      </TableCell>
-    </TableRow>
   );
 }

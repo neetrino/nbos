@@ -70,7 +70,8 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
     );
 
     for (const entry of listPlatformCronCatalogEntries()) {
-      const policyEnabled = policies.get(entry.jobName)?.enabled === true;
+      const policy = policies.get(entry.jobName);
+      const policyEnabled = policy?.enabled === true;
       const registered = registeredNames.has(entry.jobName) || nestCronNames.has(entry.jobName);
       const expression = this.resolveExpression(entry);
 

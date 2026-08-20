@@ -31,7 +31,7 @@ describe('BillingCron', () => {
     process.env = { ...original };
   });
 
-  it('registers even when env flag is off (policy gates ticks)', () => {
+  it('registers even when env flag is off (policy gates ticks)', async () => {
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new BillingCron(
       createConfig({}),
@@ -43,7 +43,7 @@ describe('BillingCron', () => {
     expect(addSpy).toHaveBeenCalledWith(SCHEDULER_JOB_NAMES.billing, expect.any(Object));
   });
 
-  it('registers when enabled', () => {
+  it('registers when enabled', async () => {
     process.env[BILLING_CRON_ENABLED_ENV] = 'true';
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new BillingCron(
@@ -59,7 +59,7 @@ describe('BillingCron', () => {
     expect(registry.doesExist('cron', SCHEDULER_JOB_NAMES.billing)).toBe(false);
   });
 
-  it('does not register for PROCESS_ROLE=api', () => {
+  it('does not register for PROCESS_ROLE=api', async () => {
     process.env.PROCESS_ROLE = 'api';
     process.env[BILLING_CRON_ENABLED_ENV] = 'true';
     const addSpy = vi.spyOn(registry, 'addCronJob');

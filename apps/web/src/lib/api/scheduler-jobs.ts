@@ -33,6 +33,7 @@ export type PlatformSchedulerJobRow = {
   nextRunAt: string | null;
   runtimeHeartbeatAt: string | null;
   canToggle: boolean;
+  canRunNow: boolean;
 };
 
 export type PlatformSchedulerJobsResponse = {
@@ -42,6 +43,12 @@ export type PlatformSchedulerJobsResponse = {
   schedulerOnline: boolean;
   note: string;
   jobs: PlatformSchedulerJobRow[];
+};
+
+export type PlatformSchedulerRunNowResponse = {
+  jobName: string;
+  trigger: 'manual_admin';
+  result: unknown;
 };
 
 export const schedulerJobsApi = {
@@ -56,6 +63,12 @@ export const schedulerJobsApi = {
     const resp = await api.patch<PlatformSchedulerJobRow>(
       `/api/platform/scheduler/jobs/${encodeURIComponent(jobName)}`,
       body,
+    );
+    return resp.data;
+  },
+  async runJobNow(jobName: string): Promise<PlatformSchedulerRunNowResponse> {
+    const resp = await api.post<PlatformSchedulerRunNowResponse>(
+      `/api/platform/scheduler/jobs/${encodeURIComponent(jobName)}/run`,
     );
     return resp.data;
   },

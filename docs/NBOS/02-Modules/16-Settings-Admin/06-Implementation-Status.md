@@ -16,7 +16,7 @@ Tracks **global Trash admin** shipped in Phase 7. Full Settings canon: `00-Setti
 - Admin UI to **edit** retention per entity (env-only today).
 - Per-module **permanent-delete UI** from inventory (Profile A API shipped; web controls backlog).
 - Broader Settings RBAC/audit gaps — Cleanup Register.
-- **Scheduler catalog (stage 1–2):** Settings → Scheduler lists code catalog + runtime snapshot; enable/disable via `SchedulerJobPolicy` (audited). Run now (stage 3) not shipped. Canon: `05-Scheduler-Catalog.md`.
+- **Scheduler catalog (stage 1–3):** Settings → Scheduler lists code catalog + runtime snapshot; enable/disable + Run now via `SchedulerJobPolicy` (audited). Cron schedule changes only in code/deploy. Failure alerts remain on ops backlog. Canon: `05-Scheduler-Catalog.md`.
 
 ## Related code
 

@@ -13,7 +13,7 @@ export async function isSchedulerJobPolicyEnabled(jobName: string): Promise<bool
   return checker(jobName);
 }
 
-/** Test helper — clears the module-level checker. */
+/** Test helper — clears module-level wiring. */
 export function resetSchedulerJobPolicyChecker(): void {
   checker = null;
 }

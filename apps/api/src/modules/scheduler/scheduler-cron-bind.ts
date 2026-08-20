@@ -23,7 +23,7 @@ function writeSchedulerCronStderr(message: string): void {
   process.stderr.write(`[SchedulerCron] ${message}\n`);
 }
 
-function resolveCronExpression(
+function resolveCronExpressionFromEnv(
   config: ConfigService,
   cronEnvKey: string,
   defaultExpression: string,
@@ -54,7 +54,7 @@ export function startSchedulerCronJob(args: StartSchedulerCronJobArgs): void {
     return;
   }
 
-  const expression = resolveCronExpression(args.config, cronEnvKey, defaultExpression);
+  const expression = resolveCronExpressionFromEnv(args.config, cronEnvKey, defaultExpression);
   let job: CronJob;
   try {
     job = new CronJob(expression, () => {

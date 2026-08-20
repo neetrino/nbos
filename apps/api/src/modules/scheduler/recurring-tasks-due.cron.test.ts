@@ -32,7 +32,7 @@ describe('RecurringTasksDueCron', () => {
     process.env = { ...original };
   });
 
-  it('registers even when env flag is off (policy gates ticks)', () => {
+  it('registers even when env flag is off (policy gates ticks)', async () => {
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new RecurringTasksDueCron(
       createConfig({}),
@@ -44,7 +44,7 @@ describe('RecurringTasksDueCron', () => {
     expect(addSpy).toHaveBeenCalledWith(SCHEDULER_JOB_NAMES.recurringTasksDue, expect.any(Object));
   });
 
-  it('registers cron when enabled', () => {
+  it('registers cron when enabled', async () => {
     process.env.SCHEDULER_RECURRING_TASKS_DUE_ENABLED = 'true';
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new RecurringTasksDueCron(
