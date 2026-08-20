@@ -3,56 +3,93 @@ import { SchedulerService } from './scheduler.service';
 import { SALES_KPI_BACKFILL_ALL_JOB_NAME } from './scheduler-job-catalog';
 import { SCHEDULER_JOB_NAMES, type SchedulerTrigger } from './scheduler-lease.constants';
 
-type JobRunner = (service: SchedulerService, trigger: SchedulerTrigger) => Promise<unknown>;
+const RUNNABLE_JOB_NAMES = [
+  SCHEDULER_JOB_NAMES.billing,
+  SCHEDULER_JOB_NAMES.overdueInvoices,
+  SCHEDULER_JOB_NAMES.invoiceCardReminders,
+  SCHEDULER_JOB_NAMES.expenseBacklogReminders,
+  SCHEDULER_JOB_NAMES.salesKpiMonthClose,
+  SCHEDULER_JOB_NAMES.expensePlanAutoDue,
+  SCHEDULER_JOB_NAMES.recurringTasksDue,
+  SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice,
+  SCHEDULER_JOB_NAMES.platformTrashPurge,
+  SCHEDULER_JOB_NAMES.supportSlaEscalation,
+  SCHEDULER_JOB_NAMES.notificationInboxReconcile,
+  SCHEDULER_JOB_NAMES.notificationEnqueueReconcile,
+  SCHEDULER_JOB_NAMES.authSessionExpiryCleanup,
+  SCHEDULER_JOB_NAMES.reportSchedulesDue,
+  SCHEDULER_JOB_NAMES.mailOutboundReconcile,
+  SCHEDULER_JOB_NAMES.mailGmailWatchRenew,
+  SCHEDULER_JOB_NAMES.mailSyncReconcile,
+  SALES_KPI_BACKFILL_ALL_JOB_NAME,
+] as const;
 
-const RUNNERS: Record<string, JobRunner> = {
-  [SCHEDULER_JOB_NAMES.billing]: (service, trigger) => service.runBilling(trigger),
-  [SCHEDULER_JOB_NAMES.overdueInvoices]: (service, trigger) => service.markOverdueInvoices(trigger),
-  [SCHEDULER_JOB_NAMES.invoiceCardReminders]: (service, trigger) =>
-    service.runInvoiceCardReminders(trigger),
-  [SCHEDULER_JOB_NAMES.expenseBacklogReminders]: (service, trigger) =>
-    service.runExpenseBacklogReminders(trigger),
-  [SCHEDULER_JOB_NAMES.salesKpiMonthClose]: (service, trigger) =>
-    service.runSalesKpiMonthClose(undefined, trigger),
-  [SCHEDULER_JOB_NAMES.expensePlanAutoDue]: (service, trigger) =>
-    service.runExpensePlanAutoDue(trigger),
-  [SCHEDULER_JOB_NAMES.recurringTasksDue]: (service, trigger) =>
-    service.runRecurringTasksDue(trigger),
-  [SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice]: (service, trigger) =>
-    service.runClientServicesRenewalInvoice(trigger),
-  [SCHEDULER_JOB_NAMES.platformTrashPurge]: (service, trigger) =>
-    service.runPlatformTrashPurge(trigger),
-  [SCHEDULER_JOB_NAMES.supportSlaEscalation]: (service, trigger) =>
-    service.runSupportSlaEscalation(trigger),
-  [SCHEDULER_JOB_NAMES.notificationInboxReconcile]: (service, trigger) =>
-    service.runNotificationInboxReconcile(trigger),
-  [SCHEDULER_JOB_NAMES.notificationEnqueueReconcile]: (service, trigger) =>
-    service.runNotificationEnqueueReconcile(trigger),
-  [SCHEDULER_JOB_NAMES.authSessionExpiryCleanup]: (service, trigger) =>
-    service.runAuthSessionExpiryCleanup(trigger),
-  [SCHEDULER_JOB_NAMES.reportSchedulesDue]: (service, trigger) =>
-    service.runReportSchedulesDue(trigger),
-  [SCHEDULER_JOB_NAMES.mailOutboundReconcile]: (service, trigger) =>
-    service.runMailOutboundReconcile(trigger),
-  [SCHEDULER_JOB_NAMES.mailGmailWatchRenew]: (service, trigger) =>
-    service.runMailGmailWatchRenew(trigger),
-  [SCHEDULER_JOB_NAMES.mailSyncReconcile]: (service, trigger) =>
-    service.runMailSyncReconcile(trigger),
-  [SALES_KPI_BACKFILL_ALL_JOB_NAME]: (service, trigger) => service.runSalesKpiBackfillAll(trigger),
-};
+type RunnableJobName = (typeof RUNNABLE_JOB_NAMES)[number];
 
 export function canRunSchedulerJobNow(jobName: string): boolean {
-  return Object.prototype.hasOwnProperty.call(RUNNERS, jobName);
+  return (RUNNABLE_JOB_NAMES as readonly string[]).includes(jobName);
 }
 
+/**
+ * Dispatches by explicit switch (allowlist) so jobName from HTTP cannot select
+ * an arbitrary SchedulerService method.
+ */
 export async function runSchedulerJobByName(
   service: SchedulerService,
   jobName: string,
   trigger: SchedulerTrigger,
 ): Promise<unknown> {
-  const runner = RUNNERS[jobName];
-  if (!runner) {
+  if (!canRunSchedulerJobNow(jobName)) {
     throw new BadRequestException(`No runner for scheduler job: ${jobName}`);
   }
-  return runner(service, trigger);
+  return dispatchRunnableJob(service, jobName as RunnableJobName, trigger);
+}
+
+async function dispatchRunnableJob(
+  service: SchedulerService,
+  jobName: RunnableJobName,
+  trigger: SchedulerTrigger,
+): Promise<unknown> {
+  switch (jobName) {
+    case SCHEDULER_JOB_NAMES.billing:
+      return service.runBilling(trigger);
+    case SCHEDULER_JOB_NAMES.overdueInvoices:
+      return service.markOverdueInvoices(trigger);
+    case SCHEDULER_JOB_NAMES.invoiceCardReminders:
+      return service.runInvoiceCardReminders(trigger);
+    case SCHEDULER_JOB_NAMES.expenseBacklogReminders:
+      return service.runExpenseBacklogReminders(trigger);
+    case SCHEDULER_JOB_NAMES.salesKpiMonthClose:
+      return service.runSalesKpiMonthClose(undefined, trigger);
+    case SCHEDULER_JOB_NAMES.expensePlanAutoDue:
+      return service.runExpensePlanAutoDue(trigger);
+    case SCHEDULER_JOB_NAMES.recurringTasksDue:
+      return service.runRecurringTasksDue(trigger);
+    case SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice:
+      return service.runClientServicesRenewalInvoice(trigger);
+    case SCHEDULER_JOB_NAMES.platformTrashPurge:
+      return service.runPlatformTrashPurge(trigger);
+    case SCHEDULER_JOB_NAMES.supportSlaEscalation:
+      return service.runSupportSlaEscalation(trigger);
+    case SCHEDULER_JOB_NAMES.notificationInboxReconcile:
+      return service.runNotificationInboxReconcile(trigger);
+    case SCHEDULER_JOB_NAMES.notificationEnqueueReconcile:
+      return service.runNotificationEnqueueReconcile(trigger);
+    case SCHEDULER_JOB_NAMES.authSessionExpiryCleanup:
+      return service.runAuthSessionExpiryCleanup(trigger);
+    case SCHEDULER_JOB_NAMES.reportSchedulesDue:
+      return service.runReportSchedulesDue(trigger);
+    case SCHEDULER_JOB_NAMES.mailOutboundReconcile:
+      return service.runMailOutboundReconcile(trigger);
+    case SCHEDULER_JOB_NAMES.mailGmailWatchRenew:
+      return service.runMailGmailWatchRenew(trigger);
+    case SCHEDULER_JOB_NAMES.mailSyncReconcile:
+      return service.runMailSyncReconcile(trigger);
+    case SALES_KPI_BACKFILL_ALL_JOB_NAME:
+      return service.runSalesKpiBackfillAll(trigger);
+    default: {
+      const _exhaustive: never = jobName;
+      throw new BadRequestException(`No runner for scheduler job: ${_exhaustive}`);
+    }
+  }
 }
