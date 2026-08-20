@@ -455,7 +455,7 @@ Header делится на две зоны:
 - quick note (если включено);
 - notifications;
 - messenger shortcut, если включено;
-- user profile / My Account;
+- user profile / My Account (в т.ч. Security → Active Sessions; канон `12-Account-Security-Sessions.md`);
 - session menu.
 
 ### Module context bar (left)

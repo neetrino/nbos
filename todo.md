@@ -4,5 +4,5 @@
 
 Дальше:
 
+- [ ] Auth Session V2 — канон: [`docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md`](docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md). Сначала довести V2 (native + UI сессий), потом роллаут. Legacy JWT и denylist **не удалять**, пока все не зайдут по V2. Джоба 14 — только вместе с V2.
 - [ ] [ai-modul-steps.md](http://ai-modul-steps.md)
-- [ ] После того как новый вход (Auth Session V2) полностью заменит старый JWT и все зайдут по-новому — удалить legacy-логин (v1) и denylist. Сейчас не трогать: иначе никто не войдёт. Джоба 14 включать только вместе с V2.

@@ -164,14 +164,16 @@ Permission Role = что человек может делать в систем�
 
 ### Security
 
-Глобальные настройки безопасности:
+Глобальные настройки безопасности платформы (не личные устройства):
 
-- session lifetime;
-- 2FA requirement;
+- session lifetime defaults (access / refresh TTL);
+- 2FA requirement (later);
 - password policy;
 - IP allowlist, если понадобится;
 - vault access defaults;
 - admin action confirmation rules.
+
+Личные **Active Sessions** (этот браузер / телефон / Messenger / Vault) живут в **My Account → Security**, не здесь. Канон: `../../01-Platform-Overview/06-Authentication-and-Sessions.md`, UI: `../../05-UI-Specifications/12-Account-Security-Sessions.md`.
 
 ### Feature Flags
 
