@@ -223,6 +223,8 @@ Lead получает статус SQL (Quality Lead)
 
 Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Lead merge и intake attach — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`); Deal↔Deal merge не делаем. Merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
 
+Звонок известного Contact **не** создаёт второй Contact и не создаёт Lead, если есть открытый Deal. История звонков — Communication / Calls, канон `../01-CRM/08-Calls-and-Telephony.md`.
+
 ---
 
 ## 7. Дедупликация контактов

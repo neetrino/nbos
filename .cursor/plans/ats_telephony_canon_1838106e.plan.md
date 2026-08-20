@@ -4,31 +4,31 @@ overview: Сначала фиксируем полный канон телефо
 todos:
   - id: canon-calls
     content: Написать 08-Calls-and-Telephony.md + 11-Call-Screen.md; расширить 09-ATS-AM-Integration.md; обновить Hub, Core Entities, TECH decisions, External Services, CRM/Clients/Delivery UI, Implementation Status/Progress
-    status: pending
+    status: completed
   - id: stage-1-webhook
     content: SkipTransform + SkipThrottle на ATS webhook, тест голого JSON redirect_call
-    status: pending
+    status: cancelled
   - id: stage-2-schema
     content: Expand AtsCallEvent (contact/deal/context/employees/note/rate/recording), исходящий → Lead, attach контекста
-    status: pending
+    status: cancelled
   - id: stage-3-popup
     content: Отдельный app-shell realtime (не Messenger, не unread SSE) + fullscreen overlay только ответственному
-    status: pending
+    status: cancelled
   - id: stage-4-history-ui
     content: List API Call + вкладка Calls на Lead, наполнить DealCallsTab, лента в Contact Communication
-    status: pending
+    status: cancelled
   - id: stage-5-recordings
     content: Worker download → createGeneratedFileAsset + FileLink LEAD/CONTACT + LEAD storage-home + плеер/заметка
-    status: pending
+    status: cancelled
   - id: stage-6-dial
     content: Click-to-call callback API + окно инициатору
-    status: pending
+    status: cancelled
   - id: stage-7-reconcile
     content: Scheduler history reconcile + catalog/policy
-    status: pending
+    status: cancelled
   - id: stage-8-accept
     content: Settings ATS card, Delivery Calls projection, security-review, verify-before-completion
-    status: pending
+    status: cancelled
 isProject: false
 ---
 

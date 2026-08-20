@@ -1,111 +1,176 @@
-# ATS.am Active Call — NBOS Integration (MVP)
+# ATS.am — контракт интеграции
 
-## Purpose
+> Провайдер телефонии: [ATS.am API](https://ats.am/ru/apidocumentacia) (также [hy](https://ats.am/hy/api_document)).
+>
+> **Продукт и UI** (кто видит окно, Lead/Contact, история, запись в Drive): [`../02-Modules/01-CRM/08-Calls-and-Telephony.md`](../02-Modules/01-CRM/08-Calls-and-Telephony.md), [`../05-UI-Specifications/11-Call-Screen.md`](../05-UI-Specifications/11-Call-Screen.md).
+>
+> Этот файл — только контракт ATS ↔ NBOS. Не дублировать продуктовую логику.
 
-Receive **Active Call** webhooks from [ATS.am](https://ats.am/hy/api_document) and:
+ATS отдаёт **четыре** возможности. Транскрипта нет.
 
-1. Create CRM **Leads** for new inbound callers.
-2. Return optional **`redirect_call`** (SIP ID) so ATS routes known callers to the responsible employee.
+| API | Направление | Зачем NBOS |
+| --- | --- | --- |
+| Active Call webhook | ATS → NBOS | Старт / ответ / конец, `redirect_call` |
+| `callback` | NBOS → ATS | Click-to-call |
+| `history` | NBOS → ATS | Сверка пропущенных `uid` |
+| `call-record` | NBOS → ATS | Скачать файл записи по `uid` |
 
-**Out of scope (this MVP):** click-to-call callback API, call history / recording download, seller realtime pop-up, MarketingAccount mapping by DID (`input`).
+Перед исходящими вызовами ATS (`callback` / `history` / `call-record`) им нужно отдать **IP** API и worker. Это их требование, не настройка в коде.
 
-## Endpoint
+---
 
-| Item    | Value                                                        |
-| ------- | ------------------------------------------------------------ |
-| Method  | `POST`                                                       |
-| Path    | `/api/integrations/ats/webhook`                              |
-| Auth    | Query `key` must equal env `ATS_API_KEY`                     |
-| Body    | `application/x-www-form-urlencoded` or `multipart/form-data` |
-| Success | HTTP `200` + JSON body (see Response)                        |
+## 1. Environment
 
-Production example:
+| Variable | Где | Notes |
+| --- | --- | --- |
+| `ATS_API_KEY` | `nbos-api` обязательно для webhook; `nbos-worker` для download/callback | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`. |
+| `ATS_API_KEY` | `nbos-scheduler` | Не нужен. Сверка history идёт через API/worker с ключом процесса, который зовёт ATS. |
+| `ATS_API_KEY` | `nbos-web` | Не нужен. Браузер не зовёт ATS напрямую. |
 
-`https://nbos.neetrino.com/api/integrations/ats/webhook?key=…`
+Ключ = код из кабинета ATS, раздел «Зарегистрированные данные». Не коммитить. Тот же ключ в URL webhook кабинета: `?key=`.
 
-### Response
+---
 
-`redirect_call` is a **field on our webhook response** (not a separate request to `account.ats.am`). ATS waits for this JSON and uses it for call routing.
+## 2. Active Call webhook (ATS → NBOS)
 
-| Case                                                   | Body                                                |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| Unknown caller / no usable SIP / finish·end / outbound | `{ "status": "success" }`                           |
-| Inbound `state=start` + known Contact or Lead with SIP | `{ "status": "success", "redirect_call": "<sip>" }` |
+| Item | Value |
+| --- | --- |
+| Method | `POST` |
+| Path | `/api/integrations/ats/webhook` |
+| Auth | Query `key` = env `ATS_API_KEY` |
+| Body | `application/x-www-form-urlencoded` или `multipart/form-data` |
+| Success | HTTP `200` + **голый** JSON (не `{ data: … }`) |
 
-Example SIP value: `"3126107"` — taken from `Employee.sipId`, never hardcoded.
+Production: `https://nbos.neetrino.com/api/integrations/ats/webhook?key=…`
 
-## Environment
+Маршрут публичный (`@Public`). Throttle на этот path не применять. Ответ **не** оборачивать глобальным transform interceptor.
 
-| Variable      | Required             | Notes                                                                     |
-| ------------- | -------------------- | ------------------------------------------------------------------------- |
-| `ATS_API_KEY` | When webhook is used | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`. |
+Ops: Cloudflare не должен резать server-to-server POST (Bot Fight / 1010). Skip на этот path.
 
-Do not commit secrets. Configure in deployment env / local `.env` only.
+### 2.1 Response
 
-## ATS payload fields (contract)
+`redirect_call` — поле **нашего** JSON. Отдельный запрос на `account.ats.am` не делаем. ATS ждёт этот JSON для маршрута.
+
+| Case | Body |
+| --- | --- |
+| Нет маршрута / finish·end / outbound | `{ "status": "success" }` |
+| Inbound `state=start` + известный Contact или Lead с SIP | `{ "status": "success", "redirect_call": "<sip>" }` |
+
+SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
+
+### 2.2 Payload
 
 `state`, `uid`, `input`, `clid`, `op`, `rate`, `billsec`, `calldirect`, `disposition`, `channel`, `record_link`
 
-| Field         | Semantics                                                    |
-| ------------- | ------------------------------------------------------------ |
-| `state`       | `start` \| `status` (answered) \| `finish` \| `end`          |
-| `calldirect`  | `"0"` inbound, `"1"` outbound                                |
-| `disposition` | `ANSWERED` \| `NO ANSWER`                                    |
-| `uid`         | Unique call id (idempotency key)                             |
-| `clid`        | Caller number                                                |
-| `input`       | DID / number called (future MarketingAccount mapping — TODO) |
+| Field | Semantics |
+| --- | --- |
+| `state` | `start` \| `status` (answered) \| `finish` \| `end` |
+| `calldirect` | `"0"` inbound, `"1"` outbound |
+| `disposition` | `ANSWERED` \| `NO ANSWER` |
+| `uid` | Уникальный id звонка (идемпотентность) |
+| `clid` | Номер собеседника |
+| `op` | Номер/SIP, на который сел звонок |
+| `input` | DID (маркетинг later) |
+| `rate` | 0–5, обычно на конце |
+| `billsec` | Длительность |
+| `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls` |
 
-## NBOS behavior
+Неизвестные поля игнорировать.
 
-| Case                                                                            | Behavior                                                                                                       |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Inbound (`calldirect=0`) + `state=start` (or first non-terminal sight of `uid`) | Normalize `clid` (AM defaults via shared phone helper) → reuse open Lead with same phone, else **create Lead** |
-| Same `uid` again                                                                | Update `AtsCallEvent` only; **never** second Lead for that call                                                |
-| Finish / end                                                                    | Update `AtsCallEvent` only; **no** `redirect_call`                                                             |
-| Outbound (`calldirect=1`)                                                       | Store event; **no Lead**; **no** `redirect_call`                                                               |
-| Wrong key                                                                       | `401`, no Lead                                                                                                 |
-| `ATS_API_KEY` unset                                                             | `503`                                                                                                          |
+### 2.3 Поведение ingest (контракт)
 
-### `redirect_call` (inbound `state=start` only)
+Продуктовые правила attach — `08-Calls` + `07-Lead-and-Deal-Merge`. Здесь только граница провайдера:
 
-1. Normalize `clid` with the same helper as Lead ingest (`ats-phone.util` / AM WhatsApp defaults).
-2. Lookup by phone variants:
-   - **Contact first** (`Contact.phone`, non-trashed). Schema has a single phone per Contact (no additional-phone array).
-   - Else **Lead** (`Lead.phone`, non-trashed).
-3. Resolve responsible **Employee** SIP:
-   - **Lead:** `Lead.assignedTo` → `Employee.sipId`.
-   - **Contact:** Contact has **no** `ownerId` / `assignedTo` in CRM schema. Decision: use most recently updated non-trashed **Deal** linked by `Deal.contactId` or `DealAdditionalContact` → `Deal.sellerId` → `Employee.sipId`. Fallback: most recent non-trashed **Lead** with `contactId` = Contact and `assignedTo` set.
-4. If entity found but no assignee / empty `sipId` → respond without `redirect_call` and log (`ats_redirect_skipped`).
-5. New / unmatched number → `{ "status": "success" }` only; Lead create path unchanged.
+| Case | NBOS |
+| --- | --- |
+| Неверный / пустой `key` | `401`, ничего не писать |
+| Ключ не задан | `503` |
+| Нет `uid` | `400` |
+| Тот же `uid` | Update той же строки Call |
+| Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead |
+| Outbound | Строка Call; Lead если номер новый (продукт `08-Calls`) |
+| `finish` / `end` | Update; **без** `redirect_call` |
+| Inbound `start` + SIP | `redirect_call` в голом JSON |
 
-### Employee SIP profile
+### 2.4 Резолв `redirect_call` (inbound `start` only)
 
-| Field            | Storage                        | Editable                                                           |
-| ---------------- | ------------------------------ | ------------------------------------------------------------------ |
-| `Employee.sipId` | `employees.sip_id` (`String?`) | HR employee sheet; also `PUT /me/profile` and `PUT /employees/:id` |
+1. Нормализовать `clid` (тот же phone helper, AM defaults).
+2. Contact first (primary + extra phones, не Trash) → иначе Lead по телефону.
+3. SIP:
+   - Lead: `assignedTo` → `Employee.sipId`;
+   - Contact: последний не-Trash Deal (`contactId` или additional) → `sellerId` → `sipId`; fallback — последний не-Trash Lead этого Contact с `assignedTo`.
+4. Нет assignee / пустой SIP → без `redirect_call`, лог `ats_redirect_skipped`.
+5. Новый номер → `{ "status": "success" }` без redirect; Lead по правилам продукта.
 
-### Lead fields (create)
+### 2.5 Lead при создании с ATS
 
-| Field                  | Value                                           |
-| ---------------------- | ----------------------------------------------- |
-| `source`               | `MARKETING`                                     |
-| `sourceDetail`         | `ATS`                                           |
-| `phone`                | E.164-style `+{digits}` after normalization     |
-| `contactName` / `name` | `Incoming call {phone}`                         |
-| `code`                 | Same `L-{year}-{nnnn}` generator as Meta ingest |
+| Field | Value |
+| --- | --- |
+| `source` | `MARKETING` |
+| `sourceDetail` | `ATS` |
+| `phone` | `+{digits}` |
+| `contactName` / `name` | `Incoming call {phone}` |
+| `code` | Тот же генератор `L-{year}-{nnnn}`, что Meta |
 
-### Explicit non-goals
+Contact на webhook не создаём.
 
-- **Contact is not created on call.** Contact appears later on SQL / Clients canon (same stance as Meta DM MVP).
-- Full call-tracking / Marketing attribution by DID is future (Marketing docs); leave DID → MarketingAccount as TODO in code.
-- ATS callback / history / call-record APIs are out of scope.
+---
 
-## Persistence
+## 3. Callback (NBOS → ATS)
 
-`AtsCallEvent` — unique `uid`; tracks latest `state`, `disposition`, `billsec`, `record_link`, `clid`, `input`, `calldirect`, optional `leadId`.
+Click-to-call. Браузер **не** вызывает ATS.
 
-## Related
+`GET https://account.ats.am/docs/api/v1/callback?key=…&from=…&to=…`
 
-- Meta DM Lead ingest pattern: `08-Meta-Messaging-Identity-and-Lead-Dedup.md`
-- External services overview: `04-External-Services.md`
+| Query | Смысл |
+| --- | --- |
+| `key` | Тот же `ATS_API_KEY` |
+| `from` | SIP / номер вызывающего (наш сотрудник) |
+| `to` | Номер клиента |
+
+Внутренний NBOS `POST` (авторизованный employee) → сервер собирает `from`/`to` → ATS. Пустой SIP инициатора → 4xx.
+
+---
+
+## 4. History (NBOS → ATS)
+
+`GET https://account.ats.am/docs/api/v1/history?key=…&dateStart=Y-M-D&dateEnd=Y-M-D&rows=…&start=…`
+
+Для сверки `uid`, не для UI-ленты вживую. Джоба планировщика — продукт `08-Calls` §10. Те же правила attach, без второго Lead.
+
+Поля ответа ATS (пример): `uniqueid`, `linkedid`, `start`, `endz`, `duration`, `disposition`, `status`, `destination`, `extension`, `in_num` / `ext_num`.
+
+---
+
+## 5. Call record (NBOS → ATS)
+
+`GET https://account.ats.am/docs/api/v1/call-record?key=…&uid=…`
+
+`uid` = File ID / id звонка. Worker качает байты → Drive. Fallback: webhook `record_link`, если `call-record` недоступен. Канон файла: `08-Calls` §6.
+
+---
+
+## 6. Employee SIP
+
+| Field | Storage | Editable |
+| --- | --- | --- |
+| `Employee.sipId` | `employees.sip_id` | HR employee sheet; `PUT /me/profile`; `PUT /employees/:id` |
+
+---
+
+## 7. Runtime сегодня vs канон
+
+| Есть в коде | Ещё нет |
+| --- | --- |
+| Webhook, ключ, inbound Lead, дедуп `uid`, логика redirect | Голый JSON ответа (сейчас может быть обёртка `{ data }`) |
+| `AtsCallEvent` + `leadId` | `contactId`, контекст Deal/Project, note, recording FileAsset |
+| — | Окно, list API, callback, history reconcile, download job |
+
+---
+
+## 8. Related
+
+- Product: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`
+- External services: `04-External-Services.md`
+- Meta ingest: `08-Meta-Messaging-Identity-and-Lead-Dedup.md`
 - Lead pipeline: `../02-Modules/01-CRM/02-Lead-Pipeline.md`

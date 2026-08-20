@@ -9,6 +9,7 @@
 Примеры интеграций:
 
 - WhatsApp Web adapter / WAHA;
+- ATS.am telephony (configured / not; never show `ATS_API_KEY`);
 - email provider;
 - file storage provider;
 - notification provider;

@@ -241,33 +241,32 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 
 ---
 
-## ATS.am (Active Call webhook)
+## ATS.am (телефония)
 
-### MVP (implemented)
+Продукт: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`. Контракт: `09-ATS-AM-Integration.md`.
 
-See `09-ATS-AM-Integration.md`.
+### Runtime сегодня (webhook MVP)
 
-| Capability      | MVP behavior                                                                                        |
-| --------------- | --------------------------------------------------------------------------------------------------- |
-| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                                             |
-| Auth            | Query `key` = env `ATS_API_KEY`                                                                     |
-| Lead creation   | Inbound (`calldirect=0`) → **Lead only** (`source=MARKETING`, `sourceDetail=ATS`)                   |
-| `redirect_call` | Inbound `state=start` + known Contact/Lead assignee with `Employee.sipId` → include in webhook JSON |
-| Contact / Deal  | **Not** created on call                                                                             |
-| Idempotency     | `AtsCallEvent.uid` unique; finish/end update event only (no redirect)                               |
+| Capability | Behavior |
+| --- | --- |
+| Webhook | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…` |
+| Auth | Query `key` = env `ATS_API_KEY` |
+| Lead | Inbound → Lead only (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём |
+| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId` |
+| Idempotency | `AtsCallEvent.uid` unique |
 
-Env: `ATS_API_KEY` (optional at boot; webhook `503` if unset). SIP IDs live on `Employee.sipId` (HR profile).
+### Канон полного среза (после MVP)
 
-### Назначение (full product vision)
+| Capability | Canon |
+| --- | --- |
+| Окно ответственного | App-shell realtime, не Messenger |
+| История | Вкладка Calls на Lead/Deal; Communication у Contact |
+| Запись | Worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT |
+| Исходящий | Server-side `callback` |
+| Сверка | Scheduler `ats-call-history-reconcile` |
+| DID → MarketingAccount | Later |
 
-Телефония ATS.am: входящие звонки в CRM, позже — history/records, click-to-call, pop-up продавцу, call tracking по DID.
-
-### Фаза реализации
-
-| Этап        | Описание                                                                   |
-| ----------- | -------------------------------------------------------------------------- |
-| **MVP**     | Active Call webhook → Lead (без Contact) + optional `redirect_call` by SIP |
-| **Фаза 2+** | History/records, callback API, MarketingAccount by DID                     |
+Env: `ATS_API_KEY` на api (+ worker для download/callback). SIP: `Employee.sipId`.
 
 ---
 

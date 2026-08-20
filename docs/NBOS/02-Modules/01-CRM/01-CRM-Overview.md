@@ -47,7 +47,7 @@ For stale logic and removal tracking see `06-CRM-Cleanup-Register.md`.
 
 Канал (Instagram, звонок, форма) — история на карточке, не вторая карточка Lead. Тот же человек + два разных запроса — два Lead на одном Contact. Две сделки на одном Contact часто корректны.
 
-Полный канон (intake attach, Lead→Contact attach, Lead merge, права; Deal↔Deal merge не делаем): `07-Lead-and-Deal-Merge.md`. Merge Contact — `../03-Clients/02-Contacts.md`; это не замена merge Lead. Открытый Deal — контекст входящего, не merge сущностей.
+Полный канон (intake attach, Lead→Contact attach, Lead merge, права; Deal↔Deal merge не делаем): `07-Lead-and-Deal-Merge.md`. Звонки: `08-Calls-and-Telephony.md`. Merge Contact — `../03-Clients/02-Contacts.md`; это не замена merge Lead. Открытый Deal — контекст входящего, не merge сущностей.
 
 ---
 
@@ -219,6 +219,11 @@ CRM не должен становиться отдельным глобальн
 
 - Встречи из стадии «Meeting» автоматически попадают в календарь Seller
 - Дедлайны по follow-up видны в календаре
+
+### CRM → Telephony (ATS.am)
+
+- Входящий / исходящий звонок — активность **Call** на Lead и Contact (если Contact уже есть). Contact на звонке не создаём.
+- Канон: `08-Calls-and-Telephony.md`. Контракт провайдера: `../../06-Integrations/09-ATS-AM-Integration.md`.
 
 ### CRM → Messenger
 

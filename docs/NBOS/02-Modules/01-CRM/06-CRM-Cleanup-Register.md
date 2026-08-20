@@ -25,6 +25,7 @@
 - `04-Offers-and-Handoff.md`
 - `05-Deal-Stage-Gates-and-Won-Override.md`
 - `07-Lead-and-Deal-Merge.md`
+- `08-Calls-and-Telephony.md`
 - `../../04-Finance/03-Subscriptions.md`
 - `../../../03-Business-Logic/04-Subscription-Billing-Logic.md`
 
@@ -277,6 +278,16 @@ uninvoiced and outstanding coverage.
 **Отдельный канон (не Lead merge):** Contact merge — Clients (`../03-Clients/02-Contacts.md`).
 
 Instagram + звонок без общего телефона по-прежнему две карточки — это чинится баннером / wizard после того, как Seller дописал телефон, не авто-merge.
+
+### C5. Calls / ATS telephony
+
+Канон: `08-Calls-and-Telephony.md`, UI `../../05-UI-Specifications/11-Call-Screen.md`, контракт `../../06-Integrations/09-ATS-AM-Integration.md`.
+
+**Shipped (webhook MVP):** inbound Lead, `uid` idempotency, `redirect_call` by `Employee.sipId`. Contact on call не создаём.
+
+**Runtime gaps vs canon:** обёртка `{ data }` на webhook JSON; нет `contactId` / контекста / записи Drive; нет окна; Deal Calls tab и Lead History — заглушки; Contact Communication без ленты звонков; исходящий Lead не создаётся; Settings ATS card = «Applicant tracking».
+
+**Сознательно later:** транскрипт, DID → MarketingAccount, импорт Bitrix, popup всем.
 
 ---
 
