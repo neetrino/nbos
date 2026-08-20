@@ -2,12 +2,12 @@ import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/comm
 import { describe, expect, it, vi } from 'vitest';
 import { AtsWebhookService } from './ats-webhook.service';
 import type { AtsCallRedirectService } from './ats-call-redirect.service';
+import type { AtsCallService } from './ats-call.service';
 import type { AtsProviderConfig } from './ats-provider.config';
-import type { AtsLeadIngestService } from './ats-lead-ingest.service';
 
 function createService(options: {
   apiKey?: string;
-  ingest?: AtsLeadIngestService['ingestCallEvent'];
+  ingest?: AtsCallService['ingestCallEvent'];
   resolveRedirect?: AtsCallRedirectService['resolveRedirectCall'];
 }): AtsWebhookService {
   const config = {
@@ -15,15 +15,15 @@ function createService(options: {
     isConfigured: () => (options.apiKey ?? 'test-ats-key').length > 0,
   } as AtsProviderConfig;
 
-  const leadIngest = {
+  const callService = {
     ingestCallEvent: options.ingest ?? vi.fn().mockResolvedValue(undefined),
-  } as unknown as AtsLeadIngestService;
+  } as unknown as AtsCallService;
 
   const callRedirect = {
     resolveRedirectCall: options.resolveRedirect ?? vi.fn().mockResolvedValue(null),
   } as unknown as AtsCallRedirectService;
 
-  return new AtsWebhookService(config, leadIngest, callRedirect);
+  return new AtsWebhookService(config, callService, callRedirect);
 }
 
 const startBody: Record<string, unknown> = {

@@ -245,26 +245,29 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 
 Продукт: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`. Контракт: `09-ATS-AM-Integration.md`.
 
-### Runtime сегодня (webhook MVP)
+### Runtime сегодня (Call core Phase 1)
 
-| Capability | Behavior |
-| --- | --- |
-| Webhook | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…` |
-| Auth | Query `key` = env `ATS_API_KEY` |
-| Lead | Inbound → Lead only (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём |
-| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId` |
-| Idempotency | `AtsCallEvent.uid` unique |
+| Capability      | Behavior                                                                       |
+| --------------- | ------------------------------------------------------------------------------ |
+| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                        |
+| Auth            | Query `key` = env `ATS_API_KEY`                                                |
+| Call            | One `AtsCallEvent` per `uid`; inbound and outbound follow CRM resolution       |
+| Lead            | New number → Lead (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём |
+| Context         | Attach existing Contact / open Lead / open Deal when found                     |
+| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                    |
+| Idempotency     | `AtsCallEvent.uid` unique; repeat webhook updates the same row                 |
+| Read API        | `GET /api/crm/calls`, `GET /api/crm/calls/:id`                                 |
 
 ### Канон полного среза (после MVP)
 
-| Capability | Canon |
-| --- | --- |
-| Окно ответственного | App-shell realtime, не Messenger |
-| История | Вкладка Calls на Lead/Deal; Communication у Contact |
-| Запись | Worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT |
-| Исходящий | Server-side `callback` |
-| Сверка | Scheduler `ats-call-history-reconcile` |
-| DID → MarketingAccount | Later |
+| Capability             | Canon                                                |
+| ---------------------- | ---------------------------------------------------- |
+| Окно ответственного    | App-shell realtime, не Messenger                     |
+| История                | Вкладка Calls на Lead/Deal; Communication у Contact  |
+| Запись                 | Worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT |
+| Исходящий              | Server-side `callback`                               |
+| Сверка                 | Scheduler `ats-call-history-reconcile`               |
+| DID → MarketingAccount | Later                                                |
 
 Env: `ATS_API_KEY` на api (+ worker для download/callback). SIP: `Employee.sipId`.
 

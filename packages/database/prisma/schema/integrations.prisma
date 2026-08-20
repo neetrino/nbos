@@ -159,27 +159,41 @@ model MetaMessage {
   @@map("meta_messages")
 }
 
-/// ATS.am Active Call webhook idempotency + latest call snapshot (one row per call uid).
+/// ATS.am Active Call webhook idempotency + CRM Call snapshot (one row per call uid).
 model AtsCallEvent {
-  id          String   @id @default(uuid())
-  uid         String   @unique
-  state       String?
-  disposition String?
-  billsec     String?
-  recordLink  String?  @map("record_link") @db.Text
-  clid        String?
-  input       String?
-  calldirect  String?
-  op          String?
-  channel     String?
-  rate        String?
-  leadId      String?  @map("lead_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                      String   @id @default(uuid())
+  uid                     String   @unique
+  state                   String?
+  disposition             String?
+  billsec                 String?
+  recordLink              String?  @map("record_link") @db.Text
+  clid                    String?
+  /// Normalized E.164 of `clid` when parse succeeds.
+  phone                   String?
+  input                   String?
+  calldirect              String?
+  op                      String?
+  channel                 String?
+  rate                    String?
+  leadId                  String?  @map("lead_id")
+  contactId               String?  @map("contact_id")
+  dealId                  String?  @map("deal_id")
+  responsibleEmployeeId   String?  @map("responsible_employee_id")
+  answeredEmployeeId      String?  @map("answered_employee_id")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
 
-  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  lead                  Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  contact               Contact?  @relation("AtsCallContact", fields: [contactId], references: [id], onDelete: SetNull)
+  deal                  Deal?     @relation("AtsCallDeal", fields: [dealId], references: [id], onDelete: SetNull)
+  responsibleEmployee   Employee? @relation("AtsCallResponsible", fields: [responsibleEmployeeId], references: [id], onDelete: SetNull)
+  answeredEmployee      Employee? @relation("AtsCallAnswered", fields: [answeredEmployeeId], references: [id], onDelete: SetNull)
 
   @@index([leadId])
+  @@index([contactId])
+  @@index([dealId])
   @@index([clid])
+  @@index([phone])
+  @@index([createdAt])
   @@map("ats_call_events")
 }

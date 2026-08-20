@@ -142,6 +142,8 @@ model Employee {
   platformOwnershipTransfers         PlatformOwnership[]                 @relation("PlatformOwnershipTransferredBy")
   emergencyAccessRequestsMade        CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessRequester")
   emergencyAccessRequestsDecided     CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessDecider")
+  atsCallsResponsible                AtsCallEvent[]                      @relation("AtsCallResponsible")
+  atsCallsAnswered                   AtsCallEvent[]                      @relation("AtsCallAnswered")
 
   @@map("employees")
 }

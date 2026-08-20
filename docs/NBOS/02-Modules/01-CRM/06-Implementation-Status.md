@@ -18,7 +18,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
-- **Calls / telephony (canon ready):** `08-Calls-and-Telephony.md`. Runtime today = ATS webhook MVP (inbound Lead + redirect). Not shipped: call screen, Calls tabs / Contact Communication feed, recording FileAsset, click-to-call, history reconcile.
+- **Calls / telephony (Phase 1 Call core):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → `AtsCallService` → CRM Call (`AtsCallEvent`) with Lead/Contact/Deal attach for inbound and outbound; `GET /crm/calls`. Not shipped: call screen, Calls tabs / Contact Communication feed, recording FileAsset, click-to-call, history reconcile.
 
 ## Shipped — Lead intake attach and Lead merge
 
@@ -54,6 +54,7 @@ Runtime notes (canon silent → safer):
 ## API routes (lifecycle + merge)
 
 - `crm/leads`, `crm/deals` — list + `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
+- `GET /crm/calls`, `GET /crm/calls/:id` — Call list by `leadId` / `contactId` / `dealId`; Call by id.
 - `GET /crm/leads/duplicates` — intake / phone-add / merge / identify candidates (Leads, Contacts, open Deals).
 - `POST /crm/leads/:id/merge` — survivor path id; body `{ absorbedId, fieldChoices?, status? }`.
 - `POST /crm/leads/:id/attach-contact` — body `{ contactId, aboutDealId? }`. Not a merge.

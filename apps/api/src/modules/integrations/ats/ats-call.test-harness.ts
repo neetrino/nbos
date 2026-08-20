@@ -9,20 +9,26 @@ export interface AtsIngestLeadRow {
   mergedIntoId: string | null;
   code: string;
   contactId: string | null;
+  assignedTo: string | null;
+}
+
+export interface AtsIngestEventRow {
+  id: string;
+  uid: string;
+  leadId: string | null;
+  contactId: string | null;
+  dealId: string | null;
+  phone: string | null;
+  calldirect: string | null;
+  state: string | null;
+  clid: string | null;
+  billsec: string | null;
+  responsibleEmployeeId: string | null;
+  answeredEmployeeId: string | null;
 }
 
 export interface AtsIngestTestState {
-  events: Map<
-    string,
-    {
-      id: string;
-      uid: string;
-      leadId: string | null;
-      calldirect: string | null;
-      state: string | null;
-      clid: string | null;
-    }
-  >;
+  events: Map<string, AtsIngestEventRow>;
   leads: AtsIngestLeadRow[];
   contacts: Array<{ id: string; phone: string | null; trashedAt: Date | null }>;
   deals: Array<{
@@ -31,7 +37,9 @@ export interface AtsIngestTestState {
     leadId: string | null;
     status: string;
     trashedAt: Date | null;
+    sellerId: string | null;
   }>;
+  employees: Array<{ id: string; sipId: string | null }>;
 }
 
 export function inboundStart(overrides: Partial<AtsWebhookPayload> = {}): AtsWebhookPayload {
@@ -57,12 +65,14 @@ export function createAtsIngestPrismaMock() {
     leads: [],
     contacts: [],
     deals: [],
+    employees: [],
   };
   const prisma = {
     atsCallEvent: createEventMocks(state),
     lead: createLeadMocks(state),
     contact: createContactMocks(state),
     deal: createDealMocks(state),
+    employee: createEmployeeMocks(state),
     $transaction: vi
       .fn()
       .mockImplementation(async (callback: (tx: unknown) => Promise<string>) => callback(prisma)),
@@ -76,29 +86,28 @@ function createEventMocks(state: AtsIngestTestState) {
     findUnique: vi.fn().mockImplementation(async ({ where }: { where: { uid: string } }) => {
       return state.events.get(where.uid) ?? null;
     }),
-    create: vi.fn().mockImplementation(
-      async ({
-        data,
-      }: {
-        data: {
-          uid: string;
-          calldirect?: string | null;
-          state?: string | null;
-          clid?: string | null;
-        };
-      }) => {
-        const row = {
-          id: `evt-${state.events.size + 1}`,
-          uid: data.uid,
-          leadId: null as string | null,
-          calldirect: data.calldirect ?? null,
-          state: data.state ?? null,
-          clid: data.clid ?? null,
-        };
-        state.events.set(data.uid, row);
-        return row;
-      },
-    ),
+    create: vi
+      .fn()
+      .mockImplementation(
+        async ({ data }: { data: Partial<AtsIngestEventRow> & { uid: string } }) => {
+          const row: AtsIngestEventRow = {
+            id: `evt-${state.events.size + 1}`,
+            uid: data.uid,
+            leadId: data.leadId ?? null,
+            contactId: data.contactId ?? null,
+            dealId: data.dealId ?? null,
+            phone: data.phone ?? null,
+            calldirect: data.calldirect ?? null,
+            state: data.state ?? null,
+            clid: data.clid ?? null,
+            billsec: data.billsec ?? null,
+            responsibleEmployeeId: data.responsibleEmployeeId ?? null,
+            answeredEmployeeId: data.answeredEmployeeId ?? null,
+          };
+          state.events.set(data.uid, row);
+          return row;
+        },
+      ),
     update: vi
       .fn()
       .mockImplementation(
@@ -109,6 +118,8 @@ function createEventMocks(state: AtsIngestTestState) {
           return row;
         },
       ),
+    findMany: vi.fn(),
+    count: vi.fn(),
   };
 }
 
@@ -130,6 +141,10 @@ function createLeadMocks(state: AtsIngestTestState) {
         ) ?? null
       );
     }),
+    findUnique: vi.fn().mockImplementation(async ({ where }: { where: { id: string } }) => {
+      const row = state.leads.find((lead) => lead.id === where.id);
+      return row ? { assignedTo: row.assignedTo } : null;
+    }),
     create: vi
       .fn()
       .mockImplementation(
@@ -146,6 +161,7 @@ function createLeadMocks(state: AtsIngestTestState) {
             mergedIntoId: null,
             code: data.code,
             contactId: data.contactId ?? null,
+            assignedTo: null,
           };
           state.leads.push(row);
           return { id: row.id };
@@ -179,21 +195,30 @@ function createContactMocks(state: AtsIngestTestState) {
 
 function createDealMocks(state: AtsIngestTestState) {
   return {
-    findFirst: vi
-      .fn()
-      .mockImplementation(
-        async ({ where }: { where: { contactId?: string; status?: { notIn?: string[] } } }) => {
-          const excluded = new Set(where.status?.notIn ?? []);
-          return (
-            state.deals.find(
-              (deal) =>
-                deal.trashedAt == null &&
-                deal.contactId === where.contactId &&
-                !excluded.has(deal.status),
-            ) ?? null
-          );
-        },
-      ),
+    findFirst: vi.fn().mockImplementation(async ({ where }: { where: DealFindWhere }) => {
+      const excluded = new Set(where.status?.notIn ?? []);
+      return (
+        state.deals.find((deal) => {
+          if (deal.trashedAt != null) return false;
+          if (excluded.has(deal.status)) return false;
+          if (where.contactId && deal.contactId !== where.contactId) return false;
+          if (where.leadId && deal.leadId !== where.leadId) return false;
+          return true;
+        }) ?? null
+      );
+    }),
+    findUnique: vi.fn().mockImplementation(async ({ where }: { where: { id: string } }) => {
+      const row = state.deals.find((deal) => deal.id === where.id);
+      return row ? { sellerId: row.sellerId } : null;
+    }),
+  };
+}
+
+function createEmployeeMocks(state: AtsIngestTestState) {
+  return {
+    findFirst: vi.fn().mockImplementation(async ({ where }: { where: { sipId?: string } }) => {
+      return state.employees.find((employee) => employee.sipId === where.sipId) ?? null;
+    }),
   };
 }
 
@@ -244,5 +269,11 @@ interface LeadFindWhere {
   code?: { startsWith: string };
   contactId?: string;
   OR?: Array<{ contactId?: string }>;
+  status?: { notIn?: string[] };
+}
+
+interface DealFindWhere {
+  contactId?: string;
+  leadId?: string;
   status?: { notIn?: string[] };
 }

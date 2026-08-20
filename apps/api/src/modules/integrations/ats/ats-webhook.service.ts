@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
-import { AtsLeadIngestService } from './ats-lead-ingest.service';
+import { AtsCallService } from './ats-call.service';
 import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
@@ -15,7 +15,7 @@ import type { AtsWebhookSuccessResponse } from './ats.types';
 export class AtsWebhookService {
   constructor(
     private readonly config: AtsProviderConfig,
-    private readonly leadIngestService: AtsLeadIngestService,
+    private readonly callService: AtsCallService,
     private readonly callRedirectService: AtsCallRedirectService,
   ) {}
 
@@ -25,7 +25,7 @@ export class AtsWebhookService {
   ): Promise<AtsWebhookSuccessResponse> {
     this.assertApiKey(key);
     const payload = this.parseBody(body);
-    await this.leadIngestService.ingestCallEvent(payload);
+    await this.callService.ingestCallEvent(payload);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
     if (!redirectCall) {
       return ATS_WEBHOOK_SUCCESS;

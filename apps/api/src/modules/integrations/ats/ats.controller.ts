@@ -8,6 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../../common/decorators';
 import { AtsWebhookService } from './ats-webhook.service';
@@ -19,11 +20,12 @@ export class AtsController {
   constructor(private readonly webhookService: AtsWebhookService) {}
 
   @Public()
+  @SkipThrottle()
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(AnyFilesInterceptor())
   @ApiOperation({
-    summary: 'ATS.am Active Call webhook (inbound → CRM Lead; no Contact)',
+    summary: 'ATS.am Active Call webhook (CRM Call + redirect_call)',
   })
   receiveWebhook(
     @Query('key') key: string | undefined,

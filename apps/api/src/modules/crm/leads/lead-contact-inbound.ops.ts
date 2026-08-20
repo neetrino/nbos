@@ -9,7 +9,15 @@ export interface ContactPhoneInboundTarget {
   contactId: string | null;
   /** Open Deal on this Contact: never create a second Lead, even if Deal.leadId is empty. */
   hasOpenDeal: boolean;
+  dealId: string | null;
 }
+
+const EMPTY_INBOUND_TARGET: ContactPhoneInboundTarget = {
+  existingLeadId: null,
+  contactId: null,
+  hasOpenDeal: false,
+  dealId: null,
+};
 
 async function findContactByPhone(
   db: InboundLookupDb,
@@ -60,15 +68,17 @@ export async function resolveContactPhoneInbound(
   phone: string,
 ): Promise<ContactPhoneInboundTarget> {
   const contact = await findContactByPhone(db, phone);
-  if (!contact) return { existingLeadId: null, contactId: null, hasOpenDeal: false };
+  if (!contact) return EMPTY_INBOUND_TARGET;
 
-  const openLead = await findOpenLeadForContact(db, contact.id);
-  if (openLead) return { existingLeadId: openLead.id, contactId: contact.id, hasOpenDeal: false };
+  const [openLead, openDeal] = await Promise.all([
+    findOpenLeadForContact(db, contact.id),
+    findOpenDealForContact(db, contact.id),
+  ]);
 
-  const openDeal = await findOpenDealForContact(db, contact.id);
-  if (openDeal) {
-    return { existingLeadId: openDeal.leadId, contactId: contact.id, hasOpenDeal: true };
-  }
-
-  return { existingLeadId: null, contactId: contact.id, hasOpenDeal: false };
+  return {
+    existingLeadId: openLead?.id ?? openDeal?.leadId ?? null,
+    contactId: contact.id,
+    hasOpenDeal: openDeal != null,
+    dealId: openDeal?.id ?? null,
+  };
 }
