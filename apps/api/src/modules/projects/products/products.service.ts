@@ -529,7 +529,7 @@ export class ProductsService {
       where: { id },
       data: {
         ...buildProductUpdateData(data),
-        ...(primaryContactId ? { contactId: primaryContactId } : {}),
+        ...(primaryContactId ? { contact: { connect: { id: primaryContactId } } } : {}),
       },
     });
     const product = await this.findById(id);

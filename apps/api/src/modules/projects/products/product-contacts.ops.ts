@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { PrismaClient, TransactionClient } from '@nbos/database';
 import { syncEntityContactLinks } from '../../crm/shared/sync-entity-contact-links.ops';
 
-type Db = InstanceType<typeof PrismaClient> | TransactionClient;
+type Db = TransactionClient;
 
 /**
  * Ensures Contact is on the Project (primary if empty, else additional).
@@ -89,8 +89,9 @@ export async function syncProductContactLinks(
   if (!primaryContactId) {
     throw new BadRequestException('Product requires a primary contact.');
   }
+  const db = prisma as TransactionClient;
   for (const contactId of contactIds) {
-    await ensureContactOnProject(prisma, product.projectId, contactId);
+    await ensureContactOnProject(db, product.projectId, contactId);
   }
   return { primaryContactId };
 }

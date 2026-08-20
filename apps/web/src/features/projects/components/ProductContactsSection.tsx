@@ -31,7 +31,7 @@ function buildContactCards(
 ): ProjectContactCardModel[] {
   const emailById = new Map<string, string | null>();
   for (const row of product.additionalContacts ?? []) {
-    emailById.set(row.contact.id, row.contact.email);
+    emailById.set(row.contact.id, row.contact.email ?? null);
   }
   if (product.contact) {
     emailById.set(product.contact.id, product.contact.email ?? null);
