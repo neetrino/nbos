@@ -14,6 +14,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { TokenDenylistService } from '../../common/security/token-denylist.service';
 import { CredentialVaultSessionService } from '../credentials/credential-vault-session.service';
 import { AuthSessionService } from './auth-session.service';
+import type { AuthSessionClientKindApi } from '@nbos/shared';
 import { resolveAuthAccessTokenTtlSeconds, shouldIssueAuthSessionV2 } from './auth-session.flags';
 import { recordAuthMetric } from './auth-session.metrics';
 import { changeEmployeePassword } from './auth-change-password';
@@ -27,15 +28,16 @@ interface LegacyJwtPayload {
 }
 
 /**
- * Internal login/refresh result. Controllers must map through `toAuthPublicResponse`
- * so `refreshToken` is never serialized into the public JSON body.
+ * Internal login/refresh result. Controllers map through `toAuthPublicResponse`
+ * so web/BFF never get `refreshToken` in JSON (native mobile may).
  */
 export interface LoginResult {
   accessToken: string;
-  /** Opaque refresh for HttpOnly cookie / server-side BFF Set-Cookie parse only. */
+  /** Opaque refresh for cookie / native JSON (never persist). */
   refreshToken?: string;
   sessionId?: string;
   tokenVersion: 1 | 2;
+  clientKind?: AuthSessionClientKindApi;
   user: {
     id: string;
     email: string;
@@ -64,7 +66,12 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-    meta?: { ip?: string; userAgent?: string },
+    meta?: {
+      ip?: string;
+      userAgent?: string;
+      clientKind?: AuthSessionClientKindApi;
+      deviceLabel?: string;
+    },
   ): Promise<LoginResult> {
     const employee = await this.prisma.employee.findUnique({
       where: { email: email.toLowerCase().trim() },
@@ -103,10 +110,13 @@ export class AuthService {
     };
 
     if (shouldIssueAuthSessionV2(employee.id)) {
+      const clientKind = meta?.clientKind ?? 'web';
       const session = await this.authSessions.createSession({
         employeeId: employee.id,
         ip: meta?.ip,
         userAgent: meta?.userAgent,
+        deviceLabel: meta?.deviceLabel,
+        clientKind,
       });
       const accessToken = this.signV2AccessToken({
         sub: employee.id,
@@ -121,6 +131,7 @@ export class AuthService {
         refreshToken: session.refreshToken,
         sessionId: session.sessionId,
         tokenVersion: 2,
+        clientKind,
         user,
       };
     }
@@ -163,6 +174,7 @@ export class AuthService {
       refreshToken: rotated.refreshToken,
       sessionId: rotated.sessionId,
       tokenVersion: 2,
+      clientKind: rotated.clientKind,
       user: {
         id: employee.id,
         email: employee.email,
@@ -196,6 +208,19 @@ export class AuthService {
   async logoutAll(employeeId: string): Promise<{ success: true; revoked: number }> {
     const revoked = await this.authSessions.revokeAllSessions(employeeId, 'logout_all');
     await this.vaultSession.lock(employeeId);
+    return { success: true, revoked };
+  }
+
+  async logoutOthers(
+    employeeId: string,
+    currentSessionId?: string,
+  ): Promise<{ success: true; revoked: number }> {
+    if (!currentSessionId) {
+      throw new BadRequestException('Current session required');
+    }
+    const revoked = await this.authSessions.revokeAllSessions(employeeId, 'logout_all', {
+      exceptSessionId: currentSessionId,
+    });
     return { success: true, revoked };
   }
 

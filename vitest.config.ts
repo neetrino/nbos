@@ -2,6 +2,14 @@ import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Nest uses TypeScript experimentalDecorators. Oxc must not depend on
+  // tsconfig discovery (breaks when the repo path contains `{}`).
+  oxc: {
+    decorator: {
+      legacy: true,
+      emitDecoratorMetadata: true,
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'apps/web/src'),

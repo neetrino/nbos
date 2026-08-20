@@ -34,11 +34,11 @@ Server-side Auth Session
   + RBAC loaded from PostgreSQL
 ```
 
-| Layer | Source of truth |
-| --- | --- |
-| Who is signed in | `AuthSession` row (`ACTIVE`, not expired) |
-| Who is this employee | `Employee.id` (`sub` on the access JWT) |
-| What can they do | Role → permissions in PostgreSQL (`EmployeeGuard`) |
+| Layer                | Source of truth                                    |
+| -------------------- | -------------------------------------------------- |
+| Who is signed in     | `AuthSession` row (`ACTIVE`, not expired)          |
+| Who is this employee | `Employee.id` (`sub` on the access JWT)            |
+| What can they do     | Role → permissions in PostgreSQL (`EmployeeGuard`) |
 
 The access JWT is a **temporary ticket**. It must not carry roles, permissions, money, or secrets.
 
@@ -48,11 +48,11 @@ Do **not** replace this with a separate OAuth/IdP for mobile. Do **not** give th
 
 ## 3. Authentication vs authorization
 
-| | Authentication | Authorization |
-| --- | --- | --- |
-| Question | Who is this? | What may they do? |
-| Owns | Login, password, sessions, tokens, devices, auth events | Roles, permissions, module/record scopes |
-| Must not contain | Business permissions | Long-lived access secrets |
+|                  | Authentication                                          | Authorization                            |
+| ---------------- | ------------------------------------------------------- | ---------------------------------------- |
+| Question         | Who is this?                                            | What may they do?                        |
+| Owns             | Login, password, sessions, tokens, devices, auth events | Roles, permissions, module/record scopes |
+| Must not contain | Business permissions                                    | Long-lived access secrets                |
 
 Permissions stay in the database. A role change takes effect within the EmployeeGuard cache window (≤60s). No `authVersion` bump is required for RBAC freshness.
 
@@ -62,12 +62,12 @@ Permissions stay in the database. A role change takes effect within the Employee
 
 Same `Employee`. **One login = one `AuthSession`.** Three apps on one phone = three sessions.
 
-| `clientKind` | Surface | Refresh transport |
-| --- | --- | --- |
-| `web` | Next.js + BFF | HttpOnly cookie / BFF body. **Never** in public JSON. |
-| `mobile_work` | Main work app | Refresh in login/refresh **JSON**; store in Keychain / Keystore |
-| `mobile_messenger` | Chat app | Same as `mobile_work` |
-| `mobile_vault` | Password delivery | Same as `mobile_work` |
+| `clientKind`       | Surface           | Refresh transport                                               |
+| ------------------ | ----------------- | --------------------------------------------------------------- |
+| `web`              | Next.js + BFF     | HttpOnly cookie / BFF body. **Never** in public JSON.           |
+| `mobile_work`      | Main work app     | Refresh in login/refresh **JSON**; store in Keychain / Keystore |
+| `mobile_messenger` | Chat app          | Same as `mobile_work`                                           |
+| `mobile_vault`     | Password delivery | Same as `mobile_work`                                           |
 
 Native clients send `clientKind` (and optional `deviceLabel`) on login. Browser login is always `web`.
 
@@ -81,14 +81,14 @@ SSO across the three apps is **out of scope** for V2. Shared Keychain can be add
 
 Existing HR entity. Do not invent extra statuses.
 
-| Field | Role in auth |
-| --- | --- |
-| `id` | Identity (`sub`) |
-| `email` | Login identifier (normalized lower-case) |
-| `passwordHash` | Argon2id. Null = cannot password-login (invite not accepted) |
-| `status` | `ACTIVE` \| `PROBATION` \| `ON_LEAVE` \| `TERMINATED` |
-| `roleId` | RBAC role (authorization, not the session) |
-| `authVersion` | Bumped on password change/reset, terminate, logout-all, ownership transfer |
+| Field          | Role in auth                                                               |
+| -------------- | -------------------------------------------------------------------------- |
+| `id`           | Identity (`sub`)                                                           |
+| `email`        | Login identifier (normalized lower-case)                                   |
+| `passwordHash` | Argon2id. Null = cannot password-login (invite not accepted)               |
+| `status`       | `ACTIVE` \| `PROBATION` \| `ON_LEAVE` \| `TERMINATED`                      |
+| `roleId`       | RBAC role (authorization, not the session)                                 |
+| `authVersion`  | Bumped on password change/reset, terminate, logout-all, ownership transfer |
 
 **Who may log in:** `ACTIVE`, `PROBATION`, `ON_LEAVE` with a password hash.  
 **Who must not:** `TERMINATED`, missing hash, or invite not completed.
@@ -99,25 +99,25 @@ Invite-only onboarding stays on `Invitation` + `POST /api/v1/auth/accept-invite`
 
 Created on every successful V2 login. Raw refresh is **never** stored.
 
-| Persist | Do not persist |
-| --- | --- |
-| `id`, `employeeId`, `tokenFamilyId` | Raw refresh |
+| Persist                                                            | Do not persist          |
+| ------------------------------------------------------------------ | ----------------------- |
+| `id`, `employeeId`, `tokenFamilyId`                                | Raw refresh             |
 | `refreshTokenHash`, `previousRefreshHash`, `previousHashExpiresAt` | Raw IP / raw User-Agent |
-| `status`, `expiresAt`, `lastUsedAt`, `revokedAt`, `revokeReason` | Roles / permissions |
-| `createdIpHash`, `lastIpHash`, `userAgentHash` | Vault unlock state |
-| `deviceLabel`, `clientKind` (required) | |
+| `status`, `expiresAt`, `lastUsedAt`, `revokedAt`, `revokeReason`   | Roles / permissions     |
+| `createdIpHash`, `lastIpHash`, `userAgentHash`                     | Vault unlock state      |
+| `deviceLabel`, `clientKind` (required)                             |                         |
 
 `clientKind` is the gap vs current schema: add it so the session list can show Web / Work / Messenger / Vault.
 
 **Status**
 
-| Status | Meaning |
-| --- | --- |
-| `ACTIVE` | Usable refresh family |
-| `ROTATED` | Internal: previous refresh in grace window |
-| `EXPIRED` | Past `expiresAt` (job 14) |
-| `REVOKED` | Logout, logout-all, password, terminate, admin |
-| `COMPROMISED` | Refresh reuse detected — family is dead |
+| Status        | Meaning                                        |
+| ------------- | ---------------------------------------------- |
+| `ACTIVE`      | Usable refresh family                          |
+| `ROTATED`     | Internal: previous refresh in grace window     |
+| `EXPIRED`     | Past `expiresAt` (job 14)                      |
+| `REVOKED`     | Logout, logout-all, password, terminate, admin |
+| `COMPROMISED` | Refresh reuse detected — family is dead        |
 
 ### 5.3 PasswordResetToken
 
@@ -188,11 +188,11 @@ Login errors must not distinguish “unknown email” from “wrong password”.
 
 ## 9. Logout and session control
 
-| Action | Effect |
-| --- | --- |
-| Logout current | Revoke this `AuthSession`; clear web refresh cookie; legacy `jti` denylist if the caller is still on v1 |
-| Logout other device | `DELETE /api/v1/auth/sessions/:id` — owner only |
-| Logout all | Revoke all `ACTIVE` sessions; bump `authVersion`; clear vault unlock |
+| Action              | Effect                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| Logout current      | Revoke this `AuthSession`; clear web refresh cookie; legacy `jti` denylist if the caller is still on v1 |
+| Logout other device | `DELETE /api/v1/auth/sessions/:id` — owner only                                                         |
+| Logout all          | Revoke all `ACTIVE` sessions; bump `authVersion`; clear vault unlock                                    |
 
 Logout-all is also the side effect of password change, password reset, terminate, and founder ownership transfer.
 
@@ -221,7 +221,7 @@ Do not leave a terminated employee able to refresh.
 
 ## 12. High-risk actions
 
-Use `RequireActiveSessionGuard` (V2 `sid` + `ACTIVE` row). Do not register it globally.
+Use `RequireActiveSessionGuard` (V2 `sid` + `ACTIVE` row). Register it as `APP_GUARD` so it no-ops unless `@RequireActiveSession` is present. Do not require a live session on every route.
 
 Required for:
 
@@ -279,15 +279,15 @@ No second password store. No messenger-only user.
 
 Record security events (no secrets, no raw refresh, no password, no token):
 
-| Event | When |
-| --- | --- |
-| `auth.session_created` | V2 login |
-| `auth.session_revoked` | Logout / revoke device |
-| `auth.sessions_revoked` | Logout-all |
-| `auth.user_disabled_sessions_revoked` | Terminate |
-| `auth.password_changed` | Change password |
-| `auth.password_reset_issued` / `_completed` | Reset |
-| `auth.refresh_reuse_detected` | Stolen refresh replay |
+| Event                                       | When                   |
+| ------------------------------------------- | ---------------------- |
+| `auth.session_created`                      | V2 login               |
+| `auth.session_revoked`                      | Logout / revoke device |
+| `auth.sessions_revoked`                     | Logout-all             |
+| `auth.user_disabled_sessions_revoked`       | Terminate              |
+| `auth.password_changed`                     | Change password        |
+| `auth.password_reset_issued` / `_completed` | Reset                  |
+| `auth.refresh_reuse_detected`               | Stolen refresh replay  |
 
 Login failures stay metrics + generic 401 (no “user exists” audit line).
 
@@ -305,13 +305,13 @@ Login failures stay metrics + generic 401 (no “user exists” audit line).
 
 Today production login is still long-lived JWT + Redis denylist. **Do not delete v1 until V2 is the only live login.**
 
-| Phase | Rule |
-| --- | --- |
-| Dual-run | Flags default: issue/accept V2 **off**; legacy accept + denylist **on** |
-| Canary | `AUTH_SESSION_V2_CANARY_USER_IDS` |
-| All new logins V2 | Set `AUTH_LEGACY_ISSUANCE_DISABLED_AT` |
-| Wait | `JWT_EXPIRES_IN` (default 7d) |
-| Then | `AUTH_LEGACY_TOKEN_ACCEPT_ENABLED=false` → `AUTH_LEGACY_DENYLIST_READ_ENABLED=false` → delete v1 issue path and denylist reads |
+| Phase             | Rule                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Dual-run          | Flags default: issue/accept V2 **off**; legacy accept + denylist **on**                                                        |
+| Canary            | `AUTH_SESSION_V2_CANARY_USER_IDS`                                                                                              |
+| All new logins V2 | Set `AUTH_LEGACY_ISSUANCE_DISABLED_AT`                                                                                         |
+| Wait              | `JWT_EXPIRES_IN` (default 7d)                                                                                                  |
+| Then              | `AUTH_LEGACY_TOKEN_ACCEPT_ENABLED=false` → `AUTH_LEGACY_DENYLIST_READ_ENABLED=false` → delete v1 issue path and denylist reads |
 
 Check: `pnpm auth:legacy-retirement-check`.  
 Ops steps: [`docs/architecture/auth-session-v2-rollout.md`](../../architecture/auth-session-v2-rollout.md) stages A–H.
@@ -329,18 +329,23 @@ Ops steps: [`docs/architecture/auth-session-v2-rollout.md`](../../architecture/a
 - hashed IP/UA, pepper, cookie + BFF CSRF;
 - password change/reset revoke sessions;
 - offboarding revokes sessions + bumps `authVersion`;
-- `RequireActiveSessionGuard` (exported, not applied to high-risk routes);
+- `RequireActiveSessionGuard` as `APP_GUARD` (no-op without `@RequireActiveSession`); applied on role change, terminate, credential reveal/copy/export;
 - job 14 catalogued, `rosterIntent: off`;
 - dual-path `AuthGuard` (v1 denylist / v2 claims).
 
 ### Remaining (this canon)
 
+Shipped in code (flags still off — not live login):
+
 1. `clientKind` on `AuthSession` + login DTO;
-2. Native JSON refresh profile (web stays cookie-only);
-3. Populate `deviceLabel` from client / UA;
-4. My Account **Active Sessions** UI;
-5. Apply `RequireActiveSessionGuard` on §12 routes;
-6. Put V2 flags in `.env.example`;
+2. Native JSON refresh (browser Origin / BFF never get refresh in JSON);
+3. `deviceLabel` from client or User-Agent;
+4. My Account → Security → Active Sessions;
+5. `@RequireActiveSession` on role change, terminate, credential reveal/copy/export (legacy v1 still allowed);
+6. V2 flags documented in `.env.example`.
+
+Ops (do not do until V2 is the live login):
+
 7. Roll out V2 (staging → canary → all), then enable job 14;
 8. After TTL wait: remove legacy issue, accept, and denylist.
 
@@ -348,14 +353,14 @@ Ops steps: [`docs/architecture/auth-session-v2-rollout.md`](../../architecture/a
 
 ## 20. Tests (required)
 
-| Area | Cases |
-| --- | --- |
-| Login | Valid; wrong password; no hash; `TERMINATED`; generic errors |
-| Refresh | Rotate; expired; reuse → `COMPROMISED`; `TERMINATED` mid-session |
-| Sessions | Create; revoke one; revoke all; list `current` |
-| Password | Change and reset revoke all + bump `authVersion` |
-| Transport | Web JSON has no refresh; native JSON has refresh |
-| Guard | V2 ordinary request has no denylist GET; high-risk requires `ACTIVE` sid |
+| Area      | Cases                                                                    |
+| --------- | ------------------------------------------------------------------------ |
+| Login     | Valid; wrong password; no hash; `TERMINATED`; generic errors             |
+| Refresh   | Rotate; expired; reuse → `COMPROMISED`; `TERMINATED` mid-session         |
+| Sessions  | Create; revoke one; revoke all; list `current`                           |
+| Password  | Change and reset revoke all + bump `authVersion`                         |
+| Transport | Web JSON has no refresh; native JSON has refresh                         |
+| Guard     | V2 ordinary request has no denylist GET; high-risk requires `ACTIVE` sid |
 
 ---
 

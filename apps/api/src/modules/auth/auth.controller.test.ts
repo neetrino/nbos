@@ -97,4 +97,53 @@ describe('AuthController public responses', () => {
       expect.stringContaining('nbos_refresh=sid.rotated'),
     );
   });
+
+  it('returns refreshToken in JSON for native clientKind without browser Origin', async () => {
+    vi.mocked(authService.login).mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'sid.native',
+      sessionId: 'sid',
+      tokenVersion: 2,
+      clientKind: 'mobile_work',
+      user: { id: '1', email: 'a@b.c', firstName: 'A', lastName: 'B' },
+    });
+
+    const body = await controller.login(
+      { email: 'a@b.c', password: 'x', clientKind: 'mobile_work' },
+      { headers: {} },
+      res,
+    );
+
+    expect(body.refreshToken).toBe('sid.native');
+    expect(authService.login).toHaveBeenCalledWith(
+      'a@b.c',
+      'x',
+      expect.objectContaining({ clientKind: 'mobile_work' }),
+    );
+  });
+
+  it('does not put refreshToken in JSON when Origin is a CORS browser origin', async () => {
+    process.env.CORS_ORIGIN = 'https://app.example.com';
+    vi.mocked(authService.login).mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'sid.secret',
+      sessionId: 'sid',
+      tokenVersion: 2,
+      clientKind: 'web',
+      user: { id: '1', email: 'a@b.c', firstName: 'A', lastName: 'B' },
+    });
+
+    const body = await controller.login(
+      { email: 'a@b.c', password: 'x', clientKind: 'mobile_work' },
+      { headers: { origin: 'https://app.example.com' } },
+      res,
+    );
+
+    expect(body).not.toHaveProperty('refreshToken');
+    expect(authService.login).toHaveBeenCalledWith(
+      'a@b.c',
+      'x',
+      expect.objectContaining({ clientKind: 'web' }),
+    );
+  });
 });

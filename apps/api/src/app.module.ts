@@ -57,6 +57,7 @@ import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { RequireActiveSessionGuard } from './common/guards/require-active-session.guard';
 import { QueueWorkersModule } from './runtime/queue-workers.module';
 
 /** Public HTTP API (+ workers only when PROCESS_ROLE=all for local/dev). */
@@ -143,6 +144,10 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RequireActiveSessionGuard,
     },
     {
       provide: APP_INTERCEPTOR,
