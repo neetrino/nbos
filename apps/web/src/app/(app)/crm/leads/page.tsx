@@ -664,7 +664,6 @@ function LeadsPipelinePageContent() {
         open={showCreate}
         onOpenChange={setShowCreate}
         onCreated={handleLeadCreated}
-        onOpenExisting={(id) => pushOpenLeadToUrl(id)}
       />
 
       <LeadBoardQuickCreateTask
@@ -686,7 +685,6 @@ function LeadsPipelinePageContent() {
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onRefresh={() => void fetchLeads()}
-        onOpenRelatedLead={(id) => pushOpenLeadToUrl(id)}
         onMerged={(lead) => {
           setSelectedLead(lead);
           pushOpenLeadToUrl(lead.id);

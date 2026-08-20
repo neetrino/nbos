@@ -14,7 +14,7 @@ import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { buildLeadDetailSheetTabs } from './build-lead-detail-sheet-tabs';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
-import type { Lead, LeadDuplicateLookupResult } from '@/lib/api/leads';
+import type { Lead } from '@/lib/api/leads';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import {
   LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
@@ -29,9 +29,6 @@ import { getLeadDisplayTitle } from '../utils/crm-entity-display';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
-import { canOfferLeadMerge } from '@nbos/shared';
-import { usePermission } from '@/lib/permissions';
-import { LeadDuplicateBanner } from './LeadDuplicateBanner';
 import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
 import { LeadTasksTab } from './LeadTasksTab';
 
@@ -64,13 +61,7 @@ export interface LeadSheetLoadedContentProps {
   patchGeneralDraft: (partial: Partial<LeadGeneralDraft>) => void;
   handleGeneralSave: () => void;
   handleGeneralCancel: () => void;
-  phoneDuplicates: LeadDuplicateLookupResult | null;
-  onDismissPhoneDuplicates: () => void;
-  onOpenRelatedLead?: (id: string) => void;
   onMerged?: (lead: Lead) => void;
-  mergeAbsorbedId: string | null;
-  onMergeFromBanner: (id: string) => void;
-  onConsumedMergeAbsorbed: () => void;
   onAttached: (lead: Lead) => void;
   onAttachedAndTrashed: () => void;
   onRefresh?: () => void;
@@ -79,7 +70,6 @@ export interface LeadSheetLoadedContentProps {
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
-  const { me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const { renderLead, isTrashView, generalDraft, gateRequiredFields } = props;
   const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
@@ -91,7 +81,6 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       }),
     [canCreateTask, props],
   );
-  const canMerge = canOfferLeadMerge(me?.role.slug, me?.isPlatformOwner === true);
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
   const leadVisual = LEAD_ENTITY_VISUAL;
@@ -153,8 +142,6 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
             renderLead={renderLead}
             isTrashView={isTrashView}
             isTerminal={isTerminal}
-            mergeAbsorbedId={props.mergeAbsorbedId}
-            onConsumedMergeAbsorbed={props.onConsumedMergeAbsorbed}
             onMerged={props.onMerged}
             onUpdated={props.onAttached}
             onTrashed={props.onAttachedAndTrashed}
@@ -184,17 +171,6 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
         <div className="px-5 py-4">
-          {props.phoneDuplicates && props.onOpenRelatedLead ? (
-            <div className="mb-4">
-              <LeadDuplicateBanner
-                result={props.phoneDuplicates}
-                mode="phone-add"
-                onOpen={props.onOpenRelatedLead}
-                onMerge={canMerge ? props.onMergeFromBanner : undefined}
-                onDismiss={props.onDismissPhoneDuplicates}
-              />
-            </div>
-          ) : null}
           <DetailSheetTabPanel tabKey={props.activeTab}>
             {props.activeTab === 'general' && generalDraft ? (
               <LeadGeneralTab

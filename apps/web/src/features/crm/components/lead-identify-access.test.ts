@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Lead } from '@/lib/api/leads';
-import { canIdentifyLeadByState, canShowLeadIdentifySection } from './lead-identify-access';
+import { canShowLeadIdentifySection } from './lead-identify-access';
 
 function lead(overrides: Partial<Lead> = {}): Lead {
   return {
@@ -32,29 +32,34 @@ function lead(overrides: Partial<Lead> = {}): Lead {
   };
 }
 
-describe('canIdentifyLeadByState', () => {
-  it('hides identify in trash, SQL, merged, or when a Deal exists', () => {
-    expect(canIdentifyLeadByState(lead(), false)).toBe(true);
-    expect(canIdentifyLeadByState(lead(), true)).toBe(false);
-    expect(canIdentifyLeadByState(lead({ status: 'SQL' }), false)).toBe(false);
-    expect(canIdentifyLeadByState(lead({ mergedIntoId: 'other' }), false)).toBe(false);
-    expect(
-      canIdentifyLeadByState(
-        lead({ deal: { id: 'd1', code: 'D-1', status: 'START_CONVERSATION' } }),
-        false,
-      ),
-    ).toBe(false);
-  });
-});
-
 describe('canShowLeadIdentifySection', () => {
-  it('allows Head of Sales on any open Lead', () => {
+  it('allows Head of Sales on any active Lead, including New and SQL', () => {
     expect(
       canShowLeadIdentifySection({
         lead: lead({ assignedTo: 'other' }),
         isTrashView: false,
         roleSlug: 'head-sales',
         actorId: 'h1',
+      }),
+    ).toBe(true);
+    expect(
+      canShowLeadIdentifySection({
+        lead: lead({ status: 'SQL', assignedTo: 'other' }),
+        isTrashView: false,
+        roleSlug: 'head-sales',
+        actorId: 'h1',
+      }),
+    ).toBe(true);
+  });
+
+  it('allows Founder via isPlatformOwner even with slug owner', () => {
+    expect(
+      canShowLeadIdentifySection({
+        lead: lead({ assignedTo: 'other', status: 'NEW' }),
+        isTrashView: false,
+        roleSlug: 'owner',
+        actorId: 'founder',
+        isPlatformOwner: true,
       }),
     ).toBe(true);
   });
@@ -70,7 +75,7 @@ describe('canShowLeadIdentifySection', () => {
     ).toBe(true);
   });
 
-  it('hides identify for Seller on unassigned or someone else Lead', () => {
+  it('hides Связать for Seller on unassigned or someone else Lead', () => {
     expect(
       canShowLeadIdentifySection({
         lead: lead({ assignedTo: null }),
@@ -89,13 +94,24 @@ describe('canShowLeadIdentifySection', () => {
     ).toBe(false);
   });
 
-  it('never shows identify for Marketing', () => {
+  it('never shows Связать for Marketing', () => {
     expect(
       canShowLeadIdentifySection({
         lead: lead({ assignedTo: 'm1' }),
         isTrashView: false,
         roleSlug: 'marketing',
         actorId: 'm1',
+      }),
+    ).toBe(false);
+  });
+
+  it('hides Связать in Trash', () => {
+    expect(
+      canShowLeadIdentifySection({
+        lead: lead({ assignedTo: 'h1' }),
+        isTrashView: true,
+        roleSlug: 'head-sales',
+        actorId: 'h1',
       }),
     ).toBe(false);
   });
