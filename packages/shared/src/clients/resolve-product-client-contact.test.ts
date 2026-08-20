@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { resolveProductClientContactId } from './resolve-product-client-contact';
 
 describe('resolveProductClientContactId', () => {
