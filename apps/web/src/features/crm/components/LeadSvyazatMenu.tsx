@@ -27,6 +27,7 @@ export function LeadSvyazatMenu(props: LeadSvyazatMenuProps) {
     isTrashView: props.isTrashView,
     roleSlug: me?.role.slug,
     actorId: me?.id,
+    isPlatformOwner: me?.isPlatformOwner === true,
   });
 
   if (!canShow) return null;

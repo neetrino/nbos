@@ -8,6 +8,7 @@ alwaysApply: false
 
 - **Branches:** `feature/*`, `bugfix/*`, `hotfix/*`; `main` protected; `develop` if team uses Git Flow.
 - **NBOS working branch:** long-lived `sipan`. Land work with a PR `sipan` → `main` and a **merge commit** (not squash, not rebase). After merge, **leave `sipan` on its own commits** — do not fast-forward `sipan` onto `main`. `main` stays on the merge commit, `sipan` stays on the work line, so the graph shows two branches.
+- **Leave `sipan` alone** unless the user names `sipan`. Do not switch off `sipan` onto `main` / dependabot / `merge-*`. Do not checkout `sipan` from those chats. Do not discard uncommitted work on `sipan`. See `sipan-branch-lock.mdc`.
 - **Conventional Commits** — `feat:`, `fix:`, `chore:`, `docs:` …
 - **PRs** — small, focused, green CI, description template, self-review first.
 - **No force-push** to `main`/`develop`; no secrets in commits.

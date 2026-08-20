@@ -11,8 +11,6 @@ export interface LeadSheetHeaderActionsProps {
   renderLead: Lead;
   isTrashView: boolean;
   isTerminal: boolean;
-  mergeAbsorbedId: string | null;
-  onConsumedMergeAbsorbed: () => void;
   onMerged?: (lead: Lead) => void;
   onUpdated: (lead: Lead) => void;
   onTrashed: () => void;
@@ -31,8 +29,6 @@ export function LeadSheetHeaderActions(props: LeadSheetHeaderActionsProps) {
         <LeadSvyazatMenu
           lead={renderLead}
           isTrashView={isTrashView}
-          initialAbsorbedId={props.mergeAbsorbedId}
-          onConsumedInitialAbsorbed={props.onConsumedMergeAbsorbed}
           onMerged={props.onMerged}
           onUpdated={props.onUpdated}
           onTrashed={props.onTrashed}

@@ -1,0 +1,13 @@
+---
+description: Lock git branch sipan — other chats must not switch, reset, or discard it.
+alwaysApply: true
+---
+
+# sipan branch lock
+
+`sipan` is Sipan’s working branch. **Do not touch it unless the user explicitly names `sipan`.**
+
+- Do **not** `checkout`, `switch`, `reset`, `rebase`, `merge`, or `pull` onto/from `sipan` from a dependabot, `merge-*`, `main`, or any other chat.
+- If `HEAD` is already `sipan`, do **not** switch to `main`, `merge-*`, or dependabot branches unless the user names that branch in this message.
+- Do **not** stash, discard, or overwrite uncommitted work on `sipan`.
+- Dependabot / merge-conflict chats stay on their own `merge-*` branch.

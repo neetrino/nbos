@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
-import { leadsApi, type Lead, type LeadDuplicateLookupResult } from '@/lib/api/leads';
+import type { Lead } from '@/lib/api/leads';
 import { LeadSheetLoadedContent } from './LeadSheetLoadedContent';
 import { LeadSheetCreateDialogs } from './LeadSheetCreateDialogs';
 import { Sheet } from '@/components/ui/sheet';
@@ -45,7 +45,6 @@ interface LeadSheetProps {
   onRestore?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
   onRefresh?: () => void;
-  onOpenRelatedLead?: (id: string) => void;
   onMerged?: (lead: Lead) => void;
   blockerNavigation?: LeadSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
@@ -69,7 +68,6 @@ export function LeadSheet({
   onRestore,
   onPermanentDelete,
   onRefresh,
-  onOpenRelatedLead,
   onMerged,
   blockerNavigation = null,
   onBlockerNavigationConsumed,
@@ -86,8 +84,6 @@ export function LeadSheet({
   const [generalDraft, setGeneralDraft] = useState<LeadGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<LeadGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [phoneDuplicates, setPhoneDuplicates] = useState<LeadDuplicateLookupResult | null>(null);
-  const [mergeAbsorbedId, setMergeAbsorbedId] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const generalDirtyRef = useRef(false);
 
@@ -112,7 +108,6 @@ export function LeadSheet({
       setGeneralDraft(next);
       setGeneralSnap(next);
     });
-    queueMicrotask(() => setPhoneDuplicates(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on lead.id
   }, [lead?.id, lead?.updatedAt]);
 
@@ -141,16 +136,6 @@ export function LeadSheet({
       try {
         await onUpdate(lead.id, patch);
         onRefresh?.();
-        const addedPhone = !snapAtSave.phone?.trim() && Boolean(draftAtSave.phone?.trim());
-        if (addedPhone && draftAtSave.phone) {
-          const result = await leadsApi.findDuplicates({
-            phone: draftAtSave.phone,
-            excludeId: lead.id,
-          });
-          setPhoneDuplicates(result);
-        } else {
-          setPhoneDuplicates(null);
-        }
       } catch (err) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
@@ -248,13 +233,7 @@ export function LeadSheet({
             patchGeneralDraft={patchGeneralDraft}
             handleGeneralSave={handleGeneralSave}
             handleGeneralCancel={handleGeneralCancel}
-            phoneDuplicates={phoneDuplicates}
-            onDismissPhoneDuplicates={() => setPhoneDuplicates(null)}
-            onOpenRelatedLead={onOpenRelatedLead}
             onMerged={onMerged}
-            mergeAbsorbedId={mergeAbsorbedId}
-            onMergeFromBanner={(id) => setMergeAbsorbedId(id)}
-            onConsumedMergeAbsorbed={() => setMergeAbsorbedId(null)}
             onAttached={(updated) => {
               onMerged?.(updated);
               onRefresh?.();
