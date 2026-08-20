@@ -18,6 +18,11 @@ import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { INTERNAL_SCHEDULER_CRON_PROVIDERS } from './scheduler-internal.crons';
 import { SchedulerService } from './scheduler.service';
+import {
+  listPlatformCronCatalogEntries,
+  listRosterOnPlatformCronJobNames,
+  SCHEDULER_ROSTER_INTENT,
+} from './scheduler-job-catalog';
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
@@ -34,28 +39,12 @@ const CRON_PROVIDERS = [
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
-const EXPECTED_PROD_GREEN_JOBS = [
-  'billing',
-  'expense-plan-auto-due',
-  'notification-enqueue-reconcile',
-  'notification-inbox-reconcile',
-  'overdue-invoices',
-  'recurring-tasks-due',
-  'report-schedules-due',
-  'sales-kpi-month-close',
-];
+const EXPECTED_PROD_GREEN_JOBS = listRosterOnPlatformCronJobNames();
 
-const ABSENT_YELLOW_JOBS = [
-  'auth-session-expiry-cleanup',
-  'client-services-renewal-invoice',
-  'expense-backlog-reminders',
-  'invoice-card-reminders',
-  'platform-trash-purge',
-  'support-sla-escalation',
-  'mail-outbound-reconcile',
-  'mail-gmail-watch-renew',
-  'mail-sync-reconcile',
-];
+const ABSENT_YELLOW_JOBS = listPlatformCronCatalogEntries()
+  .filter((entry) => entry.rosterIntent !== SCHEDULER_ROSTER_INTENT.on)
+  .map((entry) => entry.jobName)
+  .sort();
 
 function createSchedulerServiceMock(): SchedulerService {
   return {
@@ -94,7 +83,7 @@ function applySchedulerRoleEnv(base: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED: 'true',
     SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_ENABLED: 'true',
     REPORT_SCHEDULES_DUE_CRON_ENABLED: 'true',
-    SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'false',
+    SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED: 'true',
     SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED: 'false',
     SCHEDULER_MAIL_GMAIL_WATCH_RENEW_ENABLED: 'false',
     SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED: 'false',

@@ -20,6 +20,7 @@ describe('ClientServicesRenewalInvoiceCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env.SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED;
     schedulerService = {
       runClientServicesRenewalInvoice: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }),
     };

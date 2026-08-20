@@ -1,5 +1,7 @@
 # NBOS — реестр cron
 
+Ops-журнал решений (вкл/выкл на проде). Каталог «что существует» и Settings UI: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md). Code catalog: `apps/api/src/modules/scheduler/scheduler-job-catalog.ts`.
+
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
 Прод: мастер **вкл**, девять 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services, отчёты по расписанию). Остальные жёлтые не включать пакетом.
 

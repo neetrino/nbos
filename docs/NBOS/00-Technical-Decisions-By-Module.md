@@ -177,12 +177,13 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Calendar
 
-| Area          | Decision                                                                                                       |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| MVP           | Internal calendar only.                                                                                        |
-| Main layers   | Meetings, delivery deadlines and personal items.                                                               |
-| Module dates  | Support SLA, finance due dates and detailed task dates stay owned by their modules unless explicitly promoted. |
-| External sync | Google Calendar sync is later work.                                                                            |
+| Area          | Decision                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MVP           | Internal calendar only.                                                                                                                                                                              |
+| Main layers   | Meetings, delivery deadlines and personal items.                                                                                                                                                     |
+| Module dates  | Support SLA, finance due dates and detailed task dates stay owned by their modules unless explicitly promoted.                                                                                       |
+| External sync | Google Calendar sync is later work.                                                                                                                                                                  |
+| Scheduler UI  | Platform cron catalog lives in Settings → Scheduler, not Calendar. Code catalog + runtime snapshot; env kill switch `SCHEDULER_ENABLED`. See `02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`. |
 
 ### Dashboard And Reports
 

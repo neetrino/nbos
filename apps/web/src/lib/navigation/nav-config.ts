@@ -212,6 +212,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
+        label: 'Scheduler',
+        href: '/settings/scheduler',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
         label: 'Audit Log',
         href: '/settings/audit-log',
         permission: { module: 'AUDIT_LOGS', action: 'VIEW' },

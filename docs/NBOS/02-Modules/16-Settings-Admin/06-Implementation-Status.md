@@ -16,6 +16,7 @@ Tracks **global Trash admin** shipped in Phase 7. Full Settings canon: `00-Setti
 - Admin UI to **edit** retention per entity (env-only today).
 - Per-module **permanent-delete UI** from inventory (Profile A API shipped; web controls backlog).
 - Broader Settings RBAC/audit gaps — Cleanup Register.
+- **Scheduler catalog (stage 1):** Settings → Scheduler lists code catalog + runtime snapshot (read-only). Enable/disable (stage 2) and Run now (stage 3) not shipped. Canon: `05-Scheduler-Catalog.md`.
 
 ## Related code
 

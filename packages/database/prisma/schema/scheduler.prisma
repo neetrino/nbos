@@ -33,3 +33,20 @@ model SchedulerRun {
   @@index([status, startedAt])
   @@map("scheduler_runs")
 }
+
+/// Written by nbos-scheduler only; API reads for Settings → Scheduler status.
+model SchedulerJobRuntime {
+  jobName          String   @id @map("job_name")
+  masterEnabled    Boolean  @map("master_enabled")
+  registered       Boolean
+  enabledByEnv     Boolean  @map("enabled_by_env")
+  expression       String?
+  timezone         String
+  heartbeatAt      DateTime @map("heartbeat_at")
+  schedulerOwnerId String   @map("scheduler_owner_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([heartbeatAt])
+  @@map("scheduler_job_runtimes")
+}

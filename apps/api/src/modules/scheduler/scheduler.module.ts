@@ -35,6 +35,9 @@ import { SchedulerRunService } from './scheduler-run.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { ServiceApiKeyGuard } from '../../common/guards/service-api-key.guard';
 import { shouldRegisterScheduledJobs } from '../../runtime/process-role';
+import { SchedulerJobRuntimeSnapshotService } from './scheduler-job-runtime-snapshot.service';
+import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.controller';
+import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
 
 const SCHEDULER_IMPORTS = [
   BillingModule,
@@ -86,14 +89,20 @@ export class SchedulerModule {
     return {
       module: SchedulerModule,
       imports: [...(includeCrons ? [ScheduleModule.forRoot()] : []), ...SCHEDULER_IMPORTS],
-      controllers: [SchedulerController, SchedulerDiagnosticsController, SchedulerReadyController],
+      controllers: [
+        SchedulerController,
+        SchedulerDiagnosticsController,
+        SchedulerReadyController,
+        PlatformSchedulerJobsController,
+      ],
       providers: [
         SchedulerService,
         SchedulerLeaseService,
         SchedulerRunService,
         ScheduledJobRegistry,
         ServiceApiKeyGuard,
-        ...(includeCrons ? [...CRON_PROVIDERS] : []),
+        PlatformSchedulerJobsService,
+        ...(includeCrons ? [...CRON_PROVIDERS, SchedulerJobRuntimeSnapshotService] : []),
       ],
       exports: [SchedulerService, SchedulerLeaseService, ScheduledJobRegistry, SchedulerRunService],
     };

@@ -29,6 +29,7 @@ My Company управляет компанией.
 | `Security Defaults`         | Глобальные правила безопасности                            |
 | `Audit Log`                 | История важных админских действий                          |
 | `Feature Flags`             | Включение/выключение функций по ролям/модулям/окружениям   |
+| `Scheduler`                 | Каталог платформенных cron/time jobs (без людей)           |
 | `Trash inventory`           | Кросс-модульный обзор Trash + retention purge (Phase 7)    |
 
 **Статус реализации (Trash inventory / retention):** см. `06-Implementation-Status.md`. Платформенный индекс: `../../03-Business-Logic/10-Platform-Lifecycle-Implementation-Status.md`.
@@ -67,8 +68,15 @@ Settings / Admin
   Integrations
   Security
   Feature Flags
+  Scheduler
   Audit Log
 ```
+
+### Scheduler
+
+Каталог системных фоновых jobs (`nbos-scheduler`): что существует, статус, last/next run.
+
+Не Feature Flags и не Automation rules. Не Calendar. Канон: `05-Scheduler-Catalog.md`.
 
 ### General
 

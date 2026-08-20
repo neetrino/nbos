@@ -35,6 +35,8 @@ SCHEDULER_HEARTBEAT_INTERVAL_MS=30000
 
 Automatic work runs as Nest CronJobs on `nbos-scheduler` (`SCHEDULER_ENABLED` + one per-job flag). HTTP `/api/scheduler/*` is leftover for rare manual/repair calls (`sales-kpi-backfill-all` has no cron). Do not add Coolify/external cron.
 
+**Code catalog** is the source of “which jobs exist” (`apps/api/.../scheduler-job-catalog.ts`). Settings → Scheduler lists them with runtime snapshot (`SchedulerJobRuntime`) written by `nbos-scheduler`. Product canon: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md).
+
 Living on/off roster (icons + decisions): [`scheduler-cron-roster.md`](./scheduler-cron-roster.md).
 
 ## Rollout

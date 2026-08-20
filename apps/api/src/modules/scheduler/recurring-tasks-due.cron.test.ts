@@ -20,6 +20,7 @@ describe('RecurringTasksDueCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env.SCHEDULER_RECURRING_TASKS_DUE_ENABLED;
     schedulerService = {
       runRecurringTasksDue: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }),
     };

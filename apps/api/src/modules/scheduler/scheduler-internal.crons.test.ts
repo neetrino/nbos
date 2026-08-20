@@ -21,6 +21,7 @@ describe('BillingCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env[BILLING_CRON_ENABLED_ENV];
     schedulerService = { runBilling: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }) };
     registry = new SchedulerRegistry();
     jobRegistry = new ScheduledJobRegistry();

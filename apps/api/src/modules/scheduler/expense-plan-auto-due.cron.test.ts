@@ -20,6 +20,7 @@ describe('ExpensePlanAutoDueCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env.SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED;
     schedulerService = {
       runExpensePlanAutoDue: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }),
     };
