@@ -55,7 +55,8 @@ Settings → Scheduler = видимость, вкл/выкл, Run now.
 
 - Таблица `SchedulerJobPolicy`: `enabled`, `updatedById`, timestamps.
 - Первый seed: из env `*_ENABLED` (если задан) иначе `rosterIntent=on`.
-- После seed env `*_ENABLED` не источник правды для ticks.
+- После seed env `*_ENABLED` не источник правды для ticks; day-to-day — Settings → Scheduler.
+- В `.env.example` per-job `*_ENABLED` не держатся: только `SCHEDULER_ENABLED` + опциональные `*_CRON`. После merge на прод старые `*_ENABLED` можно убрать из Coolify.
 - Nest регистрирует **все** `platform_cron` по роли; тик: `SCHEDULER_ENABLED` + policy.
 - `PATCH /api/platform/scheduler/jobs/:jobName` — `enabled` + audit.
 - `POST /api/platform/scheduler/jobs/:jobName/run` — Run now (`manual_admin`) + audit `scheduler.job_run_now`.
