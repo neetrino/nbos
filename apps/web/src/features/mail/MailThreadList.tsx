@@ -47,7 +47,6 @@ export interface MailThreadListProps {
   accountEmailById: ReadonlyMap<string, string>;
   selectedThreadId: string | null;
   selectedThreadIds: ReadonlySet<string>;
-  bulkBusy: boolean;
   onOpenThread: (threadId: string) => void;
   onToggleThreadSelected: (threadId: string, checked: boolean) => void;
 }
@@ -57,7 +56,6 @@ export function MailThreadList({
   accountEmailById,
   selectedThreadId,
   selectedThreadIds,
-  bulkBusy,
   onOpenThread,
   onToggleThreadSelected,
 }: MailThreadListProps) {
@@ -83,7 +81,6 @@ export function MailThreadList({
             <div className="flex shrink-0 items-center pl-2">
               <Checkbox
                 checked={isSelected}
-                disabled={bulkBusy}
                 onCheckedChange={(checked) => onToggleThreadSelected(thread.id, checked === true)}
                 aria-label={`Select ${subject}`}
               />
