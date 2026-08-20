@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { CalendarClock, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import type { ReportDefinition, ReportSchedule } from '@/lib/api/reports';
 import { REPORTS_SCHEDULE_FILES_HREF } from '../reports-schedule-display';
 import { ReportsScheduleCreateForm } from './ReportsScheduleCreateForm';
@@ -44,9 +44,12 @@ export function ReportsSchedulePanel({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={REPORTS_SCHEDULE_FILES_HREF}>Report files</Link>
-          </Button>
+          <Link
+            href={REPORTS_SCHEDULE_FILES_HREF}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Report files
+          </Link>
           <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
