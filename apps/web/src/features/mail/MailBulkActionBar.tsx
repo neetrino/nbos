@@ -9,7 +9,6 @@ export interface MailBulkActionBarProps {
   visibleThreadCount: number;
   selectedCount: number;
   allVisibleSelected: boolean;
-  busy: boolean;
   canMarkUnread: boolean;
   onToggleSelectAll: (checked: boolean) => void;
   onMarkRead: () => void;
@@ -22,7 +21,6 @@ export function MailBulkActionBar({
   visibleThreadCount,
   selectedCount,
   allVisibleSelected,
-  busy,
   canMarkUnread,
   onToggleSelectAll,
   onMarkRead,
@@ -46,41 +44,22 @@ export function MailBulkActionBar({
       <Checkbox
         checked={selectAllChecked}
         onCheckedChange={(checked) => onToggleSelectAll(checked === true)}
-        disabled={busy}
         aria-label="Select all threads on this page"
       />
       {selectedCount > 0 ? (
         <>
           <span className="text-sm font-medium tabular-nums">{selectedCount} selected</span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => onMarkRead()}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => onMarkRead()}>
             <MailOpen size={14} aria-hidden />
             Mark read
           </Button>
           {canMarkUnread ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => onMarkUnread()}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => onMarkUnread()}>
               <MailCheck size={14} aria-hidden />
               Mark unread
             </Button>
           ) : null}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={busy}
-            onClick={() => onClearSelection()}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={() => onClearSelection()}>
             <X size={14} aria-hidden />
             Clear
           </Button>

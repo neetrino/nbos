@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderOpen, Plus, RefreshCcw, Search, Settings, Share2, Trash2 } from 'lucide-react';
+import { FolderOpen, Plus, RefreshCcw, Settings, Share2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
+import { IntegratedSearchFilters, type FilterConfig } from '@/components/shared';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 import { MailAccountSwitcher } from '@/features/mail/MailAccountSwitcher';
 import {
@@ -25,12 +24,16 @@ export interface MailToolbarRowProps {
   filterAccountId: string | null;
   activeFolder: MailFolderKey;
   searchValue: string;
+  filterConfigs: FilterConfig[];
+  filterValues: Record<string, string>;
   canEdit: boolean;
   busy: boolean;
   syncingAccountId: string | null;
   onSelectAccount: (accountId: string | null) => void;
   onSelectFolder: (folder: MailFolderKey) => void;
   onSearchChange: (value: string) => void;
+  onFilterChange: (key: string, value: string) => void;
+  onClearAll: () => void;
   onRefresh: () => void;
   onSyncAccount: (accountId: string) => void;
   onShareAccount: (account: MailAccountHealthSummaryRow) => void;
@@ -44,12 +47,16 @@ export function MailToolbarRow({
   filterAccountId,
   activeFolder,
   searchValue,
+  filterConfigs,
+  filterValues,
   canEdit,
   busy,
   syncingAccountId,
   onSelectAccount,
   onSelectFolder,
   onSearchChange,
+  onFilterChange,
+  onClearAll,
   onRefresh,
   onSyncAccount,
   onShareAccount,
@@ -115,18 +122,15 @@ export function MailToolbarRow({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="relative min-w-[12rem] flex-1">
-        <Search
-          className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
-          aria-hidden
-        />
-        <Input
-          {...LIST_SEARCH_INPUT_PROPS}
-          value={searchValue}
-          onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search subject…"
-          aria-label="Search mail"
-          className="h-9 pl-8"
+      <div className="min-w-[12rem] flex-1">
+        <IntegratedSearchFilters
+          search={searchValue}
+          onSearchChange={onSearchChange}
+          searchPlaceholder="Search by subject…"
+          filters={filterConfigs}
+          filterValues={filterValues}
+          onFilterChange={onFilterChange}
+          onClearAll={onClearAll}
         />
       </div>
 

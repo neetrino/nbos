@@ -7,6 +7,7 @@ export const SEARCH_FILTER_PAGE_ID = {
   partners: 'partners.list',
   hrTeam: 'hr.team-directory',
   tasksList: 'tasks.list',
+  mailInbox: 'mail.inbox',
   tasksWorkspaceRuntime: 'tasks.workspace-runtime',
   tasksWorkSpaces: 'tasks.work-spaces',
   productTasks: 'product.tasks',

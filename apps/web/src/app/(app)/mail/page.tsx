@@ -32,6 +32,8 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 
 import { usePermission } from '@/lib/permissions';
 
+import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+
 import { MailActivePanelHost } from '@/features/mail/MailActivePanelHost';
 import {
   applyMailConnectPanelQuery,
@@ -54,18 +56,19 @@ import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
 import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
 
 import {
-  bulkMarkReadFailedTargets,
-  bulkMarkReadPartialToast,
-  bulkMarkReadSuccessToast,
-  bulkMarkReadSucceededTargets,
-  bulkMarkThreadIds,
-  bulkMarkUnreadPartialToast,
-  bulkMarkUnreadSuccessToast,
-  selectReadBulkMarkTargets,
-  selectUnreadBulkMarkTargets,
-} from '@/features/mail/mail-bulk-read-actions';
-import { mailFolderListParams, type MailFolderKey } from '@/features/mail/mail-folder-config';
+  mailAccountsForDailySwitcher,
+  type MailFolderKey,
+} from '@/features/mail/mail-folder-config';
 import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
+import {
+  buildMailSearchFilterConfigs,
+  hasActiveMailSearchFilters,
+  MAIL_SEARCH_FILTER_KEY,
+  MAIL_SEARCH_FILTER_VALUE,
+  mergeMailInboxListParams,
+  resolveMailSearchFilterValues,
+} from '@/features/mail/mail-search-filters';
+import { useMailBulkThreadRead } from '@/features/mail/use-mail-bulk-thread-read';
 
 function clearThreadSelection(setSelectedThreadIds: (ids: Set<string>) => void) {
   setSelectedThreadIds(new Set());
@@ -100,11 +103,13 @@ export default function MailInboxPage() {
 
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
 
-  const [bulkBusy, setBulkBusy] = useState(false);
-
   const [threadSearchDraft, setThreadSearchDraft] = useState('');
 
   const threadSearchQuery = useDebouncedValue(threadSearchDraft, SEARCH_DEBOUNCE_MS).trim();
+
+  const [searchFilters, setSearchFilters] = usePersistedSearchFilters(
+    SEARCH_FILTER_PAGE_ID.mailInbox,
+  );
 
   const [activePanel, setActivePanel] = useState<ActiveMailPanel>(null);
 
@@ -146,7 +151,7 @@ export default function MailInboxPage() {
         <Button
           type="button"
           size="sm"
-          disabled={accountHealth.length === 0 || loading || bulkBusy}
+          disabled={accountHealth.length === 0 || loading}
           onClick={() => setActivePanel({ type: 'compose', defaultAccountId: filterAccountId })}
         >
           <Plus size={16} aria-hidden />
@@ -154,7 +159,7 @@ export default function MailInboxPage() {
         </Button>
       ),
     };
-  }, [canEdit, accountHealth.length, loading, bulkBusy, filterAccountId]);
+  }, [canEdit, accountHealth.length, loading, filterAccountId]);
 
   useHeaderContext(headerActions);
 
@@ -171,15 +176,26 @@ export default function MailInboxPage() {
   const allVisibleSelected =
     visibleThreadIds.length > 0 && visibleThreadIds.every((id) => selectedThreadIds.has(id));
 
+  const mailFilterConfigs = useMemo(
+    () =>
+      buildMailSearchFilterConfigs(mailAccountsForDailySwitcher(accountHealth, filterAccountId)),
+    [accountHealth, filterAccountId],
+  );
+
+  const mailFilterValues = useMemo(
+    () => resolveMailSearchFilterValues(searchFilters, filterAccountId),
+    [filterAccountId, searchFilters],
+  );
+
   useEffect(() => {
     setThreadPage(1);
-  }, [threadSearchQuery]);
+  }, [threadSearchQuery, searchFilters]);
 
   useEffect(() => {
     setActivePanel(null);
 
     clearThreadSelection(setSelectedThreadIds);
-  }, [filterAccountId, activeFolder, threadSearchQuery, threadPage]);
+  }, [filterAccountId, activeFolder, threadSearchQuery, searchFilters, threadPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -187,19 +203,15 @@ export default function MailInboxPage() {
     setError(null);
 
     try {
-      const folderParams = mailFolderListParams(activeFolder);
-
       const [health, threadPageResult] = await Promise.all([
         mailApi.listAccountHealthSummaries(),
 
         mailApi.listThreads({
-          mailAccountId: filterAccountId ?? undefined,
+          ...mergeMailInboxListParams(activeFolder, searchFilters, filterAccountId),
 
           search: threadSearchQuery || undefined,
 
           page: threadPage,
-
-          ...folderParams,
         }),
       ]);
 
@@ -213,7 +225,7 @@ export default function MailInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeFolder, filterAccountId, threadSearchQuery, threadPage]);
+  }, [activeFolder, filterAccountId, searchFilters, threadSearchQuery, threadPage]);
 
   const runSync = useCallback(
     async (accountId: string) => {
@@ -426,90 +438,26 @@ export default function MailInboxPage() {
     setSelectedThreadIds(new Set(visibleThreadIds));
   };
 
-  const runBulkMarkRead = async () => {
-    const targets = selectUnreadBulkMarkTargets(threads, selectedThreadIds);
+  const { runBulkMarkRead, runBulkMarkUnread } = useMailBulkThreadRead({
+    threads,
+    selectedThreadIds,
+    onClearSelection: () => clearThreadSelection(setSelectedThreadIds),
+    onMarkedRead: handleThreadMarkedRead,
+    onMarkedUnread: handleThreadMarkedUnread,
+  });
 
-    if (targets.length === 0) {
+  const handleMailFilterChange = (key: string, value: string) => {
+    if (key === MAIL_SEARCH_FILTER_KEY.mailbox) {
+      selectAccount(value === MAIL_SEARCH_FILTER_VALUE.all ? null : value);
       return;
     }
-
-    setBulkBusy(true);
-    targets.forEach((thread) => {
-      handleThreadMarkedRead(thread.id, thread.mailAccountId);
-    });
-
-    try {
-      const result = await mailApi.bulkMarkThreadsRead(bulkMarkThreadIds(targets));
-      const failedTargets = bulkMarkReadFailedTargets(targets, result);
-      failedTargets.forEach((thread) => {
-        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
-      });
-      if (result.failed === 0) {
-        clearThreadSelection(setSelectedThreadIds);
-        toast.success(bulkMarkReadSuccessToast(result.succeeded));
-        return;
-      }
-      if (result.succeeded === 0) {
-        toast.error('Could not mark selected threads as read.');
-        return;
-      }
-      setSelectedThreadIds((prev) => {
-        const next = new Set(prev);
-        bulkMarkReadSucceededTargets(targets, result).forEach((thread) => next.delete(thread.id));
-        return next;
-      });
-      toast.error(bulkMarkReadPartialToast(result));
-    } catch (bulkError) {
-      targets.forEach((thread) => {
-        handleThreadMarkedUnread(thread.id, thread.mailAccountId);
-      });
-      toast.error(getApiErrorMessage(bulkError, 'Bulk mark read failed.'));
-    } finally {
-      setBulkBusy(false);
-    }
+    setSearchFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const runBulkMarkUnread = async () => {
-    const targets = selectReadBulkMarkTargets(threads, selectedThreadIds);
-
-    if (targets.length === 0) {
-      return;
-    }
-
-    setBulkBusy(true);
-    targets.forEach((thread) => {
-      handleThreadMarkedUnread(thread.id, thread.mailAccountId);
-    });
-
-    try {
-      const result = await mailApi.bulkMarkThreadsUnread(bulkMarkThreadIds(targets));
-      const failedTargets = bulkMarkReadFailedTargets(targets, result);
-      failedTargets.forEach((thread) => {
-        handleThreadMarkedRead(thread.id, thread.mailAccountId);
-      });
-      if (result.failed === 0) {
-        clearThreadSelection(setSelectedThreadIds);
-        toast.success(bulkMarkUnreadSuccessToast(result.succeeded));
-        return;
-      }
-      if (result.succeeded === 0) {
-        toast.error('Could not mark selected threads as unread.');
-        return;
-      }
-      setSelectedThreadIds((prev) => {
-        const next = new Set(prev);
-        bulkMarkReadSucceededTargets(targets, result).forEach((thread) => next.delete(thread.id));
-        return next;
-      });
-      toast.error(bulkMarkUnreadPartialToast(result));
-    } catch (bulkError) {
-      targets.forEach((thread) => {
-        handleThreadMarkedRead(thread.id, thread.mailAccountId);
-      });
-      toast.error(getApiErrorMessage(bulkError, 'Bulk mark unread failed.'));
-    } finally {
-      setBulkBusy(false);
-    }
+  const handleClearMailSearch = () => {
+    setThreadSearchDraft('');
+    setSearchFilters({});
+    selectAccount(null);
   };
 
   useEffect(() => {
@@ -786,12 +734,16 @@ export default function MailInboxPage() {
         filterAccountId={filterAccountId}
         activeFolder={activeFolder}
         searchValue={threadSearchDraft}
+        filterConfigs={mailFilterConfigs}
+        filterValues={mailFilterValues}
         canEdit={canEdit}
-        busy={loading || bulkBusy}
+        busy={loading}
         syncingAccountId={syncingAccountId}
         onSelectAccount={selectAccount}
         onSelectFolder={selectFolder}
         onSearchChange={setThreadSearchDraft}
+        onFilterChange={handleMailFilterChange}
+        onClearAll={handleClearMailSearch}
         onRefresh={() => void load()}
         onSyncAccount={(accountId) => void runSync(accountId)}
         onShareAccount={(account) =>
@@ -831,7 +783,6 @@ export default function MailInboxPage() {
                 visibleThreadCount={threads.length}
                 selectedCount={selectedCount}
                 allVisibleSelected={allVisibleSelected}
-                busy={bulkBusy}
                 canMarkUnread={canEdit}
                 onToggleSelectAll={toggleSelectAllVisible}
                 onMarkRead={() => void runBulkMarkRead()}
@@ -845,7 +796,7 @@ export default function MailInboxPage() {
                   icon={Mail}
                   title="No threads"
                   description={
-                    threadSearchQuery
+                    threadSearchQuery || hasActiveMailSearchFilters(searchFilters)
                       ? 'No threads match this search.'
                       : 'Connect a mailbox or wait for the next sync.'
                   }
@@ -857,7 +808,6 @@ export default function MailInboxPage() {
                     accountEmailById={accountEmailById}
                     selectedThreadId={selectedThreadId}
                     selectedThreadIds={selectedThreadIds}
-                    bulkBusy={bulkBusy}
                     onOpenThread={openThread}
                     onToggleThreadSelected={toggleThreadSelected}
                   />
