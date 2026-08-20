@@ -18,6 +18,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
+- **Calls / telephony (canon ready):** `08-Calls-and-Telephony.md`. Runtime today = ATS webhook MVP (inbound Lead + redirect). Not shipped: call screen, Calls tabs / Contact Communication feed, recording FileAsset, click-to-call, history reconcile.
 
 ## Shipped — Lead intake attach and Lead merge
 
@@ -44,6 +45,7 @@ Runtime notes (canon silent → safer):
 
 - **Deal↔Deal merge** — consciously not built; duplicate Deals → Failed / Trash (existing flows).
 - **Contact merge** — shipped in Clients (`../03-Clients/02-Contacts.md` §7); not a substitute for Lead merge.
+- **Call transcript / DID marketing / Bitrix call import** — later (`08-Calls-and-Telephony.md` §11).
 
 ## MVP assumptions (Trash)
 

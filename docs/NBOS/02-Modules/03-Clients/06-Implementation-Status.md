@@ -18,7 +18,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 ## Intentional placeholders / next slices
 
-- Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
+- Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`). Calls feed in Communication is canon (`../01-CRM/08-Calls-and-Telephony.md`) — not shipped.
 - **Bank details** UI, **Client Service** detail in portfolio — not in this slice.
 
 ## MVP assumptions (launch scope)

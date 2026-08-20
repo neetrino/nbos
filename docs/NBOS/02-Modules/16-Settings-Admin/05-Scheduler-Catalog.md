@@ -71,6 +71,14 @@ Settings → Scheduler = видимость, вкл/выкл, Run now.
 | 2    | Toggle из админки (`SchedulerJobPolicy`); env `*_ENABLED` только для seed |
 | 3    | Run now; расписание в коде; падения Scheduler/BullMQ → in-app Owner + CEO |
 
+## Planned (ещё не в code catalog)
+
+| Job | Смысл | Canon |
+| --- | --- | --- |
+| `ats-call-history-reconcile` | Добрать `uid` из ATS `history`, те же attach-правила, докачать записи | `../01-CRM/08-Calls-and-Telephony.md` §10 |
+
+Не регистрировать, пока нет кода джобы. Приём звонка — webhook API, не эта джоба.
+
 ## Связанные документы
 
 - Overview: `00-Settings-Admin-Overview.md`
