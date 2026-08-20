@@ -227,7 +227,7 @@ export const leadsApi = {
 
   async createContact(
     leadId: string,
-    data?: { attach?: { type: 'deal' | 'project' | 'lead'; id: string } },
+    data?: { attach?: { type: 'deal' | 'project' | 'product' | 'lead'; id: string } },
   ): Promise<Lead> {
     const resp = await api.post<Lead>(`/api/crm/leads/${leadId}/create-contact`, data ?? {});
     return resp.data;

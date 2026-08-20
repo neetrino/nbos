@@ -506,6 +506,16 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         id: true,
         name: true,
         projectId: true,
+        contactId: true,
+        contact: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            messengerLinks: true,
+          },
+        },
         project: {
           select: {
             contactId: true,
@@ -541,7 +551,8 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
       },
     });
 
-    const contact = product.project.contact ?? product.order?.deal?.contact ?? null;
+    const contact =
+      product.contact ?? product.project.contact ?? product.order?.deal?.contact ?? null;
     if (!contact) {
       const invitation = payload.invitationId
         ? await this.prisma.productWhatsAppClientInvitation.update({
@@ -716,11 +727,13 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: {
+        contactId: true,
         project: { select: { contactId: true } },
         order: { select: { deal: { select: { contactId: true } } } },
       },
     });
     const contactId =
+      product?.contactId ??
       product?.project.contactId ??
       (contextDealId
         ? (

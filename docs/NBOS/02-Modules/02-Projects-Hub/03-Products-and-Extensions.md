@@ -56,7 +56,8 @@
 - `developerId` — Developer Backend (primary, accountable);
 - `frontendDeveloperId` — Developer Frontend (assisting, seat `DEVELOPER_FRONTEND`; optional);
 - linked order;
-- company / contact context через project.
+- company через project;
+- client contacts: `Product.contactId` + `ProductAdditionalContact` (канон `../03-Clients/07-Contact-and-Product.md`). Новый Product копирует только `Project.contactId`; additional Project не копируются. Extension контактов не имеет.
 
 Project-level delivery classification не передаётся в Product, потому что отдельной delivery-классификации проекта больше нет. Если нужна логика "WordPress / custom / ecommerce / platform", она должна выражаться через `productCategory`, `productType`, stage requirements и checklist template assignment.
 

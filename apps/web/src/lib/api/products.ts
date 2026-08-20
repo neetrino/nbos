@@ -41,6 +41,16 @@ export interface Product {
   closedBy?: ProductClosedByRef | null;
   createdAt: string;
   updatedAt: string;
+  contactId?: string;
+  contact?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+  } | null;
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string; email?: string | null };
+  }>;
   project: {
     id: string;
     name: string;
@@ -193,6 +203,7 @@ export interface CreateProductData {
   description?: string;
   checklistTemplateId?: string;
   languages?: string[];
+  contactIds?: string[];
 }
 
 export interface UpdateProductData {
@@ -209,6 +220,7 @@ export interface UpdateProductData {
   description?: string | null;
   checklistTemplateId?: string | null;
   languages?: string[];
+  contactIds?: string[];
 }
 
 export interface PauseDeliveryData {

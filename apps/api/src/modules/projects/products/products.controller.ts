@@ -135,6 +135,7 @@ export class ProductsController {
       description?: string;
       checklistTemplateId?: string;
       languages?: string[];
+      contactIds?: string[];
     },
   ) {
     return this.productsService.create(body);
@@ -159,6 +160,7 @@ export class ProductsController {
       description?: string | null;
       checklistTemplateId?: string | null;
       languages?: string[];
+      contactIds?: string[];
     },
   ) {
     return this.productsService.update(id, body);

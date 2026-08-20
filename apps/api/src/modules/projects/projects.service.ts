@@ -12,6 +12,7 @@ import {
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
 import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
+import { clearProductMembershipsForRemovedProjectContacts } from './products/product-contacts.ops';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
 import {
   assertEntityIsActive,
@@ -150,6 +151,9 @@ export class ProjectsService {
         data.contactIds,
       );
       resolvedContactId = primaryContactId ?? existing.contactId;
+      const remaining = new Set(data.contactIds.filter(Boolean));
+      if (resolvedContactId) remaining.add(resolvedContactId);
+      await clearProductMembershipsForRemovedProjectContacts(this.prisma, id, remaining);
     }
 
     await this.prisma.project.update({

@@ -1,42 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
-import { LoadingState } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
-import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
-import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
+import { ProductContactsSection } from '@/features/projects/components/ProductContactsSection';
 import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
   product: FullProduct;
+  onProductUpdated: (product: FullProduct) => void;
 }
 
-export function ProductOverviewTab({ product }: ProductOverviewTabProps) {
+export function ProductOverviewTab({ product, onProductUpdated }: ProductOverviewTabProps) {
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
   ).length;
   const gateRequiredFields = new Set<string>();
-  const [project, setProject] = useState<FullProject | null>(null);
-  const [projectLoading, setProjectLoading] = useState(true);
-
-  const loadProject = useCallback(async () => {
-    setProjectLoading(true);
-    try {
-      const data = await projectsApi.getById(product.projectId);
-      setProject(data);
-    } catch {
-      setProject(null);
-    } finally {
-      setProjectLoading(false);
-    }
-  }, [product.projectId]);
-
-  useEffect(() => {
-    void loadProject();
-  }, [loadProject]);
 
   return (
     <div className="space-y-4 pb-6">
@@ -50,18 +30,7 @@ export function ProductOverviewTab({ product }: ProductOverviewTabProps) {
         <div className="w-full min-w-0">
           <div className="bg-card border-border rounded-xl border p-4">
             <p className="mb-3 text-sm font-semibold">Contacts</p>
-            {projectLoading ? (
-              <LoadingState count={1} />
-            ) : project ? (
-              <ProjectContactsSection
-                embedded
-                contactLayout="grid"
-                project={project}
-                onProjectUpdated={setProject}
-              />
-            ) : (
-              <p className="text-muted-foreground text-xs">Could not load contacts.</p>
-            )}
+            <ProductContactsSection product={product} onProductUpdated={onProductUpdated} />
           </div>
         </div>
       </div>
