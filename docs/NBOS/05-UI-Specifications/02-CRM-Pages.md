@@ -370,6 +370,17 @@ Project + Product
 
 Страницы `/crm/leads` и `/crm/deals` открывают лид и сделку в **правой slide-over панели** (sheet), а не только на отдельном URL — см. также уточнение в §4 для Deal Card.
 
+### 8.0. Вкладки sheet
+
+**Calls ≠ History.** History — аудит / смена стадий. Calls — телефония (канон `../02-Modules/01-CRM/08-Calls-and-Telephony.md`, окно `11-Call-Screen.md`).
+
+| Sheet | Tabs |
+| --- | --- |
+| Lead | General · **Calls** · History · Task |
+| Deal | General · History · Invoice · Task · **Calls** |
+
+На обеих: кнопка «Позвонить» (внутренний click-to-call). Полноэкранное окно звонка — не sheet, см. `11-Call-Screen.md`.
+
 ### 8.1. Вкладка General — черновик и сохранение
 
 - Поля вкладки **General** редактируются в **локальном черновике** до нажатия **Save**.

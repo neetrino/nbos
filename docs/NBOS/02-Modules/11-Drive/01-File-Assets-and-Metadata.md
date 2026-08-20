@@ -70,7 +70,7 @@
 | `SOP_DOCUMENT`          | SOP / инструкция                              |
 | `TRAINING_MATERIAL`     | Обучающий материал                            |
 | `MEETING_RECORDING`     | Запись встречи                                |
-| `CALL_RECORDING`        | Запись звонка                                 |
+| `CALL_RECORDING`        | Запись звонка. ATS: один FileAsset + FileLink на LEAD и CONTACT; канон `../01-CRM/08-Calls-and-Telephony.md` |
 
 Purpose используется для:
 

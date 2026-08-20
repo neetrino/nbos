@@ -4,7 +4,7 @@
 >
 > **Статус:** канон (2026-08-20). Runtime: intake attach + Lead merge + Lead→Contact attach + Lead **Связать** (pour / create-contact / attach product) shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются. **Contact↔Product** — канон Clients `07-Contact-and-Product.md`.
 >
-> Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
+> Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `08-Calls-and-Telephony.md` (ATS Call), `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
 
 ## 1. Назначение
 

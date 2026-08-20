@@ -153,6 +153,7 @@ Permission Role = что человек может делать в систем�
 Управление внешними подключениями:
 
 - WhatsApp Web adapter / WAHA;
+- ATS.am (телефония: статус ключа без секрета; канон `../01-CRM/08-Calls-and-Telephony.md`) — не «Applicant tracking»;
 - email provider;
 - storage provider;
 - notification providers;

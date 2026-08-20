@@ -76,7 +76,7 @@ Client Portfolio открывается как полноценная стран
 | Finance       | Invoices, payments, orders, outstanding balance, LTV                 |
 | Subscriptions | Активные, pending, on hold, cancelled, completed subscriptions       |
 | Support       | Open tickets, recent tickets, SLA risks                              |
-| Communication | История сообщений, звонков, заметок, reminders                       |
+| Communication | Messenger + **лента звонков** (тот же Call, что на Lead) + заметки / reminders. Не Files. Канон: `../01-CRM/08-Calls-and-Telephony.md` |
 | Files         | Drive Client Library: документы Contact / Company / проектов клиента |
 
 Default tab = Overview. Система запоминает последний открытый tab пользователя.

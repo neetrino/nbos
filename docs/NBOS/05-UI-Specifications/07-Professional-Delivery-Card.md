@@ -86,7 +86,7 @@
 Табы нужны только для отдельных рабочих миров, где много собственной логики:
 
 1. **Work Space** — задачи / ссылка в Work Space (MVP: deep link кнопкой допустим).
-2. **Calls** — filtered projection или MVP placeholder.
+2. **Calls** — проекция той же ленты Call по Contact/Lead **после** даты карточки. Своего хранилища нет. Канон: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`. Пока runtime ленты нет — placeholder допустим.
 3. **Bonus** — с учётом RBAC: employee видит своё, CEO/Founder/allowed roles видят всё.
 4. **History** — audit, stage movements, важные изменения.
 

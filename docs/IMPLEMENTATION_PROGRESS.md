@@ -59,10 +59,10 @@
 
 ## Блок 2C — Внешние факторы: делать только после кредов / аккаунтов / infra
 
-Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура. **Лента звонков в UI** (после интеграции ATS) — канон: `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)` §8.
+Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура. **Лента звонков в UI** — канон: `[08-Calls-and-Telephony.md](NBOS/02-Modules/01-CRM/08-Calls-and-Telephony.md)`, окно `[11-Call-Screen.md](NBOS/05-UI-Specifications/11-Call-Screen.md)`, Delivery projection `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)` §5.
 
 - Telegram: internal notification channel по канону + явные env/токены — M
-- **Телефония / ATS (звонки):** интеграция с внешним приложением звонков или ATS (webhook или API провайдера): приём событий о входящих/исходящих звонках, **нормализация номера** (E.164 / правила компании), **сохранение** записей в NBOS, **сопоставление** с Contact / Deal / Project по телефону и правилам приоритета; затем **лента звонков** в UI (Delivery Card канон §8, карточки CRM и связанные сущности). Требует выбора провайдера/модели, кредов, политики PII/записей; детальный подканон — при старте среза (сейчас в `docs/NBOS` нет отдельного закреплённого документа только под ATS) — **L**
+- **Телефония / ATS (звонки):** канон есть, ключ ATS.am есть, webhook MVP в runtime. Осталось по `08-Calls`: голый JSON webhook, модель Call (contact/контекст/запись), окно ответственного, лента Lead/Deal/Contact, download → Drive, click-to-call, history reconcile. DID / транскрипт / импорт Bitrix — later. — **L**
 - WhatsApp Gateway + WAHA (VPS): контракт Gateway↔NBOS, health/send/webhook на Gateway, вложения Gateway→NBOS Drive — L
 - Support: связь с external messenger conversation — M
 - Technical: webhooks GitHub / репозиторий links как интеграция — M
@@ -125,7 +125,7 @@
 | -------------- | --------------------------------------------------------- |
 | Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей |
 | Исключения     | Банк; Bitrix mapping/import/cutover после core            |
-| Активный 2A    | Задачи в **§2A** выше; телефония / ATS — **2C**           |
+| Активный 2A    | Задачи в **§2A** выше; ATS канон закрыт, runtime-срез — по `08-Calls` когда скажут |
 | Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`     |
 
 ---
