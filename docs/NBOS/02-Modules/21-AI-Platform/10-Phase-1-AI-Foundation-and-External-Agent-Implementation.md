@@ -1,391 +1,884 @@
-# Phase 1 — AI Foundation + External Workspace Agent Implementation
+# Phase 1 — AI Foundation + External Agent + Provider/Model Foundation Implementation
 
-> Executable implementation checklist. Every item must be verified against canon + runtime + tests.
+> Canon-linked executable implementation checklist.
+>
+> Every numbered item must be verified against runtime, tests and the canonical documents in `21-AI-Platform`.
 
 ## Status format
-
-Use:
 
 - `[ ]` not started
 - `[~]` partial
 - `[x]` verified complete
 - `[!]` blocked / business decision
 
-A point is not complete only because code exists. It is complete when implementation, negative paths, tests and docs align.
+A point is complete only when implementation, negative paths, tests and documentation align.
 
 ---
 
-## A. Pre-implementation reconciliation
+# A. Canon and runtime reconciliation
 
-1. [ ] Read all `21-AI-Platform` canon files before changing code.
-2. [ ] Read `00-Technical-Decisions-By-Module.md` global rules.
-3. [ ] Read Platform Access Foundation runtime/canon.
-4. [ ] Read Tasks canon and cleanup register.
-5. [ ] Read Drive canon relevant to task artifacts.
-6. [ ] Compare current TaskStatus Prisma enum with accepted task lifecycle.
-7. [ ] Confirm semantic meaning of Start Task in current runtime.
-8. [ ] Confirm semantic meaning of Submit Review in current runtime.
-9. [ ] Confirm whether external agent may create tasks in Phase 1.
-10. [ ] Confirm current task discussion/comment storage model.
-11. [ ] Confirm current task attachment/Drive linking path.
-12. [ ] Confirm canonical Product vs Extension Work Space resolution.
-13. [ ] Document any discovered canon/runtime conflict before coding around it.
-14. [ ] Do not preserve known legacy behavior merely for convenience without explicit compatibility rationale.
-15. [ ] Produce final Phase 1 touched-module map.
+1. [ ] Read `00-AI-Platform-Overview.md`.
+2. [ ] Read `01-AI-Actors-Identity-and-Access.md`.
+3. [ ] Read `02-AI-Capability-and-Action-Layer.md`.
+4. [ ] Read `03-External-Agent-Access.md`.
+5. [ ] Read `04-Internal-AI-Runtime.md`.
+6. [ ] Read `05-AI-Data-Security-and-Audit.md`.
+7. [ ] Read `06-AI-Providers-Models-and-Routing.md`.
+8. [ ] Read `07-AI-Admin-and-Connections-UX.md`.
+9. [ ] Read `08-External-Agent-Protocols-REST-and-MCP.md`.
+10. [ ] Read `09-External-Agent-API-and-MCP-Contract.md`.
+11. [ ] Read `11-Internal-Agent-Lifecycle-and-Assignments.md`.
+12. [ ] Read `12-AI-Prompts-Context-Memory-and-Knowledge.md`.
+13. [ ] Read `13-AI-Risk-and-Approval-Policy.md`.
+14. [ ] Read `14-AI-Evaluation-Usage-Cost-and-Observability.md`.
+15. [ ] Read `15-Customer-Facing-AI-Policy.md`.
+16. [ ] Read `99-AI-Cleanup-Register.md`.
+17. [ ] Read `00-Technical-Decisions-By-Module.md` global technical rules.
+18. [ ] Read Platform Access Foundation canon/runtime.
+19. [ ] Read Tasks canon and Task cleanup register.
+20. [ ] Read Drive canon relevant to Task artifacts.
+21. [ ] Read Audit runtime and schema.
+22. [ ] Read existing authentication/RBAC runtime.
+23. [ ] Read current integration/provider patterns without conflating them with AI Agent identities.
+24. [ ] Compare current `TaskStatusEnum` runtime with current Tasks canon.
+25. [ ] Confirm runtime semantics for Start Task.
+26. [ ] Confirm runtime semantics for Submit Review.
+27. [ ] Confirm canonical task discussion/comment storage.
+28. [ ] Confirm canonical task attachment/Drive linking flow.
+29. [ ] Confirm Work Space Product/Extension/Project relationship semantics.
+30. [ ] Confirm current API response/error/pagination conventions.
+31. [ ] Confirm current secret storage/encryption mechanisms usable for provider credentials.
+32. [ ] Confirm current BullMQ/worker propagation patterns for ActorContext/correlation data.
+33. [ ] Document all canon/runtime conflicts found before implementing around them.
+34. [ ] Classify each conflict as OK/PARTIAL/MISSING/STALE/BUSINESS DECISION.
+35. [ ] Produce a touched-module map for Phase 1.
 
-## B. Actor foundation
+# B. Phase 1 scope lock
 
-16. [ ] Define normalized `ActorType` contract.
-17. [ ] Define normalized `ActorContext` contract used by policy/audit/capabilities.
-18. [ ] Support `USER` actor without breaking current employee requests.
-19. [ ] Support `EXTERNAL_AGENT` actor.
-20. [ ] Reserve/support `INTERNAL_AI` actor contract for later.
-21. [ ] Reserve/support `SYSTEM` and `AUTOMATION` where needed.
-22. [ ] Add `onBehalfOf` identity support in actor context.
-23. [ ] Ensure AI actors are not represented as fake Employees.
-24. [ ] Add actor display-name resolution contract.
-25. [ ] Add tests for actor normalization.
+36. [ ] Lock Phase 1 as shared AI foundation + External Workspace Agent + provider/model/internal-agent foundation.
+37. [ ] Confirm External Agent may receive `tasks.create` only via explicit grant.
+38. [ ] Confirm External Agent may receive `tasks.update` only via explicit grant.
+39. [ ] Define exact allowlisted fields for `tasks.update` from current Tasks domain rules.
+40. [ ] Confirm External Agent has no `tasks.delete` capability in Phase 1.
+41. [ ] Confirm External Agent has no unrestricted arbitrary status mutation capability.
+42. [ ] Confirm External Agent cannot force final task completion when human review is required.
+43. [ ] Confirm REST and MCP are both Phase 1 deliverables.
+44. [ ] Confirm OpenAI provider connection foundation is Phase 1.
+45. [ ] Confirm Anthropic provider connection foundation is Phase 1.
+46. [ ] Confirm model-catalog synchronization is Phase 1.
+47. [ ] Confirm FIXED model policy is Phase 1.
+48. [ ] Confirm PRIMARY_FALLBACK model policy is Phase 1.
+49. [ ] Confirm Internal Agent entity/lifecycle foundation is Phase 1.
+50. [ ] Confirm full internal employee AI chat runtime is NOT Phase 1.
+51. [ ] Confirm production Messenger auto-reply runtime is NOT Phase 1.
+52. [ ] Confirm production RAG/vector infrastructure is NOT Phase 1.
+53. [ ] Confirm adaptive/learned model routing is NOT Phase 1.
+54. [ ] Confirm automatic activation of newly discovered models is forbidden.
+55. [ ] Confirm customer-facing autonomous high-risk actions are NOT Phase 1.
 
-## C. Audit migration
+# C. Actor foundation
 
-26. [ ] Design backward-compatible AuditLog actor evolution.
-27. [ ] Preserve readability of all existing audit rows.
-28. [ ] Add actor type/id fields or equivalent normalized structure.
-29. [ ] Keep legacy `userId` behavior for human audit where required.
-30. [ ] Allow audit log creation for non-Employee actors.
-31. [ ] Update AuditService logging API to accept ActorContext.
-32. [ ] Update actor attachment/resolution to handle employees and agents.
-33. [ ] Add correlation/request id support.
-34. [ ] Add optional on-behalf-of fields.
-35. [ ] Prevent raw secrets/tokens from audit payloads.
-36. [ ] Add audit events for agent create/disable/revoke.
-37. [ ] Add audit events for capability/scope changes.
-38. [ ] Add audit events for agent mutation capabilities.
-39. [ ] Add migration tests for old audit data.
-40. [ ] Add unit/integration tests for external-agent audit records.
+56. [ ] Define normalized `ActorType` contract.
+57. [ ] Support `USER` actor.
+58. [ ] Support `EXTERNAL_AGENT` actor.
+59. [ ] Support `INTERNAL_AI` actor.
+60. [ ] Support `SYSTEM` actor where appropriate.
+61. [ ] Support `AUTOMATION` actor where appropriate.
+62. [ ] Define normalized `ActorContext` shared by policy/audit/capabilities.
+63. [ ] Include stable actor id/type/display identity.
+64. [ ] Include organization/tenant context where applicable.
+65. [ ] Add `onBehalfOf` support.
+66. [ ] Add channel/source metadata support.
+67. [ ] Add correlation/request id support.
+68. [ ] Ensure machine actors are never represented as fake Employees.
+69. [ ] Preserve employee actor behavior without widening existing access.
+70. [ ] Add actor normalization unit tests.
 
-## D. External Agent persistence
+# D. Audit actor migration
 
-41. [ ] Add External Agent database model.
-42. [ ] Add stable id and human-readable name.
-43. [ ] Add purpose/description.
-44. [ ] Add owner/creator Employee relation for administration.
-45. [ ] Add ACTIVE/DISABLED/REVOKED/EXPIRED state semantics.
-46. [ ] Add optional expiresAt.
-47. [ ] Add lastUsedAt.
-48. [ ] Add safe client/IP metadata fields only if useful.
-49. [ ] Add createdAt/updatedAt.
-50. [ ] Add relevant indexes.
+71. [ ] Design backward-compatible AuditLog evolution.
+72. [ ] Preserve all existing audit history.
+73. [ ] Add actor type/id fields or equivalent normalized structure.
+74. [ ] Keep legacy `userId` compatibility where required.
+75. [ ] Allow AuditLog creation for non-Employee actors.
+76. [ ] Update AuditService logging interface to accept ActorContext.
+77. [ ] Update actor display resolution for Employee and AI actors.
+78. [ ] Add `onBehalfOf` audit fields/context.
+79. [ ] Add channel/protocol/source audit metadata where useful.
+80. [ ] Add correlation/execution id fields/context.
+81. [ ] Add safe credential/client metadata only where useful.
+82. [ ] Prevent raw bearer tokens from audit.
+83. [ ] Prevent provider API keys from audit.
+84. [ ] Prevent full sensitive prompt/context persistence by default.
+85. [ ] Audit External Agent lifecycle changes.
+86. [ ] Audit provider connection lifecycle changes.
+87. [ ] Audit model activation/deactivation.
+88. [ ] Audit model policy changes.
+89. [ ] Audit Internal Agent lifecycle changes.
+90. [ ] Audit capability/scope changes.
+91. [ ] Audit approval lifecycle.
+92. [ ] Add migration tests using representative historical AuditLog rows.
+93. [ ] Add human audit regression tests.
+94. [ ] Add External Agent audit tests.
+95. [ ] Add Internal AI audit contract tests.
 
-## E. Agent credentials
+# E. External Agent persistence
 
-51. [ ] Create separate agent credential model.
-52. [ ] Generate cryptographically strong opaque tokens.
-53. [ ] Store only secure token hash.
-54. [ ] Store safe token prefix/key id for lookup/display.
-55. [ ] Show raw token only once at creation/rotation.
-56. [ ] Support credential expiry.
-57. [ ] Support credential revocation.
-58. [ ] Support credential rotation.
-59. [ ] Allow safe overlap during rotation if explicitly designed.
-60. [ ] Ensure disabling/revoking agent invalidates credentials immediately.
-61. [ ] Never log Authorization header/token.
-62. [ ] Never return token hash through APIs.
-63. [ ] Add credential verification constant-time/safe comparison behavior as appropriate.
-64. [ ] Add credential authentication tests.
-65. [ ] Add revoked/expired token negative tests.
+96. [ ] Add External Agent model/entity.
+97. [ ] Add stable id.
+98. [ ] Add human-readable name.
+99. [ ] Add description/purpose.
+100. [ ] Add owner/creator Employee relation.
+101. [ ] Add ACTIVE/DISABLED/REVOKED/EXPIRED semantics.
+102. [ ] Add optional agent expiry.
+103. [ ] Add lastUsedAt.
+104. [ ] Add safe last-client/IP metadata only if useful.
+105. [ ] Add createdAt/updatedAt.
+106. [ ] Add appropriate indexes.
+107. [ ] Ensure agent identity remains stable through credential rotation.
+108. [ ] Add persistence tests.
 
-## F. Agent authentication boundary
+# F. External Agent credentials
 
-66. [ ] Implement dedicated external-agent auth guard/middleware.
-67. [ ] Keep employee JWT/session auth separate.
-68. [ ] Build ActorContext from authenticated agent.
-69. [ ] Reject disabled/revoked/expired actors.
-70. [ ] Return stable machine-readable auth error codes.
-71. [ ] Avoid leaking whether unauthorized resources exist.
-72. [ ] Require TLS in deployment assumptions/documentation.
-73. [ ] Ensure tokens are accepted in header, never required in query string.
-74. [ ] Add auth observability without exposing secrets.
-75. [ ] Add integration tests for employee-vs-agent auth boundary.
+109. [ ] Create separate External Agent Credential model.
+110. [ ] Generate cryptographically strong opaque tokens.
+111. [ ] Store only secure token hash/derived verifier.
+112. [ ] Store safe prefix/key id for lookup/display.
+113. [ ] Show raw token only once on issuance.
+114. [ ] Show raw token only once on rotation.
+115. [ ] Support credential expiry.
+116. [ ] Support immediate credential revoke.
+117. [ ] Support credential rotation.
+118. [ ] Support temporary overlap during controlled rotation if implemented.
+119. [ ] Agent disable/revoke invalidates all credentials immediately.
+120. [ ] Never log Authorization token.
+121. [ ] Never expose token hash in API/UI.
+122. [ ] Implement safe token verification.
+123. [ ] Add invalid token tests.
+124. [ ] Add revoked token tests.
+125. [ ] Add expired token tests.
+126. [ ] Add rotation tests.
 
-## G. Capability registry
+# G. External Agent authentication boundary
 
-76. [ ] Define stable capability key format.
-77. [ ] Define capability metadata contract.
-78. [ ] Define owning module field.
-79. [ ] Define risk class.
-80. [ ] Define read/write classification.
-81. [ ] Define allowed scope types.
-82. [ ] Define idempotency requirement metadata.
-83. [ ] Define approval requirement metadata.
-84. [ ] Seed/register Phase 1 capabilities deterministically.
-85. [ ] Prevent unknown capability grants.
-86. [ ] Version capabilities or define compatibility strategy.
-87. [ ] Add capability registry tests.
+127. [ ] Implement dedicated External Agent authentication guard/middleware.
+128. [ ] Keep employee JWT/session authentication separate.
+129. [ ] Build ActorContext from authenticated External Agent.
+130. [ ] Reject disabled agent.
+131. [ ] Reject revoked agent.
+132. [ ] Reject expired agent/credential.
+133. [ ] Use stable machine-readable auth errors.
+134. [ ] Avoid record existence leakage through auth errors.
+135. [ ] Require TLS production assumption.
+136. [ ] Accept token in Authorization header.
+137. [ ] Do not require query-string token.
+138. [ ] Redact Authorization values from logs/errors.
+139. [ ] Add auth observability without secrets.
+140. [ ] Add Employee-vs-Agent boundary tests.
 
-## H. Capability grants and scopes
+# H. Capability registry
 
-88. [ ] Add agent capability grant persistence.
-89. [ ] Add resource scope persistence.
-90. [ ] Support Work Space scope in Phase 1.
-91. [ ] Support explicit resource scope if required for exceptions.
-92. [ ] Keep Project/Product scope structurally possible for future use.
-93. [ ] Define grant expiry/revocation where needed.
-94. [ ] Ensure capability grant does not imply organization-wide resource access.
-95. [ ] Ensure resource scope does not imply every action capability.
-96. [ ] Add indexes for actor/capability/scope evaluation.
-97. [ ] Audit grant creation/change/revoke.
-98. [ ] Add grant evaluation tests.
-99. [ ] Add cross-workspace denial tests.
-100. [ ] Add revoked-grant denial tests.
+141. [ ] Define stable capability key format.
+142. [ ] Define capability version strategy.
+143. [ ] Define owning module.
+144. [ ] Define read/write classification.
+145. [ ] Define risk class.
+146. [ ] Define allowed scope types.
+147. [ ] Define input schema metadata.
+148. [ ] Define output/projection schema metadata.
+149. [ ] Define idempotency requirement metadata.
+150. [ ] Define audit behavior metadata.
+151. [ ] Define approval requirement metadata.
+152. [ ] Define rate-limit class metadata.
+153. [ ] Prevent unknown capability grants.
+154. [ ] Register Phase 1 Work Space/Task/Drive capabilities deterministically.
+155. [ ] Register `tasks.create` separately.
+156. [ ] Register `tasks.update` separately.
+157. [ ] Do not register `tasks.delete` for External Agent Phase 1.
+158. [ ] Do not register generic `tasks.set_status(anyStatus)`.
+159. [ ] Add capability-registry tests.
 
-## I. Policy evaluator
+# I. Capability grants and resource scopes
 
-101. [ ] Implement one reusable policy evaluation service.
-102. [ ] Default policy result to DENY.
-103. [ ] Evaluate actor state.
-104. [ ] Evaluate capability grant.
-105. [ ] Evaluate resource scope.
-106. [ ] Evaluate module-specific restrictions.
-107. [ ] Evaluate forbidden data classes.
-108. [ ] Support ALLOW result.
-109. [ ] Support DENY result.
-110. [ ] Support REQUIRE_APPROVAL result contract even if few Phase 1 actions use it.
-111. [ ] Return structured internal denial reasons.
-112. [ ] Map external errors without leaking private resource existence.
-113. [ ] Add policy decision unit tests.
-114. [ ] Add deny-by-default tests for missing grants.
-115. [ ] Add scope traversal/isolation negative tests.
+160. [ ] Add External Agent capability grant persistence.
+161. [ ] Add resource scope persistence.
+162. [ ] Support Work Space scope.
+163. [ ] Keep Project scope structurally possible.
+164. [ ] Keep Product scope structurally possible.
+165. [ ] Keep explicit resource scope structurally possible.
+166. [ ] Keep organization scope structurally possible but do not grant broadly by default.
+167. [ ] Support grant revoke.
+168. [ ] Support optional grant expiry if useful.
+169. [ ] Capability grant must not imply all resources.
+170. [ ] Resource scope must not imply all actions.
+171. [ ] Add indexes for actor/capability/scope evaluation.
+172. [ ] Audit grant create/change/revoke.
+173. [ ] Add grant-evaluation tests.
+174. [ ] Add cross-Workspace denial tests.
+175. [ ] Add revoked-grant denial tests.
 
-## J. Domain Action Gateway
+# J. Policy evaluator
 
-116. [ ] Create AI/agent capability invocation boundary.
-117. [ ] Prohibit direct Prisma writes from agent controllers/adapters.
-118. [ ] Route Task writes into existing Tasks domain/application services.
-119. [ ] Route Drive artifact operations into Drive services.
-120. [ ] Preserve ActorContext through invocation.
-121. [ ] Add consistent correlation id.
-122. [ ] Validate capability input schemas.
-123. [ ] Validate capability output schemas/projections.
-124. [ ] Audit material mutations after successful domain commit.
-125. [ ] Audit failures where security/operations require it.
+176. [ ] Implement one reusable Policy Evaluator.
+177. [ ] Default to DENY.
+178. [ ] Evaluate actor state.
+179. [ ] Evaluate credential state where applicable.
+180. [ ] Evaluate capability grant.
+181. [ ] Evaluate resource scope.
+182. [ ] Evaluate module-specific restrictions.
+183. [ ] Evaluate data classification/restrictions.
+184. [ ] Evaluate action risk.
+185. [ ] Evaluate approval requirement.
+186. [ ] Evaluate usage/rate limits.
+187. [ ] Support ALLOW.
+188. [ ] Support DENY.
+189. [ ] Support REQUIRE_APPROVAL.
+190. [ ] Return structured internal denial reasons.
+191. [ ] Map safe external errors without existence leakage.
+192. [ ] Make prompt/document/message content unable to alter policy result.
+193. [ ] Add policy unit tests.
+194. [ ] Add deny-by-default tests.
+195. [ ] Add scope traversal/isolation tests.
 
-## K. Workspace discovery and isolation
+# K. Domain Action Gateway
 
-126. [ ] Implement authorized Work Space discovery/list.
-127. [ ] Return only explicitly granted/derived authorized Work Spaces.
-128. [ ] Do not expose unauthorized names/counts through discovery.
-129. [ ] Resolve canonical Product/Extension Work Space semantics.
-130. [ ] Do not trust client-provided project/workspace relationships.
-131. [ ] Re-resolve scope server-side for every action.
-132. [ ] Add test: agent A workspace cannot read workspace B.
-133. [ ] Add test: agent A workspace cannot mutate workspace B task by guessed id.
-134. [ ] Add test: shared Project does not automatically widen workspace scope.
-135. [ ] Add test: disabled agent loses workspace discovery.
+196. [ ] Create shared AI/agent capability invocation boundary.
+197. [ ] Prohibit direct Prisma domain writes from REST agent controllers.
+198. [ ] Prohibit direct Prisma domain writes from MCP tool adapters.
+199. [ ] Prohibit direct Prisma domain writes from future Internal AI tool adapters.
+200. [ ] Route Task actions through Tasks application/domain services.
+201. [ ] Route Drive operations through Drive services.
+202. [ ] Preserve ActorContext through invocation.
+203. [ ] Preserve correlation id through invocation.
+204. [ ] Validate capability input schemas.
+205. [ ] Validate output projection schemas.
+206. [ ] Re-check target scope server-side.
+207. [ ] Audit successful material mutations after domain commit.
+208. [ ] Audit failures/denials where policy requires.
+209. [ ] Preserve transaction boundaries.
+210. [ ] Add gateway integration tests.
 
-## L. Task read capabilities
+# L. Work Space discovery and isolation
 
-136. [ ] Implement `tasks.list` scoped by authorized Work Space.
-137. [ ] Implement `tasks.read` scoped by authorized Work Space.
-138. [ ] Return minimal purpose-built task projection.
-139. [ ] Include task id/code/title/description safely.
-140. [ ] Include current workflow status.
-141. [ ] Include priority and due date.
-142. [ ] Include permitted workspace/sprint context.
-143. [ ] Include checklist summary/state if needed.
-144. [ ] Include permitted links only.
-145. [ ] Exclude unrelated finance/client/private data.
-146. [ ] Exclude Credentials/secrets.
-147. [ ] Add pagination/limits.
-148. [ ] Add stable sorting/filtering needed by agents.
-149. [ ] Add unauthorized task read tests.
-150. [ ] Add payload minimization tests/snapshots.
+211. [ ] Implement authorized Work Space list/discovery.
+212. [ ] Implement authorized Work Space detail projection.
+213. [ ] Return only granted/derived authorized Work Spaces.
+214. [ ] Hide unauthorized names/counts.
+215. [ ] Resolve Product/Extension Work Space semantics canonically.
+216. [ ] Never trust client-provided Project/Product relationships as authority.
+217. [ ] Re-resolve scope server-side on every action.
+218. [ ] Test agent Work Space A cannot discover Work Space B.
+219. [ ] Test guessed Work Space B id fails safely.
+220. [ ] Test shared Project does not automatically widen Work Space scope.
+221. [ ] Test disabled agent loses discovery.
 
-## M. Task discussion/context reads
+# M. Task read capabilities
 
-151. [ ] Determine canonical task discussion source.
-152. [ ] Implement `tasks.read_discussion` only after access check.
-153. [ ] Limit discussion history/page size.
-154. [ ] Preserve author/source metadata.
-155. [ ] Treat discussion content as untrusted data, not policy/system instruction.
-156. [ ] Exclude hidden/private content according to existing rules.
-157. [ ] Add discussion access tests.
+222. [ ] Implement `tasks.list`.
+223. [ ] Scope `tasks.list` to authorized Work Space.
+224. [ ] Implement `tasks.read`.
+225. [ ] Use purpose-built Task projection.
+226. [ ] Include id/code/title.
+227. [ ] Include description safely.
+228. [ ] Include status.
+229. [ ] Include priority.
+230. [ ] Include due date.
+231. [ ] Include permitted Work Space/Sprint context.
+232. [ ] Include permitted checklist state where needed.
+233. [ ] Include permitted links only.
+234. [ ] Exclude unrelated Finance data.
+235. [ ] Exclude Credentials/secrets.
+236. [ ] Exclude unrelated customer/private data.
+237. [ ] Add bounded pagination.
+238. [ ] Add stable agent-useful filters/sorting.
+239. [ ] Add unauthorized task read tests.
+240. [ ] Add payload-minimization tests.
 
-## N. Drive artifact reads
+# N. Task discussion/context read
 
-158. [ ] Implement linked artifact metadata read through Drive.
-159. [ ] Verify task/workspace link before file access.
-160. [ ] Apply Drive access restrictions in addition to agent scope.
-161. [ ] Block forbidden secret artifacts.
-162. [ ] Avoid exposing arbitrary bucket paths as business authority.
-163. [ ] Use safe download/session mechanism already owned by Drive where possible.
-164. [ ] Apply size/type limits appropriate for agent reads.
-165. [ ] Add cross-task/cross-workspace file isolation tests.
+241. [ ] Confirm canonical discussion source.
+242. [ ] Implement `tasks.read_discussion`.
+243. [ ] Apply Task/Work Space access check first.
+244. [ ] Limit discussion history/page size.
+245. [ ] Preserve author/source metadata.
+246. [ ] Preserve AI/human provenance.
+247. [ ] Treat discussion text as untrusted content.
+248. [ ] Exclude hidden/private content according to Tasks rules.
+249. [ ] Add discussion access tests.
 
-## O. Task mutation capabilities
+# O. Drive artifact reads
 
-166. [ ] Implement `tasks.start` as semantic command.
-167. [ ] Map Start to current accepted Tasks lifecycle rules.
-168. [ ] Reject invalid transition with deterministic blockers.
-169. [ ] Implement `tasks.update` only for explicitly approved editable fields.
-170. [ ] Do not expose unrestricted status assignment.
-171. [ ] Implement `tasks.comment` or equivalent progress-note action.
-172. [ ] Preserve agent authorship in discussion/activity.
-173. [ ] Implement `tasks.submit_review` as semantic command.
-174. [ ] Do not bypass review/completion rules.
-175. [ ] Do not let external agent force Completed when human acceptance is required.
-176. [ ] Optionally implement task creation only if approved by reconciliation item 9.
-177. [ ] Apply optimistic concurrency/precondition where stale overwrites are risky.
-178. [ ] Audit every material task mutation.
-179. [ ] Add valid-transition tests.
-180. [ ] Add invalid-transition tests.
-181. [ ] Add stale/concurrent-update tests.
-182. [ ] Add unauthorized-field update tests.
+250. [ ] Implement linked Task artifact metadata read.
+251. [ ] Verify Task/Work Space link before artifact access.
+252. [ ] Apply Drive policy in addition to Agent scope.
+253. [ ] Block forbidden secret artifacts.
+254. [ ] Avoid exposing arbitrary bucket paths.
+255. [ ] Use safe/short-lived download mechanism.
+256. [ ] Apply read size/type constraints where relevant.
+257. [ ] Add cross-Task artifact isolation tests.
+258. [ ] Add cross-Work Space artifact isolation tests.
 
-## P. Artifact writes
+# P. Task create capability
 
-183. [ ] Implement generated artifact upload through Drive.
-184. [ ] Create Drive File Asset using existing Drive ownership rules.
-185. [ ] Link artifact to Task/WorkSpace context.
-186. [ ] Store agent actor/source provenance.
-187. [ ] Validate file size/type.
-188. [ ] Prevent executable/unsafe file handling outside established Drive policy.
-189. [ ] Do not allow agent to choose arbitrary unrelated entity links.
-190. [ ] Add artifact upload/link tests.
+259. [ ] Implement `tasks.create` as separately grantable capability.
+260. [ ] Require authorized target Work Space.
+261. [ ] Define strict Task create input DTO/schema.
+262. [ ] Apply normal Tasks defaults/business validation.
+263. [ ] Prevent unrelated Project/Product/entity guessed-id linking.
+264. [ ] Apply assignment/reviewer rules from Tasks domain.
+265. [ ] Apply priority/due-date validation.
+266. [ ] Apply idempotency to create.
+267. [ ] Preserve External Agent as creator/source provenance without fake Employee impersonation.
+268. [ ] Audit Task creation.
+269. [ ] Test create allowed when capability granted.
+270. [ ] Test create denied without capability.
+271. [ ] Test create denied outside Work Space scope.
+272. [ ] Test duplicate retry does not duplicate Task.
 
-## Q. Idempotency
+# Q. Task update capability
 
-191. [ ] Define idempotency key contract for external agent mutations.
-192. [ ] Store operation identity/results safely.
-193. [ ] Return original result for safe duplicate retry.
-194. [ ] Prevent duplicate task creation.
-195. [ ] Prevent duplicate comment creation.
-196. [ ] Prevent duplicate artifact link creation.
-197. [ ] Prevent duplicate semantic transition execution.
-198. [ ] Scope idempotency key to actor/capability appropriately.
-199. [ ] Add retry/duplicate tests.
+273. [ ] Implement separately grantable `tasks.update`.
+274. [ ] Define explicit editable-field allowlist.
+275. [ ] Reject unknown/non-allowlisted fields.
+276. [ ] Reject deletion through update.
+277. [ ] Reject arbitrary status assignment through update.
+278. [ ] Reject direct final-completion bypass.
+279. [ ] Reject unauthorized Work Space reassignment.
+280. [ ] Reject audit/system/security-field mutation.
+281. [ ] Use Tasks domain services/commands.
+282. [ ] Add optimistic precondition/version/updatedAt check where needed.
+283. [ ] Avoid silently overwriting materially newer human changes.
+284. [ ] Audit material Task updates.
+285. [ ] Test allowed-field updates.
+286. [ ] Test denied-field updates.
+287. [ ] Test stale update conflict.
+288. [ ] Test update denied without capability.
 
-## R. Rate limits and abuse controls
+# R. Semantic Task workflow actions
 
-200. [ ] Define per-agent request limits.
-201. [ ] Define per-capability limits for expensive/mutating operations.
-202. [ ] Define payload size limits.
-203. [ ] Define concurrency limit if needed.
-204. [ ] Return stable rate-limit error and retry metadata.
-205. [ ] Ensure one abusive agent does not consume all employee/API capacity.
-206. [ ] Add rate-limit tests.
+289. [ ] Implement `tasks.start`.
+290. [ ] Map `tasks.start` to current Tasks lifecycle.
+291. [ ] Reject invalid Start transition deterministically.
+292. [ ] Implement `tasks.comment`.
+293. [ ] Preserve External Agent authorship/source on comment.
+294. [ ] Implement `tasks.submit_review`.
+295. [ ] Map submit-review to current Tasks lifecycle.
+296. [ ] Reject invalid submit-review transition.
+297. [ ] Ensure External Agent cannot force Completed.
+298. [ ] Ensure External Agent cannot delete Task.
+299. [ ] Ensure returned-from-review Task can be read/reworked normally.
+300. [ ] Audit semantic Task actions.
+301. [ ] Add valid-transition tests.
+302. [ ] Add invalid-transition tests.
 
-## S. AI execution tracking
+# S. Artifact writes
 
-207. [ ] Add execution/request record if needed for multi-step/async agent operations.
-208. [ ] Track actor/capability/resource/correlation id.
-209. [ ] Support PENDING/RUNNING/SUCCEEDED/FAILED/CANCELLED semantics where async applies.
-210. [ ] Store safe result/error metadata.
-211. [ ] Never store raw bearer tokens.
-212. [ ] Preserve actor context into BullMQ jobs.
-213. [ ] Revalidate revoked actors before delayed sensitive commit where appropriate.
-214. [ ] Add worker failure/retry tests.
+303. [ ] Implement generated artifact upload through Drive.
+304. [ ] Create Drive File Asset using existing ownership rules.
+305. [ ] Link artifact to authorized Task/Work Space.
+306. [ ] Store agent/source provenance.
+307. [ ] Validate file size.
+308. [ ] Validate file type.
+309. [ ] Apply established unsafe/executable-file policy.
+310. [ ] Prevent arbitrary unrelated entity links.
+311. [ ] Apply idempotency to artifact link creation where necessary.
+312. [ ] Add upload/link tests.
 
-## T. Admin API/UI
+# T. Idempotency
 
-215. [ ] Add admin permission(s) for AI Agent management.
-216. [ ] Add agent list.
-217. [ ] Add agent create flow.
-218. [ ] Add agent detail/edit flow.
-219. [ ] Add capability grant UI.
-220. [ ] Add Work Space scope grant UI.
-221. [ ] Add token generation one-time display flow.
-222. [ ] Add credential rotation flow.
-223. [ ] Add credential revoke flow.
-224. [ ] Add agent disable/re-enable flow.
-225. [ ] Add last-used metadata display.
-226. [ ] Add audit history link/view.
-227. [ ] Prevent token/hash redisplay after creation.
-228. [ ] Add admin authorization tests.
+313. [ ] Define common External Agent idempotency contract.
+314. [ ] Support `Idempotency-Key` for REST mutations.
+315. [ ] Support equivalent `clientOperationId` for MCP tools.
+316. [ ] Scope idempotency to actor/capability appropriately.
+317. [ ] Store operation identity/result safely.
+318. [ ] Return original compatible result for safe duplicate retry.
+319. [ ] Prevent duplicate Task create.
+320. [ ] Prevent duplicate comments.
+321. [ ] Prevent duplicate artifact links.
+322. [ ] Prevent duplicate semantic transitions.
+323. [ ] Add duplicate/retry tests.
 
-## U. External machine API quality
+# U. Rate limits and abuse controls
 
-229. [ ] Use dedicated versioned agent namespace.
-230. [ ] Generate/update OpenAPI contracts.
-231. [ ] Use consistent JSON error envelope.
-232. [ ] Provide stable error codes.
-233. [ ] Add request correlation id to responses/logs where useful.
-234. [ ] Add pagination contract.
-235. [ ] Add idempotency header/field documentation.
-236. [ ] Avoid Cursor-specific naming in canonical API.
-237. [ ] Add examples for generic external agent clients.
-238. [ ] Add contract tests.
+324. [ ] Define per-External-Agent request limits.
+325. [ ] Define per-capability limits for expensive/mutating actions.
+326. [ ] Define payload size limits.
+327. [ ] Define optional concurrency limits.
+328. [ ] Return stable rate-limit error/retry metadata.
+329. [ ] Ensure abusive Agent cannot consume employee API capacity globally.
+330. [ ] Add rate-limit tests.
 
-## V. Security hardening
+# V. REST machine API
 
-239. [ ] Verify agent cannot access Credentials secret endpoints.
-240. [ ] Verify agent cannot call unrestricted employee-only APIs using agent token.
-241. [ ] Verify agent cannot enumerate unauthorized Projects/Products/WorkSpaces/Tasks.
-242. [ ] Verify Authorization header redaction in logs/errors.
-243. [ ] Verify token hashes are never API-visible.
-244. [ ] Verify disabled/revoked tokens fail immediately.
-245. [ ] Verify payload validation rejects malformed/oversized requests.
-246. [ ] Verify prompt/content text cannot alter authorization policy.
-247. [ ] Verify Drive links cannot be abused to escape authorized scope.
-248. [ ] Verify no direct raw SQL/database capability exists.
-249. [ ] Verify no Finance mutation capability is exposed in Phase 1.
-250. [ ] Verify no external client messaging capability is exposed in Phase 1.
+331. [ ] Implement dedicated `/api/v1/agent` namespace.
+332. [ ] Implement `GET /agent/me` or equivalent identity endpoint.
+333. [ ] Implement Work Space discovery endpoints.
+334. [ ] Implement Task read/list endpoints.
+335. [ ] Implement Task create endpoint.
+336. [ ] Implement Task allowlisted update endpoint.
+337. [ ] Implement semantic start endpoint.
+338. [ ] Implement comment endpoint.
+339. [ ] Implement submit-review endpoint.
+340. [ ] Implement discussion read endpoint.
+341. [ ] Implement artifact list/read endpoint.
+342. [ ] Implement artifact attach/upload endpoint.
+343. [ ] Do not expose Task delete endpoint for Agent Phase 1.
+344. [ ] Use consistent JSON error envelope.
+345. [ ] Use stable error codes from `09` contract.
+346. [ ] Add pagination contract.
+347. [ ] Add idempotency documentation.
+348. [ ] Generate/update OpenAPI contracts.
+349. [ ] Add REST contract tests.
 
-## W. Regression and compatibility
+# W. MCP server/adapter
 
-251. [ ] Existing human login/auth continues working.
-252. [ ] Existing RBAC behavior remains unchanged for employees.
-253. [ ] Existing Platform Access employee grants remain valid.
-254. [ ] Existing Audit pages/APIs still display human historical records.
-255. [ ] Existing Tasks UI behavior is not broken by ActorContext changes.
-256. [ ] Existing Drive behavior is not widened.
-257. [ ] Worker/scheduler processes start successfully after shared changes.
-258. [ ] Prisma migrations are production-safe and reversible/forward-fixable according to project standards.
-259. [ ] Add migration validation on representative existing data.
-260. [ ] Run project test/lint/typecheck suites relevant to touched modules.
+350. [ ] Implement remote MCP endpoint/server supported by stack.
+351. [ ] Authenticate MCP through the same External Agent credential system.
+352. [ ] Build same ActorContext as REST.
+353. [ ] Implement `nbos_get_identity`.
+354. [ ] Implement `nbos_list_workspaces`.
+355. [ ] Implement `nbos_get_workspace`.
+356. [ ] Implement `nbos_list_tasks`.
+357. [ ] Implement `nbos_get_task`.
+358. [ ] Implement `nbos_create_task`.
+359. [ ] Implement `nbos_update_task`.
+360. [ ] Implement `nbos_start_task`.
+361. [ ] Implement `nbos_get_task_discussion`.
+362. [ ] Implement `nbos_add_task_comment`.
+363. [ ] Implement `nbos_list_task_artifacts`.
+364. [ ] Implement `nbos_get_task_artifact`.
+365. [ ] Implement `nbos_attach_task_artifact`.
+366. [ ] Implement `nbos_submit_task_review`.
+367. [ ] Do not expose delete tool in Phase 1.
+368. [ ] Use structured input/output schemas.
+369. [ ] Ensure MCP tools invoke same capabilities/domain services as REST.
+370. [ ] Ensure MCP authorization decisions match REST.
+371. [ ] Propagate correlation id/protocol metadata.
+372. [ ] Add MCP contract tests.
+373. [ ] Add REST-vs-MCP parity tests.
 
-## X. Documentation and operational readiness
+# X. External client setup and acceptance
 
-261. [ ] Update `00-Documentation-Hub.md` with AI canon links.
-262. [ ] Update `00-Technical-Decisions-By-Module.md` with AI Platform decisions.
-263. [ ] Update `00-Implementation-Roadmap.md` with AI Foundation phase/slice.
-264. [ ] Update Architecture Layers wording to reference AI Platform.
-265. [ ] Update Platform Access docs if runtime model evolves.
-266. [ ] Update Audit documentation for actor-aware model.
-267. [ ] Update Tasks docs for any lifecycle decisions resolved during implementation.
-268. [ ] Update AI Cleanup Register statuses with evidence.
-269. [ ] Add external agent setup documentation.
-270. [ ] Add token rotation/revocation runbook.
-271. [ ] Add incident procedure for leaked agent token.
-272. [ ] Add troubleshooting guide for policy denial/scope errors.
+374. [ ] Document generic REST setup.
+375. [ ] Document Cursor MCP setup pattern.
+376. [ ] Document Codex MCP/API setup pattern where supported.
+377. [ ] Document Claude Code MCP/API setup pattern where supported.
+378. [ ] Ensure setup requires only NBOS URL + External Agent token.
+379. [ ] Ensure setup never requires DB credentials.
+380. [ ] Ensure setup never requires SSH.
+381. [ ] Ensure setup never requires Employee admin JWT/session.
+382. [ ] Ensure setup never requires OpenAI/Anthropic provider keys.
 
-## Y. Final acceptance
+# Y. AI Provider connection foundation
 
-273. [ ] Create one test agent scoped to one non-production/test Work Space.
-274. [ ] Agent lists only that Work Space.
-275. [ ] Agent lists only tasks in allowed Work Space.
-276. [ ] Agent cannot read a known task from another Work Space.
-277. [ ] Agent reads permitted linked artifact.
-278. [ ] Agent cannot read unrelated Drive artifact.
-279. [ ] Agent starts an allowed task.
-280. [ ] Agent posts a progress/comment action with visible AI provenance.
-281. [ ] Agent attaches a generated artifact through Drive.
-282. [ ] Agent submits task for review.
-283. [ ] Normal human review/completion path still controls final completion.
-284. [ ] Duplicate mutation retry does not duplicate effects.
-285. [ ] Revoking credential blocks next request.
-286. [ ] Disabling agent blocks all credentials.
-287. [ ] Audit identifies external agent, capability, resource and result.
-288. [ ] No audit/log entry contains raw token or secret.
-289. [ ] Cross-workspace negative test suite passes.
-290. [ ] Human RBAC regression suite passes.
-291. [ ] API/worker/scheduler build and boot checks pass.
-292. [ ] Cleanup register reflects all remaining known gaps.
-293. [ ] Phase 1 non-goals remain absent.
-294. [ ] Final code review confirms no direct agent-controller Prisma domain writes.
-295. [ ] Final security review confirms deny-by-default behavior.
-296. [ ] Final architecture review confirms internal AI can reuse Actor -> Policy -> Capability -> Domain Action -> Audit without redesign.
+383. [ ] Create generic AI Provider Connection abstraction/model.
+384. [ ] Support provider type OPENAI.
+385. [ ] Support provider type ANTHROPIC.
+386. [ ] Allow multiple connections per provider structurally.
+387. [ ] Add connection name/status.
+388. [ ] Add createdBy/audit metadata.
+389. [ ] Add optional provider organization/project metadata where applicable.
+390. [ ] Add lastValidatedAt.
+391. [ ] Add lastModelSyncAt.
+392. [ ] Add enable/disable semantics.
+393. [ ] Add provider adapter interface.
+394. [ ] Keep business modules provider-independent.
+395. [ ] Add provider connection persistence tests.
 
-## Exit criterion
+# Z. Provider credential security
 
-Phase 1 is complete only when an external AI agent can perform the approved Work Space task workflow with strict isolation and provenance while all existing human NBOS workflows remain intact.
+396. [ ] Store provider credentials through approved encrypted secret mechanism.
+397. [ ] Never expose provider key to AI actor.
+398. [ ] Never expose provider key after save.
+399. [ ] Never log provider key.
+400. [ ] Never store provider key in Audit changes.
+401. [ ] Support key rotation/replacement.
+402. [ ] Support connection disable/revoke behavior.
+403. [ ] Validate provider connection without exposing secret.
+404. [ ] Audit provider connection lifecycle.
+405. [ ] Add secret-redaction tests.
+
+# AA. Model catalog
+
+406. [ ] Create AI Model catalog entity.
+407. [ ] Store provider/model external id.
+408. [ ] Store stable internal NBOS model id.
+409. [ ] Store display name.
+410. [ ] Store discoveredAt.
+411. [ ] Store lastSeenAt.
+412. [ ] Support DISCOVERED status.
+413. [ ] Support ACTIVE status.
+414. [ ] Support DISABLED status.
+415. [ ] Support DEPRECATED status.
+416. [ ] Support UNAVAILABLE status.
+417. [ ] Implement OpenAI model-list synchronization.
+418. [ ] Implement Anthropic model-list synchronization.
+419. [ ] Implement manual Sync Models action.
+420. [ ] Implement scheduled synchronization path/contract.
+421. [ ] Do not auto-activate newly discovered models.
+422. [ ] Preserve historical model records when provider stops listing them.
+423. [ ] Record provider metadata/capabilities where reliable.
+424. [ ] Allow internal suitability tags/notes.
+425. [ ] Distinguish provider metadata from internal suitability judgment.
+426. [ ] Support alias/snapshot metadata where provider exposes it.
+427. [ ] Add model-sync tests.
+428. [ ] Add new-model-discovery tests.
+429. [ ] Add disappeared/unavailable-model tests.
+
+# AB. Model Policy / routing foundation
+
+430. [ ] Create AI Model Policy entity.
+431. [ ] Create model-policy candidate relation.
+432. [ ] Support policy name/purpose/status.
+433. [ ] Support FIXED mode.
+434. [ ] Support PRIMARY_FALLBACK mode.
+435. [ ] Support ordered fallback candidates.
+436. [ ] Allow candidates from the same provider.
+437. [ ] Allow candidates from different providers.
+438. [ ] Validate candidates are enabled/available for production assignment.
+439. [ ] Do not silently auto-promote DISCOVERED model.
+440. [ ] Record routing policy version/config identity where practical.
+441. [ ] Define fallback reasons (provider error/rate limit/timeout/unavailable/etc.).
+442. [ ] Preserve idempotency across retries/fallback for mutating workflows.
+443. [ ] Keep TIERED/ADAPTIVE structurally possible.
+444. [ ] Do not implement learned/adaptive router in Phase 1.
+445. [ ] Add FIXED policy tests.
+446. [ ] Add PRIMARY_FALLBACK configuration tests.
+447. [ ] Add cross-provider fallback configuration tests.
+
+# AC. Internal Agent foundation
+
+448. [ ] Create Internal AI Agent model/entity.
+449. [ ] Add stable id/name/purpose.
+450. [ ] Add owner Employee.
+451. [ ] Support DRAFT status.
+452. [ ] Support ACTIVE status.
+453. [ ] Support PAUSED status.
+454. [ ] Support DISABLED status.
+455. [ ] Support ARCHIVED status.
+456. [ ] Link Internal Agent to capability grants/scopes architecture.
+457. [ ] Link Internal Agent to Model Policy.
+458. [ ] Add prompt-policy linkage contract.
+459. [ ] Add approval-policy linkage contract.
+460. [ ] Add surface/channel assignment model.
+461. [ ] Preserve channel/source in execution context.
+462. [ ] Add `onBehalfOf` support for employee-initiated future actions.
+463. [ ] Ensure Internal Agent is not provider/model identity.
+464. [ ] Ensure model changes do not alter Agent permissions.
+465. [ ] Validate required dependencies before Agent activation.
+466. [ ] Pause/disable blocks new executions.
+467. [ ] Preserve attribution after archive.
+468. [ ] Audit Internal Agent lifecycle/config changes.
+469. [ ] Add Internal Agent persistence/lifecycle tests.
+
+# AD. Prompt policy/version foundation
+
+470. [ ] Create Prompt Policy entity or equivalent configuration domain.
+471. [ ] Create Prompt Version entity.
+472. [ ] Support DRAFT prompt version.
+473. [ ] Support TESTING prompt version.
+474. [ ] Support PUBLISHED prompt version.
+475. [ ] Support RETIRED prompt version.
+476. [ ] Allow Internal Agent to reference published prompt policy/version.
+477. [ ] Preserve prompt version identity in execution metadata contract.
+478. [ ] Support future rollback semantics.
+479. [ ] Audit publish/rollback/config changes.
+480. [ ] Do not let prompt grant capabilities/resources.
+481. [ ] Add prompt-version lifecycle tests.
+
+# AE. Context / memory / knowledge contracts
+
+482. [ ] Define Context Assembler interface/contract.
+483. [ ] Require authorization before context retrieval.
+484. [ ] Use purpose-built module projections.
+485. [ ] Define source/provenance metadata contract.
+486. [ ] Define freshness metadata contract.
+487. [ ] Define redaction/classification contract.
+488. [ ] Define context size/token budget contract.
+489. [ ] Mark user/task/document/message/file content as untrusted data.
+490. [ ] Define session context contract.
+491. [ ] Define persistent-memory interface but keep disabled/unimplemented by default.
+492. [ ] Require memory owner/scope/purpose/retention/provenance.
+493. [ ] Forbid secrets in AI memory.
+494. [ ] Define future Knowledge/RAG source interface.
+495. [ ] Ensure future retrieval cannot bypass authorization.
+496. [ ] Do not build unrestricted global vector store in Phase 1.
+
+# AF. Risk / approval foundation
+
+497. [ ] Add capability risk metadata.
+498. [ ] Implement `ALLOW/DENY/REQUIRE_APPROVAL` policy contract.
+499. [ ] Create approval request persistence/entity.
+500. [ ] Store requesting actor/capability/resource.
+501. [ ] Store safe payload summary.
+502. [ ] Store canonical payload digest.
+503. [ ] Support PENDING.
+504. [ ] Support APPROVED.
+505. [ ] Support REJECTED.
+506. [ ] Support EXPIRED.
+507. [ ] Support CANCELLED.
+508. [ ] Support CONSUMED.
+509. [ ] Bind approval to exact/material payload.
+510. [ ] Material payload change invalidates approval.
+511. [ ] Default approval to one-time.
+512. [ ] Require authorized Employee approver.
+513. [ ] Prevent AI self-approval.
+514. [ ] Add approval expiration.
+515. [ ] Revalidate actor/grants/domain state before approved commit.
+516. [ ] Audit approval lifecycle.
+517. [ ] Add approval-policy tests.
+
+# AG. Customer-facing AI policy foundation
+
+518. [ ] Add customer-facing channel/risk classification contract.
+519. [ ] Define conversation/customer scope context.
+520. [ ] Keep customer context isolated from other customers.
+521. [ ] Define DRAFT_ONLY mode.
+522. [ ] Define APPROVAL_REQUIRED mode.
+523. [ ] Define AUTO_SEND_ALLOWED mode contract for future narrow policies.
+524. [ ] Separate draft capability from send capability.
+525. [ ] Define escalation contract/reason.
+526. [ ] Define internal-only vs customer-visible content requirement/contract.
+527. [ ] Ensure customer messages are untrusted input.
+528. [ ] Ensure customer text cannot widen tools/capabilities.
+529. [ ] Ensure no Credentials/secrets in customer-facing context.
+530. [ ] Do not implement production Messenger auto-send runtime in Phase 1.
+531. [ ] Add customer-isolation policy tests/contracts where possible.
+
+# AH. Usage, cost and observability foundation
+
+532. [ ] Create/extend AI execution record contract.
+533. [ ] Attribute execution to actor/agent.
+534. [ ] Attribute provider connection.
+535. [ ] Attribute model.
+536. [ ] Attribute Model Policy/routing config.
+537. [ ] Attribute capability/domain/channel.
+538. [ ] Store correlation id.
+539. [ ] Track status/success/failure.
+540. [ ] Track latency.
+541. [ ] Track retry count.
+542. [ ] Track fallback occurrence/reason.
+543. [ ] Track provider usage units/tokens where available.
+544. [ ] Track estimated/provider-reported cost where available.
+545. [ ] Keep pricing-version/effective-date concept for historical cost integrity.
+546. [ ] Define basic budget/usage limit schema/contracts.
+547. [ ] Avoid storing full sensitive prompts solely for metrics.
+548. [ ] Add execution/usage attribution tests.
+
+# AI. Evaluation foundation
+
+549. [ ] Create evaluation suite/run contracts or entities sufficient for future use.
+550. [ ] Support model/model-policy evaluation target.
+551. [ ] Support prompt-version attribution.
+552. [ ] Support dataset/version identity.
+553. [ ] Support aggregate quality/latency/cost results.
+554. [ ] Keep deterministic/human/model-based grading separable.
+555. [ ] Do not automatically activate/promote model based only on provider release.
+556. [ ] Do not automatically promote based only on LLM-judge score.
+557. [ ] Add admin notes/suitability/evaluation status to model management.
+
+# AJ. Central AI administration UI
+
+558. [ ] Add central `Settings -> AI & Agents` area (or accepted equivalent).
+559. [ ] Add Overview page/summary.
+560. [ ] Add External Agents list.
+561. [ ] Add External Agent create flow.
+562. [ ] Add External Agent detail/edit flow.
+563. [ ] Add capability grant UI.
+564. [ ] Add Work Space scope grant UI.
+565. [ ] Add one-time token issuance display.
+566. [ ] Add token rotate flow.
+567. [ ] Add token revoke flow.
+568. [ ] Add External Agent disable/re-enable flow.
+569. [ ] Add last-used metadata.
+570. [ ] Add External Agent audit/activity view/link.
+571. [ ] Never redisplay raw token/hash after issuance.
+572. [ ] Add Providers page.
+573. [ ] Add OpenAI provider connection flow.
+574. [ ] Add Anthropic provider connection flow.
+575. [ ] Add Validate Connection action.
+576. [ ] Add Rotate/Replace Provider Key flow.
+577. [ ] Add Disable Provider flow.
+578. [ ] Add Models page.
+579. [ ] Add Sync Models action.
+580. [ ] Show DISCOVERED models separately.
+581. [ ] Add model Activate/Disable actions.
+582. [ ] Show provider/model metadata and internal notes/tags.
+583. [ ] Add Model Policies page.
+584. [ ] Add FIXED policy create/edit UI.
+585. [ ] Add PRIMARY_FALLBACK policy create/edit UI.
+586. [ ] Allow cross-provider candidates.
+587. [ ] Add Internal Agents page/shell.
+588. [ ] Add Internal Agent create/configure UI foundation.
+589. [ ] Add Model Policy assignment.
+590. [ ] Add prompt-policy assignment placeholder/foundation.
+591. [ ] Add approval-policy assignment placeholder/foundation.
+592. [ ] Add Usage page/shell.
+593. [ ] Add Approvals page/queue shell.
+594. [ ] Add AI Audit/Activity view.
+595. [ ] Add admin authorization tests.
+
+# AK. Contextual module access UI
+
+596. [ ] Add Work Space `Settings -> AI Access` contextual view.
+597. [ ] Show External Agents currently scoped to that Work Space.
+598. [ ] Allow authorized admin to grant existing Agent access from Work Space context.
+599. [ ] Allow authorized admin to revoke Work Space access contextually.
+600. [ ] Link to canonical central External Agent detail.
+601. [ ] Ensure contextual UI uses the same grants as central AI administration.
+602. [ ] Do not create a second Work Space-specific permission database.
+
+# AL. Security hardening
+
+603. [ ] Verify External Agent cannot access Credentials secret endpoints.
+604. [ ] Verify External Agent token cannot authenticate to unrestricted Employee-only APIs.
+605. [ ] Verify Agent cannot enumerate unauthorized Projects.
+606. [ ] Verify Agent cannot enumerate unauthorized Products.
+607. [ ] Verify Agent cannot enumerate unauthorized Work Spaces.
+608. [ ] Verify Agent cannot enumerate unauthorized Tasks.
+609. [ ] Verify REST and MCP both enforce same isolation.
+610. [ ] Verify Authorization headers are redacted.
+611. [ ] Verify credential hashes are never API-visible.
+612. [ ] Verify provider keys are never API-visible after save.
+613. [ ] Verify revoked credential blocks next REST request.
+614. [ ] Verify revoked credential blocks next MCP invocation.
+615. [ ] Verify disabled External Agent blocks all credentials.
+616. [ ] Verify malformed/oversized payload rejection.
+617. [ ] Verify prompt/task/comment/file content cannot alter authorization.
+618. [ ] Verify Drive link cannot escape authorized scope.
+619. [ ] Verify no raw SQL/database capability exists.
+620. [ ] Verify no Task delete capability exists for External Agent Phase 1.
+621. [ ] Verify no force-complete capability exists.
+622. [ ] Verify no unrestricted Finance mutation capability exists.
+623. [ ] Verify no unrestricted client-message send capability exists.
+624. [ ] Verify newly discovered model cannot become production-active automatically.
+625. [ ] Verify provider credential never enters AI context.
+626. [ ] Verify queued sensitive actions revalidate revoked actor/grant as designed.
+
+# AM. Regression and compatibility
+
+627. [ ] Existing Employee login works.
+628. [ ] Existing Employee RBAC behavior remains unchanged.
+629. [ ] Existing Platform Access human grants remain valid.
+630. [ ] Existing Audit pages/APIs still display historical human rows.
+631. [ ] Existing Tasks UI behavior remains intact.
+632. [ ] Existing Tasks workflow remains intact.
+633. [ ] Existing Drive access remains intact and not widened.
+634. [ ] Existing Integrations behavior remains intact.
+635. [ ] Existing API application boots.
+636. [ ] Existing worker boots.
+637. [ ] Existing scheduler boots.
+638. [ ] Prisma migrations are production-safe/forward-fixable according to project standards.
+639. [ ] Validate migrations on representative existing data.
+640. [ ] Run relevant lint/typecheck/test suites.
+
+# AN. Documentation synchronization
+
+641. [ ] Update `00-Documentation-Hub.md` with AI canon links.
+642. [ ] Update `00-Technical-Decisions-By-Module.md` with AI Platform decisions.
+643. [ ] Update `00-Implementation-Roadmap.md` with Phase 1 AI Foundation slice.
+644. [ ] Update Architecture Layers wording so AI is not merely an Automation Layer feature.
+645. [ ] Update Platform Access docs if runtime contracts evolve.
+646. [ ] Update Audit docs for actor-aware audit.
+647. [ ] Update Tasks docs for any lifecycle/runtime decisions resolved.
+648. [ ] Update Drive docs if Agent artifact access introduces new canonical behavior.
+649. [ ] Update `99-AI-Cleanup-Register.md` with resolved/open conflicts and evidence.
+650. [ ] Add External Agent REST setup documentation.
+651. [ ] Add External Agent MCP setup documentation.
+652. [ ] Add token rotation/revocation runbook.
+653. [ ] Add leaked External Agent token incident runbook.
+654. [ ] Add provider-key rotation incident/runbook guidance.
+655. [ ] Add policy denial/scope troubleshooting guide.
+656. [ ] Add model sync/availability troubleshooting guide.
+
+# AO. Final External Agent acceptance
+
+657. [ ] Create one test External Agent scoped to one non-production/test Work Space.
+658. [ ] Agent REST lists only authorized Work Space.
+659. [ ] Agent MCP lists only authorized Work Space.
+660. [ ] Agent REST lists only authorized tasks.
+661. [ ] Agent MCP lists only authorized tasks.
+662. [ ] Agent cannot read known task from another Work Space via REST.
+663. [ ] Agent cannot read known task from another Work Space via MCP.
+664. [ ] Agent reads permitted linked artifact.
+665. [ ] Agent cannot read unrelated Drive artifact.
+666. [ ] Agent with `tasks.create` creates a Task.
+667. [ ] Agent without `tasks.create` cannot create a Task.
+668. [ ] Agent with `tasks.update` updates an allowed field.
+669. [ ] Agent cannot update a forbidden field.
+670. [ ] Agent cannot delete a Task.
+671. [ ] Agent starts allowed Task.
+672. [ ] Agent posts progress/comment with visible AI provenance.
+673. [ ] Agent attaches generated artifact.
+674. [ ] Agent submits Task for review.
+675. [ ] Human review/completion still controls final completion.
+676. [ ] Duplicate create retry does not duplicate Task.
+677. [ ] Duplicate comment retry does not duplicate comment.
+678. [ ] Duplicate transition retry does not duplicate effects.
+679. [ ] Revoking credential blocks next REST request.
+680. [ ] Revoking credential blocks next MCP invocation.
+681. [ ] Disabling Agent blocks all credentials.
+682. [ ] Audit identifies External Agent + protocol + capability + resource + result.
+683. [ ] No audit/log contains raw Agent token.
+684. [ ] Cross-Work Space negative suite passes.
+685. [ ] REST/MCP parity suite passes.
+
+# AP. Final Provider/Model/Internal foundation acceptance
+
+686. [ ] Connect a test OpenAI provider connection securely.
+687. [ ] Validate OpenAI connection.
+688. [ ] Sync OpenAI model catalog.
+689. [ ] Connect a test Anthropic provider connection securely.
+690. [ ] Validate Anthropic connection.
+691. [ ] Sync Anthropic model catalog.
+692. [ ] Newly discovered model appears as DISCOVERED, not ACTIVE.
+693. [ ] Admin can explicitly activate/disable model.
+694. [ ] Provider key cannot be retrieved after save.
+695. [ ] Create FIXED Model Policy with one active model.
+696. [ ] Create PRIMARY_FALLBACK policy with ordered models.
+697. [ ] PRIMARY_FALLBACK can include models from different providers.
+698. [ ] Create Internal Agent in DRAFT.
+699. [ ] Assign capabilities/scopes contract to Internal Agent.
+700. [ ] Assign Model Policy to Internal Agent.
+701. [ ] Assign prompt-policy foundation/config.
+702. [ ] Activate Internal Agent only when required dependencies validate.
+703. [ ] Pause/disable blocks new execution contract/path.
+704. [ ] Audit records provider/model/Internal Agent configuration changes.
+705. [ ] Usage/execution records can attribute agent/provider/model/policy.
+
+# AQ. Final architecture review
+
+706. [ ] No External Agent controller contains direct domain Prisma writes.
+707. [ ] No MCP tool adapter contains direct domain Prisma writes.
+708. [ ] REST and MCP share the same authentication/policy/capability/domain path.
+709. [ ] External Agent and Internal Agent use the same normalized Actor/Policy/Capability concepts.
+710. [ ] Provider/Model selection is separated from Agent identity and permissions.
+711. [ ] Model changes do not alter domain grants.
+712. [ ] Prompt configuration does not grant permissions.
+713. [ ] Customer-facing safety is enforceable outside prompt text.
+714. [ ] Secrets remain excluded from AI context and audit.
+715. [ ] Existing human authorization is not replaced/broken.
+716. [ ] Cleanup Register reflects every remaining known gap.
+717. [ ] Phase 1 non-goals remain absent.
+718. [ ] Final security review confirms deny-by-default behavior.
+719. [ ] Final architecture review confirms future employee AI chat can reuse the foundation without redesign.
+720. [ ] Final architecture review confirms future Messenger AI can reuse the foundation without redesign.
+721. [ ] Final architecture review confirms future Documents/CRM/Analytics AI can reuse the foundation without redesign.
+
+---
+
+# Exit criterion
+
+Phase 1 is complete only when all of the following are true:
+
+1. trusted external coding agents can use both REST and MCP against explicitly authorized Work Spaces/Tasks;
+2. Task create/update are separately grantable and safely constrained;
+3. Task delete and force-completion are unavailable to External Agents;
+4. strict Work Space/Task/Drive isolation and provenance are proven by negative tests;
+5. provider connections and model catalogs for OpenAI/Anthropic are manageable centrally and securely;
+6. newly discovered models never become production-active automatically;
+7. FIXED and PRIMARY_FALLBACK model policies can be configured, including cross-provider candidates;
+8. Internal Agent identity/configuration foundation exists independently of provider/model choice;
+9. prompt, approval, customer-facing safety and usage/evaluation foundations are represented canonically and in runtime contracts where required by this checklist;
+10. current human NBOS workflows remain intact;
+11. the architecture can add internal AI runtime, Messenger AI, Documents AI, CRM AI and Analytics AI without creating a second identity/authorization/action system.
