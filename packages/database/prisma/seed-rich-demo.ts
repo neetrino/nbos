@@ -616,6 +616,7 @@ async function createRichProjectBundle(
   const product = await prisma.product.create({
     data: {
       projectId: project.id,
+      contactId,
       name: engagement.product,
       productCategory: engagement.category,
       productType: engagement.type,
