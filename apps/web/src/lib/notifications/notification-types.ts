@@ -21,3 +21,6 @@ export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED =
 
 export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED =
   'mail.thread_needs_link_cleared' as const;
+
+export const OPS_NOTIFICATION_TYPE_SCHEDULER_RUN_FAILED = 'ops.scheduler_run_failed' as const;
+export const OPS_NOTIFICATION_TYPE_BULLMQ_JOB_FAILED = 'ops.bullmq_job_failed' as const;

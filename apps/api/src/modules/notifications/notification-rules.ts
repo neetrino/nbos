@@ -56,6 +56,8 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
   { eventType: 'finance.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'mail.health_degraded', category: 'system_health', priority: 'high' },
   { eventType: 'mail.send_failed', category: 'system_health', priority: 'high' },
+  { eventType: 'ops.scheduler_run_failed', category: 'system_health', priority: 'high' },
+  { eventType: 'ops.bullmq_job_failed', category: 'system_health', priority: 'high' },
   { eventType: 'document.access_changed', category: 'audit_security', priority: 'normal' },
   { eventType: 'credentials.high_risk_action', category: 'audit_security', priority: 'high' },
   { eventType: 'support.sla.resolve_warning', category: 'action_required', priority: 'high' },

@@ -8,6 +8,7 @@ import { DriveModule } from '../modules/drive/drive.module';
 import { DriveExportZipWorker } from '../modules/drive/drive-export-zip.worker';
 import { WhatsAppGatewayModule } from '../modules/integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { WhatsAppProductGroupsWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-product-groups.worker';
+import { OpsAlertsModule } from '../modules/ops-alerts/ops-alerts.module';
 import { BullmqWorkerRegistry } from './bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from './process-role';
 
@@ -32,7 +33,14 @@ export class QueueWorkersModule {
   static forWorker(): DynamicModule {
     return {
       module: QueueWorkersModule,
-      imports: [AuditModule, MailModule, ReportsModule, DriveModule, WhatsAppGatewayModule],
+      imports: [
+        AuditModule,
+        MailModule,
+        ReportsModule,
+        DriveModule,
+        WhatsAppGatewayModule,
+        OpsAlertsModule,
+      ],
       providers: [
         BullmqWorkerRegistry,
         MailWorker,

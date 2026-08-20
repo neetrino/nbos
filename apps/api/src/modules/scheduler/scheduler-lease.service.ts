@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { OpsJobFailureAlertService } from '../ops-alerts/ops-job-failure-alert.service';
 import {
   SCHEDULER_RUN_STATUS,
   type SchedulerRunStatus,
@@ -54,6 +55,7 @@ export class SchedulerLeaseService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly runs: SchedulerRunService,
+    @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
 
   /**
@@ -252,9 +254,25 @@ export class SchedulerLeaseService {
       this.logger.log(
         `jobName=${options.jobName} runId=${run.id} ownerId=${lease.ownerId} fencingToken=${lease.fencingToken.toString()} trigger=${options.trigger} status=${status} durationMs=${finishedAtDelta(startedAt)} processedCount=${processedCount ?? ''}`,
       );
+      this.queueSchedulerFailureAlert(options.jobName, run.id, status, errorCode, errorMessage);
     }
 
     return { status, runId: run.id };
+  }
+
+  private queueSchedulerFailureAlert(
+    jobName: string,
+    runId: string,
+    status: SchedulerRunStatus,
+    errorCode?: string,
+    errorMessage?: string,
+  ): void {
+    if (status !== SCHEDULER_RUN_STATUS.FAILED && status !== SCHEDULER_RUN_STATUS.TIMED_OUT) {
+      return;
+    }
+    void this.opsAlerts
+      ?.notifySchedulerRunFailed({ jobName, runId, status, errorCode, errorMessage })
+      .catch(() => undefined);
   }
 }
 

@@ -127,6 +127,7 @@ Invoice reminder due
 | Drive         | Cleanup candidate, restricted file shared, export ready            |
 | Credentials   | Secret viewed/changed, access denied, rotation due                 |
 | Integrations  | WAHA disconnected, queue failed, webhook error                     |
+| Ops / runtime | Scheduler run failed/timed out; BullMQ job exhausted retries       |
 
 ## UI expectations
 

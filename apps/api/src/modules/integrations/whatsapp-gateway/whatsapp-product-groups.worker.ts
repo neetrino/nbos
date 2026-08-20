@@ -1,4 +1,11 @@
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { Worker, type Job } from 'bullmq';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import {
@@ -16,6 +23,7 @@ import { shouldRegisterBullmqWorkers } from '../../../runtime/process-role';
 import { createQueueWorkerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
+import { OpsJobFailureAlertService } from '../../ops-alerts/ops-job-failure-alert.service';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.service';
 import {
@@ -59,6 +67,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     private readonly audit: AuditService,
     private readonly queue: WhatsAppProductGroupsQueueService,
     private readonly registry: BullmqWorkerRegistry,
+    @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
 
   onModuleInit() {
@@ -105,6 +114,11 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     this.worker.on('failed', (job, error) => {
       this.logger.error(`WhatsApp job failed operationId=${job?.data.operationId}`, error);
       void this.onJobExhausted(job, error);
+      void this.opsAlerts?.notifyIfBullmqFinallyFailed(
+        WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+        job,
+        error,
+      );
     });
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { Worker } from 'bullmq';
 import type Redis from 'ioredis';
 import { resolveBullmqConcurrency } from '../../runtime/bullmq-concurrency';
@@ -7,6 +7,7 @@ import { logBullmqJob, type JobLogFields } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
 import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import { OpsJobFailureAlertService } from '../ops-alerts/ops-job-failure-alert.service';
 import { MailAttachmentDownloadService } from './mail-attachment-download.service';
 import {
   MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
@@ -33,6 +34,7 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
     private readonly sendService: MailSendService,
     private readonly downloadService: MailAttachmentDownloadService,
     private readonly registry: BullmqWorkerRegistry,
+    @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
 
   onModuleInit() {
@@ -53,6 +55,7 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
     this.registry.register(MAIL_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {
       this.logger.error(`Mail worker failed for job ${job?.id ?? 'unknown'}.`, error);
+      void this.opsAlerts?.notifyIfBullmqFinallyFailed(MAIL_QUEUE_NAME, job, error);
     });
   }
 

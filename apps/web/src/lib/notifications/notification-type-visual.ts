@@ -19,6 +19,8 @@ import {
   MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
   MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED,
   MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED,
+  OPS_NOTIFICATION_TYPE_BULLMQ_JOB_FAILED,
+  OPS_NOTIFICATION_TYPE_SCHEDULER_RUN_FAILED,
 } from './notification-types';
 
 export interface NotificationVisual {
@@ -79,6 +81,15 @@ export function getNotificationVisual(type: string): NotificationVisual {
   }
   if (type.startsWith('mail.')) {
     return MAIL_VISUAL;
+  }
+  if (
+    type === OPS_NOTIFICATION_TYPE_SCHEDULER_RUN_FAILED ||
+    type === OPS_NOTIFICATION_TYPE_BULLMQ_JOB_FAILED
+  ) {
+    return {
+      Icon: AlertTriangle,
+      iconClassName: 'bg-red-500/10 text-red-700',
+    };
   }
   return {
     Icon: Bell,

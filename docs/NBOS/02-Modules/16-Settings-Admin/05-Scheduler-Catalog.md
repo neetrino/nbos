@@ -36,7 +36,7 @@ Settings → Scheduler = видимость, вкл/выкл, Run now.
 4. Ops-roster (`docs/architecture/scheduler-cron-roster.md`) — журнал решений до политики; после — ссылка на канон.
 5. UI **не** меняет cron: расписание только в коде (catalog / default env cron) → деплой → restart `nbos-scheduler`.
 6. High-risk (billing, trash purge, invoice WhatsApp reminders): confirm + audit на toggle и Run now.
-7. Алерты падений Scheduler/BullMQ — ops backlog (`todo.md`), не часть Settings UI.
+7. Падения Scheduler run (`FAILED` / `TIMED_OUT`) и финальные BullMQ failures — in-app `system_health` Owner и CEO (разные роли). Не часть таблицы Settings; ссылка из уведомления ведёт в Scheduler / модуль.
 
 ## Статусы
 
@@ -65,11 +65,11 @@ Settings → Scheduler = видимость, вкл/выкл, Run now.
 
 ## Этапы
 
-| Этап | Что                                                                          |
-| ---- | ---------------------------------------------------------------------------- |
-| 1    | Каталог + runtime snapshot + Settings list                                   |
-| 2    | Toggle из админки (`SchedulerJobPolicy`); env `*_ENABLED` только для seed    |
-| 3    | Run now; расписание остаётся в коде; алерты падений — ops monitoring backlog |
+| Этап | Что                                                                       |
+| ---- | ------------------------------------------------------------------------- |
+| 1    | Каталог + runtime snapshot + Settings list                                |
+| 2    | Toggle из админки (`SchedulerJobPolicy`); env `*_ENABLED` только для seed |
+| 3    | Run now; расписание в коде; падения Scheduler/BullMQ → in-app Owner + CEO |
 
 ## Связанные документы
 
