@@ -335,7 +335,7 @@ WHERE id = :id AND delivery_status = 'QUEUED'
 
 1. Sync сохраняет письмо + строки вложений: имя, mime, size, `providerAttachmentId`, `PENDING`, `fileAssetId = null`.
 2. На каждое вложение — `mail.attachment.download`.
-3. Worker: `adapter.downloadAttachment` → Drive `FileAsset` → `READY`.
+3. Worker: `adapter.downloadAttachment` → Drive `FileAsset` → `READY`. IMAP: cid, иначе `imap-part:{BODYSTRUCTURE section}`; старые `part:{n}:{filename}` — fallback на retry. Download FETCH'ит секцию, не угадывает индекс mailparser.
 4. Ошибка transient — throw. Permanent / oversized — `FAILED`, письмо остаётся.
 5. UI: тело письма доступно; вложение — pending / ready / failed + retry.
 

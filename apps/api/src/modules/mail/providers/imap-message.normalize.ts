@@ -1,5 +1,5 @@
 import type { AddressObject, ParsedMail } from 'mailparser';
-import { collectImapAttachments } from './imap-message.attachments';
+import { collectImapAttachments, type ImapBodyStructureNode } from './imap-message.attachments';
 import type {
   NormalizedMessage,
   NormalizedRecipient,
@@ -38,7 +38,11 @@ function resolveProviderThreadId(parsed: ParsedMail): string | null {
 }
 
 /** Normalizes a parsed IMAP RFC822 message into the shared NBOS message shape. */
-export function normalizeParsedMail(parsed: ParsedMail, uid: number): NormalizedMessage {
+export function normalizeParsedMail(
+  parsed: ParsedMail,
+  uid: number,
+  bodyStructure?: ImapBodyStructureNode,
+): NormalizedMessage {
   const recipients: NormalizedRecipient[] = [
     ...mapAddresses('FROM', parsed.from),
     ...mapAddresses('TO', parsed.to),
@@ -58,6 +62,6 @@ export function normalizeParsedMail(parsed: ParsedMail, uid: number): Normalized
     receivedAt,
     direction: 'INBOUND',
     recipients,
-    attachments: collectImapAttachments(parsed),
+    attachments: collectImapAttachments(parsed, bodyStructure),
   };
 }
