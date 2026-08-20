@@ -25,6 +25,10 @@ describe('parseReportsPathname', () => {
       sectionId: 'center',
       viewId: 'EXPORTS',
     });
+    expect(parseReportsPathname('/reports/center/scheduled')).toEqual({
+      sectionId: 'center',
+      viewId: 'SCHEDULED',
+    });
   });
 
   it('rejects unknown paths', () => {

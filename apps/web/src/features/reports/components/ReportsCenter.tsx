@@ -10,7 +10,6 @@ import {
   type ReportDefinition,
   type ReportExportFormat,
   type ReportExportJob,
-  type ReportSchedule,
   type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -22,6 +21,7 @@ import { ReportsDataQualityPanel } from './ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from './ReportsSchedulePanel';
 import { ReportExportHistory } from './ReportExportHistory';
 import { ReportActions } from './tabs/ReportActions';
+import { useReportExportJobsPoll } from '../hooks/use-report-export-jobs-poll';
 import {
   buildInitialReportFilters,
   buildReportFilters,
@@ -68,7 +68,6 @@ export function ReportsCenter() {
 
   const [definitions, setDefinitions] = useState<ReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
-  const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
   const [warnings, setWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [search, setSearch] = useState('');
@@ -106,7 +105,6 @@ export function ReportsCenter() {
       const loaded = await loadReportShellData();
       setDefinitions(loaded.definitions);
       setExportJobs(loaded.exportJobs);
-      setSchedules(loaded.schedules);
       setSavedViews(loaded.savedViews);
       setWarnings(loaded.warnings);
     } catch (caught) {
@@ -119,6 +117,11 @@ export function ReportsCenter() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const handleExportJobs = useCallback((jobs: ReportExportJob[]) => {
+    setExportJobs(jobs);
+  }, []);
+  useReportExportJobsPoll(handleExportJobs);
 
   const visibleDefinitions = useMemo(
     () => filterDefinitions(definitions, view, search),
@@ -191,7 +194,7 @@ export function ReportsCenter() {
       trailing: showReportActions ? (
         <ReportsPageSettingsSheet
           title={`${reportViewLabel(view)} — settings`}
-          description="Download report files for the current filters."
+          description="Create a file for the current dates. It appears under Report files, where you can download it."
           triggerAriaLabel={`${reportViewLabel(view)} settings`}
         >
           <ReportActions
@@ -226,13 +229,7 @@ export function ReportsCenter() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
       {view === 'SCHEDULED' ? (
-        <ReportsSchedulePanel
-          definitions={definitions}
-          schedules={schedules}
-          filters={exportFilters}
-          onSchedulesChange={setSchedules}
-          onRefresh={() => void load()}
-        />
+        <ReportsSchedulePanel />
       ) : view === 'EXPORTS' ? (
         <ReportExportHistory
           jobs={exportJobs}
@@ -275,17 +272,15 @@ function filterDefinitions(
 }
 
 async function loadReportShellData() {
-  const [definitions, exportJobs, schedules, savedViews, quality] = await Promise.all([
+  const [definitions, exportJobs, savedViews, quality] = await Promise.all([
     reportsApi.listDefinitions(),
     reportsApi.listExportJobs(),
-    reportsApi.listSchedules(),
     reportsApi.listSavedViews(),
     reportsApi.listDataQualityWarnings(),
   ]);
   return {
     definitions: definitions.items,
     exportJobs,
-    schedules,
     savedViews,
     warnings: quality.items,
   };

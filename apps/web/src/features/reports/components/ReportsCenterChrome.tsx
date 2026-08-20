@@ -13,7 +13,7 @@ export function reportViewLabel(view: ReportsViewId): string {
     PROJECTS: 'Projects',
     SPECIALISTS: 'Specialists',
     SCHEDULED: 'Scheduled',
-    EXPORTS: 'Exports',
+    EXPORTS: 'Report files',
     QUALITY: 'Data quality',
   };
   return labels[view] ?? 'Reports';

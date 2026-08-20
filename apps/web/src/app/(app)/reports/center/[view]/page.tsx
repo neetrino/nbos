@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { ReportsCenter } from '@/features/reports/components/ReportsCenter';
-import { REPORTS_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/reports-visit-config';
+import { buildReportsViewPath } from '@/features/reports/reports-routing';
 
-const CENTER_VIEWS = new Set(['scheduled', 'exports', 'quality']);
+const CENTER_VIEWS = new Set(['exports', 'quality']);
 
 export default async function ReportsCenterViewPage({
   params,
@@ -11,7 +11,7 @@ export default async function ReportsCenterViewPage({
 }) {
   const { view } = await params;
   if (!CENTER_VIEWS.has(view)) {
-    redirect(REPORTS_SECTION_DEFAULTS.center);
+    redirect(buildReportsViewPath('EXPORTS'));
   }
   return <ReportsCenter />;
 }
