@@ -118,7 +118,7 @@ Client Portfolio — вычисляемый клиентский обзор, к�
 ClientContactLink
   id
   contact_id
-  entity_type  // COMPANY / DEAL / PROJECT / INVOICE
+  entity_type  // COMPANY / DEAL / PROJECT / PRODUCT / INVOICE
   entity_id
   purpose      // GENERAL / BILLING / TECHNICAL / OTHER
   is_primary

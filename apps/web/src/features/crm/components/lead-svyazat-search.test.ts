@@ -46,7 +46,8 @@ describe('lead svyazat search', () => {
     expect(leadSvyazatHit(lead()).title).toBe('Site');
     expect(leadSvyazatHit(lead({ name: null })).title).toBe('Anna');
     expect(leadSvyazatHit(lead()).kind).toBe('lead');
-    expect(SVYAZAT_KIND_LABELS.project).toBe('Product');
+    expect(SVYAZAT_KIND_LABELS.project).toBe('Project');
+    expect(SVYAZAT_KIND_LABELS.product).toBe('Product');
   });
 
   it('uses contact full name and phone/email subtitle', () => {

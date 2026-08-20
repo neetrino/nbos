@@ -502,11 +502,13 @@ export class ProductWhatsAppGroupService {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: {
+        contactId: true,
         project: { select: { contactId: true } },
         order: { select: { deal: { select: { contactId: true } } } },
       },
     });
-    const contactId = product?.project.contactId ?? product?.order?.deal?.contactId ?? null;
+    const contactId =
+      product?.contactId ?? product?.project.contactId ?? product?.order?.deal?.contactId ?? null;
     if (!contactId) {
       throwWhatsAppDomainError(
         400,

@@ -72,7 +72,7 @@ Client Contact is **never** added as a group participant.
 After group create success:
 
 1. `GET` Gateway invite-link (in memory only)
-2. Resolve Contact: `Project.contactId` then Deal contact
+2. Resolve Contact: `Product.contactId` → `Project.contactId` → Deal contact
 3. `normalizePhoneToWhatsAppJid()` (default country `AM`)
 4. `POST /api/messages/send` with invite URL in text
 5. Persist invitation status — **never store invite URL**

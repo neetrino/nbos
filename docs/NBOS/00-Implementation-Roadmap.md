@@ -241,6 +241,7 @@ Goal: sold work becomes controlled product delivery.
 Scope:
 
 - Projects Hub;
+- **Contact ↔ Product** (`02-Modules/03-Clients/07-Contact-and-Product.md`) — Product-scoped client contacts;
 - global `/delivery-board` for Product/Extension lifecycle;
 - lifecycle gates;
 - On Hold status and pause date;

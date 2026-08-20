@@ -63,6 +63,39 @@ export class PortfolioService {
     });
     if (!contact) throw new NotFoundException(`Contact ${contactId} not found`);
 
+    const productMemberships = await this.prisma.product.findMany({
+      where: {
+        OR: [{ contactId }, { additionalContacts: { some: { contactId } } }],
+        project: { trashedAt: null },
+      },
+      take: 80,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        productCategory: true,
+        productType: true,
+        status: true,
+        projectId: true,
+        contactId: true,
+      },
+    });
+
+    const projectsWithProductContext = contact.projects.map((project) => {
+      const memberships = productMemberships.filter((product) => product.projectId === project.id);
+      return {
+        ...project,
+        productContext: memberships.map((product) => ({
+          id: product.id,
+          name: product.name,
+          productCategory: product.productCategory,
+          productType: product.productType,
+          status: product.status,
+          role: product.contactId === contactId ? 'primary' : 'additional',
+        })),
+      };
+    });
+
     const projectIds = contact.projects.map((p) => p.id);
     const invoiceWhere: Prisma.InvoiceWhereInput | null =
       projectIds.length > 0 ? { projectId: { in: projectIds } } : null;
@@ -152,7 +185,19 @@ export class PortfolioService {
       scope: 'contact' as const,
       accessMask,
       clientHealth: 'good' as const,
-      contact,
+      contact: {
+        ...contact,
+        projects: projectsWithProductContext,
+      },
+      productMemberships: productMemberships.map((product) => ({
+        id: product.id,
+        name: product.name,
+        productCategory: product.productCategory,
+        productType: product.productType,
+        status: product.status,
+        projectId: product.projectId,
+        role: product.contactId === contactId ? 'primary' : 'additional',
+      })),
       subscriptions: subscriptions.map((s) => ({
         id: s.id,
         code: s.code,

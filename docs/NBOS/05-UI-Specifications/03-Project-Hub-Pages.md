@@ -225,6 +225,8 @@ Starting → Development → QA → Transfer
 - Ответственные
 - Ссылки (staging, production, репозиторий)
 
+**Overview — Contacts:** Product-scoped primary + additional contacts (`product-contacts` picker). Не редактирует контакты Project. Канон: `../../02-Modules/03-Clients/07-Contact-and-Product.md`.
+
 **Stage Gate / Readiness:**
 Секция stage gates для продукта. Каждый stage имеет свой набор required/optional items:
 

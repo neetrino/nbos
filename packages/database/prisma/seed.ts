@@ -401,6 +401,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000020',
       projectId: project1.id,
+      contactId: project1.contactId,
       name: 'acme.com',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
@@ -413,6 +414,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000021',
       projectId: project1.id,
+      contactId: project1.contactId,
       name: 'ACME Brand Identity',
       productCategory: 'MARKETING',
       productType: 'LOGO',
@@ -424,6 +426,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000028',
       projectId: project1.id,
+      contactId: project1.contactId,
       name: 'SEO Package',
       productCategory: 'MARKETING',
       productType: 'SEO',
@@ -437,6 +440,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000022',
       projectId: project2.id,
+      contactId: project2.contactId,
       name: 'techstart.app',
       productCategory: 'CODE',
       productType: 'MOBILE_APP',
@@ -449,6 +453,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000029',
       projectId: project2.id,
+      contactId: project2.contactId,
       name: 'get.techstart.am',
       productCategory: 'CODE',
       productType: 'LANDING',
@@ -462,6 +467,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000023',
       projectId: project3.id,
+      contactId: project3.contactId,
       name: 'globalcrm.io',
       productCategory: 'CODE',
       productType: 'CRM',
@@ -474,6 +480,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000030',
       projectId: project3.id,
+      contactId: project3.contactId,
       name: 'CRM Branding Kit',
       productCategory: 'MARKETING',
       productType: 'BRANDING',
@@ -487,6 +494,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000024',
       projectId: project4.id,
+      contactId: project4.contactId,
       name: 'medtech.health',
       productCategory: 'CODE',
       productType: 'WEB_APP',
@@ -499,6 +507,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000025',
       projectId: project4.id,
+      contactId: project4.contactId,
       name: 'blog.medtech.am',
       productCategory: 'WORDPRESS',
       productType: 'COMPANY_WEBSITE',
@@ -510,6 +519,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000031',
       projectId: project4.id,
+      contactId: project4.contactId,
       name: 'MedTech Logo & Design',
       productCategory: 'MARKETING',
       productType: 'DESIGN',
@@ -523,6 +533,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000026',
       projectId: project5.id,
+      contactId: project5.contactId,
       name: 'fleet.logisticspro.am',
       productCategory: 'CODE',
       productType: 'WEB_APP',
@@ -535,6 +546,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000027',
       projectId: project5.id,
+      contactId: project5.contactId,
       name: 'Logistics Shopify Store',
       productCategory: 'SHOPIFY',
       productType: 'ECOMMERCE',
@@ -548,6 +560,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000032',
       projectId: project1.id,
+      contactId: project1.contactId,
       name: 'ACME Newsletter Module',
       productCategory: 'MARKETING',
       productType: 'OTHER',
@@ -564,6 +577,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000033',
       projectId: project2.id,
+      contactId: project2.contactId,
       name: 'TechStart Wearables Integration',
       productCategory: 'CODE',
       productType: 'OTHER',
@@ -576,6 +590,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000034',
       projectId: project4.id,
+      contactId: project4.contactId,
       name: 'Patient Portal Handoff Package',
       productCategory: 'CODE',
       productType: 'WEB_APP',
