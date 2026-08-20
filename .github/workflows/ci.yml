@@ -38,10 +38,7 @@ jobs:
         run: pnpm db:generate
 
       - name: Format check
-        run: |
-          pnpm exec prettier --write docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
-          git diff -- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
-          git diff --exit-code -- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
+        run: pnpm format:check
 
       - name: Lint
         run: pnpm lint
