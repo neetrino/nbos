@@ -2,8 +2,13 @@ import { ImapFlow } from 'imapflow';
 import { simpleParser, type ParsedMail } from 'mailparser';
 import { createTransport } from 'nodemailer';
 import { MailAttachmentPermanentError } from '../mail-provider-error.classify';
-import { extractImapAttachment } from './imap-message.attachments';
+import {
+  extractImapAttachment,
+  parseImapPartSection,
+  type ImapBodyStructureNode,
+} from './imap-message.attachments';
 import { normalizeParsedMail } from './imap-message.normalize';
+import { downloadImapBodyPart } from './imap-part-download';
 import { buildImapFetchPlan, resolveImapLastUid, type ImapFetchPlan } from './imap-fetch-plan';
 import type {
   DownloadedAttachment,
@@ -19,6 +24,13 @@ import type {
   WatchOrIdleResult,
 } from './mail-provider-adapter';
 import { MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS } from './imap-smtp-timeouts';
+
+const IMAP_MESSAGE_FETCH_QUERY = { uid: true, source: true, bodyStructure: true } as const;
+
+interface ParsedImapSource {
+  parsed: ParsedMail;
+  bodyStructure?: ImapBodyStructureNode;
+}
 
 export interface ImapSmtpProviderConfig {
   emailAddress: string;
@@ -140,31 +152,32 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   ): Promise<{ messages: NormalizedMessage[]; maxUid: number }> {
     const messages: NormalizedMessage[] = [];
     let maxUid = lastUid;
-    for await (const item of client.fetch(
-      plan.range,
-      { uid: true, source: true },
-      { uid: plan.useUid },
-    )) {
+    for await (const item of client.fetch(plan.range, IMAP_MESSAGE_FETCH_QUERY, {
+      uid: plan.useUid,
+    })) {
       if (item.uid <= lastUid || !item.source) {
         continue;
       }
       const parsed = await simpleParser(item.source);
-      messages.push(normalizeParsedMail(parsed, item.uid));
+      messages.push(normalizeParsedMail(parsed, item.uid, item.bodyStructure));
       maxUid = Math.max(maxUid, item.uid);
     }
     return { messages, maxUid };
   }
 
-  private async fetchParsedByUid(uid: number): Promise<ParsedMail | null> {
+  private async fetchParsedByUid(uid: number): Promise<ParsedImapSource | null> {
     const client = this.createImapClient();
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
     try {
-      const item = await client.fetchOne(String(uid), { uid: true, source: true }, { uid: true });
+      const item = await client.fetchOne(String(uid), IMAP_MESSAGE_FETCH_QUERY, { uid: true });
       if (!item || !item.source) {
         return null;
       }
-      return simpleParser(item.source);
+      return {
+        parsed: await simpleParser(item.source),
+        bodyStructure: item.bodyStructure,
+      };
     } finally {
       lock.release();
       await client.logout();
@@ -176,8 +189,8 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
     if (!Number.isFinite(uid)) {
       return null;
     }
-    const parsed = await this.fetchParsedByUid(uid);
-    return parsed ? normalizeParsedMail(parsed, uid) : null;
+    const fetched = await this.fetchParsedByUid(uid);
+    return fetched ? normalizeParsedMail(fetched.parsed, uid, fetched.bodyStructure) : null;
   }
 
   async downloadAttachment(input: {
@@ -188,11 +201,27 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
     if (!Number.isFinite(uid)) {
       throw new MailAttachmentPermanentError('Invalid IMAP UID for attachment download');
     }
-    const parsed = await this.fetchParsedByUid(uid);
-    if (!parsed) {
+    const section = parseImapPartSection(input.providerAttachmentId);
+    if (section) {
+      return this.downloadByImapSection(uid, section);
+    }
+    const fetched = await this.fetchParsedByUid(uid);
+    if (!fetched) {
       throw new MailAttachmentPermanentError('IMAP message not found for attachment download');
     }
-    return extractImapAttachment(parsed, input.providerAttachmentId);
+    return extractImapAttachment(fetched.parsed, input.providerAttachmentId);
+  }
+
+  private async downloadByImapSection(uid: number, section: string): Promise<DownloadedAttachment> {
+    const client = this.createImapClient();
+    await client.connect();
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      return await downloadImapBodyPart(client, uid, section);
+    } finally {
+      lock.release();
+      await client.logout();
+    }
   }
 
   async sendMessage(input: SendMessageInput): Promise<SendMessageResult> {
