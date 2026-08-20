@@ -1,11 +1,6 @@
 ---
-alwaysApply: true
----
-
----
 description: Frontend-only safety boundaries for NBOS web work
-globs:
-  - apps/web/
+globs: ["apps/web/**"]
 alwaysApply: false
 ---
 

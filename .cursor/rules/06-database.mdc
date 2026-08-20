@@ -6,6 +6,8 @@ alwaysApply: false
 
 # Database (PostgreSQL, Prisma)
 
+Use [`safe-database-migration`](../../.agents/skills/safe-database-migration/SKILL.md) for schema-change workflow, risk classification, and generated SQL review. Do not execute a production migration without explicit authorization.
+
 ## Principles
 
 - **PostgreSQL** default for relational data; **Prisma** as ORM — avoid raw SQL unless necessary.

@@ -6,6 +6,8 @@ alwaysApply: false
 
 # Project onboarding
 
+NBOS is already Size C. Use this rule only for an explicit onboarding restart. The portable workflow is [`project-onboarding`](../../.agents/skills/project-onboarding/SKILL.md).
+
 ## Phases (summary)
 
 1. **Intake** — brief, audience, must-have features, design links, deadlines.
@@ -13,7 +15,7 @@ alwaysApply: false
 3. **TECH_CARD** — copy `docs/reference/templates/TECH_CARD_TEMPLATE.md` → `docs/TECH_CARD.md`; fill all sections; **no production code** until approved.
 4. **Architecture** — folder layout per size (A simple, B feature-based, C monorepo); stack from TECH_CARD; document in `docs/01-ARCHITECTURE.md`.
 5. **Init** — `pnpm` + app scaffold; `.env.example`; `docs/` minimal set; quality hooks per [`17-cicd.mdc`](17-cicd.mdc) and `docs/reference/workflows/ci-quality.yml.example`.
-6. **Build** — phases with `docs/PROGRESS.md`; conventional commits; checklist passes: [`docs/reference/Check/Quality/project-quality-checklist.md`](docs/reference/Check/Quality/project-quality-checklist.md).
+6. **Build** — phases with `docs/PROGRESS.md`; conventional commits; checklist passes: [`docs/reference/Check/Quality/project-quality-checklist.md`](../../docs/reference/Check/Quality/project-quality-checklist.md).
 7. **Ship** — TECH_CARD final review; deploy env vars; migrations; monitoring per [`14-ops.mdc`](14-ops.mdc).
 
 ## Pointers
