@@ -5,6 +5,7 @@ import { EmployeesService } from './employees.service';
 import { EmployeeWalletService } from './employee-wallet.service';
 import { EmployeeOffboardingService } from './employee-offboarding.service';
 import { EmployeeReactivationService } from './employee-reactivation.service';
+import { EmployeeRoleAssignmentService } from './employee-role-assignment.service';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { AuditModule } from '../audit/audit.module';
 import { NotificationModule } from '../notifications/notification.module';
@@ -17,12 +18,14 @@ import { NotificationModule } from '../notifications/notification.module';
     EmployeeWalletService,
     EmployeeOffboardingService,
     EmployeeReactivationService,
+    EmployeeRoleAssignmentService,
   ],
   exports: [
     EmployeesService,
     EmployeeWalletService,
     EmployeeOffboardingService,
     EmployeeReactivationService,
+    EmployeeRoleAssignmentService,
   ],
 })
 export class EmployeesModule {}

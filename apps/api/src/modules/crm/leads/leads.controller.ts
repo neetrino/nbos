@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
@@ -112,7 +113,7 @@ export class LeadsController {
   ) {
     return this.leadsService.create(body, {
       actorId: user?.id,
-      actorRoleLevel: user?.roleLevel,
+      canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
     });
   }
 
@@ -139,7 +140,9 @@ export class LeadsController {
       contactIds?: string[];
     },
   ) {
-    return this.leadsService.update(id, body, { actorRoleLevel: user?.roleLevel });
+    return this.leadsService.update(id, body, {
+      canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
+    });
   }
 
   @Patch(':id/status')
@@ -150,7 +153,9 @@ export class LeadsController {
     @Body() body: { status: string },
   ) {
     if (body.status === 'SQL') {
-      await this.leadConversionService.qualifyLeadAsSql(id, { actorRoleLevel: user?.roleLevel });
+      await this.leadConversionService.qualifyLeadAsSql(id, {
+        canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
+      });
       return this.leadsService.findById(id);
     }
 
@@ -170,7 +175,9 @@ export class LeadsController {
       sellerId: string;
     },
   ) {
-    return this.leadConversionService.convertToDeal(id, body, { actorRoleLevel: user?.roleLevel });
+    return this.leadConversionService.convertToDeal(id, body, {
+      canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
+    });
   }
 
   @Post(':id/merge')
@@ -183,7 +190,7 @@ export class LeadsController {
     return this.leadsService.mergeLeads(
       id,
       { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices, status: body.status },
-      { id: user.id, roleSlug: user.role },
+      { id: user.id, roleSlug: user.role, isPlatformOwner: user.isPlatformOwner === true },
     );
   }
 
@@ -210,7 +217,7 @@ export class LeadsController {
     return this.leadsService.createContactFromLead(
       id,
       { attach: body.attach },
-      { id: user.id, roleSlug: user.role },
+      { id: user.id, roleSlug: user.role, isPlatformOwner: user.isPlatformOwner === true },
     );
   }
 
@@ -224,7 +231,7 @@ export class LeadsController {
     return this.leadsService.attachContact(
       id,
       { contactId: body.contactId, aboutDealId: body.aboutDealId },
-      { id: user.id, roleSlug: user.role },
+      { id: user.id, roleSlug: user.role, isPlatformOwner: user.isPlatformOwner === true },
     );
   }
 

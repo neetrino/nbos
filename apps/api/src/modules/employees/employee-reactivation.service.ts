@@ -31,8 +31,9 @@ export class EmployeeReactivationService {
     actorId: string,
     actorRoleSlug: string,
     input: { status: EmployeeReactivationTargetStatus },
+    actorIsPlatformOwner = false,
   ): Promise<EmployeeReactivationResult> {
-    await this.assertCanReactivate(actorId, actorRoleSlug);
+    await this.assertCanReactivate(actorId, actorRoleSlug, actorIsPlatformOwner);
 
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
@@ -98,10 +99,20 @@ export class EmployeeReactivationService {
     };
   }
 
-  private async assertCanReactivate(actorId: string, actorRoleSlug: string): Promise<void> {
+  private async assertCanReactivate(
+    actorId: string,
+    actorRoleSlug: string,
+    actorIsPlatformOwner: boolean,
+  ): Promise<void> {
     const departmentSlugs = await this.loadActorDepartmentSlugs(actorId);
-    if (!canEmployeeReactivate({ roleSlug: actorRoleSlug, departmentSlugs })) {
-      throw new ForbiddenException('Only Owner, CEO, or HR can reactivate employees');
+    if (
+      !canEmployeeReactivate({
+        roleSlug: actorRoleSlug,
+        isPlatformOwner: actorIsPlatformOwner,
+        departmentSlugs,
+      })
+    ) {
+      throw new ForbiddenException('Only the CEO, platform owner, or HR can reactivate employees');
     }
   }
 

@@ -1,22 +1,20 @@
+import { hasCompanyExecutiveOps } from '../platform-ownership/evaluate-platform-owner';
 import type { ProjectTeamRole } from './constants';
-
-/** Platform roles that may manage any project team without a project seat. */
-export const GLOBAL_PROJECT_TEAM_MANAGER_ROLE_SLUGS = ['owner', 'ceo'] as const;
 
 export interface ProjectTeamManagementActor {
   roleSlug: string;
+  isPlatformOwner?: boolean;
   /** Actor's seat on the project team, if any. */
   projectTeamRole?: ProjectTeamRole | null;
 }
 
-export function isGlobalProjectTeamManager(roleSlug: string): boolean {
-  const key = roleSlug.trim().toLowerCase();
-  return (GLOBAL_PROJECT_TEAM_MANAGER_ROLE_SLUGS as readonly string[]).includes(key);
+export function isGlobalProjectTeamManager(roleSlug: string, isPlatformOwner = false): boolean {
+  return hasCompanyExecutiveOps({ isPlatformOwner, roleSlug });
 }
 
 /** Add/remove participants and change roles (incl. promote to Admin). */
 export function canManageProjectTeam(actor: ProjectTeamManagementActor): boolean {
-  if (isGlobalProjectTeamManager(actor.roleSlug)) return true;
+  if (isGlobalProjectTeamManager(actor.roleSlug, actor.isPlatformOwner === true)) return true;
   return actor.projectTeamRole === 'ADMIN';
 }
 

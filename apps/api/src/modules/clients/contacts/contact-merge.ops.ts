@@ -33,6 +33,7 @@ export interface MergeContactsInput {
   fieldChoices: ContactMergeFieldChoices;
   actorId: string;
   actorRoleSlug: string;
+  isPlatformOwner?: boolean;
 }
 
 export interface ContactMergeCandidate {
@@ -54,7 +55,7 @@ export async function mergeContacts(
   input: MergeContactsInput,
 ): Promise<{ survivorId: string; absorbedId: string }> {
   assertContactMergePair(input.survivorId, input.absorbedId);
-  assertCanMergeContacts(input.actorRoleSlug);
+  assertCanMergeContacts(input.actorRoleSlug, input.isPlatformOwner === true);
 
   const result = await prisma.$transaction((tx) => runContactMerge(tx, input));
 

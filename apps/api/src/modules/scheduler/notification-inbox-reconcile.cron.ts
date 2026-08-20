@@ -1,15 +1,15 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import {
+  NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV,
+  NOTIFICATION_INBOX_RECONCILE_CRON_ENV,
+  NOTIFICATION_INBOX_RECONCILE_DEFAULT_CRON,
+} from './notification-inbox-reconcile-cron.constants';
 import { SchedulerService } from './scheduler.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { startSchedulerCronJob, stopSchedulerCronJob } from './scheduler-cron-bind';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
-
-export const NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV =
-  'SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED';
-export const NOTIFICATION_INBOX_RECONCILE_CRON_ENV = 'SCHEDULER_NOTIFICATION_INBOX_RECONCILE_CRON';
-export const NOTIFICATION_INBOX_RECONCILE_DEFAULT_CRON = '*/15 * * * *';
 
 @Injectable()
 export class NotificationInboxReconcileCron implements OnModuleInit, OnModuleDestroy {

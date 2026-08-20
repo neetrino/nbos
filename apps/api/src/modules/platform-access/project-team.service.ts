@@ -38,13 +38,14 @@ export class ProjectTeamService {
     dto: AddProjectTeamMemberDto,
     actorId: string,
     actorRoleSlug: string,
+    actorIsPlatformOwner = false,
   ) {
     await this.assertProjectExists(projectId);
     const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
-    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole, actorIsPlatformOwner);
     const role = dto.role ?? 'MEMBER';
     if (role === 'ADMIN') {
-      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole);
+      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole, actorIsPlatformOwner);
     }
     const member = await this.prisma.projectTeamMember.upsert({
       where: {
@@ -81,12 +82,13 @@ export class ProjectTeamService {
     dto: UpdateProjectTeamMemberDto,
     actorId: string,
     actorRoleSlug: string,
+    actorIsPlatformOwner = false,
   ) {
     const existing = await this.findMemberOrThrow(projectId, employeeId);
     const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
-    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole, actorIsPlatformOwner);
     if (dto.role === 'ADMIN') {
-      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole);
+      assertCanAssignProjectTeamAdmin(actorRoleSlug, actorProjectRole, actorIsPlatformOwner);
     }
     const member = await this.prisma.projectTeamMember.update({
       where: { id: existing.id },
@@ -112,10 +114,11 @@ export class ProjectTeamService {
     employeeId: string,
     actorId: string,
     actorRoleSlug: string,
+    actorIsPlatformOwner = false,
   ) {
     const existing = await this.findMemberOrThrow(projectId, employeeId);
     const actorProjectRole = await this.findActorProjectRole(projectId, actorId);
-    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole);
+    assertCanManageProjectTeam(actorRoleSlug, actorProjectRole, actorIsPlatformOwner);
     await this.prisma.projectTeamMember.delete({ where: { id: existing.id } });
     await this.audit.log({
       entityType: 'project',

@@ -18,7 +18,7 @@ export class DriveAccessContextService {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
       driveScope: mergeDriveEffectiveScope(rbacScope, policyMode, {
-        globalOwnerRole: isGlobalDriveOwnerRole(user.role),
+        globalOwnerRole: isGlobalDriveOwnerRole(user.role, user.isPlatformOwner === true),
       }),
     };
   }

@@ -1,16 +1,15 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import {
+  NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV,
+  NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENV,
+  NOTIFICATION_ENQUEUE_RECONCILE_DEFAULT_CRON,
+} from './notification-enqueue-reconcile-cron.constants';
 import { SchedulerService } from './scheduler.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { startSchedulerCronJob, stopSchedulerCronJob } from './scheduler-cron-bind';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
-
-export const NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV =
-  'SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_ENABLED';
-export const NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENV =
-  'SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_CRON';
-export const NOTIFICATION_ENQUEUE_RECONCILE_DEFAULT_CRON = '*/10 * * * *';
 
 @Injectable()
 export class NotificationEnqueueReconcileCron implements OnModuleInit, OnModuleDestroy {

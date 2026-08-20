@@ -37,7 +37,7 @@ describe('CredentialsService mutations', () => {
       projectId: null,
       project: null,
     });
-    const created = await service.create(input, 'user-1');
+    const created = await service.create(input, accessUser1);
     expect(created.secretsPresent).toEqual({
       password: true,
       passphrase: false,
@@ -62,7 +62,7 @@ describe('CredentialsService mutations', () => {
       projectId: null,
       project: null,
     });
-    await service.create({ name: 'Simple Cred', category: 'ADMIN' }, 'user-1');
+    await service.create({ name: 'Simple Cred', category: 'ADMIN' }, accessUser1);
     expect(crypto.encrypt).not.toHaveBeenCalledWith(null, expect.anything());
   });
 

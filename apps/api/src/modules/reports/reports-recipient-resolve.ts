@@ -1,13 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
+import { CEO_ROLE_SLUG, PLATFORM_OWNERSHIP_SINGLETON_ID } from '@nbos/shared';
 import {
   REPORT_RECIPIENT_EMPLOYEE_STATUSES,
-  REPORT_SCHEDULE_RECIPIENT_ROLE_SLUGS,
   REPORT_SCHEDULE_RECIPIENT_ROLES,
   type ReportScheduleRecipientRole,
 } from './reports-recipient-roles';
 
-type ReportsPrisma = Pick<InstanceType<typeof PrismaClient>, 'employee'>;
+type ReportsPrisma = Pick<InstanceType<typeof PrismaClient>, 'employee' | 'platformOwnership'>;
 
 export function uniqueRecipientEmails(emails: readonly string[]): string[] {
   const seen = new Set<string>();
@@ -34,11 +34,9 @@ export function parseRecipientRoles(value: unknown): ReportScheduleRecipientRole
   return roles;
 }
 
+/** CEO directory slug only. OWNER is PlatformOwnership identity, not role `owner`. */
 export function recipientRoleSlugs(roles: readonly ReportScheduleRecipientRole[]): string[] {
-  const slugs: string[] = [];
-  if (roles.includes('OWNER')) slugs.push(REPORT_SCHEDULE_RECIPIENT_ROLE_SLUGS.OWNER);
-  if (roles.includes('CEO')) slugs.push(REPORT_SCHEDULE_RECIPIENT_ROLE_SLUGS.CEO);
-  return slugs;
+  return roles.includes('CEO') ? [CEO_ROLE_SLUG] : [];
 }
 
 export async function resolveReportScheduleRecipientEmails(
@@ -65,7 +63,7 @@ export async function requireReportScheduleRecipientEmails(
   const emails = await resolveReportScheduleRecipientEmails(prisma, input);
   if (emails.length === 0) {
     throw new BadRequestException(
-      'Owner/CEO emails were not found. Check My Company employees or include the schedule owner.',
+      'Founder/CEO emails were not found. Check My Company employees or include the schedule owner.',
     );
   }
   return emails;
@@ -77,6 +75,9 @@ async function resolveRoleEmails(
   ownerId: string,
 ): Promise<string[]> {
   const emails: string[] = [];
+  if (roles.includes('OWNER')) {
+    emails.push(...(await loadPlatformOwnerEmails(prisma)));
+  }
   const slugs = recipientRoleSlugs(roles);
   if (slugs.length > 0) {
     const employees = await prisma.employee.findMany({
@@ -96,4 +97,19 @@ async function resolveRoleEmails(
     if (owner?.email) emails.push(owner.email);
   }
   return uniqueRecipientEmails(emails);
+}
+
+async function loadPlatformOwnerEmails(prisma: ReportsPrisma): Promise<string[]> {
+  const ownership = await prisma.platformOwnership.findUnique({
+    where: { id: PLATFORM_OWNERSHIP_SINGLETON_ID },
+    select: { ownerEmployeeId: true },
+  });
+  if (!ownership?.ownerEmployeeId) return [];
+  const founder = await prisma.employee.findUnique({
+    where: { id: ownership.ownerEmployeeId },
+    select: { email: true, status: true },
+  });
+  if (!founder?.email) return [];
+  if (founder.status !== 'ACTIVE' && founder.status !== 'PROBATION') return [];
+  return [founder.email];
 }

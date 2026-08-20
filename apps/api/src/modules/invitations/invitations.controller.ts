@@ -20,6 +20,7 @@ export class InvitationsController {
     return this.invitationsService.create({
       ...body,
       invitedById: user.id,
+      invitedByRoleSlug: user.role,
     });
   }
 

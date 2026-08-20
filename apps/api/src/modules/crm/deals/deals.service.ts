@@ -180,7 +180,10 @@ export class DealsService {
     return { dealId, ...state };
   }
 
-  async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
+  async create(
+    data: CreateDealDto,
+    meta: { actorId?: string; canOverridePausedPartner?: boolean } = {},
+  ) {
     const resolved = await resolveDealCreateDefaults(this.prisma, data, meta);
     await validateDealCreate(this.prisma, resolved);
     const subscriptionTermMonths = parseOptionalSubscriptionTermMonths(
@@ -191,7 +194,7 @@ export class DealsService {
         this.prisma,
         resolved.source ?? null,
         resolved.sourcePartnerId,
-        meta.actorRoleLevel,
+        meta.canOverridePausedPartner === true,
       );
     }
     const code = await this.generateCode();
@@ -270,7 +273,7 @@ export class DealsService {
     return this.enrichDealForClient(await this.attachHandoffReferences(withTerms));
   }
 
-  async update(id: string, data: UpdateDealDto, meta: { actorRoleLevel?: number } = {}) {
+  async update(id: string, data: UpdateDealDto, meta: { canOverridePausedPartner?: boolean } = {}) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Deal');
     const nextSource = data.source !== undefined ? data.source : existing.source;
@@ -281,7 +284,7 @@ export class DealsService {
         this.prisma,
         nextSource,
         nextPartnerId,
-        meta.actorRoleLevel,
+        meta.canOverridePausedPartner === true,
       );
     }
     const nextStatus = data.status ?? existing.status;

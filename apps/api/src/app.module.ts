@@ -47,6 +47,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
+import { PlatformOwnershipModule } from './modules/platform-ownership/platform-ownership.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
 import { SearchModule } from './modules/search/search.module';
 import { TokenDenylistModule } from './common/security/token-denylist.module';
@@ -73,6 +74,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     TokenDenylistModule,
     DatabaseModule,
     AuthModule,
+    PlatformOwnershipModule,
     EmployeesModule,
     CrmModule,
     ProjectsModule,

@@ -40,6 +40,7 @@ export interface MergeLeadsInput {
   status?: string;
   actorId: string;
   actorRoleSlug: string;
+  isPlatformOwner?: boolean;
 }
 
 export interface MergeLeadsResult {
@@ -73,6 +74,7 @@ export async function mergeLeads(
       actorId: input.actorId,
       survivor,
       absorbed,
+      isPlatformOwner: input.isPlatformOwner === true,
     });
 
     const resolved = resolveLeadMergeFields(survivor, absorbed, input.fieldChoices, input.status);

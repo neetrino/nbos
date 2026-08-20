@@ -50,6 +50,7 @@ export interface RoleItem {
   slug: string;
   level: number;
   isSystem: boolean;
+  assignable?: boolean;
   _count?: { employees: number };
 }
 

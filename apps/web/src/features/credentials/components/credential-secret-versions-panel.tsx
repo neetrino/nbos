@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { CredentialStepUpDialog } from '@/features/credentials/components/credential-step-up-dialog';
-import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { useCredentialSecretVersions } from '@/features/credentials/hooks/use-credential-secret-versions';
 import { useCredentialVaultSession } from '@/features/credentials/hooks/use-credential-vault-session';
 import { isCredentialVaultStepUpRequired } from '@/features/credentials/utils/credential-step-up-error';
@@ -35,13 +34,11 @@ export function CredentialSecretVersionsPanel({
   sheetOpen,
   embedded = false,
 }: CredentialSecretVersionsPanelProps) {
-  const { me, scope } = usePermission();
+  const { me } = usePermission();
   const vault = useCredentialVaultSession();
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
   const [revealTarget, setRevealTarget] = useState<CredentialSecretVersion | null>(null);
-  const canReveal =
-    canUseCredentialEmergencyAccess(me?.role.slug) ||
-    scope('BYPASS_ROW_VISIBILITY', 'CREDENTIALS') === 'ALL';
+  const canReveal = Boolean(me);
 
   const revealVersion = async (version: CredentialSecretVersion, password?: string) => {
     try {

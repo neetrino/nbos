@@ -21,7 +21,8 @@ export function ContactSheetMergeControls({
 }: ContactSheetMergeControlsProps) {
   const { me } = usePermission();
   const [open, setOpen] = useState(false);
-  if (isTrashView || !canOfferContactMerge(me?.role.slug)) return null;
+  if (isTrashView || !canOfferContactMerge(me?.role.slug, me?.isPlatformOwner === true))
+    return null;
 
   return (
     <>

@@ -12,12 +12,12 @@ const REASON_MIN_LENGTH = 10;
 
 export interface CredentialEmergencyAccessPanelProps {
   credentialId: string;
-  onGranted: () => void;
+  onRequested: () => void;
 }
 
 export function CredentialEmergencyAccessPanel({
   credentialId,
-  onGranted,
+  onRequested,
 }: CredentialEmergencyAccessPanelProps) {
   const [reason, setReason] = useState('');
   const [stepUpOpen, setStepUpOpen] = useState(false);
@@ -28,15 +28,15 @@ export function CredentialEmergencyAccessPanel({
   const submit = async (stepUpPassword: string) => {
     setSubmitting(true);
     try {
-      const result = await credentialsApi.grantEmergencyAccess(credentialId, {
+      await credentialsApi.requestEmergencyAccess(credentialId, {
         reason: reason.trim(),
         stepUpPassword,
       });
-      toast.success(`Emergency access until ${new Date(result.expiresAt).toLocaleString()}`);
+      toast.success('Emergency access request sent to the platform owner');
       setStepUpOpen(false);
-      onGranted();
+      onRequested();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Emergency access failed');
+      toast.error(err instanceof Error ? err.message : 'Emergency request failed');
     } finally {
       setSubmitting(false);
     }
@@ -47,8 +47,8 @@ export function CredentialEmergencyAccessPanel({
       <div>
         <h3 className="text-sm font-medium">Emergency access</h3>
         <p className="text-muted-foreground mt-1 text-xs">
-          You cannot view this credential. Break-glass grants temporary VIEW (24h) with audit and
-          notifications.
+          You cannot view this credential. Submit a request with a reason. The platform owner must
+          approve a temporary VIEW grant (24h). OWNER_ONLY secrets cannot be requested.
         </p>
       </div>
       <div className="grid gap-2">
@@ -71,7 +71,7 @@ export function CredentialEmergencyAccessPanel({
       <CredentialStepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
-        title="Confirm emergency access"
+        title="Confirm emergency request"
         onConfirm={submit}
       />
     </div>

@@ -47,6 +47,7 @@ export function assertCanMergeLeadPair(params: {
   actorId: string;
   survivor: LeadMergeGuardRow;
   absorbed: LeadMergeGuardRow;
+  isPlatformOwner?: boolean;
 }): void {
   if (
     canMergeLeads({
@@ -54,6 +55,7 @@ export function assertCanMergeLeadPair(params: {
       actorId: params.actorId,
       survivorAssignedTo: params.survivor.assignedTo,
       absorbedAssignedTo: params.absorbed.assignedTo,
+      isPlatformOwner: params.isPlatformOwner === true,
     })
   ) {
     return;

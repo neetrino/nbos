@@ -96,7 +96,7 @@ export class OpsJobFailureAlertService {
     try {
       const recipientIds = await resolveOpsAlertRecipientIds(this.prisma);
       if (recipientIds.length === 0) {
-        this.logger.warn(`No Owner/CEO recipients for ops alert type=${command.type}`);
+        this.logger.warn(`No Founder/CEO recipients for ops alert type=${command.type}`);
         return;
       }
       await this.notifications.createMany({ ...command, recipientIds });

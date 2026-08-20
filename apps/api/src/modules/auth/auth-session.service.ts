@@ -27,7 +27,8 @@ export type SessionRevokeReason =
   | 'user_disabled'
   | 'reuse_detected'
   | 'admin_revoke'
-  | 'expired_cleanup';
+  | 'expired_cleanup'
+  | 'ownership_transfer';
 
 export interface CreateSessionInput {
   employeeId: string;

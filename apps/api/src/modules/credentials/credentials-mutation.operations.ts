@@ -25,6 +25,10 @@ import {
 } from './credential-folders.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
 import { attachCredentialProducts } from './credential-product-context';
+import {
+  resolveCreateConfidentiality,
+  assertCanSetConfidentiality,
+} from './credential-confidentiality.policy';
 
 const CREDENTIAL_DETAIL_INCLUDE = {
   project: { select: { id: true, name: true } },
@@ -126,8 +130,10 @@ function decryptComment(runtime: CredentialsRuntime, stored: unknown): string | 
 export async function createCredential(
   runtime: CredentialsRuntime,
   data: CreateCredentialDto,
-  userId: string,
+  access: CredentialsAccessContext,
 ) {
+  const userId = access.employeeId;
+  const confidentiality = resolveCreateConfidentiality(access, data.confidentiality);
   const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
   const credentialType =
     (data.credentialType as Prisma.CredentialCreateInput['credentialType']) ?? 'LOGIN_PASSWORD';
@@ -166,6 +172,7 @@ export async function createCredential(
       nextRotationAt: nullableDate(data.nextRotationAt) ?? new Date(autoDefaults.nextRotationAt),
       rotationOwnerId: data.rotationOwnerId,
       accessLevel,
+      confidentiality,
       allowedEmployees: data.allowedEmployees ?? [],
     },
     include: CREDENTIAL_DETAIL_INCLUDE,
@@ -189,13 +196,8 @@ export async function createCredential(
   }
   const folderIds = normalizeCredentialFolderIds(data);
   if (folderIds !== undefined && folderIds.length > 0) {
-    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, {
-      employeeId: userId,
-      departmentIds: [],
-      viewScope: 'ALL',
-      editScope: 'ALL',
-      deleteScope: 'ALL',
-      bypassRowVisibility: true,
+    await replaceCredentialFolderMemberships(runtime, credential.id, folderIds, access, {
+      skipRowVisibility: true,
     });
     const updated = await loadCredentialAfterFolderChange(runtime, credential.id);
     if (updated) return mapCredentialWithProduct(runtime, { ...updated, favorites: [] });
@@ -223,6 +225,10 @@ export async function updateCredential(
     },
   });
   if (!existing) throw new NotFoundException(`Credential ${id} not found`);
+
+  if (data.confidentiality !== undefined) {
+    assertCanSetConfidentiality(access, data.confidentiality);
+  }
 
   assertCredentialTypeChangeAllowed(existing, data);
 

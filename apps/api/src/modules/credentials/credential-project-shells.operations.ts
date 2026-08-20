@@ -21,6 +21,7 @@ export async function listCredentialProjectShells(
     departmentIds: access.departmentIds,
     viewScope: resolveCredentialsRbacScope(access, 'view'),
     bypassRowVisibility: access.bypassRowVisibility,
+    executiveProjectAccess: access.executiveProjectAccess,
   });
 
   const where: Prisma.CredentialWhereInput = {

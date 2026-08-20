@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
 
 const INVITATION_EXPIRY_DAYS = 7;
 const RESEND_API_URL = 'https://api.resend.com/emails';
@@ -9,14 +10,24 @@ const RESEND_API_URL = 'https://api.resend.com/emails';
 export class InvitationsService {
   private readonly logger = new Logger(InvitationsService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly ownership: PlatformOwnershipService,
+  ) {}
 
   async create(data: {
     email: string;
     roleId: string;
     departmentId?: string;
     invitedById: string;
+    invitedByRoleSlug: string;
   }) {
+    await this.ownership.assertCanAssignRole({
+      actorId: data.invitedById,
+      actorRoleSlug: data.invitedByRoleSlug,
+      targetEmployeeId: null,
+      targetRoleId: data.roleId,
+    });
     const existingEmployee = await this.prisma.employee.findUnique({
       where: { email: data.email.toLowerCase().trim() },
     });

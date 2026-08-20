@@ -3,10 +3,9 @@ import type { CredentialsAccessContext } from './credentials-access';
 import { assertVaultAccessForSecretVersion } from './credential-vault-access';
 import { decryptFieldIfEncrypted } from './credential-crypto.mapper';
 import { parseSecretField } from './credential-sensitive.utils';
-import { assertSecretVersionRevealAllowed } from './credential-secret-version.policy';
-import type { CredentialSecretVersionRow } from './credential-secret-version.types';
 import { getAccessibleCredentialRow } from './credentials-secrets.operations';
 import type { CredentialsRuntime } from './credentials-runtime';
+import type { CredentialSecretVersionRow } from './credential-secret-version.types';
 
 function mapVersionRow(row: {
   id: string;
@@ -52,7 +51,6 @@ export async function revealCredentialSecretVersion(
   access: CredentialsAccessContext,
 ) {
   await getAccessibleCredentialRow(runtime, credentialId, access);
-  await assertSecretVersionRevealAllowed(runtime.prisma, access);
   await assertVaultAccessForSecretVersion(runtime, access.employeeId, stepUpPassword);
 
   const version = await runtime.prisma.credentialSecretVersion.findFirst({

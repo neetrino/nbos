@@ -16,31 +16,37 @@ export function mapProjectTeamRoleEnum(
 export function assertCanManageProjectTeam(
   actorRoleSlug: string,
   actorProjectTeamRole: ProjectTeamRoleEnum | null,
+  actorIsPlatformOwner = false,
 ): void {
   if (
     canManageProjectTeam({
       roleSlug: actorRoleSlug,
+      isPlatformOwner: actorIsPlatformOwner,
       projectTeamRole: mapProjectTeamRoleEnum(actorProjectTeamRole),
     })
   ) {
     return;
   }
   throw new ForbiddenException(
-    'Only Owner, CEO, or project admins can manage project participants.',
+    'Only the CEO, platform owner, or project admins can manage project participants.',
   );
 }
 
 export function assertCanAssignProjectTeamAdmin(
   actorRoleSlug: string,
   actorProjectTeamRole: ProjectTeamRoleEnum | null,
+  actorIsPlatformOwner = false,
 ): void {
   if (
     canAssignProjectTeamAdminRole({
       roleSlug: actorRoleSlug,
+      isPlatformOwner: actorIsPlatformOwner,
       projectTeamRole: mapProjectTeamRoleEnum(actorProjectTeamRole),
     })
   ) {
     return;
   }
-  throw new ForbiddenException('Only Owner, CEO, or project admins can assign the Admin role.');
+  throw new ForbiddenException(
+    'Only the CEO, platform owner, or project admins can assign the Admin role.',
+  );
 }

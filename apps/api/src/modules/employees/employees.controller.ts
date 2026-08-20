@@ -17,6 +17,8 @@ import { RequirePermission, CurrentUser, type CurrentUserPayload } from '../../c
 import { EmployeesService } from './employees.service';
 import { EmployeeOffboardingService } from './employee-offboarding.service';
 import { EmployeeReactivationService } from './employee-reactivation.service';
+import { EmployeeRoleAssignmentService } from './employee-role-assignment.service';
+import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -26,6 +28,8 @@ export class EmployeesController {
     private readonly employeesService: EmployeesService,
     private readonly employeeOffboardingService: EmployeeOffboardingService,
     private readonly employeeReactivationService: EmployeeReactivationService,
+    private readonly roleAssignment: EmployeeRoleAssignmentService,
+    private readonly ownership: PlatformOwnershipService,
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
@@ -62,27 +66,36 @@ export class EmployeesController {
   @Get(':id/offboard-preview')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Preview employee offboarding impact' })
-  previewOffboard(@Param('id') id: string) {
+  async previewOffboard(@Param('id') id: string) {
+    await this.ownership.assertFounderNotTarget(id);
     return this.employeeOffboardingService.buildPreview(id);
   }
 
   @Post(':id/offboard')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Offboard employee (terminate + revoke access + checklist)' })
-  offboard(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+  async offboard(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.ownership.assertFounderNotTarget(id);
     return this.employeeOffboardingService.execute(id, user.id);
   }
 
   @Post(':id/reactivate')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Reactivate terminated employee (rehire + onboarding checklist)' })
-  reactivate(
+  async reactivate(
     @Param('id') id: string,
     @Body() body: { status?: 'ACTIVE' | 'PROBATION' },
     @CurrentUser() user: CurrentUserPayload,
   ) {
+    await this.ownership.assertFounderNotTarget(id);
     const status = body.status === 'PROBATION' ? 'PROBATION' : 'ACTIVE';
-    return this.employeeReactivationService.execute(id, user.id, user.role, { status });
+    return this.employeeReactivationService.execute(
+      id,
+      user.id,
+      user.role,
+      { status },
+      user.isPlatformOwner === true,
+    );
   }
 
   @Get(':id')
@@ -96,6 +109,7 @@ export class EmployeesController {
   @RequirePermission('COMPANY', 'ADD')
   @ApiOperation({ summary: 'Create employee' })
   async create(
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       firstName: string;
@@ -107,13 +121,7 @@ export class EmployeesController {
       position?: string;
     },
   ) {
-    return this.prisma.employee.create({
-      data: body,
-      include: {
-        role: { select: { id: true, name: true, slug: true, level: true } },
-        departments: { include: { department: true } },
-      },
-    });
+    return this.roleAssignment.createEmployee(user, body);
   }
 
   @Put(':id')
@@ -162,6 +170,7 @@ export class EmployeesController {
     @Body() body: { status: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
+    await this.ownership.assertFounderNotTarget(id);
     if (body.status === 'TERMINATED') {
       return this.employeeOffboardingService.execute(id, user.id);
     }
@@ -178,14 +187,12 @@ export class EmployeesController {
   @Patch(':id/role')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Change employee role' })
-  async changeRole(@Param('id') id: string, @Body() body: { roleId: string }) {
-    return this.prisma.employee.update({
-      where: { id },
-      data: { roleId: body.roleId },
-      include: {
-        role: { select: { id: true, name: true, slug: true, level: true } },
-      },
-    });
+  async changeRole(
+    @Param('id') id: string,
+    @Body() body: { roleId: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.roleAssignment.changeRole(user, id, body.roleId);
   }
 
   @Post(':id/departments')

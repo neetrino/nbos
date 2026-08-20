@@ -1,22 +1,36 @@
 import type { PrismaClient } from '@nbos/database';
-import {
-  OPS_ALERT_RECIPIENT_ROLE_SLUGS,
-  OPS_ALERT_RECIPIENT_STATUSES,
-} from './ops-job-failure-alert.constants';
+import { CEO_ROLE_SLUG, PLATFORM_OWNERSHIP_SINGLETON_ID } from '@nbos/shared';
+import { OPS_ALERT_RECIPIENT_STATUSES } from './ops-job-failure-alert.constants';
 
-type OpsAlertPrisma = Pick<InstanceType<typeof PrismaClient>, 'employee'>;
+type OpsAlertPrisma = Pick<InstanceType<typeof PrismaClient>, 'employee' | 'platformOwnership'>;
 
 /**
- * Active Owner and CEO seats as separate people.
- * Do not treat Owner as CEO (platform-owner security).
+ * Founder (PlatformOwnership) and CEO (role slug) as separate people.
  */
 export async function resolveOpsAlertRecipientIds(prisma: OpsAlertPrisma): Promise<string[]> {
-  const rows = await prisma.employee.findMany({
+  const ids = new Set<string>();
+  const ownership = await prisma.platformOwnership.findUnique({
+    where: { id: PLATFORM_OWNERSHIP_SINGLETON_ID },
+    select: { ownerEmployeeId: true },
+  });
+  if (ownership?.ownerEmployeeId) {
+    const founder = await prisma.employee.findUnique({
+      where: { id: ownership.ownerEmployeeId },
+      select: { id: true, status: true },
+    });
+    if (founder && isAlertableStatus(founder.status)) ids.add(founder.id);
+  }
+  const ceos = await prisma.employee.findMany({
     where: {
       status: { in: [...OPS_ALERT_RECIPIENT_STATUSES] },
-      role: { slug: { in: [...OPS_ALERT_RECIPIENT_ROLE_SLUGS] } },
+      role: { slug: CEO_ROLE_SLUG },
     },
     select: { id: true },
   });
-  return [...new Set(rows.map((row) => row.id))];
+  for (const row of ceos) ids.add(row.id);
+  return [...ids];
+}
+
+function isAlertableStatus(status: string): boolean {
+  return (OPS_ALERT_RECIPIENT_STATUSES as readonly string[]).includes(status);
 }

@@ -5,9 +5,14 @@ import {
   type PlatformAccessActionEnum,
   type AccessScopeModeEnum,
 } from '@nbos/database';
-import { PLATFORM_RESOURCE_FAMILIES, type PlatformResourceFamily } from '@nbos/shared';
+import {
+  PLATFORM_RESOURCE_FAMILIES,
+  type PlatformResourceFamily,
+  isCredentialsAllScopeMode,
+} from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
 
 export interface RoleAccessPolicyDto {
   resourceFamily: PlatformResourceFamily;
@@ -25,6 +30,7 @@ export class RoleAccessPolicyService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly audit: AuditService,
+    private readonly ownership: PlatformOwnershipService,
   ) {}
 
   async listByRole(roleId: string) {
@@ -47,6 +53,7 @@ export class RoleAccessPolicyService {
 
   async upsertForRole(roleId: string, input: UpsertRolePoliciesInput, actorId: string) {
     await this.assertRoleExists(roleId);
+    await this.assertCredentialsAllAllowed(input.policies, actorId);
     const before = await this.listByRole(roleId);
 
     await this.prisma.$transaction(
@@ -87,6 +94,17 @@ export class RoleAccessPolicyService {
       },
     });
     return after;
+  }
+
+  private async assertCredentialsAllAllowed(
+    policies: RoleAccessPolicyDto[],
+    actorId: string,
+  ): Promise<void> {
+    const needsFounder = policies.some((policy) =>
+      isCredentialsAllScopeMode(policy.resourceFamily, policy.scopeMode),
+    );
+    if (!needsFounder) return;
+    await this.ownership.assertPlatformOwner(actorId);
   }
 
   private async assertRoleExists(roleId: string) {

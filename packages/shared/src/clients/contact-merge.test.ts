@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { canMergeContacts, canOfferContactMerge } from './contact-merge';
 
 describe('canMergeContacts', () => {
-  it('allows Owner, CEO, and PM', () => {
-    expect(canMergeContacts('owner')).toBe(true);
+  it('allows CEO, PM, and Founder identity — not the legacy owner slug', () => {
+    expect(canMergeContacts('owner')).toBe(false);
+    expect(canMergeContacts('pm', true)).toBe(true);
     expect(canMergeContacts('ceo')).toBe(true);
     expect(canMergeContacts('pm')).toBe(true);
   });

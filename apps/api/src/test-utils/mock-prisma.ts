@@ -87,6 +87,8 @@ export function createMockPrisma() {
     credentialFavorite: createModelMock(),
     credentialFolder: createModelMock(),
     credentialFolderMembership: createModelMock(),
+    credentialEmergencyAccessRequest: createModelMock(),
+    platformOwnership: createModelMock(),
     emailThread: createModelMock(),
     auditLog: createModelMock(),
     partner: createModelMock(),

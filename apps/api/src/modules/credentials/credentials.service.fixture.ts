@@ -17,6 +17,7 @@ export const accessUser1 = {
   employeeId: 'user-1',
   departmentIds: [] as string[],
   bypassRowVisibility: false,
+  executiveProjectAccess: false,
 };
 export const accessOwnerAll = {
   employeeId: 'owner-1',
@@ -25,6 +26,7 @@ export const accessOwnerAll = {
   editScope: 'ALL',
   deleteScope: 'ALL',
   bypassRowVisibility: true,
+  executiveProjectAccess: false,
 };
 
 export function createCredentialsServiceTestContext() {

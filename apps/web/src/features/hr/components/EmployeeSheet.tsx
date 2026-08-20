@@ -48,6 +48,8 @@ import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
 import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
 import { useCanReactivateEmployee } from '@/features/hr/hooks/use-can-reactivate-employee';
+import { filterRolesForAssignmentPicker } from '@/features/hr/utils/role-assignment-picker';
+import { usePermission } from '@/lib/permissions';
 import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
 import { checklistTemplatesApi } from '@/lib/api/checklist-templates';
@@ -102,6 +104,7 @@ export function EmployeeSheet({
   const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const canReactivate = useCanReactivateEmployee();
+  const { me } = usePermission();
 
   useLayoutEffect(() => {
     if (!employee) {
@@ -358,7 +361,11 @@ export function EmployeeSheet({
                   employeeId={displayEmployee.id}
                   draft={draft}
                   patchDraft={patchDraft}
-                  roles={roles}
+                  roles={filterRolesForAssignmentPicker(
+                    roles,
+                    me?.isPlatformOwner === true,
+                    displayEmployee.role.id,
+                  )}
                   saving={saving}
                   canEdit={canEdit && displayEmployee.status !== 'TERMINATED'}
                   generalError={generalError}

@@ -27,6 +27,8 @@ import {
   type RoleItem,
 } from '@/lib/api/employees';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
+import { filterRolesForAssignmentPicker } from '@/features/hr/utils/role-assignment-picker';
 
 interface InviteEmployeeDialogProps {
   open: boolean;
@@ -35,6 +37,7 @@ interface InviteEmployeeDialogProps {
 }
 
 export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEmployeeDialogProps) {
+  const { me } = usePermission();
   const [loading, setLoading] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [departmentsLoading, setDepartmentsLoading] = useState(false);
@@ -146,7 +149,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
                 <SelectValue placeholder={rolesLoading ? 'Loading roles...' : 'Select role'} />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
+                {filterRolesForAssignmentPicker(roles, me?.isPlatformOwner === true).map((role) => (
                   <SelectItem key={role.id} value={role.id}>
                     {role.name}
                   </SelectItem>

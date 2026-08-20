@@ -16,7 +16,8 @@ Tracks **global Trash admin** shipped in Phase 7. Full Settings canon: `00-Setti
 - Admin UI to **edit** retention per entity (env-only today).
 - Per-module **permanent-delete UI** from inventory (Profile A API shipped; web controls backlog).
 - Broader Settings RBAC/audit gaps — Cleanup Register.
-- **Scheduler catalog (stage 1–3):** Settings → Scheduler lists code catalog + runtime snapshot; enable/disable + Run now via `SchedulerJobPolicy` (audited). Cron schedule changes only in code/deploy. Failed scheduler runs and final BullMQ jobs notify Owner and CEO in-app. Canon: `05-Scheduler-Catalog.md`.
+- **Scheduler catalog (stage 1–3):** Settings → Scheduler lists code catalog + runtime snapshot; enable/disable + Run now via `SchedulerJobPolicy` (audited). Cron schedule changes only in code/deploy. Failed scheduler runs and final BullMQ jobs notify Founder (PlatformOwnership) and CEO in-app. Canon: `05-Scheduler-Catalog.md`.
+- **Platform Owner security:** Founder identity (`PlatformOwnership` + `NBOS_FOUNDER_EMPLOYEE_ID`) is separate from CEO. Canon: `03-Platform-Owner-Security-Architecture.md`.
 
 ## Related code
 

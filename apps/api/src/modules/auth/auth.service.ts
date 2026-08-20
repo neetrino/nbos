@@ -17,7 +17,9 @@ import { AuthSessionService } from './auth-session.service';
 import { resolveAuthAccessTokenTtlSeconds, shouldIssueAuthSessionV2 } from './auth-session.flags';
 import { recordAuthMetric } from './auth-session.metrics';
 import { changeEmployeePassword } from './auth-change-password';
+import { assertInvitationRoleStillAssignable } from './auth-invite-role';
 import type { V2AccessTokenClaims } from './auth-session.tokens';
+import { NBOS_FOUNDER_EMPLOYEE_ID_ENV } from '@nbos/shared';
 
 interface LegacyJwtPayload {
   sub: string;
@@ -231,6 +233,12 @@ export class AuthService {
     if (invitation.expiresAt < new Date()) {
       throw new BadRequestException('Invitation has expired');
     }
+
+    await assertInvitationRoleStillAssignable(this.prisma, {
+      invitedById: invitation.invitedById,
+      roleId: invitation.roleId,
+      founderEmployeeIdEnv: this.config.get<string>(NBOS_FOUNDER_EMPLOYEE_ID_ENV)?.trim() || null,
+    });
 
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 

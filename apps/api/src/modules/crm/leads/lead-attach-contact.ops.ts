@@ -79,6 +79,7 @@ export interface AttachLeadToContactInput {
   aboutDealId?: string;
   actorId: string;
   actorRoleSlug: string;
+  isPlatformOwner?: boolean;
 }
 
 export interface AttachLeadToContactResult {
@@ -227,6 +228,7 @@ function assertCanAttachLead(input: AttachLeadToContactInput, lead: AttachLeadRo
       roleSlug: input.actorRoleSlug,
       actorId: input.actorId,
       assignedTo: lead.assignedTo,
+      isPlatformOwner: input.isPlatformOwner === true,
     })
   ) {
     return;

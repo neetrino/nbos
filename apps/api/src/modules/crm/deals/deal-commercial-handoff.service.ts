@@ -17,10 +17,10 @@ import {
   resolveDealOrderTotalAmount,
 } from './deal-order-bootstrap.ops';
 import { createDealDepositInvoice } from './deal-deposit-invoice.ops';
+import { hasCompanyExecutiveOps } from '@nbos/shared';
 import {
   DEPOSIT_COMMERCIAL_DEAL_TYPES,
   EXCEPTION_REASON_MIN_LEN,
-  PRIVILEGED_COMMERCIAL_ROLE_LEVEL,
   type CreateDepositOrderBody,
   type CreateExceptionOrderBody,
   type DealCommercialActor,
@@ -210,10 +210,12 @@ export class DealCommercialHandoffService {
 
   private assertPrivilegedActor(actor: DealCommercialActor): void {
     if (
-      actor.actorRoleLevel === undefined ||
-      actor.actorRoleLevel > PRIVILEGED_COMMERCIAL_ROLE_LEVEL
+      !hasCompanyExecutiveOps({
+        isPlatformOwner: actor.isPlatformOwner === true,
+        roleSlug: actor.roleSlug,
+      })
     ) {
-      throw new ForbiddenException('Only Owner or CEO can create exception orders');
+      throw new ForbiddenException('Only the CEO or platform owner can create exception orders');
     }
     if (!actor.actorId) {
       throw new ForbiddenException('Authenticated approver is required');

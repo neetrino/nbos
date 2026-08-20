@@ -9,11 +9,21 @@ import {
 function createPrisma(options?: {
   roleEmployees?: Array<{ email: string }>;
   owner?: { email: string } | null;
+  founder?: { email: string; status: string } | null;
+  ownership?: { ownerEmployeeId: string } | null;
 }) {
   return {
+    platformOwnership: {
+      findUnique: vi.fn().mockResolvedValue(options?.ownership ?? null),
+    },
     employee: {
       findMany: vi.fn().mockResolvedValue(options?.roleEmployees ?? []),
-      findUnique: vi.fn().mockResolvedValue(options?.owner ?? null),
+      findUnique: vi.fn().mockImplementation(({ where }: { where: { id: string } }) => {
+        if (options?.ownership && where.id === options.ownership.ownerEmployeeId) {
+          return Promise.resolve(options.founder ?? null);
+        }
+        return Promise.resolve(options?.owner ?? null);
+      }),
     },
   };
 }
@@ -33,15 +43,17 @@ describe('parseRecipientRoles', () => {
 });
 
 describe('recipientRoleSlugs', () => {
-  it('maps Owner and CEO to directory role slugs', () => {
-    expect(recipientRoleSlugs(['OWNER', 'CEO', 'SCHEDULE_OWNER'])).toEqual(['owner', 'ceo']);
+  it('maps CEO to the directory slug and ignores OWNER role slug', () => {
+    expect(recipientRoleSlugs(['OWNER', 'CEO', 'SCHEDULE_OWNER'])).toEqual(['ceo']);
   });
 });
 
 describe('resolveReportScheduleRecipientEmails', () => {
-  it('resolves Owner and CEO from the employee directory', async () => {
+  it('resolves Founder from PlatformOwnership and CEO from the directory', async () => {
     const prisma = createPrisma({
-      roleEmployees: [{ email: 'owner@neetrino.com' }, { email: 'suren@neetrino.com' }],
+      ownership: { ownerEmployeeId: 'founder-1' },
+      founder: { email: 'sipan@neetrino.com', status: 'ACTIVE' },
+      roleEmployees: [{ email: 'suren@neetrino.com' }],
     });
 
     await expect(
@@ -50,16 +62,16 @@ describe('resolveReportScheduleRecipientEmails', () => {
         ownerId: 'pm-1',
         storedEmails: ['stale@example.com'],
       }),
-    ).resolves.toEqual(['owner@neetrino.com', 'suren@neetrino.com']);
+    ).resolves.toEqual(['sipan@neetrino.com', 'suren@neetrino.com']);
 
+    expect(prisma.platformOwnership.findUnique).toHaveBeenCalled();
     expect(prisma.employee.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          role: { slug: { in: ['owner', 'ceo'] } },
+          role: { slug: { in: ['ceo'] } },
         }),
       }),
     );
-    expect(prisma.employee.findUnique).not.toHaveBeenCalled();
   });
 
   it('adds the schedule owner email when that role is selected', async () => {

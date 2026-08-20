@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { IS_PUBLIC_KEY } from '../decorators';
+import { PlatformOwnershipService } from '../../modules/platform-ownership/platform-ownership.service';
 
 interface CachedEmployee {
   id: string;
@@ -20,6 +21,7 @@ interface CachedEmployee {
   roleLevel: number;
   departmentIds: string[];
   permissions: Record<string, string>;
+  isPlatformOwner: boolean;
   meProfile: {
     id: string;
     firstName: string;
@@ -29,6 +31,7 @@ interface CachedEmployee {
     telegram: string | null;
     avatar: string | null;
     position: string | null;
+    isPlatformOwner: boolean;
     role: {
       id: string;
       name: string;
@@ -66,6 +69,7 @@ export class EmployeeGuard implements CanActivate {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly reflector: Reflector,
+    private readonly platformOwnership: PlatformOwnershipService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -144,6 +148,8 @@ export class EmployeeGuard implements CanActivate {
       permissions[key] = rp.scope;
     }
 
+    const isPlatformOwner = await this.platformOwnership.isPlatformOwner(employeeId);
+
     const enriched: CachedEmployee = {
       id: employee.id,
       email: employee.email,
@@ -153,6 +159,7 @@ export class EmployeeGuard implements CanActivate {
       roleLevel: employee.role.level,
       departmentIds: employee.departments.map((d) => d.departmentId),
       permissions,
+      isPlatformOwner,
       meProfile: {
         id: employee.id,
         firstName: employee.firstName,
@@ -162,6 +169,7 @@ export class EmployeeGuard implements CanActivate {
         telegram: employee.telegram,
         avatar: employee.avatar,
         position: employee.position,
+        isPlatformOwner,
         role: {
           id: employee.role.id,
           name: employee.role.name,
