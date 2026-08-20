@@ -5,6 +5,7 @@ import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { contactsApi } from '@/lib/api/clients';
 import { dealsApi } from '@/lib/api/deals';
 import { leadsApi } from '@/lib/api/leads';
+import { productsApi } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { LEAD_SVYAZAT_RECENT_LIMIT } from './lead-svyazat-labels';
@@ -12,6 +13,7 @@ import {
   toContactHits,
   toLeadHits,
   toOpenDealHits,
+  toProductHits,
   toProjectHits,
   type SvyazatSearchHit,
   type SvyazatSearchKind,
@@ -92,6 +94,13 @@ async function loadSvyazatHits(
       search: q,
     });
     return toProjectHits(data.items);
+  }
+  if (kind === 'product') {
+    const data = await productsApi.getAll({
+      pageSize: LEAD_SVYAZAT_RECENT_LIMIT,
+      search: q,
+    });
+    return toProductHits(data.items);
   }
   const data = await leadsApi.getAll({
     pageSize: LIST_PAGE_SIZE,

@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 import { splitEntityContactIds } from '@nbos/shared';
 
-export type EntityContactLinkKind = 'deal' | 'lead' | 'project' | 'company';
+export type EntityContactLinkKind = 'deal' | 'lead' | 'project' | 'company' | 'product';
 
 /** Persists full contact list: first id → primary FK, rest → junction table. */
 export async function syncEntityContactLinks(
@@ -52,6 +52,14 @@ export async function syncEntityContactLinks(
     if (uniqueAdditional.length > 0) {
       await prisma.projectAdditionalContact.createMany({
         data: uniqueAdditional.map((contactId) => ({ projectId: entityId, contactId })),
+        skipDuplicates: true,
+      });
+    }
+  } else if (kind === 'product') {
+    await prisma.productAdditionalContact.deleteMany({ where: { productId: entityId } });
+    if (uniqueAdditional.length > 0) {
+      await prisma.productAdditionalContact.createMany({
+        data: uniqueAdditional.map((contactId) => ({ productId: entityId, contactId })),
         skipDuplicates: true,
       });
     }

@@ -13,4 +13,4 @@
 - [x] Добавить production-мониторинг ошибок BullMQ jobs и Scheduler runs с понятными уведомлениями.
 - [x] Вынести ops-токены из `.env.local` приложения и заменить секреты, если скриншоты или ENV попадали третьим лицам.
 - [ ] Парковка / watch: уменьшить расход Redis-команд от API, Worker, Scheduler и BullMQ — **только если** после `nbos-redis` RAM/CPU на VPS станет заметным.
-- [ ] **Contact ↔ Product (не сейчас):** после Lead «Связать» / create-contact-from-lead — сначала canon NBOS, потом проектировать Contact ↔ Product.
+- [x] **Contact ↔ Product:** канон `07-Contact-and-Product.md` + schema/API/Связать/Won/merge/WhatsApp/UI.

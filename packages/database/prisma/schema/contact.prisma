@@ -25,6 +25,7 @@ model Contact {
   companies           Company[] @relation("CompanyPrimaryContact")
   billingForCompanies Company[] @relation("CompanyBillingContact")
   projects            Project[]
+  products            Product[]
   leads               Lead[]
   deals               Deal[]
   tickets             SupportTicket[]
@@ -33,6 +34,7 @@ model Contact {
   dealAdditionalLinks DealAdditionalContact[] @relation("DealAdditionalContact")
   leadAdditionalLinks LeadAdditionalContact[] @relation("LeadAdditionalContact")
   projectAdditionalLinks ProjectAdditionalContact[] @relation("ProjectAdditionalContact")
+  productAdditionalLinks ProductAdditionalContact[] @relation("ProductAdditionalContact")
   companyAdditionalLinks CompanyAdditionalContact[] @relation("CompanyAdditionalContact")
   partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]

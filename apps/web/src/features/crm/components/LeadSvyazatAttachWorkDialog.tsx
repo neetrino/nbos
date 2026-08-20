@@ -12,6 +12,7 @@ type WorkKind = Exclude<SvyazatSearchKind, 'contact'>;
 const WORK_KIND_OPTIONS: ReadonlyArray<{ value: WorkKind; label: string }> = [
   { value: 'deal', label: LEAD_SVYAZAT_LABELS.targetDeal },
   { value: 'project', label: LEAD_SVYAZAT_LABELS.targetProject },
+  { value: 'product', label: LEAD_SVYAZAT_LABELS.targetProduct },
   { value: 'lead', label: LEAD_SVYAZAT_LABELS.targetLead },
 ];
 
@@ -65,5 +66,6 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
 function searchLabelFor(kind: WorkKind): string {
   if (kind === 'deal') return LEAD_SVYAZAT_LABELS.searchDeal;
   if (kind === 'project') return LEAD_SVYAZAT_LABELS.searchProject;
+  if (kind === 'product') return LEAD_SVYAZAT_LABELS.searchProduct;
   return LEAD_SVYAZAT_LABELS.searchLead;
 }

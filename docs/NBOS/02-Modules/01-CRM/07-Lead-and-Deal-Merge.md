@@ -2,7 +2,7 @@
 
 > NBOS Platform — идентичность человека, attach входящих и merge карточек Lead
 >
-> **Статус:** канон (2026-08-19). Runtime: intake attach + Lead merge + Lead→Contact attach + Lead **Связать** (pour / create-contact) shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются. **Contact↔Product не в этом срезе.**
+> **Статус:** канон (2026-08-20). Runtime: intake attach + Lead merge + Lead→Contact attach + Lead **Связать** (pour / create-contact / attach product) shipped (`06-Implementation-Status.md`). **Deal↔Deal merge сознательно не делаем** — не в roadmap, wizard и `mergedIntoId` на Deal не планируются. **Contact↔Product** — канон Clients `07-Contact-and-Product.md`.
 >
 > Связанный канон: `01-CRM-Overview.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `../03-Clients/02-Contacts.md` (Contact merge), `../../03-Business-Logic/09-Entity-Lifecycle-Standard.md` (Profile A Trash).
 
@@ -121,10 +121,10 @@ Wizard: выбрать **survivor** и **absorbed**.
     с контактом      → тот же человек: влить имя/телефоны/заметки в существующий Contact, extra phone через ContactPhone (не затирать primary, не писать телефон в notes). Lead → Trash. Не `Lead.mergedIntoId` (это Lead↔Lead). Не `Contact.mergedIntoId` (это Contact↔Contact).
   Добавить
     новый контакт    → создать Contact из полей Lead, никуда не вешать. `Lead.contactId` = новый Contact, Lead **оставить**. Free-text имя/телефон/email скрыть, когда contactId задан.
-    контакт к работе → MAIN: создать Contact из Lead, повесить additional (или primary, если пусто) на одну цель: открытая Deal | активный Project | открытый не-SQL Lead (не self). Затем Trash этого входящего Lead. `Deal.leadId` не менять. Второй Deal не создавать. Если у Deal уже есть `projectId` — того же Contact добавить и на этот Project (не Product).
+    контакт к работе → MAIN: создать Contact из Lead, повесить additional (или primary, если пусто) на одну цель: открытая Deal | активный Project | Product | открытый не-SQL Lead (не self). Затем Trash этого входящего Lead. `Deal.leadId` не менять. Второй Deal не создавать. Если у Deal уже есть `projectId` — того же Contact добавить и на этот Project; если у Deal однозначный Product-якорь (`existingProductId` или order.productId) — также на этот Product (каскад вверх на Project при attach к Product).
 ```
 
-Каждый путь — одно модальное окно: live search + last 10 + человеческий заголовок + Apply/Cancel. «контакт к работе»: сначала тип цели (сделка / продукт=проект / лид), затем поиск этого типа, single select.
+Каждый путь — одно модальное окно: live search + last 10 + человеческий заголовок + Apply/Cancel. «контакт к работе»: сначала тип цели (сделка / проект / продукт / лид), затем поиск этого типа, single select. Подпись «Продукт» — только для Product search, не для Project.
 
 Ручное создание Lead и шит: поиск Contact как у Deal (`RelationPickerField`). Если Contact выбран / связан — скрыть free-text contactName / phone / email (они с Contact).
 
@@ -162,7 +162,7 @@ Wizard: выбрать **survivor** и **absorbed**.
 | Lead merge wizard   | § 6 — коррекция дублей Lead                                  | Shipped                                                                   |
 | Contact merge       | Clients (`02-Contacts.md`)                                   | Shipped: Trash + `mergedIntoId`; extra phones union; не замена Lead merge |
 | Deal↔Deal merge     | —                                                            | **Не делаем**                                                             |
-| Contact↔Product     | —                                                            | **Не в этом срезе**                                                       |
+| Contact↔Product     | Clients `07-Contact-and-Product.md` + Связать `product`      | Shipped (канон + runtime)                                                 |
 
 ## 12. Никогда
 

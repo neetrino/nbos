@@ -1,6 +1,16 @@
 'use client';
 
-import { Check, FolderKanban, Handshake, Loader2, Search, User, UserRound, X } from 'lucide-react';
+import {
+  Check,
+  FolderKanban,
+  Handshake,
+  Layers,
+  Loader2,
+  Search,
+  User,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
@@ -14,6 +24,7 @@ const KIND_ICONS = {
   contact: User,
   deal: Handshake,
   project: FolderKanban,
+  product: Layers,
   lead: UserRound,
 } as const satisfies Record<SvyazatSearchKind, typeof User>;
 

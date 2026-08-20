@@ -35,6 +35,8 @@ function openDealRow(overrides: Record<string, unknown> = {}) {
     leadId: 'sql-lead-1',
     status: 'START_CONVERSATION',
     trashedAt: null,
+    existingProductId: null,
+    orders: [],
     ...overrides,
   };
 }
@@ -141,6 +143,37 @@ describe('createContactFromLead', () => {
       skipDuplicates: true,
     });
     expect(prisma.project.update).not.toHaveBeenCalled();
+  });
+
+  it('attaches to a Product, cascades to Project, and trashes the Lead', async () => {
+    const prisma = createMockPrisma();
+    prisma.lead.findUnique.mockResolvedValue(leadRow());
+    prisma.contact.create.mockResolvedValue({ id: 'contact-new' });
+    prisma.product.findUnique.mockResolvedValue({
+      id: 'product-1',
+      contactId: 'product-primary',
+      projectId: 'project-1',
+      project: { trashedAt: null },
+    });
+    prisma.project.findUnique.mockResolvedValue({
+      id: 'project-1',
+      contactId: 'project-primary',
+      trashedAt: null,
+    });
+    const audit = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+
+    const result = await createContactFromLead(prisma as never, audit as never, {
+      leadId: 'lead-1',
+      attach: { type: 'product', id: 'product-1' },
+      ...actor({ roleSlug: 'ceo', id: 'ceo-1' }),
+    });
+
+    expect(result.trashed).toBe(true);
+    expect(result.cascadedProjectId).toBe('project-1');
+    expect(prisma.productAdditionalContact.createMany).toHaveBeenCalledWith({
+      data: [{ productId: 'product-1', contactId: 'contact-new' }],
+      skipDuplicates: true,
+    });
   });
 
   it('attaches to another open Lead as additional and trashes this Lead', async () => {
