@@ -1,11 +1,12 @@
 import type { Contact } from '@/lib/api/clients';
 import type { Deal } from '@/lib/api/deals';
 import type { Lead } from '@/lib/api/leads';
+import type { Product } from '@/lib/api/products';
 import type { Project } from '@/lib/api/projects';
 import { getLeadMergeCandidateSubtitle, getLeadMergeCandidateTitle } from './lead-merge-wizard';
 import { LEAD_SVYAZAT_RECENT_LIMIT } from './lead-svyazat-labels';
 
-export type SvyazatSearchKind = 'contact' | 'deal' | 'project' | 'lead';
+export type SvyazatSearchKind = 'contact' | 'deal' | 'project' | 'product' | 'lead';
 
 export interface SvyazatSearchHit {
   id: string;
@@ -17,7 +18,8 @@ export interface SvyazatSearchHit {
 export const SVYAZAT_KIND_LABELS: Record<SvyazatSearchKind, string> = {
   contact: 'Contact',
   deal: 'Deal',
-  project: 'Product',
+  project: 'Project',
+  product: 'Product',
   lead: 'Lead',
 };
 
@@ -48,6 +50,16 @@ function projectTitle(project: Pick<Project, 'name' | 'code'>): string {
 
 function projectSubtitle(project: Pick<Project, 'code' | 'name'>): string {
   return project.name.trim() ? project.code : '';
+}
+
+function productTitle(product: Pick<Product, 'name'>): string {
+  return product.name.trim() || 'Product';
+}
+
+function productSubtitle(product: Pick<Product, 'productType' | 'project'>): string {
+  return [product.project?.name, product.productType.replace(/_/g, ' ')]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 export function leadSvyazatHit(lead: Lead): SvyazatSearchHit {
@@ -99,6 +111,15 @@ export function toProjectHits(items: Project[]): SvyazatSearchHit[] {
       title: projectTitle(project),
       subtitle: projectSubtitle(project),
     }));
+}
+
+export function toProductHits(items: Product[]): SvyazatSearchHit[] {
+  return items.slice(0, LEAD_SVYAZAT_RECENT_LIMIT).map((product) => ({
+    id: product.id,
+    kind: 'product',
+    title: productTitle(product),
+    subtitle: productSubtitle(product),
+  }));
 }
 
 export function toLeadHits(items: Lead[], excludeId: string): SvyazatSearchHit[] {

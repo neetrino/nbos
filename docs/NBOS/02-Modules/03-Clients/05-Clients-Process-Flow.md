@@ -152,7 +152,7 @@ Deal связывает продажу с человеком и биллинго
 - создаётся Product или Extension;
 - создаётся Order;
 - создаётся Invoice или Subscription flow по правилам CRM / Finance;
-- связи Contact и Company передаются в Project / Product / Order / Invoice;
+- связи Contact и Company передаются в Project / Order / Invoice; при создании Product — `Product.contactId` из Deal или Project (канон `07-Contact-and-Product.md`);
 - Subscription всегда на Product (`productId`); client reminders — Product WhatsApp Group.
 
 Для Outsource:
@@ -183,7 +183,14 @@ Product или Extension хранит конкретную delivery-работу
 - дополнительные контакты могут быть добавлены вручную;
 - billing contact берётся из Company / Finance settings.
 
-Если сотрудник добавляет нового человека уже во время проекта, система создаёт или находит Contact и связывает его с Project. Это автоматически делает его видимым в клиентском контексте, но не требует выбора сложной роли.
+Контакты в Product (`07-Contact-and-Product.md`):
+
+- `Product.contactId` обязателен; additional через junction;
+- новый Product копирует только Project primary;
+- Product Overview редактирует Product-scoped contacts, не Project;
+- снятие с Project снимает со всех Product этого Project.
+
+Если сотрудник добавляет нового человека уже во время проекта, система создаёт или находит Contact и связывает его с Project (и при необходимости с Product). Это автоматически делает его видимым в клиентском контексте, но не требует выбора сложной роли.
 
 ---
 

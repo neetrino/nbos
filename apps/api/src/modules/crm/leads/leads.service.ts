@@ -31,6 +31,7 @@ import { mergeLeads } from './lead-merge.ops';
 import { attachLeadToContact } from './lead-attach-contact.ops';
 import { pourLeadIntoContact } from './lead-pour-into-contact.ops';
 import { createContactFromLead } from './lead-create-contact.ops';
+import type { LeadCreateContactAttachType } from './dto/create-lead-contact.dto';
 import { LEAD_MERGE_ERROR } from './lead-identity.ops';
 import { buildLeadSearchOr } from './lead-search.where';
 import type { LeadMergeFieldChoices } from '@nbos/shared';
@@ -400,7 +401,7 @@ export class LeadsService {
 
   async createContactFromLead(
     leadId: string,
-    body: { attach?: { type: 'deal' | 'project' | 'lead'; id: string } },
+    body: { attach?: { type: LeadCreateContactAttachType; id: string } },
     actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await createContactFromLead(this.prisma, this.auditService, {

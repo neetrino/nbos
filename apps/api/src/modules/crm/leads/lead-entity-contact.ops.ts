@@ -3,12 +3,14 @@ import type { TransactionClient } from '@nbos/database';
 import { isOpenDealStatus, LEAD_SVYAZAT_ERROR } from './lead-identity.ops';
 import { svyazatBlocked } from './lead-svyazat-shared.ops';
 import type { LeadCreateContactAttachType } from './dto/create-lead-contact.dto';
+import { addContactToProduct } from '../../projects/products/product-contacts.ops';
 
 export type ContactAttachRole = 'primary' | 'additional' | 'already';
 
 export interface AddContactToWorkResult {
   role: ContactAttachRole;
   cascadedProjectId: string | null;
+  cascadedProductId: string | null;
   dealLeadId: string | null;
 }
 
@@ -22,7 +24,16 @@ export async function addContactToWorkTarget(
   if (kind === 'deal') return addContactToDeal(tx, targetId, contactId);
   if (kind === 'project') {
     const role = await addContactToProject(tx, targetId, contactId);
-    return { role, cascadedProjectId: null, dealLeadId: null };
+    return { role, cascadedProjectId: null, cascadedProductId: null, dealLeadId: null };
+  }
+  if (kind === 'product') {
+    const placed = await addContactToProduct(tx, targetId, contactId);
+    return {
+      role: placed.role,
+      cascadedProjectId: placed.projectId,
+      cascadedProductId: targetId,
+      dealLeadId: null,
+    };
   }
   return addContactToLead(tx, targetId, contactId, sourceLeadId);
 }
@@ -41,6 +52,8 @@ async function addContactToDeal(
       leadId: true,
       status: true,
       trashedAt: true,
+      existingProductId: true,
+      orders: { select: { productId: true }, take: 5 },
     },
   });
   if (!deal || deal.trashedAt) {
@@ -56,7 +69,26 @@ async function addContactToDeal(
   const cascadedProjectId = deal.projectId
     ? await cascadeContactToProject(tx, deal.projectId, contactId)
     : null;
-  return { role, cascadedProjectId, dealLeadId: deal.leadId };
+  const cascadedProductId = await cascadeContactToDealProduct(tx, deal, contactId);
+  return { role, cascadedProjectId, cascadedProductId, dealLeadId: deal.leadId };
+}
+
+async function cascadeContactToDealProduct(
+  tx: TransactionClient,
+  deal: {
+    existingProductId: string | null;
+    orders: Array<{ productId: string | null }>;
+  },
+  contactId: string,
+): Promise<string | null> {
+  const orderProductIds = [
+    ...new Set(deal.orders.map((row) => row.productId).filter((id): id is string => Boolean(id))),
+  ];
+  const productId =
+    deal.existingProductId ?? (orderProductIds.length === 1 ? orderProductIds[0]! : null);
+  if (!productId) return null;
+  await addContactToProduct(tx, productId, contactId);
+  return productId;
 }
 
 async function placeContactOnDeal(
@@ -130,7 +162,7 @@ async function addContactToLead(
   });
   assertOpenTargetLead(target);
   const role = await placeContactOnLead(tx, target, contactId);
-  return { role, cascadedProjectId: null, dealLeadId: null };
+  return { role, cascadedProjectId: null, cascadedProductId: null, dealLeadId: null };
 }
 
 function assertOpenTargetLead(

@@ -201,7 +201,7 @@ function ProductDetailPageContent() {
         </div>
 
         <TabsContent value="overview" className="mt-5">
-          <ProductOverviewTab product={product} />
+          <ProductOverviewTab product={product} onProductUpdated={setProduct} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">

@@ -57,6 +57,23 @@ import { DeliveryStageChecklistSyncService } from '../../checklist-templates/del
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
+import {
+  resolveProjectContactIdForNewProduct,
+  syncProductContactLinks,
+} from './product-contacts.ops';
+
+const productContactSummarySelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+} as const;
+
+const productAdditionalContactsInclude = {
+  additionalContacts: {
+    include: { contact: { select: productContactSummarySelect } },
+  },
+} as const;
 
 interface CreateProductDto {
   projectId: string;
@@ -68,6 +85,7 @@ interface CreateProductDto {
   description?: string;
   checklistTemplateId?: string;
   languages?: string[];
+  contactIds?: string[];
 }
 
 interface UpdateProductDto {
@@ -84,6 +102,7 @@ interface UpdateProductDto {
   description?: string | null;
   checklistTemplateId?: string | null;
   languages?: string[];
+  contactIds?: string[];
 }
 
 interface PauseDeliveryDto {
@@ -341,6 +360,8 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
+        contact: { select: productContactSummarySelect },
+        ...productAdditionalContactsInclude,
         project: {
           select: {
             id: true,
@@ -446,9 +467,13 @@ export class ProductsService {
   }
 
   async create(data: CreateProductDto) {
+    const contactId =
+      data.contactIds?.[0] ??
+      (await resolveProjectContactIdForNewProduct(this.prisma, data.projectId));
     const product = await this.prisma.product.create({
       data: {
         projectId: data.projectId,
+        contactId,
         name: data.name,
         productCategory: data.productCategory as ProductCategoryEnum,
         productType: data.productType as ProductTypeEnum,
@@ -464,11 +489,25 @@ export class ProductsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         pm: { select: employeePersonSelect },
+        contact: { select: productContactSummarySelect },
       },
     });
+    if (data.contactIds && data.contactIds.length > 0) {
+      const { primaryContactId } = await syncProductContactLinks(
+        this.prisma,
+        product.id,
+        data.contactIds,
+      );
+      if (primaryContactId !== contactId) {
+        await this.prisma.product.update({
+          where: { id: product.id },
+          data: { contactId: primaryContactId },
+        });
+      }
+    }
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
     await this.syncProductTeamAccess(product);
-    return attachProductDeliveryLifecycle(product);
+    return this.findById(product.id);
   }
 
   async update(id: string, data: UpdateProductDto) {
@@ -479,19 +518,21 @@ export class ProductsService {
         ? data.frontendDeveloperId
         : previous.frontendDeveloperId,
     );
-    const product = await this.prisma.product.update({
+
+    let primaryContactId: string | undefined;
+    if (data.contactIds !== undefined) {
+      const synced = await syncProductContactLinks(this.prisma, id, data.contactIds);
+      primaryContactId = synced.primaryContactId;
+    }
+
+    await this.prisma.product.update({
       where: { id },
-      data: buildProductUpdateData(data),
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        pm: { select: employeePersonSelect },
-        developer: { select: employeePersonSelect },
-        frontendDeveloper: { select: employeePersonSelect },
-        designer: { select: employeePersonSelect },
-        technicalSpecialist: { select: employeePersonSelect },
-        qaLead: { select: employeePersonSelect },
+      data: {
+        ...buildProductUpdateData(data),
+        ...(primaryContactId ? { contact: { connect: { id: primaryContactId } } } : {}),
       },
     });
+    const product = await this.findById(id);
     await this.syncProductTeamAccess(product);
     if (
       data.technicalSpecialistId !== undefined &&
@@ -501,7 +542,7 @@ export class ProductsService {
     ) {
       await this.enqueueTechnicalSpecialist(product.id);
     }
-    return attachProductDeliveryLifecycle(product);
+    return product;
   }
 
   async updateStatus(id: string, newStatus: string, actorId: string) {

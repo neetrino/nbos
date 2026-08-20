@@ -111,6 +111,16 @@ export function ClientPortfolioTabPanels({
           const counts = p._count as { products?: number; extensions?: number } | undefined;
           const productCount = counts?.products ?? 0;
           const extensionCount = counts?.extensions ?? 0;
+          const productContext = Array.isArray(p.productContext)
+            ? (p.productContext as Array<{ name?: string; productType?: string }>)
+            : [];
+          const contextLabel =
+            productContext.length > 0
+              ? productContext
+                  .map((row) => row.name || String(row.productType ?? '').replace(/_/g, ' '))
+                  .filter(Boolean)
+                  .join(', ')
+              : null;
           return (
             <DetailSheetEntityLinkCard
               key={id}
@@ -118,7 +128,11 @@ export function ClientPortfolioTabPanels({
               icon={FolderKanban}
               label={code || 'Project'}
               title={name || code || 'Untitled project'}
-              description={`${productCount} product${productCount === 1 ? '' : 's'} · ${extensionCount} extension${extensionCount === 1 ? '' : 's'}`}
+              description={
+                contextLabel
+                  ? `Products: ${contextLabel}`
+                  : `${productCount} product${productCount === 1 ? '' : 's'} · ${extensionCount} extension${extensionCount === 1 ? '' : 's'}`
+              }
             />
           );
         })}

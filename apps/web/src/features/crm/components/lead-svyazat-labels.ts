@@ -10,7 +10,8 @@ export const LEAD_SVYAZAT_LABELS = {
   searchContact: 'Найти контакт',
   searchLead: 'Найти лид',
   searchDeal: 'Найти сделку',
-  searchProject: 'Найти продукт',
+  searchProject: 'Найти проект',
+  searchProduct: 'Найти продукт',
   apply: 'Применить',
   cancel: 'Отмена',
   createContactTitle: 'Новый контакт',
@@ -25,7 +26,8 @@ export const LEAD_SVYAZAT_LABELS = {
   emptySearch: 'Ничего не найдено',
   searching: 'Searching…',
   targetDeal: 'Сделка',
-  targetProject: 'Продукт',
+  targetProject: 'Проект',
+  targetProduct: 'Продукт',
   targetLead: 'Лид',
 } as const;
 

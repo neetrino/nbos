@@ -67,7 +67,7 @@ export function contactMergePreviewLines(survivor: Contact, absorbed: Contact): 
   return [
     `${contactDisplayName(survivor)} stays active; ${contactDisplayName(absorbed)} moves to Trash with a merge pointer.`,
     'Extra phones are unioned (normalized). Primary phone is the value you picked.',
-    'Companies, deals, leads, projects, and other links move onto the survivor. Deals are not merged with each other.',
+    'Companies, deals, leads, projects, products, and other links move onto the survivor. Deals are not merged with each other.',
     'Notes are appended. Restore of the absorbed card without un-merge is blocked.',
   ];
 }

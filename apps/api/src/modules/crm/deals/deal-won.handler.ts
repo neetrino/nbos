@@ -318,9 +318,21 @@ export class DealWonHandler {
     });
     if (linkedOrder?.productId) return linkedOrder.productId;
 
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      select: { contactId: true },
+    });
+    const contactId = deal.contactId ?? project?.contactId;
+    if (!contactId) {
+      throw new BadRequestException(
+        `Deal ${deal.code}: cannot create Product without a Contact (Deal or Project).`,
+      );
+    }
+
     const product = await this.prisma.product.create({
       data: {
         projectId,
+        contactId,
         name: deal.name ?? `Product from ${deal.code}`,
         productCategory: deal.productCategory as Prisma.ProductCreateInput['productCategory'],
         productType: deal.productType as Prisma.ProductCreateInput['productType'],

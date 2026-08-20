@@ -125,14 +125,14 @@ Lead получает статус SQL (Quality Lead)
 
 Все проекты, где данный контакт является основным контактом (заказчиком):
 
-| Поле             | Описание                                                              |
-| ---------------- | --------------------------------------------------------------------- |
-| Название проекта | Ссылка на Project                                                     |
-| Компания         | Юрлицо, привязанное к проекту                                         |
-| Статус           | Computed-статус (Development / Maintenance / Closed)                  |
-| Product Context  | Product category/type, если контакт связан с конкретной delivery line |
-| Продукты         | Список продуктов с мини-статусами                                     |
-| Дата начала      | Когда проект был создан                                               |
+| Поле             | Описание                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Название проекта | Ссылка на Project                                                                                                    |
+| Компания         | Юрлицо, привязанное к проекту                                                                                        |
+| Статус           | Computed-статус (Development / Maintenance / Closed)                                                                 |
+| Product Context  | Чипы Product, где контакт primary/additional (членство; не все продукты проекта). Канон: `07-Contact-and-Product.md` |
+| Продукты         | Список продуктов с мини-статусами по членству                                                                        |
+| Дата начала      | Когда проект был создан                                                                                              |
 
 ### 5.3. Список компаний
 
@@ -215,6 +215,10 @@ Lead получает статус SQL (Quality Lead)
   └── Deal "Extension: личный кабинет" → In Progress
 ```
 
+### Contact → Products (1:N)
+
+Один Contact может быть primary или additional на нескольких `Product` внутри одного или разных Project. `Product.contactId` + `ProductAdditionalContact`. Каскад вверх на Project; снятие с Project снимает со всех Product. Подробно: `07-Contact-and-Product.md`.
+
 ### Contact → Leads (1:1 или 1:N)
 
 Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Lead merge и intake attach — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`); Deal↔Deal merge не делаем. Merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
@@ -246,7 +250,7 @@ Contact создаётся из Lead. Если один человек обра�
 
 - Пользователь выбирает **survivor** и **absorbed**, затем конфликтующие поля (имя, primary phone, email, type и т.д.)
 - Extra phones: **union** по нормализованному номеру; primary = выбор пользователя
-- На survivor в транзакции переносятся: companies (primary / billing / additional), deals (`contactId` + additional), leads (`contactId` + additional; **без** авто Lead-merge), projects, история/notes (append), extra phones и остальные FK Contact
+- На survivor в транзакции переносятся: companies (primary / billing / additional), deals (`contactId` + additional), leads (`contactId` + additional; **без** авто Lead-merge), projects, products (`contactId` + additional; см. `07-Contact-and-Product.md`), история/notes (append), extra phones и остальные FK Contact
 - Поглощённый Contact: указатель `mergedIntoId` + Profile A **Trash**. Не hard delete. Старое «дубликат удаляется» больше не действует
 - Restore absorbed без отдельного un-merge **блокируется** (как Lead)
 - Audit: кто, когда, from→to, выбранные поля

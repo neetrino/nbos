@@ -4,6 +4,7 @@ export interface ContactMergeRelationCounts {
   companies: number;
   billingCompanies: number;
   projects: number;
+  products: number;
   leads: number;
   deals: number;
   extraPhones: number;
@@ -39,7 +40,7 @@ async function reassignDirectContactFks(
   fromId: string,
   toId: string,
 ): Promise<Omit<ContactMergeRelationCounts, 'extraPhones' | 'additionalLinks'>> {
-  const [companies, billingCompanies, projects, leads, sourceLeads, deals, sourceDeals] =
+  const [companies, billingCompanies, projects, products, leads, sourceLeads, deals, sourceDeals] =
     await Promise.all([
       tx.company.updateMany({ where: { contactId: fromId }, data: { contactId: toId } }),
       tx.company.updateMany({
@@ -47,6 +48,7 @@ async function reassignDirectContactFks(
         data: { billingContactId: toId },
       }),
       tx.project.updateMany({ where: { contactId: fromId }, data: { contactId: toId } }),
+      tx.product.updateMany({ where: { contactId: fromId }, data: { contactId: toId } }),
       tx.lead.updateMany({ where: { contactId: fromId }, data: { contactId: toId } }),
       tx.lead.updateMany({ where: { sourceContactId: fromId }, data: { sourceContactId: toId } }),
       tx.deal.updateMany({ where: { contactId: fromId }, data: { contactId: toId } }),
@@ -57,6 +59,7 @@ async function reassignDirectContactFks(
     companies: companies.count,
     billingCompanies: billingCompanies.count,
     projects: projects.count,
+    products: products.count,
     leads: leads.count + sourceLeads.count,
     deals: deals.count + sourceDeals.count,
   };
@@ -91,9 +94,29 @@ async function moveAllAdditionalLinks(
     moveContactJunction(tx.leadAdditionalContact, 'leadId', absorbedId, survivorId),
     moveContactJunction(tx.dealAdditionalContact, 'dealId', absorbedId, survivorId),
     moveContactJunction(tx.projectAdditionalContact, 'projectId', absorbedId, survivorId),
+    moveContactJunction(tx.productAdditionalContact, 'productId', absorbedId, survivorId),
     moveContactJunction(tx.companyAdditionalContact, 'companyId', absorbedId, survivorId),
   ]);
+  await dropProductAdditionalMatchingPrimary(tx, survivorId);
   return moved.reduce((sum, count) => sum + count, 0);
+}
+
+/** Primary must not also appear in ProductAdditionalContact. */
+async function dropProductAdditionalMatchingPrimary(
+  tx: TransactionClient,
+  survivorId: string,
+): Promise<void> {
+  const products = await tx.product.findMany({
+    where: { contactId: survivorId },
+    select: { id: true },
+  });
+  if (products.length === 0) return;
+  await tx.productAdditionalContact.deleteMany({
+    where: {
+      contactId: survivorId,
+      productId: { in: products.map((row) => row.id) },
+    },
+  });
 }
 
 async function moveContactJunction<TOwner extends string>(
