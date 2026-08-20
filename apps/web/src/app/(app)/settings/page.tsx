@@ -7,6 +7,7 @@ import {
   ListChecks,
   ShieldCheck,
   SlidersHorizontal,
+  Timer,
   ToggleLeft,
   Trash2,
 } from 'lucide-react';
@@ -56,6 +57,12 @@ const SETTINGS_SECTIONS = [
     icon: ToggleLeft,
   },
   {
+    title: 'Scheduler',
+    href: '/settings/scheduler',
+    description: 'Catalog of platform cron jobs that run without people.',
+    icon: Timer,
+  },
+  {
     title: 'Audit Log',
     href: '/settings/audit-log',
     description: 'Read-only trail for risky admin changes.',
@@ -75,7 +82,7 @@ export default function SettingsPage() {
       <PageHero title="Settings / Admin" />
       <p className="text-muted-foreground text-sm">
         System administration for platform configuration, technical permissions, integrations,
-        security, feature flags, and audit.
+        security, feature flags, scheduler jobs, and audit.
       </p>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

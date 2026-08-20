@@ -1,5 +1,7 @@
 # NBOS — реестр cron
 
+Ops-журнал решений (вкл/выкл на проде). Каталог «что существует» и Settings UI: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md). Code catalog: `apps/api/src/modules/scheduler/scheduler-job-catalog.ts`.
+
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
 Прод: мастер **вкл**, девять 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services, отчёты по расписанию). Остальные жёлтые не включать пакетом.
 
@@ -140,29 +142,18 @@ Cron не нужен. Кнопка: «Creating group…» / ошибка / по�
 
 Только этот сервис. API / web / worker не трогать.
 
+**Операционно оставляем в env:**
+
 ```env
 TZ=Asia/Yerevan
 SCHEDULER_ENABLED=true
-
-SCHEDULER_BILLING_ENABLED=true
-SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED=true
-SCHEDULER_OVERDUE_INVOICES_ENABLED=true
-SCHEDULER_SALES_KPI_MONTH_CLOSE_ENABLED=true
-SCHEDULER_RECURRING_TASKS_DUE_ENABLED=true
-SCHEDULER_RECURRING_TASKS_DUE_CRON=*/10 * * * *
-SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED=true
-SCHEDULER_NOTIFICATION_ENQUEUE_RECONCILE_ENABLED=true
-
-SCHEDULER_INVOICE_CARD_REMINDERS_ENABLED=false
-SCHEDULER_INVOICE_CARD_REMINDERS_CRON=0 11 * * *
-SCHEDULER_EXPENSE_BACKLOG_REMINDERS_ENABLED=false
-SCHEDULER_PLATFORM_TRASH_PURGE_ENABLED=false
-SCHEDULER_PLATFORM_TRASH_PURGE_CRON=30 3 * * 0
-SCHEDULER_SUPPORT_SLA_ESCALATION_ENABLED=false
-SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED=false
-REPORT_SCHEDULES_DUE_CRON_ENABLED=true
-SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED=true
-SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON=0 6 * * *
 ```
+
+**Per-job `*_ENABLED`:** после seed `SchedulerJobPolicy` управляются в **Settings → Scheduler**, не в Coolify env.  
+Старые флаги можно удалить с прода после merge (когда policy уже в БД). Не удалять `SCHEDULER_ENABLED`.
+
+**Cron:** менять в коде (catalog) или редкий `*_CRON` в env → restart `nbos-scheduler`. Не UI.
+
+Канон: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md) · `.env.example` § E.
 
 Джобы 1 / 3 / 6 есть только в новом образе scheduler. Старый эти флаги проигнорирует.

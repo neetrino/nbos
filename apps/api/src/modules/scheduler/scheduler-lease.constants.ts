@@ -8,6 +8,17 @@ export const DEFAULT_SCHEDULER_LEASE_TTL_MS = 120_000;
 export const DEFAULT_SCHEDULER_HEARTBEAT_INTERVAL_MS = 30_000;
 export const DEFAULT_SCHEDULER_SHUTDOWN_TIMEOUT_MS = 45_000;
 
+/** How often nbos-scheduler upserts SchedulerJobRuntime rows for Settings. */
+export const DEFAULT_SCHEDULER_RUNTIME_SNAPSHOT_INTERVAL_MS =
+  DEFAULT_SCHEDULER_HEARTBEAT_INTERVAL_MS;
+
+/**
+ * Settings treats runtime rows older than this as schedulerOffline.
+ * Must be > snapshot interval so a healthy process is never marked offline.
+ */
+export const DEFAULT_SCHEDULER_RUNTIME_OFFLINE_AFTER_MS =
+  DEFAULT_SCHEDULER_RUNTIME_SNAPSHOT_INTERVAL_MS * 3;
+
 /** Stable machine names for leases / runs / cron registry. */
 export const SCHEDULER_JOB_NAMES = {
   expensePlanAutoDue: 'expense-plan-auto-due',
@@ -45,6 +56,7 @@ export type SchedulerRunStatus = (typeof SCHEDULER_RUN_STATUS)[keyof typeof SCHE
 export const SCHEDULER_TRIGGER = {
   cron: 'cron',
   manualHttp: 'manual_http',
+  manualAdmin: 'manual_admin',
 } as const;
 
 export type SchedulerTrigger = (typeof SCHEDULER_TRIGGER)[keyof typeof SCHEDULER_TRIGGER];

@@ -90,11 +90,11 @@ describe('shouldStartCronJob', () => {
     expect(shouldStartCronJob('SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED')).toBe(false);
   });
 
-  it('scheduler registers from job flag; master only gates ticks', () => {
+  it('scheduler registers by role; master only gates ticks', () => {
     process.env.NODE_ENV = 'development';
     process.env.PROCESS_ROLE = 'scheduler';
     process.env.SCHEDULER_ENABLED = 'false';
-    process.env.SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED = 'true';
+    process.env.SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED = 'false';
     expect(shouldStartCronJob('SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED')).toBe(true);
     expect(shouldRunCronTick()).toBe(false);
     expect(describeCronSkipReason('SCHEDULER_NOTIFICATION_INBOX_RECONCILE_ENABLED')).toBeNull();
@@ -104,7 +104,7 @@ describe('shouldStartCronJob', () => {
     expect(shouldRunCronTick()).toBe(true);
   });
 
-  it('describeCronSkipReason names role vs job flag only', () => {
+  it('describeCronSkipReason names role only', () => {
     process.env.NODE_ENV = 'development';
     process.env.PROCESS_ROLE = 'api';
     process.env.SCHEDULER_BILLING_ENABLED = 'true';
@@ -113,11 +113,6 @@ describe('shouldStartCronJob', () => {
     process.env.PROCESS_ROLE = 'scheduler';
     process.env.SCHEDULER_ENABLED = 'false';
     process.env.SCHEDULER_BILLING_ENABLED = 'false';
-    expect(describeCronSkipReason('SCHEDULER_BILLING_ENABLED')).toBe(
-      'job flag SCHEDULER_BILLING_ENABLED off',
-    );
-
-    process.env.SCHEDULER_BILLING_ENABLED = 'true';
     expect(describeCronSkipReason('SCHEDULER_BILLING_ENABLED')).toBeNull();
   });
 });

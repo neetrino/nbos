@@ -20,6 +20,7 @@ describe('ExpensePlanAutoDueCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env.SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED;
     schedulerService = {
       runExpensePlanAutoDue: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }),
     };
@@ -31,7 +32,7 @@ describe('ExpensePlanAutoDueCron', () => {
     process.env = { ...original };
   });
 
-  it('does not register when disabled', () => {
+  it('registers even when env flag is off (policy gates ticks)', async () => {
     const config = createConfig({});
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new ExpensePlanAutoDueCron(
@@ -41,10 +42,10 @@ describe('ExpensePlanAutoDueCron', () => {
       jobRegistry,
     );
     cron.onModuleInit();
-    expect(addSpy).not.toHaveBeenCalled();
+    expect(addSpy).toHaveBeenCalledWith(SCHEDULER_JOB_NAMES.expensePlanAutoDue, expect.any(Object));
   });
 
-  it('registers cron when enabled', () => {
+  it('registers cron when enabled', async () => {
     process.env.SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED = 'true';
     const config = createConfig({
       SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED: 'true',
@@ -64,7 +65,7 @@ describe('ExpensePlanAutoDueCron', () => {
     expect(registry.doesExist('cron', SCHEDULER_JOB_NAMES.expensePlanAutoDue)).toBe(false);
   });
 
-  it('does not register when cron expression is invalid', () => {
+  it('does not register when cron expression is invalid', async () => {
     process.env.SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED = 'true';
     const config = createConfig({
       SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED: 'true',
@@ -81,7 +82,7 @@ describe('ExpensePlanAutoDueCron', () => {
     expect(addSpy).not.toHaveBeenCalled();
   });
 
-  it('does not register for PROCESS_ROLE=api', () => {
+  it('does not register for PROCESS_ROLE=api', async () => {
     process.env.PROCESS_ROLE = 'api';
     const config = createConfig({
       SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED: 'true',

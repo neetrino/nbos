@@ -339,6 +339,7 @@ Settings / Admin
   Integrations
   Security
   Feature Flags
+  Scheduler
   Audit Log
 ```
 

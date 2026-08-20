@@ -4,12 +4,14 @@ import { Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { startSchedulerCronJob } from './scheduler-cron-bind';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
+import { resetSchedulerJobPolicyChecker } from './scheduler-job-policy.accessor';
 
 describe('startSchedulerCronJob', () => {
   const original = { ...process.env };
 
   afterEach(() => {
     process.env = { ...original };
+    resetSchedulerJobPolicyChecker();
     vi.restoreAllMocks();
   });
 

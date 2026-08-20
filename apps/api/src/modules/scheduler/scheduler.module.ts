@@ -35,6 +35,11 @@ import { SchedulerRunService } from './scheduler-run.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { ServiceApiKeyGuard } from '../../common/guards/service-api-key.guard';
 import { shouldRegisterScheduledJobs } from '../../runtime/process-role';
+import { SchedulerJobRuntimeSnapshotService } from './scheduler-job-runtime-snapshot.service';
+import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.controller';
+import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
+import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
+import { AuditModule } from '../audit/audit.module';
 
 const SCHEDULER_IMPORTS = [
   BillingModule,
@@ -51,6 +56,7 @@ const SCHEDULER_IMPORTS = [
   TasksModule,
   ClientServicesModule,
   MailModule,
+  AuditModule,
 ] as const;
 
 const CRON_PROVIDERS = [
@@ -86,16 +92,29 @@ export class SchedulerModule {
     return {
       module: SchedulerModule,
       imports: [...(includeCrons ? [ScheduleModule.forRoot()] : []), ...SCHEDULER_IMPORTS],
-      controllers: [SchedulerController, SchedulerDiagnosticsController, SchedulerReadyController],
+      controllers: [
+        SchedulerController,
+        SchedulerDiagnosticsController,
+        SchedulerReadyController,
+        PlatformSchedulerJobsController,
+      ],
       providers: [
         SchedulerService,
         SchedulerLeaseService,
         SchedulerRunService,
         ScheduledJobRegistry,
         ServiceApiKeyGuard,
-        ...(includeCrons ? [...CRON_PROVIDERS] : []),
+        SchedulerJobPolicyService,
+        PlatformSchedulerJobsService,
+        ...(includeCrons ? [...CRON_PROVIDERS, SchedulerJobRuntimeSnapshotService] : []),
       ],
-      exports: [SchedulerService, SchedulerLeaseService, ScheduledJobRegistry, SchedulerRunService],
+      exports: [
+        SchedulerService,
+        SchedulerLeaseService,
+        ScheduledJobRegistry,
+        SchedulerRunService,
+        SchedulerJobPolicyService,
+      ],
     };
   }
 }

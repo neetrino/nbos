@@ -45,21 +45,22 @@ Business Entity has date
 
 Scheduler should emit events or call owning services.
 
-## Runtime cleanup note
+## Catalog and admin visibility
 
-Current scheduler runtime is narrow and Finance-oriented:
+Job definitions live in a **code catalog** (`scheduler-job-catalog`). Settings → Scheduler shows the full visible catalog with last/next run and derived status. Calendar remains a human date surface — not the scheduler UI.
 
-- `runBilling`;
-- `markOverdueInvoices`.
+Canonical admin rules: `../16-Settings-Admin/05-Scheduler-Catalog.md`.
 
-It also uses old invoice status wording in code. This must be refactored when Finance runtime is aligned with the new Finance/Notifications canon.
+Runtime already has:
 
-Future scheduler should have:
+- job definitions (code catalog);
+- idempotency + lease;
+- run history (`SchedulerRun`);
+- last run / next run (Settings list);
+- manual HTTP repair triggers (`/api/scheduler/*`).
 
-- job definitions;
-- idempotency;
-- retry/backoff;
-- audit log;
-- last run / next run;
-- manual run by admin;
-- failure notification.
+Still ahead:
+
+- admin enable/disable policy (Settings, stage 2);
+- manual run by admin from UI (stage 3);
+- failure notification (ops monitoring).

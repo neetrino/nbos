@@ -1,29 +1,27 @@
 import { shouldRegisterScheduledJobs, resolveProcessRole } from '../../runtime/process-role';
-import { isEnvFlagEnabled, isSchedulerEnabled } from './scheduler-lease.constants';
+import { isSchedulerEnabled } from './scheduler-lease.constants';
 
 /**
- * Why a CronJob must not be registered. `null` means role + job flag allow it.
+ * Why a CronJob must not be registered. `null` means role allows it.
+ * Per-job enable is policy (DB), not env — checked on each tick.
  * Does not consider SCHEDULER_ENABLED — that only gates tick execution.
  */
 export function describeCronSkipReason(
-  jobEnabledEnvKey: string,
+  _jobEnabledEnvKey?: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string | null {
   if (!shouldRegisterScheduledJobs(env)) {
     return `role=${resolveProcessRole(env)}`;
   }
-  if (!isEnvFlagEnabled(jobEnabledEnvKey, env)) {
-    return `job flag ${jobEnabledEnvKey} off`;
-  }
   return null;
 }
 
-/** Whether this process may register a Nest CronJob for the given per-job flag. */
+/** Whether this process may register Nest CronJobs (role only). */
 export function shouldStartCronJob(
-  jobEnabledEnvKey: string,
+  _jobEnabledEnvKey?: string,
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return describeCronSkipReason(jobEnabledEnvKey, env) === null;
+  return describeCronSkipReason(_jobEnabledEnvKey, env) === null;
 }
 
 /** Whether registered cron ticks may run (master switch for dedicated scheduler). */

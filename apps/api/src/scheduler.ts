@@ -12,15 +12,7 @@ import {
   SCHEDULER_HEALTH_PORT_ENV,
   SCHEDULER_SHUTDOWN_TIMEOUT_MS_ENV,
 } from './modules/scheduler/scheduler-lease.constants';
-import { EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV } from './modules/scheduler/expense-plan-auto-due-cron.constants';
-import { NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV } from './modules/scheduler/notification-enqueue-reconcile.cron';
-import { NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV } from './modules/scheduler/notification-inbox-reconcile.cron';
-import { RECURRING_TASKS_DUE_ENABLED_ENV } from './modules/scheduler/recurring-tasks-due-cron.constants';
-import {
-  BILLING_CRON_ENABLED_ENV,
-  OVERDUE_INVOICES_CRON_ENABLED_ENV,
-  SALES_KPI_MONTH_CLOSE_CRON_ENABLED_ENV,
-} from './modules/scheduler/scheduler-internal-cron.constants';
+import { listPlatformCronCatalogEntries } from './modules/scheduler/scheduler-job-catalog';
 import { assertProcessRoleForEntrypoint } from './runtime/process-role';
 import { logProcessStartup } from './runtime/process-startup-log';
 import { logRedisTopology } from './runtime/queue-redis';
@@ -39,15 +31,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.flushLogs();
 
-  const knownJobFlagEnvKeys = [
-    BILLING_CRON_ENABLED_ENV,
-    OVERDUE_INVOICES_CRON_ENABLED_ENV,
-    SALES_KPI_MONTH_CLOSE_CRON_ENABLED_ENV,
-    EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV,
-    RECURRING_TASKS_DUE_ENABLED_ENV,
-    NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV,
-    NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV,
-  ];
+  const knownJobFlagEnvKeys = listPlatformCronCatalogEntries()
+    .map((entry) => entry.enabledEnvKey)
+    .filter((key): key is string => key !== null);
   const enabledJobFlagEnvKeys = knownJobFlagEnvKeys.filter((envKey) => isEnvFlagEnabled(envKey));
   logger.log(
     enabledJobFlagEnvKeys.length > 0

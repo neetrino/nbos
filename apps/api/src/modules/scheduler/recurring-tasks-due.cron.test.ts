@@ -20,6 +20,7 @@ describe('RecurringTasksDueCron', () => {
 
   beforeEach(() => {
     process.env = { ...original, NODE_ENV: 'development', PROCESS_ROLE: 'all' };
+    delete process.env.SCHEDULER_RECURRING_TASKS_DUE_ENABLED;
     schedulerService = {
       runRecurringTasksDue: vi.fn().mockResolvedValue({ status: 'SUCCEEDED' }),
     };
@@ -31,7 +32,7 @@ describe('RecurringTasksDueCron', () => {
     process.env = { ...original };
   });
 
-  it('does not register when disabled', () => {
+  it('registers even when env flag is off (policy gates ticks)', async () => {
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new RecurringTasksDueCron(
       createConfig({}),
@@ -40,10 +41,10 @@ describe('RecurringTasksDueCron', () => {
       jobRegistry,
     );
     cron.onModuleInit();
-    expect(addSpy).not.toHaveBeenCalled();
+    expect(addSpy).toHaveBeenCalledWith(SCHEDULER_JOB_NAMES.recurringTasksDue, expect.any(Object));
   });
 
-  it('registers cron when enabled', () => {
+  it('registers cron when enabled', async () => {
     process.env.SCHEDULER_RECURRING_TASKS_DUE_ENABLED = 'true';
     const addSpy = vi.spyOn(registry, 'addCronJob');
     const cron = new RecurringTasksDueCron(
