@@ -44,16 +44,6 @@ const RISK_VARIANT: Record<PlatformSchedulerJobRow['risk'], StatusVariant> = {
   high: 'red',
 };
 
-export function confirmHighRiskSchedulerAction(
-  row: PlatformSchedulerJobRow,
-  action: string,
-): boolean {
-  if (row.risk !== 'high') return true;
-  return window.confirm(
-    `${action} high-risk job "${row.title}" (${row.jobName})?\n\n${row.description}\n\nThis is audited.`,
-  );
-}
-
 export function SchedulerJobTableRow(props: {
   row: PlatformSchedulerJobRow;
   busy: boolean;
