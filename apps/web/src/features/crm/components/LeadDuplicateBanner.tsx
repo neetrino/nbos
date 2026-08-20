@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import type { LeadDuplicateLookupResult } from '@/lib/api/leads';
 import { LeadCandidateList } from './LeadDuplicateBannerRows';
 
-export type LeadDuplicateBannerMode = 'create' | 'phone-add' | 'identify';
+export type LeadDuplicateBannerMode = 'create' | 'phone-add';
 
 interface LeadDuplicateBannerProps {
   result: LeadDuplicateLookupResult;
@@ -14,10 +14,7 @@ interface LeadDuplicateBannerProps {
   onMerge?: (leadId: string) => void;
   onDismiss?: () => void;
   onOpenContact?: (contactId: string) => void;
-  onAttachContact?: (contactId: string, aboutDealId?: string) => void;
   onOpenDeal?: (dealId: string) => void;
-  canAttach?: boolean;
-  attaching?: boolean;
 }
 
 export function LeadDuplicateBanner({
@@ -27,15 +24,11 @@ export function LeadDuplicateBanner({
   onMerge,
   onDismiss,
   onOpenContact,
-  onAttachContact,
   onOpenDeal,
-  canAttach = false,
-  attaching = false,
 }: LeadDuplicateBannerProps) {
   if (!hasDuplicateHits(result)) return null;
 
   const hasOpenDeal = result.openDeals.length > 0 || result.leads.some((lead) => lead.hasOpenDeal);
-  const showAttach = canAttach && mode !== 'phone-add' && Boolean(onAttachContact);
 
   return (
     <div
@@ -52,12 +45,9 @@ export function LeadDuplicateBanner({
           <LeadCandidateList
             result={result}
             mode={mode}
-            showAttach={showAttach}
-            attaching={attaching}
             onOpen={onOpen}
             onMerge={onMerge}
             onOpenContact={onOpenContact}
-            onAttachContact={onAttachContact}
             onOpenDeal={onOpenDeal}
           />
           {mode === 'create' ? (
@@ -83,9 +73,6 @@ export function hasDuplicateHits(result: LeadDuplicateLookupResult): boolean {
 function bannerTitle(mode: LeadDuplicateBannerMode): string {
   if (mode === 'phone-add') {
     return 'Another open Lead uses this phone. Merge only if it is the same request.';
-  }
-  if (mode === 'identify') {
-    return 'Possible existing Contact or open Deal for this person.';
   }
   return 'Possible existing Lead, Contact, or open Deal for this person.';
 }
