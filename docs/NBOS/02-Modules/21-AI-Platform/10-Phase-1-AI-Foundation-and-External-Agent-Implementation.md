@@ -128,15 +128,15 @@ A point is complete only when implementation, negative paths, tests and document
 97. [ ] Add stable id.
 98. [ ] Add human-readable name.
 99. [ ] Add description/purpose.
-100. [ ] Add owner/creator Employee relation.
-101. [ ] Add ACTIVE/DISABLED/REVOKED/EXPIRED semantics.
-102. [ ] Add optional agent expiry.
-103. [ ] Add lastUsedAt.
-104. [ ] Add safe last-client/IP metadata only if useful.
-105. [ ] Add createdAt/updatedAt.
-106. [ ] Add appropriate indexes.
-107. [ ] Ensure agent identity remains stable through credential rotation.
-108. [ ] Add persistence tests.
+100.  [ ] Add owner/creator Employee relation.
+101.  [ ] Add ACTIVE/DISABLED/REVOKED/EXPIRED semantics.
+102.  [ ] Add optional agent expiry.
+103.  [ ] Add lastUsedAt.
+104.  [ ] Add safe last-client/IP metadata only if useful.
+105.  [ ] Add createdAt/updatedAt.
+106.  [ ] Add appropriate indexes.
+107.  [ ] Ensure agent identity remains stable through credential rotation.
+108.  [ ] Add persistence tests.
 
 # F. External Agent credentials
 
